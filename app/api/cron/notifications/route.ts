@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const todayStr = dayNames[now.getDay()];
 
-    const messages = [];
+    const messages: any[] = [];
 
     usersSnapshot.forEach((doc) => {
       const data = doc.data();
