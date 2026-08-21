@@ -125,7 +125,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
       isOpen={isOpen}
       onClose={handleClose}
       title="Import Exam Timetable via AI/OCR"
-      size={step === 'review' ? '4xl' : 'md'}
+      maxWidth={step === 'review' ? '4xl' : 'md'}
     >
       {step === 'upload' && (
         <div className="flex flex-col gap-6 text-center">
