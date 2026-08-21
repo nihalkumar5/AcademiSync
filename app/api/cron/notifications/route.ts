@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   // Add simple authentication to prevent public triggering (Vercel sets this header for cron jobs)
   const authHeader = request.headers.get('authorization');
-  if (process.env.CRON_SECRET && authHeader !== \`Bearer \${process.env.CRON_SECRET}\`) {
+  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
@@ -53,8 +53,8 @@ export async function GET(request: Request) {
           messages.push({
             token: fcmToken,
             notification: {
-              title: \`Class in \${classAlertMinutes} mins: \${session.subject}\`,
-              body: \`\${session.type} at \${session.room}\`
+              title: `Class in ${classAlertMinutes} mins: ${session.subject}`,
+              body: `${session.type} at ${session.room}`
             }
           });
         }
