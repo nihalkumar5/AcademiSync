@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     if (apiKey && imageList.length > 0) {
       try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
 
         const prompt = `You are an academic exam timetable extractor.
 Analyze the provided exam timetable image(s) and extract all exams across all pages into a strict single JSON array.
@@ -40,7 +40,7 @@ Return ONLY raw JSON array.
 
         const imageParts = imageList.map((img: any) => ({
           inlineData: {
-            data: img.base64.replace(/^data:image\/\w+;base64,/, ''),
+            data: img.base64.replace(/^data:[^;]+;base64,/, ''),
             mimeType: img.mimeType || 'image/jpeg',
           },
         }));

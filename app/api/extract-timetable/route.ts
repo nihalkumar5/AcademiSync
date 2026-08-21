@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     if (apiKey && imageList.length > 0) {
       try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
 
         const prompt = `You are a specialized timetable parsing assistant for university students.
 Analyze the provided timetable image(s) and extract all class/lecture/lab slots across all pages into a strict single JSON array.
@@ -45,7 +45,7 @@ Return ONLY raw JSON in the format:
 
         const imageParts = imageList.map((img: any) => ({
           inlineData: {
-            data: img.base64.replace(/^data:image\/\w+;base64,/, ''),
+            data: img.base64.replace(/^data:[^;]+;base64,/, ''),
             mimeType: img.mimeType || 'image/jpeg',
           },
         }));
