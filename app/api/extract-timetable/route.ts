@@ -17,28 +17,34 @@ export async function POST(req: Request) {
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
 
-        const prompt = `You are a specialized timetable parsing assistant for university students.
+        const prompt = `You are a specialized timetable parsing assistant for university students across India.
 Analyze the provided timetable image(s) and extract all class/lecture/lab slots across all pages into a strict single JSON array.
-Each element MUST have:
-- "day": one of "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
-- "startTime": 24-hour format "HH:MM" (e.g. "09:00", "14:00")
-- "endTime": 24-hour format "HH:MM" (e.g. "10:00", "16:00")
-- "subjectName": Full subject name (e.g. "Machine Learning", "Data Engineering")
-- "subjectCode": Course code if visible (e.g. "CS302")
-- "room": Classroom/Hall (e.g. "LT-1", "Room 204", "AI Lab")
-- "faculty": Faculty name if visible
-- "isLab": boolean (true if practical or lab session, else false)
 
-Return ONLY raw JSON in the format:
+CRITICAL INSTRUCTIONS FOR SUBJECTS:
+- Look at every cell carefully. Look for course abbreviations, course names, subject titles, or codes (e.g. "ML", "CNS", "PS", "DE", "DBMS", "Operating Systems", "Mathematics").
+- Check if there is a legend / course reference table at the bottom or sides mapping short codes to full subject names.
+- If a cell only contains an abbreviation like "PS" or "NS" or "DSA", use that exact abbreviation or its expanded name (e.g. "Probability & Statistics", "Network Security", "Data Structures").
+- NEVER EVER return the generic word "Subject" or "Lecture" or "Class" as subjectName. Always put the specific subject name, abbreviation, or topic written in that slot.
+- For each element, extract:
+  * "day": "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", or "Sunday"
+  * "startTime": 24-hour format "HH:MM" (e.g. "09:00", "10:05", "14:30")
+  * "endTime": 24-hour format "HH:MM" (e.g. "10:00", "11:05", "16:30")
+  * "subjectName": Specific subject name or abbreviation (e.g. "Probability & Statistics", "Machine Learning", "OS Lab")
+  * "subjectCode": Course code if present (e.g. "CS302", "MA201")
+  * "room": Room / Hall number (e.g. "118", "LT-1", "Lab 2")
+  * "faculty": Faculty name if visible
+  * "isLab": boolean (true if practical or lab session, else false)
+
+Return ONLY raw valid JSON array:
 [
   {
     "day": "Monday",
-    "startTime": "09:00",
-    "endTime": "10:00",
-    "subjectName": "Machine Learning",
-    "subjectCode": "CS302",
-    "room": "LT-1",
-    "faculty": "Dr. Debanjan Sadhukhan",
+    "startTime": "10:05",
+    "endTime": "11:05",
+    "subjectName": "Probability & Statistics",
+    "subjectCode": "MA201",
+    "room": "118",
+    "faculty": "Mr. Prashant Singh (VF)",
     "isLab": false
   }
 ]`;

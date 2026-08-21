@@ -14,7 +14,7 @@ export interface TimetableImportModalProps {
 }
 
 export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOpen, onClose }) => {
-  const { subjects, addSubject, timetable, setFullTimetable, showToast } = useApp();
+  const { subjects, addSubject, timetable, setFullTimetable, setFullSubjectsAndTimetable, showToast } = useApp();
 
   const [step, setStep] = useState<'upload' | 'extracting' | 'review'>('upload');
   const [fileName, setFileName] = useState('');
@@ -157,15 +157,8 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
       });
     });
 
-    // Save back to context
-    newSubjects.forEach((sub) => {
-      if (!subjects.find((s) => s.id === sub.id)) {
-        addSubject(sub);
-      }
-    });
-
-    // Overwrite old timetable completely
-    setFullTimetable(newSessions);
+    // Save subjects and timetable together atomically with matching IDs
+    setFullSubjectsAndTimetable(newSubjects, newSessions);
     handleClose();
   };
 

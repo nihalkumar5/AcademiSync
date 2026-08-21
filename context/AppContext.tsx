@@ -49,6 +49,7 @@ interface AppContextType {
   updateClassSession: (id: string, session: Partial<ClassSession>) => void;
   deleteClassSession: (id: string) => void;
   setFullTimetable: (sessions: ClassSession[]) => void;
+  setFullSubjectsAndTimetable: (newSubjects: Subject[], sessions: ClassSession[]) => void;
   homework: Homework[];
   addHomework: (hw: Omit<Homework, 'id' | 'createdAt'>) => Homework;
   updateHomework: (id: string, hw: Partial<Homework>) => void;
@@ -319,6 +320,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     showToast('Timetable Updated', `${sessions.length} class slots loaded`, 'success');
   };
 
+  const setFullSubjectsAndTimetable = (newSubjects: Subject[], sessions: ClassSession[]) => {
+    setSubjectsState(newSubjects);
+    storage.setSubjects(newSubjects);
+    setTimetableState(sessions);
+    storage.setTimetable(sessions);
+    refreshCarryItems(sessions, newSubjects);
+    showToast('Timetable Imported', `${sessions.length} class slots loaded`, 'success');
+  };
+
   const addHomework = (hwData: Omit<Homework, 'id' | 'createdAt'>): Homework => {
     const newHw: Homework = {
       ...hwData,
@@ -533,6 +543,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         updateClassSession,
         deleteClassSession,
         setFullTimetable,
+        setFullSubjectsAndTimetable,
         homework,
         addHomework,
         updateHomework,
