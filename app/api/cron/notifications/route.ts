@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 
     const messages: any[] = [];
 
-    usersSnapshot.forEach((doc) => {
+    usersSnapshot.forEach((doc: any) => {
       const data = doc.data();
       const fcmToken = data.fcmToken;
       const timetable = data.timetable || [];
