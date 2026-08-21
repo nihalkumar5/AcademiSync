@@ -77,8 +77,8 @@ interface AppContextType {
   commandPaletteOpen: boolean;
   setCommandPaletteOpen: (open: boolean) => void;
   triggerConfetti: () => void;
-  toastMessage: { title: string; message: string; type?: 'info' | 'success' | 'warning' } | null;
-  showToast: (title: string, message: string, type?: 'info' | 'success' | 'warning') => void;
+  toastMessage: { title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error' } | null;
+  showToast: (title: string, message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -88,7 +88,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [activeView, setActiveView] = useState<ActiveView>('home');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState<{ title: string; message: string; type?: 'info' | 'success' | 'warning' } | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error' } | null>(null);
 
   // Core state
   const [profile, setProfileState] = useState<StudentProfile>(storage.getProfile());
@@ -221,7 +221,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const showToast = (title: string, message: string, type: 'info' | 'success' | 'warning' = 'info') => {
+  const showToast = (title: string, message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     setToastMessage({ title, message, type });
     setTimeout(() => {
       setToastMessage((current) => (current?.title === title ? null : current));

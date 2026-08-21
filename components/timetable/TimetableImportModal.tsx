@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { ExtractedClassSession, DayOfWeek, ClassSession } from '@/lib/types';
+import { ExtractedClassSession, DayOfWeek, ClassSession, Subject } from '@/lib/types';
 import { DAYS_OF_WEEK } from '@/lib/timetableUtils';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
@@ -31,8 +31,9 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     onClose();
   };
 
-  const runExtraction = async (filesInfo: { name: string, base64: string, mimeType: string }[]) => {
-    setFileName(filesInfo.length === 1 ? filesInfo[0].name : `${filesInfo.length} files selected`);
+  const runExtraction = async (filesInfo: string | { name: string, base64: string, mimeType: string }[]) => {
+    const isString = typeof filesInfo === 'string';
+    setFileName(isString ? filesInfo : (filesInfo.length === 1 ? filesInfo[0].name : `${filesInfo.length} files selected`));
     setStep('extracting');
 
     try {
@@ -40,8 +41,8 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fileName: filesInfo.length === 1 ? filesInfo[0].name : 'Multiple Files',
-          images: filesInfo,
+          fileName: isString ? filesInfo : (filesInfo.length === 1 ? filesInfo[0].name : 'Multiple Files'),
+          images: isString ? [] : filesInfo,
         }),
       });
 
