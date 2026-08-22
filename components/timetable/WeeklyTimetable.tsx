@@ -83,9 +83,9 @@ export const WeeklyTimetable: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={handleImportTimetable}
-            className="gap-1.5 rounded-xl border-slate-300 dark:border-zinc-700 shadow-sm"
+            className="gap-1.5 rounded-xl border-slate-200 dark:border-zinc-800 shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-xs font-semibold"
           >
-            <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+            <Sparkles className="w-3.5 h-3.5 text-[#6366F1]" />
             <span>AI Import</span>
           </Button>
 
@@ -93,7 +93,7 @@ export const WeeklyTimetable: React.FC = () => {
             variant="primary"
             size="sm"
             onClick={() => handleAddForDay(selectedMobileDay)}
-            className="gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+            className="gap-1.5 rounded-xl bg-[#6366F1] hover:bg-[#4F46E5] text-white shadow-sm text-xs font-semibold"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Class</span>
@@ -113,22 +113,22 @@ export const WeeklyTimetable: React.FC = () => {
               key={day}
               onClick={() => setSelectedMobileDay(day)}
               className={clsx(
-                'flex flex-col items-center justify-center px-4 py-2.5 rounded-2xl text-xs font-semibold shrink-0 transition-all border shadow-sm',
+                'flex flex-col items-center justify-center px-4 py-2 rounded-2xl text-xs font-semibold shrink-0 transition-all border shadow-sm',
                 isSelected
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
-                  : 'bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-zinc-800'
+                  ? 'bg-[#6366F1] text-white border-[#6366F1] shadow-md shadow-indigo-500/20 font-bold'
+                  : 'bg-white dark:bg-[#111827] text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-zinc-800'
               )}
             >
               <div className="flex items-center gap-1.5">
                 <span>{day.slice(0, 3)}</span>
                 {isToday && (
-                  <span className={clsx('w-1.5 h-1.5 rounded-full', isSelected ? 'bg-white' : 'bg-blue-500')} />
+                  <span className={clsx('w-1.5 h-1.5 rounded-full', isSelected ? 'bg-white' : 'bg-[#6366F1]')} />
                 )}
               </div>
               <span
                 className={clsx(
-                  'text-[10.5px] font-mono mt-0.5',
-                  isSelected ? 'text-blue-100' : 'text-slate-400'
+                  'text-[10px] font-mono mt-0.5',
+                  isSelected ? 'text-indigo-100' : 'text-slate-400'
                 )}
               >
                 {classCount} classes

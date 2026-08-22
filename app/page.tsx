@@ -8,6 +8,7 @@ import { Header } from '@/components/layout/Header';
 import { CommandPalette } from '@/components/layout/CommandPalette';
 import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
 import { Toast } from '@/components/ui/Toast';
+import { IntersemesterLogo } from '@/components/ui/IntersemesterLogo';
 
 // Views
 import { OverviewHeader } from '@/components/dashboard/OverviewHeader';
@@ -30,50 +31,33 @@ export default function AppHome() {
 
   if (!isHydrated) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-zinc-50 dark:bg-zinc-950 overflow-hidden relative">
+      <div className="flex items-center justify-center min-h-screen bg-[#F5F7FA] dark:bg-[#0B0F19] overflow-hidden relative">
         {/* Subtle background glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-[64px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#6366F1]/10 rounded-full blur-[64px]" />
         
         <motion.div 
           initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="flex flex-col items-center gap-8 relative z-10"
+          className="flex flex-col items-center gap-6 relative z-10"
         >
-          {/* Animated Rings */}
-          <div className="relative flex items-center justify-center w-20 h-20">
-            {/* Outer ring */}
+          {/* Animated Monogram */}
+          <div className="relative flex items-center justify-center">
             <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
-              className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-blue-600 border-r-indigo-500 opacity-80"
-            />
-            {/* Inner ring */}
-            <motion.div
-              animate={{ rotate: -360 }}
-              transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-              className="absolute inset-2 rounded-full border-[2.5px] border-transparent border-b-cyan-500 border-l-blue-400 opacity-60"
-            />
-            {/* Center pulsing core */}
-            <motion.div 
-              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+              animate={{ scale: [1, 1.06, 1] }}
               transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              className="w-3 h-3 bg-blue-600 dark:bg-blue-400 rounded-full shadow-[0_0_15px_rgba(37,99,235,0.6)]" 
-            />
+            >
+              <IntersemesterLogo size="lg" showTagline={false} />
+            </motion.div>
           </div>
           
-          <div className="flex flex-col items-center gap-2">
-            <h2 className="text-base font-black text-slate-900 dark:text-zinc-50 tracking-tight">
-              AcademiSync
-            </h2>
-            <motion.p 
-              animate={{ opacity: [0.4, 1, 0.4] }}
-              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              className="text-[10px] font-bold text-blue-600/80 dark:text-blue-400/80 uppercase tracking-[0.25em]"
-            >
-              Initializing Workspace
-            </motion.p>
-          </div>
+          <motion.p 
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            className="text-[11px] font-bold text-[#6366F1] uppercase tracking-[0.25em]"
+          >
+            Loading Workspace
+          </motion.p>
         </motion.div>
       </div>
     );

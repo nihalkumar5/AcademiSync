@@ -18,6 +18,7 @@ import {
 import { useApp, ActiveView } from '@/context/AppContext';
 import { clsx } from 'clsx';
 import { UserButton, SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
+import { IntersemesterLogo } from '../ui/IntersemesterLogo';
 
 export const Sidebar: React.FC = () => {
   const {
@@ -69,19 +70,9 @@ export const Sidebar: React.FC = () => {
     <aside className="hidden md:flex flex-col w-64 bg-white/80 dark:bg-zinc-950/80 border-r border-slate-200/80 dark:border-zinc-800/80 h-screen sticky top-0 select-none p-3.5 justify-between backdrop-blur-md z-20">
       <div className="flex flex-col gap-4">
         {/* Workspace Brand / Header */}
-        <div className="flex items-center justify-between px-2 pt-1">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-md shadow-blue-500/20">
-              <GraduationCap className="w-4 h-4" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 tracking-tight leading-tight flex items-center gap-1">
-                {profile.college || 'Your College'}
-              </span>
-              <span className="text-[10.5px] text-slate-500 dark:text-zinc-400 font-mono">
-                Academic Assistant
-              </span>
-            </div>
+        <div className="flex items-center justify-between px-2 pt-1 pb-2 border-b border-slate-100 dark:border-zinc-800/80">
+          <div className="flex items-center gap-2">
+            <IntersemesterLogo size="md" showTagline={true} taglineText="Student Edition" />
           </div>
         </div>
 
@@ -101,7 +92,7 @@ export const Sidebar: React.FC = () => {
 
         {/* Main Navigation links */}
         <div className="flex flex-col gap-1">
-          <span className="px-2.5 pb-1 text-[10.5px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 font-mono">
+          <span className="px-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 font-mono">
             Academic
           </span>
           {mainNav.map((item) => {
@@ -111,14 +102,14 @@ export const Sidebar: React.FC = () => {
                 key={item.id}
                 onClick={() => setActiveView(item.id)}
                 className={clsx(
-                  'flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all group',
+                  'flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all group',
                   isActive
-                    ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-200/60 dark:border-blue-800/60 shadow-sm'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200/80 dark:border-indigo-800/80 shadow-sm'
                     : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100/70 dark:hover:bg-zinc-900/60 hover:text-slate-900 dark:hover:text-zinc-200'
                 )}
               >
                 <span className="flex items-center gap-2.5">
-                  <span className={clsx(isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-zinc-300')}>
+                  <span className={clsx(isActive ? 'text-[#6366F1] dark:text-[#818CF8]' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-zinc-300')}>
                     {item.icon}
                   </span>
                   {item.label}
@@ -128,7 +119,7 @@ export const Sidebar: React.FC = () => {
                     className={clsx(
                       'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full shadow-sm',
                       isActive
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-[#6366F1] text-white'
                         : 'bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300'
                     )}
                   >
@@ -142,7 +133,7 @@ export const Sidebar: React.FC = () => {
 
         {/* Secondary Navigation */}
         <div className="flex flex-col gap-1">
-          <span className="px-2.5 pb-1 text-[10.5px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 font-mono">
+          <span className="px-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 font-mono">
             Management
           </span>
           {secondaryNav.map((item) => {
@@ -152,14 +143,14 @@ export const Sidebar: React.FC = () => {
                 key={item.id}
                 onClick={() => setActiveView(item.id)}
                 className={clsx(
-                  'flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all group',
+                  'flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all group',
                   isActive
-                    ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-200/60 dark:border-blue-800/60 shadow-sm'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200/80 dark:border-indigo-800/80 shadow-sm'
                     : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100/70 dark:hover:bg-zinc-900/60 hover:text-slate-900 dark:hover:text-zinc-200'
                 )}
               >
                 <span className="flex items-center gap-2.5">
-                  <span className={clsx(isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-zinc-300')}>
+                  <span className={clsx(isActive ? 'text-[#6366F1] dark:text-[#818CF8]' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-zinc-300')}>
                     {item.icon}
                   </span>
                   {item.label}
@@ -192,7 +183,7 @@ export const Sidebar: React.FC = () => {
             </SignedIn>
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg transition-colors">
+                <button className="text-xs font-bold bg-[#6366F1] hover:bg-[#4F46E5] text-white px-3 py-1.5 rounded-lg transition-colors">
                   Sign In
                 </button>
               </SignInButton>

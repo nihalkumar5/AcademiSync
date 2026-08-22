@@ -3,15 +3,12 @@ import './globals.css';
 import { AppProvider } from '@/context/AppContext';
 
 export const metadata: Metadata = {
-  title: 'AcademiSync — Pan-India Student Productivity Suite',
+  title: 'Intersemester — Your Academic Life, Organized',
   description:
-    'Modern, fast academic command center for college students across India: Timetables, Homework deadlines, and automated Tomorrow Carry Bag.',
+    'Smart academic assistant that helps students manage their classes, tasks, deadlines, and everyday campus life with clarity and calm.',
 };
 
-import { Inter } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export default function RootLayout({
   children,
@@ -20,8 +17,8 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en" suppressHydrationWarning className={inter.variable}>
-        <body className="min-h-[100dvh] bg-[#f8fafc] text-zinc-900 antialiased flex flex-col font-sans selection:bg-blue-500 selection:text-white">
+      <html lang="en" suppressHydrationWarning>
+        <body className="min-h-[100dvh] bg-[#F5F7FA] dark:bg-[#0B0F19] text-[#0F172A] dark:text-zinc-100 antialiased flex flex-col font-sans selection:bg-indigo-600 selection:text-white">
           <AppProvider>{children}</AppProvider>
         </body>
       </html>

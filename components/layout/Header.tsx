@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { Button } from '../ui/Button';
+import { IntersemesterMonogram } from '../ui/IntersemesterLogo';
 import { AddHomeworkModal } from '../homework/AddHomeworkModal';
 import { AddCustomItemModal } from '../carry/AddCustomItemModal';
 import { TimetableImportModal } from '../timetable/TimetableImportModal';
@@ -62,8 +63,9 @@ export const Header: React.FC = () => {
   const viewTitles: Record<string, string> = {
     home: 'Home Dashboard',
     timetable: 'Weekly Timetable',
-    homework: 'Homework & Assignments',
-    carry: "Tomorrow's Carry Bag",
+    exams: 'Exam Timetable',
+    homework: 'Homework & Tasks',
+    carry: "Tomorrow's Schedule & Bag",
     subjects: 'Subject Directory',
     calendar: 'Academic Calendar',
     notifications: 'Notification Inbox',
@@ -77,9 +79,12 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-8 py-3 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-2xl saturate-150 border-b border-slate-200/50 dark:border-zinc-800/50 shadow-sm">
+      <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-8 py-3 bg-white/70 dark:bg-[#0B0F19]/70 backdrop-blur-2xl border-b border-slate-200/60 dark:border-zinc-800/60 shadow-sm">
         <div className="flex items-center gap-3">
-          <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
+          <div className="md:hidden flex items-center">
+            <IntersemesterMonogram size={28} />
+          </div>
+          <h1 className="text-base sm:text-lg font-bold text-[#0F172A] dark:text-zinc-100 tracking-tight font-sans">
             {viewTitles[activeView] || 'Academic Assistant'}
           </h1>
         </div>
@@ -87,8 +92,8 @@ export const Header: React.FC = () => {
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Live Clock Pill */}
           {currentTime && (
-            <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700/80 text-xs font-mono font-bold text-slate-700 dark:text-zinc-200 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+            <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/90 dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700/80 text-xs font-mono font-bold text-slate-700 dark:text-zinc-200 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-[#6366F1] animate-ping" />
               <span>{currentTime}</span>
             </div>
           )}
@@ -128,7 +133,7 @@ export const Header: React.FC = () => {
           >
             <Bell className="w-4 h-4" />
             {unreadNotifs > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white dark:ring-zinc-950 animate-pulse" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#6366F1] ring-2 ring-white dark:ring-zinc-950 animate-pulse" />
             )}
           </button>
 
@@ -138,7 +143,7 @@ export const Header: React.FC = () => {
               size="sm"
               variant="primary"
               onClick={() => setAddMenuOpen((prev) => !prev)}
-              className="gap-1.5 px-3.5 rounded-xl shadow-sm bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
+              className="gap-1.5 px-3.5 rounded-xl shadow-sm bg-[#6366F1] hover:bg-[#4F46E5] text-white border-none font-semibold"
             >
               <Plus className="w-3.5 h-3.5" />
               <span className="hidden sm:inline font-semibold">Create</span>
@@ -150,15 +155,15 @@ export const Header: React.FC = () => {
                   className="fixed inset-0 z-40"
                   onClick={() => setAddMenuOpen(false)}
                 />
-                <div className="absolute right-0 mt-3 w-[50vw] sm:w-64 rounded-3xl bg-blue-600/95 dark:bg-blue-900/95 backdrop-blur-xl border border-blue-400/20 shadow-2xl shadow-blue-900/20 py-2 z-50 text-left overflow-hidden">
+                <div className="absolute right-0 mt-3 w-64 rounded-3xl bg-[#0F172A]/95 dark:bg-[#1E1B4B]/95 backdrop-blur-xl border border-indigo-400/20 shadow-2xl shadow-indigo-950/30 py-2 z-50 text-left overflow-hidden">
                   <button
                     onClick={() => {
                       setAddMenuOpen(false);
                       setShowAddHwModal(true);
                     }}
-                    className="flex items-center gap-3 w-full px-5 py-3.5 text-sm font-semibold text-blue-50 hover:text-white hover:bg-white/10 transition-colors text-left"
+                    className="flex items-center gap-3 w-full px-5 py-3 text-sm font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-colors text-left"
                   >
-                    <CheckSquare className="w-5 h-5 text-blue-200" />
+                    <CheckSquare className="w-4 h-4 text-indigo-300" />
                     New Homework
                   </button>
 
@@ -167,9 +172,9 @@ export const Header: React.FC = () => {
                       setAddMenuOpen(false);
                       setShowHwScanModal(true);
                     }}
-                    className="flex items-center gap-3 w-full px-5 py-3.5 text-sm font-semibold text-blue-50 hover:text-white hover:bg-white/10 transition-colors text-left"
+                    className="flex items-center gap-3 w-full px-5 py-3 text-sm font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-colors text-left"
                   >
-                    <Sparkles className="w-5 h-5 text-purple-200" />
+                    <Sparkles className="w-4 h-4 text-purple-300" />
                     Scan Homework (AI)
                   </button>
 
@@ -178,22 +183,22 @@ export const Header: React.FC = () => {
                       setAddMenuOpen(false);
                       setShowAddCarryModal(true);
                     }}
-                    className="flex items-center gap-3 w-full px-5 py-3.5 text-sm font-semibold text-blue-50 hover:text-white hover:bg-white/10 transition-colors text-left"
+                    className="flex items-center gap-3 w-full px-5 py-3 text-sm font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-colors text-left"
                   >
-                    <Backpack className="w-5 h-5 text-emerald-200" />
+                    <Backpack className="w-4 h-4 text-emerald-300" />
                     Add Bag Item
                   </button>
 
-                  <div className="my-1 border-t border-blue-400/20 mx-3" />
+                  <div className="my-1 border-t border-slate-700/50 mx-3" />
 
                   <button
                     onClick={() => {
                       setAddMenuOpen(false);
                       setShowTimetableImportModal(true);
                     }}
-                    className="flex items-center gap-3 w-full px-5 py-3.5 text-sm font-semibold text-blue-50 hover:text-white hover:bg-white/10 transition-colors text-left"
+                    className="flex items-center gap-3 w-full px-5 py-3 text-sm font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-colors text-left"
                   >
-                    <Upload className="w-5 h-5 text-amber-200" />
+                    <Upload className="w-4 h-4 text-amber-300" />
                     Import Timetable (AI)
                   </button>
                 </div>

@@ -1,62 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Apple-like system light background */
-  --background: #F2F2F7;
-  --foreground: #000000;
+  --background: #F5F7FA;
+  --foreground: #0F172A;
 }
 
 .dark {
-  --background: #000000;
-  --foreground: #FFFFFF;
+  --background: #0B0F19;
+  --foreground: #F8FAFC;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   background-image: 
-    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.04) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.04) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.03) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(167, 139, 250, 0.04) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(224, 231, 255, 0.05) 0px, transparent 50%);
   background-attachment: fixed;
   font-feature-settings: "rlig" 1, "calt" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Premium iOS Widget / Linear Style Primitives */
+/* Intersemester Card & Bento Primitives */
 .bento-card {
   background: #FFFFFF;
-  border-radius: 24px;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03), 0 0 1px 1px rgba(0, 0, 0, 0.03);
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  border-radius: 20px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.03), 0 0 1px 1px rgba(15, 23, 42, 0.02);
+  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
   overflow: hidden;
   position: relative;
 }
 
 .bento-card:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 .dark .bento-card {
-  background: #1C1C1E;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.2), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+  background: #111827;
+  border: 1px solid rgba(30, 41, 59, 0.8);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4), 0 0 1px 1px rgba(255, 255, 255, 0.04);
 }
 
-/* Vibrant Mesh Card for the Hero Section */
+/* Glass Card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.7);
+  border-radius: 18px;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.02);
+}
+
+.dark .glass-card {
+  background: rgba(17, 24, 39, 0.8);
+  border: 1px solid rgba(30, 41, 59, 0.7);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Vibrant Mesh Card for Hero & Featured Sections */
 .hero-mesh-card {
-  background: linear-gradient(135deg, #f0f7ff 0%, #e0e7ff 100%);
-  border-radius: 28px;
-  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  background: linear-gradient(135deg, #EFF6FF 0%, #EEF2FF 50%, #FAF5FF 100%);
+  border-radius: 24px;
+  border: 1px solid rgba(224, 231, 255, 0.9);
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.08);
   position: relative;
   overflow: hidden;
 }
 
 .dark .hero-mesh-card {
-  background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #172554 100%);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
 }
 
 /* Custom subtle scrollbars */

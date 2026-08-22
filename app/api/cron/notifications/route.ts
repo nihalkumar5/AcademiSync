@@ -68,7 +68,7 @@ export async function GET(request: Request) {
           token: fcmToken,
           notification: {
             title: "Pack your bag for tomorrow! 🎒",
-            body: "Check AcademiSync to see tomorrow's classes and what to carry."
+            body: "Check Intersemester to see tomorrow's classes and what to carry."
           }
         });
       }

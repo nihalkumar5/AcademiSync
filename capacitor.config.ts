@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.academisync.app',
-  appName: 'AcademiSync',
+  appId: 'com.intersemester.app',
+  appName: 'Intersemester',
   webDir: 'out'
 };
 

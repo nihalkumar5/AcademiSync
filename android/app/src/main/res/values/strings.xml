@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">AcademiSync</string>
-    <string name="title_activity_main">AcademiSync</string>
-    <string name="package_name">com.academisync.app</string>
-    <string name="custom_url_scheme">com.academisync.app</string>
+    <string name="app_name">Intersemester</string>
+    <string name="title_activity_main">Intersemester</string>
+    <string name="package_name">com.intersemester.app</string>
+    <string name="custom_url_scheme">com.intersemester.app</string>
 </resources>
