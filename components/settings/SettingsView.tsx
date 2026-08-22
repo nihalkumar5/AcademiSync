@@ -49,31 +49,6 @@ export const SettingsView: React.FC = () => {
   const [isHolding, setIsHolding] = useState(false);
   const holdIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Auto-sync initial data if empty and Clerk is available
-  useEffect(() => {
-    if (isLoaded && isSignedIn && user) {
-      const clerkName = user.fullName || user.firstName || '';
-      const clerkEmail = user.primaryEmailAddress?.emailAddress || '';
-
-      let updated = false;
-      if (profile.name === 'Student' || !profile.name) {
-        setName(clerkName);
-        updated = true;
-      }
-      if (!profile.email) {
-        setEmail(clerkEmail);
-        updated = true;
-      }
-
-      if (updated) {
-        updateProfile({
-          name: clerkName || name,
-          email: clerkEmail || email,
-        });
-      }
-    }
-  }, [isLoaded, isSignedIn, user]);
-
   // Hold-to-Reset timer logic
   useEffect(() => {
     if (isHolding) {
@@ -105,22 +80,6 @@ export const SettingsView: React.FC = () => {
     setTimeout(() => {
       window.location.reload();
     }, 600);
-  };
-
-  const handleSyncClerk = () => {
-    if (user) {
-      const clerkName = user.fullName || user.firstName || '';
-      const clerkEmail = user.primaryEmailAddress?.emailAddress || '';
-      setName(clerkName);
-      setEmail(clerkEmail);
-      updateProfile({
-        name: clerkName,
-        email: clerkEmail,
-      });
-      showToast('Account Synced', 'Fetched details from your profile.', 'success');
-    } else {
-      showToast('Error', 'No account found. Please sign in.', 'error');
-    }
   };
 
   const [classReminderMinutes, setClassReminderMinutes] = useState(settings.classReminderMinutes);
@@ -255,18 +214,8 @@ export const SettingsView: React.FC = () => {
           {/* Auth Action in Student Pass */}
           <div className="flex items-center gap-2">
             <SignedIn>
-              <div className="flex items-center gap-2 bg-white/15 px-3 py-1.5 rounded-2xl border border-white/25 backdrop-blur-md">
-                <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: 'w-7 h-7' } }} />
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleSyncClerk}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-white cursor-pointer"
-                  title="Sync Profile"
-                >
-                  <RefreshCcw className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Sync</span>
-                </motion.button>
+              <div className="flex items-center bg-white/15 p-1 rounded-2xl border border-white/25 backdrop-blur-md shadow-xs">
+                <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: 'w-8 h-8' } }} />
               </div>
             </SignedIn>
             <SignedOut>
