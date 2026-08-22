@@ -178,9 +178,22 @@ export const SettingsView: React.FC = () => {
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative z-10">
           <div className="flex items-center gap-4">
-            {/* Avatar Initials Badge */}
-            <div className="w-16 h-16 rounded-2xl bg-white/15 border-2 border-white/30 backdrop-blur-md flex items-center justify-center font-black text-2xl tracking-tighter text-white shadow-inner shrink-0">
-              {initials}
+            {/* Avatar / Google Profile Image Badge */}
+            <div className="relative w-16 h-16 rounded-2xl bg-white/15 border-2 border-white/30 backdrop-blur-md flex items-center justify-center font-black text-2xl tracking-tighter text-white shadow-inner shrink-0 overflow-hidden">
+              <SignedIn>
+                {user?.imageUrl ? (
+                  <img
+                    src={user.imageUrl}
+                    alt={name || 'User profile'}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span>{initials}</span>
+                )}
+              </SignedIn>
+              <SignedOut>
+                <span>{initials}</span>
+              </SignedOut>
             </div>
 
             <div className="flex flex-col min-w-0">
@@ -209,27 +222,6 @@ export const SettingsView: React.FC = () => {
                 )}
               </div>
             </div>
-          </div>
-
-          {/* Auth Action in Student Pass */}
-          <div className="flex items-center gap-2">
-            <SignedIn>
-              <div className="flex items-center bg-white/15 p-1 rounded-2xl border border-white/25 backdrop-blur-md shadow-xs">
-                <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: 'w-8 h-8' } }} />
-              </div>
-            </SignedIn>
-            <SignedOut>
-              <SignInButton mode="modal">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white text-[#6E4F36] text-xs font-bold shadow-md hover:bg-white/95 transition-all cursor-pointer"
-                >
-                  <User className="w-4 h-4" />
-                  <span>Sign In / Register</span>
-                </motion.button>
-              </SignInButton>
-            </SignedOut>
           </div>
         </div>
       </div>
