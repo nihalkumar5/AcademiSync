@@ -12,6 +12,7 @@ import {
   Backpack,
   MapPin,
   Sparkles,
+  Hand,
 } from 'lucide-react';
 
 export const OverviewHeader: React.FC = () => {
@@ -31,18 +32,17 @@ export const OverviewHeader: React.FC = () => {
   const todayClasses = timetable.filter((s) => s.day === todayDay);
   const pendingHw = homework.filter((h) => h.status !== 'Completed');
   const upcomingDeadlines = homework.filter((h) => {
-    if (h.status === 'Completed') return false;
     const diff = Math.ceil(
-      (new Date(h.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+      (new Date(h.deadline).getTime() - new Date().getTime()) / (1000 * 3600 * 24)
     );
-    return diff <= 1;
+    return h.status !== 'Completed' && diff <= 3;
   });
   const unpackedCarry = carryItems.filter((i) => !i.isPacked);
 
   const hour = time ? time.getHours() : new Date().getHours();
-  let greeting = 'Good morning';
-  if (hour >= 12 && hour < 17) greeting = 'Good afternoon';
-  else if (hour >= 17) greeting = 'Good evening';
+  let greeting = 'Good evening';
+  if (hour < 12) greeting = 'Good morning';
+  else if (hour < 18) greeting = 'Good afternoon';
 
   const dateFormatted = time
     ? new Intl.DateTimeFormat('en-US', {
@@ -66,9 +66,9 @@ export const OverviewHeader: React.FC = () => {
     <div className="flex flex-col gap-6 mt-8 mb-4">
       {/* Huge Greeting */}
       <div>
-        <h2 className="text-5xl sm:text-7xl font-medium text-black dark:text-white tracking-tighter leading-[1.1]">
-          {greeting},<br />
-          {profile.name.split(' ')[0]}
+        <h2 className="text-5xl sm:text-7xl font-medium text-black dark:text-white tracking-tighter leading-[1.1] flex flex-wrap items-center gap-x-4">
+          <span>{greeting},<br />{profile.name.split(' ')[0]}</span>
+          <Hand className="w-10 h-10 sm:w-14 sm:h-14 mt-4 sm:mt-0 opacity-80" strokeWidth={1.5} />
         </h2>
         <p className="text-lg text-black/70 dark:text-white/70 mt-6 max-w-sm leading-snug">
           It is {timeFormatted} on {dateFormatted}. You are currently in Sem {profile.semester} at {profile.college || 'Your College'}.
