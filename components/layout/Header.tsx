@@ -86,20 +86,61 @@ export const Header: React.FC = () => {
           </h1>
         </div>
 
-        <div className="flex items-center gap-4 text-sm font-medium tracking-tight text-black dark:text-white">
-          <button onClick={() => setCommandPaletteOpen(true)} className="hover:underline">Search</button>
-          <button onClick={toggleTheme} className="hover:underline">Theme</button>
-          <button onClick={() => setActiveView('notifications')} className="hover:underline relative">
-            Alerts
-            {unreadNotifs > 0 && <span className="absolute -top-1 -right-2 w-1.5 h-1.5 bg-black dark:bg-white rounded-full"></span>}
+        <div className="flex items-center gap-2 sm:gap-4 text-sm font-medium tracking-tight text-black dark:text-white">
+          {/* Live Clock Pill */}
+          {currentTime && (
+            <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 border border-black dark:border-white text-xs font-mono">
+              <span className="w-2 h-2 bg-black dark:bg-white animate-pulse" />
+              <span>{currentTime}</span>
+            </div>
+          )}
+
+          {/* Quick Search Button */}
+          <button
+            onClick={() => setCommandPaletteOpen(true)}
+            className="flex items-center gap-2 px-2 py-1.5 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+            title="Open Command Palette (⌘K)"
+          >
+            <Search className="w-4 h-4" />
+            <span className="hidden sm:inline">Search</span>
+            <kbd className="hidden sm:inline text-[10px] font-mono border border-current px-1 py-0.5 opacity-60">
+              ⌘K
+            </kbd>
+          </button>
+
+          {/* Quick Theme Switcher */}
+          <button
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            className="p-1.5 border border-transparent hover:border-black dark:hover:border-white transition-all"
+            title={`Switch to ${settings.theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+          >
+            {settings.theme === 'dark' ? (
+              <Sun className="w-4 h-4" />
+            ) : (
+              <Moon className="w-4 h-4" />
+            )}
+          </button>
+
+          {/* Notifications Bell */}
+          <button
+            onClick={() => setActiveView('notifications')}
+            className="relative p-1.5 border border-transparent hover:border-black dark:hover:border-white transition-all"
+            title="Notifications"
+          >
+            <Bell className="w-4 h-4" />
+            {unreadNotifs > 0 && (
+              <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-black dark:bg-white animate-pulse" />
+            )}
           </button>
           
+          {/* Quick Create Dropdown */}
           <div className="relative">
             <button
               onClick={() => setAddMenuOpen(!addMenuOpen)}
-              className="hover:underline"
+              className="flex items-center justify-center p-1.5 border border-black dark:border-white bg-black text-white dark:bg-white dark:text-black hover:bg-transparent hover:text-black dark:hover:text-white transition-colors"
             >
-              New
+              <Plus className={`w-4 h-4 transition-transform ${addMenuOpen ? 'rotate-45' : ''}`} />
             </button>
 
             {addMenuOpen && (
