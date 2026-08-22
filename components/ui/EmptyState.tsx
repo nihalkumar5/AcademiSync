@@ -21,20 +21,20 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   actionIcon,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30 my-4">
-      <div className="w-11 h-11 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 dark:text-zinc-400 mb-3 shadow-inner">
+    <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center rounded-none border-2 border-dashed border-black dark:border-white bg-transparent my-4">
+      <div className="w-12 h-12 flex items-center justify-center border-2 border-black dark:border-white mb-4">
         {icon}
       </div>
-      <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">
+      <h3 className="text-sm font-bold uppercase tracking-widest text-black dark:text-white">
         {title}
       </h3>
-      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm leading-relaxed">
+      <p className="text-xs text-black/70 dark:text-white/70 mt-2 max-w-sm font-bold">
         {description}
       </p>
       {actionLabel && onAction && (
-        <div className="mt-4">
-          <Button variant="secondary" size="sm" onClick={onAction}>
-            {actionIcon && <span className="mr-1">{actionIcon}</span>}
+        <div className="mt-6">
+          <Button variant="secondary" size="sm" onClick={onAction} className="rounded-none border-2 border-black dark:border-white shadow-[2px_2px_0_rgba(0,0,0,1)] dark:shadow-[2px_2px_0_rgba(255,255,255,1)] hover:-translate-y-0.5 hover:translate-x-0.5 hover:shadow-none uppercase font-bold tracking-widest">
+            {actionIcon && <span className="mr-2">{actionIcon}</span>}
             {actionLabel}
           </Button>
         </div>
