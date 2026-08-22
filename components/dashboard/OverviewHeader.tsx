@@ -82,7 +82,7 @@ export const OverviewHeader: React.FC = () => {
         </div>
 
         {/* Minimal Time Clock */}
-        <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-slate-800 shadow-sm">
+        <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-2xl glass-card shadow-sm">
           <span className="w-2 h-2 rounded-full bg-[#6366F1] animate-pulse" />
           <span className="text-sm font-black font-mono text-[#0F172A] dark:text-white tracking-tight">
             {timeFormatted}
@@ -91,7 +91,7 @@ export const OverviewHeader: React.FC = () => {
       </div>
 
       {/* Today's Overview Container (Design System Card) */}
-      <div className="bg-white dark:bg-[#111827] rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm relative overflow-hidden">
+      <div className="glass-card rounded-3xl p-5 sm:p-6 shadow-sm relative overflow-hidden">
         <div className="flex items-center justify-between mb-4">
           <span className="text-xs sm:text-sm font-bold text-[#0F172A] dark:text-white tracking-tight">
             Today&apos;s Overview

@@ -82,7 +82,7 @@ export const LiveClassCard: React.FC = () => {
     const sub = nextClass.subject;
     const session = nextClass.session;
     return (
-      <div className="bg-white dark:bg-[#111827] rounded-3xl p-5 sm:p-6 text-left flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-slate-200/80 dark:border-slate-800 shadow-sm relative overflow-hidden">
+      <div className="glass-card rounded-3xl p-5 sm:p-6 text-left flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <span className="text-[10.5px] font-mono font-extrabold text-[#6366F1] bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-0.5 rounded-full">
@@ -127,7 +127,7 @@ export const LiveClassCard: React.FC = () => {
   }
 
   return (
-    <div className="bg-white dark:bg-[#111827] rounded-3xl p-5 sm:p-6 text-left flex items-center gap-4 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+    <div className="glass-card rounded-3xl p-5 sm:p-6 text-left flex items-center gap-4">
       <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-[#6366F1] flex items-center justify-center shadow-inner">
         <CheckCircle2 className="w-5 h-5" />
       </div>

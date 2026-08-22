@@ -33,7 +33,7 @@ export const SmartFocusList: React.FC = () => {
   }
 
   return (
-    <div className="bg-white dark:bg-[#111827] rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col gap-4 text-left">
+    <div className="glass-card rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col gap-4 text-left">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="text-sm sm:text-base font-extrabold text-[#0F172A] dark:text-white tracking-tight font-sans">

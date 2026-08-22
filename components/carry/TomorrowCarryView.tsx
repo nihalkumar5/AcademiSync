@@ -90,7 +90,7 @@ export const TomorrowCarryView: React.FC = () => {
 
           <div className="flex flex-col gap-2">
             {tomorrowClasses.length === 0 ? (
-              <div className="bg-white dark:bg-[#111827] p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-center text-xs text-slate-400 font-medium">
+              <div className="glass-card p-6 rounded-2xl text-center text-xs text-slate-400 font-medium">
                 No classes scheduled for tomorrow.
               </div>
             ) : (
@@ -99,7 +99,7 @@ export const TomorrowCarryView: React.FC = () => {
                 return (
                   <div
                     key={sess.id}
-                    className="bg-white dark:bg-[#111827] p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between text-left hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors"
+                    className="glass-card p-3.5 rounded-2xl shadow-sm flex items-center justify-between text-left hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-xs font-mono font-bold text-[#6366F1] dark:text-[#818CF8] w-12 shrink-0">
@@ -125,7 +125,7 @@ export const TomorrowCarryView: React.FC = () => {
 
         {/* Right Column: Things to Carry Card */}
         <div className="lg:col-span-7 flex flex-col gap-3">
-          <div className="bg-white dark:bg-[#111827] rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col gap-4">
+          <div className="glass-card rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col gap-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-[#6366F1] flex items-center justify-center">

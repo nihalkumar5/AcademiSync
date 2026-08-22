@@ -29,7 +29,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         "group relative flex flex-col p-4 text-left transition-all",
         isCurrent
           ? 'hero-mesh-card ring-1 ring-indigo-500/20'
-          : 'bento-card hover:shadow-lg hover:shadow-indigo-500/5 hover:border-indigo-100/60 dark:hover:border-indigo-900/30'
+          : 'glass-card hover:shadow-lg hover:shadow-indigo-500/5 hover:border-indigo-100/60 dark:hover:border-indigo-900/30'
       )}
     >
       <div className="flex items-start justify-between gap-1.5 mb-2">
