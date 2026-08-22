@@ -69,7 +69,7 @@ export const OverviewHeader: React.FC = () => {
           {greeting},<br />
           <span className="inline-flex items-baseline gap-2">
             {profile.name.split(' ')[0]}
-            <span>👋</span>
+            <span className="text-4xl sm:text-5xl">👋</span>
           </span>
         </h2>
         <p className="text-lg text-black/70 dark:text-white/70 mt-6 max-w-sm leading-snug">
