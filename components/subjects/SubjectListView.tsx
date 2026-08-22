@@ -81,16 +81,18 @@ export const SubjectListView: React.FC = () => {
                 {/* Header: Code & Action Buttons */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span
-                      className="text-xs font-mono font-bold px-2 py-0.5 rounded-md"
-                      style={{
-                        backgroundColor: `${sub.color}15`,
-                        color: sub.color,
-                        border: `1px solid ${sub.color}30`,
-                      }}
-                    >
-                      {sub.code}
-                    </span>
+                    {sub.code && sub.code !== 'UNK' && (
+                      <span
+                        className="text-[10px] font-mono font-bold px-2 py-0.5 rounded shadow-sm"
+                        style={{
+                          backgroundColor: `${sub.color}15`,
+                          color: sub.color,
+                          border: `1px solid ${sub.color}30`,
+                        }}
+                      >
+                        {sub.code}
+                      </span>
+                    )}
                     <Badge variant="neutral" size="sm">
                       {sub.credits} Credits
                     </Badge>

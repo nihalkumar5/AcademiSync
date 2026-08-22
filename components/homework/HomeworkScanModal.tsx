@@ -218,7 +218,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
           >
             {subjects.map((sub) => (
               <option key={sub.id} value={sub.id}>
-                {sub.code ? `[${sub.code}] ` : ''}{sub.name}
+                {sub.code && sub.code !== 'UNK' ? `[${sub.code}] ` : ''}{sub.name}
               </option>
             ))}
           </Select>

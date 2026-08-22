@@ -133,7 +133,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         matchedSubject = {
           id: `subj_${Date.now()}_${idx}`,
           name: extSession.subjectName,
-          code: extSession.subjectCode || 'UNK',
+          code: extSession.subjectCode || '',
           shortName: extSession.subjectName.substring(0, 4).toUpperCase(),
           facultyName: extSession.faculty || 'TBD',
           room: extSession.room || 'TBD',

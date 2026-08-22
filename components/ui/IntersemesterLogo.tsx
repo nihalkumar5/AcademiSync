@@ -15,6 +15,11 @@ export const IntersemesterMonogram: React.FC<{ size?: number; className?: string
   size = 36,
   className = '',
 }) => {
+  const uniqueId = React.useId().replace(/:/g, '');
+  const ribbonId = `isRibbonGradient-${uniqueId}`;
+  const stemId = `isStemGradient-${uniqueId}`;
+  const dotId = `isDotGradient-${uniqueId}`;
+
   return (
     <svg
       width={size}
@@ -26,7 +31,7 @@ export const IntersemesterMonogram: React.FC<{ size?: number; className?: string
     >
       <defs>
         {/* Main Brand Ribbon Gradient */}
-        <linearGradient id="isRibbonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id={ribbonId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#38BDF8" />
           <stop offset="30%" stopColor="#6366F1" />
           <stop offset="70%" stopColor="#8B5CF6" />
@@ -34,28 +39,28 @@ export const IntersemesterMonogram: React.FC<{ size?: number; className?: string
         </linearGradient>
 
         {/* Stem Gradient */}
-        <linearGradient id="isStemGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+        <linearGradient id={stemId} x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="#2563EB" />
           <stop offset="100%" stopColor="#0F172A" />
         </linearGradient>
 
         {/* Dot Gradient */}
-        <linearGradient id="isDotGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id={dotId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#60A5FA" />
           <stop offset="100%" stopColor="#3B82F6" />
         </linearGradient>
       </defs>
 
       {/* "i" Dot */}
-      <circle cx="44" cy="28" r="12" fill="url(#isDotGradient)" />
+      <circle cx="44" cy="28" r="12" fill={`url(#${dotId})`} />
 
       {/* "i" Stem */}
-      <rect x="33" y="46" width="22" height="52" rx="11" fill="url(#isStemGradient)" />
+      <rect x="33" y="46" width="22" height="52" rx="11" fill={`url(#${stemId})`} />
 
       {/* "s" Flowing Ribbon Top Arc */}
       <path
         d="M55 57C55 49.268 61.268 43 69 43H85C92.732 43 99 49.268 99 57C99 64.732 92.732 71 85 71H63C54.1634 71 47 78.1634 47 87C47 95.8366 54.1634 103 63 103H91C95.4183 103 99 99.4183 99 95C99 90.5817 95.4183 87 91 87H65C62.7909 87 61 85.2091 61 83C61 80.7909 62.7909 79 65 79H87C97.4934 79 106 70.4934 106 60C106 49.5066 97.4934 41 87 41H67C55.402 41 46 50.402 46 62C46 63.7 46.2 65.3 46.6 66.9C49.1 60.9 51.8 57 55 57Z"
-        fill="url(#isRibbonGradient)"
+        fill={`url(#${ribbonId})`}
       />
     </svg>
   );

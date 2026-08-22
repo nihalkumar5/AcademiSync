@@ -98,7 +98,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
         >
           {subjects.map((sub) => (
             <option key={sub.id} value={sub.id}>
-              {sub.code ? `[${sub.code}] ` : ''}{sub.name}
+              {sub.code && sub.code !== 'UNK' ? `[${sub.code}] ` : ''}{sub.name}
             </option>
           ))}
         </Select>
