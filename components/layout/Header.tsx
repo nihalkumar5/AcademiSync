@@ -149,15 +149,15 @@ export const Header: React.FC = () => {
                   className="fixed inset-0 z-40"
                   onClick={() => setAddMenuOpen(false)}
                 />
-                <div className="absolute right-0 mt-3 w-64 rounded-3xl bg-[#0F172A]/95 dark:bg-[#1E1B4B]/95 backdrop-blur-xl border border-indigo-400/20 shadow-2xl shadow-indigo-950/30 py-2 z-50 text-left overflow-hidden">
+                <div className="absolute right-0 mt-3 w-56 bg-white dark:bg-black border border-black dark:border-white shadow-[4px_4px_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_rgba(255,255,255,1)] py-2 z-50 text-left">
                   <button
                     onClick={() => {
                       setAddMenuOpen(false);
                       setShowAddHwModal(true);
                     }}
-                    className="flex items-center gap-3 w-full px-5 py-3 text-sm font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-colors text-left"
+                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-left"
                   >
-                    <CheckSquare className="w-4 h-4 text-indigo-300" />
+                    <CheckSquare className="w-4 h-4" />
                     New Homework
                   </button>
 
@@ -166,9 +166,9 @@ export const Header: React.FC = () => {
                       setAddMenuOpen(false);
                       setShowHwScanModal(true);
                     }}
-                    className="flex items-center gap-3 w-full px-5 py-3 text-sm font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-colors text-left"
+                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-left"
                   >
-                    <Sparkles className="w-4 h-4 text-purple-300" />
+                    <Sparkles className="w-4 h-4" />
                     Scan Homework (AI)
                   </button>
 
@@ -177,22 +177,22 @@ export const Header: React.FC = () => {
                       setAddMenuOpen(false);
                       setShowAddCarryModal(true);
                     }}
-                    className="flex items-center gap-3 w-full px-5 py-3 text-sm font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-colors text-left"
+                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-left"
                   >
-                    <Backpack className="w-4 h-4 text-emerald-300" />
+                    <Backpack className="w-4 h-4" />
                     Add Bag Item
                   </button>
 
-                  <div className="my-1 border-t border-slate-700/50 mx-3" />
+                  <div className="my-1 border-t border-black dark:border-white mx-0" />
 
                   <button
                     onClick={() => {
                       setAddMenuOpen(false);
                       setShowTimetableImportModal(true);
                     }}
-                    className="flex items-center gap-3 w-full px-5 py-3 text-sm font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-colors text-left"
+                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-left"
                   >
-                    <Upload className="w-4 h-4 text-amber-300" />
+                    <Upload className="w-4 h-4" />
                     Import Timetable (AI)
                   </button>
                 </div>
