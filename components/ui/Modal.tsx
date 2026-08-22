@@ -74,7 +74,7 @@ export const Modal: React.FC<ModalProps> = ({
             transition={{ duration: 0.2 }}
             className={twMerge(
               clsx(
-                'relative w-full bg-white dark:bg-black border border-black dark:border-white shadow-[8px_8px_0_rgba(0,0,0,1)] dark:shadow-[8px_8px_0_rgba(255,255,255,1)] z-10 my-auto text-left rounded-none',
+                'relative w-full bg-white dark:bg-black border border-black dark:border-white z-10 my-auto text-left rounded-none',
                 maxWClasses[maxWidth]
               )
             )}
