@@ -36,7 +36,7 @@ export const MobileNav: React.FC = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/80 dark:bg-[#0B0F19]/80 border-t border-slate-200/60 dark:border-zinc-800/60 backdrop-blur-2xl px-2 py-1.5 pb-safe shadow-[0_-4px_25px_rgba(0,0,0,0.04)]">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--background)] border-t border-black dark:border-white px-2 py-3 pb-safe">
       <div className="flex items-center justify-around">
         {tabs.map((tab) => {
           const isActive = activeView === tab.id;
@@ -45,16 +45,16 @@ export const MobileNav: React.FC = () => {
               key={tab.id}
               onClick={() => setActiveView(tab.id)}
               className={clsx(
-                'flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl relative transition-all duration-200',
+                'flex flex-col items-center justify-center py-1.5 px-3 relative transition-all duration-200',
                 isActive
-                  ? 'text-[#6366F1] dark:text-[#818CF8] font-bold bg-indigo-50/70 dark:bg-indigo-950/40'
-                  : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
+                  ? 'text-black dark:text-white font-bold underline decoration-2 underline-offset-4'
+                  : 'text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white'
               )}
             >
               <div className="relative">
                 {tab.icon}
                 {tab.badge !== undefined && (
-                  <span className="absolute -top-1.5 -right-2 bg-rose-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center ring-2 ring-white dark:ring-[#0B0F19]">
+                  <span className="absolute -top-1.5 -right-2 bg-black dark:bg-white text-white dark:text-black text-[9px] font-bold rounded-none px-1 py-0 border border-transparent flex items-center justify-center">
                     {tab.badge}
                   </span>
                 )}
