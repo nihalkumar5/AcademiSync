@@ -64,7 +64,7 @@ export default function AppHome() {
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+    <div className="flex min-h-screen w-full bg-transparent text-[#181716] dark:text-[#F4F1EA]">
       {/* Desktop Sidebar Navigation */}
       <Sidebar />
 

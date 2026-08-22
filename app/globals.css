@@ -3,24 +3,35 @@
 @tailwind utilities;
 
 :root {
-  /* Warm minimal beige/off-white background */
-  --background: #EBE9E0; 
-  /* Stark black text */
-  --foreground: #111111; 
+  /* Warm minimal beige/sand background */
+  --background: #F7F4EB; 
+  /* Stark charcoal/black text */
+  --foreground: #181716; 
 }
 
 .dark {
-  /* Muted dark charcoal for dark mode */
-  --background: #1C1B1A;
-  --foreground: #F0EFE9;
+  /* Muted dark warm charcoal for dark mode */
+  --background: #171615;
+  --foreground: #F4F1EA;
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background-color: var(--background);
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.038) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.038) 1px, transparent 1px);
+  background-size: 32px 32px;
   font-feature-settings: "rlig" 1, "calt" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.dark body, body.dark {
+  background-color: var(--background);
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
 }
 
 /* Brutalist reset for existing cards */
