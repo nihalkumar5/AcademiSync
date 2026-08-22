@@ -232,12 +232,69 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const triggerConfetti = () => {
     if (typeof window !== 'undefined') {
       try {
-        confetti({
-          particleCount: 45,
-          spread: 60,
-          origin: { y: 0.8 },
-          colors: ['#3B82F6', '#10B981', '#6366F1'],
+        const count = 200;
+        const defaults = {
+          origin: { y: 0.7 },
+          zIndex: 9999,
+        };
+
+        const fire = (particleRatio: number, opts: confetti.Options) => {
+          confetti({
+            ...defaults,
+            ...opts,
+            particleCount: Math.floor(count * particleRatio),
+          });
+        };
+
+        // Multi-stage celebratory explosion
+        fire(0.25, {
+          spread: 30,
+          startVelocity: 55,
+          colors: ['#F59E0B', '#EF4444', '#10B981', '#6366F1', '#EC4899', '#8B5CF6'],
         });
+        fire(0.2, {
+          spread: 60,
+          colors: ['#FBBF24', '#34D399', '#60A5FA', '#F472B6'],
+        });
+        fire(0.35, {
+          spread: 100,
+          decay: 0.91,
+          scalar: 0.8,
+          colors: ['#FFD700', '#FF69B4', '#00FFFF', '#7B68EE', '#32CD32'],
+        });
+        fire(0.1, {
+          spread: 120,
+          startVelocity: 25,
+          decay: 0.92,
+          scalar: 1.2,
+          shapes: ['star', 'circle'],
+          colors: ['#FFE600', '#FF007F', '#00F0FF'],
+        });
+        fire(0.1, {
+          spread: 120,
+          startVelocity: 45,
+          colors: ['#F59E0B', '#10B981', '#6366F1'],
+        });
+
+        // Secondary side cannons for full-screen festive feel
+        setTimeout(() => {
+          confetti({
+            particleCount: 60,
+            angle: 60,
+            spread: 65,
+            origin: { x: 0.05, y: 0.75 },
+            colors: ['#F59E0B', '#10B981', '#6366F1', '#EC4899', '#FFD700'],
+            zIndex: 9999,
+          });
+          confetti({
+            particleCount: 60,
+            angle: 120,
+            spread: 65,
+            origin: { x: 0.95, y: 0.75 },
+            colors: ['#F59E0B', '#10B981', '#6366F1', '#EC4899', '#FFD700'],
+            zIndex: 9999,
+          });
+        }, 120);
       } catch (e) {
         // Fallback gracefully
       }
