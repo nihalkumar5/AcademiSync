@@ -79,76 +79,28 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-8 py-3 bg-white/70 dark:bg-[#0B0F19]/70 backdrop-blur-2xl border-b border-slate-200/60 dark:border-zinc-800/60 shadow-sm">
+      <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-8 py-4 bg-transparent">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center">
-            <IntersemesterMonogram size={32} />
-          </div>
-          <h1 className="text-xl sm:text-2xl text-[#0F172A] dark:text-zinc-100 tracking-tight font-sans">
-            <span className="font-extrabold">Inter</span>
-            <span className="font-medium text-slate-500 dark:text-slate-400">semester</span>
+          <h1 className="text-xl sm:text-2xl text-black dark:text-white tracking-tighter font-medium">
+            intersemester
           </h1>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Live Clock Pill */}
-          {currentTime && (
-            <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/90 dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700/80 text-xs font-mono font-bold text-slate-700 dark:text-zinc-200 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-[#6366F1] animate-ping" />
-              <span>{currentTime}</span>
-            </div>
-          )}
-
-          {/* Quick Search Button */}
-          <button
-            onClick={() => setCommandPaletteOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100/90 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-500 dark:text-zinc-400 text-xs hover:border-slate-300 dark:hover:border-zinc-700 transition-colors shadow-sm"
-            title="Open Command Palette (⌘K)"
-          >
-            <Search className="w-3.5 h-3.5 text-slate-400" />
-            <span className="hidden sm:inline">Search...</span>
-            <kbd className="hidden sm:inline text-[10px] font-mono bg-white dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-zinc-700 text-slate-400">
-              ⌘K
-            </kbd>
+        <div className="flex items-center gap-4 text-sm font-medium tracking-tight text-black dark:text-white">
+          <button onClick={() => setCommandPaletteOpen(true)} className="hover:underline">Search</button>
+          <button onClick={toggleTheme} className="hover:underline">Theme</button>
+          <button onClick={() => setActiveView('notifications')} className="hover:underline relative">
+            Alerts
+            {unreadNotifs > 0 && <span className="absolute -top-1 -right-2 w-1.5 h-1.5 bg-black dark:bg-white rounded-full"></span>}
           </button>
-
-          {/* Quick Theme Switcher */}
-          <button
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-            className="p-2 rounded-xl text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-transparent hover:border-slate-200 dark:hover:border-zinc-700 transition-all"
-            title={`Switch to ${settings.theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-          >
-            {settings.theme === 'dark' ? (
-              <Sun className="w-4 h-4 text-amber-400" />
-            ) : (
-              <Moon className="w-4 h-4 text-slate-600" />
-            )}
-          </button>
-
-          {/* Notifications Bell */}
-          <button
-            onClick={() => setActiveView('notifications')}
-            className="relative p-2 rounded-xl text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
-            title="Notifications"
-          >
-            <Bell className="w-4 h-4" />
-            {unreadNotifs > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#6366F1] ring-2 ring-white dark:ring-zinc-950 animate-pulse" />
-            )}
-          </button>
-
-          {/* Quick Create Dropdown */}
+          
           <div className="relative">
-            <Button
-              size="sm"
-              variant="primary"
-              onClick={() => setAddMenuOpen((prev) => !prev)}
-              className="gap-1.5 px-3.5 rounded-xl shadow-sm bg-[#6366F1] hover:bg-[#4F46E5] text-white border-none font-semibold"
+            <button
+              onClick={() => setAddMenuOpen(!addMenuOpen)}
+              className="hover:underline"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline font-semibold">Create</span>
-            </Button>
+              New
+            </button>
 
             {addMenuOpen && (
               <>

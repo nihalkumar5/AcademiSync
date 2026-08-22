@@ -60,64 +60,59 @@ export const HomeworkView: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6 text-left max-w-5xl">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col gap-6 mt-8 mb-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">
-              Homework & Assignments
-            </h2>
-            <Badge variant="neutral" size="sm">
-              {pendingCount} pending
-            </Badge>
-          </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-            Keep track of submissions, project deadlines, and lab journal writeups.
+          <h2 className="text-5xl sm:text-7xl font-medium text-black dark:text-white tracking-tighter leading-[1.1]">
+            Homework,<br />
+            Projects,<br />
+            Assignments,<br />
+            To-Do
+          </h2>
+          <p className="text-lg text-black/70 dark:text-white/70 mt-6 max-w-sm leading-snug">
+            Keep track of submissions, project deadlines, and lab journal writeups. You have {pendingCount} pending tasks.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 mt-4">
           <Button
             variant="outline"
-            size="sm"
+            size="md"
             onClick={() => setShowScanModal(true)}
-            className="gap-1.5"
+            className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
           >
-            <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-            <span>AI Scanner</span>
+            AI Scanner
           </Button>
 
           <Button
             variant="primary"
-            size="sm"
+            size="md"
             onClick={() => {
               setEditHomework(null);
               setShowAddModal(true);
             }}
-            className="gap-1.5"
+            className="rounded-none bg-black text-white dark:bg-white dark:text-black border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>New Task</span>
+            New Task
           </Button>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 py-4 border-y border-black dark:border-white">
         {/* Search */}
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-5 h-5 text-black dark:text-white absolute left-0 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search assignments or topics..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/80 rounded-lg text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="w-full pl-8 pr-3 py-2 text-base bg-transparent border-none text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:ring-0"
           />
         </div>
 
         {/* Status Pill Tabs */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-1 md:pb-0">
+        <div className="flex items-center gap-6 overflow-x-auto">
           {(['All', 'Not Started', 'In Progress', 'Completed'] as const).map((status) => {
             const count =
               status === 'All'
@@ -130,23 +125,14 @@ export const HomeworkView: React.FC = () => {
                 key={status}
                 onClick={() => setStatusFilter(status)}
                 className={clsx(
-                  'px-2.5 py-1 rounded-lg text-xs font-medium shrink-0 transition-colors flex items-center gap-1.5',
+                  'text-lg font-medium shrink-0 transition-colors flex items-center gap-2',
                   isSelected
-                    ? 'bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 font-semibold shadow-sm'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                    ? 'text-black dark:text-white underline decoration-2 underline-offset-4'
+                    : 'text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white'
                 )}
               >
                 <span>{status}</span>
-                <span
-                  className={clsx(
-                    'text-[10px] font-mono rounded-full px-1.5 py-0.2',
-                    isSelected
-                      ? 'bg-slate-600 text-white dark:bg-slate-300 dark:text-slate-900'
-                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
-                  )}
-                >
-                  {count}
-                </span>
+                <span className="text-sm">({count})</span>
               </button>
             );
           })}

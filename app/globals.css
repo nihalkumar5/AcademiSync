@@ -1,83 +1,37 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #F5F7FA;
-  --foreground: #0F172A;
+  /* Warm minimal beige/off-white background */
+  --background: #EBE9E0; 
+  /* Stark black text */
+  --foreground: #111111; 
 }
 
 .dark {
-  --background: #0B0F19;
-  --foreground: #F8FAFC;
+  /* Muted dark charcoal for dark mode */
+  --background: #1C1B1A;
+  --foreground: #F0EFE9;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.04) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(167, 139, 250, 0.04) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(224, 231, 255, 0.05) 0px, transparent 50%);
-  background-attachment: fixed;
   font-feature-settings: "rlig" 1, "calt" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Intersemester Card & Bento Primitives */
-.bento-card {
-  background: #FFFFFF;
-  border-radius: 20px;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.03), 0 0 1px 1px rgba(15, 23, 42, 0.02);
-  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-  overflow: hidden;
-  position: relative;
-}
-
-.bento-card:active {
-  transform: scale(0.98);
-}
-
-.dark .bento-card {
-  background: #111827;
-  border: 1px solid rgba(30, 41, 59, 0.8);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4), 0 0 1px 1px rgba(255, 255, 255, 0.04);
-}
-
-/* Glass Card */
-.glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.7);
-  border-radius: 18px;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.02);
-}
-
-.dark .glass-card {
-  background: rgba(17, 24, 39, 0.8);
-  border: 1px solid rgba(30, 41, 59, 0.7);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
-
-/* Vibrant Mesh Card for Hero & Featured Sections */
-.hero-mesh-card {
-  background: linear-gradient(135deg, #EFF6FF 0%, #EEF2FF 50%, #FAF5FF 100%);
-  border-radius: 24px;
-  border: 1px solid rgba(224, 231, 255, 0.9);
-  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.08);
-  position: relative;
-  overflow: hidden;
-}
-
-.dark .hero-mesh-card {
-  background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #172554 100%);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+/* Brutalist reset for existing cards */
+.bento-card, .glass-card, .hero-mesh-card {
+  background: transparent;
+  border-radius: 0px;
+  border: 1px solid var(--foreground);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: all 0.15s ease-in-out;
 }
 
 /* Custom subtle scrollbars */
@@ -91,8 +45,8 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.3);
-  border-radius: 9999px;
+  background: var(--foreground);
+  opacity: 0.3;
 }
 
 .no-scrollbar::-webkit-scrollbar {
