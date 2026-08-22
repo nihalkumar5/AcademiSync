@@ -83,14 +83,14 @@ export const OnboardingModal: React.FC = () => {
     if (type === 'logo') {
       return (
         <motion.div
-          initial={{ scale: 0.5, rotate: -10, opacity: 0 }}
+          initial={{ scale: 0.5, rotate: -8, opacity: 0 }}
           animate={{
             scale: 1,
             rotate: 0,
             opacity: 1,
           }}
           transition={{ type: 'spring', stiffness: 340, damping: 20 }}
-          className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-[#A27E5C] via-[#8E6C4C] to-[#75553A] text-[#FDF8F4] flex items-center justify-center font-black text-2xl sm:text-3xl tracking-tighter shadow-md shadow-[#75553A]/25 border-2 border-[#C9B099]/80 relative overflow-hidden"
+          className="w-12 h-12 sm:w-13 sm:h-13 aspect-square shrink-0 rounded-2xl bg-gradient-to-br from-[#A27E5C] via-[#8E6C4C] to-[#75553A] text-[#FDF8F4] flex items-center justify-center font-black text-2xl tracking-tighter shadow-md shadow-[#75553A]/25 border-2 border-[#C9B099]/80 relative overflow-hidden"
         >
           <motion.span
             animate={{ scale: [1, 1.06, 1] }}
@@ -103,13 +103,13 @@ export const OnboardingModal: React.FC = () => {
       );
     }
 
-    const iconClass = 'w-7 h-7 text-[#6E4F36]';
+    const iconClass = 'w-6 h-6 text-[#6E4F36]';
     return (
       <motion.div
         initial={{ scale: 0.5, rotate: 8, opacity: 0 }}
         animate={{ scale: 1, rotate: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 340, damping: 20 }}
-        className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl border-2 border-[#D5C1AE] bg-[#EADBCA]/85 backdrop-blur-md flex items-center justify-center shadow-sm shadow-[#8C6B5D]/10"
+        className="w-12 h-12 sm:w-13 sm:h-13 aspect-square shrink-0 rounded-2xl border-2 border-[#D5C1AE] bg-[#EADBCA]/85 backdrop-blur-md flex items-center justify-center shadow-sm shadow-[#8C6B5D]/10"
       >
         {type === 'calendar' && (
           <motion.div
@@ -227,40 +227,44 @@ export const OnboardingModal: React.FC = () => {
           </motion.button>
         </div>
 
-        {/* Dynamic Animated Content Container (Elevated higher to prevent overlapping character hair) */}
+        {/* Dynamic Animated Content Container with Right-Aligned Square Icon */}
         <div className="absolute top-0 inset-x-0 pt-10 sm:pt-14 px-7 sm:px-8 z-20 flex flex-col pointer-events-none">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={`text-${currentIndex}`}
-              initial={{ opacity: 0, y: 14 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -14 }}
-              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="flex flex-col gap-2.5 sm:gap-3 text-left"
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="flex flex-col gap-2 text-left"
             >
-              {/* Animated icon badge */}
-              <div>{renderIcon(currentSlide.iconType)}</div>
+              {/* Row with Title on Left, Perfect Square Icon Badge on Right */}
+              <div className="flex items-start justify-between gap-3">
+                <motion.h1
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, delay: 0.05, ease: 'easeOut' }}
+                  className="text-[26px] sm:text-[29px] leading-[1.12] font-black tracking-tight text-[#2B1F16]"
+                >
+                  <span>{currentSlide.titleMain}</span>
+                  <br />
+                  <span className="text-[#96725B] drop-shadow-sm">
+                    {currentSlide.titleAccent}
+                  </span>
+                </motion.h1>
 
-              {/* Title with styled accent word */}
-              <motion.h1
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: 0.06, ease: 'easeOut' }}
-                className="text-[26px] sm:text-[30px] leading-[1.12] font-black tracking-tight text-[#2B1F16]"
-              >
-                <span>{currentSlide.titleMain}</span>
-                <br />
-                <span className="text-[#96725B] drop-shadow-sm">
-                  {currentSlide.titleAccent}
-                </span>
-              </motion.h1>
+                {/* Right-aligned Square Icon */}
+                <div className="shrink-0 pt-0.5">
+                  {renderIcon(currentSlide.iconType)}
+                </div>
+              </div>
 
               {/* Description Paragraph */}
               <motion.p
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.38, delay: 0.12, ease: 'easeOut' }}
-                className="text-[#6E5643] text-[13.5px] sm:text-[14.5px] leading-snug font-medium max-w-[260px] sm:max-w-[280px]"
+                transition={{ duration: 0.36, delay: 0.1, ease: 'easeOut' }}
+                className="text-[#6E5643] text-[13.5px] sm:text-[14.5px] leading-snug font-medium max-w-[270px] sm:max-w-[290px] mt-0.5"
               >
                 {currentSlide.description}
               </motion.p>
