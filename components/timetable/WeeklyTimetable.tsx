@@ -9,7 +9,7 @@ import { AddEditClassModal } from './AddEditClassModal';
 import { TimetableImportModal } from './TimetableImportModal';
 import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
-import { Plus, Upload, CalendarDays, Sparkles } from 'lucide-react';
+import { Plus, Sparkles, CalendarDays } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useClerk, useUser } from '@clerk/nextjs';
 
@@ -66,43 +66,43 @@ export const WeeklyTimetable: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 text-left">
+    <div className="flex flex-col gap-8 text-left">
       {/* Top Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-zinc-50 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-zinc-50 tracking-tight">
             Weekly Schedule
           </h2>
-          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">
+          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1 font-medium">
             Manage your lectures, lab slots, and classroom locations.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <Button
             variant="outline"
             size="sm"
             onClick={handleImportTimetable}
-            className="gap-1.5 rounded-xl border-slate-200 dark:border-zinc-800 shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-xs font-semibold"
+            className="gap-2 rounded-xl border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 text-[13px] font-semibold h-10 px-4"
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#6366F1]" />
-            <span>AI Import</span>
+            <Sparkles className="w-4 h-4 text-indigo-500" />
+            <span className="text-slate-700 dark:text-zinc-300">AI Import</span>
           </Button>
 
           <Button
             variant="primary"
             size="sm"
             onClick={() => handleAddForDay(selectedMobileDay)}
-            className="gap-1.5 rounded-xl bg-[#6366F1] hover:bg-[#4F46E5] text-white shadow-sm text-xs font-semibold"
+            className="gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 text-[13px] font-semibold h-10 px-4"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4" />
             <span>Add Class</span>
           </Button>
         </div>
       </div>
 
       {/* Mobile Day Tabs (< 768px) */}
-      <div className="flex md:hidden items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+      <div className="flex md:hidden items-center gap-2 overflow-x-auto pb-2 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
         {weekDays.map((day) => {
           const isSelected = selectedMobileDay === day;
           const isToday = currentDay === day;
@@ -113,21 +113,21 @@ export const WeeklyTimetable: React.FC = () => {
               key={day}
               onClick={() => setSelectedMobileDay(day)}
               className={clsx(
-                'flex flex-col items-center justify-center px-4 py-2 rounded-2xl text-xs font-semibold shrink-0 transition-all border shadow-sm',
+                'flex flex-col items-center justify-center px-4 py-2.5 rounded-2xl text-xs font-semibold shrink-0 transition-all border',
                 isSelected
-                  ? 'bg-[#6366F1] text-white border-[#6366F1] shadow-md shadow-indigo-500/20 font-bold'
-                  : 'bg-white dark:bg-[#111827] text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-zinc-800'
+                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/20'
+                  : 'bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800/80'
               )}
             >
               <div className="flex items-center gap-1.5">
-                <span>{day.slice(0, 3)}</span>
+                <span className={isSelected ? "font-bold" : "font-semibold"}>{day.slice(0, 3)}</span>
                 {isToday && (
-                  <span className={clsx('w-1.5 h-1.5 rounded-full', isSelected ? 'bg-white' : 'bg-[#6366F1]')} />
+                  <span className={clsx('w-1.5 h-1.5 rounded-full', isSelected ? 'bg-white' : 'bg-indigo-500')} />
                 )}
               </div>
               <span
                 className={clsx(
-                  'text-[10px] font-mono mt-0.5',
+                  'text-[10px] font-medium mt-0.5',
                   isSelected ? 'text-indigo-100' : 'text-slate-400'
                 )}
               >
@@ -139,7 +139,7 @@ export const WeeklyTimetable: React.FC = () => {
       </div>
 
       {/* Mobile Schedule List (< 768px) */}
-      <div className="flex md:hidden flex-col gap-3">
+      <div className="flex md:hidden flex-col gap-3.5">
         {(() => {
           const sessions = timetable
             .filter((s) => s.day === selectedMobileDay)
@@ -148,7 +148,7 @@ export const WeeklyTimetable: React.FC = () => {
           if (sessions.length === 0) {
             return (
               <EmptyState
-                icon={<CalendarDays className="w-5 h-5 text-blue-500" />}
+                icon={<CalendarDays className="w-6 h-6 text-indigo-400" />}
                 title={`No classes on ${selectedMobileDay}`}
                 description="Take a break or schedule a class manually."
                 actionLabel="Add Class for this day"
@@ -181,44 +181,62 @@ export const WeeklyTimetable: React.FC = () => {
           return (
             <div
               key={day}
-              className={`flex flex-col gap-3 p-3.5 rounded-2xl border transition-all shadow-sm ${
+              className={clsx(
+                "flex flex-col gap-4 p-4 rounded-3xl transition-all",
                 isToday
-                  ? 'bg-blue-50/40 dark:bg-blue-950/20 border-blue-300 dark:border-blue-800/80 ring-2 ring-blue-500/10'
-                  : 'bg-white/90 dark:bg-zinc-900/60 border-slate-200/80 dark:border-zinc-800'
-              }`}
+                  ? "hero-mesh-card ring-1 ring-indigo-500/20"
+                  : "glass-card"
+              )}
             >
               {/* Day Header */}
-              <div className="flex items-center justify-between px-1 pb-1.5 border-b border-slate-100 dark:border-zinc-800">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-extrabold text-slate-900 dark:text-zinc-100">
-                    {day}
-                  </span>
-                  {isToday && (
-                    <span className="text-[10px] font-bold text-blue-700 bg-blue-100 dark:bg-blue-950 px-2 py-0.5 rounded-full">
-                      Today
+              <div className="flex items-center justify-between px-1">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className={clsx(
+                      "text-sm font-bold",
+                      isToday ? "text-indigo-900 dark:text-indigo-100" : "text-slate-900 dark:text-zinc-100"
+                    )}>
+                      {day}
                     </span>
-                  )}
+                    {isToday && (
+                      <span className="text-[10px] font-bold text-white bg-indigo-500 px-2 py-0.5 rounded-full shadow-sm">
+                        Today
+                      </span>
+                    )}
+                  </div>
+                  <span className={clsx(
+                    "text-[11px] font-medium",
+                    isToday ? "text-indigo-700/80 dark:text-indigo-300/80" : "text-slate-500 dark:text-zinc-400"
+                  )}>
+                    {daySessions.length} classes
+                  </span>
                 </div>
 
                 <button
                   onClick={() => handleAddForDay(day)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                  className={clsx(
+                    "p-1.5 rounded-xl transition-colors shrink-0",
+                    isToday
+                      ? "bg-indigo-600/10 text-indigo-600 hover:bg-indigo-600/20 dark:bg-indigo-500/20 dark:text-indigo-300 dark:hover:bg-indigo-500/30"
+                      : "bg-slate-100 text-slate-500 hover:text-slate-800 hover:bg-slate-200 dark:bg-zinc-800/50 dark:hover:bg-zinc-700"
+                  )}
                   title={`Add class to ${day}`}
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Class Cards List */}
-              <div className="flex flex-col gap-2.5 min-h-[380px]">
+              <div className="flex flex-col gap-3 min-h-[400px]">
                 {daySessions.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-48 text-center text-slate-400">
-                    <span className="text-xs font-medium">Free Day</span>
+                  <div className="flex flex-col items-center justify-center h-48 text-center bg-white/40 dark:bg-zinc-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800/80">
+                    <CalendarDays className="w-6 h-6 text-slate-300 dark:text-zinc-600 mb-2" />
+                    <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Free Day</span>
                     <button
                       onClick={() => handleAddForDay(day)}
-                      className="mt-2 text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                      className="mt-1 text-[11px] font-bold text-indigo-500 hover:text-indigo-600"
                     >
-                      + Add lecture
+                      Add class
                     </button>
                   </div>
                 ) : (
