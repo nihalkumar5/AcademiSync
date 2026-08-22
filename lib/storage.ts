@@ -22,15 +22,15 @@ import {
 } from './initialData';
 
 const STORAGE_KEYS = {
-  PROFILE: 'iiitnr_profile_v1',
-  SUBJECTS: 'iiitnr_subjects_v1',
-  TIMETABLE: 'iiitnr_timetable_v1',
-  HOMEWORK: 'iiitnr_homework_v1',
-  CARRY_ITEMS: 'iiitnr_carry_items_v1',
-  NOTIFICATIONS: 'iiitnr_notifications_v1',
-  EVENTS: 'iiitnr_events_v1',
-  SETTINGS: 'iiitnr_settings_v1',
-  EXAMS: 'iiitnr_exams_v1',
+  PROFILE: 'iiitnr_profile_v2',
+  SUBJECTS: 'iiitnr_subjects_v2',
+  TIMETABLE: 'iiitnr_timetable_v2',
+  HOMEWORK: 'iiitnr_homework_v2',
+  CARRY_ITEMS: 'iiitnr_carry_items_v2',
+  NOTIFICATIONS: 'iiitnr_notifications_v2',
+  EVENTS: 'iiitnr_events_v2',
+  SETTINGS: 'iiitnr_settings_v2',
+  EXAMS: 'iiitnr_exams_v2',
 };
 
 // Safe LocalStorage helpers

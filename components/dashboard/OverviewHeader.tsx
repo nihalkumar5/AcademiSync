@@ -67,9 +67,9 @@ export const OverviewHeader: React.FC = () => {
       <div>
         <h2 className="text-5xl sm:text-7xl font-medium text-black dark:text-white tracking-tighter leading-[1.1]">
           {greeting},<br />
-          <span className="inline-flex items-baseline">
+          <span className="inline-flex items-baseline gap-2">
             {profile.name.split(' ')[0]}
-            <span className="w-4 h-4 sm:w-6 sm:h-6 bg-black dark:bg-white ml-2 rounded-none inline-block" />
+            <span>👋</span>
           </span>
         </h2>
         <p className="text-lg text-black/70 dark:text-white/70 mt-6 max-w-sm leading-snug">
