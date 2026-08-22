@@ -13,8 +13,10 @@ import {
   Sun,
   Moon,
   Clock,
+  User,
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { UserButton, SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 import { Button } from '../ui/Button';
 import { IntersemesterMonogram } from '../ui/IntersemesterLogo';
 import { AddHomeworkModal } from '../homework/AddHomeworkModal';
@@ -122,6 +124,21 @@ export const Header: React.FC = () => {
               <Moon className="w-4 h-4" />
             )}
           </button>
+
+          {/* User Account Button for Mobile & Desktop */}
+          <div className="flex items-center">
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: 'w-7 h-7' } }} />
+            </SignedIn>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-lg bg-[#8C6B5D] hover:bg-[#785B4E] text-white transition-all cursor-pointer shadow-2xs">
+                  <User className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Sign In</span>
+                </button>
+              </SignInButton>
+            </SignedOut>
+          </div>
 
           {/* Notifications Bell */}
           <button

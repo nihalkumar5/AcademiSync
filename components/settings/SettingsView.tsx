@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useUser, UserButton, SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 import { useApp } from '@/context/AppContext';
 import { Programme, Branch } from '@/lib/types';
 import { storage } from '@/lib/storage';
@@ -252,17 +252,36 @@ export const SettingsView: React.FC = () => {
             </div>
           </div>
 
-          {isSignedIn && (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleSyncClerk}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/30 text-xs font-semibold text-white backdrop-blur-md transition-all shadow-xs cursor-pointer w-fit"
-            >
-              <RefreshCcw className="w-3.5 h-3.5" />
-              <span>Sync Account</span>
-            </motion.button>
-          )}
+          {/* Auth Action in Student Pass */}
+          <div className="flex items-center gap-2">
+            <SignedIn>
+              <div className="flex items-center gap-2 bg-white/15 px-3 py-1.5 rounded-2xl border border-white/25 backdrop-blur-md">
+                <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: 'w-7 h-7' } }} />
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleSyncClerk}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-white cursor-pointer"
+                  title="Sync Profile"
+                >
+                  <RefreshCcw className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Sync</span>
+                </motion.button>
+              </div>
+            </SignedIn>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white text-[#6E4F36] text-xs font-bold shadow-md hover:bg-white/95 transition-all cursor-pointer"
+                >
+                  <User className="w-4 h-4" />
+                  <span>Sign In / Register</span>
+                </motion.button>
+              </SignInButton>
+            </SignedOut>
+          </div>
         </div>
       </div>
 
@@ -428,8 +447,60 @@ export const SettingsView: React.FC = () => {
           </form>
         </div>
 
-        {/* Right Column: Notification Schedule & Data Backups */}
+        {/* Right Column: Account & Sync + Notification Schedule + Data Backups */}
         <div className="lg:col-span-5 flex flex-col gap-6">
+          {/* Cloud Sync & Account Status Card */}
+          <div className="p-6 rounded-3xl bg-white/95 dark:bg-[#1C1B19]/95 border border-[#E6DDD2] dark:border-[#2C2926] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col gap-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#EFEAE2] dark:border-[#282624]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#EFEAE2] dark:bg-[#2A2724] flex items-center justify-center text-[#8C6B5D]">
+                  <User className="w-4 h-4" />
+                </div>
+                <h3 className="text-base font-bold text-[#1A1918] dark:text-[#F4F1EA]">
+                  Account & Cloud Sync
+                </h3>
+              </div>
+            </div>
+
+            <SignedIn>
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#FAF8F5] dark:bg-[#201E1C] border border-[#E8E0D5] dark:border-[#2C2926]">
+                <div className="flex items-center gap-3 min-w-0">
+                  <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: 'w-10 h-10' } }} />
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-bold text-[#1A1918] dark:text-white truncate">
+                      {user?.fullName || user?.firstName || 'Connected Account'}
+                    </span>
+                    <span className="text-[11px] text-[#7A6D61] dark:text-[#9A9188] font-mono truncate max-w-[170px]">
+                      {user?.primaryEmailAddress?.emailAddress}
+                    </span>
+                  </div>
+                </div>
+
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">
+                  Cloud Active
+                </span>
+              </div>
+            </SignedIn>
+
+            <SignedOut>
+              <div className="flex flex-col gap-3 p-4 rounded-2xl bg-[#FAF8F5] dark:bg-[#201E1C] border border-[#E8E0D5] dark:border-[#2C2926]">
+                <p className="text-xs text-[#6E5643] dark:text-[#A89E94] leading-relaxed font-medium">
+                  Sign in to backup your schedule and carry list so you never lose your timetable data.
+                </p>
+                <SignInButton mode="modal">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full py-2.5 rounded-xl bg-[#8C6B5D] hover:bg-[#785B4E] text-white text-xs font-bold shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span>Sign In / Create Account</span>
+                  </motion.button>
+                </SignInButton>
+              </div>
+            </SignedOut>
+          </div>
+
           {/* Notification Schedule */}
           <div className="p-6 rounded-3xl bg-white/95 dark:bg-[#1C1B19]/95 border border-[#E6DDD2] dark:border-[#2C2926] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col gap-5">
             <div className="flex items-center gap-2.5 pb-3 border-b border-[#EFEAE2] dark:border-[#282624]">
