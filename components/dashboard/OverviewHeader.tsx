@@ -31,17 +31,18 @@ export const OverviewHeader: React.FC = () => {
   const todayClasses = timetable.filter((s) => s.day === todayDay);
   const pendingHw = homework.filter((h) => h.status !== 'Completed');
   const upcomingDeadlines = homework.filter((h) => {
+    if (h.status === 'Completed') return false;
     const diff = Math.ceil(
-      (new Date(h.deadline).getTime() - new Date().getTime()) / (1000 * 3600 * 24)
+      (new Date(h.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
     );
-    return h.status !== 'Completed' && diff <= 3;
+    return diff <= 1;
   });
   const unpackedCarry = carryItems.filter((i) => !i.isPacked);
 
   const hour = time ? time.getHours() : new Date().getHours();
-  let greeting = 'Good evening';
-  if (hour < 12) greeting = 'Good morning';
-  else if (hour < 18) greeting = 'Good afternoon';
+  let greeting = 'Good morning';
+  if (hour >= 12 && hour < 17) greeting = 'Good afternoon';
+  else if (hour >= 17) greeting = 'Good evening';
 
   const dateFormatted = time
     ? new Intl.DateTimeFormat('en-US', {
@@ -62,61 +63,93 @@ export const OverviewHeader: React.FC = () => {
   const seconds = time ? time.getSeconds().toString().padStart(2, '0') : '00';
 
   return (
-    <div className="flex flex-col gap-6 mt-8 mb-4">
-      {/* Huge Greeting */}
-      <div>
-        <h2 className="text-5xl sm:text-7xl font-medium text-black dark:text-white tracking-tighter leading-[1.1]">
-          {greeting},<br />
-          <span className="inline-flex items-baseline gap-2">
-            {profile.name.split(' ')[0]}
-            <span className="text-4xl sm:text-5xl">👋</span>
+    <div className="flex flex-col gap-4 text-left px-1">
+      {/* Top Greeting & Real-time Indicator */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+        <div className="flex flex-col">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] dark:text-white tracking-tight flex items-center gap-2">
+            <span>{greeting},</span>
+            <span className="text-[#6366F1] dark:text-[#818CF8]">
+              {profile.name.split(' ')[0]} 👋
+            </span>
+          </h2>
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#64748B] dark:text-slate-400 mt-1">
+            <MapPin className="w-3.5 h-3.5 text-[#6366F1]" />
+            <span>{profile.college || 'Your College'} • Sem {profile.semester}</span>
+            <span>•</span>
+            <span className="font-mono">{dateFormatted}</span>
+          </div>
+        </div>
+
+        {/* Minimal Time Clock */}
+        <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-2xl glass-card shadow-sm">
+          <span className="w-2 h-2 rounded-full bg-[#6366F1] animate-pulse" />
+          <span className="text-sm font-black font-mono text-[#0F172A] dark:text-white tracking-tight">
+            {timeFormatted}
           </span>
-        </h2>
-        <p className="text-lg text-black/70 dark:text-white/70 mt-6 max-w-sm leading-snug">
-          It is {timeFormatted} on {dateFormatted}. You are currently in Sem {profile.semester} at {profile.college || 'Your College'}.
-        </p>
+        </div>
       </div>
 
-      {/* Brutalist Stats Grid */}
-      <div className="grid grid-cols-3 gap-6 py-4 mt-4 border-y border-black dark:border-white">
-        {/* Classes */}
-        <button
-          onClick={() => setActiveView('timetable')}
-          className="flex flex-col items-start justify-center group hover:opacity-70 transition-opacity text-left"
-        >
-          <span className="text-4xl sm:text-5xl font-medium text-black dark:text-white tracking-tighter leading-none mb-2">
-            {todayClasses.length}
+      {/* Today's Overview Container (Design System Card) */}
+      <div className="glass-card rounded-3xl p-5 sm:p-6 shadow-sm relative overflow-hidden">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-xs sm:text-sm font-bold text-[#0F172A] dark:text-white tracking-tight">
+            Today&apos;s Overview
           </span>
-          <span className="text-sm font-medium text-black/60 dark:text-white/60">
-            Classes Today
+          <span className="text-[11px] font-mono font-bold text-[#6366F1] bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-full">
+            {todayDay}
           </span>
-        </button>
+        </div>
 
-        {/* Homework */}
-        <button
-          onClick={() => setActiveView('homework')}
-          className="flex flex-col items-start justify-center border-l border-black dark:border-white pl-6 group hover:opacity-70 transition-opacity text-left"
-        >
-          <span className="text-4xl sm:text-5xl font-medium text-black dark:text-white tracking-tighter leading-none mb-2">
-            {pendingHw.length}
-          </span>
-          <span className="text-sm font-medium text-black/60 dark:text-white/60">
-            Tasks Due
-          </span>
-        </button>
+        <div className="grid grid-cols-3 gap-3">
+          {/* Stat 1: Classes */}
+          <button
+            onClick={() => setActiveView('timetable')}
+            className="flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl bg-[#F5F7FA] dark:bg-[#1E293B]/50 hover:bg-indigo-50/70 dark:hover:bg-indigo-950/50 border border-slate-200/60 dark:border-slate-700/50 transition-all cursor-pointer group"
+          >
+            <div className="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-900/60 text-[#6366F1] dark:text-[#818CF8] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+              <BookOpen className="w-4 h-4" />
+            </div>
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] dark:text-white tracking-tight">
+              {todayClasses.length}
+            </span>
+            <span className="text-[10.5px] sm:text-xs font-semibold text-[#64748B] dark:text-slate-400 mt-0.5">
+              Classes
+            </span>
+          </button>
 
-        {/* Exams */}
-        <button
-          onClick={() => setActiveView('homework')}
-          className="flex flex-col items-start justify-center border-l border-black dark:border-white pl-6 group hover:opacity-70 transition-opacity text-left"
-        >
-          <span className="text-4xl sm:text-5xl font-medium text-black dark:text-white tracking-tighter leading-none mb-2">
-            {upcomingDeadlines.length}
-          </span>
-          <span className="text-sm font-medium text-black/60 dark:text-white/60">
-            Deadlines
-          </span>
-        </button>
+          {/* Stat 2: Tasks */}
+          <button
+            onClick={() => setActiveView('homework')}
+            className="flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl bg-[#F5F7FA] dark:bg-[#1E293B]/50 hover:bg-purple-50/70 dark:hover:bg-purple-950/50 border border-slate-200/60 dark:border-slate-700/50 transition-all cursor-pointer group"
+          >
+            <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/60 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+              <CheckSquare className="w-4 h-4" />
+            </div>
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] dark:text-white tracking-tight">
+              {pendingHw.length}
+            </span>
+            <span className="text-[10.5px] sm:text-xs font-semibold text-[#64748B] dark:text-slate-400 mt-0.5">
+              Tasks
+            </span>
+          </button>
+
+          {/* Stat 3: Deadlines */}
+          <button
+            onClick={() => setActiveView('homework')}
+            className="flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl bg-[#F5F7FA] dark:bg-[#1E293B]/50 hover:bg-rose-50/70 dark:hover:bg-rose-950/50 border border-slate-200/60 dark:border-slate-700/50 transition-all cursor-pointer group"
+          >
+            <div className="w-8 h-8 rounded-xl bg-rose-100 dark:bg-rose-900/60 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+              <AlertCircle className="w-4 h-4" />
+            </div>
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] dark:text-white tracking-tight">
+              {upcomingDeadlines.length}
+            </span>
+            <span className="text-[10.5px] sm:text-xs font-semibold text-[#64748B] dark:text-slate-400 mt-0.5">
+              Deadlines
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   );
