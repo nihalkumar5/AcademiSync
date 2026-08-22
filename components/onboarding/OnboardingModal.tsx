@@ -95,7 +95,8 @@ export const OnboardingModal: React.FC = () => {
             opacity: 1,
           }}
           transition={{ type: 'spring', stiffness: 340, damping: 20 }}
-          className="w-18 h-18 sm:w-20 sm:h-20 aspect-square shrink-0 rounded-[1.75rem] bg-gradient-to-br from-[#A27E5C] via-[#8E6C4C] to-[#75553A] text-[#FDF8F4] flex items-center justify-center font-black text-3xl sm:text-4xl tracking-tighter shadow-lg shadow-[#75553A]/25 border-2 border-[#C9B099]/80 relative overflow-hidden"
+          style={{ width: '76px', height: '76px', minWidth: '76px', minHeight: '76px' }}
+          className="aspect-square shrink-0 rounded-[1.6rem] bg-gradient-to-br from-[#A27E5C] via-[#8E6C4C] to-[#75553A] text-[#FDF8F4] flex items-center justify-center font-black text-3xl sm:text-4xl tracking-tighter shadow-lg shadow-[#75553A]/30 border-2 border-[#C9B099]/80 relative overflow-hidden"
         >
           <motion.span
             animate={{ scale: [1, 1.06, 1] }}
@@ -108,20 +109,21 @@ export const OnboardingModal: React.FC = () => {
       );
     }
 
-    const iconClass = 'w-9 h-9 sm:w-10 sm:h-10 text-[#6E4F36]';
+    const iconClass = 'w-10 h-10 text-[#6E4F36]';
     return (
       <motion.div
         initial={{ scale: 0.5, rotate: 8, opacity: 0 }}
         animate={{ scale: 1, rotate: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 340, damping: 20 }}
-        className="w-18 h-18 sm:w-20 sm:h-20 aspect-square shrink-0 rounded-[1.75rem] border-2 border-[#D5C1AE] bg-[#EADBCA]/85 backdrop-blur-md flex items-center justify-center shadow-md shadow-[#8C6B5D]/10"
+        style={{ width: '76px', height: '76px', minWidth: '76px', minHeight: '76px' }}
+        className="aspect-square shrink-0 rounded-[1.6rem] border-2 border-[#D5C1AE] bg-[#EADBCA]/90 backdrop-blur-md flex items-center justify-center shadow-md shadow-[#8C6B5D]/15"
       >
         {type === 'calendar' && (
           <motion.div
             animate={{ rotate: [0, -6, 6, -3, 3, 0] }}
             transition={{ repeat: Infinity, duration: 3.5, repeatDelay: 1 }}
           >
-            <Calendar className={iconClass} strokeWidth={2.3} />
+            <Calendar className={iconClass} strokeWidth={2.4} />
           </motion.div>
         )}
         {type === 'tasks' && (
@@ -129,7 +131,7 @@ export const OnboardingModal: React.FC = () => {
             animate={{ scale: [1, 1.12, 1] }}
             transition={{ repeat: Infinity, duration: 2.2, repeatDelay: 1 }}
           >
-            <CheckSquare className={iconClass} strokeWidth={2.3} />
+            <CheckSquare className={iconClass} strokeWidth={2.4} />
           </motion.div>
         )}
         {type === 'bell' && (
@@ -145,7 +147,7 @@ export const OnboardingModal: React.FC = () => {
             }}
             style={{ transformOrigin: 'top center' }}
           >
-            <Bell className={iconClass} strokeWidth={2.3} />
+            <Bell className={iconClass} strokeWidth={2.4} />
           </motion.div>
         )}
       </motion.div>
