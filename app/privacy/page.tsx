@@ -124,13 +124,15 @@ export default function PrivacyPage() {
         <section className="flex flex-col gap-3 p-5 rounded-2xl bg-white dark:bg-[#1E1C1A] border border-[#E6DDD2] dark:border-[#2C2926]">
           <h2 className="text-base font-bold text-[#1A1918] dark:text-[#F4F1EA] flex items-center gap-2">
             <Mail className="w-4 h-4 text-[#8C6B5D]" />
-            7. Contact Us
+            7. Contact &amp; Grievance Officer
           </h2>
-          <p className="text-xs sm:text-sm">
-            If you have any questions, concerns, or privacy requests regarding this Privacy Policy, please contact our support team at:
+          <p className="text-xs sm:text-sm text-[#7A6D61] dark:text-[#9E958C]">
+            If you have any questions, concerns, or privacy requests regarding this Privacy Policy, please contact the developer at:
           </p>
-          <div className="font-mono text-xs font-bold text-[#8C6B5D] dark:text-[#CBB5A1]">
-            support@intersemester.app
+          <div className="flex flex-col gap-1 text-xs font-mono text-[#8C6B5D] dark:text-[#CBB5A1]">
+            <span><strong>Email:</strong> kumarnihal829@gmail.com</span>
+            <span><strong>Phone:</strong> +91 9565550673</span>
+            <span><strong>Campus:</strong> IIIT Naya Raipur (IIIT NR), Atal Nagar, Chhattisgarh, India</span>
           </div>
         </section>
       </div>

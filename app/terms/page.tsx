@@ -99,11 +99,11 @@ export default function TermsPage() {
             <HelpCircle className="w-4 h-4 text-[#8C6B5D]" />
             6. Questions &amp; Support
           </h2>
-          <p className="text-xs sm:text-sm">
-            For inquiries regarding these Terms &amp; Conditions, please reach out to us at:
+          <p className="text-xs sm:text-sm text-[#7A6D61] dark:text-[#9E958C]">
+            For inquiries regarding these Terms &amp; Conditions, please contact:
           </p>
           <div className="font-mono text-xs font-bold text-[#8C6B5D] dark:text-[#CBB5A1]">
-            legal@intersemester.app
+            kumarnihal829@gmail.com
           </div>
         </section>
       </div>

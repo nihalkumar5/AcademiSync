@@ -51,24 +51,44 @@ export default function ContactPage() {
             <div className="w-10 h-10 rounded-2xl bg-[#EFEAE2] dark:bg-[#2A2724] text-[#8C6B5D] flex items-center justify-center">
               <Mail className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold">Direct Email</h3>
-            <p className="text-xs text-[#7A6D61] dark:text-[#9A9188] leading-relaxed">
-              Reach out directly to our engineering and support inbox:
-            </p>
-            <a
-              href="mailto:support@intersemester.app"
-              className="font-mono text-xs font-bold text-[#8C6B5D] dark:text-[#CBB5A1] hover:underline"
-            >
-              support@intersemester.app
-            </a>
+            <h3 className="text-base font-bold">Developer Contact</h3>
+            
+            <div className="flex flex-col gap-2 text-xs text-[#7A6D61] dark:text-[#9A9188]">
+              <div>
+                <span className="font-semibold text-[#1A1918] dark:text-[#F4F1EA] block">Email</span>
+                <a
+                  href="mailto:kumarnihal829@gmail.com"
+                  className="font-mono font-bold text-[#8C6B5D] dark:text-[#CBB5A1] hover:underline"
+                >
+                  kumarnihal829@gmail.com
+                </a>
+              </div>
+
+              <div>
+                <span className="font-semibold text-[#1A1918] dark:text-[#F4F1EA] block">Phone / WhatsApp</span>
+                <a
+                  href="tel:+919565550673"
+                  className="font-mono font-bold text-[#8C6B5D] dark:text-[#CBB5A1] hover:underline"
+                >
+                  +91 9565550673
+                </a>
+              </div>
+
+              <div>
+                <span className="font-semibold text-[#1A1918] dark:text-[#F4F1EA] block">Location</span>
+                <span className="font-medium text-[#3B322C] dark:text-[#D1C7BD]">
+                  IIIT Naya Raipur (IIIT NR), Chhattisgarh, India
+                </span>
+              </div>
+            </div>
           </div>
 
           <div className="p-5 rounded-3xl bg-[#FAF6F0] dark:bg-[#1E1C1A] border border-[#E8DFC8] dark:border-[#2D2A27] flex flex-col gap-2.5 text-xs text-[#6E5643] dark:text-[#C4B7AB]">
             <span className="font-bold flex items-center gap-1.5 text-[#1A1918] dark:text-[#F4F1EA]">
               <Sparkles className="w-3.5 h-3.5 text-[#8C6B5D]" />
-              Response Time
+              Quick Support
             </span>
-            <span>We typically respond to student inquiries and bug reports within 24 hours.</span>
+            <span>Reach out anytime for developer support, feature suggestions, or campus timetable onboardings.</span>
           </div>
         </div>
 

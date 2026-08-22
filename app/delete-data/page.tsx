@@ -74,10 +74,10 @@ export default function DeleteDataPage() {
               <span className="text-[11px] text-[#7A6D61] dark:text-[#9E958C]">Send from your registered account email</span>
             </div>
             <a
-              href="mailto:support@intersemester.app?subject=Account%20and%20Data%20Deletion%20Request"
+              href="mailto:kumarnihal829@gmail.com?subject=Account%20and%20Data%20Deletion%20Request"
               className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shrink-0"
             >
-              Email Support
+              Email Developer
             </a>
           </div>
           <p className="text-xs text-[#7A6D61] dark:text-[#9A9188] pt-1">
