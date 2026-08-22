@@ -34,6 +34,14 @@ export const WeeklyTimetable: React.FC = () => {
     return currentMins >= startMins && currentMins <= endMins;
   };
 
+  const checkIsPast = (session: ClassSession) => {
+    if (currentDay !== session.day) return false;
+    const now = new Date();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+    const endMins = timeToMinutes(session.endTime);
+    return currentMins > endMins;
+  };
+
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
   const weekDays = DAYS_OF_WEEK.slice(0, 5); // Monday to Friday
 
@@ -67,36 +75,36 @@ export const WeeklyTimetable: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-8 text-left">
-      {/* Top Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div className="flex flex-col gap-6 mt-8 mb-4">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-zinc-50 tracking-tight">
-            Weekly Schedule
+          <h2 className="text-5xl sm:text-7xl font-medium text-black dark:text-white tracking-tighter leading-[1.1]">
+            Weekly,<br />
+            Schedule,<br />
+            Timetable,<br />
+            Classes
           </h2>
-          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1 font-medium">
+          <p className="text-lg text-black/70 dark:text-white/70 mt-6 max-w-sm leading-snug">
             Manage your lectures, lab slots, and classroom locations.
           </p>
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto sm:justify-end">
+        <div className="flex items-center gap-3 mt-4">
           <Button
             variant="outline"
-            size="sm"
+            size="md"
             onClick={handleImportTimetable}
-            className="flex-1 sm:flex-none justify-center gap-2 rounded-xl glass-card shadow-sm hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 text-[13px] font-semibold h-10 px-4"
+            className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
           >
-            <Sparkles className="w-4 h-4 text-indigo-500" />
-            <span className="text-slate-700 dark:text-zinc-300">AI Import</span>
+            AI Import
           </Button>
 
           <Button
             variant="primary"
-            size="sm"
+            size="md"
             onClick={() => handleAddForDay(selectedMobileDay)}
-            className="flex-1 sm:flex-none justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 text-[13px] font-semibold h-10 px-4"
+            className="rounded-none bg-black text-white dark:bg-white dark:text-black border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors"
           >
-            <Plus className="w-4 h-4" />
-            <span>Add Class</span>
+            Add Class
           </Button>
         </div>
       </div>
@@ -142,7 +150,7 @@ export const WeeklyTimetable: React.FC = () => {
       <div className="flex md:hidden flex-col gap-3.5">
         {(() => {
           const sessions = timetable
-            .filter((s) => s.day === selectedMobileDay)
+            .filter((s) => s.day === selectedMobileDay && !checkIsPast(s))
             .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
           if (sessions.length === 0) {
@@ -175,7 +183,7 @@ export const WeeklyTimetable: React.FC = () => {
         {weekDays.map((day) => {
           const isToday = currentDay === day;
           const daySessions = timetable
-            .filter((s) => s.day === day)
+            .filter((s) => s.day === day && !checkIsPast(s))
             .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
           return (

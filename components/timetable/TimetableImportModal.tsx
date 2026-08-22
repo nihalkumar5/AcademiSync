@@ -172,11 +172,8 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     >
       {step === 'upload' && (
         <div className="flex flex-col gap-6 text-center">
-          <div className="relative group rounded-3xl overflow-hidden p-0.5 transition-all">
-            {/* Animated glowing border background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/30 via-transparent to-indigo-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
-            
-            <div className="relative flex flex-col items-center justify-center p-10 rounded-3xl border border-zinc-200/50 dark:border-zinc-800/50 bg-gradient-to-b from-white to-zinc-50/50 dark:from-zinc-900 dark:to-zinc-950/50 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 cursor-pointer overflow-hidden">
+          <div className="relative group transition-all">
+            <div className="relative flex flex-col items-center justify-center p-10 border-2 border-dashed border-black dark:border-white hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-300 cursor-pointer overflow-hidden">
               <input
                 type="file"
                 accept="image/*,.pdf"
@@ -184,40 +181,36 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                 onChange={handleFileUpload}
                 className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
               />
-              
-              {/* Background abstract decoration */}
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 text-blue-600 dark:text-blue-300 flex items-center justify-center mb-5 shadow-inner relative z-0">
-                <Upload className="w-7 h-7" />
+              <div className="w-14 h-14 bg-black text-white dark:bg-white dark:text-black flex items-center justify-center mb-4 transition-transform group-hover:-translate-y-1 group-hover:scale-110">
+                <Upload className="w-6 h-6" />
               </div>
-              
-              <h4 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">
+              <h3 className="text-xl font-bold text-black dark:text-white mb-2 tracking-tight">
                 Upload Timetable Photo
-              </h4>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2 max-w-sm font-medium leading-relaxed">
+              </h3>
+              <p className="text-sm text-black/60 dark:text-white/60 max-w-[260px] mx-auto leading-relaxed">
                 Powered by Gemini Vision OCR. Drop your official timetable to auto-extract your schedule.
               </p>
-
-              <div className="mt-6 px-5 py-2 rounded-full bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 text-sm font-semibold tracking-wide shadow-md group-hover:scale-105 transition-transform duration-300">
-                Choose Files
+              
+              <div className="mt-6 pointer-events-none">
+                <Button variant="primary" className="rounded-none shadow-[4px_4px_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_rgba(255,255,255,1)]">
+                  Choose Files
+                </Button>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 px-4">
-            <div className="h-px bg-zinc-200 dark:bg-zinc-800 flex-1" />
-            <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400">or try demo</span>
-            <div className="h-px bg-zinc-200 dark:bg-zinc-800 flex-1" />
+          <div className="flex items-center justify-center gap-4 text-xs font-bold text-black/40 dark:text-white/40 tracking-widest uppercase">
+            <span className="w-12 h-px bg-black/10 dark:bg-white/10" />
+            Or Try Demo
+            <span className="w-12 h-px bg-black/10 dark:bg-white/10" />
           </div>
 
-          <Button
-            variant="outline"
+          <Button 
+            variant="outline" 
             onClick={() => runExtraction('IIITNR_BTech_CSE_Sem6_Timetable.pdf')}
-            className="w-full gap-2.5 rounded-2xl border-zinc-200 dark:border-zinc-800 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-950/30 dark:hover:text-blue-300 py-3.5 transition-colors"
+            className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black gap-2 w-full justify-center"
           >
-            <Sparkles className="w-4 h-4 text-purple-500" />
+            <Sparkles className="w-4 h-4" />
             Scan Sample IIIT-NR B.Tech Timetable
           </Button>
         </div>

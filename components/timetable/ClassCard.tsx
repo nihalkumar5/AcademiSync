@@ -26,34 +26,35 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   return (
     <div
       className={clsx(
-        "group relative flex flex-col p-4 text-left transition-all",
+        "group relative flex flex-col p-4 text-left transition-all border",
         isCurrent
-          ? 'hero-mesh-card ring-1 ring-indigo-500/20'
-          : 'glass-card hover:shadow-lg hover:shadow-indigo-500/5 hover:border-indigo-100/60 dark:hover:border-indigo-900/30'
+          ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-[4px_4px_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_rgba(255,255,255,1)]'
+          : 'bg-white dark:bg-black text-black dark:text-white border-black dark:border-white'
       )}
     >
       <div className="flex items-start justify-between gap-1.5 mb-2">
         <div className="flex items-center gap-2 flex-wrap">
-          <div className={clsx(
-            "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold",
-            isCurrent 
-              ? "bg-indigo-600 text-white shadow-sm shadow-indigo-500/20" 
-              : "bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300"
-          )}>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 border border-current text-xs font-medium opacity-80">
             <Clock className="w-3.5 h-3.5" />
             <span>{session.startTime} – {session.endTime}</span>
           </div>
 
           {session.isLab && (
-            <Badge variant="amber" size="sm" className="rounded-lg px-2">
+            <Badge variant="amber" size="sm" className="rounded-none px-2 border-black dark:border-white">
               <FlaskConical className="w-3 h-3 mr-1" />
               Lab
             </Badge>
           )}
           {isCurrent && (
             <span className="flex h-2 w-2 relative ml-1">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+              <span className={clsx(
+                "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
+                isCurrent ? "bg-white dark:bg-black" : "bg-black dark:bg-white"
+              )}></span>
+              <span className={clsx(
+                "relative inline-flex rounded-full h-2 w-2",
+                isCurrent ? "bg-white dark:bg-black" : "bg-black dark:bg-white"
+              )}></span>
             </span>
           )}
         </div>
@@ -109,23 +110,23 @@ export const ClassCard: React.FC<ClassCardProps> = ({
       {/* Subject Name & Code */}
       <div className="mt-1 flex items-start gap-2.5">
         <div
-          className="w-1.5 h-6 rounded-full shrink-0 mt-0.5"
-          style={{ backgroundColor: subject?.color || '#6366F1' }}
+          className="w-1.5 h-6 rounded-none shrink-0 mt-0.5"
+          style={{ backgroundColor: subject?.color || '#000000' }}
         />
-        <h4 className="text-[15px] leading-snug font-bold text-slate-900 dark:text-zinc-50">
+        <h4 className="text-[15px] leading-snug font-bold">
           {subject?.name || 'Subject'}
         </h4>
       </div>
 
       {/* Room & Faculty */}
-      <div className="mt-3.5 flex items-center gap-4 text-xs font-medium text-slate-500 dark:text-zinc-400">
-        <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-zinc-800/50 px-2 py-1 rounded-md">
-          <MapPin className="w-3.5 h-3.5 text-indigo-500/70" />
-          <span className="text-slate-700 dark:text-zinc-300">{session.room || (session.isLab ? subject?.labRoom : subject?.room) || 'TBA'}</span>
+      <div className="mt-3.5 flex items-center gap-4 text-xs font-medium opacity-80">
+        <div className="flex items-center gap-1.5 border border-current px-2 py-1 rounded-none">
+          <MapPin className="w-3.5 h-3.5" />
+          <span>{session.room || (session.isLab ? subject?.labRoom : subject?.room) || 'TBA'}</span>
         </div>
         {(session.faculty || subject?.facultyName) && (
           <div className="flex items-center gap-1.5 truncate">
-            <User className="w-3.5 h-3.5 text-slate-400" />
+            <User className="w-3.5 h-3.5" />
             <span className="truncate">{session.faculty || subject?.facultyName}</span>
           </div>
         )}

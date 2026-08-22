@@ -74,21 +74,21 @@ export const Modal: React.FC<ModalProps> = ({
             transition={{ duration: 0.2 }}
             className={twMerge(
               clsx(
-                'relative w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden z-10 my-auto text-left',
+                'relative w-full bg-white dark:bg-black border border-black dark:border-white z-10 my-auto text-left rounded-none',
                 maxWClasses[maxWidth]
               )
             )}
           >
             {(title || showCloseButton) && (
-              <div className="flex items-start justify-between p-5 pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
+              <div className="flex items-start justify-between p-5 border-b border-black dark:border-white">
                 <div>
                   {title && (
-                    <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">
+                    <h2 className="text-xl font-bold text-black dark:text-white tracking-tighter">
                       {title}
                     </h2>
                   )}
                   {description && (
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    <p className="mt-1 text-sm text-black/60 dark:text-white/60 leading-snug">
                       {description}
                     </p>
                   )}
@@ -96,13 +96,14 @@ export const Modal: React.FC<ModalProps> = ({
                 {showCloseButton && (
                   <button
                     onClick={onClose}
-                    className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                    className="p-1.5 shrink-0 transition-colors text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black border border-transparent hover:border-black dark:hover:border-white"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-5 h-5" />
                   </button>
                 )}
               </div>
             )}
+
             <div className="p-5">{children}</div>
           </motion.div>
         </div>
