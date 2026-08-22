@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useUser, UserButton, SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 import { useApp } from '@/context/AppContext';
 import { Programme, Branch } from '@/lib/types';
@@ -20,6 +21,11 @@ import {
   Hash,
   AlertTriangle,
   X,
+  FileText,
+  Shield,
+  MessageSquare,
+  Info,
+  ChevronRight,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -559,6 +565,75 @@ export const SettingsView: React.FC = () => {
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>Reset to Sample Curriculum</span>
               </motion.button>
+            </div>
+          </div>
+
+          {/* Legal, Privacy & Support Section */}
+          <div className="p-6 rounded-3xl bg-white/95 dark:bg-[#1C1B19]/95 border border-[#E6DDD2] dark:border-[#2C2926] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col gap-3">
+            <div className="flex items-center gap-2.5 pb-2 border-b border-[#EFEAE2] dark:border-[#282624]">
+              <div className="w-8 h-8 rounded-xl bg-[#EFEAE2] dark:bg-[#2A2724] flex items-center justify-center text-[#8C6B5D]">
+                <Shield className="w-4 h-4" />
+              </div>
+              <h3 className="text-base font-bold text-[#1A1918] dark:text-[#F4F1EA]">
+                Legal &amp; Support
+              </h3>
+            </div>
+
+            <div className="flex flex-col gap-1 pt-1">
+              <Link
+                href="/privacy"
+                className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-[#FAF8F5] dark:hover:bg-[#201E1C] transition-colors group text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Shield className="w-4 h-4 text-[#8C6B5D]" />
+                  <span>Privacy Policy</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+              </Link>
+
+              <Link
+                href="/terms"
+                className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-[#FAF8F5] dark:hover:bg-[#201E1C] transition-colors group text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <FileText className="w-4 h-4 text-[#8C6B5D]" />
+                  <span>Terms &amp; Conditions</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+              </Link>
+
+              <Link
+                href="/contact"
+                className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-[#FAF8F5] dark:hover:bg-[#201E1C] transition-colors group text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <MessageSquare className="w-4 h-4 text-[#8C6B5D]" />
+                  <span>Contact Support &amp; Feedback</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+              </Link>
+
+              <Link
+                href="/delete-data"
+                className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-[#FAF8F5] dark:hover:bg-[#201E1C] transition-colors group text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <AlertTriangle className="w-4 h-4 text-rose-500" />
+                  <span>Data &amp; Account Deletion</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+              </Link>
+
+              <Link
+                href="/about"
+                className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-[#FAF8F5] dark:hover:bg-[#201E1C] transition-colors group text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Info className="w-4 h-4 text-[#8C6B5D]" />
+                  <span>About Intersemester (v1.2.0)</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+              </Link>
             </div>
           </div>
         </div>
