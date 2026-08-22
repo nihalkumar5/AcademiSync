@@ -36,7 +36,7 @@ export const MobileNav: React.FC = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--background)] border-t border-black dark:border-white px-2 py-3 pb-safe">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#F0EBE2] dark:bg-[#1A1918] border-t border-[#DFD7CC] dark:border-white/10 px-2 py-3 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
       <div className="flex items-center justify-around">
         {tabs.map((tab) => {
           const isActive = activeView === tab.id;
