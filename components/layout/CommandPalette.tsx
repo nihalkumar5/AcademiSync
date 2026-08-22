@@ -12,11 +12,11 @@ import {
   Calendar,
   Bell,
   Settings,
-  Plus,
-  Sparkles,
   Sun,
   Moon,
-  Upload,
+  ArrowRight,
+  Sparkles,
+  Command,
 } from 'lucide-react';
 import { useApp, ActiveView } from '@/context/AppContext';
 
@@ -48,7 +48,7 @@ export const CommandPalette: React.FC = () => {
   }[] = [
     {
       id: 'nav_home',
-      title: 'Go to Home Dashboard',
+      title: 'Home Dashboard',
       category: 'Navigation',
       icon: <LayoutDashboard className="w-4 h-4" />,
       action: () => {
@@ -58,7 +58,7 @@ export const CommandPalette: React.FC = () => {
     },
     {
       id: 'nav_timetable',
-      title: 'Go to Weekly Timetable',
+      title: 'Weekly Timetable',
       category: 'Navigation',
       icon: <CalendarDays className="w-4 h-4" />,
       action: () => {
@@ -68,7 +68,7 @@ export const CommandPalette: React.FC = () => {
     },
     {
       id: 'nav_homework',
-      title: 'Go to Homework & Tasks',
+      title: 'Homework & Tasks',
       category: 'Navigation',
       icon: <CheckSquare className="w-4 h-4" />,
       action: () => {
@@ -78,7 +78,7 @@ export const CommandPalette: React.FC = () => {
     },
     {
       id: 'nav_carry',
-      title: "Go to Tomorrow's Carry Bag",
+      title: "Tomorrow's Carry Bag",
       category: 'Navigation',
       icon: <Backpack className="w-4 h-4" />,
       action: () => {
@@ -88,7 +88,7 @@ export const CommandPalette: React.FC = () => {
     },
     {
       id: 'nav_calendar',
-      title: 'Go to Academic Calendar',
+      title: 'Academic Calendar',
       category: 'Navigation',
       icon: <Calendar className="w-4 h-4" />,
       action: () => {
@@ -98,7 +98,7 @@ export const CommandPalette: React.FC = () => {
     },
     {
       id: 'nav_subjects',
-      title: 'Go to Subject Directory',
+      title: 'Subject Directory',
       category: 'Navigation',
       icon: <BookOpen className="w-4 h-4" />,
       action: () => {
@@ -108,7 +108,7 @@ export const CommandPalette: React.FC = () => {
     },
     {
       id: 'nav_notifications',
-      title: 'Go to Notification Inbox',
+      title: 'Notification Inbox',
       category: 'Navigation',
       icon: <Bell className="w-4 h-4" />,
       action: () => {
@@ -118,7 +118,7 @@ export const CommandPalette: React.FC = () => {
     },
     {
       id: 'nav_settings',
-      title: 'Open Settings & Academic Profile',
+      title: 'Settings & Profile',
       category: 'Navigation',
       icon: <Settings className="w-4 h-4" />,
       action: () => {
@@ -128,7 +128,7 @@ export const CommandPalette: React.FC = () => {
     },
     {
       id: 'act_theme',
-      title: `Switch Theme to ${settings.theme === 'dark' ? 'Light' : 'Dark'} Mode`,
+      title: `Switch to ${settings.theme === 'dark' ? 'Light' : 'Dark'} Mode`,
       category: 'Preferences',
       icon: settings.theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />,
       action: () => {
@@ -161,82 +161,132 @@ export const CommandPalette: React.FC = () => {
   return (
     <AnimatePresence>
       {commandPaletteOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4">
+        <div className="fixed inset-0 z-[110] flex items-start justify-center pt-16 sm:pt-24 p-4 select-none">
+          {/* Frosted Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setCommandPaletteOpen(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-md"
           />
 
+          {/* Premium Spotlight Card */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: -10 }}
+            initial={{ opacity: 0, scale: 0.95, y: -14 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: -10 }}
-            transition={{ type: 'spring', duration: 0.2, bounce: 0 }}
-            className="relative w-full max-w-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-10 text-left"
+            exit={{ opacity: 0, scale: 0.95, y: -14 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 350 }}
+            className="relative w-full max-w-lg bg-[#FAF8F5]/95 dark:bg-[#181716]/95 backdrop-blur-2xl border border-[#E3DBD0] dark:border-[#2E2B28] rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] overflow-hidden z-10 text-left flex flex-col font-sans"
           >
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-              <Search className="w-4 h-4 text-zinc-400" />
+            {/* Search Input Bar */}
+            <div className="flex items-center gap-3.5 px-5 py-4 border-b border-[#E8E0D5] dark:border-[#292624]">
+              <div className="w-8 h-8 rounded-xl bg-[#EFE8DD] dark:bg-[#252321] text-[#8C6B5D] dark:text-[#A89280] flex items-center justify-center border border-[#DFD6C8] dark:border-[#383430] shrink-0">
+                <Search className="w-4 h-4" strokeWidth={2.4} />
+              </div>
+              
               <input
                 autoFocus
                 type="text"
-                placeholder="Type a command or jump to screen..."
+                placeholder="Search pages, tools, commands..."
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);
                   setSelectedIndex(0);
                 }}
                 onKeyDown={handleKeyDown}
-                className="w-full bg-transparent text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none"
+                className="w-full bg-transparent text-[15px] font-medium text-[#1A1918] dark:text-[#F4F1EA] placeholder:text-[#9E9084] dark:placeholder:text-[#7A736C] focus:outline-none tracking-tight"
               />
-              <kbd className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 text-zinc-400">
-                ESC
-              </kbd>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                <kbd className="text-[11px] font-mono font-semibold bg-[#EFE8DD] dark:bg-[#252321] text-[#7A6352] dark:text-[#A89280] px-2 py-1 rounded-md border border-[#DFD6C8] dark:border-[#383430] shadow-2xs">
+                  ESC
+                </kbd>
+              </div>
             </div>
 
-            <div className="max-h-72 overflow-y-auto p-2">
+            {/* Results Command List */}
+            <div className="max-h-[340px] overflow-y-auto p-2.5 space-y-1">
               {filtered.length === 0 ? (
-                <div className="py-8 text-center text-xs text-zinc-500">
-                  No commands found matching &quot;{query}&quot;
+                <div className="py-12 flex flex-col items-center justify-center gap-2 text-center text-[#8C7E72] dark:text-[#7D766F]">
+                  <Sparkles className="w-6 h-6 opacity-50" />
+                  <p className="text-xs font-medium">No results found for &ldquo;{query}&rdquo;</p>
                 </div>
               ) : (
                 filtered.map((cmd, idx) => {
                   const isSelected = idx === selectedIndex;
                   return (
-                    <button
+                    <motion.button
                       key={cmd.id}
                       onClick={cmd.action}
                       onMouseEnter={() => setSelectedIndex(idx)}
-                      className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-xs transition-colors ${
+                      animate={{
+                        backgroundColor: isSelected
+                          ? 'rgba(235, 226, 214, 0.95)'
+                          : 'transparent',
+                      }}
+                      className={`flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all group cursor-pointer ${
                         isSelected
-                          ? 'bg-blue-600 text-white font-medium'
-                          : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                          ? 'text-[#1A1918] dark:text-white dark:!bg-[#282522] border border-[#DDD0C0] dark:border-[#3A3632] shadow-xs'
+                          : 'text-[#5C4F44] dark:text-[#BDB4AA] border border-transparent hover:bg-[#F2ECE3]/70 dark:hover:bg-[#201E1C]'
                       }`}
                     >
-                      <div className="flex items-center gap-2.5">
-                        <span className={isSelected ? 'text-white' : 'text-zinc-400'}>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
+                            isSelected
+                              ? 'bg-[#8C6B5D] text-[#FAF8F5] shadow-xs'
+                              : 'bg-[#EFE8DE]/80 dark:bg-[#22201E] text-[#7A6352] dark:text-[#9E9084] border border-[#DFD6C8]/60 dark:border-[#302D2A]'
+                          }`}
+                        >
                           {cmd.icon}
-                        </span>
-                        <span>{cmd.title}</span>
+                        </div>
+                        <span className="text-[13px] tracking-tight">{cmd.title}</span>
                       </div>
-                      <span
-                        className={`text-[10px] font-mono ${
-                          isSelected ? 'text-blue-200' : 'text-zinc-400 dark:text-zinc-500'
-                        }`}
-                      >
-                        {cmd.category}
-                      </span>
-                    </button>
+
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                            isSelected
+                              ? 'bg-[#DDD0C0] dark:bg-[#34302C] text-[#5C4838] dark:text-[#C4B7AB]'
+                              : 'bg-[#EAE1D4]/60 dark:bg-[#201E1C] text-[#8C7A6B] dark:text-[#7A736C]'
+                          }`}
+                        >
+                          {cmd.category}
+                        </span>
+                        {isSelected && (
+                          <ArrowRight className="w-3.5 h-3.5 text-[#8C6B5D] dark:text-[#C4B7AB] animate-pulse" />
+                        )}
+                      </div>
+                    </motion.button>
                   );
                 })
               )}
             </div>
 
-            <div className="flex items-center justify-between px-4 py-2 bg-zinc-50 dark:bg-zinc-950/60 border-t border-zinc-100 dark:border-zinc-800/80 text-[11px] text-zinc-400">
-              <span>Navigate with <kbd className="font-mono">↑</kbd> <kbd className="font-mono">↓</kbd></span>
-              <span>Select with <kbd className="font-mono">↵</kbd></span>
+            {/* Bottom Keyboard Hint Bar */}
+            <div className="flex items-center justify-between px-4 py-2.5 bg-[#F2ECE2]/80 dark:bg-[#131211]/80 border-t border-[#E5DDD2] dark:border-[#282624] text-[11px] text-[#7A6B5F] dark:text-[#8C837B]">
+              <div className="flex items-center gap-3 font-medium">
+                <span className="flex items-center gap-1">
+                  <kbd className="font-mono bg-[#EAE2D6] dark:bg-[#242220] px-1.5 py-0.5 rounded border border-[#D8CEBF] dark:border-[#383430] text-[10px]">
+                    ↑
+                  </kbd>
+                  <kbd className="font-mono bg-[#EAE2D6] dark:bg-[#242220] px-1.5 py-0.5 rounded border border-[#D8CEBF] dark:border-[#383430] text-[10px]">
+                    ↓
+                  </kbd>
+                  <span className="ml-0.5">Navigate</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <kbd className="font-mono bg-[#EAE2D6] dark:bg-[#242220] px-1.5 py-0.5 rounded border border-[#D8CEBF] dark:border-[#383430] text-[10px]">
+                    ↵
+                  </kbd>
+                  <span className="ml-0.5">Open</span>
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1 font-mono text-[10px] text-[#96887C] dark:text-[#6E665E]">
+                <Command className="w-3 h-3" /> Spotlight
+              </div>
             </div>
           </motion.div>
         </div>
