@@ -90,7 +90,7 @@ export const OnboardingModal: React.FC = () => {
             opacity: 1,
           }}
           transition={{ type: 'spring', stiffness: 340, damping: 20 }}
-          className="w-12 h-12 sm:w-13 sm:h-13 aspect-square shrink-0 rounded-2xl bg-gradient-to-br from-[#A27E5C] via-[#8E6C4C] to-[#75553A] text-[#FDF8F4] flex items-center justify-center font-black text-2xl tracking-tighter shadow-md shadow-[#75553A]/25 border-2 border-[#C9B099]/80 relative overflow-hidden"
+          className="w-18 h-18 sm:w-20 sm:h-20 aspect-square shrink-0 rounded-[1.75rem] bg-gradient-to-br from-[#A27E5C] via-[#8E6C4C] to-[#75553A] text-[#FDF8F4] flex items-center justify-center font-black text-3xl sm:text-4xl tracking-tighter shadow-lg shadow-[#75553A]/25 border-2 border-[#C9B099]/80 relative overflow-hidden"
         >
           <motion.span
             animate={{ scale: [1, 1.06, 1] }}
@@ -103,20 +103,20 @@ export const OnboardingModal: React.FC = () => {
       );
     }
 
-    const iconClass = 'w-6 h-6 text-[#6E4F36]';
+    const iconClass = 'w-9 h-9 sm:w-10 sm:h-10 text-[#6E4F36]';
     return (
       <motion.div
         initial={{ scale: 0.5, rotate: 8, opacity: 0 }}
         animate={{ scale: 1, rotate: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 340, damping: 20 }}
-        className="w-12 h-12 sm:w-13 sm:h-13 aspect-square shrink-0 rounded-2xl border-2 border-[#D5C1AE] bg-[#EADBCA]/85 backdrop-blur-md flex items-center justify-center shadow-sm shadow-[#8C6B5D]/10"
+        className="w-18 h-18 sm:w-20 sm:h-20 aspect-square shrink-0 rounded-[1.75rem] border-2 border-[#D5C1AE] bg-[#EADBCA]/85 backdrop-blur-md flex items-center justify-center shadow-md shadow-[#8C6B5D]/10"
       >
         {type === 'calendar' && (
           <motion.div
             animate={{ rotate: [0, -6, 6, -3, 3, 0] }}
             transition={{ repeat: Infinity, duration: 3.5, repeatDelay: 1 }}
           >
-            <Calendar className={iconClass} strokeWidth={2.4} />
+            <Calendar className={iconClass} strokeWidth={2.3} />
           </motion.div>
         )}
         {type === 'tasks' && (
@@ -124,7 +124,7 @@ export const OnboardingModal: React.FC = () => {
             animate={{ scale: [1, 1.12, 1] }}
             transition={{ repeat: Infinity, duration: 2.2, repeatDelay: 1 }}
           >
-            <CheckSquare className={iconClass} strokeWidth={2.4} />
+            <CheckSquare className={iconClass} strokeWidth={2.3} />
           </motion.div>
         )}
         {type === 'bell' && (
@@ -140,7 +140,7 @@ export const OnboardingModal: React.FC = () => {
             }}
             style={{ transformOrigin: 'top center' }}
           >
-            <Bell className={iconClass} strokeWidth={2.4} />
+            <Bell className={iconClass} strokeWidth={2.3} />
           </motion.div>
         )}
       </motion.div>
@@ -215,20 +215,8 @@ export const OnboardingModal: React.FC = () => {
           </motion.div>
         </AnimatePresence>
 
-        {/* Top Floating Header with Skip */}
-        <div className="absolute top-0 inset-x-0 pt-4 sm:pt-6 px-6 sm:px-8 flex justify-end items-center z-20">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleFinish}
-            className="text-[#664F3C] hover:text-[#2C2016] font-semibold text-sm tracking-wide px-3 py-1 rounded-full hover:bg-black/5 active:bg-black/10 transition-all cursor-pointer touch-manipulation"
-          >
-            Skip
-          </motion.button>
-        </div>
-
-        {/* Dynamic Animated Content Container with Right-Aligned Square Icon */}
-        <div className="absolute top-0 inset-x-0 pt-10 sm:pt-14 px-7 sm:px-8 z-20 flex flex-col pointer-events-none">
+        {/* Dynamic Animated Content Container with Right-Aligned 1.6x Square Icon */}
+        <div className="absolute top-0 inset-x-0 pt-8 sm:pt-12 px-7 sm:px-8 z-20 flex flex-col pointer-events-none">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={`text-${currentIndex}`}
@@ -238,13 +226,13 @@ export const OnboardingModal: React.FC = () => {
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               className="flex flex-col gap-2 text-left"
             >
-              {/* Row with Title on Left, Perfect Square Icon Badge on Right */}
+              {/* Row with Title on Left, 1.6x Enlarged Perfect Square Icon Badge on Right */}
               <div className="flex items-start justify-between gap-3">
                 <motion.h1
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.35, delay: 0.05, ease: 'easeOut' }}
-                  className="text-[26px] sm:text-[29px] leading-[1.12] font-black tracking-tight text-[#2B1F16]"
+                  className="text-[27px] sm:text-[31px] leading-[1.12] font-black tracking-tight text-[#2B1F16]"
                 >
                   <span>{currentSlide.titleMain}</span>
                   <br />
@@ -253,7 +241,7 @@ export const OnboardingModal: React.FC = () => {
                   </span>
                 </motion.h1>
 
-                {/* Right-aligned Square Icon */}
+                {/* Right-aligned 1.6x Enlarged Square Icon */}
                 <div className="shrink-0 pt-0.5">
                   {renderIcon(currentSlide.iconType)}
                 </div>
@@ -264,7 +252,7 @@ export const OnboardingModal: React.FC = () => {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.36, delay: 0.1, ease: 'easeOut' }}
-                className="text-[#6E5643] text-[13.5px] sm:text-[14.5px] leading-snug font-medium max-w-[270px] sm:max-w-[290px] mt-0.5"
+                className="text-[#6E5643] text-[13.5px] sm:text-[14.5px] leading-snug font-medium max-w-[250px] sm:max-w-[270px] mt-0.5"
               >
                 {currentSlide.description}
               </motion.p>
@@ -272,8 +260,18 @@ export const OnboardingModal: React.FC = () => {
           </AnimatePresence>
         </div>
 
-        {/* Bottom Interactive Navigation Bar */}
+        {/* Bottom Interactive Navigation Bar (With Skip on Bottom-Left, Dots in Center, Arrow on Right) */}
         <div className="absolute bottom-0 inset-x-0 p-7 sm:p-8 flex items-center justify-between z-20">
+          {/* Bottom Left Skip Button */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleFinish}
+            className="text-[#664F3C] hover:text-[#2C2016] font-bold text-sm tracking-wide px-3 py-2 rounded-full hover:bg-black/5 active:bg-black/10 transition-all cursor-pointer touch-manipulation"
+          >
+            Skip
+          </motion.button>
+
           {/* Animated and Generously Clickable Indicator Dots */}
           <div className="flex items-center gap-1.5 pl-1">
             {slides.map((s, i) => {
@@ -286,7 +284,7 @@ export const OnboardingModal: React.FC = () => {
                     setDirection(i > currentIndex ? 1 : -1);
                     setCurrentIndex(i);
                   }}
-                  className="p-3 -m-1.5 flex items-center justify-center cursor-pointer focus:outline-none touch-manipulation group"
+                  className="p-2.5 -m-1 flex items-center justify-center cursor-pointer focus:outline-none touch-manipulation group"
                   aria-label={`Go to slide ${i + 1}`}
                 >
                   <motion.div
@@ -310,7 +308,7 @@ export const OnboardingModal: React.FC = () => {
             whileHover={{ scale: 1.08, shadow: '0px 10px 20px rgba(140, 107, 93, 0.4)' }}
             whileTap={{ scale: 0.92 }}
             onClick={handleNext}
-            className="w-14 h-14 rounded-full bg-[#8C6B5D] hover:bg-[#7A5B4D] active:bg-[#684C3F] flex items-center justify-center text-[#FDF8F4] transition-colors shadow-[0_8px_20px_rgba(140,107,93,0.35)] focus:outline-none cursor-pointer touch-manipulation"
+            className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-[#8C6B5D] hover:bg-[#7A5B4D] active:bg-[#684C3F] flex items-center justify-center text-[#FDF8F4] transition-colors shadow-[0_8px_20px_rgba(140,107,93,0.35)] focus:outline-none cursor-pointer touch-manipulation"
             aria-label="Next slide"
           >
             <motion.div
@@ -320,9 +318,9 @@ export const OnboardingModal: React.FC = () => {
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
               {currentIndex === slides.length - 1 ? (
-                <Sparkles className="w-6 h-6" />
+                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
               ) : (
-                <ArrowRight className="w-6 h-6" strokeWidth={2.4} />
+                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2.4} />
               )}
             </motion.div>
           </motion.button>
