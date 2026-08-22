@@ -335,45 +335,53 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       id: `hw_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       createdAt: new Date().toISOString(),
     };
-    const updated = [newHw, ...homework];
-    setHomeworkState(updated);
-    storage.setHomework(updated);
+    setHomeworkState(prev => {
+      const updated = [newHw, ...prev];
+      storage.setHomework(updated);
+      return updated;
+    });
     showToast('Task Created', hwData.title, 'success');
     return newHw;
   };
 
   const updateHomework = (id: string, partial: Partial<Homework>) => {
-    const updated = homework.map((h) => (h.id === id ? { ...h, ...partial } : h));
-    setHomeworkState(updated);
-    storage.setHomework(updated);
+    setHomeworkState(prev => {
+      const updated = prev.map((h) => (h.id === id ? { ...h, ...partial } : h));
+      storage.setHomework(updated);
+      return updated;
+    });
   };
 
   const deleteHomework = (id: string) => {
-    const updated = homework.filter((h) => h.id !== id);
-    setHomeworkState(updated);
-    storage.setHomework(updated);
+    setHomeworkState(prev => {
+      const updated = prev.filter((h) => h.id !== id);
+      storage.setHomework(updated);
+      return updated;
+    });
     showToast('Task Deleted', 'Assignment removed from list', 'info');
   };
 
   const toggleHomeworkStatus = (id: string) => {
-    const target = homework.find((h) => h.id === id);
-    if (!target) return;
-    const nextStatus: HomeworkStatus = target.status === 'Completed' ? 'Not Started' : 'Completed';
-    const updated: Homework[] = homework.map((h) =>
-      h.id === id
-        ? {
-            ...h,
-            status: nextStatus,
-            completedAt: nextStatus === 'Completed' ? new Date().toISOString() : undefined,
-          }
-        : h
-    );
-    setHomeworkState(updated);
-    storage.setHomework(updated);
-    if (nextStatus === 'Completed') {
-      triggerConfetti();
-      showToast('Task Completed', `"${target.title}" marked as done!`, 'success');
-    }
+    setHomeworkState(prev => {
+      const target = prev.find((h) => h.id === id);
+      if (!target) return prev;
+      const nextStatus: HomeworkStatus = target.status === 'Completed' ? 'Not Started' : 'Completed';
+      const updated = prev.map((h) =>
+        h.id === id
+          ? {
+              ...h,
+              status: nextStatus,
+              completedAt: nextStatus === 'Completed' ? new Date().toISOString() : undefined,
+            }
+          : h
+      );
+      storage.setHomework(updated);
+      if (nextStatus === 'Completed') {
+        triggerConfetti();
+        showToast('Task Completed', `"${target.title}" marked as done!`, 'success');
+      }
+      return updated;
+    });
   };
 
   const toggleCarryItemPacked = (id: string) => {

@@ -62,21 +62,21 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
       updateHomework(homeworkToEdit.id, {
         subjectId,
         title: title.trim(),
-        description: description.trim() || undefined,
+        description: description.trim() ,
         deadline: new Date(deadline).toISOString(),
         priority,
         status,
-        attachmentName: attachmentName.trim() || undefined,
+        attachmentName: attachmentName.trim() ,
       });
     } else {
       addHomework({
         subjectId,
         title: title.trim(),
-        description: description.trim() || undefined,
+        description: description.trim() ,
         deadline: new Date(deadline).toISOString(),
         priority,
         status,
-        attachmentName: attachmentName.trim() || undefined,
+        attachmentName: attachmentName.trim() ,
       });
     }
     onClose();

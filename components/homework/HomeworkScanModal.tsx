@@ -116,7 +116,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
     addHomework({
       subjectId: extractedSubjectId,
       title: extractedTitle.trim(),
-      description: extractedDescription.trim() || undefined,
+      description: extractedDescription.trim() ,
       deadline: new Date(extractedDeadline).toISOString(),
       priority: extractedPriority,
       status: 'Not Started',
