@@ -28,7 +28,7 @@ export const MobileNav: React.FC = () => {
     },
     {
       id: 'carry',
-      label: 'Tomorrow',
+      label: 'Bag Carry',
       icon: <Backpack className="w-5 h-5" />,
       badge: unpackedCarry > 0 ? unpackedCarry : undefined,
     },

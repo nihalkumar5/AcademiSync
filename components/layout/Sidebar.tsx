@@ -46,7 +46,7 @@ export const Sidebar: React.FC = () => {
       icon: <CheckSquare className="w-4 h-4" />,
       badge: pendingHomeworkCount > 0 ? pendingHomeworkCount : undefined,
     },
-    { id: 'carry', label: 'Tomorrow Bag 🎒', icon: <Backpack className="w-4 h-4" /> },
+    { id: 'carry', label: 'Bag Carry', icon: <Backpack className="w-4 h-4" /> },
     { id: 'calendar', label: 'Academic Calendar', icon: <Calendar className="w-4 h-4" /> },
   ];
 
