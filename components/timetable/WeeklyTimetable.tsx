@@ -34,6 +34,14 @@ export const WeeklyTimetable: React.FC = () => {
     return currentMins >= startMins && currentMins <= endMins;
   };
 
+  const checkIsPast = (session: ClassSession) => {
+    if (currentDay !== session.day) return false;
+    const now = new Date();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+    const endMins = timeToMinutes(session.endTime);
+    return currentMins > endMins;
+  };
+
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
   const weekDays = DAYS_OF_WEEK.slice(0, 5); // Monday to Friday
 
@@ -142,7 +150,7 @@ export const WeeklyTimetable: React.FC = () => {
       <div className="flex md:hidden flex-col gap-3.5">
         {(() => {
           const sessions = timetable
-            .filter((s) => s.day === selectedMobileDay)
+            .filter((s) => s.day === selectedMobileDay && !checkIsPast(s))
             .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
           if (sessions.length === 0) {
@@ -175,7 +183,7 @@ export const WeeklyTimetable: React.FC = () => {
         {weekDays.map((day) => {
           const isToday = currentDay === day;
           const daySessions = timetable
-            .filter((s) => s.day === day)
+            .filter((s) => s.day === day && !checkIsPast(s))
             .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
           return (
