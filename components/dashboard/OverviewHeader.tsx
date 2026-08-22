@@ -66,9 +66,12 @@ export const OverviewHeader: React.FC = () => {
     <div className="flex flex-col gap-6 mt-8 mb-4">
       {/* Huge Greeting */}
       <div>
-        <h2 className="text-5xl sm:text-7xl font-medium text-black dark:text-white tracking-tighter leading-[1.1] flex flex-wrap items-center gap-x-4">
-          <span>{greeting},<br />{profile.name.split(' ')[0]}</span>
-          <Hand className="w-10 h-10 sm:w-14 sm:h-14 mt-4 sm:mt-0 opacity-80" strokeWidth={1.5} />
+        <h2 className="text-5xl sm:text-7xl font-medium text-black dark:text-white tracking-tighter leading-[1.1]">
+          {greeting},<br />
+          <span className="inline-flex items-center gap-3">
+            {profile.name.split(' ')[0]}
+            <Hand className="w-10 h-10 sm:w-14 sm:h-14 opacity-80 inline-block mb-1 sm:mb-2" strokeWidth={2} />
+          </span>
         </h2>
         <p className="text-lg text-black/70 dark:text-white/70 mt-6 max-w-sm leading-snug">
           It is {timeFormatted} on {dateFormatted}. You are currently in Sem {profile.semester} at {profile.college || 'Your College'}.
