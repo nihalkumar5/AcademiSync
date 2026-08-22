@@ -132,7 +132,7 @@ export const HomeworkView: React.FC = () => {
                 className={clsx(
                   'px-2.5 py-1 rounded-lg text-xs font-medium shrink-0 transition-colors flex items-center gap-1.5',
                   isSelected
-                    ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold'
+                    ? 'bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 font-semibold shadow-sm'
                     : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                 )}
               >
@@ -141,7 +141,7 @@ export const HomeworkView: React.FC = () => {
                   className={clsx(
                     'text-[10px] font-mono rounded-full px-1.5 py-0.2',
                     isSelected
-                      ? 'bg-zinc-700 text-white dark:bg-zinc-300 dark:text-zinc-900'
+                      ? 'bg-slate-600 text-white dark:bg-slate-300 dark:text-slate-900'
                       : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
                   )}
                 >

@@ -164,7 +164,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
                 Powered by Gemini Vision OCR. Drop an image to auto-extract task details and deadlines.
               </p>
 
-              <div className="mt-6 px-5 py-2 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-sm font-semibold tracking-wide shadow-md group-hover:scale-105 transition-transform duration-300">
+              <div className="mt-6 px-5 py-2 rounded-full bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 text-sm font-semibold tracking-wide shadow-md group-hover:scale-105 transition-transform duration-300">
                 Choose File
               </div>
             </div>

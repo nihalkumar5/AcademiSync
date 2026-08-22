@@ -200,8 +200,8 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                 Powered by Gemini Vision OCR. Drop your official timetable to auto-extract your schedule.
               </p>
 
-              <div className="mt-6 px-5 py-2 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-sm font-semibold tracking-wide shadow-md group-hover:scale-105 transition-transform duration-300">
-                Select Files
+              <div className="mt-6 px-5 py-2 rounded-full bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 text-sm font-semibold tracking-wide shadow-md group-hover:scale-105 transition-transform duration-300">
+                Choose Files
               </div>
             </div>
           </div>
