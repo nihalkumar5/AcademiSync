@@ -68,27 +68,37 @@ export const WeeklyTimetable: React.FC = () => {
   return (
     <div className="flex flex-col gap-8 text-left">
       {/* Top Controls */}
-      {/* Top Controls */}
-      <div className="flex items-center gap-3 w-full sm:justify-end">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleImportTimetable}
-          className="flex-1 sm:flex-none justify-center gap-2 rounded-xl glass-card shadow-sm hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 text-[13px] font-semibold h-10 px-4"
-        >
-          <Sparkles className="w-4 h-4 text-indigo-500" />
-          <span className="text-slate-700 dark:text-zinc-300">AI Import</span>
-        </Button>
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-zinc-50 tracking-tight">
+            Weekly Schedule
+          </h2>
+          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1 font-medium">
+            Manage your lectures, lab slots, and classroom locations.
+          </p>
+        </div>
 
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => handleAddForDay(selectedMobileDay)}
-          className="flex-1 sm:flex-none justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 text-[13px] font-semibold h-10 px-4"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Class</span>
-        </Button>
+        <div className="flex items-center gap-3 w-full sm:w-auto sm:justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleImportTimetable}
+            className="flex-1 sm:flex-none justify-center gap-2 rounded-xl glass-card shadow-sm hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 text-[13px] font-semibold h-10 px-4"
+          >
+            <Sparkles className="w-4 h-4 text-indigo-500" />
+            <span className="text-slate-700 dark:text-zinc-300">AI Import</span>
+          </Button>
+
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => handleAddForDay(selectedMobileDay)}
+            className="flex-1 sm:flex-none justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 text-[13px] font-semibold h-10 px-4"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Class</span>
+          </Button>
+        </div>
       </div>
 
       {/* Mobile Day Tabs (< 768px) */}

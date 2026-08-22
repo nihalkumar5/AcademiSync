@@ -80,12 +80,11 @@ export const Header: React.FC = () => {
   return (
     <>
       <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-8 py-3 bg-white/70 dark:bg-[#0B0F19]/70 backdrop-blur-2xl border-b border-slate-200/60 dark:border-zinc-800/60 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="md:hidden flex items-center">
-            <IntersemesterMonogram size={28} />
-          </div>
-          <h1 className="text-base sm:text-lg font-bold text-[#0F172A] dark:text-zinc-100 tracking-tight font-sans">
-            {viewTitles[activeView] || 'Academic Assistant'}
+        <div className="flex items-center gap-2.5">
+          <IntersemesterMonogram size={28} />
+          <h1 className="text-lg sm:text-xl text-[#0F172A] dark:text-zinc-100 tracking-tight font-sans">
+            <span className="font-extrabold">Inter</span>
+            <span className="font-medium text-slate-600 dark:text-slate-400">semester</span>
           </h1>
         </div>
 
