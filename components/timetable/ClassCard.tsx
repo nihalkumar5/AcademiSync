@@ -34,12 +34,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
     >
       <div className="flex items-start justify-between gap-1.5 mb-2">
         <div className="flex items-center gap-2 flex-wrap">
-          <div className={clsx(
-            "flex items-center gap-1.5 px-2.5 py-1 border text-xs font-bold",
-            isCurrent 
-              ? "bg-white text-black border-black dark:bg-black dark:text-white dark:border-white" 
-              : "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
-          )}>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 border border-current text-xs font-medium opacity-80">
             <Clock className="w-3.5 h-3.5" />
             <span>{session.startTime} – {session.endTime}</span>
           </div>
