@@ -12,7 +12,6 @@ import {
   Backpack,
   MapPin,
   Sparkles,
-  Hand,
 } from 'lucide-react';
 
 export const OverviewHeader: React.FC = () => {
@@ -68,9 +67,9 @@ export const OverviewHeader: React.FC = () => {
       <div>
         <h2 className="text-5xl sm:text-7xl font-medium text-black dark:text-white tracking-tighter leading-[1.1]">
           {greeting},<br />
-          <span className="inline-flex items-center gap-3">
+          <span className="inline-flex items-baseline">
             {profile.name.split(' ')[0]}
-            <Hand className="w-10 h-10 sm:w-14 sm:h-14 opacity-80 inline-block mb-1 sm:mb-2" strokeWidth={2} />
+            <span className="w-4 h-4 sm:w-6 sm:h-6 bg-black dark:bg-white ml-2 rounded-none inline-block" />
           </span>
         </h2>
         <p className="text-lg text-black/70 dark:text-white/70 mt-6 max-w-sm leading-snug">
