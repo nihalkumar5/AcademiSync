@@ -12,7 +12,12 @@ const slides = [
     bg: '/onboarding/w1.jpeg',
     iconType: 'logo',
     titleMain: 'Welcome to',
-    titleAccent: 'intersemester.',
+    titleAccent: (
+      <>
+        <span className="font-black">inter</span>
+        <span className="font-normal opacity-85">semester.</span>
+      </>
+    ),
     description: 'Your all-in-one planner to manage classes, tasks and deadlines effortlessly.',
   },
   {

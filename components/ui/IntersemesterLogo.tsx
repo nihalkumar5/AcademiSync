@@ -106,14 +106,12 @@ export const IntersemesterLogo: React.FC<IntersemesterLogoProps> = ({
         <div className="flex flex-col text-left">
           <div
             className={clsx(
-              'font-extrabold tracking-tight leading-none text-[#0F172A] dark:text-white flex items-center font-sans',
+              'tracking-tight leading-none text-[#1A1918] dark:text-[#F4F1EA] flex items-center font-sans',
               textSizes[size]
             )}
           >
-            <span>Inter</span>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
-              semester
-            </span>
+            <span className="font-extrabold">inter</span>
+            <span className="font-normal opacity-80">semester</span>
           </div>
 
           {showTagline && (

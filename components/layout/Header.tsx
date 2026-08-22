@@ -80,9 +80,10 @@ export const Header: React.FC = () => {
   return (
     <>
       <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-8 py-4 bg-[#FAFAF8]/80 dark:bg-[#111110]/80 backdrop-blur-md border-b border-black/10 dark:border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl sm:text-2xl text-black dark:text-white tracking-tighter font-medium">
-            intersemester
+        <div className="flex items-center gap-3 select-none">
+          <h1 className="text-xl sm:text-2xl text-[#1A1918] dark:text-[#F4F1EA] tracking-tighter font-sans">
+            <span className="font-extrabold">inter</span>
+            <span className="font-normal opacity-80">semester</span>
           </h1>
         </div>
 
