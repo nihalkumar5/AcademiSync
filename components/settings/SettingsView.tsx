@@ -28,9 +28,6 @@ import {
   ChevronRight,
   Copy,
   Check,
-  ExternalLink,
-  Globe,
-  Smartphone,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -58,19 +55,7 @@ export const SettingsView: React.FC = () => {
   const [showResetModal, setShowResetModal] = useState(false);
   const [holdProgress, setHoldProgress] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const holdIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleCopyLink = (path: string, key: string, label: string) => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://academi-sync-chi.vercel.app';
-    const fullUrl = `${origin}${path}`;
-    navigator.clipboard.writeText(fullUrl);
-    setCopiedKey(key);
-    showToast('Link Copied', `${label} URL copied to clipboard`, 'success');
-    setTimeout(() => {
-      setCopiedKey(null);
-    }, 2000);
-  };
 
   // Hold-to-Reset timer logic
   useEffect(() => {
@@ -585,137 +570,68 @@ export const SettingsView: React.FC = () => {
             </div>
           </div>
 
-          {/* Google Play & Legal Compliance Section */}
-          <div className="p-6 rounded-3xl bg-white/95 dark:bg-[#1C1B19]/95 border border-[#E6DDD2] dark:border-[#2C2926] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col gap-4">
-            <div className="flex items-center justify-between pb-2.5 border-b border-[#EFEAE2] dark:border-[#282624]">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#EFEAE2] dark:bg-[#2A2724] flex items-center justify-center text-[#8C6B5D]">
-                  <Globe className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-[#1A1918] dark:text-[#F4F1EA]">
-                    Legal &amp; Play Store Links
-                  </h3>
-                  <p className="text-[11px] text-[#7A6D61] dark:text-[#9A9188] font-medium">
-                    Official URLs required for Google Play Console submission
-                  </p>
-                </div>
+          {/* Legal, Privacy & Support Section */}
+          <div className="p-6 rounded-3xl bg-white/95 dark:bg-[#1C1B19]/95 border border-[#E6DDD2] dark:border-[#2C2926] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col gap-3">
+            <div className="flex items-center gap-2.5 pb-2 border-b border-[#EFEAE2] dark:border-[#282624]">
+              <div className="w-8 h-8 rounded-xl bg-[#EFEAE2] dark:bg-[#2A2724] flex items-center justify-center text-[#8C6B5D]">
+                <Shield className="w-4 h-4" />
               </div>
+              <h3 className="text-base font-bold text-[#1A1918] dark:text-[#F4F1EA]">
+                Legal &amp; Support
+              </h3>
             </div>
 
-            <div className="flex flex-col gap-2 pt-1">
-              {[
-                {
-                  key: 'privacy',
-                  label: 'Privacy Policy',
-                  desc: 'Mandatory Data Safety & User Privacy',
-                  path: '/privacy',
-                  icon: Shield,
-                  badge: 'Play Store',
-                },
-                {
-                  key: 'contact',
-                  label: 'Contact & Support',
-                  desc: 'Developer contact & Grievance email',
-                  path: '/contact',
-                  icon: MessageSquare,
-                  badge: 'Support',
-                },
-                {
-                  key: 'delete-data',
-                  label: 'Data Deletion Request',
-                  desc: 'Account & data erasure instructions',
-                  path: '/delete-data',
-                  icon: AlertTriangle,
-                  badge: 'Data Safety',
-                },
-                {
-                  key: 'terms',
-                  label: 'Terms & Conditions',
-                  desc: 'Academic usage license agreement',
-                  path: '/terms',
-                  icon: FileText,
-                  badge: 'Legal',
-                },
-                {
-                  key: 'about',
-                  label: 'About Intersemester',
-                  desc: 'Student edition release notes & mission',
-                  path: '/about',
-                  icon: Sparkles,
-                  badge: 'v1.2.0',
-                },
-                {
-                  key: 'manifest',
-                  label: 'Web App Manifest',
-                  desc: 'PWA / TWA standalone configuration',
-                  path: '/manifest.json',
-                  icon: Smartphone,
-                  badge: 'PWA / APK',
-                },
-              ].map((item) => {
-                const IconComponent = item.icon;
-                const isCopied = copiedKey === item.key;
-                return (
-                  <div
-                    key={item.key}
-                    className="flex items-center justify-between p-3 rounded-2xl bg-[#FAF8F5] dark:bg-[#201E1C] border border-[#E8E0D5] dark:border-[#2C2926] hover:border-[#8C6B5D]/50 transition-all group gap-2"
-                  >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="w-8 h-8 rounded-xl bg-[#EFEAE2] dark:bg-[#2A2724] flex items-center justify-center text-[#8C6B5D] shrink-0">
-                        <IconComponent className="w-4 h-4" />
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-[#1A1918] dark:text-[#F4F1EA] truncate">
-                            {item.label}
-                          </span>
-                          <span className="text-[9.5px] font-mono font-bold px-1.5 py-0.2 rounded bg-black/5 dark:bg-white/5 text-[#7A6D61] dark:text-[#9E958C]">
-                            {item.badge}
-                          </span>
-                        </div>
-                        <span className="text-[10.5px] font-mono text-[#8C6B5D] dark:text-[#CBB5A1] truncate mt-0.5">
-                          {item.path}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {/* Copy Link Button */}
-                      <motion.button
-                        whileHover={{ scale: 1.08 }}
-                        whileTap={{ scale: 0.92 }}
-                        onClick={() => handleCopyLink(item.path, item.key, item.label)}
-                        className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer ${
-                          isCopied
-                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-xs'
-                            : 'bg-white dark:bg-[#181716] border-[#DFD6CA] dark:border-[#383430] text-[#6E5643] dark:text-[#C4B7AB] hover:border-[#8C6B5D] hover:text-[#8C6B5D]'
-                        }`}
-                        title="Copy full URL"
-                      >
-                        {isCopied ? (
-                          <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5" />
-                        )}
-                        <span className="hidden sm:inline text-[11px]">
-                          {isCopied ? 'Copied' : 'Copy'}
-                        </span>
-                      </motion.button>
-
-                      {/* Open Link */}
-                      <Link
-                        href={item.path}
-                        target="_blank"
-                        className="p-2 rounded-xl bg-white dark:bg-[#181716] border border-[#DFD6CA] dark:border-[#383430] text-[#6E5643] dark:text-[#C4B7AB] hover:border-[#8C6B5D] hover:text-[#8C6B5D] transition-all cursor-pointer flex items-center justify-center"
-                        title="Open page in new tab"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </Link>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="flex flex-col gap-1 pt-1">
+              <Link
+                href="/privacy"
+                className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-[#FAF8F5] dark:hover:bg-[#201E1C] transition-colors group text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Shield className="w-4 h-4 text-[#8C6B5D]" />
+                  <span>Privacy Policy</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+              </Link>
+              <Link
+                href="/terms"
+                className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-[#FAF8F5] dark:hover:bg-[#201E1C] transition-colors group text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <FileText className="w-4 h-4 text-[#8C6B5D]" />
+                  <span>Terms &amp; Conditions</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+              </Link>
+              <Link
+                href="/contact"
+                className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-[#FAF8F5] dark:hover:bg-[#201E1C] transition-colors group text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <MessageSquare className="w-4 h-4 text-[#8C6B5D]" />
+                  <span>Contact Support</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+              </Link>
+              <Link
+                href="/delete-data"
+                className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-[#FAF8F5] dark:hover:bg-[#201E1C] transition-colors group text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <AlertTriangle className="w-4 h-4 text-[#8C6B5D]" />
+                  <span>Data Deletion Request</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+              </Link>
+              <Link
+                href="/about"
+                className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-[#FAF8F5] dark:hover:bg-[#201E1C] transition-colors group text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Info className="w-4 h-4 text-[#8C6B5D]" />
+                  <span>About Intersemester (v1.2.0)</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+              </Link>
             </div>
           </div>
         </div>
