@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#8C6B5D</color>
+    <color name="colorPrimaryDark">#6E5643</color>
+    <color name="colorAccent">#F4EFE6</color>
+    <color name="splash_background">#FAFAF8</color>
+    <color name="brand_bronze">#8C6B5D</color>
+</resources>

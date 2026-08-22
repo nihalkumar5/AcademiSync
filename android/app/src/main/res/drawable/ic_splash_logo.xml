@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    
+    <!-- Squircle Background (Bronze) -->
+    <path
+        android:fillColor="@color/brand_bronze"
+        android:pathData="M50,0 C10,0 0,10 0,50 C0,90 10,100 50,100 C90,100 100,90 100,50 C100,10 90,0 50,0 Z" />
+    
+    <!-- Inner S (White/Cream) -->
+    <path
+        android:fillColor="#F4EFE6"
+        android:pathData="M 60 35 C 60 25 40 25 40 35 C 40 45 60 55 60 65 C 60 75 40 75 40 65 L 45 60 C 45 65 55 65 55 65 C 55 60 35 50 35 40 C 35 30 65 30 65 40 Z" />
+</vector>
