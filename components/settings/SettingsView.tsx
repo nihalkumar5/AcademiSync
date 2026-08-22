@@ -5,9 +5,6 @@ import { useUser } from '@clerk/nextjs';
 import { useApp } from '@/context/AppContext';
 import { Programme, Branch } from '@/lib/types';
 import { storage } from '@/lib/storage';
-import { Button } from '../ui/Button';
-import { Input, Select } from '../ui/Input';
-import { Badge } from '../ui/Badge';
 import {
   User,
   GraduationCap,
@@ -15,12 +12,18 @@ import {
   Download,
   Upload,
   RefreshCw,
-  Sun,
-  Moon,
   Sparkles,
   ShieldCheck,
   RefreshCcw,
+  Check,
+  Building2,
+  Mail,
+  Hash,
+  BookOpen,
+  Calendar,
+  Layers,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const SettingsView: React.FC = () => {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -47,7 +50,7 @@ export const SettingsView: React.FC = () => {
     if (isLoaded && isSignedIn && user) {
       const clerkName = user.fullName || user.firstName || '';
       const clerkEmail = user.primaryEmailAddress?.emailAddress || '';
-      
+
       let updated = false;
       if (profile.name === 'Student' || !profile.name) {
         setName(clerkName);
@@ -57,8 +60,7 @@ export const SettingsView: React.FC = () => {
         setEmail(clerkEmail);
         updated = true;
       }
-      
-      // Auto save to profile if it was empty
+
       if (updated) {
         updateProfile({
           name: clerkName || name,
@@ -74,7 +76,11 @@ export const SettingsView: React.FC = () => {
       const clerkEmail = user.primaryEmailAddress?.emailAddress || '';
       setName(clerkName);
       setEmail(clerkEmail);
-      showToast('Synced', 'Fetched details from your account.', 'success');
+      updateProfile({
+        name: clerkName,
+        email: clerkEmail,
+      });
+      showToast('Account Synced', 'Fetched details from your profile.', 'success');
     } else {
       showToast('Error', 'No account found. Please sign in.', 'error');
     }
@@ -96,7 +102,7 @@ export const SettingsView: React.FC = () => {
       year: Number(year),
       semester: Number(semester),
     });
-    showToast('Profile Updated', 'Academic records updated successfully', 'success');
+    showToast('Profile Saved', 'Academic records updated successfully', 'success');
   };
 
   const handleSaveSettings = (e: React.FormEvent) => {
@@ -106,6 +112,7 @@ export const SettingsView: React.FC = () => {
       eveningCarryReminderTime: eveningTime,
       homeworkWarningDays: Number(hwDays),
     });
+    showToast('Preferences Saved', 'Notification schedules updated', 'success');
   };
 
   const handleExportBackup = () => {
@@ -142,224 +149,373 @@ export const SettingsView: React.FC = () => {
     }
   };
 
+  const initials = (name || 'Student')
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
+
   return (
-    <div className="flex flex-col gap-6 text-left max-w-4xl">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="flex flex-col gap-6 text-left max-w-4xl mx-auto w-full pb-12">
+      {/* Top Header with Onboarding trigger */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 sm:pt-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1A1918] dark:text-[#F4F1EA]">
             Settings & Profile
-          </h2>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-            Configure your college batch, notification triggers, and data backup.
+          </h1>
+          <p className="text-xs sm:text-sm text-[#7A6D61] dark:text-[#9E958C] mt-1 font-medium">
+            Manage your student identity, reminders, and data preferences.
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.96 }}
           onClick={() => setShowOnboarding(true)}
-          className="gap-1.5"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#EFEAE2]/80 dark:bg-[#201E1C] border border-[#DFD6CA] dark:border-[#322F2C] text-xs font-semibold text-[#5C4D40] dark:text-[#D1C7BD] hover:bg-[#EAE3DA] transition-all shadow-2xs cursor-pointer w-fit"
         >
-          <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+          <Sparkles className="w-4 h-4 text-[#8C6B5D]" />
           <span>Rerun Onboarding Wizard</span>
-        </Button>
+        </motion.button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Student Profile Card */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-sm flex flex-col gap-4">
-          <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
-            <div className="flex items-center gap-2">
-              <GraduationCap className="w-4 h-4 text-blue-500" />
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                Student Academic Profile
-              </h3>
+      {/* Digital Student Pass / ID Card */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#8C6B5D] via-[#7B5B4E] to-[#63483D] text-white p-6 sm:p-7 shadow-[0_15px_35px_rgba(140,107,93,0.25)] border border-[#A68777]/50">
+        {/* Background Monogram Glow Watermark */}
+        <div className="absolute -right-8 -bottom-10 font-black text-[140px] leading-none opacity-10 select-none pointer-events-none tracking-tighter">
+          is
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative z-10">
+          <div className="flex items-center gap-4">
+            {/* Avatar Initials Badge */}
+            <div className="w-16 h-16 rounded-2xl bg-white/15 border-2 border-white/30 backdrop-blur-md flex items-center justify-center font-black text-2xl tracking-tighter text-white shadow-inner shrink-0">
+              {initials}
             </div>
-            {isSignedIn && (
-              <button
-                type="button"
-                onClick={handleSyncClerk}
-                className="flex items-center gap-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-md"
-              >
-                <RefreshCcw className="w-3 h-3" />
-                <span>Sync Account</span>
-              </button>
-            )}
+
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white truncate">
+                  {name || 'Student Name'}
+                </h2>
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-white/20 text-white border border-white/25">
+                  Verified
+                </span>
+              </div>
+
+              <p className="text-xs sm:text-sm text-white/80 font-medium mt-0.5 truncate">
+                {college || 'University Name'}
+              </p>
+
+              <div className="flex items-center gap-2 text-xs text-white/70 font-mono mt-2">
+                <span>{programme} {branch}</span>
+                <span>•</span>
+                <span>Sem {semester} (Year {year})</span>
+                {rollNumber && (
+                  <>
+                    <span>•</span>
+                    <span>Roll #{rollNumber}</span>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
 
-          <form onSubmit={handleSaveProfile} className="flex flex-col gap-3">
-            <Input
-              label="College / University Name"
-              value={college}
-              onChange={(e) => setCollege(e.target.value)}
-              placeholder="e.g. NIT Trichy, VIT Vellore..."
-              required
-            />
-            <Input
-              label="Full Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
+          {isSignedIn && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleSyncClerk}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/30 text-xs font-semibold text-white backdrop-blur-md transition-all shadow-xs cursor-pointer w-fit"
+            >
+              <RefreshCcw className="w-3.5 h-3.5" />
+              <span>Sync Account</span>
+            </motion.button>
+          )}
+        </div>
+      </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                label="Roll Number"
-                value={rollNumber}
-                onChange={(e) => setRollNumber(e.target.value)}
-                required
-              />
-              <Input
-                label="Institute Email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Academic Profile Form */}
+        <div className="lg:col-span-7 p-6 rounded-3xl bg-white/95 dark:bg-[#1C1B19]/95 border border-[#E6DDD2] dark:border-[#2C2926] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col gap-5">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-[#EFEAE2] dark:border-[#282624]">
+            <div className="w-8 h-8 rounded-xl bg-[#EFEAE2] dark:bg-[#2A2724] flex items-center justify-center text-[#8C6B5D]">
+              <GraduationCap className="w-4 h-4" />
+            </div>
+            <h3 className="text-base font-bold text-[#1A1918] dark:text-[#F4F1EA]">
+              Academic Information
+            </h3>
+          </div>
+
+          <form onSubmit={handleSaveProfile} className="flex flex-col gap-4">
+            {/* College Name */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]">
+                College / University
+              </label>
+              <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-[#F4EFE6]/60 dark:bg-[#201E1C] border border-[#DFD6CA] dark:border-[#2C2926]">
+                <Building2 className="w-4 h-4 text-[#8C7D70] shrink-0" />
+                <input
+                  type="text"
+                  value={college}
+                  onChange={(e) => setCollege(e.target.value)}
+                  placeholder="e.g. NIT Trichy, IIT Bombay..."
+                  required
+                  className="w-full bg-transparent text-sm font-medium text-[#1A1918] dark:text-[#F4F1EA] focus:outline-none placeholder:text-[#9E9084]"
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <Select
-                label="Programme"
-                value={programme}
-                onChange={(e) => setProgramme(e.target.value as Programme)}
-              >
-                <option value="B.Tech">B.Tech</option>
-                <option value="M.Tech">M.Tech</option>
-                <option value="CMIT">CMIT</option>
-                <option value="Ph.D">Ph.D</option>
-              </Select>
-
-              <Select
-                label="Branch / Specialization"
-                value={branch}
-                onChange={(e) => setBranch(e.target.value as Branch)}
-              >
-                <option value="CSE">CSE (Computer Science)</option>
-                <option value="DSAI">DSAI (Data Science & AI)</option>
-                <option value="ECE">ECE (Electronics & Comm)</option>
-                <option value="IT">IT (Information Tech)</option>
-              </Select>
+            {/* Full Name */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]">
+                Full Name
+              </label>
+              <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-[#F4EFE6]/60 dark:bg-[#201E1C] border border-[#DFD6CA] dark:border-[#2C2926]">
+                <User className="w-4 h-4 text-[#8C7D70] shrink-0" />
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className="w-full bg-transparent text-sm font-medium text-[#1A1918] dark:text-[#F4F1EA] focus:outline-none"
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                label="Year"
-                type="number"
-                min={1}
-                max={4}
-                value={year}
-                onChange={(e) => setYear(Number(e.target.value))}
-                required
-              />
-              <Input
-                label="Semester"
-                type="number"
-                min={1}
-                max={8}
-                value={semester}
-                onChange={(e) => setSemester(Number(e.target.value))}
-                required
-              />
+            {/* Roll Number & Email */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]">
+                  Roll Number
+                </label>
+                <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-[#F4EFE6]/60 dark:bg-[#201E1C] border border-[#DFD6CA] dark:border-[#2C2926]">
+                  <Hash className="w-4 h-4 text-[#8C7D70] shrink-0" />
+                  <input
+                    type="text"
+                    value={rollNumber}
+                    onChange={(e) => setRollNumber(e.target.value)}
+                    required
+                    className="w-full bg-transparent text-sm font-medium text-[#1A1918] dark:text-[#F4F1EA] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]">
+                  Institute Email
+                </label>
+                <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-[#F4EFE6]/60 dark:bg-[#201E1C] border border-[#DFD6CA] dark:border-[#2C2926]">
+                  <Mail className="w-4 h-4 text-[#8C7D70] shrink-0" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full bg-transparent text-sm font-medium text-[#1A1918] dark:text-[#F4F1EA] focus:outline-none"
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="pt-2">
-              <Button type="submit" variant="primary" size="sm">
-                Save Academic Profile
-              </Button>
+            {/* Programme & Branch */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]">
+                  Degree Programme
+                </label>
+                <select
+                  value={programme}
+                  onChange={(e) => setProgramme(e.target.value as Programme)}
+                  className="w-full px-3.5 py-2.5 rounded-2xl bg-[#F4EFE6]/60 dark:bg-[#201E1C] border border-[#DFD6CA] dark:border-[#2C2926] text-sm font-medium text-[#1A1918] dark:text-[#F4F1EA] focus:outline-none cursor-pointer"
+                >
+                  <option value="B.Tech">B.Tech</option>
+                  <option value="M.Tech">M.Tech</option>
+                  <option value="CMIT">CMIT</option>
+                  <option value="Ph.D">Ph.D</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]">
+                  Branch / Department
+                </label>
+                <select
+                  value={branch}
+                  onChange={(e) => setBranch(e.target.value as Branch)}
+                  className="w-full px-3.5 py-2.5 rounded-2xl bg-[#F4EFE6]/60 dark:bg-[#201E1C] border border-[#DFD6CA] dark:border-[#2C2926] text-sm font-medium text-[#1A1918] dark:text-[#F4F1EA] focus:outline-none cursor-pointer"
+                >
+                  <option value="CSE">CSE (Computer Science)</option>
+                  <option value="DSAI">DSAI (Data Science & AI)</option>
+                  <option value="ECE">ECE (Electronics & Comm)</option>
+                  <option value="IT">IT (Information Tech)</option>
+                </select>
+              </div>
             </div>
+
+            {/* Year & Semester */}
+            <div className="grid grid-cols-2 gap-3.5">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]">
+                  Academic Year
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={4}
+                  value={year}
+                  onChange={(e) => setYear(Number(e.target.value))}
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-2xl bg-[#F4EFE6]/60 dark:bg-[#201E1C] border border-[#DFD6CA] dark:border-[#2C2926] text-sm font-medium text-[#1A1918] dark:text-[#F4F1EA] focus:outline-none"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]">
+                  Semester
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={8}
+                  value={semester}
+                  onChange={(e) => setSemester(Number(e.target.value))}
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-2xl bg-[#F4EFE6]/60 dark:bg-[#201E1C] border border-[#DFD6CA] dark:border-[#2C2926] text-sm font-medium text-[#1A1918] dark:text-[#F4F1EA] focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              className="mt-2 w-full py-3 rounded-2xl bg-[#8C6B5D] hover:bg-[#7B5B4E] text-white text-sm font-semibold shadow-sm transition-all cursor-pointer"
+            >
+              Save Academic Profile
+            </motion.button>
           </form>
         </div>
 
-        {/* Preferences & Notifications Card */}
-        <div className="flex flex-col gap-6">
-          <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-sm flex flex-col gap-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-zinc-100 dark:border-zinc-800">
-              <Bell className="w-4 h-4 text-emerald-500" />
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                Notification Schedule
+        {/* Right Column: Notification Schedule & Data Backups */}
+        <div className="lg:col-span-5 flex flex-col gap-6">
+          {/* Notification Schedule */}
+          <div className="p-6 rounded-3xl bg-white/95 dark:bg-[#1C1B19]/95 border border-[#E6DDD2] dark:border-[#2C2926] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col gap-5">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-[#EFEAE2] dark:border-[#282624]">
+              <div className="w-8 h-8 rounded-xl bg-[#EFEAE2] dark:bg-[#2A2724] flex items-center justify-center text-[#8C6B5D]">
+                <Bell className="w-4 h-4" />
+              </div>
+              <h3 className="text-base font-bold text-[#1A1918] dark:text-[#F4F1EA]">
+                Notification Engine
               </h3>
             </div>
 
-            <form onSubmit={handleSaveSettings} className="flex flex-col gap-3">
-              <div className="grid grid-cols-2 gap-3">
-                <Input
-                  label="Class Alert (Minutes Before)"
+            <form onSubmit={handleSaveSettings} className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]">
+                    Class Reminder
+                  </label>
+                  <input
+                    type="number"
+                    min={5}
+                    max={60}
+                    value={classReminderMinutes}
+                    onChange={(e) => setClassReminderMinutes(Number(e.target.value))}
+                    className="w-full px-3.5 py-2.5 rounded-2xl bg-[#F4EFE6]/60 dark:bg-[#201E1C] border border-[#DFD6CA] dark:border-[#2C2926] text-sm font-medium text-[#1A1918] dark:text-[#F4F1EA] focus:outline-none"
+                  />
+                  <span className="text-[10px] text-[#8C7D70] font-medium">Minutes before class</span>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]">
+                    Evening Bag Check
+                  </label>
+                  <input
+                    type="time"
+                    value={eveningTime}
+                    onChange={(e) => setEveningTime(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-2xl bg-[#F4EFE6]/60 dark:bg-[#201E1C] border border-[#DFD6CA] dark:border-[#2C2926] text-sm font-medium text-[#1A1918] dark:text-[#F4F1EA] focus:outline-none"
+                  />
+                  <span className="text-[10px] text-[#8C7D70] font-medium">Daily evening check</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB]">
+                  Homework Early Warning
+                </label>
+                <input
                   type="number"
-                  min={5}
-                  max={60}
-                  value={classReminderMinutes}
-                  onChange={(e) => setClassReminderMinutes(Number(e.target.value))}
-                  helperText="Default: 15 mins"
+                  min={1}
+                  max={7}
+                  value={hwDays}
+                  onChange={(e) => setHwDays(Number(e.target.value))}
+                  className="w-full px-3.5 py-2.5 rounded-2xl bg-[#F4EFE6]/60 dark:bg-[#201E1C] border border-[#DFD6CA] dark:border-[#2C2926] text-sm font-medium text-[#1A1918] dark:text-[#F4F1EA] focus:outline-none"
                 />
-
-                <Input
-                  label="Evening Bag Check (Time)"
-                  type="time"
-                  value={eveningTime}
-                  onChange={(e) => setEveningTime(e.target.value)}
-                  helperText="Default: 20:00 (8:00 PM)"
-                />
+                <span className="text-[10px] text-[#8C7D70] font-medium">Days before deadline</span>
               </div>
 
-              <Input
-                label="Homework Warning Threshold (Days Before)"
-                type="number"
-                min={1}
-                max={7}
-                value={hwDays}
-                onChange={(e) => setHwDays(Number(e.target.value))}
-                helperText="Send 1st alert X days before submission"
-              />
-
-              <div className="pt-2">
-                <Button type="submit" variant="secondary" size="sm">
-                  Update Notification Timing
-                </Button>
-              </div>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                className="mt-1 w-full py-2.5 rounded-2xl bg-[#EFEAE2] hover:bg-[#E4DCCF] dark:bg-[#282522] dark:hover:bg-[#34302C] text-[#5C4838] dark:text-[#D1C7BD] text-xs font-semibold transition-all cursor-pointer border border-[#DFD6CA] dark:border-[#3A3632]"
+              >
+                Update Notification Schedule
+              </motion.button>
             </form>
           </div>
 
-          {/* Data Backup & Restore */}
-          <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-sm flex flex-col gap-3">
-            <div className="flex items-center gap-2 pb-2 border-b border-zinc-100 dark:border-zinc-800">
-              <ShieldCheck className="w-4 h-4 text-purple-500" />
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                Backup & Privacy
+          {/* Backup & Privacy */}
+          <div className="p-6 rounded-3xl bg-white/95 dark:bg-[#1C1B19]/95 border border-[#E6DDD2] dark:border-[#2C2926] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col gap-4">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-[#EFEAE2] dark:border-[#282624]">
+              <div className="w-8 h-8 rounded-xl bg-[#EFEAE2] dark:bg-[#2A2724] flex items-center justify-center text-[#8C6B5D]">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <h3 className="text-base font-bold text-[#1A1918] dark:text-[#F4F1EA]">
+                Data & Storage
               </h3>
             </div>
 
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Your academic data is kept safely in local client storage with zero telemetry.
+            <p className="text-xs text-[#7A6D61] dark:text-[#9A9188] leading-relaxed font-medium">
+              Your academic timetable and tasks are encrypted and synced to your private account.
             </p>
 
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <Button variant="outline" size="sm" onClick={handleExportBackup} className="gap-1.5">
-                <Download className="w-3.5 h-3.5 text-zinc-400" />
-                <span>Export Backup (JSON)</span>
-              </Button>
+            <div className="flex flex-col gap-2.5 pt-1">
+              <div className="flex items-center gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleExportBackup}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#F4EFE6]/70 dark:bg-[#201E1C] border border-[#DFD6CA] dark:border-[#2C2926] text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB] hover:bg-[#EAE2D6] transition-all cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Export JSON</span>
+                </motion.button>
 
-              <label className="inline-flex items-center justify-center font-medium transition-all text-xs px-3 py-2 rounded-lg gap-1.5 h-9 bg-transparent text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 cursor-pointer">
-                <Upload className="w-3.5 h-3.5 text-zinc-400" />
-                <span>Import Backup</span>
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={handleImportBackup}
-                  className="hidden"
-                />
-              </label>
+                <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#F4EFE6]/70 dark:bg-[#201E1C] border border-[#DFD6CA] dark:border-[#2C2926] text-xs font-semibold text-[#5C4F44] dark:text-[#C4B7AB] hover:bg-[#EAE2D6] transition-all cursor-pointer">
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Import JSON</span>
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleImportBackup}
+                    className="hidden"
+                  />
+                </label>
+              </div>
 
-              <Button
-                variant="danger"
-                size="sm"
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleResetData}
-                className="gap-1.5 ml-auto"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border border-rose-200/80 dark:border-rose-900/50 text-xs font-semibold transition-all cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                <span>Reset Data</span>
-              </Button>
+                <span>Reset to Sample Curriculum</span>
+              </motion.button>
             </div>
           </div>
         </div>
