@@ -2,18 +2,16 @@
 
 import React from 'react';
 import { Homework, Subject } from '@/lib/types';
-import { Badge } from '../ui/Badge';
 import {
   Calendar,
-  CheckCircle2,
-  Circle,
-  Clock,
+  Check,
   Paperclip,
   Trash2,
   Edit2,
-  AlertTriangle,
+  Clock,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { motion } from 'framer-motion';
 
 export interface HomeworkCardProps {
   homework: Homework;
@@ -41,90 +39,116 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
   let deadlineLabel = `${deadlineDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · ${deadlineDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   let isUrgent = diffDays <= 1 && !isDone;
 
-  const priorityVariant: Record<string, 'rose' | 'amber' | 'neutral'> = {
-    High: 'rose',
-    Medium: 'amber',
-    Low: 'neutral',
-  };
-
-  const statusColors = {
-    'Not Started': 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400',
-    'In Progress': 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60',
-    Completed: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60',
+  const priorityStyles: Record<string, string> = {
+    High: 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/80 dark:border-rose-900/50',
+    Medium: 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200/80 dark:border-amber-900/50',
+    Low: 'bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-400 border border-stone-200 dark:border-stone-800',
   };
 
   return (
-    <div
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      transition={{ duration: 0.2 }}
       className={clsx(
-        'group flex flex-col p-4 rounded-xl border transition-all text-left relative',
+        'group flex flex-col p-4 rounded-2xl border transition-all text-left relative',
         isDone
-          ? 'bg-zinc-50/60 dark:bg-zinc-900/40 border-zinc-200/60 dark:border-zinc-800/40 opacity-75'
-          : 'bg-white dark:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-sm'
+          ? 'bg-[#F2ECE3]/40 dark:bg-[#1A1918]/40 border-[#E5DDD2]/50 dark:border-[#282624]/50 opacity-70'
+          : 'bg-white/95 dark:bg-[#1C1B19]/95 border-[#E6DDD2] dark:border-[#2C2926] shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-md'
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
+      {/* Top Header: Subject Badge, Priority & Actions */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {subject && (
             <span
-              className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-md"
+              className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-lg shadow-2xs"
               style={{
                 backgroundColor: `${subject.color}15`,
                 color: subject.color,
-                border: `1px solid ${subject.color}30`,
+                border: `1px solid ${subject.color}35`,
               }}
             >
               {subject.shortName || subject.code}
             </span>
           )}
-          <Badge variant={priorityVariant[homework.priority] || 'neutral'} size="sm">
-            {homework.priority} Priority
-          </Badge>
+
+          <span
+            className={clsx(
+              'text-[10px] font-semibold font-mono px-2 py-0.5 rounded-md',
+              priorityStyles[homework.priority] || priorityStyles.Low
+            )}
+          >
+            {homework.priority}
+          </span>
         </div>
 
-        <div className="flex items-center gap-1">
-          <button
+        {/* Edit & Delete Action Buttons */}
+        <div className="flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => onEdit(homework)}
-            className="p-1.5 rounded-md text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+            className="p-1.5 rounded-lg text-[#8C7D70] hover:text-[#1A1918] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
             title="Edit Task"
           >
             <Edit2 className="w-3.5 h-3.5" />
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => onDelete(homework.id)}
-            className="p-1.5 rounded-md text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+            className="p-1.5 rounded-lg text-[#8C7D70] hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
             title="Delete Task"
           >
             <Trash2 className="w-3.5 h-3.5" />
-          </button>
+          </motion.button>
         </div>
       </div>
 
-      {/* Task Title & Checkbox */}
-      <div className="flex items-start gap-3 mt-2.5">
-        <button
+      {/* Task Content: Interactive Checkbox & Title */}
+      <div className="flex items-start gap-3 mt-3">
+        {/* Tactile Circular Checkbox */}
+        <motion.button
           type="button"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.85 }}
           onClick={() => onToggleStatus(homework.id)}
-          className="mt-0.5 text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors shrink-0"
-        >
-          {isDone ? (
-            <CheckCircle2 className="w-5 h-5 text-emerald-500 fill-emerald-50 dark:fill-emerald-950" />
-          ) : (
-            <Circle className="w-5 h-5" />
+          className={clsx(
+            'w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all mt-0.5 shrink-0 cursor-pointer shadow-2xs',
+            isDone
+              ? 'bg-[#8C6B5D] border-[#8C6B5D] text-white shadow-xs'
+              : 'border-[#CBBDB0] dark:border-[#524B44] hover:border-[#8C6B5D] bg-transparent'
           )}
-        </button>
+          aria-label={isDone ? 'Mark task as incomplete' : 'Mark task as completed'}
+        >
+          {isDone && (
+            <motion.div
+              initial={{ scale: 0, rotate: -30 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+            >
+              <Check className="w-3.5 h-3.5 stroke-[3]" />
+            </motion.div>
+          )}
+        </motion.button>
 
         <div className="flex flex-col min-w-0 flex-1">
           <h4
             className={clsx(
-              'text-sm font-semibold tracking-tight leading-snug',
-              isDone ? 'line-through text-zinc-400 dark:text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'
+              'text-[15px] font-semibold tracking-tight leading-snug transition-colors',
+              isDone
+                ? 'line-through text-[#9E9084] dark:text-[#7A736C]'
+                : 'text-[#1A1918] dark:text-[#F4F1EA]'
             )}
           >
             {homework.title}
           </h4>
 
           {homework.description && (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+            <p className="text-xs text-[#7A6D61] dark:text-[#9A9188] mt-1 line-clamp-2 leading-relaxed font-normal">
               {homework.description}
             </p>
           )}
@@ -132,12 +156,12 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
       </div>
 
       {/* Footer Info: Deadline, Status, Attachment */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mt-3.5 pt-2.5 border-t border-zinc-100 dark:border-zinc-800/80 text-[11px]">
-        <div className="flex items-center gap-3 text-zinc-500 dark:text-zinc-400">
+      <div className="flex flex-wrap items-center justify-between gap-2 mt-3.5 pt-2.5 border-t border-[#EFEAE2] dark:border-[#282624] text-[11px]">
+        <div className="flex items-center gap-3 text-[#7A6D61] dark:text-[#9A9188]">
           <span
             className={clsx(
-              'flex items-center gap-1 font-mono font-medium',
-              isUrgent ? 'text-rose-500 font-bold' : ''
+              'flex items-center gap-1.5 font-mono font-medium',
+              isUrgent ? 'text-rose-600 dark:text-rose-400 font-bold' : ''
             )}
           >
             <Calendar className="w-3.5 h-3.5" />
@@ -145,17 +169,27 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
           </span>
 
           {homework.attachmentName && (
-            <span className="flex items-center gap-1 text-zinc-400 truncate max-w-[120px]">
+            <span className="flex items-center gap-1 text-[#8C7D70] truncate max-w-[120px]">
               <Paperclip className="w-3 h-3" />
               <span className="truncate">{homework.attachmentName}</span>
             </span>
           )}
         </div>
 
-        <span className={clsx('text-[10px] font-mono px-2 py-0.5 rounded-full font-medium', statusColors[homework.status])}>
+        {/* Status Indicator */}
+        <span
+          className={clsx(
+            'text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full',
+            isDone
+              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/40'
+              : homework.status === 'In Progress'
+              ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-800/40'
+              : 'bg-[#EFEAE2] dark:bg-[#252321] text-[#7A6D61] dark:text-[#A89E94] border border-[#E0D7CB] dark:border-[#322F2C]'
+          )}
+        >
           {homework.status}
         </span>
       </div>
-    </div>
+    </motion.div>
   );
 };
