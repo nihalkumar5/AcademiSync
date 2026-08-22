@@ -83,33 +83,33 @@ export const OnboardingModal: React.FC = () => {
     if (type === 'logo') {
       return (
         <motion.div
-          initial={{ scale: 0.4, rotate: -12, opacity: 0 }}
+          initial={{ scale: 0.5, rotate: -10, opacity: 0 }}
           animate={{
             scale: 1,
             rotate: 0,
             opacity: 1,
           }}
-          transition={{ type: 'spring', stiffness: 320, damping: 18 }}
-          className="w-16 h-16 sm:w-20 sm:h-20 rounded-[1.6rem] bg-gradient-to-br from-[#A27E5C] via-[#8E6C4C] to-[#75553A] text-[#FDF8F4] flex items-center justify-center font-black text-3xl sm:text-4xl tracking-tighter shadow-lg shadow-[#75553A]/30 border-2 border-[#C9B099]/80 relative overflow-hidden"
+          transition={{ type: 'spring', stiffness: 340, damping: 20 }}
+          className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-[#A27E5C] via-[#8E6C4C] to-[#75553A] text-[#FDF8F4] flex items-center justify-center font-black text-2xl sm:text-3xl tracking-tighter shadow-md shadow-[#75553A]/25 border-2 border-[#C9B099]/80 relative overflow-hidden"
         >
           <motion.span
-            animate={{ scale: [1, 1.05, 1] }}
+            animate={{ scale: [1, 1.06, 1] }}
             transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
           >
             is
           </motion.span>
-          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/15 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent pointer-events-none" />
         </motion.div>
       );
     }
 
-    const iconClass = 'w-9 h-9 sm:w-10 sm:h-10 text-[#6E4F36]';
+    const iconClass = 'w-7 h-7 text-[#6E4F36]';
     return (
       <motion.div
-        initial={{ scale: 0.4, rotate: 10, opacity: 0 }}
+        initial={{ scale: 0.5, rotate: 8, opacity: 0 }}
         animate={{ scale: 1, rotate: 0, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 320, damping: 18 }}
-        className="w-16 h-16 sm:w-20 sm:h-20 rounded-[1.6rem] border-2 border-[#D5C1AE] bg-[#EADBCA]/80 backdrop-blur-md flex items-center justify-center shadow-md shadow-[#8C6B5D]/10"
+        transition={{ type: 'spring', stiffness: 340, damping: 20 }}
+        className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl border-2 border-[#D5C1AE] bg-[#EADBCA]/85 backdrop-blur-md flex items-center justify-center shadow-sm shadow-[#8C6B5D]/10"
       >
         {type === 'calendar' && (
           <motion.div
@@ -216,37 +216,37 @@ export const OnboardingModal: React.FC = () => {
         </AnimatePresence>
 
         {/* Top Floating Header with Skip */}
-        <div className="absolute top-0 inset-x-0 pt-6 px-6 sm:px-8 flex justify-end items-center z-20">
+        <div className="absolute top-0 inset-x-0 pt-4 sm:pt-6 px-6 sm:px-8 flex justify-end items-center z-20">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleFinish}
-            className="text-[#664F3C] hover:text-[#2C2016] font-semibold text-sm tracking-wide px-3.5 py-1.5 rounded-full hover:bg-black/5 active:bg-black/10 transition-all cursor-pointer touch-manipulation"
+            className="text-[#664F3C] hover:text-[#2C2016] font-semibold text-sm tracking-wide px-3 py-1 rounded-full hover:bg-black/5 active:bg-black/10 transition-all cursor-pointer touch-manipulation"
           >
             Skip
           </motion.button>
         </div>
 
-        {/* Dynamic Animated Content Container */}
-        <div className="absolute top-0 inset-x-0 pt-16 sm:pt-20 px-8 z-20 flex flex-col pointer-events-none">
+        {/* Dynamic Animated Content Container (Elevated higher to prevent overlapping character hair) */}
+        <div className="absolute top-0 inset-x-0 pt-10 sm:pt-14 px-7 sm:px-8 z-20 flex flex-col pointer-events-none">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={`text-${currentIndex}`}
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="flex flex-col gap-4 text-left"
+              exit={{ opacity: 0, y: -14 }}
+              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+              className="flex flex-col gap-2.5 sm:gap-3 text-left"
             >
-              {/* Extra large animated icon badge */}
-              <div className="pt-2">{renderIcon(currentSlide.iconType)}</div>
+              {/* Animated icon badge */}
+              <div>{renderIcon(currentSlide.iconType)}</div>
 
               {/* Title with styled accent word */}
               <motion.h1
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.38, delay: 0.08, ease: 'easeOut' }}
-                className="text-[32px] sm:text-[36px] leading-[1.12] font-black tracking-tight text-[#2B1F16]"
+                transition={{ duration: 0.35, delay: 0.06, ease: 'easeOut' }}
+                className="text-[26px] sm:text-[30px] leading-[1.12] font-black tracking-tight text-[#2B1F16]"
               >
                 <span>{currentSlide.titleMain}</span>
                 <br />
@@ -257,10 +257,10 @@ export const OnboardingModal: React.FC = () => {
 
               {/* Description Paragraph */}
               <motion.p
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.16, ease: 'easeOut' }}
-                className="text-[#6E5643] text-[15px] sm:text-[16px] leading-relaxed font-medium max-w-[290px]"
+                transition={{ duration: 0.38, delay: 0.12, ease: 'easeOut' }}
+                className="text-[#6E5643] text-[13.5px] sm:text-[14.5px] leading-snug font-medium max-w-[260px] sm:max-w-[280px]"
               >
                 {currentSlide.description}
               </motion.p>
@@ -269,7 +269,7 @@ export const OnboardingModal: React.FC = () => {
         </div>
 
         {/* Bottom Interactive Navigation Bar */}
-        <div className="absolute bottom-0 inset-x-0 p-8 sm:p-9 flex items-center justify-between z-20">
+        <div className="absolute bottom-0 inset-x-0 p-7 sm:p-8 flex items-center justify-between z-20">
           {/* Animated and Generously Clickable Indicator Dots */}
           <div className="flex items-center gap-1.5 pl-1">
             {slides.map((s, i) => {
