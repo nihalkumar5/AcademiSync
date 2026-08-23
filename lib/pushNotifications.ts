@@ -10,6 +10,15 @@ export const registerPushNotifications = async (userId: string) => {
     return;
   }
 
+  // CRITICAL SAFETY CHECK:
+  // On Android, if google-services.json is missing from the android/app directory,
+  // calling PushNotifications.register() will throw a native FirebaseException and instantly crash the app.
+  // We disable registration by default to prevent development crashes.
+  if (process.env.NEXT_PUBLIC_ENABLE_PUSH !== 'true') {
+    console.log('Push notifications registration skipped (NEXT_PUBLIC_ENABLE_PUSH is not true).');
+    return;
+  }
+
   try {
     // Request permission to use push notifications
     let permStatus = await PushNotifications.checkPermissions();
