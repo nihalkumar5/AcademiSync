@@ -98,13 +98,13 @@ export const OnboardingModal: React.FC = () => {
           style={{ width: '76px', height: '76px', minWidth: '76px', minHeight: '76px' }}
           className="aspect-square shrink-0 rounded-[1.6rem] bg-gradient-to-br from-[#A27E5C] via-[#8E6C4C] to-[#75553A] text-[#FDF8F4] flex items-center justify-center font-black text-3xl sm:text-4xl tracking-tighter shadow-lg shadow-[#75553A]/30 border-2 border-[#C9B099]/80 relative overflow-hidden"
         >
-          <motion.span
-            animate={{ scale: [1, 1.06, 1] }}
-            transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
-          >
-            is
-          </motion.span>
-          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent pointer-events-none" />
+          <Image
+            src="/logo1.png"
+            alt="Intersemester logo"
+            width={76}
+            height={76}
+            className="w-full h-full object-cover"
+          />
         </motion.div>
       );
     }
