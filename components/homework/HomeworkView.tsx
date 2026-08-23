@@ -90,10 +90,9 @@ export const HomeworkView: React.FC = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowScanModal(true)}
-            className="flex items-center gap-2 px-5 py-3 rounded-none border border-black dark:border-white text-black dark:text-white bg-transparent hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-sm font-medium cursor-pointer"
+            className="flex items-center px-5 py-3 rounded-none border border-black dark:border-white text-black dark:text-white bg-transparent hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-sm font-medium cursor-pointer"
           >
-            <Sparkles className="w-4 h-4 text-current" />
-            <span>AI Scanner</span>
+            AI Scanner
           </motion.button>
 
           <motion.button
@@ -103,10 +102,9 @@ export const HomeworkView: React.FC = () => {
               setEditHomework(null);
               setShowAddModal(true);
             }}
-            className="flex items-center gap-2 px-5 py-3 rounded-none bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors text-sm font-medium cursor-pointer"
+            className="flex items-center px-5 py-3 rounded-none bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors text-sm font-medium cursor-pointer"
           >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>New Task</span>
+            New Task
           </motion.button>
         </div>
       </div>
