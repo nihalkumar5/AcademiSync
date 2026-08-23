@@ -38,6 +38,7 @@ export const SettingsView: React.FC = () => {
     showToast,
     setShowOnboarding,
     triggerSimulatedAlert,
+    resetAllData,
   } = useApp();
 
   const [name, setName] = useState(profile.name);
@@ -79,9 +80,9 @@ export const SettingsView: React.FC = () => {
     };
   }, [isHolding]);
 
-  const executeReset = () => {
+  const executeReset = async () => {
     setIsHolding(false);
-    storage.resetAll();
+    await resetAllData();
     showToast('Reset Complete', 'Workspace restored to default curriculum.', 'info');
     setTimeout(() => {
       window.location.reload();

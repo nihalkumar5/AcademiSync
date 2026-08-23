@@ -19,7 +19,7 @@ import { calculateTomorrowCarryItems } from '@/lib/timetableUtils';
 import { checkAndGenerateSmartNotifications } from '@/lib/notificationEngine';
 import confetti from 'canvas-confetti';
 import { useUser } from '@clerk/nextjs';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { registerPushNotifications } from '@/lib/pushNotifications';
 import { triggerLocalNotification, scheduleTimetableLocalNotifications } from '@/lib/localNotifications';
@@ -81,6 +81,7 @@ interface AppContextType {
   triggerConfetti: () => void;
   toastMessage: { title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error' } | null;
   showToast: (title: string, message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
+  resetAllData: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -608,6 +609,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     showToast('Preferences Saved', 'Updated application settings', 'success');
   };
 
+  const resetAllData = async () => {
+    // 1. Clear local storage
+    storage.resetAll();
+
+    // 2. If Clerk user is loaded, delete their Firestore record
+    if (isClerkLoaded && user) {
+      try {
+        const userRef = doc(db, 'users', user.id);
+        await deleteDoc(userRef);
+      } catch (e) {
+        console.error('Failed to delete Firestore document during reset:', e);
+      }
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -656,6 +672,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         triggerConfetti,
         toastMessage,
         showToast,
+        resetAllData,
       }}
     >
       {children}
