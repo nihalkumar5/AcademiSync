@@ -6,19 +6,18 @@ import { ClassSession, Subject } from './types';
 const ensureNotificationChannel = async () => {
   if (!Capacitor.isNativePlatform()) return;
   try {
-    // We use class_alerts_v2 to force Android to register a new channel
-    // and bypass any cached lower-priority channel settings.
+    // We use class_alerts_v3 to register a new channel with our custom chime sound.
     await LocalNotifications.createChannel({
-      id: 'class_alerts_v2',
+      id: 'class_alerts_v3',
       name: 'Class Alerts (High Priority)',
       description: 'High priority alarms for upcoming classes with sound and lockscreen display',
       importance: 5,   // 5 = Max/High importance (heads-up banner pop-up + sound)
       visibility: 1,   // 1 = Public (displays content on lock screen)
-      sound: 'default',
+      sound: 'class_bell', // Custom premium bell chime (res/raw/class_bell.wav)
       vibration: true,
       lights: true,
     });
-    console.log('Class Alerts native notification channel configured.');
+    console.log('Class Alerts native notification channel configured with custom chime.');
   } catch (error) {
     console.error('Failed to create native notification channel:', error);
   }
@@ -47,8 +46,8 @@ export const triggerLocalNotification = async (title: string, body: string) => {
           title,
           body,
           id: Math.floor(Math.random() * 100000) + 1,
-          sound: 'default',
-          channelId: 'class_alerts_v2', // Directs it to our high priority channel
+          sound: 'class_bell', // Plays the custom chime
+          channelId: 'class_alerts_v3', // Directs it to our high priority channel
           attachments: [],
           actionTypeId: '',
           extra: null,
@@ -142,8 +141,8 @@ export const scheduleTimetableLocalNotifications = async (
             minute: targetMin,
           },
         },
-        sound: 'default',
-        channelId: 'class_alerts_v2', // Enforces sound/banner on Android
+        sound: 'class_bell', // Plays the custom chime
+        channelId: 'class_alerts_v3', // Enforces sound/banner on Android
         extra: null,
       });
     }
