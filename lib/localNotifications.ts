@@ -2,6 +2,26 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 import { Capacitor } from '@capacitor/core';
 import { ClassSession, Subject } from './types';
 
+// Helper to configure a high-importance native Android channel for lockscreen alerts & sound
+const ensureNotificationChannel = async () => {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    await LocalNotifications.createChannel({
+      id: 'class_alerts',
+      name: 'Class Alerts',
+      description: 'High priority alarms for upcoming classes with sound and lockscreen display',
+      importance: 5,   // 5 = Max/High importance (heads-up banner pop-up + sound)
+      visibility: 1,   // 1 = Public (displays content on lock screen)
+      sound: 'default',
+      vibration: true,
+      lights: true,
+    });
+    console.log('Class Alerts native notification channel configured.');
+  } catch (error) {
+    console.error('Failed to create native notification channel:', error);
+  }
+};
+
 export const triggerLocalNotification = async (title: string, body: string) => {
   if (!Capacitor.isNativePlatform()) {
     console.log('Local notifications are only available on native devices.');
@@ -15,6 +35,9 @@ export const triggerLocalNotification = async (title: string, body: string) => {
       await LocalNotifications.requestPermissions();
     }
 
+    // Ensure the high-importance channel exists
+    await ensureNotificationChannel();
+
     // Schedule the notification immediately
     await LocalNotifications.schedule({
       notifications: [
@@ -24,6 +47,7 @@ export const triggerLocalNotification = async (title: string, body: string) => {
           id: Math.floor(Math.random() * 100000) + 1,
           schedule: { at: new Date(Date.now() + 1000) }, // 1 second delay
           sound: 'default',
+          channelId: 'class_alerts', // Directs it to our high priority channel
           attachments: [],
           actionTypeId: '',
           extra: null,
@@ -52,6 +76,9 @@ export const scheduleTimetableLocalNotifications = async (
     if (check.display !== 'granted') {
       await LocalNotifications.requestPermissions();
     }
+
+    // Ensure high-importance channel exists
+    await ensureNotificationChannel();
 
     // Cancel all existing scheduled notifications first to prevent duplicates
     const pending = await LocalNotifications.getPending();
@@ -115,6 +142,7 @@ export const scheduleTimetableLocalNotifications = async (
           },
         },
         sound: 'default',
+        channelId: 'class_alerts', // Enforces sound/banner on Android
         extra: null,
       });
     }
