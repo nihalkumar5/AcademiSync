@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import {
   getTomorrowDayOfWeek,
@@ -23,6 +23,11 @@ export const TomorrowCarryView: React.FC = () => {
   } = useApp();
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const now = new Date();
   const currentHour = now.getHours();
@@ -46,6 +51,14 @@ export const TomorrowCarryView: React.FC = () => {
     month: 'short',
     day: 'numeric',
   }).format(isAfter6PM ? new Date(Date.now() + 86400000) : new Date());
+
+  if (!mounted) {
+    return (
+      <div className="flex justify-center items-center py-24">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black dark:border-white" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 text-left max-w-4xl mx-auto w-full pb-12 font-sans">
