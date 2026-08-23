@@ -73,7 +73,7 @@ export const OverviewHeader: React.FC = () => {
           </span>
         </h2>
         <p className="text-lg text-black/70 dark:text-white/70 mt-6 max-w-sm leading-snug">
-          It is {timeFormatted} on {dateFormatted}. You are currently in Sem {profile.semester} of {profile.programme} {profile.branch} at {profile.college || 'Your College'}.
+          It is {timeFormatted} on {dateFormatted}. You are currently in Sem {profile.semester}{profile.programme ? ` of ${profile.programme}` : ''}{profile.branch ? ` ${profile.branch}` : ''} at {profile.college || 'Your College'}.
         </p>
       </div>
 
