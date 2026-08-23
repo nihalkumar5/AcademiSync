@@ -65,29 +65,32 @@ export const HomeworkView: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-5 text-left max-w-4xl mx-auto w-full pb-10">
-      {/* Mobile-App Styled Top Bar & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 sm:pt-4">
+      {/* Editorial Stacked Header — matches Weekly Timetable style */}
+      <div className="flex flex-col gap-4 pt-2 sm:pt-6">
+        {/* Large stacked heading with badge inline */}
         <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-3xl sm:text-4xl font-medium tracking-tighter text-black dark:text-white">
-              Tasks & To-Do
+          <div className="flex items-start gap-3 flex-wrap">
+            <h1 className="text-[clamp(3rem,12vw,5.5rem)] font-medium tracking-tight leading-none text-black dark:text-white">
+              Tasks,<br />To-Do,<br />Pending
             </h1>
+          </div>
+          <div className="flex items-center gap-2 mt-3">
             <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-none border border-black dark:border-white text-black dark:text-white">
               {pendingCount} pending
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-black/70 dark:text-white/70 mt-1 font-medium">
+          <p className="text-sm sm:text-base text-black/60 dark:text-white/60 mt-3 font-normal leading-relaxed max-w-md">
             Manage your assignments, project submissions, and daily priorities.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowScanModal(true)}
-            className="flex items-center gap-2 px-3.5 py-2.5 rounded-none border border-black dark:border-white text-black dark:text-white bg-transparent hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-xs font-semibold cursor-pointer"
+            className="flex items-center gap-2 px-5 py-3 rounded-none border border-black dark:border-white text-black dark:text-white bg-transparent hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-sm font-medium cursor-pointer"
           >
             <Sparkles className="w-4 h-4 text-current" />
             <span>AI Scanner</span>
@@ -100,7 +103,7 @@ export const HomeworkView: React.FC = () => {
               setEditHomework(null);
               setShowAddModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-none bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors text-xs font-semibold cursor-pointer"
+            className="flex items-center gap-2 px-5 py-3 rounded-none bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors text-sm font-medium cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>New Task</span>
