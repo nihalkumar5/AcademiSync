@@ -616,16 +616,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const resetAllData = async () => {
-    // 1. Clear local storage
+    // 1. Clear local storage (except profile, handled inside storage.ts)
     storage.resetAll();
-
-    // 2. If Clerk user is loaded, delete their Firestore record
+    
+    // 2. Reset React state to empty/defaults for everything except profile
+    setSubjectsState([]);
+    setTimetableState([]);
+    setHomeworkState([]);
+    setCarryItemsState([]);
+    setNotificationsState([]);
+    setEventsState([]);
+    setExamsState([]);
+    // Settings could optionally be kept, but keeping with clear-all except profile:
+    // (If you want to keep settings, remove the next line and add settings to the Firestore save)
+    
+    // 3. Overwrite Firestore record to ONLY contain the profile, erasing everything else
     if (isClerkLoaded && user) {
       try {
         const userRef = doc(db, 'users', user.id);
-        await deleteDoc(userRef);
+        // Using setDoc without merge overwrites the document completely
+        await setDoc(userRef, { profile }, { merge: false });
       } catch (e) {
-        console.error('Failed to delete Firestore document during reset:', e);
+        console.error('Failed to clear Firestore document during reset:', e);
       }
     }
   };
