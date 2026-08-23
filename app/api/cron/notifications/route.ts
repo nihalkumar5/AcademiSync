@@ -30,38 +30,50 @@ export async function GET(request: Request) {
       const data = doc.data();
       const fcmToken = data.fcmToken;
       const timetable = data.timetable || [];
+      const subjects = data.subjects || [];
       const settings = data.settings;
 
       // Skip if no token
       if (!fcmToken) return;
 
       // 1. Check for Upcoming Classes
-      const classAlertMinutes = settings?.classAlertMinutes || 15;
+      const classAlertMinutes = settings?.classReminderMinutes ?? settings?.classAlertMinutes ?? 10;
+      const subjectMap = new Map(subjects.map((s: any) => [s.id, s]));
       
       const todayClasses = timetable.filter((c: any) => c.day === todayStr);
       for (const session of todayClasses) {
-        // Parse "09:30 AM" to total minutes
-        const [time, modifier] = session.startTime.split(' ');
-        let [hours, minutes] = time.split(':').map(Number);
-        if (modifier === 'PM' && hours < 12) hours += 12;
-        if (modifier === 'AM' && hours === 12) hours = 0;
+        // Parse time robustly supporting both "09:30 AM" and "09:30" (24h format)
+        const parts = session.startTime.trim().split(' ');
+        const timePart = parts[0];
+        const modifier = parts[1];
         
-        const sessionTimeMinutes = hours * 60 + minutes;
+        let [hours, minutes] = timePart.split(':').map(Number);
+        if (modifier) {
+          const cleanModifier = modifier.toUpperCase();
+          if (cleanModifier === 'PM' && hours < 12) hours += 12;
+          if (cleanModifier === 'AM' && hours === 12) hours = 0;
+        }
+        
+        const sessionTimeMinutes = hours * 60 + (minutes || 0);
         
         // If class is exactly 'classAlertMinutes' away
         if (sessionTimeMinutes - currentTimeMinutes === classAlertMinutes) {
+          const sub = subjectMap.get(session.subjectId) as any;
+          const subjectLabel = sub ? (sub.shortName || sub.name) : 'Class';
+          const roomLabel = session.room || (sub ? sub.room : 'TBD');
+          
           messages.push({
             token: fcmToken,
             notification: {
-              title: `Class in ${classAlertMinutes} mins: ${session.subject}`,
-              body: `${session.type} at ${session.room}`
+              title: `Class in ${classAlertMinutes} mins: ${subjectLabel}`,
+              body: `${session.isLab ? 'Lab' : 'Lecture'} at ${roomLabel}`
             }
           });
         }
       }
 
       // 2. Check for Evening Bag Pack (8 PM)
-      const bagCheckTime = settings?.eveningBagCheckTime || "20:00"; // 20:00
+      const bagCheckTime = settings?.eveningCarryReminderTime ?? settings?.eveningBagCheckTime ?? "20:00"; // 20:00
       const [bagHour, bagMin] = bagCheckTime.split(':').map(Number);
       if (currentHour === bagHour && currentMinute === bagMin) {
         messages.push({

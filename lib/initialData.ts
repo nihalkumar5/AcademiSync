@@ -33,7 +33,7 @@ export const DEFAULT_NOTIFICATIONS: AppNotification[] = [];
 
 export const DEFAULT_SETTINGS: UserSettings = {
   theme: 'light',
-  classReminderMinutes: 15,
+  classReminderMinutes: 10,
   eveningCarryReminderTime: '20:00',
   homeworkWarningDays: 3,
   notificationsEnabled: true,

@@ -504,7 +504,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     let title = '';
     let message = '';
     if (category === 'classes') {
-      title = 'Class Alert: Machine Learning in 15 mins';
+      title = 'Class Alert: Machine Learning in 10 mins';
       message = 'Dr. Debanjan Sadhukhan · LT-1 (09:00 AM)';
     } else if (category === 'carry') {
       title = '🎒 Evening Bag Check (8:00 PM)';
