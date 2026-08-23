@@ -40,6 +40,7 @@ export const SettingsView: React.FC = () => {
     updateSettings,
     showToast,
     setShowOnboarding,
+    triggerSimulatedAlert,
   } = useApp();
 
   const [name, setName] = useState(profile.name);
@@ -507,14 +508,28 @@ export const SettingsView: React.FC = () => {
                 <span className="text-[10px] text-[#8C7D70] font-medium">Days before deadline</span>
               </div>
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="submit"
-                className="mt-1 w-full py-2.5 rounded-2xl bg-[#EFEAE2] hover:bg-[#E4DCCF] dark:bg-[#282522] dark:hover:bg-[#34302C] text-[#5C4838] dark:text-[#D1C7BD] text-xs font-semibold transition-all cursor-pointer border border-[#DFD6CA] dark:border-[#3A3632]"
-              >
-                Update Notification Schedule
-              </motion.button>
+              <div className="flex gap-2 mt-1">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-2xl bg-[#EFEAE2] hover:bg-[#E4DCCF] dark:bg-[#282522] dark:hover:bg-[#34302C] text-[#5C4838] dark:text-[#D1C7BD] text-xs font-semibold transition-all cursor-pointer border border-[#DFD6CA] dark:border-[#3A3632]"
+                >
+                  Update Schedule
+                </motion.button>
+                
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                  onClick={() => triggerSimulatedAlert('classes')}
+                  className="px-4 py-2.5 rounded-2xl bg-[#8C6B5D] hover:bg-[#7B5B4E] text-white text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm shrink-0"
+                  title="Send a sample test notification"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Test Alert</span>
+                </motion.button>
+              </div>
             </form>
           </div>
 
