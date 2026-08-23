@@ -6,7 +6,12 @@ const config: CapacitorConfig = {
   webDir: 'out',
   server: {
     url: 'https://academi-sync-chi.vercel.app/',
-    cleartext: true
+    cleartext: true,
+    allowNavigation: [
+      'academi-sync-chi.vercel.app',
+      '*.clerk.accounts.dev',
+      'clerk.com'
+    ]
   }
 };
 
