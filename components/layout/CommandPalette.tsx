@@ -171,18 +171,18 @@ export const CommandPalette: React.FC = () => {
             className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-md"
           />
 
-          {/* Premium Spotlight Card */}
+          {/* Brutalist Spotlight Card */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -14 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -14 }}
-            transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-            className="relative w-full max-w-lg bg-[#FAF8F5]/95 dark:bg-[#181716]/95 backdrop-blur-2xl border border-[#E3DBD0] dark:border-[#2E2B28] rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] overflow-hidden z-10 text-left flex flex-col font-sans"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="relative w-full max-w-lg bg-white dark:bg-black border-2 border-black dark:border-white rounded-none shadow-[6px_6px_0_rgba(0,0,0,1)] dark:shadow-[6px_6px_0_rgba(255,255,255,1)] overflow-hidden z-10 text-left flex flex-col font-mono"
           >
             {/* Search Input Bar */}
-            <div className="flex items-center gap-3.5 px-5 py-4 border-b border-[#E8E0D5] dark:border-[#292624]">
-              <div className="w-8 h-8 rounded-xl bg-[#EFE8DD] dark:bg-[#252321] text-[#8C6B5D] dark:text-[#A89280] flex items-center justify-center border border-[#DFD6C8] dark:border-[#383430] shrink-0">
-                <Search className="w-4 h-4" strokeWidth={2.4} />
+            <div className="flex items-center gap-3 px-4 py-3 border-b-2 border-black dark:border-white">
+              <div className="w-8 h-8 rounded-none bg-black dark:bg-white text-white dark:text-black flex items-center justify-center border border-black dark:border-white shrink-0">
+                <Search className="w-4 h-4" strokeWidth={2.5} />
               </div>
               
               <input
@@ -195,97 +195,92 @@ export const CommandPalette: React.FC = () => {
                   setSelectedIndex(0);
                 }}
                 onKeyDown={handleKeyDown}
-                className="w-full bg-transparent text-[15px] font-medium text-[#1A1918] dark:text-[#F4F1EA] placeholder:text-[#9E9084] dark:placeholder:text-[#7A736C] focus:outline-none tracking-tight"
+                className="w-full bg-transparent text-sm font-bold text-black dark:text-white placeholder:text-neutral-500 focus:outline-none tracking-tight"
               />
 
               <div className="flex items-center gap-1.5 shrink-0">
-                <kbd className="text-[11px] font-mono font-semibold bg-[#EFE8DD] dark:bg-[#252321] text-[#7A6352] dark:text-[#A89280] px-2 py-1 rounded-md border border-[#DFD6C8] dark:border-[#383430] shadow-2xs">
+                <kbd className="text-[10px] font-mono font-bold bg-white dark:bg-black text-black dark:text-white px-2 py-0.5 rounded-none border border-black dark:border-white shadow-[2px_2px_0_rgba(0,0,0,1)] dark:shadow-[2px_2px_0_rgba(255,255,255,1)]">
                   ESC
                 </kbd>
               </div>
             </div>
 
             {/* Results Command List */}
-            <div className="max-h-[340px] overflow-y-auto p-2.5 space-y-1">
+            <div className="max-h-[340px] overflow-y-auto p-2 space-y-1">
               {filtered.length === 0 ? (
-                <div className="py-12 flex flex-col items-center justify-center gap-2 text-center text-[#8C7E72] dark:text-[#7D766F]">
-                  <Sparkles className="w-6 h-6 opacity-50" />
-                  <p className="text-xs font-medium">No results found for &ldquo;{query}&rdquo;</p>
+                <div className="py-12 flex flex-col items-center justify-center gap-2 text-center text-neutral-500">
+                  <Sparkles className="w-5 h-5 opacity-70" />
+                  <p className="text-xs font-bold">No results found for &ldquo;{query}&rdquo;</p>
                 </div>
               ) : (
                 filtered.map((cmd, idx) => {
                   const isSelected = idx === selectedIndex;
                   return (
-                    <motion.button
+                    <button
                       key={cmd.id}
                       onClick={cmd.action}
                       onMouseEnter={() => setSelectedIndex(idx)}
-                      animate={{
-                        backgroundColor: isSelected
-                          ? 'rgba(235, 226, 214, 0.95)'
-                          : 'transparent',
-                      }}
-                      className={`flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all group cursor-pointer ${
+                      className={`flex items-center justify-between w-full px-3 py-2.5 rounded-none text-xs font-bold transition-all group cursor-pointer border ${
                         isSelected
-                          ? 'text-[#1A1918] dark:text-white dark:!bg-[#282522] border border-[#DDD0C0] dark:border-[#3A3632] shadow-xs'
-                          : 'text-[#5C4F44] dark:text-[#BDB4AA] border border-transparent hover:bg-[#F2ECE3]/70 dark:hover:bg-[#201E1C]'
+                          ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-[2px_2px_0_rgba(0,0,0,15%)]'
+                          : 'bg-transparent text-black dark:text-white border-transparent hover:border-black dark:hover:border-white'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
+                          className={`w-7 h-7 rounded-none flex items-center justify-center transition-colors border ${
                             isSelected
-                              ? 'bg-[#8C6B5D] text-[#FAF8F5] shadow-xs'
-                              : 'bg-[#EFE8DE]/80 dark:bg-[#22201E] text-[#7A6352] dark:text-[#9E9084] border border-[#DFD6C8]/60 dark:border-[#302D2A]'
+                              ? 'bg-white text-black dark:bg-black dark:text-white border-black dark:border-white'
+                              : 'bg-neutral-100 dark:bg-neutral-900 border-black dark:border-white text-black dark:text-white'
                           }`}
                         >
                           {cmd.icon}
                         </div>
-                        <span className="text-[13px] tracking-tight">{cmd.title}</span>
+                        <span className="text-xs uppercase tracking-tight">{cmd.title}</span>
                       </div>
 
                       <div className="flex items-center gap-2">
                         <span
-                          className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                          className={`text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-none border ${
                             isSelected
-                              ? 'bg-[#DDD0C0] dark:bg-[#34302C] text-[#5C4838] dark:text-[#C4B7AB]'
-                              : 'bg-[#EAE1D4]/60 dark:bg-[#201E1C] text-[#8C7A6B] dark:text-[#7A736C]'
+                              ? 'border-white dark:border-black text-white dark:text-black'
+                              : 'border-black dark:border-white text-black dark:text-white'
                           }`}
                         >
                           {cmd.category}
                         </span>
                         {isSelected && (
-                          <ArrowRight className="w-3.5 h-3.5 text-[#8C6B5D] dark:text-[#C4B7AB] animate-pulse" />
+                          <ArrowRight className="w-3.5 h-3.5 animate-pulse" />
                         )}
                       </div>
-                    </motion.button>
+                    </button>
                   );
                 })
               )}
             </div>
 
             {/* Bottom Keyboard Hint Bar */}
-            <div className="flex items-center justify-between px-4 py-2.5 bg-[#F2ECE2]/80 dark:bg-[#131211]/80 border-t border-[#E5DDD2] dark:border-[#282624] text-[11px] text-[#7A6B5F] dark:text-[#8C837B]">
-              <div className="flex items-center gap-3 font-medium">
+            <div className="flex items-center justify-between px-4 py-2 bg-neutral-100 dark:bg-neutral-900 border-t-2 border-black dark:border-white text-[10px] text-black dark:text-white font-mono uppercase font-bold">
+              <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1">
-                  <kbd className="font-mono bg-[#EAE2D6] dark:bg-[#242220] px-1.5 py-0.5 rounded border border-[#D8CEBF] dark:border-[#383430] text-[10px]">
+                  <kbd className="font-mono bg-white dark:bg-black px-1.5 py-0.5 rounded-none border border-black dark:border-white text-[9px] shadow-[1px_1px_0_rgba(0,0,0,1)] dark:shadow-[1px_1px_0_rgba(255,255,255,1)]">
                     ↑
                   </kbd>
-                  <kbd className="font-mono bg-[#EAE2D6] dark:bg-[#242220] px-1.5 py-0.5 rounded border border-[#D8CEBF] dark:border-[#383430] text-[10px]">
+                  <kbd className="font-mono bg-white dark:bg-black px-1.5 py-0.5 rounded-none border border-black dark:border-white text-[9px] shadow-[1px_1px_0_rgba(0,0,0,1)] dark:shadow-[1px_1px_0_rgba(255,255,255,1)]">
                     ↓
                   </kbd>
-                  <span className="ml-0.5">Navigate</span>
+                  <span className="ml-0.5">Nav</span>
                 </span>
                 <span className="flex items-center gap-1">
-                  <kbd className="font-mono bg-[#EAE2D6] dark:bg-[#242220] px-1.5 py-0.5 rounded border border-[#D8CEBF] dark:border-[#383430] text-[10px]">
+                  <kbd className="font-mono bg-white dark:bg-black px-1.5 py-0.5 rounded-none border border-black dark:border-white text-[9px] shadow-[1px_1px_0_rgba(0,0,0,1)] dark:shadow-[1px_1px_0_rgba(255,255,255,1)]">
                     ↵
                   </kbd>
                   <span className="ml-0.5">Open</span>
                 </span>
               </div>
 
-              <div className="flex items-center gap-1 font-mono text-[10px] text-[#96887C] dark:text-[#6E665E]">
-                <Command className="w-3 h-3" /> Spotlight
+              <div className="flex items-center gap-1 font-mono text-[9px] opacity-75">
+                <Command className="w-3 h-3" /> Search
               </div>
             </div>
           </motion.div>
