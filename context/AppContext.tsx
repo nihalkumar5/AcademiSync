@@ -22,6 +22,7 @@ import { useUser } from '@clerk/nextjs';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { registerPushNotifications } from '@/lib/pushNotifications';
+import { triggerLocalNotification, scheduleTimetableLocalNotifications } from '@/lib/localNotifications';
 
 export type ActiveView =
   | 'home'
@@ -206,6 +207,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       showToast(newNotifs[0].title, newNotifs[0].message, 'info');
     }
   }, [timetable, subjects, homework, settings, isHydrated]);
+
+  // Native Local Notification Scheduler Effect
+  useEffect(() => {
+    if (!isHydrated) return;
+    const scheduleReminders = async () => {
+      await scheduleTimetableLocalNotifications(
+        timetable,
+        subjects,
+        settings.classReminderMinutes || 10
+      );
+    };
+    scheduleReminders();
+  }, [timetable, subjects, settings.classReminderMinutes, isHydrated]);
 
   // Keyboard shortcut listener (Cmd+K / Ctrl+K)
   useEffect(() => {
@@ -530,6 +544,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setNotificationsState(updated);
     storage.setNotifications(updated);
     showToast(title, message, 'info');
+    
+    // Also trigger native OS push/local notification
+    triggerLocalNotification(title, message);
   };
 
   const addEvent = (eventData: Omit<AcademicEvent, 'id'>) => {
