@@ -67,10 +67,9 @@ export const TomorrowCarryView: React.FC = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-5 py-3 rounded-none bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors text-sm font-medium cursor-pointer w-fit"
+            className="flex items-center px-5 py-3 rounded-none bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors text-sm font-medium cursor-pointer w-fit"
           >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Add Custom Item</span>
+            Add Custom Item
           </motion.button>
         </div>
       </div>
