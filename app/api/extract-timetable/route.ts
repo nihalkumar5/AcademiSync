@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     if (apiKey && imageList.length > 0) {
       try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
         const prompt = `You are a specialized timetable parsing assistant for university students across India.
 Analyze the provided timetable image(s) and extract all class/lecture/lab slots across all pages into a strict single JSON array.
