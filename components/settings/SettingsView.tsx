@@ -45,7 +45,9 @@ export const SettingsView: React.FC = () => {
   const [college, setCollege] = useState(profile.college);
   const [rollNumber, setRollNumber] = useState(profile.rollNumber);
   const [email, setEmail] = useState(profile.email);
-  const [programme, setProgramme] = useState<Programme>(profile.programme);
+  const [programme, setProgramme] = useState<Programme>(
+    profile.programme === 'CMIT' ? 'Mtech- CMIT' : profile.programme
+  );
   const [branch, setBranch] = useState<Branch>(profile.branch);
   const [year, setYear] = useState(profile.year);
   const [semester, setSemester] = useState(profile.semester);
@@ -323,7 +325,7 @@ export const SettingsView: React.FC = () => {
                 >
                   <option value="B.Tech">B.Tech</option>
                   <option value="M.Tech">M.Tech</option>
-                  <option value="CMIT">CMIT</option>
+                  <option value="Mtech- CMIT">Mtech- CMIT</option>
                   <option value="Ph.D">Ph.D</option>
                 </select>
               </div>

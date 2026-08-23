@@ -1,4 +1,4 @@
-export type Programme = 'B.Tech' | 'M.Tech' | 'CMIT' | 'Ph.D';
+export type Programme = 'B.Tech' | 'M.Tech' | 'CMIT' | 'Mtech- CMIT' | 'Ph.D';
 
 export type Branch = 'CSE' | 'DSAI' | 'ECE' | 'IT';
 
