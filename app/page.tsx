@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MobileNav } from '@/components/layout/MobileNav';
@@ -9,7 +9,8 @@ import { CommandPalette } from '@/components/layout/CommandPalette';
 import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
 import { Toast } from '@/components/ui/Toast';
 import { IntersemesterLogo } from '@/components/ui/IntersemesterLogo';
-import { SplashLoader } from '@/components/ui/SplashLoader';
+import { SplashScreen } from '@capacitor/splash-screen';
+import { Capacitor } from '@capacitor/core';
 
 // Views
 import { OverviewHeader } from '@/components/dashboard/OverviewHeader';
@@ -29,18 +30,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AppHome() {
   const { activeView, isHydrated } = useApp();
-  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    // Show splash screen for at least 3 seconds to cover initial webview rendering
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, []);
+    if (isHydrated && Capacitor.isNativePlatform()) {
+      // Programmatically hide native splash only when app state is hydrated/ready
+      SplashScreen.hide().catch((err) => console.error('Splash hide error:', err));
+    }
+  }, [isHydrated]);
 
-  if (showSplash || !isHydrated) {
-    return <SplashLoader />;
+  if (!isHydrated) {
+    return null; // Return empty space while native splash covers it
   }
 
   return (

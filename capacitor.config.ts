@@ -15,8 +15,8 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 2500, // Show transparent native splash for 2.5s while WebView boots in background
-      launchAutoHide: true,
+      launchShowDuration: 5000, // Fallback duration in case programmatic hide fails
+      launchAutoHide: false,    // Wait for JS code to trigger hide
       backgroundColor: '#FAFAF8',
       androidScaleType: 'CENTER_CROP',
       showSpinner: false,
