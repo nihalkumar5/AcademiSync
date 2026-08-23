@@ -72,9 +72,24 @@ export const OverviewHeader: React.FC = () => {
             <span className="text-4xl sm:text-5xl">👋</span>
           </span>
         </h2>
-        <p className="text-lg text-black/70 dark:text-white/70 mt-6 max-w-sm leading-snug">
-          It is {timeFormatted} on {dateFormatted}. You are currently in Sem {profile.semester}{profile.programme ? ` of ${profile.programme}` : ''}{profile.branch ? ` ${profile.branch}` : ''} at {profile.college || 'Your College'}.
-        </p>
+        <div className="mt-6 flex flex-col gap-3">
+          <p className="text-lg text-black/70 dark:text-white/70 leading-snug">
+            It is {timeFormatted} on {dateFormatted}.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="px-2.5 py-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[11px] font-semibold tracking-wide text-black/70 dark:text-white/70 uppercase">
+              Sem {profile.semester}
+            </span>
+            {(profile.programme || profile.branch) && (
+              <span className="px-2.5 py-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[11px] font-semibold tracking-wide text-black/70 dark:text-white/70 uppercase">
+                {profile.programme} {profile.branch}
+              </span>
+            )}
+            <span className="px-2.5 py-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[11px] font-semibold tracking-wide text-black/70 dark:text-white/70 uppercase truncate max-w-[200px]">
+              {profile.college || 'Your College'}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Brutalist Stats Grid */}
