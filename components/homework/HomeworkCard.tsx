@@ -40,9 +40,9 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
   let isUrgent = diffDays <= 1 && !isDone;
 
   const priorityStyles: Record<string, string> = {
-    High: 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/80 dark:border-rose-900/50',
-    Medium: 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200/80 dark:border-amber-900/50',
-    Low: 'bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-400 border border-stone-200 dark:border-stone-800',
+    High: 'bg-transparent text-rose-600 dark:text-rose-400 border border-rose-500 rounded-none',
+    Medium: 'bg-transparent text-amber-600 dark:text-amber-400 border border-amber-500 rounded-none',
+    Low: 'bg-transparent text-zinc-500 dark:text-zinc-400 border border-zinc-500 dark:border-zinc-700 rounded-none',
   };
 
   return (
@@ -53,10 +53,8 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ duration: 0.2 }}
       className={clsx(
-        'group flex flex-col p-4 rounded-2xl border transition-all text-left relative',
-        isDone
-          ? 'bg-[#F2ECE3]/40 dark:bg-[#1A1918]/40 border-[#E5DDD2]/50 dark:border-[#282624]/50 opacity-70'
-          : 'bg-white/95 dark:bg-[#1C1B19]/95 border-[#E6DDD2] dark:border-[#2C2926] shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-md'
+        'glass-card group flex flex-col p-4 transition-all text-left relative',
+        isDone ? 'opacity-55' : 'opacity-100'
       )}
     >
       {/* Top Header: Subject Badge, Priority & Actions */}
@@ -64,11 +62,11 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
         <div className="flex items-center gap-2 flex-wrap">
           {subject && (
             <span
-              className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-lg shadow-2xs"
+              className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-none border"
               style={{
                 backgroundColor: `${subject.color}15`,
                 color: subject.color,
-                border: `1px solid ${subject.color}35`,
+                borderColor: `${subject.color}35`,
               }}
             >
               {subject.shortName || subject.code}
@@ -77,7 +75,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
 
           <span
             className={clsx(
-              'text-[10px] font-semibold font-mono px-2 py-0.5 rounded-md',
+              'text-[10px] font-semibold font-mono px-2 py-0.5',
               priorityStyles[homework.priority] || priorityStyles.Low
             )}
           >
@@ -113,24 +111,24 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
         {/* Tactile Circular Checkbox */}
         <motion.button
           type="button"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.85 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => onToggleStatus(homework.id)}
           className={clsx(
-            'w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all mt-0.5 shrink-0 cursor-pointer shadow-2xs',
+            'w-5 h-5 rounded-none flex items-center justify-center border transition-all mt-0.5 shrink-0 cursor-pointer shadow-none',
             isDone
-              ? 'bg-[#8C6B5D] border-[#8C6B5D] text-white shadow-xs'
-              : 'border-[#CBBDB0] dark:border-[#524B44] hover:border-[#8C6B5D] bg-transparent'
+              ? 'bg-black border-black text-white dark:bg-white dark:border-white dark:text-black'
+              : 'border-black dark:border-white bg-transparent hover:bg-black/5 dark:hover:bg-white/5'
           )}
           aria-label={isDone ? 'Mark task as incomplete' : 'Mark task as completed'}
         >
           {isDone && (
             <motion.div
-              initial={{ scale: 0, rotate: -30 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.15 }}
             >
-              <Check className="w-3.5 h-3.5 stroke-[3]" />
+              <Check className="w-3.5 h-3.5 stroke-[3.5]" />
             </motion.div>
           )}
         </motion.button>
@@ -179,12 +177,12 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
         {/* Status Indicator */}
         <span
           className={clsx(
-            'text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full',
+            'text-[10px] font-mono font-semibold px-2 py-0.5 rounded-none border',
             isDone
-              ? 'bg-[#7C897A]/10 dark:bg-[#7C897A]/20 text-[#7C897A] dark:text-[#A9B5A7] border border-[#7C897A]/30 dark:border-[#7C897A]/40'
+              ? 'bg-[#7C897A]/10 dark:bg-[#7C897A]/20 text-[#7C897A] dark:text-[#A9B5A7] border-[#7C897A]/30 dark:border-[#7C897A]/40'
               : homework.status === 'In Progress'
-              ? 'bg-[#C79F6F]/10 dark:bg-[#C79F6F]/20 text-[#C79F6F] dark:text-[#E8C59A] border border-[#C79F6F]/30 dark:border-[#C79F6F]/40'
-              : 'bg-[#EFEAE2] dark:bg-[#252321] text-[#7A6D61] dark:text-[#A89E94] border border-[#E0D7CB] dark:border-[#322F2C]'
+              ? 'bg-[#C79F6F]/10 dark:bg-[#C79F6F]/20 text-[#C79F6F] dark:text-[#E8C59A] border-[#C79F6F]/30 dark:border-[#C79F6F]/40'
+              : 'bg-transparent border-black/30 dark:border-white/30 text-black/70 dark:text-white/70'
           )}
         >
           {homework.status}

@@ -69,14 +69,14 @@ export const HomeworkView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 sm:pt-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1A1918] dark:text-[#F4F1EA]">
+            <h1 className="text-3xl sm:text-4xl font-medium tracking-tighter text-black dark:text-white">
               Tasks & To-Do
             </h1>
-            <span className="text-xs font-bold font-mono px-2.5 py-0.5 rounded-full bg-[#8C6B5D]/15 text-[#8C6B5D] dark:text-[#CBB5A1] dark:bg-[#8C6B5D]/30">
+            <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-none border border-black dark:border-white text-black dark:text-white">
               {pendingCount} pending
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-[#7A6D61] dark:text-[#9E958C] mt-1 font-medium">
+          <p className="text-xs sm:text-sm text-black/70 dark:text-white/70 mt-1 font-medium">
             Manage your assignments, project submissions, and daily priorities.
           </p>
         </div>
@@ -84,23 +84,23 @@ export const HomeworkView: React.FC = () => {
         {/* Action Buttons */}
         <div className="flex items-center gap-2.5">
           <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => setShowScanModal(true)}
-            className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-[#EFEAE2]/80 dark:bg-[#201E1C] border border-[#DFD6CA] dark:border-[#322F2C] text-xs font-semibold text-[#5C4D40] dark:text-[#D1C7BD] hover:bg-[#EAE3DA] transition-all shadow-2xs cursor-pointer"
+            className="flex items-center gap-2 px-3.5 py-2.5 rounded-none border border-black dark:border-white text-black dark:text-white bg-transparent hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-xs font-semibold cursor-pointer"
           >
-            <Sparkles className="w-4 h-4 text-[#8C6B5D]" />
+            <Sparkles className="w-4 h-4 text-current" />
             <span>AI Scanner</span>
           </motion.button>
 
           <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => {
               setEditHomework(null);
               setShowAddModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#8C6B5D] hover:bg-[#7A5B4D] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-none bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors text-xs font-semibold cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>New Task</span>
@@ -110,19 +110,19 @@ export const HomeworkView: React.FC = () => {
 
       {/* iOS Style Rounded Search Bar */}
       <div className="relative w-full">
-        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-[#F0EBE2]/70 dark:bg-[#1C1B19] border border-[#E0D7CB] dark:border-[#2C2926] shadow-2xs">
-          <Search className="w-4 h-4 text-[#8C7D70] dark:text-[#7A726A] shrink-0" />
+        <div className="flex items-center gap-3 px-4 py-3 rounded-none bg-white dark:bg-zinc-950 border border-black dark:border-white">
+          <Search className="w-4 h-4 text-black/50 dark:text-white/50 shrink-0" />
           <input
             type="text"
             placeholder="Search assignments, topics, or notes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-transparent text-sm text-[#1A1918] dark:text-[#F4F1EA] placeholder:text-[#9A8D80] dark:placeholder:text-[#6C665F] focus:outline-none font-medium"
+            className="w-full bg-transparent text-sm text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none font-medium"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="p-1 rounded-full text-[#8C7D70] hover:text-[#1A1918] transition-colors"
+              className="p-1 rounded-none text-black/50 hover:text-black dark:text-white/50 dark:hover:text-white transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -131,32 +131,25 @@ export const HomeworkView: React.FC = () => {
       </div>
 
       {/* Segmented Pill Tabs Filter */}
-      <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#EFEAE2]/60 dark:bg-[#1E1C1A] border border-[#E0D7CB]/70 dark:border-[#2C2926] overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
         {filterTabs.map((tab) => {
           const isSelected = statusFilter === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => setStatusFilter(tab.id as any)}
-              className={`relative flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+              className={`relative flex items-center gap-2 px-4 py-2 rounded-none text-xs font-bold border transition-all shrink-0 cursor-pointer ${
                 isSelected
-                  ? 'text-[#1A1918] dark:text-white'
-                  : 'text-[#7A6D61] dark:text-[#8E867E] hover:text-[#1A1918] dark:hover:text-white'
+                  ? 'bg-black text-white border-black dark:bg-white dark:text-black dark:border-white shadow-none'
+                  : 'bg-white text-black/70 border-black/20 hover:border-black dark:bg-zinc-950 dark:text-white/70 dark:border-white/20 dark:hover:border-white'
               }`}
             >
-              {isSelected && (
-                <motion.div
-                  layoutId="activeTaskTab"
-                  transition={{ type: 'spring', stiffness: 380, damping: 28 }}
-                  className="absolute inset-0 bg-white dark:bg-[#2B2825] rounded-xl shadow-xs border border-[#DDD3C6] dark:border-[#383430]"
-                />
-              )}
               <span className="relative z-10">{tab.label}</span>
               <span
-                className={`relative z-10 text-[10px] font-mono px-1.5 py-0.2 rounded-md ${
+                className={`relative z-10 text-[10px] font-mono px-1.5 py-0.2 rounded-none border ${
                   isSelected
-                    ? 'bg-[#EFEAE2] dark:bg-[#1C1B19] text-[#7A6D61] dark:text-[#C7BDB3]'
-                    : 'bg-black/5 dark:bg-white/5 opacity-75'
+                    ? 'bg-white text-black border-white dark:bg-black dark:text-white dark:border-black'
+                    : 'bg-black/5 dark:bg-white/5 border-transparent opacity-75'
                 }`}
               >
                 {tab.count}
