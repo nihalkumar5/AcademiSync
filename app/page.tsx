@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MobileNav } from '@/components/layout/MobileNav';
@@ -9,6 +9,7 @@ import { CommandPalette } from '@/components/layout/CommandPalette';
 import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
 import { Toast } from '@/components/ui/Toast';
 import { IntersemesterLogo } from '@/components/ui/IntersemesterLogo';
+import { SplashLoader } from '@/components/ui/SplashLoader';
 
 // Views
 import { OverviewHeader } from '@/components/dashboard/OverviewHeader';
@@ -28,39 +29,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AppHome() {
   const { activeView, isHydrated } = useApp();
+  const [showSplash, setShowSplash] = useState(true);
 
-  if (!isHydrated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#F5F7FA] dark:bg-[#0B0F19] overflow-hidden relative">
-        {/* Subtle background glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#6366F1]/10 rounded-full blur-[64px]" />
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="flex flex-col items-center gap-6 relative z-10"
-        >
-          {/* Animated Monogram */}
-          <div className="relative flex items-center justify-center">
-            <motion.div
-              animate={{ scale: [1, 1.06, 1] }}
-              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-            >
-              <IntersemesterLogo size="lg" showTagline={false} />
-            </motion.div>
-          </div>
-          
-          <motion.p 
-            animate={{ opacity: [0.4, 1, 0.4] }}
-            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-            className="text-[11px] font-bold text-[#6366F1] uppercase tracking-[0.25em]"
-          >
-            Loading Workspace
-          </motion.p>
-        </motion.div>
-      </div>
-    );
+  useEffect(() => {
+    // Show splash screen for at least 3 seconds to cover initial webview rendering
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (showSplash || !isHydrated) {
+    return <SplashLoader />;
   }
 
   return (
