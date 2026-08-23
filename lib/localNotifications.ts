@@ -47,7 +47,6 @@ export const triggerLocalNotification = async (title: string, body: string) => {
           title,
           body,
           id: Math.floor(Math.random() * 100000) + 1,
-          schedule: { at: new Date(Date.now() + 1000) }, // 1 second delay
           sound: 'default',
           channelId: 'class_alerts_v2', // Directs it to our high priority channel
           attachments: [],
