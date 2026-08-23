@@ -176,7 +176,7 @@ export const AcademicCalendar: React.FC = () => {
                   className={clsx(
                     'h-16 p-1.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between text-left relative',
                     isSelected
-                      ? 'bg-blue-50/50 dark:bg-blue-950/30 border-blue-500 ring-1 ring-blue-500/20'
+                      ? 'bg-[#8C6B5D]/5 dark:bg-[#8C6B5D]/15 border-[#8C6B5D] ring-1 ring-[#8C6B5D]/20'
                       : 'bg-white dark:bg-zinc-900 border-zinc-200/60 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
                   )}
                 >
@@ -185,9 +185,9 @@ export const AcademicCalendar: React.FC = () => {
                       className={clsx(
                         'text-xs font-mono font-semibold',
                         isToday
-                          ? 'w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]'
+                          ? 'w-5 h-5 rounded-full bg-[#8C6B5D] text-white flex items-center justify-center text-[10px]'
                           : isSelected
-                          ? 'text-blue-600 dark:text-blue-400'
+                          ? 'text-[#8C6B5D] dark:text-[#CBB5A1]'
                           : 'text-zinc-700 dark:text-zinc-300'
                       )}
                     >
@@ -310,7 +310,7 @@ export const AcademicCalendar: React.FC = () => {
               <select
                 value={newType}
                 onChange={(e) => setNewType(e.target.value as any)}
-                className="w-full mt-1.5 px-3 py-2 text-sm bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full mt-1.5 px-3 py-2 text-sm bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#8C6B5D]/30 focus:border-[#8C6B5D]"
               >
                 <option value="exam">Examination</option>
                 <option value="assignment">Major Assignment / Review</option>

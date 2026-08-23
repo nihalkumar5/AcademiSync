@@ -58,7 +58,7 @@ export const TodayTimeline: React.FC = () => {
             const isPassed = currentMinutes >= end;
             
             // Dynamic theme dot color
-            const subjectColor = sub?.color || '#3B82F6';
+            const subjectColor = sub?.color || '#8C6B5D';
 
             return (
               <div key={session.id} className="relative pl-6 pb-6 last:pb-0">
@@ -86,17 +86,17 @@ export const TodayTimeline: React.FC = () => {
                   {/* Class Info Box */}
                   <div className={`flex-1 rounded-2xl p-3 sm:p-4 border transition-colors ${
                     isNow 
-                      ? 'bg-blue-50/60 dark:bg-blue-900/20 border-blue-200/80 dark:border-blue-800/80 ring-1 ring-blue-500/20' 
+                      ? 'bg-[#8C6B5D]/10 dark:bg-[#8C6B5D]/20 border-[#8C6B5D]/30 dark:border-[#8C6B5D]/40 ring-1 ring-[#8C6B5D]/20' 
                       : 'bg-slate-50/80 dark:bg-zinc-900/60 border-slate-200/60 dark:border-zinc-800/80'
                   }`}>
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className={`text-[15px] font-bold ${isNow ? 'text-blue-900 dark:text-blue-100' : 'text-slate-900 dark:text-zinc-100'}`}>
+                          <h4 className={`text-[15px] font-bold ${isNow ? 'text-[#8C6B5D] dark:text-[#E8D9CE]' : 'text-slate-900 dark:text-zinc-100'}`}>
                             {sub?.name || 'Class Session'}
                           </h4>
                           {isNow && (
-                            <span className="px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wider animate-pulse">
+                            <span className="px-2 py-0.5 rounded-md bg-[#8C6B5D] text-white text-[10px] font-bold uppercase tracking-wider animate-pulse">
                               Now
                             </span>
                           )}

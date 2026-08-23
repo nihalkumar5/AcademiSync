@@ -168,7 +168,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
       {step === 'extracting' && (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="relative mb-4">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center animate-pulse shadow-sm">
+            <div className="w-14 h-14 rounded-2xl bg-[#8C6B5D]/10 dark:bg-[#8C6B5D]/20 text-[#8C6B5D] dark:text-[#CBB5A1] flex items-center justify-center animate-pulse shadow-sm">
               <Sparkles className="w-7 h-7" />
             </div>
           </div>
@@ -183,9 +183,9 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
 
       {step === 'review' && (
         <div className="flex flex-col gap-4 text-left">
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs text-blue-900 dark:text-blue-200">
+          <div className="flex items-center justify-between p-3.5 rounded-xl bg-[#8C6B5D]/5 dark:bg-[#8C6B5D]/10 border border-[#8C6B5D]/20 dark:border-[#8C6B5D]/30 text-xs text-[#6E5643] dark:text-[#CBB5A1]">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
+              <Sparkles className="w-4 h-4 text-[#8C6B5D] shrink-0" />
               <span>
                 <strong>Review Extracted Exams:</strong> AI extracted {extractedExams.length} exams. Please verify details before saving.
               </span>
@@ -263,7 +263,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
               <Button variant="ghost" size="sm" onClick={resetState} className="relative z-30">
                 Back
               </Button>
-              <Button variant="primary" size="sm" onClick={handleSaveConfirmed} className="gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white relative z-30">
+              <Button variant="primary" size="sm" onClick={handleSaveConfirmed} className="gap-1.5 rounded-xl bg-[#8C6B5D] hover:bg-[#7B5B4D] text-white relative z-30">
                 <Check className="w-4 h-4" />
                 Confirm & Save Exams
               </Button>

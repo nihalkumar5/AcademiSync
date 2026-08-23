@@ -157,7 +157,7 @@ export const SubjectListView: React.FC = () => {
               {/* Carry Requirements Footer */}
               <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800/80">
                 <div className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-400 mb-1.5">
-                  <Backpack className="w-3.5 h-3.5 text-blue-500" />
+                  <Backpack className="w-3.5 h-3.5 text-[#8C6B5D]" />
                   <span>Configured Things to Carry:</span>
                 </div>
 

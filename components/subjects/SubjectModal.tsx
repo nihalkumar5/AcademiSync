@@ -28,21 +28,21 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
   const [facultyEmail, setFacultyEmail] = useState('');
   const [room, setRoom] = useState('LT-1');
   const [credits, setCredits] = useState(4);
-  const [color, setColor] = useState('#3B82F6');
+  const [color, setColor] = useState('#7C897A');
   const [isLab, setIsLab] = useState(false);
   const [labRoom, setLabRoom] = useState('');
   const [carryReqs, setCarryReqs] = useState<string[]>([]);
   const [newCarryInput, setNewCarryInput] = useState('');
 
   const defaultColors = [
-    '#3B82F6', // Blue
-    '#10B981', // Emerald
-    '#8B5CF6', // Purple
-    '#F59E0B', // Amber
-    '#EC4899', // Pink
-    '#06B6D4', // Cyan
-    '#6366F1', // Indigo
-    '#14B8A6', // Teal
+    '#7C897A', // Sage
+    '#C08A76', // Terracotta
+    '#C79F6F', // Ochre
+    '#B88B8C', // Muted Rose
+    '#7A8B99', // Slate
+    '#9C8E80', // Cocoa
+    '#8C6B5D', // Brand Bronze
+    '#687680', // Deep Grey-blue
   ];
 
   useEffect(() => {
@@ -218,7 +218,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
               id="subIsLab"
               checked={isLab}
               onChange={(e) => setIsLab(e.target.checked)}
-              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+              className="w-4 h-4 rounded text-[#8C6B5D] focus:ring-[#8C6B5D]"
             />
             <label htmlFor="subIsLab" className="text-xs font-medium text-zinc-800 dark:text-zinc-200 cursor-pointer">
               Includes Practical Lab Sessions
@@ -235,9 +235,9 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
         </div>
 
         {/* Things to Carry Requirements (Critical Requirement) */}
-        <div className="flex flex-col gap-2 p-3.5 rounded-xl bg-blue-50/40 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-800/40">
+        <div className="flex flex-col gap-2 p-3.5 rounded-xl bg-[#8C6B5D]/5 dark:bg-[#8C6B5D]/10 border border-[#8C6B5D]/20 dark:border-[#8C6B5D]/30">
           <div className="flex items-center gap-1.5">
-            <Backpack className="w-4 h-4 text-blue-500" />
+            <Backpack className="w-4 h-4 text-[#8C6B5D]" />
             <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
               Required Things to Carry for this Subject
             </h4>
@@ -258,7 +258,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
                   handleAddCarryItem();
                 }
               }}
-              className="flex-1 px-3 py-1.5 text-xs bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="flex-1 px-3 py-1.5 text-xs bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#8C6B5D]/20 focus:border-[#8C6B5D]"
             />
             <Button type="button" size="sm" variant="secondary" onClick={handleAddCarryItem}>
               <Plus className="w-3.5 h-3.5 mr-1" />

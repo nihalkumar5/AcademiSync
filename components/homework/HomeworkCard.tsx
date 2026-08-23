@@ -181,9 +181,9 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
           className={clsx(
             'text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full',
             isDone
-              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/40'
+              ? 'bg-[#7C897A]/10 dark:bg-[#7C897A]/20 text-[#7C897A] dark:text-[#A9B5A7] border border-[#7C897A]/30 dark:border-[#7C897A]/40'
               : homework.status === 'In Progress'
-              ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-800/40'
+              ? 'bg-[#C79F6F]/10 dark:bg-[#C79F6F]/20 text-[#C79F6F] dark:text-[#E8C59A] border border-[#C79F6F]/30 dark:border-[#C79F6F]/40'
               : 'bg-[#EFEAE2] dark:bg-[#252321] text-[#7A6D61] dark:text-[#A89E94] border border-[#E0D7CB] dark:border-[#322F2C]'
           )}
         >

@@ -257,7 +257,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
               <Button type="button" variant="outline" size="sm" onClick={handleClose} className="rounded-xl">
                 Cancel
               </Button>
-              <Button type="submit" variant="primary" size="sm" className="gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white">
+              <Button type="submit" variant="primary" size="sm" className="gap-1.5 rounded-xl bg-[#8C6B5D] hover:bg-[#7B5B4D] text-white">
                 <Check className="w-4 h-4" />
                 Confirm & Save Task
               </Button>

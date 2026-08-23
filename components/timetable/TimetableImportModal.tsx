@@ -140,7 +140,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
           facultyName: extSession.faculty || 'TBD',
           room: extSession.room || 'TBD',
           credits: 3,
-          color: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'][idx % 6],
+          color: ['#7C897A', '#C08A76', '#C79F6F', '#B88B8C', '#7A8B99', '#9C8E80'][idx % 6],
           carryRequirements: ['Notebook'],
           isLab: extSession.isLab,
         };
@@ -246,7 +246,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
           {step === 'extracting' && (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="relative mb-4">
-                <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center animate-pulse shadow-sm">
+                <div className="w-14 h-14 rounded-2xl bg-[#8C6B5D]/10 dark:bg-[#8C6B5D]/20 text-[#8C6B5D] dark:text-[#CBB5A1] flex items-center justify-center animate-pulse shadow-sm">
                   <Sparkles className="w-7 h-7" />
                 </div>
               </div>
@@ -261,9 +261,9 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
 
           {step === 'review' && (
             <div className="flex flex-col gap-4 text-left">
-              <div className="flex items-center justify-between p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs text-blue-900 dark:text-blue-200">
+              <div className="flex items-center justify-between p-3.5 rounded-xl bg-[#8C6B5D]/5 dark:bg-[#8C6B5D]/10 border border-[#8C6B5D]/20 dark:border-[#8C6B5D]/30 text-xs text-[#6E5643] dark:text-[#CBB5A1]">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
+                  <Sparkles className="w-4 h-4 text-[#8C6B5D] shrink-0" />
                   <span>
                     <strong>Review Extracted Classes:</strong> AI extracted {extractedSessions.length} sessions. Please verify details before saving.
                   </span>
@@ -341,11 +341,11 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                           />
                         </td>
                         <td className="p-2.5 text-center">
-                          <input
+                           <input
                             type="checkbox"
                             checked={item.isLab || false}
                             onChange={(e) => updateExtractedRow(idx, { isLab: e.target.checked })}
-                            className="w-4 h-4 rounded text-blue-600"
+                            className="w-4 h-4 rounded text-[#8C6B5D] focus:ring-[#8C6B5D]"
                           />
                         </td>
                         <td className="p-2.5 text-right">
@@ -373,7 +373,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                   <Button variant="ghost" size="sm" onClick={resetState}>
                     Back
                   </Button>
-                  <Button variant="primary" size="sm" onClick={handleSaveConfirmed} className="gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white">
+                  <Button variant="primary" size="sm" onClick={handleSaveConfirmed} className="gap-1.5 rounded-xl bg-[#8C6B5D] hover:bg-[#7B5B4D] text-white">
                     <Check className="w-4 h-4" />
                     Confirm & Save Timetable
                   </Button>

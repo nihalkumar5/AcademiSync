@@ -162,7 +162,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
             id="isLabCheck"
             checked={isLab}
             onChange={(e) => setIsLab(e.target.checked)}
-            className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"
+            className="w-4 h-4 rounded text-[#8C6B5D] focus:ring-[#8C6B5D] border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"
           />
           <label
             htmlFor="isLabCheck"

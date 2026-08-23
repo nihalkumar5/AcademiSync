@@ -39,7 +39,7 @@ export const NotificationCenter: React.FC = () => {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const categoryIcons: Record<NotificationCategory, React.ReactNode> = {
-    classes: <BookOpen className="w-5 h-5 text-blue-500" />,
+    classes: <BookOpen className="w-5 h-5 text-[#8C6B5D]" />,
     homework: <CheckSquare className="w-5 h-5 text-indigo-500" />,
     deadlines: <AlertCircle className="w-5 h-5 text-rose-500" />,
     carry: <Backpack className="w-5 h-5 text-emerald-500" />,
@@ -54,7 +54,7 @@ export const NotificationCenter: React.FC = () => {
           <h2 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-3">
             Inbox
             {unreadCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-xs font-bold tracking-wide">
+              <span className="px-2 py-0.5 rounded-full bg-[#8C6B5D]/10 dark:bg-[#8C6B5D]/20 text-[#8C6B5D] dark:text-[#CBB5A1] text-xs font-bold tracking-wide">
                 {unreadCount} New
               </span>
             )}
@@ -67,7 +67,7 @@ export const NotificationCenter: React.FC = () => {
         {notifications.length > 0 && (
           <button
             onClick={markAllNotificationsAsRead}
-            className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors flex items-center gap-1.5"
+            className="text-sm font-semibold text-[#8C6B5D] dark:text-[#CBB5A1] hover:text-[#7A5B4D] transition-colors flex items-center gap-1.5"
           >
             <CheckCheck className="w-4 h-4" />
             Mark all read
@@ -84,30 +84,28 @@ export const NotificationCenter: React.FC = () => {
               key={cat}
               onClick={() => setCategoryFilter(cat)}
               className={clsx(
-                'px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap',
+                'px-4 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap border shrink-0',
                 isSelected
-                  ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-md scale-105'
-                  : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800/80 dark:text-zinc-400 dark:hover:bg-zinc-700/80'
+                  ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100'
+                  : 'bg-zinc-50 text-zinc-500 border-zinc-200/60 hover:text-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-400 dark:border-zinc-800/80 dark:hover:text-zinc-200'
               )}
             >
-              <span className="capitalize">{cat === 'all' ? 'All Updates' : cat}</span>
+              {cat === 'all' ? 'All Alerts' : cat.charAt(0).toUpperCase() + cat.slice(1)}
             </button>
           );
         })}
       </div>
 
-      {/* Notifications List with smooth exit animations */}
+      {/* Notifications feed */}
       {filtered.length === 0 ? (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <EmptyState
-            icon={<Bell className="w-6 h-6 text-zinc-300" />}
-            title="All caught up"
-            description="You have no notifications in this view. Take a breath and relax."
-          />
-        </motion.div>
+        <EmptyState
+          icon={<Bell className="w-6 h-6 text-zinc-400" />}
+          title="Inbox is empty"
+          description="We'll notify you here about upcoming class alerts, homework deadlines, or backpack reminders."
+        />
       ) : (
         <div className="flex flex-col gap-3">
-          <AnimatePresence initial={false}>
+          <AnimatePresence mode="popLayout">
             {filtered.map((notif) => (
               <motion.div
                 key={notif.id}
@@ -124,7 +122,7 @@ export const NotificationCenter: React.FC = () => {
                 )}
               >
                 {!notif.read && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-3xl" />
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#8C6B5D] rounded-l-3xl" />
                 )}
 
                 <div className="flex gap-4">
