@@ -48,7 +48,7 @@ export const TomorrowCarryView: React.FC = () => {
       <div className="flex flex-col gap-4 pt-2 sm:pt-6">
         <div>
           <h1 className="text-[clamp(3rem,12vw,5.5rem)] font-medium tracking-tight leading-none text-black dark:text-white">
-            Bag<br />Carry,<br />Pack
+            Bag,<br />Carry,<br />Pack
           </h1>
           <div className="flex items-center gap-2 mt-3">
             <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-none border border-black dark:border-white text-black dark:text-white">
