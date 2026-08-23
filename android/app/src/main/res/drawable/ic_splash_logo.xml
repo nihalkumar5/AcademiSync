@@ -5,23 +5,8 @@
     android:viewportWidth="100"
     android:viewportHeight="100">
     
-    <!-- Mortarboard Diamond (Cap Top) -->
+    <!-- Completely transparent placeholder to hide the native static splash logo -->
     <path
-        android:fillColor="#8C6B5D"
-        android:pathData="M50,20 L90,40 L50,60 L10,40 Z" />
-    
-    <!-- Cap Skull/Base -->
-    <path
-        android:fillColor="#8C6B5D"
-        android:pathData="M26,48 L26,62 C26,72 74,72 74,62 L74,48 Z" />
-
-    <!-- Tassel String and Fringe -->
-    <path
-        android:fillColor="#8C6B5D"
-        android:pathData="M50,40 C35,42 32,54 32,64 L31,64 C30,64 30,67 32,67 C34,67 34,64 33,64 C33,54 36,42 50,40 Z" />
-
-    <!-- Tassel Bottom Brush/Dot -->
-    <path
-        android:fillColor="#8C6B5D"
-        android:pathData="M32,65 A2.5,2.5 0 1,1 31.9,65 Z" />
+        android:fillColor="#00000000"
+        android:pathData="M0,0 L1,1" />
 </vector>
