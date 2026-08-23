@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '@/context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Calendar, CheckSquare, Bell, Sparkles } from 'lucide-react';
+import { Calendar, CheckSquare, Bell } from 'lucide-react';
 import Image from 'next/image';
 
 const slides = [
@@ -223,7 +223,7 @@ export const OnboardingModal: React.FC = () => {
         </AnimatePresence>
 
         {/* Dynamic Animated Content Container with Right-Aligned 1.6x Square Icon */}
-        <div className="absolute top-0 inset-x-0 pt-8 sm:pt-12 px-7 sm:px-8 z-20 flex flex-col pointer-events-none">
+        <div className="absolute top-0 inset-x-0 pt-20 sm:pt-24 px-7 sm:px-8 z-20 flex flex-col pointer-events-none">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={`text-${currentIndex}`}
@@ -241,9 +241,10 @@ export const OnboardingModal: React.FC = () => {
                   transition={{ duration: 0.35, delay: 0.05, ease: 'easeOut' }}
                   className="text-[27px] sm:text-[31px] leading-[1.12] font-black tracking-tight text-[#2B1F16]"
                 >
-                  <span>{currentSlide.titleMain}</span>
-                  <br />
-                  <span className="text-[#96725B] drop-shadow-sm">
+                  <span className="font-cursive text-[36px] sm:text-[42px] font-medium tracking-normal text-[#8C6B5D] block mb-1">
+                    {currentSlide.titleMain}
+                  </span>
+                  <span className="text-[#2B1F16] dark:text-[#FDF8F4] drop-shadow-sm">
                     {currentSlide.titleAccent}
                   </span>
                 </motion.h1>
@@ -259,7 +260,7 @@ export const OnboardingModal: React.FC = () => {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.36, delay: 0.1, ease: 'easeOut' }}
-                className="text-[#6E5643] text-[13.5px] sm:text-[14.5px] leading-snug font-medium max-w-[250px] sm:max-w-[270px] mt-0.5"
+                className="text-[#6E5643] text-[13.5px] sm:text-[14.5px] leading-snug font-medium max-w-[250px] sm:max-w-[270px] mt-2"
               >
                 {currentSlide.description}
               </motion.p>
@@ -267,70 +268,64 @@ export const OnboardingModal: React.FC = () => {
           </AnimatePresence>
         </div>
 
-        {/* Bottom Interactive Navigation Bar (With Skip on Bottom-Left, Dots in Center, Arrow on Right) */}
-        <div className="absolute bottom-0 inset-x-0 p-7 sm:p-8 flex items-center justify-between z-20">
-          {/* Bottom Left Skip Button */}
+        {/* Bottom Controls Area (Black Button above Dots & Skip) */}
+        <div className="absolute bottom-0 inset-x-0 p-7 sm:p-8 flex flex-col gap-5 z-20">
+          {/* Black Next / Get Started Button */}
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleFinish}
-            className="text-[#664F3C] hover:text-[#2C2016] font-bold text-sm tracking-wide px-3 py-2 rounded-full hover:bg-black/5 active:bg-black/10 transition-all cursor-pointer touch-manipulation"
-          >
-            Skip
-          </motion.button>
-
-          {/* Animated and Generously Clickable Indicator Dots */}
-          <div className="flex items-center gap-1.5 pl-1">
-            {slides.map((s, i) => {
-              const isActive = i === currentIndex;
-              return (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => {
-                    setDirection(i > currentIndex ? 1 : -1);
-                    setCurrentIndex(i);
-                  }}
-                  className="p-2.5 -m-1 flex items-center justify-center cursor-pointer focus:outline-none touch-manipulation group"
-                  aria-label={`Go to slide ${i + 1}`}
-                >
-                  <motion.div
-                    animate={{
-                      width: isActive ? 28 : 8,
-                      backgroundColor: isActive ? '#8C6B5D' : '#D1BCA9',
-                      opacity: isActive ? 1 : 0.6,
-                    }}
-                    whileHover={{ scale: 1.25, opacity: 1 }}
-                    whileTap={{ scale: 0.9 }}
-                    transition={{ type: 'spring', stiffness: 380, damping: 26 }}
-                    className="h-2.5 rounded-full"
-                  />
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Next Floating Spring Button */}
-          <motion.button
-            whileHover={{ scale: 1.08, shadow: '0px 10px 20px rgba(140, 107, 93, 0.4)' }}
-            whileTap={{ scale: 0.92 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={handleNext}
-            className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-[#8C6B5D] hover:bg-[#7A5B4D] active:bg-[#684C3F] flex items-center justify-center text-[#FDF8F4] transition-colors shadow-[0_8px_20px_rgba(140,107,93,0.35)] focus:outline-none cursor-pointer touch-manipulation"
-            aria-label="Next slide"
+            className="w-full py-4 rounded-2xl bg-[#1A1918] hover:bg-[#2B2927] text-[#FDF8F4] font-bold text-sm tracking-wide transition-colors flex items-center justify-center cursor-pointer touch-manipulation shadow-md"
           >
-            <motion.div
-              key={currentIndex === slides.length - 1 ? 'finish' : 'next'}
-              initial={{ scale: 0.6, rotate: -45, opacity: 0 }}
-              animate={{ scale: 1, rotate: 0, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            >
-              {currentIndex === slides.length - 1 ? (
-                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
-              ) : (
-                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2.4} />
-              )}
-            </motion.div>
+            {currentIndex === slides.length - 1 ? 'Get Started' : 'Next'}
           </motion.button>
+
+          {/* Dots & Skip Row */}
+          <div className="flex items-center justify-between w-full">
+            {/* Skip Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleFinish}
+              className="text-[#664F3C] hover:text-[#2C2016] font-bold text-sm tracking-wide px-3 py-1.5 rounded-full hover:bg-black/5 active:bg-black/10 transition-all cursor-pointer touch-manipulation w-16 text-left"
+            >
+              Skip
+            </motion.button>
+
+            {/* Animated Dots */}
+            <div className="flex items-center gap-1.5">
+              {slides.map((s, i) => {
+                const isActive = i === currentIndex;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => {
+                      setDirection(i > currentIndex ? 1 : -1);
+                      setCurrentIndex(i);
+                    }}
+                    className="p-2.5 -m-1 flex items-center justify-center cursor-pointer focus:outline-none touch-manipulation group"
+                    aria-label={`Go to slide ${i + 1}`}
+                  >
+                    <motion.div
+                      animate={{
+                        width: isActive ? 28 : 8,
+                        backgroundColor: isActive ? '#8C6B5D' : '#D1BCA9',
+                        opacity: isActive ? 1 : 0.6,
+                      }}
+                      whileHover={{ scale: 1.25, opacity: 1 }}
+                      whileTap={{ scale: 0.9 }}
+                      transition={{ type: 'spring', stiffness: 380, damping: 26 }}
+                      className="h-2.5 rounded-full"
+                    />
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Spacer to center dots */}
+            <div className="w-16" />
+          </div>
         </div>
 
       </div>
