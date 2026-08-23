@@ -470,12 +470,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const packedCount = updated.filter((i) => i.isPacked).length;
     if (packedCount === updated.length && updated.length > 0) {
       triggerConfetti();
-      showToast('Bag Ready! 🎒', 'All required items for tomorrow are packed.', 'success');
+      showToast('Bag Ready! 🎒', 'All required items are packed.', 'success');
     }
   };
 
   const addCustomCarryItem = (title: string, dateStr?: string, reminderNote?: string) => {
-    const targetDate = dateStr || new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    const now = new Date();
+    const currentHour = now.getHours();
+    const defaultDate = currentHour >= 18 
+      ? new Date(Date.now() + 86400000).toISOString().split('T')[0] // Tomorrow
+      : new Date().toISOString().split('T')[0];                     // Today
+
+    const targetDate = dateStr || defaultDate;
     const newItem: CarryItem = {
       id: `carry_cust_${Date.now()}`,
       title,

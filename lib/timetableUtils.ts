@@ -138,11 +138,30 @@ export const calculateTomorrowCarryItems = (
   timetable: ClassSession[],
   subjects: Subject[],
   existingCarryItems: CarryItem[],
-  targetDateStr: string = getTomorrowDateString(),
-  targetDay: DayOfWeek = getTomorrowDayOfWeek()
+  targetDateStr?: string,
+  targetDay?: DayOfWeek
 ): CarryItem[] => {
+  const now = new Date();
+  const currentHour = now.getHours();
+
+  let defaultDateStr = '';
+  let defaultDay: DayOfWeek = 'Monday';
+
+  if (currentHour >= 18) {
+    // 6 PM or later: show tomorrow's classes
+    defaultDateStr = getTomorrowDateString();
+    defaultDay = getTomorrowDayOfWeek();
+  } else {
+    // Before 6 PM: show today's classes
+    defaultDateStr = getTodayDateString();
+    defaultDay = getCurrentDayOfWeek();
+  }
+
+  const resolvedDateStr = targetDateStr || defaultDateStr;
+  const resolvedDay = targetDay || defaultDay;
+
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
-  const tomorrowClasses = timetable.filter((s) => s.day === targetDay);
+  const tomorrowClasses = timetable.filter((s) => s.day === resolvedDay);
 
   // Collect items required from tomorrow's subjects
   const requiredMap = new Map<string, { subjectId: string; subjectName: string }>();
@@ -168,7 +187,7 @@ export const calculateTomorrowCarryItems = (
   // Map of existing items for the date to preserve packed state
   const existingMap = new Map(
     existingCarryItems
-      .filter((i) => i.date === targetDateStr)
+      .filter((i) => i.date === resolvedDateStr)
       .map((i) => [i.title.toLowerCase(), i])
   );
 
@@ -192,13 +211,13 @@ export const calculateTomorrowCarryItems = (
       subjectId: meta.subjectId,
       subjectName: meta.subjectName,
       isPacked: existing?.isPacked ?? false,
-      date: targetDateStr,
+      date: resolvedDateStr,
     });
   });
 
   // Also include custom items added by user for this date
   existingCarryItems
-    .filter((i) => i.date === targetDateStr && i.source === 'custom')
+    .filter((i) => i.date === resolvedDateStr && i.source === 'custom')
     .forEach((customItem) => {
       result.push(customItem);
     });

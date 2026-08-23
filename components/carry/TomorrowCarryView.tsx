@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import {
   getTomorrowDayOfWeek,
+  getCurrentDayOfWeek,
   timeToMinutes,
 } from '@/lib/timetableUtils';
 import { CarryItemRow } from './CarryItemRow';
@@ -23,24 +24,28 @@ export const TomorrowCarryView: React.FC = () => {
 
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const tomorrowDay = getTomorrowDayOfWeek();
+  const now = new Date();
+  const currentHour = now.getHours();
+  const isAfter6PM = currentHour >= 18;
+
+  const targetDay = isAfter6PM ? getTomorrowDayOfWeek() : getCurrentDayOfWeek();
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
-  // Tomorrow's classes
-  const tomorrowClasses = timetable
-    .filter((s) => s.day === tomorrowDay)
+  // Target day's classes
+  const targetClasses = timetable
+    .filter((s) => s.day === targetDay)
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
-  // Carry items for tomorrow
+  // Carry items for target day
   const packedCount = carryItems.filter((i) => i.isPacked).length;
   const totalCount = carryItems.length;
   const progressPercent = totalCount > 0 ? Math.round((packedCount / totalCount) * 100) : 0;
 
-  const tomorrowFormatted = new Intl.DateTimeFormat('en-US', {
+  const targetFormatted = new Intl.DateTimeFormat('en-US', {
     weekday: 'long',
     month: 'short',
     day: 'numeric',
-  }).format(new Date(Date.now() + 86400000));
+  }).format(isAfter6PM ? new Date(Date.now() + 86400000) : new Date());
 
   return (
     <div className="flex flex-col gap-6 text-left max-w-4xl mx-auto w-full pb-12 font-sans">
@@ -52,12 +57,12 @@ export const TomorrowCarryView: React.FC = () => {
           </h1>
           <div className="flex items-center gap-2 mt-3">
             <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-none border border-black dark:border-white text-black dark:text-white">
-              {tomorrowDay}
+              {targetDay}
             </span>
           </div>
           <p className="text-sm sm:text-base text-black/60 dark:text-white/60 mt-3 font-normal leading-relaxed max-w-md flex items-center gap-1.5">
             <CalendarDays className="w-4 h-4 shrink-0" />
-            <span>Packing list for tomorrow · {tomorrowFormatted}</span>
+            <span>Packing list for {isAfter6PM ? 'tomorrow' : 'today'} · {targetFormatted}</span>
           </p>
         </div>
 
@@ -75,25 +80,25 @@ export const TomorrowCarryView: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Tomorrow's Classes Schedule */}
+        {/* Left Column: Schedule */}
         <div className="lg:col-span-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-bold text-black dark:text-white tracking-widest uppercase flex items-center gap-2">
               <Clock className="w-3.5 h-3.5" />
-              Tomorrow&apos;s Schedule
+              {isAfter6PM ? "Tomorrow's Schedule" : "Today's Schedule"}
             </h2>
             <span className="text-[11px] font-mono font-bold border border-black dark:border-white text-black dark:text-white px-2 py-0.5">
-              {tomorrowClasses.length} lectures
+              {targetClasses.length} lectures
             </span>
           </div>
 
           <div className="flex flex-col gap-2">
-            {tomorrowClasses.length === 0 ? (
+            {targetClasses.length === 0 ? (
               <div className="p-6 border border-black dark:border-white text-center text-xs text-black/60 dark:text-white/60 font-medium">
-                No classes scheduled for tomorrow. Enjoy your break!
+                No classes scheduled for {isAfter6PM ? 'tomorrow' : 'today'}. Enjoy your break!
               </div>
             ) : (
-              tomorrowClasses.map((sess) => {
+              targetClasses.map((sess) => {
                 const sub = subjectMap.get(sess.subjectId);
                 return (
                   <div
@@ -159,8 +164,8 @@ export const TomorrowCarryView: React.FC = () => {
             {carryItems.length === 0 ? (
               <EmptyState
                 icon={<Backpack className="w-5 h-5 text-black/50 dark:text-white/50" />}
-                title="Nothing special to carry tomorrow"
-                description="Either tomorrow is a free day or no carry requirements are configured for tomorrow's classes."
+                title={`Nothing special to carry ${isAfter6PM ? 'tomorrow' : 'today'}`}
+                description={`Either ${isAfter6PM ? 'tomorrow' : 'today'} is a free day or no carry requirements are configured for ${isAfter6PM ? "tomorrow's" : "today's"} classes.`}
                 actionLabel="Add Custom Item"
                 onAction={() => setShowAddModal(true)}
               />
