@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     if (apiKey && imageBase64) {
       try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
         const prompt = `You are an academic homework extractor assistant for engineering students.
 Analyze this uploaded assignment handout, problem sheet, or notice image and extract the task details in strict JSON.
