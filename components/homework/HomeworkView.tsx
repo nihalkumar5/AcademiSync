@@ -141,7 +141,7 @@ export const HomeworkView: React.FC = () => {
               onClick={() => setStatusFilter(tab.id as any)}
               className={`relative flex items-center gap-2 px-4 py-2 rounded-none text-xs font-bold border transition-all shrink-0 cursor-pointer ${
                 isSelected
-                  ? 'bg-black text-white border-black dark:bg-white dark:text-black dark:border-white shadow-none'
+                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/20'
                   : 'bg-white text-black/70 border-black/20 hover:border-black dark:bg-zinc-950 dark:text-white/70 dark:border-white/20 dark:hover:border-white'
               }`}
             >
@@ -149,7 +149,7 @@ export const HomeworkView: React.FC = () => {
               <span
                 className={`relative z-10 text-[10px] font-mono px-1.5 py-0.2 rounded-none border ${
                   isSelected
-                    ? 'bg-white text-black border-white dark:bg-black dark:text-white dark:border-black'
+                    ? 'bg-white/20 text-white border-white/30'
                     : 'bg-black/5 dark:bg-white/5 border-transparent opacity-75'
                 }`}
               >
