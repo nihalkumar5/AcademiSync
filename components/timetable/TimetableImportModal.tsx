@@ -128,7 +128,8 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     extractedSessions.forEach((extSession, idx) => {
       // Find matching subject
       let matchedSubject = newSubjects.find(
-        (s) => s.name.toLowerCase() === extSession.subjectName.toLowerCase() || s.code === extSession.subjectCode
+        (s) => s.name.toLowerCase() === extSession.subjectName.toLowerCase() || 
+               (extSession.subjectCode && s.code && s.code.toLowerCase() === extSession.subjectCode.toLowerCase())
       );
 
       if (!matchedSubject) {
