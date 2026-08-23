@@ -6,6 +6,11 @@ export const metadata: Metadata = {
   title: 'Intersemester — Your Academic Life, Organized',
   description:
     'Smart academic assistant that helps students manage their classes, tasks, deadlines, and everyday campus life with clarity and calm.',
+  icons: {
+    icon: '/icon.png',
+    shortcut: '/icon.png',
+    apple: '/icon.png',
+  },
 };
 
 import { ClerkProvider } from '@clerk/nextjs';
