@@ -15,7 +15,7 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 4000, // Show splash screen for 4 seconds to hide WebView load
+      launchShowDuration: 0, // Show native splash screen for 0 seconds to immediately display Next.js splash
       launchAutoHide: true,
       backgroundColor: '#FAFAF8',
       androidScaleType: 'CENTER_CROP',
