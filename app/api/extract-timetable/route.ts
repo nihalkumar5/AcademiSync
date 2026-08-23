@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { mergeConsecutiveSessions } from '@/lib/timetableUtils';
 
 export async function POST(req: Request) {
   try {
@@ -62,9 +63,10 @@ Return ONLY raw valid JSON array:
         const parsed = JSON.parse(cleanedJson);
 
         if (Array.isArray(parsed) && parsed.length > 0) {
+          const merged = mergeConsecutiveSessions(parsed);
           return NextResponse.json({
             success: true,
-            sessions: parsed,
+            sessions: merged,
             source: fileName || 'Gemini Vision OCR',
           });
         }

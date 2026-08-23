@@ -1,4 +1,4 @@
-import { DayOfWeek, ClassSession, Subject, CarryItem, Homework } from './types';
+import { DayOfWeek, ClassSession, Subject, CarryItem, Homework, ExtractedClassSession } from './types';
 
 export const DAYS_OF_WEEK: DayOfWeek[] = [
   'Monday',
@@ -291,4 +291,85 @@ export const calculateTodayFocus = (
   });
 
   return items;
+};
+
+/**
+ * Automatically merges consecutive extracted class sessions of the same subject on the same day.
+ */
+export const mergeConsecutiveSessions = (
+  sessions: ExtractedClassSession[]
+): ExtractedClassSession[] => {
+  if (!sessions || sessions.length <= 1) return sessions;
+
+  // Group sessions by day
+  const sessionsByDay: Record<string, ExtractedClassSession[]> = {};
+  sessions.forEach((s) => {
+    if (!sessionsByDay[s.day]) {
+      sessionsByDay[s.day] = [];
+    }
+    sessionsByDay[s.day].push(s);
+  });
+
+  const mergedSessions: ExtractedClassSession[] = [];
+
+  // Helper to convert HH:MM to minutes
+  const toMins = (t: string) => {
+    const [h, m] = t.split(':').map(Number);
+    return h * 60 + (m || 0);
+  };
+
+  // Helper to format minutes to HH:MM
+  const toTimeStr = (mins: number) => {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  };
+
+  Object.keys(sessionsByDay).forEach((day) => {
+    const daySessions = sessionsByDay[day];
+
+    // Sort by start time
+    daySessions.sort((a, b) => toMins(a.startTime) - toMins(b.startTime));
+
+    const mergedDaySessions: ExtractedClassSession[] = [];
+
+    daySessions.forEach((current) => {
+      if (mergedDaySessions.length === 0) {
+        mergedDaySessions.push({ ...current });
+        return;
+      }
+
+      const last = mergedDaySessions[mergedDaySessions.length - 1];
+
+      // Check if they are the same subject
+      const sameSubject =
+        last.subjectName.trim().toLowerCase() === current.subjectName.trim().toLowerCase();
+
+      // Check if they are consecutive or overlap
+      const lastEnd = toMins(last.endTime);
+      const currStart = toMins(current.startTime);
+      const currEnd = toMins(current.endTime);
+
+      // We allow up to 15 minutes of gap or exact overlap
+      const isConsecutive = currStart >= lastEnd && (currStart - lastEnd) <= 15;
+      const isOverlap = currStart < lastEnd && currEnd > lastEnd;
+
+      if (sameSubject && (isConsecutive || isOverlap)) {
+        // Merge them!
+        const maxEndMins = Math.max(lastEnd, currEnd);
+        last.endTime = toTimeStr(maxEndMins);
+
+        // Merge faculty and room if one is missing
+        if (!last.faculty && current.faculty) last.faculty = current.faculty;
+        if (!last.room && current.room) last.room = current.room;
+        if (current.isLab) last.isLab = true;
+      } else {
+        mergedDaySessions.push({ ...current });
+      }
+    });
+
+    mergedSessions.push(...mergedDaySessions);
+  });
+
+  return mergedSessions;
 };

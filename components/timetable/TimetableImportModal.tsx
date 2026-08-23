@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ExtractedClassSession, DayOfWeek, ClassSession, Subject } from '@/lib/types';
-import { DAYS_OF_WEEK } from '@/lib/timetableUtils';
+import { DAYS_OF_WEEK, mergeConsecutiveSessions } from '@/lib/timetableUtils';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Upload, Sparkles, Check, Trash2, Plus, ShieldAlert } from 'lucide-react';
@@ -50,7 +50,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
 
       const data = await res.json();
       if (data.success && Array.isArray(data.sessions)) {
-        setExtractedSessions(data.sessions);
+        setExtractedSessions(mergeConsecutiveSessions(data.sessions));
       } else {
         // Fallback for demo
         setExtractedSessions([
