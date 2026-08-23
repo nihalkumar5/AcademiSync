@@ -61,7 +61,7 @@ export const storage = {
   setProfile: (profile: StudentProfile) => setStoredItem(STORAGE_KEYS.PROFILE, profile),
 
   getSubjects: (): Subject[] => {
-    const rawSubjects = getStoredItem<Subject[]>(STORAGE_KEYS.SUBJECTS, DEFAULT_SUBJECTS);
+    const rawSubjects = getStoredItem<Subject[]>(STORAGE_KEYS.SUBJECTS, []);
     const colorMap: Record<string, string> = {
       '#3b82f6': '#7A8B99', // Blue -> Cozy Slate
       '#3B82F6': '#7A8B99',
@@ -97,19 +97,19 @@ export const storage = {
   },
   setSubjects: (subjects: Subject[]) => setStoredItem(STORAGE_KEYS.SUBJECTS, subjects),
 
-  getTimetable: (): ClassSession[] => getStoredItem(STORAGE_KEYS.TIMETABLE, DEFAULT_TIMETABLE),
+  getTimetable: (): ClassSession[] => getStoredItem(STORAGE_KEYS.TIMETABLE, []),
   setTimetable: (sessions: ClassSession[]) => setStoredItem(STORAGE_KEYS.TIMETABLE, sessions),
 
-  getHomework: (): Homework[] => getStoredItem(STORAGE_KEYS.HOMEWORK, DEFAULT_HOMEWORK),
+  getHomework: (): Homework[] => getStoredItem(STORAGE_KEYS.HOMEWORK, []),
   setHomework: (hw: Homework[]) => setStoredItem(STORAGE_KEYS.HOMEWORK, hw),
 
   getCarryItems: (): CarryItem[] => getStoredItem(STORAGE_KEYS.CARRY_ITEMS, []),
   setCarryItems: (items: CarryItem[]) => setStoredItem(STORAGE_KEYS.CARRY_ITEMS, items),
 
-  getNotifications: (): AppNotification[] => getStoredItem(STORAGE_KEYS.NOTIFICATIONS, DEFAULT_NOTIFICATIONS),
+  getNotifications: (): AppNotification[] => getStoredItem(STORAGE_KEYS.NOTIFICATIONS, []),
   setNotifications: (notifs: AppNotification[]) => setStoredItem(STORAGE_KEYS.NOTIFICATIONS, notifs),
 
-  getEvents: (): AcademicEvent[] => getStoredItem(STORAGE_KEYS.EVENTS, DEFAULT_EVENTS),
+  getEvents: (): AcademicEvent[] => getStoredItem(STORAGE_KEYS.EVENTS, []),
   setEvents: (events: AcademicEvent[]) => setStoredItem(STORAGE_KEYS.EVENTS, events),
 
   getSettings: (): UserSettings => getStoredItem(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS),

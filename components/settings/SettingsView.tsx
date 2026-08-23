@@ -85,7 +85,7 @@ export const SettingsView: React.FC = () => {
   const executeReset = async () => {
     setIsHolding(false);
     await resetAllData();
-    showToast('Reset Complete', 'Workspace restored to default curriculum.', 'info');
+    showToast('Workspace Cleared', 'All schedule and task data has been erased.', 'info');
     setTimeout(() => {
       window.location.reload();
     }, 600);
@@ -548,7 +548,7 @@ export const SettingsView: React.FC = () => {
                 className="w-full flex items-center justify-center gap-2 py-2.5 border border-rose-500 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white text-xs font-semibold transition-colors cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                <span>Reset to Sample Curriculum</span>
+                <span>Clear All Workspace Data</span>
               </motion.button>
             </div>
           </div>
@@ -631,10 +631,10 @@ export const SettingsView: React.FC = () => {
 
               <div>
                 <h3 className="text-lg font-bold text-black dark:text-white tracking-tight">
-                  Reset All Workspace Data?
+                  Erase All Workspace Data?
                 </h3>
                 <p className="text-xs sm:text-sm text-black/60 dark:text-white/60 leading-relaxed mt-1.5">
-                  This action will <strong className="text-rose-600 dark:text-rose-400 font-semibold">permanently erase</strong> your custom classes, homework assignments, exams, and attendance history, restoring the sample semester batch.
+                  This action will <strong className="text-rose-600 dark:text-rose-400 font-semibold">permanently erase</strong> all your classes, homework assignments, exams, and custom items, giving you a completely blank workspace.
                 </p>
               </div>
 
@@ -659,10 +659,10 @@ export const SettingsView: React.FC = () => {
                     }`}
                   >
                     {holdProgress >= 100
-                      ? 'Resetting Data...'
+                      ? 'Clearing Data...'
                       : isHolding
                       ? `Hold to confirm (${Math.round((100 - holdProgress) / 40)}s)`
-                      : 'Press & Hold for 2.5s to Reset'}
+                      : 'Press & Hold for 2.5s to Clear'}
                   </span>
                 </div>
 
