@@ -6,9 +6,11 @@ import { ClassSession, Subject } from './types';
 const ensureNotificationChannel = async () => {
   if (!Capacitor.isNativePlatform()) return;
   try {
+    // We use class_alerts_v2 to force Android to register a new channel
+    // and bypass any cached lower-priority channel settings.
     await LocalNotifications.createChannel({
-      id: 'class_alerts',
-      name: 'Class Alerts',
+      id: 'class_alerts_v2',
+      name: 'Class Alerts (High Priority)',
       description: 'High priority alarms for upcoming classes with sound and lockscreen display',
       importance: 5,   // 5 = Max/High importance (heads-up banner pop-up + sound)
       visibility: 1,   // 1 = Public (displays content on lock screen)
@@ -47,7 +49,7 @@ export const triggerLocalNotification = async (title: string, body: string) => {
           id: Math.floor(Math.random() * 100000) + 1,
           schedule: { at: new Date(Date.now() + 1000) }, // 1 second delay
           sound: 'default',
-          channelId: 'class_alerts', // Directs it to our high priority channel
+          channelId: 'class_alerts_v2', // Directs it to our high priority channel
           attachments: [],
           actionTypeId: '',
           extra: null,
@@ -142,7 +144,7 @@ export const scheduleTimetableLocalNotifications = async (
           },
         },
         sound: 'default',
-        channelId: 'class_alerts', // Enforces sound/banner on Android
+        channelId: 'class_alerts_v2', // Enforces sound/banner on Android
         extra: null,
       });
     }
