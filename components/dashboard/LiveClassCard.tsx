@@ -89,9 +89,9 @@ export const LiveClassCard: React.FC = () => {
           const [nextTimeVal, nextAmPm] = nextTimeStr.split(' ');
           
           return (
-            <div className="bg-white dark:bg-[#1C1C1E] border border-black/10 dark:border-white/10 rounded-[20px] p-2.5 sm:p-3 flex flex-row items-center justify-between gap-3 w-full shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+            <div className="bg-white dark:bg-[#1C1C1E] border border-black/10 dark:border-white/10 rounded-none p-2.5 sm:p-3 flex flex-row items-center justify-between gap-3 w-full shadow-sm hover:shadow-md transition-shadow cursor-pointer">
               {/* Left: Time Box */}
-              <div className="bg-black text-white dark:bg-white dark:text-black rounded-[14px] w-[55px] h-[55px] sm:w-[60px] sm:h-[60px] flex flex-col items-center justify-center shrink-0">
+              <div className="bg-black text-white dark:bg-white dark:text-black rounded-none w-[55px] h-[55px] sm:w-[60px] sm:h-[60px] flex flex-col items-center justify-center shrink-0">
                 <span className="text-[15px] sm:text-[17px] font-bold leading-none mb-0.5 tracking-tight">{nextTimeVal}</span>
                 <span className="text-[10px] sm:text-[11px] font-bold opacity-90 uppercase leading-none">{nextAmPm}</span>
               </div>
