@@ -21,6 +21,7 @@ import { AddHomeworkModal } from '../homework/AddHomeworkModal';
 import { AddCustomItemModal } from '../carry/AddCustomItemModal';
 import { TimetableImportModal } from '../timetable/TimetableImportModal';
 import { HomeworkScanModal } from '../homework/HomeworkScanModal';
+import { CalendarImportModal } from '../calendar/CalendarImportModal';
 
 export const Header: React.FC = () => {
   const {
@@ -37,6 +38,7 @@ export const Header: React.FC = () => {
   const [showAddCarryModal, setShowAddCarryModal] = useState(false);
   const [showTimetableImportModal, setShowTimetableImportModal] = useState(false);
   const [showHwScanModal, setShowHwScanModal] = useState(false);
+  const [showCalendarImportModal, setShowCalendarImportModal] = useState(false);
 
   // Header Real-time live clock
   const [currentTime, setCurrentTime] = useState<string>('');
@@ -196,6 +198,17 @@ export const Header: React.FC = () => {
                     <Upload className="w-4 h-4" />
                     Import Timetable (AI)
                   </button>
+
+                  <button
+                    onClick={() => {
+                      setAddMenuOpen(false);
+                      setShowCalendarImportModal(true);
+                    }}
+                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-left"
+                  >
+                    <Calendar className="w-4 h-4" />
+                    Import Academic Calendar (AI)
+                  </button>
                 </div>
               </>
             )}
@@ -208,6 +221,7 @@ export const Header: React.FC = () => {
       <AddCustomItemModal isOpen={showAddCarryModal} onClose={() => setShowAddCarryModal(false)} />
       <TimetableImportModal isOpen={showTimetableImportModal} onClose={() => setShowTimetableImportModal(false)} />
       <HomeworkScanModal isOpen={showHwScanModal} onClose={() => setShowHwScanModal(false)} />
+      <CalendarImportModal isOpen={showCalendarImportModal} onClose={() => setShowCalendarImportModal(false)} />
     </>
   );
 };

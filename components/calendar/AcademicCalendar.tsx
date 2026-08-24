@@ -6,6 +6,7 @@ import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
+import { CalendarImportModal } from './CalendarImportModal';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -16,6 +17,7 @@ import {
   CheckCircle,
   AlertTriangle,
   Flag,
+  Sparkles,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -25,6 +27,7 @@ export const AcademicCalendar: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [showAddEventModal, setShowAddEventModal] = useState(false);
+  const [showImportCalendarModal, setShowImportCalendarModal] = useState(false);
 
   // New Event Form State
   const [newTitle, setNewTitle] = useState('');
@@ -110,15 +113,29 @@ export const AcademicCalendar: React.FC = () => {
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => setShowAddEventModal(true)}
-          className="gap-1.5"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>Add Event</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() => setShowImportCalendarModal(true)}
+            className="gap-1.5 rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>AI Import Calendar</span>
+          </Button>
+
+          <Button
+            variant="primary"
+            size="sm"
+            type="button"
+            onClick={() => setShowAddEventModal(true)}
+            className="gap-1.5 rounded-none bg-black text-white dark:bg-white dark:text-black border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Event</span>
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -337,6 +354,12 @@ export const AcademicCalendar: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {/* AI Calendar Import Modal */}
+      <CalendarImportModal
+        isOpen={showImportCalendarModal}
+        onClose={() => setShowImportCalendarModal(false)}
+      />
     </div>
   );
 };
