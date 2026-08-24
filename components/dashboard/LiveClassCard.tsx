@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { getLiveClassStatus, formatTime12Hour } from '@/lib/timetableUtils';
-import { Clock, MapPin, User, CheckCircle2 } from 'lucide-react';
+import { Clock, MapPin, User, CheckCircle2, ChevronRight } from 'lucide-react';
 
 export const LiveClassCard: React.FC = () => {
   const { timetable, subjects } = useApp();
@@ -104,47 +104,43 @@ export const LiveClassCard: React.FC = () => {
   if (nextClass) {
     const sub = nextClass.subject;
     const session = nextClass.session;
-    return (
-      <div className="glass-card p-5 sm:p-6 text-left flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <span className="text-[10.5px] font-mono font-bold border border-black dark:border-white text-black dark:text-white px-2 py-0.5">
-              {formatTime12Hour(session.startTime)}
-            </span>
-            <span className="text-[11px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest">Next Class</span>
-          </div>
+    const timeString = formatTime12Hour(session.startTime);
+    const [timeValue, ampm] = timeString.split(' ');
 
-          <h3 className="text-lg font-bold text-black dark:text-white tracking-tight mt-1">
+    return (
+      <div className="bg-white dark:bg-[#1C1C1E] border border-black/10 dark:border-white/10 rounded-[20px] p-2.5 sm:p-3 flex flex-row items-center justify-between gap-3 w-full shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+        
+        {/* Left: Time Box */}
+        <div className="bg-black text-white dark:bg-white dark:text-black rounded-[14px] w-[55px] h-[55px] sm:w-[60px] sm:h-[60px] flex flex-col items-center justify-center shrink-0">
+          <span className="text-[15px] sm:text-[17px] font-bold leading-none mb-0.5 tracking-tight">{timeValue}</span>
+          <span className="text-[10px] sm:text-[11px] font-bold opacity-90 uppercase leading-none">{ampm}</span>
+        </div>
+
+        {/* Middle: Info */}
+        <div className="flex-1 min-w-0 flex flex-col justify-center px-1">
+          <h3 className="text-[14px] sm:text-[15px] font-bold text-slate-900 dark:text-zinc-100 truncate">
             {sub?.name || 'Class Session'}
           </h3>
-
-          <div className="flex items-center gap-3 text-xs text-black/50 dark:text-white/50 font-medium">
-            <span className="flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5" />
-              {session.room}
-            </span>
-            {session.faculty && (
-              <>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <User className="w-3.5 h-3.5" />
-                  {session.faculty}
-                </span>
-              </>
-            )}
+          <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-[12px] text-slate-500 dark:text-zinc-400 mt-0.5 font-medium truncate">
+            <span className="shrink-0">{session.room ? `Room ${session.room}` : 'No Room'}</span>
+            <span className="shrink-0">•</span>
+            <span className="truncate">{session.faculty || 'No Faculty'}</span>
           </div>
         </div>
 
-        <div className="shrink-0">
-          <div className="flex items-center sm:flex-col justify-center px-4 py-2 sm:p-3 border border-black dark:border-white text-black dark:text-white">
-            <span className="text-xl sm:text-2xl font-black font-mono tracking-tight leading-none mr-1 sm:mr-0">
+        {/* Right: Countdown & Chevron */}
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0 pl-2 sm:pl-4 border-l border-black/10 dark:border-white/10 pr-1 sm:pr-2">
+          <div className="flex flex-col items-center justify-center min-w-[32px]">
+            <span className="text-[18px] sm:text-[22px] font-bold text-slate-900 dark:text-zinc-100 leading-none mb-1">
               {nextClass.minutesUntilStart}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider">
-              {nextClass.minutesUntilStart === 1 ? 'min' : 'mins'}
+            <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-zinc-400 leading-none tracking-wide">
+              MINS
             </span>
           </div>
+          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 dark:text-zinc-500 shrink-0" />
         </div>
+
       </div>
     );
   }
