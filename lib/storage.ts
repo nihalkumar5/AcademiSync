@@ -141,6 +141,9 @@ export const storage = {
       homework: storage.getHomework(),
       carryItems: storage.getCarryItems(),
       settings: storage.getSettings(),
+      events: storage.getEvents(),
+      exams: storage.getExams(),
+      cancelledSessions: storage.getCancelledSessions(),
       exportedAt: new Date().toISOString(),
     }, null, 2);
   },
@@ -154,6 +157,9 @@ export const storage = {
       if (data.homework) storage.setHomework(data.homework);
       if (data.carryItems) storage.setCarryItems(data.carryItems);
       if (data.settings) storage.setSettings(data.settings);
+      if (data.events) storage.setEvents(data.events);
+      if (data.exams) storage.setExams(data.exams);
+      if (data.cancelledSessions) storage.setCancelledSessions(data.cancelledSessions);
       return true;
     } catch (e) {
       console.error('Import failed:', e);

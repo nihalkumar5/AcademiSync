@@ -123,6 +123,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const unsubscribe = onSnapshot(userRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
+        
+        if (typeof window !== 'undefined') {
+          const localLastUpdated = parseInt(window.localStorage.getItem('iiitnr_last_updated') || '0', 10);
+          if (data.lastUpdated && data.lastUpdated < localLastUpdated) {
+            console.log('Firebase data is older than local data. Skipping down-sync to prevent clobbering.');
+            return;
+          }
+        }
+        
         remoteStateString.current = JSON.stringify(data);
         
         if (data.profile) { setProfileState(data.profile); storage.setProfile(data.profile); }
@@ -144,8 +153,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     if (!isClerkLoaded || !user || !isHydrated) return;
     
+    const now = Date.now();
+    if (typeof window !== 'undefined') window.localStorage.setItem('iiitnr_last_updated', now.toString());
     const currentState = {
-      profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions
+      profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions, lastUpdated: now
     };
     
     const currentString = JSON.stringify(currentState);
@@ -170,6 +181,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const loadedEvents = storage.getEvents();
     const loadedSettings = storage.getSettings();
     const loadedCancelled = storage.getCancelledSessions();
+    const loadedExams = storage.getExams();
 
     setProfileState(loadedProfile);
     setSubjectsState(loadedSubjects);
@@ -177,6 +189,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setHomeworkState(loadedHomework);
     setNotificationsState(loadedNotifications);
     setEventsState(loadedEvents);
+    setExamsState(loadedExams);
     setSettingsState(loadedSettings);
     setCancelledSessionsState(loadedCancelled);
 
