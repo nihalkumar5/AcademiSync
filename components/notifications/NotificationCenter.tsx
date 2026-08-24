@@ -106,52 +106,56 @@ export const NotificationCenter: React.FC = () => {
           description="We'll notify you here about upcoming class alerts, homework deadlines, or backpack reminders."
         />
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4 sm:gap-6 mt-2">
           <AnimatePresence mode="popLayout">
             {filtered.map((notif) => (
               <motion.div
                 key={notif.id}
-                initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                initial={{ opacity: 0, y: 20, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
                 layout
                 onClick={() => markNotificationAsRead(notif.id)}
                 className={clsx(
-                  'group relative flex flex-col sm:flex-row sm:items-start justify-between gap-4 p-5 rounded-3xl transition-all cursor-pointer overflow-hidden',
+                  'group relative flex flex-col sm:flex-row sm:items-start justify-between gap-5 p-6 sm:p-7 rounded-[2rem] transition-all cursor-pointer overflow-hidden border',
                   notif.read
-                    ? 'bg-zinc-50 dark:bg-zinc-900/30 border border-transparent opacity-60 hover:opacity-100'
-                    : 'bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]'
+                    ? 'bg-zinc-50/50 dark:bg-zinc-900/20 border-transparent opacity-70 hover:opacity-100 hover:bg-zinc-50 dark:hover:bg-zinc-900/40'
+                    : 'bg-white dark:bg-[#1A1A1A] border-zinc-100 dark:border-zinc-800 shadow-sm hover:shadow-md'
                 )}
               >
                 {!notif.read && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#8C6B5D] rounded-l-3xl" />
+                  <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-[#8C6B5D] to-[#D5C5B4] rounded-l-[2rem]" />
                 )}
 
-                <div className="flex gap-4">
-                  <div className="p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 shrink-0 mt-0.5">
+                <div className="flex gap-5 sm:gap-6 w-full">
+                  <div className={clsx(
+                    'w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 mt-0.5',
+                    notif.read ? 'bg-zinc-100 dark:bg-zinc-800/50' : 'bg-[#FEF9C3]/50 dark:bg-[#8C6B5D]/10'
+                  )}>
                     {categoryIcons[notif.category] || <Bell className="w-5 h-5 text-zinc-400" />}
                   </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <h4
-                      className={clsx(
-                        'text-sm font-bold tracking-tight',
-                        notif.read ? 'text-zinc-600 dark:text-zinc-300' : 'text-zinc-900 dark:text-zinc-100'
-                      )}
-                    >
-                      {notif.title}
-                    </h4>
+                  <div className="flex flex-col gap-2.5 w-full">
+                    <div className="flex items-start justify-between gap-4">
+                      <h4
+                        className={clsx(
+                          'text-base sm:text-lg font-black tracking-tight',
+                          notif.read ? 'text-zinc-600 dark:text-zinc-400' : 'text-zinc-900 dark:text-zinc-50'
+                        )}
+                      >
+                        {notif.title}
+                      </h4>
+                      <span className="font-mono text-[11px] font-bold tracking-widest uppercase text-zinc-400 shrink-0 mt-1">
+                        {new Date(notif.timestamp).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
 
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-xl">
+                    <p className="text-[15px] sm:text-base text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed max-w-2xl pr-8">
                       {notif.message}
                     </p>
-
-                    <span className="text-xs font-semibold text-zinc-400 mt-1">
-                      {new Date(notif.timestamp).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
                   </div>
                 </div>
 
@@ -160,7 +164,7 @@ export const NotificationCenter: React.FC = () => {
                     e.stopPropagation();
                     deleteNotification(notif.id);
                   }}
-                  className="absolute right-4 top-4 opacity-0 group-hover:opacity-100 p-2 bg-rose-50 text-rose-500 hover:bg-rose-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/40 rounded-full transition-all shrink-0"
+                  className="absolute right-4 bottom-4 sm:right-6 sm:top-6 sm:bottom-auto opacity-0 group-hover:opacity-100 p-2.5 bg-rose-50 text-rose-500 hover:bg-rose-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/40 rounded-xl transition-all shrink-0"
                   title="Remove"
                 >
                   <Trash2 className="w-4 h-4" />

@@ -130,7 +130,7 @@ export const scheduleTimetableLocalNotifications = async (
       const notifId = i + 1000; // Offset to separate from demo/test notifications
 
       notificationsToSchedule.push({
-        title: `Class in ${reminderMinutes} mins: ${sub.shortName || sub.name}`,
+        title: `Class in ${reminderMinutes} mins: ${sub.name}`,
         body: `${session.isLab || sub.isLab ? 'Lab' : 'Lecture'} at ${session.room || sub.room} starts at ${session.startTime}`,
         id: notifId,
         schedule: {

@@ -53,8 +53,8 @@ export const checkAndGenerateSmartNotifications = (
     if (diff > 0 && diff <= maxReminderMins && !existingIds.has(remindKey)) {
       newNotifications.push({
         id: `notif_${Date.now()}_cr_${session.id}`,
-        title: `⏰ ${sub?.shortName || sub?.name || 'Class'} in ${diff} mins`,
-        message: `${sub?.name || 'Lecture'} starts at ${formatTime12Hour(session.startTime)} in ${session.room}${session.faculty ? ` with ${session.faculty}` : ''}.`,
+        title: `⏰ Class in ${diff} mins: ${sub?.name || 'Lecture'}`,
+        message: `Starts at ${formatTime12Hour(session.startTime)} in ${session.room}${session.faculty ? ` with ${session.faculty}` : ''}.`,
         category: 'classes',
         timestamp: new Date().toISOString(),
         read: false,
