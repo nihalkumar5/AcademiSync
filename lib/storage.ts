@@ -31,6 +31,7 @@ const STORAGE_KEYS = {
   EVENTS: 'iiitnr_events_v2',
   SETTINGS: 'iiitnr_settings_v2',
   EXAMS: 'iiitnr_exams_v2',
+  CANCELLED_SESSIONS: 'iiitnr_cancelled_sessions_v1',
 };
 
 // Safe LocalStorage helpers
@@ -117,6 +118,9 @@ export const storage = {
 
   getExams: (): Exam[] => getStoredItem(STORAGE_KEYS.EXAMS, []),
   setExams: (exams: Exam[]) => setStoredItem(STORAGE_KEYS.EXAMS, exams),
+
+  getCancelledSessions: (): string[] => getStoredItem(STORAGE_KEYS.CANCELLED_SESSIONS, []),
+  setCancelledSessions: (cancelled: string[]) => setStoredItem(STORAGE_KEYS.CANCELLED_SESSIONS, cancelled),
 
   resetAll: () => {
     if (typeof window === 'undefined') return;

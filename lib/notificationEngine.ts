@@ -7,7 +7,8 @@ export const checkAndGenerateSmartNotifications = (
   homework: Homework[],
   events: AcademicEvent[],
   settings: UserSettings,
-  existingNotifications: AppNotification[]
+  existingNotifications: AppNotification[],
+  cancelledSessionKeys: string[] = []
 ): AppNotification[] => {
   const newNotifications: AppNotification[] = [];
   const existingIds = new Set(existingNotifications.map((n) => n.relatedId || n.id));
@@ -20,9 +21,9 @@ export const checkAndGenerateSmartNotifications = (
   const todayEvents = events.filter((e) => e.date === dateTodayStr);
   const isHolidayOrExam = todayEvents.some((e) => e.type === 'holiday' || e.type === 'exam');
 
-  // 1. Daily Morning Schedule Summary (Generates once per day)
+  // 1. Daily Morning Schedule Summary (Generates once per day, excluding cancelled classes)
   const todayClasses = isHolidayOrExam ? [] : timetable
-    .filter((s) => s.day === todayDay)
+    .filter((s) => s.day === todayDay && !cancelledSessionKeys.includes(`${dateTodayStr}_${s.id}`))
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
   const dailySummaryKey = `daily_summary_${dateTodayStr}`;

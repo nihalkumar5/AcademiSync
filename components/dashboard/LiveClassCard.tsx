@@ -6,16 +6,19 @@ import { getLiveClassStatus, formatTime12Hour } from '@/lib/timetableUtils';
 import { Clock, MapPin, User, CheckCircle2, ChevronRight } from 'lucide-react';
 
 export const LiveClassCard: React.FC = () => {
-  const { timetable, subjects } = useApp();
-  const [status, setStatus] = useState(() => getLiveClassStatus(timetable, subjects));
+  const { timetable, subjects, isSessionCancelled } = useApp();
+  
+  const getActiveTimetable = () => timetable.filter((s) => !isSessionCancelled(s.id));
+
+  const [status, setStatus] = useState(() => getLiveClassStatus(getActiveTimetable(), subjects));
 
   useEffect(() => {
-    setStatus(getLiveClassStatus(timetable, subjects));
+    setStatus(getLiveClassStatus(getActiveTimetable(), subjects));
     const interval = setInterval(() => {
-      setStatus(getLiveClassStatus(timetable, subjects));
+      setStatus(getLiveClassStatus(getActiveTimetable(), subjects));
     }, 15000);
     return () => clearInterval(interval);
-  }, [timetable, subjects]);
+  }, [timetable, subjects, isSessionCancelled]);
 
   const { currentClass, nextClass } = status;
 

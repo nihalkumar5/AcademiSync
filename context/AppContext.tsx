@@ -80,6 +80,9 @@ interface AppContextType {
   commandPaletteOpen: boolean;
   setCommandPaletteOpen: (open: boolean) => void;
   triggerConfetti: () => void;
+  cancelledSessions: string[];
+  toggleSessionCancelled: (sessionId: string, dateStr?: string) => void;
+  isSessionCancelled: (sessionId: string, dateStr?: string) => boolean;
   toastMessage: { title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error' } | null;
   showToast: (title: string, message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
   resetAllData: () => Promise<void>;
@@ -104,6 +107,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [events, setEventsState] = useState<AcademicEvent[]>(storage.getEvents());
   const [exams, setExamsState] = useState<Exam[]>(storage.getExams());
   const [settings, setSettingsState] = useState<UserSettings>(storage.getSettings());
+  const [cancelledSessions, setCancelledSessionsState] = useState<string[]>(storage.getCancelledSessions());
 
   const { user, isLoaded: isClerkLoaded } = useUser();
   const remoteStateString = useRef("");
@@ -130,6 +134,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (data.events) { setEventsState(data.events); storage.setEvents(data.events); }
         if (data.exams) { setExamsState(data.exams); storage.setExams(data.exams); }
         if (data.settings) { setSettingsState(data.settings); storage.setSettings(data.settings); }
+        if (data.cancelledSessions) { setCancelledSessionsState(data.cancelledSessions); storage.setCancelledSessions(data.cancelledSessions); }
       }
     });
     return () => unsubscribe();
@@ -140,7 +145,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (!isClerkLoaded || !user || !isHydrated) return;
     
     const currentState = {
-      profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings
+      profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions
     };
     
     const currentString = JSON.stringify(currentState);
@@ -152,7 +157,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }, 1500);
 
     return () => clearTimeout(timeout);
-  }, [profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, user, isClerkLoaded, isHydrated]);
+  }, [profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions, user, isClerkLoaded, isHydrated]);
 
   // Hydration effect
   useEffect(() => {
@@ -164,6 +169,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const loadedNotifications = storage.getNotifications();
     const loadedEvents = storage.getEvents();
     const loadedSettings = storage.getSettings();
+    const loadedCancelled = storage.getCancelledSessions();
 
     setProfileState(loadedProfile);
     setSubjectsState(loadedSubjects);
@@ -172,6 +178,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setNotificationsState(loadedNotifications);
     setEventsState(loadedEvents);
     setSettingsState(loadedSettings);
+    setCancelledSessionsState(loadedCancelled);
 
     // Calculate carry items for tomorrow merging stored states
     const computedCarry = calculateTomorrowCarryItems(loadedTimetable, loadedSubjects, storedCarry);
@@ -204,7 +211,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           homework,
           events,
           settings,
-          prevNotifications
+          prevNotifications,
+          cancelledSessions
         );
         
         if (newNotifs.length > 0) {
@@ -646,6 +654,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     showToast('Preferences Saved', 'Updated application settings', 'success');
   };
 
+  const toggleSessionCancelled = (sessionId: string, dateStr?: string) => {
+    const targetDate = dateStr || new Date().toISOString().split('T')[0];
+    const key = `${targetDate}_${sessionId}`;
+    
+    setCancelledSessionsState((prev) => {
+      const isAlreadyCancelled = prev.includes(key);
+      const updated = isAlreadyCancelled ? prev.filter((k) => k !== key) : [...prev, key];
+      storage.setCancelledSessions(updated);
+      
+      if (!isAlreadyCancelled) {
+        showToast('Class Marked Cancelled', 'Session marked as cancelled for today.', 'info');
+      } else {
+        showToast('Class Restored', 'Session restored to regular schedule.', 'success');
+      }
+      return updated;
+    });
+  };
+
+  const isSessionCancelled = (sessionId: string, dateStr?: string) => {
+    const targetDate = dateStr || new Date().toISOString().split('T')[0];
+    const key = `${targetDate}_${sessionId}`;
+    return cancelledSessions.includes(key);
+  };
+
   const resetAllData = async () => {
     // 1. Clear local storage (except profile, handled inside storage.ts)
     storage.resetAll();
@@ -720,6 +752,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         commandPaletteOpen,
         setCommandPaletteOpen,
         triggerConfetti,
+        cancelledSessions,
+        toggleSessionCancelled,
+        isSessionCancelled,
         toastMessage,
         showToast,
         resetAllData,
