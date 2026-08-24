@@ -11,6 +11,7 @@ import {
   CheckCheck,
   Trash2,
   BookOpen,
+  Calendar,
   CheckSquare,
   AlertCircle,
   Backpack,
@@ -40,6 +41,7 @@ export const NotificationCenter: React.FC = () => {
 
   const categoryIcons: Record<NotificationCategory, React.ReactNode> = {
     classes: <BookOpen className="w-5 h-5 text-[#8C6B5D]" />,
+    events: <Calendar className="w-5 h-5 text-amber-500" />,
     homework: <CheckSquare className="w-5 h-5 text-indigo-500" />,
     deadlines: <AlertCircle className="w-5 h-5 text-rose-500" />,
     carry: <Backpack className="w-5 h-5 text-emerald-500" />,
@@ -77,7 +79,7 @@ export const NotificationCenter: React.FC = () => {
 
       {/* Modern minimal filter pills */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-        {(['all', 'classes', 'homework', 'deadlines', 'carry', 'system'] as const).map((cat) => {
+        {(['all', 'classes', 'events', 'homework', 'deadlines', 'carry', 'system'] as const).map((cat) => {
           const isSelected = categoryFilter === cat;
           return (
             <button

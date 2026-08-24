@@ -75,7 +75,7 @@ export interface CarryItem {
   reminderNote?: string;
 }
 
-export type NotificationCategory = 'classes' | 'homework' | 'deadlines' | 'carry' | 'system';
+export type NotificationCategory = 'classes' | 'events' | 'homework' | 'deadlines' | 'carry' | 'system';
 
 export interface AppNotification {
   id: string;

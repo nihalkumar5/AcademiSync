@@ -145,7 +145,7 @@ export const checkAndGenerateSmartNotifications = (
         id: `notif_${Date.now()}_ev_${ev.id}`,
         title: `${emoji} ${titlePrefix}: ${ev.title}`,
         message: ev.description || `Event details: ${ev.title}${ev.location ? ` at ${ev.location}` : ''}.`,
-        category: ev.type === 'exam' || ev.type === 'assignment' ? 'deadlines' : 'classes',
+        category: 'events',
         timestamp: new Date().toISOString(),
         read: false,
         relatedId: eventKey,
