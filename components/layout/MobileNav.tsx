@@ -69,7 +69,7 @@ export const MobileNav: React.FC = () => {
 
               <span className={clsx(
                 'text-[10px] tracking-tight mt-0.5 font-mono',
-                isActive ? 'font-black underline decoration-2 underline-offset-2' : 'font-medium'
+                isActive ? 'font-black' : 'font-medium'
               )}>
                 {tab.label}
               </span>
