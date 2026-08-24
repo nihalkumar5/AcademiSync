@@ -1,10 +1,11 @@
-import { AppNotification, ClassSession, Homework, Subject, UserSettings } from './types';
+import { AppNotification, ClassSession, Homework, Subject, UserSettings, AcademicEvent } from './types';
 import { getCurrentDayOfWeek, timeToMinutes, formatTime12Hour } from './timetableUtils';
 
 export const checkAndGenerateSmartNotifications = (
   timetable: ClassSession[],
   subjects: Subject[],
   homework: Homework[],
+  events: AcademicEvent[],
   settings: UserSettings,
   existingNotifications: AppNotification[]
 ): AppNotification[] => {
@@ -115,6 +116,37 @@ export const checkAndGenerateSmartNotifications = (
         timestamp: new Date().toISOString(),
         read: false,
         relatedId: relatedKey,
+      });
+    }
+  });
+
+  // 5. Academic Calendar Events & Holidays for Today (Generates once per day per event)
+  const todayEvents = events.filter((e) => e.date === dateTodayStr);
+  todayEvents.forEach((ev) => {
+    const eventKey = `event_today_${ev.id}_${dateTodayStr}`;
+    if (!existingIds.has(eventKey)) {
+      let emoji = '📅';
+      let titlePrefix = "Today's Event";
+      
+      if (ev.type === 'holiday') {
+        emoji = '🌴';
+        titlePrefix = "Today is a Holiday";
+      } else if (ev.type === 'exam') {
+        emoji = '📝';
+        titlePrefix = "Exam Today";
+      } else if (ev.type === 'assignment') {
+        emoji = '🚨';
+        titlePrefix = "Assignment Due";
+      }
+
+      newNotifications.push({
+        id: `notif_${Date.now()}_ev_${ev.id}`,
+        title: `${emoji} ${titlePrefix}: ${ev.title}`,
+        message: ev.description || `Event details: ${ev.title}${ev.location ? ` at ${ev.location}` : ''}.`,
+        category: ev.type === 'exam' || ev.type === 'assignment' ? 'deadlines' : 'classes',
+        timestamp: new Date().toISOString(),
+        read: false,
+        relatedId: eventKey,
       });
     }
   });

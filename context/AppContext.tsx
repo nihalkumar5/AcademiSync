@@ -202,6 +202,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           timetable,
           subjects,
           homework,
+          events,
           settings,
           prevNotifications
         );
@@ -211,6 +212,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           storage.setNotifications(updated);
           // Show toast for the first new notification
           showToast(newNotifs[0].title, newNotifs[0].message, 'info');
+          // Trigger native OS local notifications for all newly generated items
+          newNotifs.forEach((n) => {
+            triggerLocalNotification(n.title, n.message);
+          });
           return updated;
         }
         return prevNotifications;
@@ -223,7 +228,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // Check every 60 seconds for time-based triggers
     const interval = setInterval(runCheck, 60000);
     return () => clearInterval(interval);
-  }, [timetable, subjects, homework, settings, isHydrated]);
+  }, [timetable, subjects, homework, events, settings, isHydrated]);
 
   // Native Local Notification Scheduler Effect
   useEffect(() => {
