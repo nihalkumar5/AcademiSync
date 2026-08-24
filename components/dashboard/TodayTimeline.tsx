@@ -7,6 +7,25 @@ import { MapPin, User, Clock, FlaskConical } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
 
+// Pastel paper color presets mapped to subject colors
+const PASTEL_COLOR_MAP: Record<string, { light: string }> = {
+  '#7A8B99': { light: 'bg-[#F0F4F8] dark:bg-[#1A2128] border-[#CBD6E2] dark:border-[#2B3744]' }, // Ice Blue
+  '#9C8E80': { light: 'bg-[#F7F3EF] dark:bg-[#24201C] border-[#DFD5CB] dark:border-[#3A332C]' }, // Cocoa Sand
+  '#B88B8C': { light: 'bg-[#FDF1F1] dark:bg-[#281B1C] border-[#F4C7C7] dark:border-[#42282A]' }, // Rose Crayon
+  '#C79F6F': { light: 'bg-[#FEF8EE] dark:bg-[#282015] border-[#F6E2C6] dark:border-[#42331E]' }, // Ochre Peach
+  '#7C897A': { light: 'bg-[#F1F6F3] dark:bg-[#1A231C] border-[#D0DEC7] dark:border-[#2B3B2E]' }, // Sage Mint
+  '#C08A76': { light: 'bg-[#FAF1EC] dark:bg-[#281C17] border-[#F2D3C5] dark:border-[#422C23]' }, // Terracotta
+};
+
+const PASTEL_FALLBACK_CLASSES = [
+  'bg-[#FEF8EE] dark:bg-[#282015] border-[#F6E2C6] dark:border-[#42331E]', // Cream Ochre
+  'bg-[#F1F6F3] dark:bg-[#1A231C] border-[#D0DEC7] dark:border-[#2B3B2E]', // Sage Mint
+  'bg-[#FDF1F1] dark:bg-[#281B1C] border-[#F4C7C7] dark:border-[#42282A]', // Rose Pink
+  'bg-[#F0F4F8] dark:bg-[#1A2128] border-[#CBD6E2] dark:border-[#2B3744]', // Ice Blue
+  'bg-[#FAF1EC] dark:bg-[#281C17] border-[#F2D3C5] dark:border-[#422C23]', // Peach Coral
+  'bg-[#F7F3EF] dark:bg-[#24201C] border-[#DFD5CB] dark:border-[#3A332C]', // Warm Cocoa
+];
+
 export const TodayTimeline: React.FC = () => {
   const { timetable, subjects, setActiveView } = useApp();
 
@@ -75,56 +94,69 @@ export const TodayTimeline: React.FC = () => {
                   />
                 )}
 
-                <div className={`flex flex-col sm:flex-row gap-3 transition-opacity ${isPassed ? 'opacity-50' : 'opacity-100'}`}>
-                  {/* Time */}
-                  <div className="w-16 shrink-0 flex flex-col pt-0.5">
-                    <span className="text-[13px] font-black text-slate-800 dark:text-zinc-100 tracking-tighter font-mono">
-                      {session.startTime}
-                    </span>
-                  </div>
+                {(() => {
+                  const colorKey = sub?.color ? sub.color.toUpperCase() : '';
+                  const matchedStyle = PASTEL_COLOR_MAP[colorKey] || PASTEL_COLOR_MAP[sub?.color || ''];
+                  let cardColorClass = '';
+                  if (isNow) {
+                    cardColorClass = 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-[4px_4px_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_rgba(255,255,255,1)]';
+                  } else if (matchedStyle) {
+                    cardColorClass = `${matchedStyle.light} text-black dark:text-white`;
+                  } else {
+                    const charSum = (sub?.name || session.id).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+                    const fallbackClass = PASTEL_FALLBACK_CLASSES[charSum % PASTEL_FALLBACK_CLASSES.length];
+                    cardColorClass = `${fallbackClass} text-black dark:text-white`;
+                  }
 
-                  {/* Class Info Box */}
-                  <div className={`flex-1 rounded-2xl p-3 sm:p-4 border transition-colors ${
-                    isNow 
-                      ? 'bg-[#8C6B5D]/10 dark:bg-[#8C6B5D]/20 border-[#8C6B5D]/30 dark:border-[#8C6B5D]/40 ring-1 ring-[#8C6B5D]/20' 
-                      : 'bg-slate-50/80 dark:bg-zinc-900/60 border-slate-200/60 dark:border-zinc-800/80'
-                  }`}>
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className={`text-[15px] font-bold ${isNow ? 'text-[#8C6B5D] dark:text-[#E8D9CE]' : 'text-slate-900 dark:text-zinc-100'}`}>
-                            {sub?.name || 'Class Session'}
-                          </h4>
-                          {isNow && (
-                            <span className="px-2 py-0.5 rounded-md bg-[#8C6B5D] text-white text-[10px] font-bold uppercase tracking-wider animate-pulse">
-                              Now
-                            </span>
-                          )}
-                        </div>
-                        
-                        <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-zinc-400 font-medium flex-wrap mt-0.5">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3.5 h-3.5" />
-                            {session.room}
-                          </span>
-                          {session.faculty && (
-                            <span className="flex items-center gap-1">
-                              <User className="w-3.5 h-3.5" />
-                              {session.faculty}
-                            </span>
+                  return (
+                    <div className={`flex flex-col sm:flex-row gap-3 transition-opacity ${isPassed ? 'opacity-50' : 'opacity-100'}`}>
+                      {/* Time */}
+                      <div className="w-16 shrink-0 flex flex-col pt-0.5">
+                        <span className="text-[13px] font-black text-slate-800 dark:text-zinc-100 tracking-tighter font-mono">
+                          {session.startTime}
+                        </span>
+                      </div>
+
+                      {/* Class Info Box */}
+                      <div className={`flex-1 rounded-none p-3 sm:p-4 border transition-colors ${cardColorClass}`}>
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className={`text-[15px] font-bold ${isNow ? 'text-white dark:text-black' : 'text-black dark:text-white'}`}>
+                                {sub?.name || 'Class Session'}
+                              </h4>
+                              {isNow && (
+                                <span className="px-2 py-0.5 rounded-none bg-white text-black dark:bg-black dark:text-white text-[10px] font-bold uppercase tracking-wider animate-pulse border border-current">
+                                  Now
+                                </span>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center gap-3 text-xs opacity-75 font-medium flex-wrap mt-0.5">
+                              <span className="flex items-center gap-1">
+                                <MapPin className="w-3.5 h-3.5" />
+                                {session.room}
+                              </span>
+                              {session.faculty && (
+                                <span className="flex items-center gap-1">
+                                  <User className="w-3.5 h-3.5" />
+                                  {session.faculty}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {session.isLab && (
+                            <div className="flex items-center gap-1 px-2 py-0.5 border border-current text-xs font-bold">
+                              <FlaskConical className="w-3.5 h-3.5" />
+                              Lab
+                            </div>
                           )}
                         </div>
                       </div>
-
-                      {session.isLab && (
-                        <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-xs font-bold">
-                          <FlaskConical className="w-3.5 h-3.5" />
-                          Lab
-                        </div>
-                      )}
                     </div>
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
             );
           })}

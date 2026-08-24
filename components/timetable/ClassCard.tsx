@@ -6,6 +6,25 @@ import { MapPin, User, MoreHorizontal, Edit2, Trash2, FlaskConical, Clock } from
 import { Badge } from '../ui/Badge';
 import { clsx } from 'clsx';
 
+// Pastel paper color presets mapped to subject colors
+const PASTEL_COLOR_MAP: Record<string, { light: string }> = {
+  '#7A8B99': { light: 'bg-[#F0F4F8] dark:bg-[#1A2128] border-[#CBD6E2] dark:border-[#2B3744]' }, // Ice Blue
+  '#9C8E80': { light: 'bg-[#F7F3EF] dark:bg-[#24201C] border-[#DFD5CB] dark:border-[#3A332C]' }, // Cocoa Sand
+  '#B88B8C': { light: 'bg-[#FDF1F1] dark:bg-[#281B1C] border-[#F4C7C7] dark:border-[#42282A]' }, // Rose Crayon
+  '#C79F6F': { light: 'bg-[#FEF8EE] dark:bg-[#282015] border-[#F6E2C6] dark:border-[#42331E]' }, // Ochre Peach
+  '#7C897A': { light: 'bg-[#F1F6F3] dark:bg-[#1A231C] border-[#D0DEC7] dark:border-[#2B3B2E]' }, // Sage Mint
+  '#C08A76': { light: 'bg-[#FAF1EC] dark:bg-[#281C17] border-[#F2D3C5] dark:border-[#422C23]' }, // Terracotta
+};
+
+const PASTEL_FALLBACK_CLASSES = [
+  'bg-[#FEF8EE] dark:bg-[#282015] border-[#F6E2C6] dark:border-[#42331E]', // Cream Ochre
+  'bg-[#F1F6F3] dark:bg-[#1A231C] border-[#D0DEC7] dark:border-[#2B3B2E]', // Sage Mint
+  'bg-[#FDF1F1] dark:bg-[#281B1C] border-[#F4C7C7] dark:border-[#42282A]', // Rose Pink
+  'bg-[#F0F4F8] dark:bg-[#1A2128] border-[#CBD6E2] dark:border-[#2B3744]', // Ice Blue
+  'bg-[#FAF1EC] dark:bg-[#281C17] border-[#F2D3C5] dark:border-[#422C23]', // Peach Coral
+  'bg-[#F7F3EF] dark:bg-[#24201C] border-[#DFD5CB] dark:border-[#3A332C]', // Warm Cocoa
+];
+
 export interface ClassCardProps {
   session: ClassSession;
   subject?: Subject;
@@ -23,13 +42,26 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Compute pastel paper background
+  const colorKey = subject?.color ? subject.color.toUpperCase() : '';
+  const matchedStyle = PASTEL_COLOR_MAP[colorKey] || PASTEL_COLOR_MAP[subject?.color || ''];
+
+  let cardColorClass = '';
+  if (isCurrent) {
+    cardColorClass = 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-[4px_4px_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_rgba(255,255,255,1)]';
+  } else if (matchedStyle) {
+    cardColorClass = `${matchedStyle.light} text-black dark:text-white`;
+  } else {
+    const charSum = (subject?.name || session.id).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    const fallbackClass = PASTEL_FALLBACK_CLASSES[charSum % PASTEL_FALLBACK_CLASSES.length];
+    cardColorClass = `${fallbackClass} text-black dark:text-white`;
+  }
+
   return (
     <div
       className={clsx(
-        "group relative flex flex-col p-4 text-left transition-all border",
-        isCurrent
-          ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-[4px_4px_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_rgba(255,255,255,1)]'
-          : 'bg-white dark:bg-black text-black dark:text-white border-black dark:border-white'
+        "group relative flex flex-col p-4 text-left transition-all border rounded-none",
+        cardColorClass
       )}
     >
       <div className="flex items-start justify-between gap-1.5 mb-2">
