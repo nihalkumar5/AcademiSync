@@ -6,6 +6,7 @@ import { getCurrentDayOfWeek, timeToMinutes } from '@/lib/timetableUtils';
 import { MapPin, User, Clock, FlaskConical } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
+import { Subject } from '@/lib/types';
 
 // 10 distinct, elegant & engaging pastel paper colors (slightly lighter shades)
 const ELEGANT_PASTEL_PALETTE = [
