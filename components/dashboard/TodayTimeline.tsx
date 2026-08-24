@@ -3,7 +3,7 @@
 import React from 'react';
 import { useApp } from '@/context/AppContext';
 import { getCurrentDayOfWeek, timeToMinutes } from '@/lib/timetableUtils';
-import { MapPin, User, Clock, FlaskConical, Ban, RotateCcw } from 'lucide-react';
+import { MapPin, User, Clock, FlaskConical, Ban, RotateCcw, MoreHorizontal } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
 import { Subject } from '@/lib/types';
@@ -193,7 +193,7 @@ export const TodayTimeline: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() => toggleSessionCancelled(session.id)}
-                                className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300 transition-colors cursor-pointer"
+                                className="flex items-center gap-1 px-2 py-0.5 text-[10.5px] font-bold bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300 transition-colors cursor-pointer"
                                 title="Restore this class for today"
                               >
                                 <RotateCcw className="w-3 h-3" />
@@ -203,15 +203,10 @@ export const TodayTimeline: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() => toggleSessionCancelled(session.id)}
-                                className={`flex items-center gap-1 px-2 py-0.5 text-[10.5px] font-semibold border transition-all cursor-pointer ${
-                                  isNow
-                                    ? 'border-white/40 text-white/80 hover:bg-white/10 hover:text-white dark:border-black/40 dark:text-black/80 dark:hover:bg-black/10'
-                                    : 'border-black/20 dark:border-white/20 text-black/60 dark:text-white/60 hover:border-rose-500 hover:text-rose-600 dark:hover:border-rose-400 dark:hover:text-rose-400 bg-white/40 dark:bg-black/20'
-                                }`}
-                                title="Mark class as cancelled for today"
+                                className="p-1 text-black/30 dark:text-white/30 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-black/5 dark:hover:bg-white/10 transition-all opacity-30 group-hover:opacity-100 cursor-pointer rounded-none"
+                                title="Mark as cancelled for today"
                               >
-                                <Ban className="w-3 h-3" />
-                                <span>Cancel</span>
+                                <MoreHorizontal className="w-4 h-4" />
                               </button>
                             )}
                           </div>
