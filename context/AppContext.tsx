@@ -218,25 +218,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     const runCheck = () => {
       setNotificationsState((prevNotifications) => {
+        const nowMs = Date.now();
+        const prunedNotifications = prevNotifications.filter(n => {
+          return nowMs - new Date(n.timestamp).getTime() < 24 * 60 * 60 * 1000;
+        });
+
         const newNotifs = checkAndGenerateSmartNotifications(
           timetable,
           subjects,
           homework,
           events,
           settings,
-          prevNotifications,
+          prunedNotifications,
           cancelledSessions
         );
         
-        if (newNotifs.length > 0) {
-          const updated = [...newNotifs, ...prevNotifications];
+        if (newNotifs.length > 0 || prunedNotifications.length !== prevNotifications.length) {
+          const updated = [...newNotifs, ...prunedNotifications];
           storage.setNotifications(updated);
-          // Show toast for the first new notification
-          showToast(newNotifs[0].title, newNotifs[0].message, 'info');
-          // Trigger native OS local notifications for all newly generated items
-          newNotifs.forEach((n) => {
-            triggerLocalNotification(n.title, n.message);
-          });
+          
+          if (newNotifs.length > 0) {
+            showToast(newNotifs[0].title, newNotifs[0].message, 'info');
+            newNotifs.forEach((n) => {
+              triggerLocalNotification(n.title, n.message);
+            });
+          }
           return updated;
         }
         return prevNotifications;
