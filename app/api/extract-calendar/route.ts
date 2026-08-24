@@ -92,8 +92,29 @@ CRITICAL INSTRUCTIONS FOR DATE PROCESSING:
         }
 
         const result = await model.generateContent(contents);
-        const responseText = result.response.text();
-        const parsed = JSON.parse(responseText);
+        const responseText = result.response.text().trim();
+        
+        let parsed;
+        try {
+          parsed = JSON.parse(responseText);
+        } catch (jsonErr) {
+          console.warn('Direct JSON parse failed, attempting cleanup. Raw response:', responseText);
+          const cleanedJson = responseText
+            .replace(/```json/g, '')
+            .replace(/```/g, '')
+            .trim();
+          try {
+            parsed = JSON.parse(cleanedJson);
+          } catch (jsonErr2) {
+            // Regex fallback to extract array [ ... ]
+            const arrayMatch = responseText.match(/\[\s*\{[\s\S]*\}\s*\]/);
+            if (arrayMatch) {
+              parsed = JSON.parse(arrayMatch[0]);
+            } else {
+              throw new Error('AI response was not in a valid JSON format: ' + responseText.substring(0, 150));
+            }
+          }
+        }
 
         if (Array.isArray(parsed) && parsed.length > 0) {
           return NextResponse.json({

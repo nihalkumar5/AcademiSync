@@ -46,6 +46,18 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
         }),
       });
 
+      if (!res.ok) {
+        let errMsg = 'Server error during extraction';
+        try {
+          const errData = await res.json();
+          errMsg = errData.error || errMsg;
+        } catch {
+          const text = await res.text();
+          errMsg = text.substring(0, 100) || errMsg;
+        }
+        throw new Error(errMsg);
+      }
+
       const data = await res.json();
       if (data.success && Array.isArray(data.events)) {
         setExtractedEvents(data.events);
@@ -87,7 +99,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
         // Show toast alert on user upload error and return to upload step
         showToast(
           'Extraction Failed',
-          error.message || 'Could not parse the academic calendar. Please ensure the file is an image or PDF under 4MB.',
+          error.message || 'Could not parse the academic calendar. Please ensure the file is an image or PDF under 3MB.',
           'error'
         );
         setStep('upload');
@@ -98,6 +110,21 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
+      // Enforce 3MB limit to prevent 413 Payload Too Large on base64 upload
+      const MAX_SIZE_MB = 3;
+      const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+      const oversizedFile = files.find((file) => file.size > MAX_SIZE_BYTES);
+
+      if (oversizedFile) {
+        showToast(
+          'File Too Large',
+          `"${oversizedFile.name}" exceeds the ${MAX_SIZE_MB}MB size limit. Please upload a smaller image or compressed PDF.`,
+          'error'
+        );
+        e.target.value = ''; // Reset file input
+        return;
+      }
+
       const readers = files.map((file) => {
         return new Promise<{ name: string; base64: string; mimeType: string }>((resolve) => {
           const reader = new FileReader();
