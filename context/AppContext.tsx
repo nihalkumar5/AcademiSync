@@ -67,7 +67,7 @@ interface AppContextType {
   triggerSimulatedAlert: (category: NotificationCategory) => void;
   events: AcademicEvent[];
   addEvent: (event: Omit<AcademicEvent, 'id'>) => void;
-  addEvents: (events: Omit<AcademicEvent, 'id'>[]) => void;
+  addEvents: (events: Omit<AcademicEvent, 'id'>[], overwrite?: boolean) => void;
   deleteEvent: (id: string) => void;
   exams: Exam[];
   addExam: (exam: Omit<Exam, 'id' | 'createdAt'>) => Exam;
@@ -583,12 +583,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     showToast('Event Added', eventData.title, 'success');
   };
 
-  const addEvents = (eventsData: Omit<AcademicEvent, 'id'>[]) => {
+  const addEvents = (eventsData: Omit<AcademicEvent, 'id'>[], overwrite = false) => {
     const newEvents = eventsData.map((ev, index) => ({
       ...ev,
       id: `ev_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 5)}`,
     }));
-    const updated = [...events, ...newEvents];
+    const updated = overwrite ? newEvents : [...events, ...newEvents];
     setEventsState(updated);
     storage.setEvents(updated);
   };

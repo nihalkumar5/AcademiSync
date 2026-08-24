@@ -205,7 +205,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
       }
     });
 
-    addEvents(expandedEvents);
+    addEvents(expandedEvents, true);
 
     showToast('Calendar Imported', `${expandedEvents.length} academic events added to your planner`, 'success');
     handleClose();
