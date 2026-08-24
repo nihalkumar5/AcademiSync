@@ -40,6 +40,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
+        type={props.type || "button"}
         disabled={disabled || isLoading}
         className={twMerge(clsx(baseStyles, variants[variant], sizes[size], className))}
         {...props}

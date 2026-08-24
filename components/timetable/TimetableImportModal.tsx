@@ -109,7 +109,6 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
 
   const addExtractedRow = () => {
     setExtractedSessions((prev) => [
-      ...prev,
       {
         day: 'Monday',
         startTime: '09:00',
@@ -117,6 +116,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         subjectName: 'New Subject',
         isLab: false,
       },
+      ...prev,
     ]);
   };
 
