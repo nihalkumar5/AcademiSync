@@ -140,6 +140,7 @@ export const scheduleTimetableLocalNotifications = async (
             hour: targetHour,
             minute: targetMin,
           },
+          allowWhileIdle: true,
         },
         sound: 'class_bell', // Plays the custom chime
         channelId: 'class_alerts_v3', // Enforces sound/banner on Android
