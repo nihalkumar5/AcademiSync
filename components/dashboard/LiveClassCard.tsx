@@ -22,6 +22,17 @@ export const LiveClassCard: React.FC = () => {
   if (currentClass) {
     const sub = currentClass.subject;
     const session = currentClass.session;
+
+    // Check if there is an upcoming class starting within 30 mins OR continuous with current class
+    let showUpcoming = false;
+    if (nextClass) {
+      const [currEndH, currEndM] = session.endTime.split(':').map(Number);
+      const [nextStartH, nextStartM] = nextClass.session.startTime.split(':').map(Number);
+      const gapMinutes = (nextStartH * 60 + nextStartM) - (currEndH * 60 + currEndM);
+      
+      showUpcoming = nextClass.minutesUntilStart <= 30 || gapMinutes <= 30;
+    }
+
     return (
       <div className="w-full border border-black dark:border-white bg-black dark:bg-white text-white dark:text-black relative overflow-hidden">
         <div className="p-5 sm:p-6 flex flex-col gap-4 relative z-10">
@@ -69,6 +80,23 @@ export const LiveClassCard: React.FC = () => {
             />
           </div>
         </div>
+
+        {/* Compact Upcoming Class Bar */}
+        {showUpcoming && nextClass && (
+          <div className="border-t border-white/20 dark:border-black/20 bg-white/10 dark:bg-black/10 px-5 py-3 flex items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2 overflow-hidden">
+              <span className="text-[9.5px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 bg-white/20 dark:bg-black/20 text-white dark:text-black shrink-0">
+                Up Next • {formatTime12Hour(nextClass.session.startTime)}
+              </span>
+              <span className="font-semibold truncate text-white dark:text-black">
+                {nextClass.subject?.name || 'Next Class'}
+              </span>
+            </div>
+            <div className="text-[11px] font-mono font-medium text-white/80 dark:text-black/80 shrink-0">
+              {nextClass.session.room ? `@ ${nextClass.session.room}` : ''} ({nextClass.minutesUntilStart}m)
+            </div>
+          </div>
+        )}
       </div>
     );
   }
