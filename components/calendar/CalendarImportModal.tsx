@@ -143,7 +143,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
       onClose={handleClose}
       title="Import Academic Calendar via AI"
       description="Upload your institute academic calendar photo or PDF to extract exam dates, holidays, and events."
-      maxWidth={step === 'review' ? '3xl' : 'lg'}
+      maxWidth={step === 'review' ? '4xl' : 'lg'}
     >
       {step === 'upload' && (
         <div className="flex flex-col gap-6 text-center">
