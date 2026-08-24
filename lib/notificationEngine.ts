@@ -12,31 +12,83 @@ export const checkAndGenerateSmartNotifications = (
   const existingIds = new Set(existingNotifications.map((n) => n.relatedId || n.id));
   const now = new Date();
   const todayDay = getCurrentDayOfWeek();
+  const dateTodayStr = now.toISOString().split('T')[0];
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
-  // 1. Class reminders (e.g., 15 minutes before)
-  const todayClasses = timetable.filter((s) => s.day === todayDay);
+  // 1. Daily Morning Schedule Summary (Generates once per day)
+  const todayClasses = timetable
+    .filter((s) => s.day === todayDay)
+    .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+
+  const dailySummaryKey = `daily_summary_${dateTodayStr}`;
+  if (todayClasses.length > 0 && !existingIds.has(dailySummaryKey)) {
+    const firstClass = todayClasses[0];
+    const sub = subjectMap.get(firstClass.subjectId);
+    newNotifications.push({
+      id: `notif_${Date.now()}_ds`,
+      title: `📅 Today's Schedule (${todayClasses.length} ${todayClasses.length === 1 ? 'class' : 'classes'})`,
+      message: `Your first class is ${sub?.name || 'Class'} at ${formatTime12Hour(firstClass.startTime)} in ${firstClass.room}.`,
+      category: 'classes',
+      timestamp: new Date().toISOString(),
+      read: false,
+      relatedId: dailySummaryKey,
+    });
+  }
+
+  // 2. Class reminders (Up to 30 mins before & Starting Now)
+  const maxReminderMins = settings.classReminderMinutes || 30;
   todayClasses.forEach((session) => {
     const startMinutes = timeToMinutes(session.startTime);
     const diff = startMinutes - currentMinutes;
-    const relatedKey = `class_remind_${session.id}_${todayDay}_${session.startTime}`;
+    const sub = subjectMap.get(session.subjectId);
 
-    if (diff > 0 && diff <= (settings.classReminderMinutes || 15) && !existingIds.has(relatedKey)) {
-      const sub = subjectMap.get(session.subjectId);
+    // Reminder 5-30 mins before
+    const remindKey = `class_remind_${session.id}_${dateTodayStr}`;
+    if (diff > 0 && diff <= maxReminderMins && !existingIds.has(remindKey)) {
       newNotifications.push({
-        id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-        title: `${sub?.shortName || 'Class'} in ${diff} minutes`,
-        message: `${sub?.name || 'Class'} begins at ${formatTime12Hour(session.startTime)} in ${session.room}${session.faculty ? ` with ${session.faculty}` : ''}.`,
+        id: `notif_${Date.now()}_cr_${session.id}`,
+        title: `⏰ ${sub?.shortName || sub?.name || 'Class'} in ${diff} mins`,
+        message: `${sub?.name || 'Lecture'} starts at ${formatTime12Hour(session.startTime)} in ${session.room}${session.faculty ? ` with ${session.faculty}` : ''}.`,
         category: 'classes',
         timestamp: new Date().toISOString(),
         read: false,
-        relatedId: relatedKey,
+        relatedId: remindKey,
+      });
+    }
+
+    // Starting Now alert
+    const startingNowKey = `class_now_${session.id}_${dateTodayStr}`;
+    if (diff <= 0 && diff >= -5 && !existingIds.has(startingNowKey)) {
+      newNotifications.push({
+        id: `notif_${Date.now()}_cn_${session.id}`,
+        title: `🔔 Class Starting Now: ${sub?.name || 'Lecture'}`,
+        message: `Class in ${session.room}${session.faculty ? ` with ${session.faculty}` : ''} has begun.`,
+        category: 'classes',
+        timestamp: new Date().toISOString(),
+        read: false,
+        relatedId: startingNowKey,
       });
     }
   });
 
-  // 2. Homework deadline reminders (Today, Tomorrow, 3 days)
+  // 3. Evening Carry Bag Check (Fires after 6 PM / 18:00 for tomorrow)
+  if (now.getHours() >= 18) {
+    const carryCheckKey = `carry_evening_${dateTodayStr}`;
+    if (!existingIds.has(carryCheckKey)) {
+      newNotifications.push({
+        id: `notif_${Date.now()}_carry`,
+        title: `🎒 Pack Your Bag for Tomorrow`,
+        message: `Check your carry bag items and lab requirements for tomorrow's classes.`,
+        category: 'carry',
+        timestamp: new Date().toISOString(),
+        read: false,
+        relatedId: carryCheckKey,
+      });
+    }
+  }
+
+  // 4. Homework & Assignment Deadline Alerts
   const incompleteHw = homework.filter((h) => h.status !== 'Completed');
   incompleteHw.forEach((hw) => {
     const sub = subjectMap.get(hw.subjectId);
@@ -46,9 +98,9 @@ export const checkAndGenerateSmartNotifications = (
 
     if (diffDays === 0 && !existingIds.has(relatedKey)) {
       newNotifications.push({
-        id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-        title: `🚨 Deadline Today: ${hw.title}`,
-        message: `Your ${sub?.shortName || 'course'} assignment is due today at ${deadlineDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`,
+        id: `notif_${Date.now()}_hw0_${hw.id}`,
+        title: `🚨 Due Today: ${hw.title}`,
+        message: `${sub?.name || 'Assignment'} is due today at ${deadlineDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`,
         category: 'deadlines',
         timestamp: new Date().toISOString(),
         read: false,
@@ -56,9 +108,9 @@ export const checkAndGenerateSmartNotifications = (
       });
     } else if (diffDays === 1 && !existingIds.has(relatedKey)) {
       newNotifications.push({
-        id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-        title: `Due Tomorrow: ${hw.title}`,
-        message: `${sub?.name || 'Subject'} assignment submission deadline is tomorrow.`,
+        id: `notif_${Date.now()}_hw1_${hw.id}`,
+        title: `⏳ Due Tomorrow: ${hw.title}`,
+        message: `${sub?.name || 'Assignment'} deadline is tomorrow.`,
         category: 'homework',
         timestamp: new Date().toISOString(),
         read: false,

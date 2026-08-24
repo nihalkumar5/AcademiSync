@@ -7,23 +7,23 @@ import { MapPin, User, Clock, FlaskConical } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
 
-// Pastel paper color presets mapped to subject colors
+// Premium rich color presets mapped to subject colors
 const PASTEL_COLOR_MAP: Record<string, { light: string }> = {
-  '#7A8B99': { light: 'bg-[#F0F4F8] dark:bg-[#1A2128] border-[#CBD6E2] dark:border-[#2B3744]' }, // Ice Blue
-  '#9C8E80': { light: 'bg-[#F7F3EF] dark:bg-[#24201C] border-[#DFD5CB] dark:border-[#3A332C]' }, // Cocoa Sand
-  '#B88B8C': { light: 'bg-[#FDF1F1] dark:bg-[#281B1C] border-[#F4C7C7] dark:border-[#42282A]' }, // Rose Crayon
-  '#C79F6F': { light: 'bg-[#FEF8EE] dark:bg-[#282015] border-[#F6E2C6] dark:border-[#42331E]' }, // Ochre Peach
-  '#7C897A': { light: 'bg-[#F1F6F3] dark:bg-[#1A231C] border-[#D0DEC7] dark:border-[#2B3B2E]' }, // Sage Mint
-  '#C08A76': { light: 'bg-[#FAF1EC] dark:bg-[#281C17] border-[#F2D3C5] dark:border-[#422C23]' }, // Terracotta
+  '#7A8B99': { light: 'bg-[#E0F2FE] dark:bg-[#0C4A6E]/30 border-[#38BDF8]/40 dark:border-[#0EA5E9]/40' }, // Denim Blue
+  '#9C8E80': { light: 'bg-[#F3E8FF] dark:bg-[#3B0764]/30 border-[#C084FC]/40 dark:border-[#A855F7]/40' }, // Warm Cocoa / Purple Tint
+  '#B88B8C': { light: 'bg-[#FCE7F3] dark:bg-[#831843]/30 border-[#F472B6]/40 dark:border-[#EC4899]/40' }, // Rose Pink
+  '#C79F6F': { light: 'bg-[#FEF3C7] dark:bg-[#78350F]/30 border-[#FBBF24]/40 dark:border-[#F59E0B]/40' }, // Golden Amber
+  '#7C897A': { light: 'bg-[#D1FAE5] dark:bg-[#064E3B]/30 border-[#34D399]/40 dark:border-[#10B981]/40' }, // Sage Mint
+  '#C08A76': { light: 'bg-[#FFEDD5] dark:bg-[#7C2D12]/30 border-[#FB923C]/40 dark:border-[#F97316]/40' }, // Peach Terracotta
 };
 
 const PASTEL_FALLBACK_CLASSES = [
-  'bg-[#FEF8EE] dark:bg-[#282015] border-[#F6E2C6] dark:border-[#42331E]', // Cream Ochre
-  'bg-[#F1F6F3] dark:bg-[#1A231C] border-[#D0DEC7] dark:border-[#2B3B2E]', // Sage Mint
-  'bg-[#FDF1F1] dark:bg-[#281B1C] border-[#F4C7C7] dark:border-[#42282A]', // Rose Pink
-  'bg-[#F0F4F8] dark:bg-[#1A2128] border-[#CBD6E2] dark:border-[#2B3744]', // Ice Blue
-  'bg-[#FAF1EC] dark:bg-[#281C17] border-[#F2D3C5] dark:border-[#422C23]', // Peach Coral
-  'bg-[#F7F3EF] dark:bg-[#24201C] border-[#DFD5CB] dark:border-[#3A332C]', // Warm Cocoa
+  'bg-[#FEF3C7] dark:bg-[#78350F]/30 border-[#FBBF24]/40 dark:border-[#F59E0B]/40', // Golden Amber
+  'bg-[#D1FAE5] dark:bg-[#064E3B]/30 border-[#34D399]/40 dark:border-[#10B981]/40', // Sage Mint
+  'bg-[#FCE7F3] dark:bg-[#831843]/30 border-[#F472B6]/40 dark:border-[#EC4899]/40', // Rose Pink
+  'bg-[#E0F2FE] dark:bg-[#0C4A6E]/30 border-[#38BDF8]/40 dark:border-[#0EA5E9]/40', // Ice Blue
+  'bg-[#FFEDD5] dark:bg-[#7C2D12]/30 border-[#FB923C]/40 dark:border-[#F97316]/40', // Peach Terracotta
+  'bg-[#EDE9FE] dark:bg-[#4C1D95]/30 border-[#A78BFA]/40 dark:border-[#8B5CF6]/40', // Velvet Lavender
 ];
 
 export const TodayTimeline: React.FC = () => {
