@@ -17,8 +17,11 @@ export const checkAndGenerateSmartNotifications = (
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
+  const todayEvents = events.filter((e) => e.date === dateTodayStr);
+  const isHolidayOrExam = todayEvents.some((e) => e.type === 'holiday' || e.type === 'exam');
+
   // 1. Daily Morning Schedule Summary (Generates once per day)
-  const todayClasses = timetable
+  const todayClasses = isHolidayOrExam ? [] : timetable
     .filter((s) => s.day === todayDay)
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
@@ -121,7 +124,6 @@ export const checkAndGenerateSmartNotifications = (
   });
 
   // 5. Academic Calendar Events & Holidays for Today (Generates once per day per event)
-  const todayEvents = events.filter((e) => e.date === dateTodayStr);
   todayEvents.forEach((ev) => {
     const eventKey = `event_today_${ev.id}_${dateTodayStr}`;
     if (!existingIds.has(eventKey)) {
