@@ -30,9 +30,13 @@ export async function POST(req: Request) {
                     type: SchemaType.STRING, 
                     description: 'Specific name/title of the academic event, holiday, or exam. E.g., "Mid-Semester Examinations", "Diwali Break", "AI Project Presentation", "Semester Registration".' 
                   },
-                  date: { 
+                  startDate: { 
                     type: SchemaType.STRING, 
-                    description: 'Start date of the event in YYYY-MM-DD format.' 
+                    description: 'Start date of the event or range in YYYY-MM-DD format.' 
+                  },
+                  endDate: { 
+                    type: SchemaType.STRING, 
+                    description: 'End date of the event or range in YYYY-MM-DD format. If it is a single-day event, set endDate to the same value as startDate.' 
                   },
                   type: { 
                     type: SchemaType.STRING, 
@@ -49,7 +53,7 @@ export async function POST(req: Request) {
                     description: 'Location, hall, or room if specified.' 
                   }
                 },
-                required: ['title', 'date', 'type']
+                required: ['title', 'startDate', 'endDate', 'type']
               }
             }
           }
@@ -59,9 +63,9 @@ export async function POST(req: Request) {
 Analyze the provided academic calendar (which may be page image(s), a PDF, or a text version) and extract all events, examinations, holidays, registrations, and deadlines.
 
 CRITICAL INSTRUCTIONS FOR DATE PROCESSING:
-1. DATE RANGE SPLITTING: If the calendar specifies a range of dates for an event (e.g., "September 14, 2026 to September 19, 2026", "Oct 19 - 24, 2026", or "Mid-Sem: 15-20 October"), you MUST generate a separate event object for EACH day in that range. For example, for a holiday from Oct 20 to Oct 22, create 3 separate items: one for 2026-10-20, one for 2026-10-21, and one for 2026-10-22, all with the title "Diwali Holidays". This ensures that the user's monthly calendar grid renders the event color correctly across all days of the range.
+1. DATE RANGES: For events that span multiple days (e.g., "September 14, 2026 to September 19, 2026", "Oct 19 - 24, 2026", or "Mid-Sem: 15-20 October"), you MUST extract the start date into "startDate" and the end date into "endDate". For single-day events, set both "startDate" and "endDate" to the same date. Do NOT split them into multiple objects yourself; output them as a single object with a date range.
 2. ACADEMIC YEAR BOUNDARY & YEAR INFERENCE: Academic calendars span across two calendar years (e.g., Academic Year 2026-27). Infer the correct year (YYYY) for each month. July to December are in the first year (e.g., 2026), and January to June are in the second year (e.g., 2027). Look closely at headers, footers, and text to confirm the correct academic year context.
-3. THOROUGH EXTRACTION: Scan the entire document page-by-page. Do not skip any events. Extract registration dates, commencement of classes, holidays, preparation leaves, mid-semester exams, end-semester exams, fests, results announcements, and vacations.`;
+3. THOROUGH EXTRACTION: Scan the entire document page-by-page. Extract registration dates, commencement of classes, holidays, preparation leaves, mid-semester exams, end-semester exams, fests, results announcements, and vacations.`;
 
         let contents: any[] = [prompt];
 

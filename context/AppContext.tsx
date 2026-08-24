@@ -67,6 +67,7 @@ interface AppContextType {
   triggerSimulatedAlert: (category: NotificationCategory) => void;
   events: AcademicEvent[];
   addEvent: (event: Omit<AcademicEvent, 'id'>) => void;
+  addEvents: (events: Omit<AcademicEvent, 'id'>[]) => void;
   deleteEvent: (id: string) => void;
   exams: Exam[];
   addExam: (exam: Omit<Exam, 'id' | 'createdAt'>) => Exam;
@@ -582,6 +583,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     showToast('Event Added', eventData.title, 'success');
   };
 
+  const addEvents = (eventsData: Omit<AcademicEvent, 'id'>[]) => {
+    const newEvents = eventsData.map((ev, index) => ({
+      ...ev,
+      id: `ev_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 5)}`,
+    }));
+    const updated = [...events, ...newEvents];
+    setEventsState(updated);
+    storage.setEvents(updated);
+  };
+
   const addExam = (examData: Omit<Exam, 'id' | 'createdAt'>): Exam => {
     const newExam: Exam = {
       ...examData,
@@ -695,6 +706,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setFullExams,
         events,
         addEvent,
+        addEvents,
         deleteEvent,
         settings,
         updateSettings,

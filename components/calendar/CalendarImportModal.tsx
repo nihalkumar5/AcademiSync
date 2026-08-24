@@ -13,11 +13,11 @@ export interface CalendarImportModalProps {
 }
 
 export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen, onClose }) => {
-  const { addEvent, showToast } = useApp();
+  const { addEvent, addEvents, showToast } = useApp();
 
   const [step, setStep] = useState<'upload' | 'extracting' | 'review'>('upload');
   const [fileName, setFileName] = useState('');
-  const [extractedEvents, setExtractedEvents] = useState<Omit<AcademicEvent, 'id'>[]>([]);
+  const [extractedEvents, setExtractedEvents] = useState<(Omit<AcademicEvent, 'id'> & { startDate?: string; endDate?: string })[]>([]);
 
   const resetState = () => {
     setStep('upload');
@@ -145,7 +145,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
     }
   };
 
-  const updateExtractedRow = (index: number, partial: Partial<Omit<AcademicEvent, 'id'>>) => {
+  const updateExtractedRow = (index: number, partial: Partial<Omit<AcademicEvent, 'id'> & { startDate?: string; endDate?: string }>) => {
     setExtractedEvents((prev) =>
       prev.map((item, idx) => (idx === index ? { ...item, ...partial } : item))
     );
@@ -161,6 +161,8 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
       {
         title: 'New Academic Event',
         date: todayStr,
+        startDate: todayStr,
+        endDate: todayStr,
         type: 'event',
       },
       ...prev,
@@ -168,11 +170,44 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
   };
 
   const handleSaveConfirmed = () => {
+    const expandedEvents: Omit<AcademicEvent, 'id'>[] = [];
+
     extractedEvents.forEach((ev) => {
-      addEvent(ev);
+      const dateVal = ev.startDate || ev.date;
+      const start = new Date(dateVal);
+      const endVal = ev.endDate || ev.date || dateVal;
+      const end = new Date(endVal);
+
+      if (isNaN(start.getTime())) return;
+
+      if (isNaN(end.getTime()) || end.getTime() <= start.getTime()) {
+        expandedEvents.push({
+          title: ev.title,
+          type: ev.type,
+          date: dateVal,
+          description: ev.description,
+          location: ev.location,
+        });
+      } else {
+        // Range: generate events day-by-day
+        let current = new Date(start);
+        while (current.getTime() <= end.getTime()) {
+          const dateStr = current.toISOString().split('T')[0];
+          expandedEvents.push({
+            title: ev.title,
+            type: ev.type,
+            date: dateStr,
+            description: ev.description,
+            location: ev.location,
+          });
+          current.setDate(current.getDate() + 1);
+        }
+      }
     });
 
-    showToast('Calendar Imported', `${extractedEvents.length} academic events added to your planner`, 'success');
+    addEvents(expandedEvents);
+
+    showToast('Calendar Imported', `${expandedEvents.length} academic events added to your planner`, 'success');
     handleClose();
   };
 
@@ -258,7 +293,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
             <table className="w-full text-xs text-left">
               <thead className="bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-bold border-b border-slate-200 dark:border-zinc-700">
                 <tr>
-                  <th className="p-3">Date</th>
+                  <th className="p-3">Date / Range</th>
                   <th className="p-3">Title</th>
                   <th className="p-3">Type</th>
                   <th className="p-3">Location / Notes</th>
@@ -269,12 +304,21 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
                 {extractedEvents.map((item, idx) => (
                   <tr key={idx} className="hover:bg-slate-50/80 dark:hover:bg-zinc-800/40">
                     <td className="p-2.5">
-                      <input
-                        type="date"
-                        value={item.date}
-                        onChange={(e) => updateExtractedRow(idx, { date: e.target.value })}
-                        className="bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs"
-                      />
+                      <div className="flex flex-col gap-1 min-w-[125px]">
+                        <input
+                          type="date"
+                          value={item.startDate || item.date}
+                          onChange={(e) => updateExtractedRow(idx, { startDate: e.target.value })}
+                          className="bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-0.5 text-xs w-full"
+                        />
+                        <span className="text-[10px] text-slate-400 dark:text-zinc-500 text-center font-bold block leading-none">to</span>
+                        <input
+                          type="date"
+                          value={item.endDate || item.date || item.startDate}
+                          onChange={(e) => updateExtractedRow(idx, { endDate: e.target.value })}
+                          className="bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-0.5 text-xs w-full"
+                        />
+                      </div>
                     </td>
                     <td className="p-2.5">
                       <input
