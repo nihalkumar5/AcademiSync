@@ -18,27 +18,27 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
       layout
       onClick={() => onToggle(item.id)}
       className={clsx(
-        'group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer select-none text-left',
+        'group flex items-center justify-between p-3.5 sm:p-4 border rounded-none transition-all cursor-pointer select-none text-left',
         item.isPacked
-          ? 'bg-emerald-50/50 dark:bg-emerald-950/10 border-emerald-200/70 dark:border-emerald-900/40 opacity-75'
-          : 'bg-white dark:bg-zinc-900/70 border-zinc-200/80 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.04)] hover:shadow-md'
+          ? 'border-emerald-600/50 dark:border-emerald-700/50 bg-emerald-500/5 opacity-60'
+          : 'border-black dark:border-white hover:bg-black/5 dark:hover:bg-white/5 bg-transparent'
       )}
     >
       <div className="flex items-center gap-3.5 min-w-0 flex-1">
-        {/* Soft rounded checkbox */}
+        {/* Square checkbox — signature design */}
         <motion.button
           type="button"
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.92 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.9 }}
           onClick={(e) => {
             e.stopPropagation();
             onToggle(item.id);
           }}
           className={clsx(
-            'w-6 h-6 rounded-lg flex items-center justify-center border transition-all shrink-0 cursor-pointer',
+            'w-5 h-5 rounded-none flex items-center justify-center border transition-all shrink-0 cursor-pointer',
             item.isPacked
-              ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
-              : 'border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 hover:border-zinc-400'
+              ? 'bg-emerald-600 border-emerald-600 text-white'
+              : 'border-black dark:border-white bg-transparent'
           )}
         >
           {item.isPacked && (
@@ -47,7 +47,7 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
               animate={{ scale: 1 }}
               transition={{ duration: 0.15 }}
             >
-              <Check className="w-3.5 h-3.5 stroke-[3]" />
+              <Check className="w-3.5 h-3.5 stroke-[3.5]" />
             </motion.div>
           )}
         </motion.button>
@@ -56,31 +56,31 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
         <div className="flex flex-col min-w-0">
           <span
             className={clsx(
-              'text-sm font-semibold tracking-tight truncate transition-all',
+              'text-xs sm:text-sm font-bold tracking-tight truncate transition-all',
               item.isPacked
-                ? 'line-through text-zinc-400 dark:text-zinc-500'
-                : 'text-zinc-900 dark:text-zinc-100'
+                ? 'line-through text-black/40 dark:text-white/40'
+                : 'text-black dark:text-white'
             )}
           >
             {item.title}
           </span>
 
-          <div className="flex items-center gap-2 mt-0.5 text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-black/50 dark:text-white/50 font-medium">
             {item.source === 'subject' ? (
-              <span className="flex items-center gap-1 text-zinc-600 dark:text-zinc-300 font-medium">
-                <BookOpen className="w-3.5 h-3.5 text-[#8C6B5D]" />
+              <span className="flex items-center gap-1 font-mono">
+                <BookOpen className="w-3 h-3 text-[#8C6B5D]" />
                 <span className="truncate">{item.subjectName || 'Required Subject Item'}</span>
               </span>
             ) : (
-              <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
-                <Tag className="w-3.5 h-3.5" />
+              <span className="flex items-center gap-1 font-mono text-amber-700 dark:text-amber-400">
+                <Tag className="w-3 h-3" />
                 <span>Custom Item</span>
               </span>
             )}
             {item.reminderNote && (
               <>
                 <span>•</span>
-                <span className="truncate italic text-zinc-400">{item.reminderNote}</span>
+                <span className="truncate italic">{item.reminderNote}</span>
               </>
             )}
           </div>
@@ -91,10 +91,10 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
       <div className="flex items-center gap-2.5 shrink-0 pl-2">
         <span
           className={clsx(
-            'text-[11px] px-2.5 py-1 rounded-full transition-colors font-semibold',
+            'text-[10.5px] font-mono px-2 py-0.5 transition-colors font-bold border rounded-none',
             item.isPacked
-              ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
-              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+              ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400'
+              : 'border-black/30 dark:border-white/30 text-black/60 dark:text-white/60'
           )}
         >
           {item.isPacked ? 'Packed' : 'To Pack'}
@@ -107,7 +107,7 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
               e.stopPropagation();
               onDelete(item.id);
             }}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+            className="p-1 text-black/40 dark:text-white/40 hover:text-rose-600 dark:hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
             title="Delete item"
           >
             <Trash2 className="w-3.5 h-3.5" />
