@@ -80,6 +80,11 @@ export const OverviewHeader: React.FC = () => {
             <span className="px-2.5 py-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[11px] font-semibold tracking-wide text-black/70 dark:text-white/70 uppercase">
               Sem {profile.semester}
             </span>
+            {profile.rollNumber && (
+              <span className="px-2.5 py-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[11px] font-semibold tracking-wide text-black/70 dark:text-white/70 uppercase font-mono">
+                {profile.rollNumber}
+              </span>
+            )}
             {(profile.programme || profile.branch) && (
               <span className="px-2.5 py-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[11px] font-semibold tracking-wide text-black/70 dark:text-white/70 uppercase">
                 {profile.programme} {profile.branch}

@@ -32,17 +32,39 @@ const getSubjectPastelStyle = (sub?: Subject, fallbackId: string = '') => {
 };
 
 export const TodayTimeline: React.FC = () => {
-  const { timetable, subjects, setActiveView, isSessionCancelled, toggleSessionCancelled } = useApp();
+  const { timetable, subjects, events, setActiveView, isSessionCancelled, toggleSessionCancelled } = useApp();
 
+  const now = new Date();
   const todayDay = getCurrentDayOfWeek();
+  const dateTodayStr = now.toISOString().split('T')[0];
+  const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
+
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
   const todaySessions = timetable
     .filter((s) => s.day === todayDay)
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
-  const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  if (todayHoliday) {
+    return (
+      <div className="flex flex-col gap-3 text-left">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 tracking-tight pl-1">
+          Today&apos;s Schedule
+        </h3>
+        <div className="p-6 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-900/40 text-center flex flex-col items-center justify-center gap-2">
+          <span className="text-3xl">🌴</span>
+          <h4 className="text-sm font-bold text-amber-950 dark:text-amber-200">
+            Holiday: {todayHoliday.title}
+          </h4>
+          <p className="text-xs text-amber-800/80 dark:text-amber-300/80 max-w-sm">
+            All lectures and labs are suspended for today. Enjoy your break!
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (todaySessions.length === 0) {
     return (
