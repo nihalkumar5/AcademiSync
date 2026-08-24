@@ -42,45 +42,57 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
         body: JSON.stringify({
           fileName: isString ? filesInfo : (filesInfo.length === 1 ? filesInfo[0].name : 'Multiple Files'),
           images: isString ? [] : filesInfo,
+          isSample: isString,
         }),
       });
 
       const data = await res.json();
       if (data.success && Array.isArray(data.events)) {
         setExtractedEvents(data.events);
+        setStep('review');
       } else {
-        throw new Error('No events extracted');
+        throw new Error(data.error || 'No events extracted');
       }
-    } catch (error) {
-      console.warn('Calendar OCR API error, using sample extraction:', error);
-      const today = new Date();
-      const curYear = today.getFullYear();
-      const curMonth = String(today.getMonth() + 1).padStart(2, '0');
+    } catch (error: any) {
+      console.warn('Calendar OCR API error:', error);
+      if (isString) {
+        // Fallback for sample run
+        const today = new Date();
+        const curYear = today.getFullYear();
+        const curMonth = String(today.getMonth() + 1).padStart(2, '0');
 
-      setExtractedEvents([
-        {
-          title: 'Mid-Semester Examinations',
-          date: `${curYear}-${curMonth}-15`,
-          type: 'exam',
-          description: 'Mid-term theory exams',
-          location: 'LT-1 & LT-2',
-        },
-        {
-          title: 'Institute Foundation Day',
-          date: `${curYear}-${curMonth}-22`,
-          type: 'holiday',
-          description: 'Classes suspended',
-        },
-        {
-          title: 'Major Assignment Submission',
-          date: `${curYear}-${curMonth}-28`,
-          type: 'assignment',
-          description: 'Submit project report to course coordinator',
-        },
-      ]);
+        setExtractedEvents([
+          {
+            title: 'Mid-Semester Examinations',
+            date: `${curYear}-${curMonth}-15`,
+            type: 'exam',
+            description: 'Mid-term theory exams',
+            location: 'LT-1 & LT-2',
+          },
+          {
+            title: 'Institute Foundation Day',
+            date: `${curYear}-${curMonth}-22`,
+            type: 'holiday',
+            description: 'Classes suspended',
+          },
+          {
+            title: 'Major Assignment Submission',
+            date: `${curYear}-${curMonth}-28`,
+            type: 'assignment',
+            description: 'Submit project report to course coordinator',
+          },
+        ]);
+        setStep('review');
+      } else {
+        // Show toast alert on user upload error and return to upload step
+        showToast(
+          'Extraction Failed',
+          error.message || 'Could not parse the academic calendar. Please ensure the file is an image or PDF under 4MB.',
+          'error'
+        );
+        setStep('upload');
+      }
     }
-
-    setStep('review');
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
