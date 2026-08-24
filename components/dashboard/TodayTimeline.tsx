@@ -102,7 +102,7 @@ export const TodayTimeline: React.FC = () => {
                 {(() => {
                   let cardColorClass = '';
                   if (isNow) {
-                    cardColorClass = 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-[4px_4px_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_rgba(255,255,255,1)]';
+                    cardColorClass = 'bg-black text-white dark:bg-white dark:text-black shadow-lg shadow-black/10 dark:shadow-white/10 border-transparent ring-1 ring-black/5 dark:ring-white/5';
                   } else {
                     cardColorClass = `${getSubjectPastelStyle(sub, session.id)} text-black dark:text-white`;
                   }

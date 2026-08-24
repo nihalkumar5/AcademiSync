@@ -220,7 +220,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                   </p>
                   
                   <div className="mt-6 pointer-events-none">
-                    <Button variant="primary" className="rounded-none shadow-[4px_4px_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_rgba(255,255,255,1)]">
+                    <Button variant="primary" className="rounded-xl shadow-lg shadow-black/10 dark:shadow-white/10 ring-1 ring-black/5 dark:ring-white/5">
                       Choose Files
                     </Button>
                   </div>
