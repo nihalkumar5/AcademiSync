@@ -194,19 +194,34 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Periodic notification check & sync
   useEffect(() => {
     if (!isHydrated) return;
-    const newNotifs = checkAndGenerateSmartNotifications(
-      timetable,
-      subjects,
-      homework,
-      settings,
-      notifications
-    );
-    if (newNotifs.length > 0) {
-      const updated = [...newNotifs, ...notifications];
-      setNotificationsState(updated);
-      storage.setNotifications(updated);
-      showToast(newNotifs[0].title, newNotifs[0].message, 'info');
-    }
+
+    const runCheck = () => {
+      setNotificationsState((prevNotifications) => {
+        const newNotifs = checkAndGenerateSmartNotifications(
+          timetable,
+          subjects,
+          homework,
+          settings,
+          prevNotifications
+        );
+        
+        if (newNotifs.length > 0) {
+          const updated = [...newNotifs, ...prevNotifications];
+          storage.setNotifications(updated);
+          // Show toast for the first new notification
+          showToast(newNotifs[0].title, newNotifs[0].message, 'info');
+          return updated;
+        }
+        return prevNotifications;
+      });
+    };
+
+    // Run once on load/change
+    runCheck();
+
+    // Check every 60 seconds for time-based triggers
+    const interval = setInterval(runCheck, 60000);
+    return () => clearInterval(interval);
   }, [timetable, subjects, homework, settings, isHydrated]);
 
   // Native Local Notification Scheduler Effect
