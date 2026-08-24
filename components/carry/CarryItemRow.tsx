@@ -18,14 +18,14 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
       layout
       onClick={() => onToggle(item.id)}
       className={clsx(
-        'group flex items-center justify-between p-3.5 sm:p-4 border rounded-none transition-all cursor-pointer select-none text-left',
+        'group flex items-center justify-between p-4 sm:p-4.5 border rounded-none transition-all cursor-pointer select-none text-left gap-3',
         item.isPacked
-          ? 'border-emerald-600/50 dark:border-emerald-700/50 bg-emerald-500/5 opacity-60'
-          : 'border-black dark:border-white hover:bg-black/5 dark:hover:bg-white/5 bg-transparent'
+          ? 'border-emerald-600/40 dark:border-emerald-700/40 bg-emerald-500/[0.04] opacity-65'
+          : 'border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white bg-white/40 dark:bg-zinc-900/40 hover:bg-black/[0.02] dark:hover:bg-white/[0.02]'
       )}
     >
       <div className="flex items-center gap-3.5 min-w-0 flex-1">
-        {/* Square checkbox — signature design */}
+        {/* Square Checkbox */}
         <motion.button
           type="button"
           whileHover={{ scale: 1.05 }}
@@ -38,7 +38,7 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
             'w-5 h-5 rounded-none flex items-center justify-center border transition-all shrink-0 cursor-pointer',
             item.isPacked
               ? 'bg-emerald-600 border-emerald-600 text-white'
-              : 'border-black dark:border-white bg-transparent'
+              : 'border-black/40 dark:border-white/40 group-hover:border-black dark:group-hover:border-white bg-transparent'
           )}
         >
           {item.isPacked && (
@@ -53,10 +53,10 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
         </motion.button>
 
         {/* Item Title & Origin */}
-        <div className="flex flex-col min-w-0">
+        <div className="flex flex-col min-w-0 flex-1 pr-1">
           <span
             className={clsx(
-              'text-xs sm:text-sm font-bold tracking-tight truncate transition-all',
+              'text-sm font-bold tracking-tight truncate transition-all leading-snug',
               item.isPacked
                 ? 'line-through text-black/40 dark:text-white/40'
                 : 'text-black dark:text-white'
@@ -65,21 +65,21 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
             {item.title}
           </span>
 
-          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-black/50 dark:text-white/50 font-medium">
+          <div className="flex items-center gap-2 mt-1 text-xs text-black/55 dark:text-white/55 font-medium min-w-0">
             {item.source === 'subject' ? (
-              <span className="flex items-center gap-1 font-mono">
-                <BookOpen className="w-3 h-3 text-[#8C6B5D]" />
+              <span className="flex items-center gap-1.5 font-mono truncate">
+                <BookOpen className="w-3 h-3 text-[#8C6B5D] shrink-0" />
                 <span className="truncate">{item.subjectName || 'Required Subject Item'}</span>
               </span>
             ) : (
-              <span className="flex items-center gap-1 font-mono text-amber-700 dark:text-amber-400">
-                <Tag className="w-3 h-3" />
-                <span>Custom Item</span>
+              <span className="flex items-center gap-1.5 font-mono text-amber-700 dark:text-amber-400 truncate">
+                <Tag className="w-3 h-3 shrink-0" />
+                <span className="truncate">Custom Item</span>
               </span>
             )}
             {item.reminderNote && (
               <>
-                <span>•</span>
+                <span className="shrink-0">•</span>
                 <span className="truncate italic">{item.reminderNote}</span>
               </>
             )}
@@ -88,13 +88,13 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
       </div>
 
       {/* Right Side Status Tag & Delete button */}
-      <div className="flex items-center gap-2.5 shrink-0 pl-2">
+      <div className="flex items-center gap-2 shrink-0 pl-1">
         <span
           className={clsx(
-            'text-[10.5px] font-mono px-2 py-0.5 transition-colors font-bold border rounded-none',
+            'text-[11px] font-mono px-2.5 py-0.5 transition-colors font-bold border rounded-none whitespace-nowrap',
             item.isPacked
-              ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400'
-              : 'border-black/30 dark:border-white/30 text-black/60 dark:text-white/60'
+              ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30'
+              : 'border-black/30 dark:border-white/30 text-black/60 dark:text-white/60 bg-transparent'
           )}
         >
           {item.isPacked ? 'Packed' : 'To Pack'}
