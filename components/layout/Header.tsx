@@ -134,15 +134,17 @@ export const Header: React.FC = () => {
             )}
           </button>
 
-          {/* Notifications Bell */}
+          {/* Notifications Bell with Numeric Badge */}
           <button
             onClick={() => setActiveView('notifications')}
-            className="relative p-1.5 border border-transparent hover:border-black dark:hover:border-white transition-all"
-            title="Notifications"
+            className="relative p-1.5 border border-transparent hover:border-black dark:hover:border-white transition-all cursor-pointer"
+            title={`Notifications (${unreadNotifs} unread)`}
           >
             <Bell className="w-4 h-4" />
             {unreadNotifs > 0 && (
-              <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-black dark:bg-white animate-pulse" />
+              <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[9.5px] font-bold flex items-center justify-center border border-white dark:border-black leading-none">
+                {unreadNotifs > 99 ? '99+' : unreadNotifs}
+              </span>
             )}
           </button>
           
