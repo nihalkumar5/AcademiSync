@@ -10,6 +10,7 @@ export interface EmptyStateProps {
   actionLabel?: string;
   onAction?: () => void;
   actionIcon?: ReactNode;
+  className?: string;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
@@ -19,9 +20,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   actionLabel,
   onAction,
   actionIcon,
+  className = "",
 }) => {
   return (
-    <div className="flex flex-col items-start justify-center p-6 sm:p-8 text-left border border-black/15 dark:border-white/15 bg-black/[0.02] dark:bg-white/[0.02] my-4 relative overflow-hidden group">
+    <div className={`flex flex-col items-start justify-center p-6 sm:p-8 text-left border border-black/15 dark:border-white/15 bg-black/[0.02] dark:bg-white/[0.02] my-4 relative overflow-hidden group ${className}`}>
       {/* Subtle Aesthetic Glow */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-black/5 dark:bg-white/5 blur-3xl rounded-full pointer-events-none" />
       

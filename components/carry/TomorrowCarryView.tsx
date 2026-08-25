@@ -150,11 +150,11 @@ export const TomorrowCarryView: React.FC = () => {
 
           <div className="flex flex-col gap-3">
             {targetHoliday ? (
-              <div className="p-6 relative overflow-hidden border-2 border-black dark:border-white bg-yellow-50 dark:bg-yellow-900/20 flex flex-col gap-2 text-left">
+              <div className="p-6 relative overflow-hidden border border-black/10 dark:border-white/10 bg-yellow-50 dark:bg-yellow-900/20 flex flex-col gap-2 text-left">
                 
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded-none border border-black dark:border-white bg-white dark:bg-black text-black dark:text-white">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded-none border border-black/20 dark:border-white/20 bg-white/50 dark:bg-black/50 text-black dark:text-white">
                       Campus Holiday
                     </span>
                   </div>
@@ -261,14 +261,18 @@ export const TomorrowCarryView: React.FC = () => {
 
             {/* Checklist Items */}
             {carryItems.length === 0 ? (
-              <EmptyState
-                title={targetHoliday ? 'No packing needed — Holiday!' : `Nothing special to carry ${isAfter6PM ? 'tomorrow' : 'today'}`}
-                description={
-                  targetHoliday
-                    ? `${targetFormatted} is an official campus holiday (${targetHoliday.title}). Regular lectures are suspended, enjoy your day off!`
-                    : `Either ${isAfter6PM ? 'tomorrow' : 'today'} is a free day or no carry requirements are configured for ${isAfter6PM ? "tomorrow's" : "today's"} classes.`
-                }
-              />
+              targetHoliday ? (
+                <EmptyState
+                  title="NO PACKING NEEDED — HOLIDAY!"
+                  description={`${targetFormatted} is an official campus holiday (${targetHoliday.title}). Enjoy your break!`}
+                  className="bg-yellow-50 dark:bg-yellow-900/20 border-black/10 dark:border-white/10"
+                />
+              ) : (
+                <EmptyState
+                  title={`Nothing special to carry ${isAfter6PM ? 'tomorrow' : 'today'}`}
+                  description={`Either ${isAfter6PM ? 'tomorrow' : 'today'} is a free day or no carry requirements are configured for ${isAfter6PM ? "tomorrow's" : "today's"} classes.`}
+                />
+              )
             ) : (
               <div className="flex flex-col gap-3">
                 {carryItems.map((item) => (
