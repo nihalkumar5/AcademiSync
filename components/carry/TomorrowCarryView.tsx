@@ -5,12 +5,14 @@ import { useApp } from '@/context/AppContext';
 import {
   getTomorrowDayOfWeek,
   getCurrentDayOfWeek,
+  getTodayDateString,
+  getTomorrowDateString,
   timeToMinutes,
 } from '@/lib/timetableUtils';
 import { CarryItemRow } from './CarryItemRow';
 import { AddCustomItemModal } from './AddCustomItemModal';
 import { EmptyState } from '../ui/EmptyState';
-import { Backpack, Plus, MapPin, CalendarDays, Clock, FlaskConical, CheckCircle2 } from 'lucide-react';
+import { Backpack, Plus, MapPin, CalendarDays, Clock, FlaskConical, CheckCircle2, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Subject } from '@/lib/types';
 
@@ -41,6 +43,7 @@ export const TomorrowCarryView: React.FC = () => {
   const {
     timetable,
     subjects,
+    events,
     carryItems,
     toggleCarryItemPacked,
     deleteCarryItem,
@@ -58,23 +61,29 @@ export const TomorrowCarryView: React.FC = () => {
   const isAfter6PM = currentHour >= 18;
 
   const targetDay = isAfter6PM ? getTomorrowDayOfWeek() : getCurrentDayOfWeek();
+  const targetDateStr = isAfter6PM ? getTomorrowDateString() : getTodayDateString();
+  const targetHoliday = events.find((e) => e.date === targetDateStr && e.type === 'holiday');
+
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
-  // Target day's classes
-  const targetClasses = timetable
+  // Target day's classes (if holiday, 0 active classes)
+  const rawTargetClasses = timetable
     .filter((s) => s.day === targetDay)
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+
+  const targetClasses = targetHoliday ? [] : rawTargetClasses;
 
   // Carry items for target day
   const packedCount = carryItems.filter((i) => i.isPacked).length;
   const totalCount = carryItems.length;
   const progressPercent = totalCount > 0 ? Math.round((packedCount / totalCount) * 100) : 0;
 
+  const targetDateObj = new Date(targetDateStr + 'T12:00:00');
   const targetFormatted = new Intl.DateTimeFormat('en-US', {
     weekday: 'long',
     month: 'short',
     day: 'numeric',
-  }).format(isAfter6PM ? new Date(Date.now() + 86400000) : new Date());
+  }).format(isNaN(targetDateObj.getTime()) ? (isAfter6PM ? new Date(Date.now() + 86400000) : new Date()) : targetDateObj);
 
   if (!mounted) {
     return (
@@ -96,9 +105,16 @@ export const TomorrowCarryView: React.FC = () => {
             <span className="text-xs font-bold font-mono px-2.5 py-1 rounded-none border border-black dark:border-white text-black dark:text-white uppercase tracking-wider">
               {targetDay}
             </span>
-            <span className="text-xs font-bold font-mono px-2.5 py-1 rounded-none border border-black dark:border-white text-black dark:text-white">
-              {packedCount}/{totalCount} packed
-            </span>
+            {targetHoliday ? (
+              <span className="text-xs font-bold font-mono px-2.5 py-1 rounded-none border border-amber-600 bg-amber-500/10 text-amber-700 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1">
+                <span>🌴</span>
+                <span>Holiday: {targetHoliday.title}</span>
+              </span>
+            ) : (
+              <span className="text-xs font-bold font-mono px-2.5 py-1 rounded-none border border-black dark:border-white text-black dark:text-white">
+                {packedCount}/{totalCount} packed
+              </span>
+            )}
           </div>
           <p className="text-sm sm:text-base text-black/65 dark:text-white/65 mt-3 font-normal leading-relaxed max-w-md flex items-center gap-1.5">
             <CalendarDays className="w-4 h-4 shrink-0 text-black/60 dark:text-white/60" />
@@ -129,12 +145,27 @@ export const TomorrowCarryView: React.FC = () => {
               {isAfter6PM ? "Tomorrow's Schedule" : "Today's Schedule"}
             </h2>
             <span className="text-[11px] font-mono font-bold border border-black/20 dark:border-white/20 text-black/70 dark:text-white/70 px-2 py-0.5 rounded-none">
-              {targetClasses.length} {targetClasses.length === 1 ? 'lecture' : 'lectures'}
+              {targetHoliday ? '0 lectures (Holiday)' : `${targetClasses.length} ${targetClasses.length === 1 ? 'lecture' : 'lectures'}`}
             </span>
           </div>
 
           <div className="flex flex-col gap-3">
-            {targetClasses.length === 0 ? (
+            {targetHoliday ? (
+              <div className="p-6 border border-amber-400 dark:border-amber-600 bg-amber-500/10 dark:bg-amber-500/15 flex flex-col gap-2.5 text-left">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">🌴</span>
+                  <span className="text-[11px] font-black uppercase tracking-widest text-amber-800 dark:text-amber-200">
+                    Campus Holiday
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-amber-950 dark:text-amber-100">
+                  {targetHoliday.title}
+                </h3>
+                <p className="text-xs text-amber-900/80 dark:text-amber-200/80 leading-relaxed font-medium">
+                  {targetHoliday.description || `Official holiday on ${targetFormatted}. All regular lectures, labs, and practicals are suspended. Enjoy your break!`}
+                </p>
+              </div>
+            ) : targetClasses.length === 0 ? (
               <div className="p-6 border border-black/20 dark:border-white/20 text-center text-xs text-black/60 dark:text-white/60 font-medium">
                 No classes scheduled for {isAfter6PM ? 'tomorrow' : 'today'}. Enjoy your break!
               </div>
@@ -230,9 +261,13 @@ export const TomorrowCarryView: React.FC = () => {
             {/* Checklist Items */}
             {carryItems.length === 0 ? (
               <EmptyState
-                icon={<Backpack className="w-5 h-5 text-black/50 dark:text-white/50" />}
-                title={`Nothing special to carry ${isAfter6PM ? 'tomorrow' : 'today'}`}
-                description={`Either ${isAfter6PM ? 'tomorrow' : 'today'} is a free day or no carry requirements are configured for ${isAfter6PM ? "tomorrow's" : "today's"} classes.`}
+                icon={targetHoliday ? <Sparkles className="w-5 h-5 text-amber-500" /> : <Backpack className="w-5 h-5 text-black/50 dark:text-white/50" />}
+                title={targetHoliday ? 'No packing needed — Holiday!' : `Nothing special to carry ${isAfter6PM ? 'tomorrow' : 'today'}`}
+                description={
+                  targetHoliday
+                    ? `${targetFormatted} is an official campus holiday (${targetHoliday.title}). Regular lectures are suspended, enjoy your day off!`
+                    : `Either ${isAfter6PM ? 'tomorrow' : 'today'} is a free day or no carry requirements are configured for ${isAfter6PM ? "tomorrow's" : "today's"} classes.`
+                }
                 actionLabel="Add Custom Item"
                 onAction={() => setShowAddModal(true)}
               />

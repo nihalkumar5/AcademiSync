@@ -1,4 +1,4 @@
-import { DayOfWeek, ClassSession, Subject, CarryItem, Homework, ExtractedClassSession } from './types';
+import { DayOfWeek, ClassSession, Subject, CarryItem, Homework, ExtractedClassSession, AcademicEvent } from './types';
 
 export const DAYS_OF_WEEK: DayOfWeek[] = [
   'Monday',
@@ -9,6 +9,13 @@ export const DAYS_OF_WEEK: DayOfWeek[] = [
   'Saturday',
   'Sunday',
 ];
+
+export const getLocalDateString = (d: Date = new Date()): string => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 export const getCurrentDayOfWeek = (): DayOfWeek => {
   const dayIndex = new Date().getDay(); // 0 = Sun, 1 = Mon...
@@ -43,11 +50,11 @@ export const getTomorrowDayOfWeek = (): DayOfWeek => {
 export const getTomorrowDateString = (): string => {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  return tomorrow.toISOString().split('T')[0];
+  return getLocalDateString(tomorrow);
 };
 
 export const getTodayDateString = (): string => {
-  return new Date().toISOString().split('T')[0];
+  return getLocalDateString(new Date());
 };
 
 export const formatTime12Hour = (time24: string): string => {
@@ -139,7 +146,8 @@ export const calculateTomorrowCarryItems = (
   subjects: Subject[],
   existingCarryItems: CarryItem[],
   targetDateStr?: string,
-  targetDay?: DayOfWeek
+  targetDay?: DayOfWeek,
+  events: AcademicEvent[] = []
 ): CarryItem[] => {
   const now = new Date();
   const currentHour = now.getHours();
@@ -159,6 +167,18 @@ export const calculateTomorrowCarryItems = (
 
   const resolvedDateStr = targetDateStr || defaultDateStr;
   const resolvedDay = targetDay || defaultDay;
+
+  // Check if target date is an academic holiday
+  const isHoliday = events.some(
+    (e) => e.date === resolvedDateStr && e.type === 'holiday'
+  );
+
+  // If holiday, there are no subject bag requirements needed!
+  if (isHoliday) {
+    return existingCarryItems.filter(
+      (i) => i.date === resolvedDateStr && i.source === 'custom'
+    );
+  }
 
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
   const tomorrowClasses = timetable.filter((s) => s.day === resolvedDay);

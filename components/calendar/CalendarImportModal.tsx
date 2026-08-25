@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { AcademicEvent, CalendarEventType } from '@/lib/types';
+import { getLocalDateString, getTodayDateString } from '@/lib/timetableUtils';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Upload, Sparkles, Check, Trash2, CalendarDays } from 'lucide-react';
@@ -156,16 +157,14 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
   };
 
   const addExtractedRow = () => {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getTodayDateString();
     setExtractedEvents((prev) => [
-      {
-        title: 'New Academic Event',
-        date: todayStr,
-        startDate: todayStr,
-        endDate: todayStr,
-        type: 'event',
-      },
       ...prev,
+      {
+        title: 'New Event',
+        type: 'exam',
+        date: todayStr,
+      },
     ]);
   };
 
@@ -192,7 +191,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
         // Range: generate events day-by-day
         let current = new Date(start);
         while (current.getTime() <= end.getTime()) {
-          const dateStr = current.toISOString().split('T')[0];
+          const dateStr = getLocalDateString(current);
           expandedEvents.push({
             title: ev.title,
             type: ev.type,

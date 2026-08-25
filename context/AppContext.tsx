@@ -273,8 +273,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setSettingsState(loadedSettings);
     setCancelledSessionsState(loadedCancelled);
 
-    // Calculate carry items for tomorrow merging stored states
-    const computedCarry = calculateTomorrowCarryItems(loadedTimetable, loadedSubjects, storedCarry);
+    // Calculate carry items for tomorrow merging stored states & academic events/holidays
+    const computedCarry = calculateTomorrowCarryItems(loadedTimetable, loadedSubjects, storedCarry, undefined, undefined, loadedEvents);
     setCarryItemsState(computedCarry);
     storage.setCarryItems(computedCarry);
 
@@ -482,8 +482,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     refreshCarryItems(updatedTimetable, updatedSubs);
   };
 
-  const refreshCarryItems = (currentTimetable: ClassSession[], currentSubjects: Subject[]) => {
-    const recomputed = calculateTomorrowCarryItems(currentTimetable, currentSubjects, carryItems);
+  const refreshCarryItems = (
+    currentTimetable: ClassSession[],
+    currentSubjects: Subject[],
+    currentEvents: AcademicEvent[] = events
+  ) => {
+    const recomputed = calculateTomorrowCarryItems(
+      currentTimetable,
+      currentSubjects,
+      carryItems,
+      undefined,
+      undefined,
+      currentEvents
+    );
     setCarryItemsState(recomputed);
     storage.setCarryItems(recomputed);
   };
@@ -694,6 +705,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const updated = [...events, newEvent];
     setEventsState(updated);
     storage.setEvents(updated);
+    refreshCarryItems(timetable, subjects, updated);
     showToast('Event Added', eventData.title, 'success');
   };
 
@@ -705,6 +717,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const updated = overwrite ? newEvents : [...events, ...newEvents];
     setEventsState(updated);
     storage.setEvents(updated);
+    refreshCarryItems(timetable, subjects, updated);
   };
 
   const addExam = (examData: Omit<Exam, 'id' | 'createdAt'>): Exam => {
@@ -738,6 +751,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const updated = events.filter((e) => e.id !== id);
     setEventsState(updated);
     storage.setEvents(updated);
+    refreshCarryItems(timetable, subjects, updated);
   };
 
   const updateSettings = (partial: Partial<UserSettings>) => {

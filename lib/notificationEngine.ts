@@ -1,5 +1,5 @@
 import { AppNotification, ClassSession, Homework, Subject, UserSettings, AcademicEvent } from './types';
-import { getCurrentDayOfWeek, timeToMinutes, formatTime12Hour } from './timetableUtils';
+import { getCurrentDayOfWeek, timeToMinutes, formatTime12Hour, getTodayDateString, getTomorrowDateString } from './timetableUtils';
 
 export const checkAndGenerateSmartNotifications = (
   timetable: ClassSession[],
@@ -14,12 +14,28 @@ export const checkAndGenerateSmartNotifications = (
   const existingIds = new Set(existingNotifications.map((n) => n.relatedId || n.id));
   const now = new Date();
   const todayDay = getCurrentDayOfWeek();
-  const dateTodayStr = now.toISOString().split('T')[0];
+  const dateTodayStr = getTodayDateString();
+  const dateTomorrowStr = getTomorrowDateString();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
   const todayEvents = events.filter((e) => e.date === dateTodayStr);
+  const todayHoliday = todayEvents.find((e) => e.type === 'holiday');
   const isHolidayOrExam = todayEvents.some((e) => e.type === 'holiday' || e.type === 'exam');
+
+  // 0. Today's Holiday Alert
+  const holidayAlertKey = `holiday_alert_${dateTodayStr}`;
+  if (todayHoliday && !existingIds.has(holidayAlertKey)) {
+    newNotifications.push({
+      id: `notif_${Date.now()}_holiday`,
+      title: `🌴 Campus Holiday: ${todayHoliday.title}`,
+      message: todayHoliday.description || `Today is an official campus holiday. All classes and practicals are suspended!`,
+      category: 'events',
+      timestamp: new Date().toISOString(),
+      read: false,
+      relatedId: holidayAlertKey,
+    });
+  }
 
   // 1. Daily Morning Schedule Summary (Generates once per day, excluding cancelled classes)
   const todayClasses = isHolidayOrExam ? [] : timetable
@@ -80,16 +96,30 @@ export const checkAndGenerateSmartNotifications = (
   // 3. Evening Carry Bag Check (Fires after 6 PM / 18:00 for tomorrow)
   if (now.getHours() >= 18) {
     const carryCheckKey = `carry_evening_${dateTodayStr}`;
+    const tomorrowHoliday = events.find((e) => e.date === dateTomorrowStr && e.type === 'holiday');
+
     if (!existingIds.has(carryCheckKey)) {
-      newNotifications.push({
-        id: `notif_${Date.now()}_carry`,
-        title: `🎒 Pack Your Bag for Tomorrow`,
-        message: `Check your carry bag items and lab requirements for tomorrow's classes.`,
-        category: 'carry',
-        timestamp: new Date().toISOString(),
-        read: false,
-        relatedId: carryCheckKey,
-      });
+      if (tomorrowHoliday) {
+        newNotifications.push({
+          id: `notif_${Date.now()}_carry_hol`,
+          title: `🌴 Tomorrow is a Holiday: ${tomorrowHoliday.title}`,
+          message: `All lectures and labs are suspended tomorrow. Enjoy your break!`,
+          category: 'events',
+          timestamp: new Date().toISOString(),
+          read: false,
+          relatedId: carryCheckKey,
+        });
+      } else {
+        newNotifications.push({
+          id: `notif_${Date.now()}_carry`,
+          title: `🎒 Pack Your Bag for Tomorrow`,
+          message: `Check your carry bag items and lab requirements for tomorrow's classes.`,
+          category: 'carry',
+          timestamp: new Date().toISOString(),
+          read: false,
+          relatedId: carryCheckKey,
+        });
+      }
     }
   }
 

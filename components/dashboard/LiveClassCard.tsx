@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
-import { getLiveClassStatus, formatTime12Hour } from '@/lib/timetableUtils';
+import { getLiveClassStatus, formatTime12Hour, getTodayDateString } from '@/lib/timetableUtils';
 import { Clock, MapPin, User, CheckCircle2, ChevronRight } from 'lucide-react';
 
 export const LiveClassCard: React.FC = () => {
   const { timetable, subjects, events, isSessionCancelled } = useApp();
   
   const now = new Date();
-  const dateTodayStr = now.toISOString().split('T')[0];
+  const dateTodayStr = getTodayDateString();
   const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
 
   const getActiveTimetable = () => timetable.filter((s) => !isSessionCancelled(s.id));

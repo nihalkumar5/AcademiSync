@@ -21,11 +21,13 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
+import { getTodayDateString } from '@/lib/timetableUtils';
+
 export const AcademicCalendar: React.FC = () => {
   const { homework, events, addEvent, subjects } = useApp();
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayDateString());
   const [showAddEventModal, setShowAddEventModal] = useState(false);
   const [showImportCalendarModal, setShowImportCalendarModal] = useState(false);
 
@@ -183,7 +185,7 @@ export const AcademicCalendar: React.FC = () => {
               const dayNum = i + 1;
               const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
               const isSelected = selectedDate === dateKey;
-              const isToday = new Date().toISOString().split('T')[0] === dateKey;
+              const isToday = getTodayDateString() === dateKey;
               const dayItems = itemsByDate.get(dateKey) || [];
 
               return (

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useApp } from '@/context/AppContext';
-import { getCurrentDayOfWeek, timeToMinutes } from '@/lib/timetableUtils';
+import { getCurrentDayOfWeek, timeToMinutes, getTodayDateString } from '@/lib/timetableUtils';
 import { MapPin, User, Clock, FlaskConical, Ban, RotateCcw, MoreHorizontal } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
@@ -36,7 +36,7 @@ export const TodayTimeline: React.FC = () => {
 
   const now = new Date();
   const todayDay = getCurrentDayOfWeek();
-  const dateTodayStr = now.toISOString().split('T')[0];
+  const dateTodayStr = getTodayDateString();
   const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
 
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
