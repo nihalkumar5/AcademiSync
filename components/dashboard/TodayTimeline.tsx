@@ -50,16 +50,21 @@ export const TodayTimeline: React.FC = () => {
   if (todayHoliday) {
     return (
       <div className="flex flex-col gap-3 text-left">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 tracking-tight pl-1">
-          Today&apos;s Schedule
-        </h3>
-        <div className="p-6 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-900/40 text-center flex flex-col items-center justify-center gap-2">
-          <span className="text-3xl">🌴</span>
-          <h4 className="text-sm font-bold text-amber-950 dark:text-amber-200">
-            Holiday: {todayHoliday.title}
-          </h4>
-          <p className="text-xs text-amber-800/80 dark:text-amber-300/80 max-w-sm">
-            All lectures and labs are suspended for today. Enjoy your break!
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-xs font-bold tracking-widest uppercase text-black dark:text-white">
+            Today&apos;s Schedule
+          </h3>
+          <span className="text-[10px] font-mono font-bold border border-black dark:border-white text-black dark:text-white px-2 py-0.5 uppercase">
+            {todayDay} · Off Day
+          </span>
+        </div>
+        <div className="glass-card p-6 text-left flex flex-col gap-2 border border-black/20 dark:border-white/20">
+          <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-black/60 dark:text-white/60">
+            <span className="w-1.5 h-1.5 bg-black dark:bg-white inline-block" />
+            <span>No Lectures Scheduled</span>
+          </div>
+          <p className="text-xs text-black/70 dark:text-white/70 leading-relaxed">
+            Campus is observing <span className="font-bold text-black dark:text-white">{todayHoliday.title}</span>. All regular lectures and labs are suspended.
           </p>
         </div>
       </div>

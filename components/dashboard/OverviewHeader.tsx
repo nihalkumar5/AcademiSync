@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
-import { getCurrentDayOfWeek, formatCollegeBadge } from '@/lib/timetableUtils';
+import { getCurrentDayOfWeek, formatCollegeBadge, getTodayDateString } from '@/lib/timetableUtils';
 import {
   BookOpen,
   CheckSquare,
@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 export const OverviewHeader: React.FC = () => {
-  const { profile, timetable, homework, carryItems, setActiveView } = useApp();
+  const { profile, timetable, homework, carryItems, events, setActiveView } = useApp();
 
   const [time, setTime] = useState<Date | null>(null);
 
@@ -27,8 +27,10 @@ export const OverviewHeader: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  const dateTodayStr = getTodayDateString();
+  const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
   const todayDay = getCurrentDayOfWeek();
-  const todayClasses = timetable.filter((s) => s.day === todayDay);
+  const todayClasses = todayHoliday ? [] : timetable.filter((s) => s.day === todayDay);
   const pendingHw = homework.filter((h) => h.status !== 'Completed');
   const upcomingDeadlines = homework.filter((h) => {
     const diff = Math.ceil(
@@ -108,7 +110,7 @@ export const OverviewHeader: React.FC = () => {
             {todayClasses.length}
           </span>
           <span className="text-sm font-medium text-black/60 dark:text-white/60">
-            Classes Today
+            {todayHoliday ? 'Classes (Holiday)' : 'Classes Today'}
           </span>
         </button>
 

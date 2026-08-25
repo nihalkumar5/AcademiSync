@@ -107,9 +107,8 @@ export const TomorrowCarryView: React.FC = () => {
               {targetDay}
             </span>
             {targetHoliday ? (
-              <span className="text-xs font-bold font-mono px-2.5 py-1 rounded-none border border-amber-600 bg-amber-500/10 text-amber-700 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1">
-                <span>🌴</span>
-                <span>Holiday: {targetHoliday.title}</span>
+              <span className="text-xs font-bold font-mono px-2.5 py-1 rounded-none border border-black dark:border-white text-black dark:text-white uppercase tracking-wider">
+                Holiday: {targetHoliday.title}
               </span>
             ) : (
               <span className="text-xs font-bold font-mono px-2.5 py-1 rounded-none border border-black dark:border-white text-black dark:text-white">
@@ -151,18 +150,17 @@ export const TomorrowCarryView: React.FC = () => {
 
           <div className="flex flex-col gap-3">
             {targetHoliday ? (
-              <div className="p-6 border border-amber-400 dark:border-amber-600 bg-amber-500/10 dark:bg-amber-500/15 flex flex-col gap-2.5 text-left">
+              <div className="p-6 border border-black/20 dark:border-white/20 bg-black/5 dark:bg-white/5 flex flex-col gap-2 text-left">
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl">🌴</span>
-                  <span className="text-[11px] font-black uppercase tracking-widest text-amber-800 dark:text-amber-200">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.5 border border-black/20 dark:border-white/20 text-black/60 dark:text-white/60">
                     Campus Holiday
                   </span>
                 </div>
-                <h3 className="text-lg font-bold text-amber-950 dark:text-amber-100">
+                <h3 className="text-base font-bold text-black dark:text-white">
                   {targetHoliday.title}
                 </h3>
-                <p className="text-xs text-amber-900/80 dark:text-amber-200/80 leading-relaxed font-medium">
-                  {targetHoliday.description || `Official holiday on ${targetFormatted}. All regular lectures, labs, and practicals are suspended. Enjoy your break!`}
+                <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed font-normal">
+                  {targetHoliday.description || `Official holiday on ${targetFormatted}. Regular classes are suspended.`}
                 </p>
               </div>
             ) : targetClasses.length === 0 ? (

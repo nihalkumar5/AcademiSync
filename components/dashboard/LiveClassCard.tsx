@@ -24,48 +24,29 @@ export const LiveClassCard: React.FC = () => {
     return () => clearInterval(interval);
   }, [timetable, subjects, isSessionCancelled]);
 
-  // 🌴 Premium Holiday Display
+  // Brutalist Minimalist Holiday Display
   if (todayHoliday) {
     return (
-      <div className="w-full rounded-2xl p-6 sm:p-7 text-left relative overflow-hidden bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-emerald-500/10 dark:from-amber-500/15 dark:via-orange-500/10 dark:to-emerald-500/15 border border-amber-300/70 dark:border-amber-700/60 shadow-[0_4px_24px_-4px_rgba(245,158,11,0.12)]">
-        {/* Subtle decorative background glow */}
-        <div className="absolute right-[-20px] top-[-20px] w-36 h-36 bg-amber-400/20 dark:bg-amber-400/10 rounded-full blur-2xl pointer-events-none" />
-        
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative z-10">
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-1 rounded-full bg-amber-500/20 dark:bg-amber-500/30 text-amber-800 dark:text-amber-200 text-xs font-black uppercase tracking-widest flex items-center gap-1.5">
-                <span>🌴</span>
-                <span>Campus Holiday</span>
-              </span>
-              <span className="text-xs font-semibold text-amber-700/80 dark:text-amber-300/80">
-                • Academic Calendar
-              </span>
-            </div>
-
-            <div>
-              <h3 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-zinc-50 tracking-tight">
-                {todayHoliday.title}
-              </h3>
-              <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-1 max-w-xl font-medium leading-relaxed">
-                {todayHoliday.description || "Today is an official campus holiday. All regular lectures, labs, and academic sessions are suspended. Enjoy your break!"}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 mt-1">
-              <span className="px-2.5 py-1 rounded-lg bg-white/80 dark:bg-zinc-900/80 border border-amber-200 dark:border-amber-800/60 text-xs font-bold text-amber-900 dark:text-amber-200">
-                🎉 No Classes Today
-              </span>
-              <span className="px-2.5 py-1 rounded-lg bg-white/80 dark:bg-zinc-900/80 border border-amber-200 dark:border-amber-800/60 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-                Relax & recharge ✨
-              </span>
-            </div>
+      <div className="glass-card p-5 sm:p-6 text-left flex items-center justify-between gap-4 border border-black dark:border-white">
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="w-11 h-11 border border-black dark:border-white bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shrink-0 font-mono text-xs font-bold uppercase tracking-wider">
+            OFF
           </div>
-
-          <div className="shrink-0 flex items-center justify-center">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center text-3xl sm:text-4xl shadow-md shadow-amber-500/20">
-              🌴
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 border border-black/20 dark:border-white/20 text-black/60 dark:text-white/60">
+                Campus Holiday
+              </span>
+              <span className="font-mono text-[10px] font-medium text-black/40 dark:text-white/40 uppercase">
+                Academic Calendar
+              </span>
             </div>
+            <h3 className="text-xl sm:text-2xl font-bold text-black dark:text-white tracking-tight mt-1 truncate">
+              {todayHoliday.title}
+            </h3>
+            <p className="text-xs text-black/60 dark:text-white/60 mt-0.5 leading-snug line-clamp-1 font-normal">
+              {todayHoliday.description || "All regular lectures, labs, and academic sessions are suspended today."}
+            </p>
           </div>
         </div>
       </div>
