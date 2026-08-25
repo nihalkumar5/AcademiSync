@@ -136,21 +136,21 @@ export const SmartFocusList: React.FC = () => {
                       {item.title}
                     </span>
 
-                    <div className="flex items-center gap-2 text-[11px] text-black/50 dark:text-white/50 font-medium mt-0.5">
-                      <span className="font-mono px-1.5 py-0.2 border border-black/20 dark:border-white/20 text-[10px]">
+                    <div className="flex flex-col gap-1.5 text-[11px] text-black/50 dark:text-white/50 font-medium mt-1.5">
+                      <span className="font-mono px-1.5 py-0.5 border border-black/20 dark:border-white/20 text-[10px] w-fit break-words max-w-full leading-tight">
                         {item.tag}
                       </span>
                       {item.deadlineText && (
                         <span
                           className={clsx(
-                            'font-mono flex items-center gap-1',
+                            'font-mono flex items-center gap-1 w-fit',
                             item.urgency === 'high'
                               ? 'text-rose-600 dark:text-rose-400 font-bold'
                               : ''
                           )}
                         >
-                          <Clock className="w-3 h-3" />
-                          {item.deadlineText}
+                          <Clock className="w-3 h-3 shrink-0" />
+                          <span className="truncate">{item.deadlineText}</span>
                         </span>
                       )}
                     </div>
