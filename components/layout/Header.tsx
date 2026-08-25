@@ -83,10 +83,19 @@ export const Header: React.FC = () => {
     <>
       <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-8 py-4 bg-[#FAFAF8]/80 dark:bg-[#111110]/80 backdrop-blur-md border-b border-black/10 dark:border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
         <div className="flex items-center gap-3 select-none">
-          <h1 className="text-xl sm:text-2xl text-[#1A1918] dark:text-[#F4F1EA] tracking-tighter font-sans">
+          {/* Logo only shown on mobile where sidebar is hidden */}
+          <h1 className="md:hidden text-xl sm:text-2xl text-[#1A1918] dark:text-[#F4F1EA] tracking-tighter font-sans">
             <span className="font-extrabold">inter</span>
             <span className="font-normal opacity-80">semester</span>
           </h1>
+
+          {/* Desktop Breadcrumb indicator so logo is never duplicated */}
+          <div className="hidden md:flex items-center gap-2 font-mono text-xs">
+            <span className="text-black/35 dark:text-white/35 uppercase">Workspace /</span>
+            <span className="font-bold uppercase tracking-wider text-black dark:text-white">
+              {viewTitles[activeView] || 'Dashboard'}
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4 text-sm font-medium tracking-tight text-black dark:text-white">
