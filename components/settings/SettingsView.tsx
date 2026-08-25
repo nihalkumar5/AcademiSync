@@ -46,10 +46,10 @@ export const SettingsView: React.FC = () => {
   const [college, setCollege] = useState(profile.college);
   const [rollNumber, setRollNumber] = useState(profile.rollNumber);
   const [email, setEmail] = useState(profile.email);
-  const [programme, setProgramme] = useState<Programme>(
-    profile.programme === 'CMIT' ? 'Mtech- CMIT' : profile.programme
+  const [programme, setProgramme] = useState<string>(
+    profile.programme === 'CMIT' ? 'Mtech- CMIT' : (profile.programme || '')
   );
-  const [branch, setBranch] = useState<Branch>(profile.branch);
+  const [branch, setBranch] = useState<string>(profile.branch || '');
   const [year, setYear] = useState(profile.year);
   const [semester, setSemester] = useState(profile.semester);
 
@@ -323,31 +323,33 @@ export const SettingsView: React.FC = () => {
             {/* Programme & Branch */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div className="flex flex-col gap-1.5">
-                <label className={labelClass}>Degree Programme</label>
-                <select
-                  value={programme}
-                  onChange={(e) => setProgramme(e.target.value as Programme)}
-                  className="w-full px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white text-sm font-medium text-black dark:text-white focus:outline-none cursor-pointer"
-                >
-                  <option value="B.Tech">B.Tech</option>
-                  <option value="M.Tech">M.Tech</option>
-                  <option value="Mtech- CMIT">Mtech- CMIT</option>
-                  <option value="Ph.D">Ph.D</option>
-                </select>
+                <label className={labelClass}>Degree / Programme</label>
+                <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white">
+                  <GraduationCap className="w-4 h-4 text-black/40 dark:text-white/40 shrink-0" />
+                  <input
+                    type="text"
+                    value={programme}
+                    onChange={(e) => setProgramme(e.target.value)}
+                    placeholder="e.g. B.Tech, B.Sc, MBA, BCA, MBBS"
+                    required
+                    className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none"
+                  />
+                </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className={labelClass}>Branch / Department</label>
-                <select
-                  value={branch}
-                  onChange={(e) => setBranch(e.target.value as Branch)}
-                  className="w-full px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white text-sm font-medium text-black dark:text-white focus:outline-none cursor-pointer"
-                >
-                  <option value="CSE">CSE (Computer Science)</option>
-                  <option value="DSAI">DSAI (Data Science & AI)</option>
-                  <option value="ECE">ECE (Electronics & Comm)</option>
-                  <option value="IT">IT (Information Tech)</option>
-                </select>
+                <label className={labelClass}>Branch / Department / Major</label>
+                <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white">
+                  <Building2 className="w-4 h-4 text-black/40 dark:text-white/40 shrink-0" />
+                  <input
+                    type="text"
+                    value={branch}
+                    onChange={(e) => setBranch(e.target.value)}
+                    placeholder="e.g. Computer Science, Mechanical, Finance"
+                    required
+                    className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none"
+                  />
+                </div>
               </div>
             </div>
 

@@ -1,6 +1,6 @@
-export type Programme = 'B.Tech' | 'M.Tech' | 'CMIT' | 'Mtech- CMIT' | 'Ph.D';
+export type Programme = string;
 
-export type Branch = 'CSE' | 'DSAI' | 'ECE' | 'IT';
+export type Branch = string;
 
 export interface StudentProfile {
   id: string;
