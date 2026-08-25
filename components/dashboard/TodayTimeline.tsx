@@ -58,7 +58,7 @@ export const TodayTimeline: React.FC = () => {
             {todayDay} · Holiday
           </span>
         </div>
-        <div className="glass-card p-6 text-left flex flex-col gap-2 relative overflow-hidden border-2 border-black dark:border-white">
+        <div className="glass-card p-6 text-left flex flex-col gap-2 relative overflow-hidden border-2 border-black dark:border-white bg-yellow-50 dark:bg-yellow-900/20">
           {/* Subtle Geometric Texture */}
           <div 
             className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06] pointer-events-none" 

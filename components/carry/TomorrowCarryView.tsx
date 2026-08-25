@@ -150,7 +150,7 @@ export const TomorrowCarryView: React.FC = () => {
 
           <div className="flex flex-col gap-3">
             {targetHoliday ? (
-              <div className="p-6 relative overflow-hidden border-2 border-black dark:border-white bg-white/50 dark:bg-black/50 flex flex-col gap-2 text-left">
+              <div className="p-6 relative overflow-hidden border-2 border-black dark:border-white bg-yellow-50 dark:bg-yellow-900/20 flex flex-col gap-2 text-left">
                 {/* Subtle Geometric Texture */}
                 <div 
                   className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06] pointer-events-none" 
