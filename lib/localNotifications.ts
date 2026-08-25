@@ -212,26 +212,41 @@ export const scheduleTimetableLocalNotifications = async (
     }
 
     // 2. Schedule Daily Evening Bag Packing Reminder
-    const [bagHStr, bagMStr] = eveningBagTime.split(':');
-    const bagH = parseInt(bagHStr || '20', 10);
-    const bagM = parseInt(bagMStr || '0', 10);
-    if (!isNaN(bagH) && !isNaN(bagM)) {
-      notificationsToSchedule.push({
-        title: '🎒 Pack Your Bag for Tomorrow',
-        body: 'Check your carry bag items and timetable for tomorrow\'s classes.',
-        id: 5001,
-        schedule: {
-          on: {
-            hour: bagH,
-            minute: bagM,
-          },
-          allowWhileIdle: true,
-        },
-        sound: 'class_bell',
-        channelId: 'class_alerts_v3',
-        extra: null,
-      });
+    let bagH = 20;
+    let bagM = 0;
+    if (eveningBagTime) {
+      const cleanBag = eveningBagTime.trim();
+      const parts = cleanBag.split(' ');
+      const timeParts = parts[0].split(':');
+      let h = parseInt(timeParts[0] || '20', 10);
+      let m = parseInt(timeParts[1] || '0', 10);
+
+      if (parts[1]) {
+        const modifier = parts[1].toUpperCase();
+        if (modifier === 'PM' && h < 12) h += 12;
+        if (modifier === 'AM' && h === 12) h = 0;
+      }
+      if (!isNaN(h) && !isNaN(m)) {
+        bagH = h;
+        bagM = m;
+      }
     }
+
+    notificationsToSchedule.push({
+      title: '🎒 Pack Your Bag for Tomorrow',
+      body: 'Check your carry bag items and timetable for tomorrow\'s classes.',
+      id: 5001,
+      schedule: {
+        on: {
+          hour: bagH,
+          minute: bagM,
+        },
+        allowWhileIdle: true,
+      },
+      sound: 'class_bell',
+      channelId: 'class_alerts_v3',
+      extra: null,
+    });
 
     // 3. Schedule Homework / Assignment Due Reminders
     if (homework && homework.length > 0) {
