@@ -264,11 +264,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       await scheduleTimetableLocalNotifications(
         timetable,
         subjects,
-        settings.classReminderMinutes || 10
+        homework,
+        exams,
+        settings
       );
     };
     scheduleReminders();
-  }, [timetable, subjects, settings.classReminderMinutes, isHydrated]);
+  }, [timetable, subjects, homework, exams, settings, isHydrated]);
 
   // Keyboard shortcut listener (Cmd+K / Ctrl+K)
   useEffect(() => {

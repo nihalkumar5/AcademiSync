@@ -6,6 +6,7 @@ import { useUser, UserButton, SignedIn, SignedOut, SignInButton } from '@clerk/n
 import { useApp } from '@/context/AppContext';
 import { Programme, Branch } from '@/lib/types';
 import { storage } from '@/lib/storage';
+import { scheduleTestNotification } from '@/lib/localNotifications';
 import {
   User,
   GraduationCap,
@@ -118,6 +119,11 @@ export const SettingsView: React.FC = () => {
       homeworkWarningDays: Number(hwDays),
     });
     showToast('Preferences Saved', 'Notification schedules updated', 'success');
+  };
+
+  const handleTestNotification = async () => {
+    await scheduleTestNotification(5);
+    showToast('Test Alert Scheduled', 'Close or lock your phone now! Notification arrives in 5 seconds.', 'info');
   };
 
   const handleExportBackup = () => {
@@ -487,7 +493,7 @@ export const SettingsView: React.FC = () => {
                 <span className="text-[10px] text-black/40 dark:text-white/40 font-medium">Days before deadline</span>
               </div>
 
-              <div className="flex gap-2 mt-1">
+              <div className="flex flex-col sm:flex-row gap-2 mt-1">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -497,6 +503,23 @@ export const SettingsView: React.FC = () => {
                   Update Schedule
                 </motion.button>
 
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                  onClick={handleTestNotification}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-none border border-black/30 dark:border-white/30 text-black dark:text-white text-xs font-semibold hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Test Closed-App Alert (5s)</span>
+                </motion.button>
+              </div>
+
+              <div className="p-3 bg-black/[0.02] dark:bg-white/[0.02] border border-black/10 dark:border-white/10 flex items-start gap-2 text-[11px] text-black/60 dark:text-white/60">
+                <Info className="w-4 h-4 text-[#8C6B5D] shrink-0 mt-0.5" />
+                <span>
+                  <strong>Tip for Android:</strong> If alarms don&apos;t sound when the app is swiped away, ensure App Info &rarr; Battery is set to &ldquo;Unrestricted&rdquo; and &ldquo;Allow alarms &amp; reminders&rdquo; is enabled in your phone Settings.
+                </span>
               </div>
             </form>
           </div>
