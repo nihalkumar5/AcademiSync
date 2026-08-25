@@ -319,7 +319,7 @@ export const SettingsView: React.FC = () => {
               <div className="flex flex-col gap-1.5">
                 <label className={labelClass}>Roll Number</label>
                 <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white">
-                  <Hash className="w-4 h-4 text-black/40 dark:text-white/40 shrink-0" />
+                  <User className="w-4 h-4 text-black/40 dark:text-white/40 shrink-0" />
                   <input
                     type="text"
                     value={rollNumber}

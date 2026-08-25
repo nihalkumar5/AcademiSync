@@ -13,6 +13,7 @@ import {
   MapPin,
   Sparkles,
   Hash,
+  User,
   GraduationCap,
   Building2,
   IdCard,
@@ -83,24 +84,24 @@ export const OverviewHeader: React.FC = () => {
             It is {timeFormatted} on {dateFormatted}.
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[11px] font-semibold tracking-wide text-black/70 dark:text-white/70 uppercase">
-              <BookOpen size={11} strokeWidth={2.5} />
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[12px] font-semibold tracking-wide text-black/70 dark:text-white/70 uppercase">
+              <BookOpen size={13} strokeWidth={2.5} />
               Sem {profile.semester}
             </span>
             {profile.rollNumber && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[11px] font-semibold tracking-wide text-black/70 dark:text-white/70 uppercase font-mono">
-                <Hash size={11} strokeWidth={2.5} />
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[12px] font-semibold tracking-wide text-black/70 dark:text-white/70 uppercase font-mono">
+                <User size={13} strokeWidth={2.5} />
                 {profile.rollNumber}
               </span>
             )}
             {(profile.programme || profile.branch) && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[11px] font-semibold tracking-wide text-black/70 dark:text-white/70 uppercase">
-                <GraduationCap size={11} strokeWidth={2.5} />
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[12px] font-semibold tracking-wide text-black/70 dark:text-white/70 uppercase">
+                <GraduationCap size={13} strokeWidth={2.5} />
                 {profile.programme} {profile.branch}
               </span>
             )}
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[11px] font-semibold tracking-wide text-black/70 dark:text-white/70 uppercase truncate max-w-[220px]">
-              <Building2 size={11} strokeWidth={2.5} />
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[12px] font-semibold tracking-wide text-black/70 dark:text-white/70 uppercase truncate max-w-[240px]">
+              <Building2 size={13} strokeWidth={2.5} />
               {formatCollegeBadge(profile.college)}
             </span>
           </div>
