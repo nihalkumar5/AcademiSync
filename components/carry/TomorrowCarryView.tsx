@@ -150,7 +150,7 @@ export const TomorrowCarryView: React.FC = () => {
 
           <div className="flex flex-col gap-3">
             {targetHoliday ? (
-              <div className="p-6 relative overflow-hidden border border-black/10 dark:border-white/10 bg-yellow-100 dark:bg-yellow-900/30 flex flex-col gap-2 text-left">
+              <div className="p-6 relative overflow-hidden border border-black dark:border-white bg-yellow-100 dark:bg-yellow-900/30 flex flex-col gap-2 text-left">
                 
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-2">

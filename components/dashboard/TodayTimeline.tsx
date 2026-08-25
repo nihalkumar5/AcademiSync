@@ -58,7 +58,7 @@ export const TodayTimeline: React.FC = () => {
             {todayDay} · Holiday
           </span>
         </div>
-        <div className="glass-card p-6 text-left flex flex-col gap-2 relative overflow-hidden border border-black/10 dark:border-white/10 bg-yellow-100 dark:bg-yellow-900/30">
+        <div className="glass-card p-6 text-left flex flex-col gap-2 relative overflow-hidden border border-black dark:border-white bg-yellow-100 dark:bg-yellow-900/30">
           
           <div className="relative z-10">
             <div className="flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-wider text-black dark:text-white mb-1">
