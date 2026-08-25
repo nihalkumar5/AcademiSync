@@ -69,7 +69,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                 borderColor: `${subject.color}35`,
               }}
             >
-              {subject.shortName || subject.code}
+              {subject.name || subject.code}
             </span>
           )}
 

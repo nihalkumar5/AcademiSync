@@ -6,6 +6,7 @@ import { useUser, UserButton, SignedIn, SignedOut, SignInButton } from '@clerk/n
 import { useApp } from '@/context/AppContext';
 import { Programme, Branch } from '@/lib/types';
 import { storage } from '@/lib/storage';
+import { INDIAN_COLLEGES } from '@/lib/colleges';
 import { scheduleTestNotification } from '@/lib/localNotifications';
 import {
   User,
@@ -268,10 +269,19 @@ export const SettingsView: React.FC = () => {
                   value={college}
                   onChange={(e) => setCollege(e.target.value)}
                   placeholder="e.g. NIT Trichy, IIT Bombay..."
+                  list="indian-colleges"
                   required
                   className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none placeholder:text-black/30 dark:placeholder:text-white/30"
                 />
+                <datalist id="indian-colleges">
+                  {INDIAN_COLLEGES.map((c) => (
+                    <option key={c} value={c} />
+                  ))}
+                </datalist>
               </div>
+              <p className="text-[10px] text-black/50 dark:text-white/50 font-medium">
+                Type 2-3 letters to search, or simply type your full college name if it isn't listed.
+              </p>
             </div>
 
             {/* Full Name */}

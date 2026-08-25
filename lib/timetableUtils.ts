@@ -284,10 +284,10 @@ export const calculateTodayFocus = (
 
     items.push({
       id: hw.id,
-      title: `${subject ? subject.shortName + ': ' : ''}${hw.title}`,
+      title: hw.title,
       type: 'homework',
       urgency,
-      tag: subject?.shortName || 'Homework',
+      tag: subject?.name || 'Homework',
       deadlineText,
       completed: false,
     });
