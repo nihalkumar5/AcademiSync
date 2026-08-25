@@ -107,6 +107,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
       </div>
 
       {/* Task Content: Interactive Checkbox & Title */}
+      <div className="flex items-start gap-3 mt-3">
         {/* Tactile Square Checkbox */}
         <motion.button
           type="button"
