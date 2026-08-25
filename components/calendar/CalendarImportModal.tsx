@@ -214,7 +214,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Import Academic Calendar via AI"
+      title="Import Academic Calendar via Magic"
       description="Upload your institute academic calendar photo or PDF to extract exam dates, holidays, and events."
       maxWidth={step === 'review' ? '4xl' : 'lg'}
     >
@@ -271,7 +271,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
             <Sparkles className="w-7 h-7" />
           </div>
           <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
-            Extracting Academic Calendar Events via AI...
+            Reading Calendar via Magic...
           </h4>
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 font-medium">
             Analyzing {fileName || 'document'} for exam schedules, holidays, and semester deadlines.

@@ -92,7 +92,7 @@ export const HomeworkView: React.FC = () => {
             onClick={() => setShowScanModal(true)}
             className="flex items-center px-5 py-3 rounded-none border border-black dark:border-white text-black dark:text-white bg-transparent hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-sm font-medium cursor-pointer"
           >
-            AI Scanner
+            Magic Scanner
           </motion.button>
 
           <motion.button

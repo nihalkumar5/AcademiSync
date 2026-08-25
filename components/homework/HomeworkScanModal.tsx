@@ -186,7 +186,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
             <Sparkles className="w-7 h-7" />
           </div>
           <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
-            Reading Assignment Details via AI...
+            Reading Assignment Details via Magic...
           </h4>
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 font-medium">
             Analyzing {fileName} for subject codes, questions, and submission dates.

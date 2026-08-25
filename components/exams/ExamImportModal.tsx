@@ -124,7 +124,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Import Exam Timetable via AI/OCR"
+      title="Import Exam Timetable via Magic"
       maxWidth={step === 'review' ? '4xl' : 'md'}
     >
       {step === 'upload' && (
@@ -166,7 +166,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
             </div>
           </div>
           <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
-            Extracting Exams via AI...
+            Extracting Exams via Magic...
           </h4>
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 font-medium">
             Analyzing {fileName || 'document'} for exam schedules.

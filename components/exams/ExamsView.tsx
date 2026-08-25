@@ -93,7 +93,7 @@ export const ExamsView: React.FC = () => {
           <EmptyState
             icon={<BookOpen className="w-5 h-5 text-rose-500" />}
             title="No exams scheduled"
-            description="Upload your exam timetable using AI or add manually."
+            description="Upload your exam timetable using magic scanner or add manually."
             actionLabel="Import Timetable"
             onAction={handleAIImport}
           />

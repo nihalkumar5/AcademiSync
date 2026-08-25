@@ -95,7 +95,7 @@ export const WeeklyTimetable: React.FC = () => {
             onClick={handleImportTimetable}
             className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
           >
-            AI Import
+            Magic Import
           </Button>
 
           <Button

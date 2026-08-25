@@ -59,7 +59,7 @@ export default function AboutPage() {
             </div>
             <h3 className="text-sm font-bold text-[#1A1918] dark:text-white">Smart Timetable Engine</h3>
             <p className="text-xs text-[#7A6D61] dark:text-[#9A9188]">
-              Automated current class highlight, next lecture countdown, and 1-tap AI timetable photo scanner.
+              Automated current class highlight, next lecture countdown, and 1-tap magic timetable scanner.
             </p>
           </div>
 

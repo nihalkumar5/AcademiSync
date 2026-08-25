@@ -169,7 +169,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Import Timetable via AI/OCR"
+      title="Import Timetable via Magic"
       description="Upload your institute timetable image or PDF to extract your weekly schedule."
       maxWidth={step === 'review' ? '4xl' : 'lg'}
     >
@@ -187,7 +187,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
               Sign In Required
             </h3>
             <p className="text-sm text-[#7A6D61] dark:text-[#9A9188] max-w-[280px] mx-auto leading-relaxed font-medium">
-              Please sign in to your student account to upload and parse timetables using AI.
+              Please sign in to your student account to upload and parse timetables like magic.
             </p>
           </div>
           <SignInButton mode="modal">
@@ -252,7 +252,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                 </div>
               </div>
               <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
-                Extracting Timetable Structure via AI...
+                Reading Timetable via Magic...
               </h4>
               <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 font-medium">
                 Analyzing {fileName || 'document'} for lecture timings, room tags, and faculty.
