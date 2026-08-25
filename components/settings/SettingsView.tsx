@@ -45,6 +45,7 @@ export const SettingsView: React.FC = () => {
 
   const [name, setName] = useState(profile.name);
   const [college, setCollege] = useState(profile.college);
+  const [showCollegeDropdown, setShowCollegeDropdown] = useState(false);
   const [rollNumber, setRollNumber] = useState(profile.rollNumber);
   const [email, setEmail] = useState(profile.email);
   const [programme, setProgramme] = useState<string>(
@@ -262,22 +263,36 @@ export const SettingsView: React.FC = () => {
             {/* College Name */}
             <div className="flex flex-col gap-1.5">
               <label className={labelClass}>College / University</label>
-              <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white">
-                <Building2 className="w-4 h-4 text-black/40 dark:text-white/40 shrink-0" />
-                <input
-                  type="text"
-                  value={college}
-                  onChange={(e) => setCollege(e.target.value)}
-                  placeholder="e.g. NIT Trichy, IIT Bombay..."
-                  list="indian-colleges"
-                  required
-                  className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none placeholder:text-black/30 dark:placeholder:text-white/30"
-                />
-                <datalist id="indian-colleges">
-                  {INDIAN_COLLEGES.map((c) => (
-                    <option key={c} value={c} />
-                  ))}
-                </datalist>
+              <div className="relative w-full">
+                <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white">
+                  <Building2 className="w-4 h-4 text-black/40 dark:text-white/40 shrink-0" />
+                  <input
+                    type="text"
+                    value={college}
+                    onChange={(e) => {
+                      setCollege(e.target.value);
+                      setShowCollegeDropdown(true);
+                    }}
+                    onFocus={() => setShowCollegeDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowCollegeDropdown(false), 200)}
+                    placeholder="e.g. NIT Trichy, IIT Bombay..."
+                    required
+                    className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none placeholder:text-black/30 dark:placeholder:text-white/30"
+                  />
+                </div>
+                {showCollegeDropdown && college.length >= 2 && INDIAN_COLLEGES.filter(c => c.toLowerCase().includes(college.toLowerCase())).length > 0 && (
+                  <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-zinc-900 border border-black dark:border-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-50">
+                    {INDIAN_COLLEGES.filter(c => c.toLowerCase().includes(college.toLowerCase())).map(c => (
+                      <div
+                        key={c}
+                        onMouseDown={() => { setCollege(c); setShowCollegeDropdown(false); }}
+                        className="px-4 py-2.5 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-sm font-medium text-black dark:text-white border-b border-black/5 dark:border-white/5 last:border-0"
+                      >
+                        {c}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <p className="text-[10px] text-black/50 dark:text-white/50 font-medium">
                 Type 2-3 letters to search, or simply type your full college name if it isn't listed.
