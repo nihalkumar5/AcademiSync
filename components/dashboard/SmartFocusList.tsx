@@ -96,18 +96,27 @@ export const SmartFocusList: React.FC = () => {
                   {item.type === 'homework' ? (
                     <motion.button
                       type="button"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.9 }}
+                      whileHover={{ scale: 1.08 }}
+                      whileTap={{ scale: 0.92 }}
                       onClick={(e) => handleCheck(e, item.id, item.type)}
                       className={clsx(
                         'w-5 h-5 flex items-center justify-center border transition-all shrink-0 cursor-pointer',
-                        isCompleted
+                        item.status === 'Completed'
                           ? 'bg-emerald-500 border-emerald-500 text-white'
+                          : item.status === 'In Progress'
+                          ? 'border-amber-500 bg-amber-500/15 text-amber-600 dark:text-amber-400'
                           : 'border-black dark:border-white bg-transparent hover:bg-black/5 dark:hover:bg-white/5'
                       )}
-                      aria-label="Complete task"
+                      title={
+                        item.status === 'Not Started'
+                          ? 'Click to mark In Progress'
+                          : item.status === 'In Progress'
+                          ? 'Click to mark Completed'
+                          : 'Click to reset to Not Started'
+                      }
+                      aria-label="Toggle task status"
                     >
-                      {isCompleted && (
+                      {item.status === 'Completed' && (
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
@@ -115,6 +124,9 @@ export const SmartFocusList: React.FC = () => {
                         >
                           <Check className="w-3.5 h-3.5 stroke-[3.5]" />
                         </motion.div>
+                      )}
+                      {item.status === 'In Progress' && (
+                        <div className="w-2 h-2 bg-amber-500 animate-pulse" />
                       )}
                     </motion.button>
                   ) : (
@@ -128,7 +140,7 @@ export const SmartFocusList: React.FC = () => {
                     <span
                       className={clsx(
                         'text-[13.5px] font-semibold leading-snug tracking-tight truncate transition-all',
-                        isCompleted
+                        item.status === 'Completed'
                           ? 'line-through text-emerald-600 dark:text-emerald-400'
                           : 'text-black dark:text-white'
                       )}
@@ -137,9 +149,25 @@ export const SmartFocusList: React.FC = () => {
                     </span>
 
                     <div className="flex flex-col gap-1.5 text-[11px] text-black/50 dark:text-white/50 font-medium mt-1.5">
-                      <span className="font-mono px-1.5 py-0.5 border border-black/20 dark:border-white/20 text-[10px] w-fit break-words max-w-full leading-tight">
-                        {item.tag}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-mono px-1.5 py-0.5 border border-black/20 dark:border-white/20 text-[10px] w-fit break-words max-w-full leading-tight">
+                          {item.tag}
+                        </span>
+                        {item.type === 'homework' && item.status && (
+                          <span
+                            className={clsx(
+                              'font-mono text-[9px] font-bold px-1.5 py-0.5 border w-fit leading-tight',
+                              item.status === 'In Progress'
+                                ? 'border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                : item.status === 'Completed'
+                                ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                : 'border-black/20 dark:border-white/20 text-black/50 dark:text-white/50'
+                            )}
+                          >
+                            {item.status === 'In Progress' ? 'IN PROGRESS ⏳' : item.status === 'Completed' ? 'COMPLETED 🎉' : 'NOT STARTED'}
+                          </span>
+                        )}
+                      </div>
                       {item.deadlineText && (
                         <span
                           className={clsx(

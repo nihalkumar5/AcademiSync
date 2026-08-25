@@ -1,4 +1,4 @@
-import { DayOfWeek, ClassSession, Subject, CarryItem, Homework, ExtractedClassSession, AcademicEvent } from './types';
+import { DayOfWeek, ClassSession, Subject, CarryItem, Homework, ExtractedClassSession, AcademicEvent, HomeworkStatus } from './types';
 
 export const DAYS_OF_WEEK: DayOfWeek[] = [
   'Monday',
@@ -287,6 +287,7 @@ export const calculateTodayFocus = (
   tag: string;
   deadlineText?: string;
   completed: boolean;
+  status?: HomeworkStatus;
 }[] => {
   const items: {
     id: string;
@@ -296,6 +297,7 @@ export const calculateTodayFocus = (
     tag: string;
     deadlineText?: string;
     completed: boolean;
+    status?: HomeworkStatus;
   }[] = [];
 
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
@@ -337,6 +339,7 @@ export const calculateTodayFocus = (
       tag: subject?.name || 'Homework',
       deadlineText,
       completed: false,
+      status: hw.status,
     });
   });
 

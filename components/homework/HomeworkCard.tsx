@@ -107,22 +107,30 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
       </div>
 
       {/* Task Content: Interactive Checkbox & Title */}
-      <div className="flex items-start gap-3 mt-3">
-        {/* Tactile Circular Checkbox */}
+        {/* Tactile Square Checkbox */}
         <motion.button
           type="button"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.92 }}
           onClick={() => onToggleStatus(homework.id)}
           className={clsx(
             'w-5 h-5 rounded-none flex items-center justify-center border transition-all mt-0.5 shrink-0 cursor-pointer shadow-none',
-            isDone
-              ? 'bg-black border-black text-white dark:bg-white dark:border-white dark:text-black'
+            homework.status === 'Completed'
+              ? 'bg-emerald-500 border-emerald-500 text-white'
+              : homework.status === 'In Progress'
+              ? 'border-amber-500 bg-amber-500/15 text-amber-600 dark:text-amber-400'
               : 'border-black dark:border-white bg-transparent hover:bg-black/5 dark:hover:bg-white/5'
           )}
-          aria-label={isDone ? 'Mark task as incomplete' : 'Mark task as completed'}
+          title={
+            homework.status === 'Not Started'
+              ? 'Click to mark In Progress'
+              : homework.status === 'In Progress'
+              ? 'Click to mark Completed'
+              : 'Click to reset to Not Started'
+          }
+          aria-label="Toggle task status"
         >
-          {isDone && (
+          {homework.status === 'Completed' && (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -130,6 +138,9 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
             >
               <Check className="w-3.5 h-3.5 stroke-[3.5]" />
             </motion.div>
+          )}
+          {homework.status === 'In Progress' && (
+            <div className="w-2 h-2 bg-amber-500 animate-pulse" />
           )}
         </motion.button>
 
@@ -174,19 +185,22 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
           )}
         </div>
 
-        {/* Status Indicator */}
-        <span
+        {/* Status Indicator Button */}
+        <button
+          type="button"
+          onClick={() => onToggleStatus(homework.id)}
           className={clsx(
-            'text-[10px] font-mono font-semibold px-2 py-0.5 rounded-none border',
+            'text-[10px] font-mono font-bold px-2 py-0.5 rounded-none border cursor-pointer hover:scale-105 active:scale-95 transition-all',
             isDone
-              ? 'bg-[#7C897A]/10 dark:bg-[#7C897A]/20 text-[#7C897A] dark:text-[#A9B5A7] border-[#7C897A]/30 dark:border-[#7C897A]/40'
+              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/40'
               : homework.status === 'In Progress'
-              ? 'bg-[#C79F6F]/10 dark:bg-[#C79F6F]/20 text-[#C79F6F] dark:text-[#E8C59A] border-[#C79F6F]/30 dark:border-[#C79F6F]/40'
+              ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/40'
               : 'bg-transparent border-black/30 dark:border-white/30 text-black/70 dark:text-white/70'
           )}
+          title="Click to cycle status"
         >
-          {homework.status}
-        </span>
+          {homework.status === 'In Progress' ? 'In Progress ⏳' : homework.status === 'Completed' ? 'Completed 🎉' : 'Not Started'}
+        </button>
       </div>
     </motion.div>
   );
