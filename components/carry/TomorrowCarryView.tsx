@@ -265,7 +265,6 @@ export const TomorrowCarryView: React.FC = () => {
                 <EmptyState
                   title="NO PACKING NEEDED — HOLIDAY!"
                   description={`${targetFormatted} is an official campus holiday (${targetHoliday.title}). Enjoy your break!`}
-                  className="bg-yellow-50 dark:bg-yellow-900/20 border-black/10 dark:border-white/10"
                 />
               ) : (
                 <EmptyState
