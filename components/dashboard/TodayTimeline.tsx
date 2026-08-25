@@ -54,13 +54,13 @@ export const TodayTimeline: React.FC = () => {
           <h3 className="text-xs font-bold tracking-widest uppercase text-black dark:text-white">
             Today&apos;s Schedule
           </h3>
-          <span className="text-[10px] font-mono font-bold border border-black dark:border-white text-black dark:text-white px-2 py-0.5 uppercase">
-            {todayDay} · Off Day
+          <span className="text-[10px] font-mono font-bold border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 uppercase">
+            {todayDay} · Holiday
           </span>
         </div>
-        <div className="glass-card p-6 text-left flex flex-col gap-2 border border-black/20 dark:border-white/20">
-          <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-black/60 dark:text-white/60">
-            <span className="w-1.5 h-1.5 bg-black dark:bg-white inline-block" />
+        <div className="glass-card p-6 text-left flex flex-col gap-2 border border-black/15 dark:border-white/15 border-l-4 border-l-emerald-500 dark:border-l-emerald-400 bg-gradient-to-r from-emerald-500/[0.04] to-transparent">
+          <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse inline-block" />
             <span>No Lectures Scheduled</span>
           </div>
           <p className="text-xs text-black/70 dark:text-white/70 leading-relaxed">

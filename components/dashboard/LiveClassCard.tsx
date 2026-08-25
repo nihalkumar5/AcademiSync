@@ -24,27 +24,27 @@ export const LiveClassCard: React.FC = () => {
     return () => clearInterval(interval);
   }, [timetable, subjects, isSessionCancelled]);
 
-  // Brutalist Minimalist Holiday Display
+  // Brutalist Aesthetic Holiday Display with Subtle Color
   if (todayHoliday) {
     return (
-      <div className="glass-card p-5 sm:p-6 text-left flex items-center justify-between gap-4 border border-black dark:border-white">
+      <div className="glass-card p-5 sm:p-6 text-left flex items-center justify-between gap-4 border border-black/15 dark:border-white/15 border-l-4 border-l-emerald-500 dark:border-l-emerald-400 bg-gradient-to-r from-emerald-500/[0.05] via-transparent to-transparent relative overflow-hidden">
         <div className="flex items-center gap-4 min-w-0">
-          <div className="w-11 h-11 border border-black dark:border-white bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shrink-0 font-mono text-xs font-bold uppercase tracking-wider">
-            OFF
+          <div className="w-11 h-11 border border-emerald-500/40 dark:border-emerald-400/40 bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 flex flex-col items-center justify-center shrink-0 font-mono text-[11px] font-black uppercase tracking-wider">
+            <span>OFF</span>
           </div>
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 border border-black/20 dark:border-white/20 text-black/60 dark:text-white/60">
+              <span className="font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                 Campus Holiday
               </span>
               <span className="font-mono text-[10px] font-medium text-black/40 dark:text-white/40 uppercase">
                 Academic Calendar
               </span>
             </div>
-            <h3 className="text-xl sm:text-2xl font-bold text-black dark:text-white tracking-tight mt-1 truncate">
+            <h3 className="text-xl sm:text-2xl font-extrabold text-black dark:text-white tracking-tight mt-1 truncate">
               {todayHoliday.title}
             </h3>
-            <p className="text-xs text-black/60 dark:text-white/60 mt-0.5 leading-snug line-clamp-1 font-normal">
+            <p className="text-xs text-black/65 dark:text-white/65 mt-0.5 leading-snug line-clamp-1 font-normal">
               {todayHoliday.description || "All regular lectures, labs, and academic sessions are suspended today."}
             </p>
           </div>
