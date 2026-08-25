@@ -27,7 +27,7 @@ export const LiveClassCard: React.FC = () => {
   // High-Contrast Brutalist Holiday Display (On-Theme)
   if (todayHoliday) {
     return (
-      <div className="glass-card p-5 sm:p-6 text-left relative overflow-hidden border border-black dark:border-white !bg-yellow-50 dark:!bg-yellow-900/20">
+      <div className="glass-card p-5 sm:p-6 text-left relative overflow-hidden border border-black dark:border-white">
         
         <div className="flex items-center gap-5 sm:gap-6 min-w-0 relative z-10">
           <div className="w-14 h-14 sm:w-16 sm:h-16 bg-black dark:bg-white flex flex-col items-center justify-center shrink-0 border border-black dark:border-white">
