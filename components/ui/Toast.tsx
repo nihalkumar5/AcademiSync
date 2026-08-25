@@ -17,7 +17,7 @@ export const Toast: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.94 }}
             transition={{ type: 'spring', stiffness: 450, damping: 28 }}
-            className="pointer-events-auto flex items-center gap-3 px-4 py-2.5 bg-[#141413]/95 dark:bg-[#FAF9F5]/95 backdrop-blur-xl text-white dark:text-[#141413] shadow-[0_16px_40px_rgba(0,0,0,0.22)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)] border border-white/15 dark:border-black/10 rounded-full max-w-[92vw] sm:max-w-lg select-none"
+            className="pointer-events-auto flex items-center gap-3 px-4 py-2.5 bg-black/70 backdrop-blur-2xl text-white shadow-[0_14px_36px_rgba(0,0,0,0.25)] border border-white/20 rounded-full max-w-[92vw] sm:max-w-lg select-none ring-1 ring-white/10"
           >
             {/* Status Indicator Icon */}
             <div className="shrink-0 flex items-center justify-center">
