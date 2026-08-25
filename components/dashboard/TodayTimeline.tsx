@@ -54,7 +54,7 @@ export const TodayTimeline: React.FC = () => {
           <h3 className="text-xs font-bold tracking-widest uppercase text-black dark:text-white">
             Today&apos;s Schedule
           </h3>
-          <span className="text-[10px] font-mono font-bold border border-black dark:border-white px-2 py-0.5 uppercase shadow-[2px_2px_0px_0px_currentColor]">
+          <span className="text-[10px] font-mono font-bold border border-black dark:border-white px-2 py-0.5 uppercase">
             {todayDay} · Holiday
           </span>
         </div>

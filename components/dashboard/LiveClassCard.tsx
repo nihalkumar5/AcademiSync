@@ -35,12 +35,12 @@ export const LiveClassCard: React.FC = () => {
         />
         
         <div className="flex items-center gap-5 sm:gap-6 min-w-0 relative z-10">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-black dark:bg-white flex flex-col items-center justify-center shrink-0 border border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-black dark:bg-white flex flex-col items-center justify-center shrink-0 border border-black dark:border-white">
             <span className="font-mono text-lg sm:text-xl font-black uppercase tracking-widest text-white dark:text-black">OFF</span>
           </div>
           <div className="flex flex-col min-w-0">
             <div className="flex items-center mb-1.5">
-              <span className="font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 border border-black dark:border-white bg-white dark:bg-black text-black dark:text-white shadow-[2px_2px_0px_0px_currentColor]">
+              <span className="font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 border border-black dark:border-white bg-white dark:bg-black text-black dark:text-white">
                 Campus Holiday
               </span>
             </div>

@@ -107,7 +107,7 @@ export const TomorrowCarryView: React.FC = () => {
               {targetDay}
             </span>
             {targetHoliday ? (
-              <span className="text-xs font-bold font-mono px-3 py-1 rounded-none border border-black dark:border-white text-black dark:text-white uppercase tracking-wider shadow-[2px_2px_0px_0px_currentColor]">
+              <span className="text-xs font-bold font-mono px-3 py-1 rounded-none border border-black dark:border-white text-black dark:text-white uppercase tracking-wider">
                 Holiday: {targetHoliday.title}
               </span>
             ) : (
@@ -159,7 +159,7 @@ export const TomorrowCarryView: React.FC = () => {
                 
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded-none border border-black dark:border-white bg-white dark:bg-black text-black dark:text-white shadow-[2px_2px_0px_0px_currentColor]">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded-none border border-black dark:border-white bg-white dark:bg-black text-black dark:text-white">
                       Campus Holiday
                     </span>
                   </div>
