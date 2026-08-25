@@ -107,7 +107,7 @@ export const TomorrowCarryView: React.FC = () => {
               {targetDay}
             </span>
             {targetHoliday ? (
-              <span className="text-xs font-bold font-mono px-3 py-1 rounded-full bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 border border-violet-500/20 text-violet-700 dark:text-violet-300 uppercase tracking-wider shadow-sm">
+              <span className="text-xs font-bold font-mono px-3 py-1 rounded-none bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 uppercase tracking-wider shadow-sm">
                 Holiday: {targetHoliday.title}
               </span>
             ) : (
@@ -151,10 +151,10 @@ export const TomorrowCarryView: React.FC = () => {
           <div className="flex flex-col gap-3">
             {targetHoliday ? (
               <div className="p-6 relative overflow-hidden border border-black/10 dark:border-white/10 bg-white/50 dark:bg-black/50 flex flex-col gap-2 text-left group">
-                <div className="absolute -top-16 -right-16 w-40 h-40 bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 blur-3xl rounded-full transition-transform duration-700 group-hover:scale-110 pointer-events-none" />
+                <div className="absolute -top-16 -right-16 w-40 h-40 bg-gradient-to-br from-amber-500/20 to-yellow-500/20 blur-3xl rounded-full transition-transform duration-700 group-hover:scale-110 pointer-events-none" />
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border border-violet-500/20 bg-violet-500/10 text-violet-700 dark:text-violet-300">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded-none border border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300">
                       Campus Holiday
                     </span>
                   </div>
