@@ -262,15 +262,12 @@ export const TomorrowCarryView: React.FC = () => {
             {/* Checklist Items */}
             {carryItems.length === 0 ? (
               <EmptyState
-                icon={targetHoliday ? <Sparkles className="w-5 h-5 text-amber-500" /> : <Backpack className="w-5 h-5 text-black/50 dark:text-white/50" />}
                 title={targetHoliday ? 'No packing needed — Holiday!' : `Nothing special to carry ${isAfter6PM ? 'tomorrow' : 'today'}`}
                 description={
                   targetHoliday
                     ? `${targetFormatted} is an official campus holiday (${targetHoliday.title}). Regular lectures are suspended, enjoy your day off!`
                     : `Either ${isAfter6PM ? 'tomorrow' : 'today'} is a free day or no carry requirements are configured for ${isAfter6PM ? "tomorrow's" : "today's"} classes.`
                 }
-                actionLabel="Add Custom Item"
-                onAction={() => setShowAddModal(true)}
               />
             ) : (
               <div className="flex flex-col gap-3">
