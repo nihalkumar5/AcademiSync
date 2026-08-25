@@ -44,7 +44,7 @@ export const LiveClassCard: React.FC = () => {
             <h3 className="text-xl sm:text-2xl font-black text-black dark:text-white tracking-tight mt-1 truncate">
               {todayHoliday.title}
             </h3>
-            <p className="text-xs text-black/60 dark:text-white/60 mt-0.5 leading-relaxed line-clamp-1 font-medium">
+            <p className="text-sm text-black/70 dark:text-white/70 mt-1 leading-relaxed font-medium">
               {todayHoliday.description || "Take a break! All regular lectures and labs are suspended today."}
             </p>
           </div>

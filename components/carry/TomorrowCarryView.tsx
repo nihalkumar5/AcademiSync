@@ -158,10 +158,10 @@ export const TomorrowCarryView: React.FC = () => {
                       Campus Holiday
                     </span>
                   </div>
-                  <h3 className="text-base font-bold text-black dark:text-white">
+                  <h3 className="text-lg font-bold text-black dark:text-white mt-1">
                     {targetHoliday.title}
                   </h3>
-                  <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed font-normal">
+                  <p className="text-sm text-black/70 dark:text-white/70 leading-relaxed font-medium mt-1">
                     {targetHoliday.description || `Take a break! Regular classes are suspended on ${targetFormatted}.`}
                   </p>
                 </div>

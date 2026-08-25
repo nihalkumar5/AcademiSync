@@ -63,11 +63,11 @@ export const TodayTimeline: React.FC = () => {
           <div className="absolute -top-16 -right-16 w-40 h-40 bg-gradient-to-br from-amber-500/20 to-yellow-500/20 blur-3xl rounded-full transition-transform duration-700 group-hover:scale-110 pointer-events-none" />
           
           <div className="relative z-10">
-            <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-500 mb-1">
+            <div className="flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-wider text-amber-700 dark:text-amber-500 mb-1">
               <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse inline-block shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
               <span>No Lectures Scheduled</span>
             </div>
-            <p className="text-xs text-black/70 dark:text-white/70 leading-relaxed max-w-md">
+            <p className="text-sm text-black/70 dark:text-white/70 leading-relaxed max-w-md">
               Campus is observing <span className="font-bold text-black dark:text-white">{todayHoliday.title}</span>. Enjoy your break!
             </p>
           </div>
