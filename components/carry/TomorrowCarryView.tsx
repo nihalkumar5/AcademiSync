@@ -151,11 +151,6 @@ export const TomorrowCarryView: React.FC = () => {
           <div className="flex flex-col gap-3">
             {targetHoliday ? (
               <div className="p-6 relative overflow-hidden border-2 border-black dark:border-white bg-yellow-50 dark:bg-yellow-900/20 flex flex-col gap-2 text-left">
-                {/* Subtle Geometric Texture */}
-                <div 
-                  className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06] pointer-events-none" 
-                  style={{ backgroundImage: 'repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} 
-                />
                 
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-2">

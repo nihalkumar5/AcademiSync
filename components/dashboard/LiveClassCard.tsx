@@ -28,11 +28,6 @@ export const LiveClassCard: React.FC = () => {
   if (todayHoliday) {
     return (
       <div className="glass-card p-5 sm:p-6 text-left relative overflow-hidden border-2 border-black dark:border-white bg-yellow-50 dark:bg-yellow-900/20">
-        {/* Subtle Geometric Texture */}
-        <div 
-          className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06] pointer-events-none" 
-          style={{ backgroundImage: 'repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} 
-        />
         
         <div className="flex items-center gap-5 sm:gap-6 min-w-0 relative z-10">
           <div className="w-14 h-14 sm:w-16 sm:h-16 bg-black dark:bg-white flex flex-col items-center justify-center shrink-0 border border-black dark:border-white">
