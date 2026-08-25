@@ -24,28 +24,28 @@ export const LiveClassCard: React.FC = () => {
     return () => clearInterval(interval);
   }, [timetable, subjects, isSessionCancelled]);
 
-  // Brutalist Aesthetic Holiday Display with Subtle Color
+  // Aesthetic Premium Holiday Display
   if (todayHoliday) {
     return (
-      <div className="glass-card p-5 sm:p-6 text-left flex items-center justify-between gap-4 border border-black/15 dark:border-white/15 border-l-4 border-l-emerald-500 dark:border-l-emerald-400 bg-gradient-to-r from-emerald-500/[0.05] via-transparent to-transparent relative overflow-hidden">
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="w-11 h-11 border border-emerald-500/40 dark:border-emerald-400/40 bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 flex flex-col items-center justify-center shrink-0 font-mono text-[11px] font-black uppercase tracking-wider">
+      <div className="glass-card p-5 sm:p-6 text-left relative overflow-hidden border border-black/10 dark:border-white/10 group">
+        {/* Aesthetic Animated Glow */}
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-gradient-to-br from-violet-500/30 to-fuchsia-500/30 dark:from-violet-500/20 dark:to-fuchsia-500/20 blur-3xl rounded-full transition-transform duration-700 group-hover:scale-110 pointer-events-none" />
+        
+        <div className="flex items-center gap-4 sm:gap-5 min-w-0 relative z-10">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/25 flex flex-col items-center justify-center shrink-0 font-mono text-[13px] font-black uppercase tracking-wider">
             <span>OFF</span>
           </div>
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+              <span className="font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-700 dark:text-violet-300 border border-violet-500/20">
                 Campus Holiday
               </span>
-              <span className="font-mono text-[10px] font-medium text-black/40 dark:text-white/40 uppercase">
-                Academic Calendar
-              </span>
             </div>
-            <h3 className="text-xl sm:text-2xl font-extrabold text-black dark:text-white tracking-tight mt-1 truncate">
+            <h3 className="text-xl sm:text-2xl font-black text-black dark:text-white tracking-tight mt-1 truncate">
               {todayHoliday.title}
             </h3>
-            <p className="text-xs text-black/65 dark:text-white/65 mt-0.5 leading-snug line-clamp-1 font-normal">
-              {todayHoliday.description || "All regular lectures, labs, and academic sessions are suspended today."}
+            <p className="text-xs text-black/60 dark:text-white/60 mt-0.5 leading-relaxed line-clamp-1 font-medium">
+              {todayHoliday.description || "Take a break! All regular lectures and labs are suspended today."}
             </p>
           </div>
         </div>
