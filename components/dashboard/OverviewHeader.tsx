@@ -90,7 +90,7 @@ export const OverviewHeader: React.FC = () => {
                 {profile.programme} {profile.branch}
               </span>
             )}
-            <span className="px-2.5 py-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[11px] font-semibold tracking-wide text-black/70 dark:text-white/70 uppercase truncate max-w-[200px]">
+            <span className="px-2.5 py-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[11px] font-semibold tracking-wide text-black/70 dark:text-white/70 uppercase break-words max-w-full">
               {profile.college || 'Your College'}
             </span>
           </div>
