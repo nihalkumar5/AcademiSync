@@ -54,21 +54,24 @@ export const TodayTimeline: React.FC = () => {
           <h3 className="text-xs font-bold tracking-widest uppercase text-black dark:text-white">
             Today&apos;s Schedule
           </h3>
-          <span className="text-[10px] font-mono font-bold rounded-none bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 px-2.5 py-0.5 uppercase shadow-sm">
+          <span className="text-[10px] font-mono font-bold border border-black dark:border-white px-2 py-0.5 uppercase shadow-[2px_2px_0px_0px_currentColor]">
             {todayDay} · Holiday
           </span>
         </div>
-        <div className="glass-card p-6 text-left flex flex-col gap-2 relative overflow-hidden border border-black/10 dark:border-white/10 group">
-          {/* Subtle Ambient Glow */}
-          <div className="absolute -top-16 -right-16 w-40 h-40 bg-gradient-to-br from-amber-500/20 to-yellow-500/20 blur-3xl rounded-full transition-transform duration-700 group-hover:scale-110 pointer-events-none" />
+        <div className="glass-card p-6 text-left flex flex-col gap-2 relative overflow-hidden border-2 border-black dark:border-white">
+          {/* Subtle Geometric Texture */}
+          <div 
+            className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06] pointer-events-none" 
+            style={{ backgroundImage: 'repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} 
+          />
           
           <div className="relative z-10">
-            <div className="flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-wider text-amber-700 dark:text-amber-500 mb-1">
-              <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse inline-block shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+            <div className="flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-wider text-black dark:text-white mb-1">
+              <span className="w-2 h-2 bg-black dark:bg-white inline-block" />
               <span>No Lectures Scheduled</span>
             </div>
-            <p className="text-sm text-black/70 dark:text-white/70 leading-relaxed max-w-md">
-              Campus is observing <span className="font-bold text-black dark:text-white">{todayHoliday.title}</span>. Enjoy your break!
+            <p className="text-sm text-black/75 dark:text-white/75 leading-relaxed max-w-md font-medium mt-1">
+              Campus is observing <span className="font-black text-black dark:text-white uppercase">{todayHoliday.title}</span>. Enjoy your break!
             </p>
           </div>
         </div>

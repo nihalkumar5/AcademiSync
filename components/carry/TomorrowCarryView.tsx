@@ -107,7 +107,7 @@ export const TomorrowCarryView: React.FC = () => {
               {targetDay}
             </span>
             {targetHoliday ? (
-              <span className="text-xs font-bold font-mono px-3 py-1 rounded-none bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 uppercase tracking-wider shadow-sm">
+              <span className="text-xs font-bold font-mono px-3 py-1 rounded-none border border-black dark:border-white text-black dark:text-white uppercase tracking-wider shadow-[2px_2px_0px_0px_currentColor]">
                 Holiday: {targetHoliday.title}
               </span>
             ) : (
@@ -150,18 +150,23 @@ export const TomorrowCarryView: React.FC = () => {
 
           <div className="flex flex-col gap-3">
             {targetHoliday ? (
-              <div className="p-6 relative overflow-hidden border border-black/10 dark:border-white/10 bg-white/50 dark:bg-black/50 flex flex-col gap-2 text-left group">
-                <div className="absolute -top-16 -right-16 w-40 h-40 bg-gradient-to-br from-amber-500/20 to-yellow-500/20 blur-3xl rounded-full transition-transform duration-700 group-hover:scale-110 pointer-events-none" />
+              <div className="p-6 relative overflow-hidden border-2 border-black dark:border-white bg-white/50 dark:bg-black/50 flex flex-col gap-2 text-left">
+                {/* Subtle Geometric Texture */}
+                <div 
+                  className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06] pointer-events-none" 
+                  style={{ backgroundImage: 'repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} 
+                />
+                
                 <div className="relative z-10">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded-none border border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded-none border border-black dark:border-white bg-white dark:bg-black text-black dark:text-white shadow-[2px_2px_0px_0px_currentColor]">
                       Campus Holiday
                     </span>
                   </div>
-                  <h3 className="text-lg font-bold text-black dark:text-white mt-1">
+                  <h3 className="text-lg font-black text-black dark:text-white mt-1 uppercase leading-none">
                     {targetHoliday.title}
                   </h3>
-                  <p className="text-sm text-black/70 dark:text-white/70 leading-relaxed font-medium mt-1">
+                  <p className="text-sm text-black/75 dark:text-white/75 leading-relaxed font-medium mt-2">
                     {targetHoliday.description || `Take a break! Regular classes are suspended on ${targetFormatted}.`}
                   </p>
                 </div>

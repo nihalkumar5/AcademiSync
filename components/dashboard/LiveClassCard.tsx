@@ -24,27 +24,30 @@ export const LiveClassCard: React.FC = () => {
     return () => clearInterval(interval);
   }, [timetable, subjects, isSessionCancelled]);
 
-  // Aesthetic Premium Holiday Display
+  // High-Contrast Brutalist Holiday Display (On-Theme)
   if (todayHoliday) {
     return (
-      <div className="glass-card p-5 sm:p-6 text-left relative overflow-hidden border border-black/10 dark:border-white/10 group">
-        {/* Aesthetic Animated Glow */}
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-gradient-to-br from-amber-500/30 to-yellow-500/30 dark:from-amber-500/20 dark:to-yellow-500/20 blur-3xl rounded-full transition-transform duration-700 group-hover:scale-110 pointer-events-none" />
+      <div className="glass-card p-5 sm:p-6 text-left relative overflow-hidden border-2 border-black dark:border-white">
+        {/* Subtle Geometric Texture */}
+        <div 
+          className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06] pointer-events-none" 
+          style={{ backgroundImage: 'repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} 
+        />
         
-        <div className="flex items-center gap-4 sm:gap-5 min-w-0 relative z-10">
-          <div className="w-12 h-12 rounded-none bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-lg shadow-amber-500/25 flex flex-col items-center justify-center shrink-0 font-mono text-[13px] font-black uppercase tracking-wider">
-            <span>OFF</span>
+        <div className="flex items-center gap-5 sm:gap-6 min-w-0 relative z-10">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-black dark:bg-white flex flex-col items-center justify-center shrink-0 border border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]">
+            <span className="font-mono text-lg sm:text-xl font-black uppercase tracking-widest text-white dark:text-black">OFF</span>
           </div>
           <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-none bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+            <div className="flex items-center mb-1.5">
+              <span className="font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 border border-black dark:border-white bg-white dark:bg-black text-black dark:text-white shadow-[2px_2px_0px_0px_currentColor]">
                 Campus Holiday
               </span>
             </div>
-            <h3 className="text-xl sm:text-2xl font-black text-black dark:text-white tracking-tight mt-1 truncate">
+            <h3 className="text-xl sm:text-2xl font-black text-black dark:text-white tracking-tight uppercase leading-none mt-1">
               {todayHoliday.title}
             </h3>
-            <p className="text-sm text-black/70 dark:text-white/70 mt-1 leading-relaxed font-medium">
+            <p className="text-sm text-black/75 dark:text-white/75 mt-2 leading-relaxed font-medium">
               {todayHoliday.description || "Take a break! All regular lectures and labs are suspended today."}
             </p>
           </div>
