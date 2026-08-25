@@ -68,6 +68,33 @@ export const formatTime12Hour = (time24: string): string => {
   return `${hour12}:${m} ${ampm}`;
 };
 
+/**
+ * Formats a college name for compact, aesthetic badge display (e.g. "IIIT Allahabad", "IIT Bombay")
+ */
+export const formatCollegeBadge = (collegeStr?: string): string => {
+  if (!collegeStr || !collegeStr.trim()) return 'Your College';
+  const trimmed = collegeStr.trim();
+
+  // Pattern: "Full Name (ACRONYM) Location" -> "ACRONYM Location"
+  const match = trimmed.match(/\(([^)]+)\)\s*(.*)/);
+  if (match) {
+    const acronym = match[1].trim();
+    const rest = match[2].trim();
+    return rest ? `${acronym} ${rest}` : acronym;
+  }
+
+  if (trimmed.length <= 22) return trimmed;
+
+  return trimmed
+    .replace(/Indian Institute of Technology/gi, 'IIT')
+    .replace(/Indian Institute of Information Technology/gi, 'IIIT')
+    .replace(/National Institute of Technology/gi, 'NIT')
+    .replace(/Birla Institute of Technology and Science/gi, 'BITS')
+    .replace(/College of Engineering/gi, 'COE')
+    .replace(/University of/gi, 'Univ.')
+    .trim();
+};
+
 export const timeToMinutes = (time24: string): number => {
   const [h, m] = time24.split(':').map(Number);
   return h * 60 + (m || 0);
