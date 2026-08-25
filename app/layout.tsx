@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 };
 
 import { ClerkProvider } from '@clerk/nextjs';
+import { Analytics } from '@vercel/analytics/react';
 
 export default function RootLayout({
   children,
@@ -24,7 +25,10 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body className="min-h-[100dvh] bg-[#FAFAF8] dark:bg-[#111110] text-[#141413] dark:text-[#F5F5F3] antialiased flex flex-col font-sans selection:bg-[#96725B] selection:text-white">
-          <AppProvider>{children}</AppProvider>
+          <AppProvider>
+            {children}
+            <Analytics />
+          </AppProvider>
         </body>
       </html>
     </ClerkProvider>

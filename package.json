@@ -16,6 +16,7 @@
     "@capacitor/splash-screen": "^8.0.2",
     "@clerk/nextjs": "^5.7.6",
     "@google/generative-ai": "^0.24.1",
+    "@vercel/analytics": "^2.0.1",
     "canvas-confetti": "^1.9.3",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
