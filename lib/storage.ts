@@ -133,6 +133,15 @@ export const storage = {
     window.dispatchEvent(new Event('iiitnr-storage-updated'));
   },
 
+  clearUserSession: () => {
+    if (typeof window === 'undefined') return;
+    Object.values(STORAGE_KEYS).forEach((k) => {
+      window.localStorage.removeItem(k);
+    });
+    window.localStorage.removeItem('iiitnr_last_updated');
+    window.dispatchEvent(new Event('iiitnr-storage-updated'));
+  },
+
   exportBackup: () => {
     return JSON.stringify({
       profile: storage.getProfile(),

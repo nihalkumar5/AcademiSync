@@ -15,6 +15,7 @@ import {
   NotificationCategory,
 } from '@/lib/types';
 import { storage } from '@/lib/storage';
+import { DEFAULT_PROFILE, DEFAULT_SETTINGS } from '@/lib/initialData';
 import { calculateTomorrowCarryItems } from '@/lib/timetableUtils';
 import { checkAndGenerateSmartNotifications } from '@/lib/notificationEngine';
 import confetti from 'canvas-confetti';
@@ -110,9 +111,46 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [cancelledSessions, setCancelledSessionsState] = useState<string[]>(storage.getCancelledSessions());
 
   const { user, isLoaded: isClerkLoaded } = useUser();
+  const [isCloudSynced, setIsCloudSynced] = useState(false);
   const remoteStateString = useRef("");
+  const isApplyingRemote = useRef(false);
+  const prevUserIdRef = useRef<string | null>(null);
 
-  // Firebase Realtime Down-Sync
+  // Handle User Logout / Switch Account Cleanup
+  useEffect(() => {
+    if (!isClerkLoaded) return;
+
+    if (prevUserIdRef.current && !user) {
+      // User just logged out! Wipe local state & storage cleanly
+      console.log('User logged out. Wiping local session data.');
+      storage.clearUserSession();
+
+      setProfileState(DEFAULT_PROFILE);
+      setSubjectsState([]);
+      setTimetableState([]);
+      setHomeworkState([]);
+      setCarryItemsState([]);
+      setNotificationsState([]);
+      setEventsState([]);
+      setExamsState([]);
+      setSettingsState(DEFAULT_SETTINGS);
+      setCancelledSessionsState([]);
+      remoteStateString.current = "";
+      setIsCloudSynced(false);
+      prevUserIdRef.current = null;
+    } else if (user) {
+      if (prevUserIdRef.current && prevUserIdRef.current !== user.id) {
+        // Switched to a different user account
+        console.log('Switched user account. Resetting sync state.');
+        storage.clearUserSession();
+        setIsCloudSynced(false);
+        remoteStateString.current = "";
+      }
+      prevUserIdRef.current = user.id;
+    }
+  }, [user, isClerkLoaded]);
+
+  // Firebase Realtime Down-Sync (Runs on Login / Cloud Data Change)
   useEffect(() => {
     if (!isClerkLoaded || !user) return;
     
@@ -123,16 +161,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const unsubscribe = onSnapshot(userRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
+        const dataStr = JSON.stringify(data);
         
-        if (typeof window !== 'undefined') {
-          const localLastUpdated = parseInt(window.localStorage.getItem('iiitnr_last_updated') || '0', 10);
-          if (data.lastUpdated && data.lastUpdated < localLastUpdated) {
-            console.log('Firebase data is older than local data. Skipping down-sync to prevent clobbering.');
-            return;
-          }
+        // If this is identical to what we already have, do nothing
+        if (dataStr === remoteStateString.current) {
+          setIsCloudSynced(true);
+          return;
         }
-        
-        remoteStateString.current = JSON.stringify(data);
+
+        remoteStateString.current = dataStr;
+        isApplyingRemote.current = true;
         
         if (data.profile) { setProfileState(data.profile); storage.setProfile(data.profile); }
         if (data.subjects) { setSubjectsState(data.subjects); storage.setSubjects(data.subjects); }
@@ -144,31 +182,73 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (data.exams) { setExamsState(data.exams); storage.setExams(data.exams); }
         if (data.settings) { setSettingsState(data.settings); storage.setSettings(data.settings); }
         if (data.cancelledSessions) { setCancelledSessionsState(data.cancelledSessions); storage.setCancelledSessions(data.cancelledSessions); }
+
+        if (typeof window !== 'undefined' && data.lastUpdated) {
+          window.localStorage.setItem('iiitnr_last_updated', data.lastUpdated.toString());
+        }
+
+        setIsCloudSynced(true);
+        setTimeout(() => {
+          isApplyingRemote.current = false;
+        }, 300);
+      } else {
+        // Document does not exist yet (brand new account)
+        // Mark as synced so current local state can be saved as initial account state
+        setIsCloudSynced(true);
       }
+    }, (error) => {
+      console.error('Firebase snapshot listener error:', error);
+      setIsCloudSynced(true); // Don't block app if network fails
     });
+
     return () => unsubscribe();
   }, [user, isClerkLoaded]);
 
-  // Firebase Realtime Up-Sync
+  // Firebase Realtime Up-Sync (Saves edits to cloud for logged-in user)
   useEffect(() => {
-    if (!isClerkLoaded || !user || !isHydrated) return;
+    if (!isClerkLoaded || !user || !isHydrated || !isCloudSynced || isApplyingRemote.current) return;
     
     const now = Date.now();
-    if (typeof window !== 'undefined') window.localStorage.setItem('iiitnr_last_updated', now.toString());
     const currentState = {
-      profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions, lastUpdated: now
+      profile,
+      subjects,
+      timetable,
+      homework,
+      carryItems,
+      notifications,
+      events,
+      exams,
+      settings,
+      cancelledSessions,
+      lastUpdated: now,
     };
     
-    const currentString = JSON.stringify(currentState);
-    if (currentString === remoteStateString.current) return;
+    // Avoid re-uploading if data matches what came from cloud
+    if (remoteStateString.current) {
+      try {
+        const parsedRemote = JSON.parse(remoteStateString.current);
+        const { lastUpdated: _remoteTs, ...remoteWithoutTs } = parsedRemote;
+        const { lastUpdated: _currentTs, ...currentWithoutTs } = currentState;
+        if (JSON.stringify(remoteWithoutTs) === JSON.stringify(currentWithoutTs)) {
+          return;
+        }
+      } catch (e) {}
+    }
 
     const timeout = setTimeout(() => {
       const userRef = doc(db, 'users', user.id);
-      setDoc(userRef, currentState, { merge: true }).catch(e => console.error('Firebase Sync Error', e));
-    }, 1500);
+      setDoc(userRef, currentState, { merge: true })
+        .then(() => {
+          remoteStateString.current = JSON.stringify(currentState);
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem('iiitnr_last_updated', now.toString());
+          }
+        })
+        .catch((e) => console.error('Firebase Sync Error', e));
+    }, 1000);
 
     return () => clearTimeout(timeout);
-  }, [profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions, user, isClerkLoaded, isHydrated]);
+  }, [profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions, user, isClerkLoaded, isHydrated, isCloudSynced]);
 
   // Hydration effect
   useEffect(() => {
