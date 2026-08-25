@@ -12,6 +12,7 @@ import {
 import { CarryItemRow } from './CarryItemRow';
 import { AddCustomItemModal } from './AddCustomItemModal';
 import { EmptyState } from '../ui/EmptyState';
+import { Button } from '../ui/Button';
 import { Backpack, Plus, MapPin, CalendarDays, Clock, FlaskConical, CheckCircle2, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Subject } from '@/lib/types';
@@ -123,16 +124,15 @@ export const TomorrowCarryView: React.FC = () => {
         </div>
 
         {/* Action Button */}
-        <div className="flex items-center gap-3 mt-1">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+        <div className="flex items-center gap-3 mt-4">
+          <Button
+            variant="primary"
+            size="md"
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-5 py-3 rounded-none bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors text-sm font-semibold cursor-pointer w-fit"
+            className="rounded-none bg-black text-white dark:bg-white dark:text-black border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors"
           >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Add Custom Item</span>
-          </motion.button>
+            Add Custom Item
+          </Button>
         </div>
       </div>
 

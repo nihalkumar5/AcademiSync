@@ -240,7 +240,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
               </p>
 
               <div className="mt-6 pointer-events-none">
-                <Button variant="primary" type="button" className="rounded-none shadow-[4px_4px_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_rgba(255,255,255,1)]">
+                <Button variant="primary" className="rounded-xl shadow-lg shadow-black/10 dark:shadow-white/10 ring-1 ring-black/5 dark:ring-white/5">
                   Choose Files
                 </Button>
               </div>
@@ -249,7 +249,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
 
           <div className="flex items-center justify-center gap-4 text-xs font-bold text-black/40 dark:text-white/40 tracking-widest uppercase">
             <span className="w-12 h-px bg-black/10 dark:bg-white/10" />
-            Or Try Sample
+            Or Try Demo
             <span className="w-12 h-px bg-black/10 dark:bg-white/10" />
           </div>
 

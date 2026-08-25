@@ -146,7 +146,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
                 className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
               />
               <div className="w-14 h-14 bg-black text-white dark:bg-white dark:text-black flex items-center justify-center mb-4 transition-transform group-hover:-translate-y-1 group-hover:scale-110">
-                <Camera className="w-6 h-6" />
+                <Upload className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold text-black dark:text-white mb-2 tracking-tight">
                 Upload Assignment Photo
@@ -156,8 +156,8 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
               </p>
               
               <div className="mt-6 pointer-events-none">
-                <Button variant="primary" className="rounded-none shadow-[4px_4px_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_rgba(255,255,255,1)]">
-                  Choose File
+                <Button variant="primary" className="rounded-xl shadow-lg shadow-black/10 dark:shadow-white/10 ring-1 ring-black/5 dark:ring-white/5">
+                  Choose Files
                 </Button>
               </div>
             </div>

@@ -129,11 +129,8 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
     >
       {step === 'upload' && (
         <div className="flex flex-col gap-6 text-center">
-          <div className="relative group rounded-3xl overflow-hidden p-0.5 transition-all">
-            {/* Animated glowing border background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/30 via-transparent to-teal-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
-            
-            <div className="relative flex flex-col items-center justify-center p-10 rounded-3xl border border-zinc-200/50 dark:border-zinc-800/50 bg-gradient-to-b from-white to-zinc-50/50 dark:from-zinc-900 dark:to-zinc-950/50 hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 cursor-pointer overflow-hidden">
+          <div className="relative group transition-all">
+            <div className="relative flex flex-col items-center justify-center p-10 border-2 border-dashed border-black dark:border-white hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-300 cursor-pointer overflow-hidden">
               <input
                 type="file"
                 accept="image/*,.pdf"
@@ -141,24 +138,20 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
                 onChange={handleFileUpload}
                 className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
               />
-              
-              {/* Background abstract decoration */}
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40 text-emerald-600 dark:text-emerald-300 flex items-center justify-center mb-5 shadow-inner relative z-0">
-                <Upload className="w-7 h-7" />
+              <div className="w-14 h-14 bg-black text-white dark:bg-white dark:text-black flex items-center justify-center mb-4 transition-transform group-hover:-translate-y-1 group-hover:scale-110">
+                <Upload className="w-6 h-6" />
               </div>
-              
-              <h4 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">
+              <h3 className="text-xl font-bold text-black dark:text-white mb-2 tracking-tight">
                 Upload Exam Schedule
-              </h4>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2 max-w-sm font-medium leading-relaxed">
+              </h3>
+              <p className="text-sm text-black/60 dark:text-white/60 max-w-[280px] mx-auto leading-relaxed">
                 Powered by Gemini Vision OCR. Drop your exam timetable to auto-extract dates, times, and syllabus.
               </p>
 
-              <div className="mt-6 px-5 py-2 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-sm font-semibold tracking-wide shadow-md group-hover:scale-105 transition-transform duration-300">
-                Select Files
+              <div className="mt-6 pointer-events-none">
+                <Button variant="primary" className="rounded-xl shadow-lg shadow-black/10 dark:shadow-white/10 ring-1 ring-black/5 dark:ring-white/5">
+                  Choose Files
+                </Button>
               </div>
             </div>
           </div>
