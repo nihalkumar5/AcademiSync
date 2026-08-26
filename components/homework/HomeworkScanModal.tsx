@@ -131,7 +131,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Scan Homework / Assignment (AI)"
+      title="Scan Homework / Assignment"
       description="Upload an assignment sheet, problem photo, or syllabus notice to extract task details."
       maxWidth="lg"
     >

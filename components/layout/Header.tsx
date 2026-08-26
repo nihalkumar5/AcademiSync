@@ -183,7 +183,7 @@ export const Header: React.FC = () => {
                     className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-left"
                   >
                     <Sparkles className="w-4 h-4" />
-                    Scan Homework (AI)
+                    Scan Homework
                   </button>
 
                   <button
@@ -207,7 +207,7 @@ export const Header: React.FC = () => {
                     className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-left"
                   >
                     <Upload className="w-4 h-4" />
-                    Import Timetable (AI)
+                    Import Timetable
                   </button>
 
                   <button
@@ -218,7 +218,7 @@ export const Header: React.FC = () => {
                     className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-left"
                   >
                     <Calendar className="w-4 h-4" />
-                    Import Academic Calendar (AI)
+                    Import Academic Calendar
                   </button>
                 </div>
               </>
