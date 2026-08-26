@@ -303,7 +303,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setCancelledSessionsState(prunedCancelled);
 
     // Calculate carry items for tomorrow merging stored states & academic events/holidays
-    const computedCarry = calculateTomorrowCarryItems(loadedTimetable, loadedSubjects, storedCarry, undefined, undefined, loadedEvents);
+    const computedCarry = calculateTomorrowCarryItems(loadedTimetable, loadedSubjects, storedCarry, undefined, undefined, loadedEvents, loadedSettings);
     setCarryItemsState(computedCarry);
     storage.setCarryItems(computedCarry);
 
@@ -326,6 +326,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (!isHydrated) return;
 
     const runCheck = () => {
+      refreshCarryItems(timetable, subjects, events, settings);
+
       setNotificationsState((prevNotifications) => {
         const nowMs = Date.now();
         const prunedNotifications = prevNotifications.filter(n => {
@@ -364,7 +366,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // Check every 60 seconds for time-based triggers
     const interval = setInterval(runCheck, 60000);
     return () => clearInterval(interval);
-  }, [timetable, subjects, homework, events, settings, isHydrated]);
+  }, [timetable, subjects, homework, events, settings, carryItems, isHydrated]);
 
   // Native Local Notification Scheduler Effect (debounced 500ms to avoid race conditions)
   useEffect(() => {
@@ -523,7 +525,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const refreshCarryItems = (
     currentTimetable: ClassSession[],
     currentSubjects: Subject[],
-    currentEvents: AcademicEvent[] = events
+    currentEvents: AcademicEvent[] = events,
+    currentSettings: UserSettings = settings
   ) => {
     const recomputed = calculateTomorrowCarryItems(
       currentTimetable,
@@ -531,10 +534,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       carryItems,
       undefined,
       undefined,
-      currentEvents
+      currentEvents,
+      currentSettings
     );
-    setCarryItemsState(recomputed);
-    storage.setCarryItems(recomputed);
+    
+    // Only update state if items actually changed to prevent unnecessary re-renders
+    const isSame = carryItems.length === recomputed.length &&
+      carryItems.every((item, idx) => 
+        item.id === recomputed[idx].id && 
+        item.isPacked === recomputed[idx].isPacked &&
+        item.title === recomputed[idx].title &&
+        item.date === recomputed[idx].date
+      );
+      
+    if (!isSame) {
+      setCarryItemsState(recomputed);
+      storage.setCarryItems(recomputed);
+    }
   };
 
   const addClassSession = (sessionData: Omit<ClassSession, 'id'>) => {
@@ -818,6 +834,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const updated = { ...settings, ...partial };
     setSettingsState(updated);
     storage.setSettings(updated);
+    refreshCarryItems(timetable, subjects, events, updated);
 
     if (partial.theme) {
       if (partial.theme === 'dark' || (partial.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {

@@ -1,4 +1,4 @@
-import { DayOfWeek, ClassSession, Subject, CarryItem, Homework, ExtractedClassSession, AcademicEvent, HomeworkStatus } from './types';
+import { DayOfWeek, ClassSession, Subject, CarryItem, Homework, ExtractedClassSession, AcademicEvent, HomeworkStatus, UserSettings } from './types';
 
 export const DAYS_OF_WEEK: DayOfWeek[] = [
   'Monday',
@@ -174,20 +174,39 @@ export const calculateTomorrowCarryItems = (
   existingCarryItems: CarryItem[],
   targetDateStr?: string,
   targetDay?: DayOfWeek,
-  events: AcademicEvent[] = []
+  events: AcademicEvent[] = [],
+  settings?: UserSettings
 ): CarryItem[] => {
   const now = new Date();
   const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  const currentMinutes = currentHour * 60 + currentMinute;
+
+  let limitMinutes = 18 * 60; // Default 6 PM (1080 mins)
+  if (settings?.eveningCarryReminderTime) {
+    const parts = settings.eveningCarryReminderTime.trim().split(' ');
+    const timeParts = parts[0].split(':');
+    let h = parseInt(timeParts[0], 10);
+    const m = parseInt(timeParts[1] || '0', 10);
+    if (parts[1]) {
+      const modifier = parts[1].toUpperCase();
+      if (modifier === 'PM' && h < 12) h += 12;
+      if (modifier === 'AM' && h === 12) h = 0;
+    }
+    if (!isNaN(h) && !isNaN(m)) {
+      limitMinutes = h * 60 + m;
+    }
+  }
 
   let defaultDateStr = '';
   let defaultDay: DayOfWeek = 'Monday';
 
-  if (currentHour >= 18) {
-    // 6 PM or later: show tomorrow's classes
+  if (currentMinutes >= limitMinutes) {
+    // Configured evening carry check time or later: show tomorrow's classes
     defaultDateStr = getTomorrowDateString();
     defaultDay = getTomorrowDayOfWeek();
   } else {
-    // Before 6 PM: show today's classes
+    // Before configured time: show today's classes
     defaultDateStr = getTodayDateString();
     defaultDay = getCurrentDayOfWeek();
   }
