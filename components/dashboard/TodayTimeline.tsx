@@ -3,7 +3,7 @@
 import React from 'react';
 import { useApp } from '@/context/AppContext';
 import { motion } from 'framer-motion';
-import { getCurrentDayOfWeek, timeToMinutes, getTodayDateString } from '@/lib/timetableUtils';
+import { getCurrentDayOfWeek, timeToMinutes, getTodayDateString, getTomorrowDayOfWeek, getTomorrowDateString } from '@/lib/timetableUtils';
 import { MapPin, User, Clock, FlaskConical, Ban, RotateCcw, MoreHorizontal } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
@@ -37,27 +37,32 @@ export const TodayTimeline: React.FC = () => {
   const { timetable, subjects, events, setActiveView, isSessionCancelled, toggleSessionCancelled } = useApp();
 
   const now = new Date();
-  const todayDay = getCurrentDayOfWeek();
-  const dateTodayStr = getTodayDateString();
-  const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
+  const currentHour = now.getHours();
+  
+  // Decide whether to show today's schedule or tomorrow's schedule (switch at 8 PM / 20:00)
+  const isAfter8PM = currentHour >= 20;
+
+  const targetDay = isAfter8PM ? getTomorrowDayOfWeek() : getCurrentDayOfWeek();
+  const targetDateStr = isAfter8PM ? getTomorrowDateString() : getTodayDateString();
+  const targetHoliday = events.find((e) => e.date === targetDateStr && e.type === 'holiday');
 
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
-  const todaySessions = timetable
-    .filter((s) => s.day === todayDay)
+  const targetSessions = timetable
+    .filter((s) => s.day === targetDay)
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-  if (todayHoliday) {
+  if (targetHoliday) {
     return (
       <div className="flex flex-col gap-3 text-left">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-bold tracking-widest uppercase text-black dark:text-white">
-            Today&apos;s Schedule
+            {isAfter8PM ? "Tomorrow's Schedule" : "Today's Schedule"}
           </h3>
           <span className="text-[10px] font-mono font-bold border border-black dark:border-white px-2 py-0.5 uppercase">
-            {todayDay} · Holiday
+            {isAfter8PM ? "Tomorrow" : targetDay} · Holiday
           </span>
         </div>
         <motion.div 
@@ -72,7 +77,7 @@ export const TodayTimeline: React.FC = () => {
               <span>No Lectures Scheduled</span>
             </div>
             <p className="text-sm text-black/75 dark:text-white/75 leading-relaxed font-medium mt-1">
-              Campus is observing <span className="font-black text-black dark:text-white uppercase">{todayHoliday.title}</span>. Enjoy your break!
+              Campus is observing <span className="font-black text-black dark:text-white uppercase">{targetHoliday.title}</span>. Enjoy your break!
             </p>
           </div>
         </motion.div>
@@ -80,16 +85,16 @@ export const TodayTimeline: React.FC = () => {
     );
   }
 
-  if (todaySessions.length === 0) {
+  if (targetSessions.length === 0) {
     return (
       <div className="flex flex-col gap-3 text-left">
         <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 tracking-tight pl-1">
-          Today&apos;s Schedule
+          {isAfter8PM ? "Tomorrow's Schedule" : "Today's Schedule"}
         </h3>
         <EmptyState
           icon={<MonochromeIllustration type="no-classes" size={48} />}
-          title="No classes scheduled today"
-          description="You don't have any classes on your timetable. Enjoy your break!"
+          title={isAfter8PM ? "No classes tomorrow" : "No classes scheduled today"}
+          description={isAfter8PM ? "You don't have any classes tomorrow. Enjoy your break!" : "You don't have any classes on your timetable. Enjoy your break!"}
           actionLabel="View Full Timetable"
           onAction={() => setActiveView('timetable')}
         />
@@ -101,22 +106,21 @@ export const TodayTimeline: React.FC = () => {
     <div className="flex flex-col gap-4 text-left">
       <div className="flex items-center justify-between px-1">
         <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
-          Today&apos;s Schedule
+          {isAfter8PM ? "Tomorrow's Schedule" : "Today's Schedule"}
         </h3>
         <span className="text-xs font-semibold text-slate-400 bg-slate-200/50 dark:bg-zinc-800 px-2.5 py-1 rounded-full">
-          {todayDay}
+          {isAfter8PM ? `Tomorrow (${targetDay})` : targetDay}
         </span>
       </div>
-
       <div className="bento-card p-4 sm:p-5">
         <div className="relative flex flex-col gap-0 border-l-[3px] border-slate-100 dark:border-zinc-800 ml-3 py-2">
-          {todaySessions.map((session) => {
+          {targetSessions.map((session) => {
             const sub = subjectMap.get(session.subjectId);
             const start = timeToMinutes(session.startTime);
             const end = timeToMinutes(session.endTime);
-            const isCancelled = isSessionCancelled(session.id);
-            const isNow = !isCancelled && currentMinutes >= start && currentMinutes < end;
-            const isPassed = isCancelled || currentMinutes >= end;
+            const isCancelled = isSessionCancelled(session.id, targetDateStr);
+            const isNow = !isAfter8PM && !isCancelled && currentMinutes >= start && currentMinutes < end;
+            const isPassed = isCancelled || (isAfter8PM ? false : currentMinutes >= end);
             
             // Dynamic theme dot color
             const subjectColor = isCancelled ? '#94A3B8' : (sub?.color || '#8C6B5D');
@@ -206,9 +210,9 @@ export const TodayTimeline: React.FC = () => {
                             {isCancelled ? (
                               <button
                                 type="button"
-                                onClick={() => toggleSessionCancelled(session.id)}
+                                onClick={() => toggleSessionCancelled(session.id, targetDateStr)}
                                 className="flex items-center gap-1 px-2 py-0.5 text-[10.5px] font-bold bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300 transition-colors cursor-pointer"
-                                title="Restore this class for today"
+                                title={isAfter8PM ? "Restore this class for tomorrow" : "Restore this class for today"}
                               >
                                 <RotateCcw className="w-3 h-3" />
                                 <span>Restore</span>
@@ -216,9 +220,9 @@ export const TodayTimeline: React.FC = () => {
                             ) : (
                               <button
                                 type="button"
-                                onClick={() => toggleSessionCancelled(session.id)}
+                                onClick={() => toggleSessionCancelled(session.id, targetDateStr)}
                                 className="p-1 text-black/30 dark:text-white/30 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-black/5 dark:hover:bg-white/10 transition-all opacity-30 group-hover:opacity-100 cursor-pointer rounded-none"
-                                title="Mark as cancelled for today"
+                                title={isAfter8PM ? "Mark as cancelled for tomorrow" : "Mark as cancelled for today"}
                               >
                                 <MoreHorizontal className="w-4 h-4" />
                               </button>
