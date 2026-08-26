@@ -3,48 +3,66 @@
 import React from 'react';
 import { useApp } from '@/context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Info, AlertTriangle, X } from 'lucide-react';
+import { CheckCircle2, Info, AlertTriangle } from 'lucide-react';
 
 export const Toast: React.FC = () => {
   const { toastMessage } = useApp();
 
+  const isSuccess = toastMessage?.type === 'success';
+  const isWarning = toastMessage?.type === 'warning';
+
+  const accentColor = isSuccess
+    ? 'text-emerald-700 dark:text-emerald-400'
+    : isWarning
+    ? 'text-amber-700 dark:text-amber-400'
+    : 'text-sky-700 dark:text-sky-400';
+
+  const Icon = isSuccess ? CheckCircle2 : isWarning ? AlertTriangle : Info;
+
   return (
-    <div className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center">
+    <div className="fixed inset-x-0 top-8 sm:top-10 z-[200] pointer-events-none flex justify-center px-6">
       <AnimatePresence>
         {toastMessage && (
           <motion.div
-            initial={{ opacity: 0, y: -24, scale: 0.94 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.94 }}
-            transition={{ type: 'spring', stiffness: 450, damping: 28 }}
-            className="pointer-events-auto flex items-center gap-3 px-4 py-2.5 bg-black/70 backdrop-blur-2xl text-white shadow-[0_14px_36px_rgba(0,0,0,0.25)] border border-white/20 rounded-full max-w-[92vw] sm:max-w-lg select-none ring-1 ring-white/10"
+            key={toastMessage.title + toastMessage.message}
+            initial={{ opacity: 0, y: -32, scale: 0.92, rotate: -1 }}
+            animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95, rotate: 1 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 26 }}
+            className="pointer-events-auto relative w-full max-w-sm select-none"
           >
-            {/* Status Indicator Icon */}
-            <div className="shrink-0 flex items-center justify-center">
-              {toastMessage.type === 'success' ? (
-                <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 dark:text-emerald-600 flex items-center justify-center">
-                  <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
-                </div>
-              ) : toastMessage.type === 'warning' ? (
-                <div className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 dark:text-amber-600 flex items-center justify-center">
-                  <AlertTriangle className="w-3.5 h-3.5 stroke-[2.5]" />
-                </div>
-              ) : (
-                <div className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 dark:text-cyan-600 flex items-center justify-center">
-                  <Info className="w-3.5 h-3.5 stroke-[2.5]" />
-                </div>
-              )}
-            </div>
+            {/* Paper card */}
+            <div
+              className="relative bg-[#FEFCF5] dark:bg-[#1c1a13] border border-black/15 dark:border-white/15 px-5 py-4 text-left overflow-hidden"
+              style={{ boxShadow: '3px 3px 0px 0px rgba(0,0,0,0.10)' }}
+            >
+              {/* Torn top-left corner */}
+              <div
+                className="absolute top-0 left-0 w-4 h-4 bg-white dark:bg-zinc-950"
+                style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}
+              />
 
-            {/* Text Content */}
-            <div className="flex items-center gap-2 min-w-0 pr-1 text-left">
-              <span className="text-xs font-bold tracking-tight font-sans whitespace-nowrap">
-                {toastMessage.title}
-              </span>
-              <span className="w-1 h-1 rounded-full bg-white/30 dark:bg-black/30 shrink-0" />
-              <span className="text-[11.5px] opacity-75 truncate max-w-[200px] sm:max-w-[320px] font-normal">
-                {toastMessage.message}
-              </span>
+              {/* Icon + Title */}
+              <div className={`flex items-center gap-2 mb-0.5 ${accentColor}`}>
+                <Icon size={17} strokeWidth={2.5} className="shrink-0 mt-0.5" />
+                <span className="font-cursive text-[24px] font-bold leading-tight text-black dark:text-white">
+                  {toastMessage.title}
+                </span>
+              </div>
+
+              {/* Message */}
+              {toastMessage.message && (
+                <p className="font-cursive text-[18px] text-black/60 dark:text-white/55 leading-snug pl-[25px]">
+                  {toastMessage.message}
+                </p>
+              )}
+
+              {/* Decorative ruled lines */}
+              <div className="absolute bottom-2.5 left-5 right-5 flex flex-col gap-[6px] pointer-events-none opacity-[0.06]">
+                <div className="h-px bg-black dark:bg-white" />
+                <div className="h-px bg-black dark:bg-white" />
+                <div className="h-px bg-black dark:bg-white" />
+              </div>
             </div>
           </motion.div>
         )}
@@ -52,3 +70,4 @@ export const Toast: React.FC = () => {
     </div>
   );
 };
+
