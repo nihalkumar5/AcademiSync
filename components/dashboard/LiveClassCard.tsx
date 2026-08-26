@@ -5,6 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { getLiveClassStatus, formatTime12Hour, getTodayDateString } from '@/lib/timetableUtils';
 import { Clock, MapPin, User, CheckCircle2, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 
 export const LiveClassCard: React.FC = () => {
   const { timetable, subjects, events, isSessionCancelled } = useApp();
@@ -47,8 +48,13 @@ export const LiveClassCard: React.FC = () => {
           }}
           className="absolute -right-8 -top-8 w-32 h-32 rounded-full border border-black/5 dark:border-white/5 bg-yellow-400/10 dark:bg-yellow-400/5 shrink-0"
         />
+
+        {/* Subtle Background Monochrome Vector Illustration */}
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-[0.10] dark:opacity-[0.15] pointer-events-none select-none z-0">
+          <MonochromeIllustration type="holiday" size={72} />
+        </div>
         
-        <div className="flex items-center gap-5 sm:gap-6 min-w-0 relative z-10">
+        <div className="flex items-center gap-5 sm:gap-6 min-w-0 relative z-10 pr-12">
           <div className="w-14 h-14 sm:w-16 sm:h-16 bg-black dark:bg-white flex flex-col items-center justify-center shrink-0 border border-black dark:border-white">
             <span className="font-mono text-lg sm:text-xl font-black uppercase tracking-widest text-white dark:text-black">OFF</span>
           </div>

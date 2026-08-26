@@ -64,9 +64,14 @@ export const TodayTimeline: React.FC = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="glass-card p-6 text-left flex flex-row items-center justify-between gap-6 relative overflow-hidden border border-black dark:border-white"
+          className="glass-card p-6 text-left relative overflow-hidden border border-black dark:border-white"
         >
-          <div className="relative z-10 flex-1">
+          {/* Subtle Background Monochrome Vector Illustration */}
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-[0.12] dark:opacity-[0.18] pointer-events-none select-none z-0">
+            <MonochromeIllustration type="holiday" size={72} />
+          </div>
+
+          <div className="relative z-10 pr-12">
             <div className="flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-wider text-black dark:text-white mb-1">
               <span className="w-2 h-2 bg-black dark:bg-white inline-block" />
               <span>No Lectures Scheduled</span>
@@ -74,9 +79,6 @@ export const TodayTimeline: React.FC = () => {
             <p className="text-sm text-black/75 dark:text-white/75 leading-relaxed font-medium mt-1">
               Campus is observing <span className="font-black text-black dark:text-white uppercase">{todayHoliday.title}</span>. Enjoy your break!
             </p>
-          </div>
-          <div className="shrink-0 hidden sm:block relative z-10 opacity-30 dark:opacity-40">
-            <MonochromeIllustration type="holiday" size={56} />
           </div>
         </motion.div>
       </div>
