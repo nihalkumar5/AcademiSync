@@ -93,8 +93,22 @@ export const checkAndGenerateSmartNotifications = (
     }
   });
 
-  // 3. Evening Carry Bag Check (Fires after 6 PM / 18:00 for tomorrow)
-  if (now.getHours() >= 18) {
+  // 3. Evening Carry Bag Check — fires at user's configured eveningCarryReminderTime (±1 min window)
+  const bagTimeStr = settings.eveningCarryReminderTime || '20:00';
+  const bagTimeParts = bagTimeStr.trim().split(' ');
+  const bagTimeClock = bagTimeParts[0].split(':');
+  let bagHour = parseInt(bagTimeClock[0], 10);
+  const bagMinute = parseInt(bagTimeClock[1] || '0', 10);
+  if (bagTimeParts[1]) {
+    const mod = bagTimeParts[1].toUpperCase();
+    if (mod === 'PM' && bagHour < 12) bagHour += 12;
+    if (mod === 'AM' && bagHour === 12) bagHour = 0;
+  }
+  const bagTotalMins = bagHour * 60 + bagMinute;
+  // Fire if current time is within [bagTime, bagTime + 1min) — engine runs every 60s
+  const isCarryTime = currentMinutes >= bagTotalMins && currentMinutes < bagTotalMins + 1;
+
+  if (isCarryTime) {
     const carryCheckKey = `carry_evening_${dateTodayStr}`;
     const tomorrowHoliday = events.find((e) => e.date === dateTomorrowStr && e.type === 'holiday');
 
