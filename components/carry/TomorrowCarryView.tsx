@@ -48,6 +48,7 @@ export const TomorrowCarryView: React.FC = () => {
     carryItems,
     toggleCarryItemPacked,
     deleteCarryItem,
+    settings,
   } = useApp();
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -59,10 +60,29 @@ export const TomorrowCarryView: React.FC = () => {
 
   const now = new Date();
   const currentHour = now.getHours();
-  const isAfter6PM = currentHour >= 18;
+  const currentMinute = now.getMinutes();
+  const currentMinutes = currentHour * 60 + currentMinute;
 
-  const targetDay = isAfter6PM ? getTomorrowDayOfWeek() : getCurrentDayOfWeek();
-  const targetDateStr = isAfter6PM ? getTomorrowDateString() : getTodayDateString();
+  let limitMinutes = 18 * 60; // Default 6 PM (1080 mins)
+  if (settings?.eveningCarryReminderTime) {
+    const parts = settings.eveningCarryReminderTime.trim().split(' ');
+    const timeParts = parts[0].split(':');
+    let h = parseInt(timeParts[0], 10);
+    const m = parseInt(timeParts[1] || '0', 10);
+    if (parts[1]) {
+      const modifier = parts[1].toUpperCase();
+      if (modifier === 'PM' && h < 12) h += 12;
+      if (modifier === 'AM' && h === 12) h = 0;
+    }
+    if (!isNaN(h) && !isNaN(m)) {
+      limitMinutes = h * 60 + m;
+    }
+  }
+
+  const isAfterReminderTime = currentMinutes >= limitMinutes;
+
+  const targetDay = isAfterReminderTime ? getTomorrowDayOfWeek() : getCurrentDayOfWeek();
+  const targetDateStr = isAfterReminderTime ? getTomorrowDateString() : getTodayDateString();
   const targetHoliday = events.find((e) => e.date === targetDateStr && e.type === 'holiday');
 
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
@@ -84,7 +104,7 @@ export const TomorrowCarryView: React.FC = () => {
     weekday: 'long',
     month: 'short',
     day: 'numeric',
-  }).format(isNaN(targetDateObj.getTime()) ? (isAfter6PM ? new Date(Date.now() + 86400000) : new Date()) : targetDateObj);
+  }).format(isNaN(targetDateObj.getTime()) ? (isAfterReminderTime ? new Date(Date.now() + 86400000) : new Date()) : targetDateObj);
 
   if (!mounted) {
     return (
@@ -118,7 +138,7 @@ export const TomorrowCarryView: React.FC = () => {
           </div>
           <p className="text-sm sm:text-base text-black/65 dark:text-white/65 mt-3 font-normal leading-relaxed max-w-md flex items-center gap-1.5">
             <CalendarDays className="w-4 h-4 shrink-0 text-black/60 dark:text-white/60" />
-            <span>Packing list for {isAfter6PM ? 'tomorrow' : 'today'} · {targetFormatted}</span>
+            <span>Packing list for {isAfterReminderTime ? 'tomorrow' : 'today'} · {targetFormatted}</span>
           </p>
         </div>
 
@@ -141,7 +161,7 @@ export const TomorrowCarryView: React.FC = () => {
           <div className="flex items-center justify-between pb-1 border-b border-black/10 dark:border-white/10">
             <h2 className="text-xs font-black text-black dark:text-white tracking-widest uppercase flex items-center gap-2">
               <Clock className="w-3.5 h-3.5" />
-              {isAfter6PM ? "Tomorrow's Schedule" : "Today's Schedule"}
+              {isAfterReminderTime ? "Tomorrow's Schedule" : "Today's Schedule"}
             </h2>
             <span className="text-[11px] font-mono font-bold border border-black/20 dark:border-white/20 text-black/70 dark:text-white/70 px-2 py-0.5 rounded-none">
               {targetHoliday ? '0 lectures (Holiday)' : `${targetClasses.length} ${targetClasses.length === 1 ? 'lecture' : 'lectures'}`}
@@ -168,7 +188,7 @@ export const TomorrowCarryView: React.FC = () => {
               </div>
             ) : targetClasses.length === 0 ? (
               <div className="p-6 border border-black/20 dark:border-white/20 text-center text-xs text-black/60 dark:text-white/60 font-medium">
-                No classes scheduled for {isAfter6PM ? 'tomorrow' : 'today'}. Enjoy your break!
+                No classes scheduled for {isAfterReminderTime ? 'tomorrow' : 'today'}. Enjoy your break!
               </div>
             ) : (
               targetClasses.map((sess) => {
@@ -268,8 +288,8 @@ export const TomorrowCarryView: React.FC = () => {
                 />
               ) : (
                 <EmptyState
-                  title={`Nothing special to carry ${isAfter6PM ? 'tomorrow' : 'today'}`}
-                  description={`Either ${isAfter6PM ? 'tomorrow' : 'today'} is a free day or no carry requirements are configured for ${isAfter6PM ? "tomorrow's" : "today's"} classes.`}
+                  title={`Nothing special to carry ${isAfterReminderTime ? 'tomorrow' : 'today'}`}
+                  description={`Either ${isAfterReminderTime ? 'tomorrow' : 'today'} is a free day or no carry requirements are configured for ${isAfterReminderTime ? "tomorrow's" : "today's"} classes.`}
                 />
               )
             ) : (
