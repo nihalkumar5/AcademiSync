@@ -1,6 +1,6 @@
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Capacitor } from '@capacitor/core';
-import { ClassSession, Subject, Homework, Exam, UserSettings } from './types';
+import { ClassSession, Subject, Homework, Exam, UserSettings, AcademicEvent } from './types';
 import { formatTime12Hour } from './timetableUtils';
 
 // Helper to configure a high-importance native Android channel for lockscreen alerts & sound
@@ -102,7 +102,8 @@ export const scheduleTimetableLocalNotifications = async (
   subjects: Subject[],
   homework?: Homework[],
   exams?: Exam[],
-  settingsParam?: UserSettings | number
+  settingsParam?: UserSettings | number,
+  events?: AcademicEvent[]
 ) => {
   if (!Capacitor.isNativePlatform()) {
     console.log('Local notifications scheduling is skipped (not a native platform).');
@@ -138,26 +139,40 @@ export const scheduleTimetableLocalNotifications = async (
       : '20:00';
 
     const subjectMap = new Map(subjects.map((s) => [s.id, s]));
-    const dayToWeekdayNum: Record<string, number> = {
-      'Sunday': 1,
-      'Monday': 2,
-      'Tuesday': 3,
-      'Wednesday': 4,
-      'Thursday': 5,
-      'Friday': 6,
-      'Saturday': 7,
-    };
+
+    // Build a Set of holiday date strings (YYYY-MM-DD) from academic calendar
+    const holidayDates = new Set<string>();
+    if (events && events.length > 0) {
+      events.forEach((ev) => {
+        if (ev.type === 'holiday' && ev.date) {
+          holidayDates.add(ev.date);
+        }
+      });
+    }
 
     const notificationsToSchedule: any[] = [];
 
-    // 1. Schedule Weekly Class Alarms
+    // Day name -> JS getDay() value (0 = Sunday)
+    const dayNameToJsDay: Record<string, number> = {
+      'Sunday': 0,
+      'Monday': 1,
+      'Tuesday': 2,
+      'Wednesday': 3,
+      'Thursday': 4,
+      'Friday': 5,
+      'Saturday': 6,
+    };
+
+    const WEEKS_AHEAD = 8; // Schedule for next 8 weeks
+
+    // 1. Schedule Class Alarms as per-date one-off notifications (holiday-aware)
     for (let i = 0; i < timetable.length; i++) {
       const session = timetable[i];
       const sub = subjectMap.get(session.subjectId);
       if (!sub) continue;
 
-      const dayNum = dayToWeekdayNum[session.day];
-      if (!dayNum) continue;
+      const jsDay = dayNameToJsDay[session.day];
+      if (jsDay === undefined) continue;
 
       // Parse session.startTime robustly: "09:00", "09:00 AM", "14:30"
       const cleanTime = session.startTime.trim();
@@ -173,42 +188,52 @@ export const scheduleTimetableLocalNotifications = async (
       }
 
       if (isNaN(startH) || isNaN(startM)) continue;
-      
-      const totalMinutes = startH * 60 + startM;
-      const targetMinutes = totalMinutes - reminderMinutes;
 
-      // Handle negative minutes (e.g. class at 00:05, reminder 10 min before is previous day)
-      let targetHour = Math.floor(targetMinutes / 60);
-      let targetMin = targetMinutes % 60;
-      let targetDayNum = dayNum;
+      // Find the next N occurrences of this weekday and schedule individually
+      const now = new Date();
+      let occurrenceCount = 0;
 
-      if (targetMinutes < 0) {
-        targetHour = (24 + targetHour) % 24;
-        targetMin = (60 + targetMin) % 60;
-        targetDayNum = targetDayNum === 1 ? 7 : targetDayNum - 1;
-      }
+      for (let weekOffset = 0; weekOffset < WEEKS_AHEAD * 7 && occurrenceCount < WEEKS_AHEAD; weekOffset++) {
+        const candidateDate = new Date(now);
+        candidateDate.setDate(now.getDate() + weekOffset);
+        candidateDate.setHours(startH, startM, 0, 0);
 
-      const notifId = i + 1000;
+        // Must be the right weekday and in the future
+        if (candidateDate.getDay() !== jsDay) continue;
+        if (candidateDate.getTime() <= now.getTime()) continue;
 
-      // CRITICAL FIX: DO NOT include `every: 'week'`.
-      // In Capacitor Android, specifying `every` overrides `on` and ignores weekday/hour/minute.
-      // With `on: { weekday, hour, minute }`, Android schedules exact repeating weekly triggers!
-      notificationsToSchedule.push({
-        title: `⏰ Class in ${reminderMinutes} mins: ${sub.name}`,
-        body: `${session.isLab || sub.isLab ? 'Lab' : 'Lecture'} at ${session.room || sub.room || 'Classroom'} starts at ${formatTime12Hour(session.startTime)}`,
-        id: notifId,
-        schedule: {
-          on: {
-            weekday: targetDayNum,
-            hour: targetHour,
-            minute: targetMin,
+        // Check if this specific date is a holiday — skip if yes
+        const dateStr = candidateDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+        if (holidayDates.has(dateStr)) {
+          console.log(`Skipping class notification on ${dateStr} — holiday in academic calendar.`);
+          occurrenceCount++;
+          continue;
+        }
+
+        // Schedule reminder 'reminderMinutes' before the class
+        const reminderTime = new Date(candidateDate.getTime() - reminderMinutes * 60 * 1000);
+        if (reminderTime.getTime() <= now.getTime()) {
+          occurrenceCount++;
+          continue;
+        }
+
+        const notifId = 1000 + (i * WEEKS_AHEAD) + occurrenceCount;
+
+        notificationsToSchedule.push({
+          title: `⏰ Class in ${reminderMinutes} mins: ${sub.name}`,
+          body: `${session.isLab || sub.isLab ? 'Lab' : 'Lecture'} at ${session.room || sub.room || 'Classroom'} starts at ${formatTime12Hour(session.startTime)}`,
+          id: notifId,
+          schedule: {
+            at: reminderTime,
+            allowWhileIdle: true,
           },
-          allowWhileIdle: true,
-        },
-        sound: 'class_bell',
-        channelId: 'class_alerts_v3',
-        extra: null,
-      });
+          sound: 'class_bell',
+          channelId: 'class_alerts_v3',
+          extra: null,
+        });
+
+        occurrenceCount++;
+      }
     }
 
     // 2. Schedule Daily Evening Bag Packing Reminder

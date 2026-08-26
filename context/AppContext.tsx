@@ -362,11 +362,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         subjects,
         homework,
         exams,
-        settings
+        settings,
+        events
       );
     };
     scheduleReminders();
-  }, [timetable, subjects, homework, exams, settings, isHydrated]);
+  }, [timetable, subjects, homework, exams, settings, events, isHydrated]);
 
   // Keyboard shortcut listener (Cmd+K / Ctrl+K)
   useEffect(() => {
