@@ -8,6 +8,7 @@ import {
   getTodayDateString,
   getTomorrowDateString,
   timeToMinutes,
+  getSubjectThemeStyle,
 } from '@/lib/timetableUtils';
 import { CarryItemRow } from './CarryItemRow';
 import { AddCustomItemModal } from './AddCustomItemModal';
@@ -194,12 +195,13 @@ export const TomorrowCarryView: React.FC = () => {
             ) : (
               targetClasses.map((sess) => {
                 const sub = subjectMap.get(sess.subjectId);
-                const pastelClass = getSubjectPastelStyle(sub, sess.id);
+                const customStyle = getSubjectThemeStyle(sub?.color, settings?.theme || 'light');
 
                 return (
                   <div
                     key={sess.id}
-                    className={`p-4 border rounded-none flex items-center justify-between text-left transition-all ${pastelClass} text-black dark:text-white`}
+                    className="p-4 border rounded-none flex items-center justify-between text-left transition-all text-black dark:text-white"
+                    style={customStyle}
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
                       <div className="w-14 shrink-0 flex flex-col pt-0.5">

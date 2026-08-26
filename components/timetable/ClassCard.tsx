@@ -5,6 +5,8 @@ import { ClassSession, Subject } from '@/lib/types';
 import { MapPin, User, MoreHorizontal, Edit2, Trash2, FlaskConical, Clock } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { clsx } from 'clsx';
+import { useApp } from '@/context/AppContext';
+import { getSubjectThemeStyle } from '@/lib/timetableUtils';
 
 // 10 distinct, elegant & engaging pastel paper colors (slightly lighter shades)
 const ELEGANT_PASTEL_PALETTE = [
@@ -44,14 +46,18 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   onDelete,
   isCurrent = false,
 }) => {
+  const { settings } = useApp();
   const [menuOpen, setMenuOpen] = useState(false);
+  const theme = settings.theme || 'light';
 
   let cardColorClass = '';
   if (isCurrent) {
     cardColorClass = 'bg-black text-white dark:bg-white dark:text-black shadow-lg shadow-black/10 dark:shadow-white/10 border-transparent ring-1 ring-black/5 dark:ring-white/5';
   } else {
-    cardColorClass = `${getSubjectPastelStyle(subject, session.id)} text-black dark:text-white`;
+    cardColorClass = 'text-black dark:text-white';
   }
+
+  const customStyle = isCurrent ? undefined : getSubjectThemeStyle(subject?.color, theme);
 
   return (
     <div
@@ -59,6 +65,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         "group relative flex flex-col p-4 text-left transition-all border rounded-none",
         cardColorClass
       )}
+      style={customStyle}
     >
       <div className="flex items-start justify-between gap-1.5 mb-2">
         <div className="flex items-center gap-2 flex-wrap">

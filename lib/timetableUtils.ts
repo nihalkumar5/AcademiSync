@@ -461,3 +461,27 @@ export const mergeConsecutiveSessions = (
 
   return mergedSessions;
 };
+
+export const getSubjectThemeStyle = (hexColor?: string, theme: 'light' | 'dark' | 'system' = 'light') => {
+  const baseColor = hexColor || '#7C897A';
+  // Ensure it starts with #
+  const hex = baseColor.startsWith('#') ? baseColor : `#${baseColor}`;
+  
+  let isDark = theme === 'dark';
+  if (theme === 'system' && typeof window !== 'undefined') {
+    isDark = document.documentElement.classList.contains('dark') || 
+             window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  
+  if (isDark) {
+    return {
+      backgroundColor: `${hex}20`, // 12.5% opacity for dark mode bg
+      borderColor: `${hex}50`, // 31% opacity for dark mode border
+    };
+  } else {
+    return {
+      backgroundColor: `${hex}0F`, // 6% opacity for light mode bg
+      borderColor: `${hex}40`, // 25% opacity for light mode border
+    };
+  }
+};
