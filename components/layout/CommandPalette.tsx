@@ -17,6 +17,7 @@ import {
   ArrowRight,
   Sparkles,
   Command,
+  GraduationCap,
 } from 'lucide-react';
 import { useApp, ActiveView } from '@/context/AppContext';
 
@@ -93,6 +94,16 @@ export const CommandPalette: React.FC = () => {
       icon: <Calendar className="w-4 h-4" />,
       action: () => {
         setActiveView('calendar');
+        setCommandPaletteOpen(false);
+      },
+    },
+    {
+      id: 'nav_exams',
+      title: 'Exam Timetable',
+      category: 'Navigation',
+      icon: <GraduationCap className="w-4 h-4" />,
+      action: () => {
+        setActiveView('exams');
         setCommandPaletteOpen(false);
       },
     },
