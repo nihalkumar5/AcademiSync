@@ -150,7 +150,7 @@ export const WeeklyTimetable: React.FC = () => {
       <div className="flex md:hidden flex-col gap-3.5">
         {(() => {
           const sessions = timetable
-            .filter((s) => s.day === selectedMobileDay && !checkIsPast(s))
+            .filter((s) => s.day === selectedMobileDay)
             .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
           if (sessions.length === 0) {
@@ -172,7 +172,7 @@ export const WeeklyTimetable: React.FC = () => {
               subject={subjectMap.get(session.subjectId)}
               onEdit={handleEditSession}
               onDelete={deleteClassSession}
-              isCurrent={checkIsNow(session)}
+              isCurrent={false}
             />
           ));
         })()}
@@ -183,7 +183,7 @@ export const WeeklyTimetable: React.FC = () => {
         {weekDays.map((day) => {
           const isToday = currentDay === day;
           const daySessions = timetable
-            .filter((s) => s.day === day && !checkIsPast(s))
+            .filter((s) => s.day === day)
             .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
           return (
@@ -255,7 +255,7 @@ export const WeeklyTimetable: React.FC = () => {
                       subject={subjectMap.get(session.subjectId)}
                       onEdit={handleEditSession}
                       onDelete={deleteClassSession}
-                      isCurrent={checkIsNow(session)}
+                      isCurrent={false}
                     />
                   ))
                 )}
