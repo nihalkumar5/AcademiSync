@@ -84,7 +84,7 @@ interface AppContextType {
   cancelledSessions: string[];
   toggleSessionCancelled: (sessionId: string, dateStr?: string) => void;
   isSessionCancelled: (sessionId: string, dateStr?: string) => boolean;
-  toastMessage: { title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error' } | null;
+  toastMessage: { id: number; title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error' } | null;
   showToast: (title: string, message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
   resetAllData: () => Promise<void>;
 }
@@ -96,7 +96,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [activeView, setActiveView] = useState<ActiveView>('home');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState<{ title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error' } | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ id: number; title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error' } | null>(null);
+  const toastIdRef = useRef(0);
 
   // Core state
   const [profile, setProfileState] = useState<StudentProfile>(storage.getProfile());
@@ -115,6 +116,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const remoteStateString = useRef("");
   const isApplyingRemote = useRef(false);
   const prevUserIdRef = useRef<string | null>(null);
+  const scheduleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Handle User Logout / Switch Account Cleanup
   useEffect(() => {
@@ -287,7 +289,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setEventsState(loadedEvents);
     setExamsState(loadedExams);
     setSettingsState(loadedSettings);
-    setCancelledSessionsState(loadedCancelled);
+    // Prune cancelled session keys older than 30 days to prevent unbounded growth
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const prunedCancelled = loadedCancelled.filter((key) => {
+      const datePart = key.split('_')[0]; // "YYYY-MM-DD_sessId" format
+      const keyDate = new Date(datePart);
+      return !isNaN(keyDate.getTime()) && keyDate >= thirtyDaysAgo;
+    });
+    if (prunedCancelled.length !== loadedCancelled.length) {
+      storage.setCancelledSessions(prunedCancelled);
+    }
+    setCancelledSessionsState(prunedCancelled);
 
     // Calculate carry items for tomorrow merging stored states & academic events/holidays
     const computedCarry = calculateTomorrowCarryItems(loadedTimetable, loadedSubjects, storedCarry, undefined, undefined, loadedEvents);
@@ -353,10 +366,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return () => clearInterval(interval);
   }, [timetable, subjects, homework, events, settings, isHydrated]);
 
-  // Native Local Notification Scheduler Effect
+  // Native Local Notification Scheduler Effect (debounced 500ms to avoid race conditions)
   useEffect(() => {
     if (!isHydrated) return;
-    const scheduleReminders = async () => {
+
+    // Clear any pending reschedule triggered by a previous rapid state change
+    if (scheduleDebounceRef.current) clearTimeout(scheduleDebounceRef.current);
+
+    scheduleDebounceRef.current = setTimeout(async () => {
       await scheduleTimetableLocalNotifications(
         timetable,
         subjects,
@@ -365,8 +382,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         settings,
         events
       );
+    }, 500);
+
+    return () => {
+      if (scheduleDebounceRef.current) clearTimeout(scheduleDebounceRef.current);
     };
-    scheduleReminders();
   }, [timetable, subjects, homework, exams, settings, events, isHydrated]);
 
   // Keyboard shortcut listener (Cmd+K / Ctrl+K)
@@ -385,9 +405,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, []);
 
   const showToast = (title: string, message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
-    setToastMessage({ title, message, type });
+    const id = ++toastIdRef.current;
+    setToastMessage({ id, title, message, type });
     setTimeout(() => {
-      setToastMessage((current) => (current?.title === title ? null : current));
+      setToastMessage((current) => (current?.id === id ? null : current));
     }, 4000);
   };
 
@@ -533,6 +554,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimetableState(updated);
     storage.setTimetable(updated);
     refreshCarryItems(updated, subjects);
+    showToast('Class Updated', 'Session details saved', 'success');
   };
 
   const deleteClassSession = (id: string) => {
@@ -751,6 +773,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setEventsState(updated);
     storage.setEvents(updated);
     refreshCarryItems(timetable, subjects, updated);
+    if (newEvents.length > 0) {
+      showToast('Calendar Updated', `${newEvents.length} event${newEvents.length > 1 ? 's' : ''} added to academic calendar`, 'success');
+    }
   };
 
   const addExam = (examData: Omit<Exam, 'id' | 'createdAt'>): Exam => {
@@ -781,10 +806,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const deleteEvent = (id: string) => {
+    const target = events.find((e) => e.id === id);
     const updated = events.filter((e) => e.id !== id);
     setEventsState(updated);
     storage.setEvents(updated);
     refreshCarryItems(timetable, subjects, updated);
+    showToast('Event Removed', target?.title || 'Calendar event deleted', 'info');
   };
 
   const updateSettings = (partial: Partial<UserSettings>) => {

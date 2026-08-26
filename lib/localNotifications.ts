@@ -1,7 +1,7 @@
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Capacitor } from '@capacitor/core';
 import { ClassSession, Subject, Homework, Exam, UserSettings, AcademicEvent } from './types';
-import { formatTime12Hour } from './timetableUtils';
+import { formatTime12Hour, getLocalDateString } from './timetableUtils';
 
 // Helper to configure a high-importance native Android channel for lockscreen alerts & sound
 const ensureNotificationChannel = async () => {
@@ -203,7 +203,8 @@ export const scheduleTimetableLocalNotifications = async (
         if (candidateDate.getTime() <= now.getTime()) continue;
 
         // Check if this specific date is a holiday — skip if yes
-        const dateStr = candidateDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+        // Use getLocalDateString (local time) NOT toISOString (UTC) to avoid midnight IST → previous UTC date bug
+        const dateStr = getLocalDateString(candidateDate);
         if (holidayDates.has(dateStr)) {
           console.log(`Skipping class notification on ${dateStr} — holiday in academic calendar.`);
           occurrenceCount++;
