@@ -25,12 +25,28 @@ export const LiveClassCard: React.FC = () => {
     return () => clearInterval(interval);
   }, [timetable, subjects, isSessionCancelled]);
 
-  // High-Contrast Brutalist Holiday Display (Minimal Design)
+  // High-Contrast Brutalist Holiday Display (Minimal Design with Subtle Animation)
   if (todayHoliday) {
     return (
-      <div className="glass-card p-5 sm:p-6 text-left relative overflow-hidden border border-black dark:border-white bg-[#FFFDF9] dark:bg-[#1C1A17]">
-        {/* Subtle, Static Background Sun Glow */}
-        <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full border border-black/5 dark:border-white/5 bg-yellow-400/10 dark:bg-yellow-400/5 shrink-0" />
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="glass-card p-5 sm:p-6 text-left relative overflow-hidden border border-black dark:border-white bg-[#FFFDF9] dark:bg-[#1C1A17]"
+      >
+        {/* Subtle, Slow-Pulsing Background Sun Glow */}
+        <motion.div
+          animate={{
+            scale: [1, 1.06, 1],
+            opacity: [0.6, 0.9, 0.6],
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute -right-8 -top-8 w-32 h-32 rounded-full border border-black/5 dark:border-white/5 bg-yellow-400/10 dark:bg-yellow-400/5 shrink-0"
+        />
         
         <div className="flex items-center gap-5 sm:gap-6 min-w-0 relative z-10">
           <div className="w-14 h-14 sm:w-16 sm:h-16 bg-black dark:bg-white flex flex-col items-center justify-center shrink-0 border border-black dark:border-white">
@@ -51,7 +67,7 @@ export const LiveClassCard: React.FC = () => {
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 

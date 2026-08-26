@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useApp } from '@/context/AppContext';
+import { motion } from 'framer-motion';
 import { getCurrentDayOfWeek, timeToMinutes, getTodayDateString } from '@/lib/timetableUtils';
 import { MapPin, User, Clock, FlaskConical, Ban, RotateCcw, MoreHorizontal } from 'lucide-react';
 import { Badge } from '../ui/Badge';
@@ -58,7 +59,12 @@ export const TodayTimeline: React.FC = () => {
             {todayDay} · Holiday
           </span>
         </div>
-        <div className="glass-card p-6 text-left flex flex-col gap-2 relative overflow-hidden border border-black dark:border-white">
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          className="glass-card p-6 text-left flex flex-col gap-2 relative overflow-hidden border border-black dark:border-white"
+        >
           
           <div className="relative z-10">
             <div className="flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-wider text-black dark:text-white mb-1">
@@ -69,7 +75,7 @@ export const TodayTimeline: React.FC = () => {
               Campus is observing <span className="font-black text-black dark:text-white uppercase">{todayHoliday.title}</span>. Enjoy your break!
             </p>
           </div>
-        </div>
+        </motion.div>
       </div>
     );
   }
