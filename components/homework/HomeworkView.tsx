@@ -8,6 +8,7 @@ import { AddHomeworkModal } from './AddHomeworkModal';
 import { HomeworkScanModal } from './HomeworkScanModal';
 import { EmptyState } from '../ui/EmptyState';
 import { Plus, Sparkles, Search, CheckSquare, X } from 'lucide-react';
+import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const HomeworkView: React.FC = () => {
@@ -164,7 +165,7 @@ export const HomeworkView: React.FC = () => {
       {filtered.length === 0 ? (
         <div className="py-12 px-4">
           <EmptyState
-            icon={<CheckSquare className="w-5 h-5 text-[#8C6B5D]" />}
+            icon={<MonochromeIllustration type="no-homework" size={48} />}
             title="All caught up!"
             description={
               searchQuery

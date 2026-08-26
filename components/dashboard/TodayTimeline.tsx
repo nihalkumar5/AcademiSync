@@ -8,6 +8,7 @@ import { MapPin, User, Clock, FlaskConical, Ban, RotateCcw, MoreHorizontal } fro
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
 import { Subject } from '@/lib/types';
+import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 
 // 10 distinct, elegant & engaging pastel paper colors (slightly lighter shades)
 const ELEGANT_PASTEL_PALETTE = [
@@ -63,17 +64,19 @@ export const TodayTimeline: React.FC = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="glass-card p-6 text-left flex flex-col gap-2 relative overflow-hidden border border-black dark:border-white"
+          className="glass-card p-6 text-left flex flex-row items-center justify-between gap-6 relative overflow-hidden border border-black dark:border-white"
         >
-          
-          <div className="relative z-10">
+          <div className="relative z-10 flex-1">
             <div className="flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-wider text-black dark:text-white mb-1">
               <span className="w-2 h-2 bg-black dark:bg-white inline-block" />
               <span>No Lectures Scheduled</span>
             </div>
-            <p className="text-sm text-black/75 dark:text-white/75 leading-relaxed max-w-md font-medium mt-1">
+            <p className="text-sm text-black/75 dark:text-white/75 leading-relaxed font-medium mt-1">
               Campus is observing <span className="font-black text-black dark:text-white uppercase">{todayHoliday.title}</span>. Enjoy your break!
             </p>
+          </div>
+          <div className="shrink-0 hidden sm:block relative z-10 opacity-30 dark:opacity-40">
+            <MonochromeIllustration type="holiday" size={56} />
           </div>
         </motion.div>
       </div>
@@ -87,7 +90,7 @@ export const TodayTimeline: React.FC = () => {
           Today&apos;s Schedule
         </h3>
         <EmptyState
-          icon={<Clock className="w-6 h-6 text-indigo-400" />}
+          icon={<MonochromeIllustration type="no-classes" size={48} />}
           title="No classes scheduled today"
           description="You don't have any classes on your timetable. Enjoy your break!"
           actionLabel="View Full Timetable"

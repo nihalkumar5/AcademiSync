@@ -5,6 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Sparkles, CalendarDays, BookOpen, Clock, AlertCircle, Plus } from 'lucide-react';
+import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { ExamImportModal } from './ExamImportModal';
 import { useClerk, useUser } from '@clerk/nextjs';
 
@@ -99,7 +100,7 @@ export const ExamsView: React.FC = () => {
 
         {exams.length === 0 ? (
           <EmptyState
-            icon={<BookOpen className="w-5 h-5" />}
+            icon={<MonochromeIllustration type="exam" size={48} />}
             title="No exams scheduled"
             description="Upload your exam timetable using magic scanner or add manually."
             actionLabel="Import Timetable"

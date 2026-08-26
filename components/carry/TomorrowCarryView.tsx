@@ -16,6 +16,7 @@ import { Button } from '../ui/Button';
 import { Backpack, Plus, MapPin, CalendarDays, Clock, FlaskConical, CheckCircle2, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Subject } from '@/lib/types';
+import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 
 // Signature pastel paper palette
 const ELEGANT_PASTEL_PALETTE = [
@@ -283,11 +284,13 @@ export const TomorrowCarryView: React.FC = () => {
             {carryItems.length === 0 ? (
               targetHoliday ? (
                 <EmptyState
+                  icon={<MonochromeIllustration type="holiday" size={48} />}
                   title="NO PACKING NEEDED — HOLIDAY!"
                   description={`${targetFormatted} is an official campus holiday (${targetHoliday.title}). Enjoy your break!`}
                 />
               ) : (
                 <EmptyState
+                  icon={<MonochromeIllustration type="backpack" size={48} />}
                   title={`Nothing special to carry ${isAfterReminderTime ? 'tomorrow' : 'today'}`}
                   description={`Either ${isAfterReminderTime ? 'tomorrow' : 'today'} is a free day or no carry requirements are configured for ${isAfterReminderTime ? "tomorrow's" : "today's"} classes.`}
                 />
