@@ -117,6 +117,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const isApplyingRemote = useRef(false);
   const prevUserIdRef = useRef<string | null>(null);
   const scheduleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasShownHolidayConfetti = useRef(false);
 
   // Handle User Logout / Switch Account Cleanup
   useEffect(() => {
@@ -390,6 +391,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (scheduleDebounceRef.current) clearTimeout(scheduleDebounceRef.current);
     };
   }, [timetable, subjects, homework, exams, settings, events, isHydrated]);
+
+  // Trigger a single quick and minimal holiday confetti burst exactly once per app session
+  useEffect(() => {
+    if (!isHydrated || hasShownHolidayConfetti.current) return;
+    
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const dateTodayStr = `${year}-${month}-${day}`;
+    
+    const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
+    if (todayHoliday) {
+      hasShownHolidayConfetti.current = true;
+      confetti({
+        particleCount: 45,
+        spread: 60,
+        origin: { y: 0.75 },
+        colors: ['#FFE600', '#FF007F', '#00F0FF', '#10B981', '#6366F1']
+      });
+    }
+  }, [isHydrated, events]);
 
   // Keyboard shortcut listener (Cmd+K / Ctrl+K)
   useEffect(() => {

@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { getCurrentDayOfWeek, formatCollegeBadge, getTodayDateString } from '@/lib/timetableUtils';
-import confetti from 'canvas-confetti';
 import {
   BookOpen,
   CheckSquare,
@@ -36,17 +35,7 @@ export const OverviewHeader: React.FC = () => {
   const dateTodayStr = getTodayDateString();
   const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
 
-  // Trigger a single quick and minimal holiday confetti burst when dashboard opens on a holiday
-  useEffect(() => {
-    if (todayHoliday) {
-      confetti({
-        particleCount: 40,
-        spread: 60,
-        origin: { y: 0.75 },
-        colors: ['#FFE600', '#FF007F', '#00F0FF', '#10B981', '#6366F1']
-      });
-    }
-  }, [todayHoliday]);
+
   const todayDay = getCurrentDayOfWeek();
   const todayClasses = todayHoliday ? [] : timetable.filter((s) => s.day === todayDay);
   const pendingHw = homework.filter((h) => h.status !== 'Completed');
