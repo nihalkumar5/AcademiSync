@@ -21,7 +21,7 @@ export const checkAndGenerateSmartNotifications = (
 
   const todayEvents = events.filter((e) => e.date === dateTodayStr);
   const todayHoliday = todayEvents.find((e) => e.type === 'holiday');
-  const isHoliday = todayEvents.some((e) => e.type === 'holiday');
+  const isHolidayOrExam = todayEvents.some((e) => e.type === 'holiday' || e.type === 'exam');
 
   // 0. Today's Holiday Alert
   const holidayAlertKey = `holiday_alert_${dateTodayStr}`;
@@ -37,8 +37,8 @@ export const checkAndGenerateSmartNotifications = (
     });
   }
 
-  // 1. Daily Morning Schedule Summary (Generates once per day, skip on holidays only)
-  const todayClasses = isHoliday ? [] : timetable
+  // 1. Daily Morning Schedule Summary — skip on holidays AND exam days (no classes on either)
+  const todayClasses = isHolidayOrExam ? [] : timetable
     .filter((s) => s.day === todayDay && !cancelledSessionKeys.includes(`${dateTodayStr}_${s.id}`))
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 

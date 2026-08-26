@@ -140,12 +140,12 @@ export const scheduleTimetableLocalNotifications = async (
 
     const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
-    // Build a Set of holiday date strings (YYYY-MM-DD) from academic calendar
-    const holidayDates = new Set<string>();
+    // Build a Set of dates to skip class notifications (holidays + exam days = no classes)
+    const skipDates = new Set<string>();
     if (events && events.length > 0) {
       events.forEach((ev) => {
-        if (ev.type === 'holiday' && ev.date) {
-          holidayDates.add(ev.date);
+        if ((ev.type === 'holiday' || ev.type === 'exam') && ev.date) {
+          skipDates.add(ev.date);
         }
       });
     }
@@ -205,8 +205,8 @@ export const scheduleTimetableLocalNotifications = async (
         // Check if this specific date is a holiday — skip if yes
         // Use getLocalDateString (local time) NOT toISOString (UTC) to avoid midnight IST → previous UTC date bug
         const dateStr = getLocalDateString(candidateDate);
-        if (holidayDates.has(dateStr)) {
-          console.log(`Skipping class notification on ${dateStr} — holiday in academic calendar.`);
+        if (skipDates.has(dateStr)) {
+          console.log(`Skipping class notification on ${dateStr} — holiday or exam day.`);
           occurrenceCount++;
           continue;
         }
