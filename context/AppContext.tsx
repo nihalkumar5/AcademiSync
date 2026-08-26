@@ -248,14 +248,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       } catch (e) {}
     }
 
+    // Update timestamp IMMEDIATELY so that if user refreshes before the 1s
+    // debounce fires, onSnapshot still sees local as newer and won't overwrite.
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('iiitnr_last_updated', now.toString());
+    }
+
     const timeout = setTimeout(() => {
       const userRef = doc(db, 'users', user.id);
       setDoc(userRef, currentState, { merge: true })
         .then(() => {
           remoteStateString.current = JSON.stringify(currentState);
-          if (typeof window !== 'undefined') {
-            window.localStorage.setItem('iiitnr_last_updated', now.toString());
-          }
         })
         .catch((e) => console.error('Firebase Sync Error', e));
     }, 1000);
