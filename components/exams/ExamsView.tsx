@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Sparkles, CalendarDays, BookOpen, Clock, AlertCircle } from 'lucide-react';
+import { Sparkles, CalendarDays, BookOpen, Clock, AlertCircle, Plus } from 'lucide-react';
 import { ExamImportModal } from './ExamImportModal';
 import { useClerk, useUser } from '@clerk/nextjs';
 
@@ -16,11 +16,11 @@ export const ExamsView: React.FC = () => {
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 60000); // update every minute
+    const timer = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
 
-  const handleAIImport = () => {
+  const handleMagicImport = () => {
     if (!isSignedIn) {
       clerk.openSignIn();
       return;
@@ -37,79 +37,90 @@ export const ExamsView: React.FC = () => {
     const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-    
-    if (days > 0) return `${days} days, ${hours} hrs left`;
-    return `${hours} hrs, ${minutes} mins left`;
+    if (days > 0) return `${days}d ${hours}h left`;
+    return `${hours}h ${minutes}m left`;
   };
 
   return (
-    <div className="flex flex-col gap-6 text-left">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="flex flex-col gap-5 text-left max-w-4xl mx-auto w-full pb-10">
+
+      {/* Editorial stacked header — matches Tasks page */}
+      <div className="flex flex-col gap-4 pt-2 sm:pt-6">
         <div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-zinc-50 tracking-tight">
-            Exam Timetable
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">
+          <h1 className="text-[clamp(3rem,12vw,5.5rem)] font-medium tracking-tight leading-none text-black dark:text-white">
+            Exam,<br />Schedule,<br />Countdown
+          </h1>
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-none border border-black dark:border-white text-black dark:text-white">
+              {upcomingExams.length} upcoming
+            </span>
+          </div>
+          <p className="text-sm text-black/60 dark:text-white/60 mt-2 font-medium max-w-md">
             Track your upcoming exams, syllabus, and preparation time.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleAIImport}
-            className="gap-1.5 rounded-xl border-slate-300 dark:border-zinc-700 shadow-sm"
+        {/* Action buttons — same style as Tasks */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={handleMagicImport}
+            className="flex items-center px-5 py-3 rounded-none border border-black dark:border-white text-black dark:text-white bg-transparent hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-sm font-medium cursor-pointer"
           >
-            <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-            <span>AI Exam Import</span>
-          </Button>
+            <Sparkles className="w-4 h-4 mr-2" />
+            Magic Import
+          </button>
         </div>
       </div>
 
+      {/* Next Exam Countdown — flat brutalist card */}
       {nextExam && (
-        <div className="bg-gradient-to-r from-rose-500 to-orange-500 p-5 rounded-2xl text-white shadow-lg shadow-rose-500/20 relative overflow-hidden">
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-2 opacity-90">
-              <AlertCircle className="w-4 h-4" />
-              <span className="text-xs font-bold uppercase tracking-wider">Next Exam Countdown</span>
-            </div>
-            <h3 className="text-2xl font-black">{nextExam.subjectName}</h3>
-            <p className="text-sm opacity-90 mt-1">
-              {new Date(nextExam.date).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })} at {new Date(nextExam.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </p>
-            <div className="mt-4 bg-white/20 backdrop-blur-sm inline-flex px-4 py-2 rounded-xl font-mono text-lg font-bold">
-              {getCountdown(nextExam.date)}
-            </div>
+        <div className="glass-card p-5 text-left border border-black dark:border-white">
+          <div className="flex items-center gap-2 mb-2 text-xs font-bold uppercase tracking-widest text-black/50 dark:text-white/50">
+            <AlertCircle className="w-3.5 h-3.5" />
+            Next Exam Countdown
           </div>
-          <CalendarDays className="absolute right-0 top-1/2 -translate-y-1/2 w-32 h-32 opacity-10 text-white/50 -rotate-12" />
+          <h3 className="text-2xl font-black text-black dark:text-white">{nextExam.subjectName}</h3>
+          <p className="text-sm text-black/60 dark:text-white/60 mt-1">
+            {new Date(nextExam.date).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
+            {' '}at{' '}
+            {new Date(nextExam.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </p>
+          <div className="mt-3 inline-flex px-3 py-1 border border-black dark:border-white font-mono text-sm font-bold text-black dark:text-white">
+            {getCountdown(nextExam.date)}
+          </div>
         </div>
       )}
 
-      <div className="flex flex-col gap-4 mt-2">
-        <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">All Upcoming Exams</h3>
-        
+      {/* Exams list */}
+      <div className="flex flex-col gap-3 mt-1">
+        <h3 className="text-xs font-bold tracking-widest uppercase text-black/50 dark:text-white/50">
+          All Upcoming Exams
+        </h3>
+
         {exams.length === 0 ? (
           <EmptyState
-            icon={<BookOpen className="w-5 h-5 text-rose-500" />}
+            icon={<BookOpen className="w-5 h-5" />}
             title="No exams scheduled"
             description="Upload your exam timetable using magic scanner or add manually."
             actionLabel="Import Timetable"
-            onAction={handleAIImport}
+            onAction={handleMagicImport}
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-3">
             {exams.map(exam => {
               const isPast = new Date(exam.date).getTime() < now.getTime();
               return (
-                <div key={exam.id} className={`p-4 rounded-xl border ${isPast ? 'bg-slate-50 dark:bg-zinc-900/40 border-slate-200 dark:border-zinc-800 opacity-60' : 'bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 shadow-sm'}`}>
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-bold text-slate-900 dark:text-zinc-100">{exam.subjectName}</h4>
-                    <span className="text-xs bg-slate-100 dark:bg-zinc-800 px-2 py-1 rounded font-mono font-medium text-slate-600 dark:text-zinc-400">
+                <div
+                  key={exam.id}
+                  className={`glass-card p-4 text-left border ${isPast ? 'opacity-50 border-black/20 dark:border-white/20' : 'border-black dark:border-white'}`}
+                >
+                  <div className="flex justify-between items-start gap-3">
+                    <h4 className="font-bold text-black dark:text-white text-base">{exam.subjectName}</h4>
+                    <span className="text-[11px] font-mono font-bold px-2 py-0.5 border border-black/20 dark:border-white/20 text-black/60 dark:text-white/60 shrink-0">
                       {isPast ? 'Done' : getCountdown(exam.date)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-zinc-400 mt-2">
+                  <div className="flex items-center gap-4 text-xs text-black/50 dark:text-white/50 mt-2">
                     <div className="flex items-center gap-1">
                       <CalendarDays className="w-3.5 h-3.5" />
                       {new Date(exam.date).toLocaleDateString()}
@@ -120,9 +131,9 @@ export const ExamsView: React.FC = () => {
                     </div>
                   </div>
                   {exam.syllabus && (
-                    <div className="mt-3 p-2.5 bg-slate-50 dark:bg-zinc-950/50 rounded-lg text-xs">
-                      <span className="font-bold text-slate-700 dark:text-zinc-300 block mb-1">Syllabus / Topics:</span>
-                      <p className="text-slate-600 dark:text-zinc-400">{exam.syllabus}</p>
+                    <div className="mt-3 p-2.5 bg-black/[0.03] dark:bg-white/[0.03] border border-black/10 dark:border-white/10 text-xs">
+                      <span className="font-bold text-black dark:text-white block mb-1 uppercase tracking-wider text-[10px]">Syllabus</span>
+                      <p className="text-black/60 dark:text-white/60 leading-relaxed">{exam.syllabus}</p>
                     </div>
                   )}
                 </div>
@@ -136,3 +147,4 @@ export const ExamsView: React.FC = () => {
     </div>
   );
 };
+
