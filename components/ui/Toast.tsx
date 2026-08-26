@@ -36,15 +36,15 @@ export const Toast: React.FC = () => {
             >
               {/* Icon + Title */}
               <div className={`flex items-center gap-2 ${accentColor}`}>
-                <Icon size={14} strokeWidth={2.5} className="shrink-0" />
-                <span className="font-cursive text-[21px] font-bold leading-tight text-black dark:text-white">
+                <Icon size={13} strokeWidth={2.5} className="shrink-0" />
+                <span className="font-cursive text-[18px] font-bold leading-tight text-black dark:text-white">
                   {toastMessage.title}
                 </span>
               </div>
 
               {/* Message */}
               {toastMessage.message && (
-                <p className="font-cursive text-[16px] text-black/55 dark:text-white/50 leading-snug pl-[22px] mt-0.5 max-w-[260px]">
+                <p className="font-cursive text-[14px] text-black/55 dark:text-white/50 leading-snug pl-[19px] mt-0.5 max-w-[260px]">
                   {toastMessage.message}
                 </p>
               )}
