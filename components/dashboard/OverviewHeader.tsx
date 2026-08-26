@@ -36,33 +36,15 @@ export const OverviewHeader: React.FC = () => {
   const dateTodayStr = getTodayDateString();
   const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
 
-  // Trigger gentle slow-falling holiday confetti celebration when dashboard opens on a holiday
+  // Trigger a single quick and minimal holiday confetti burst when dashboard opens on a holiday
   useEffect(() => {
     if (todayHoliday) {
-      const duration = 3.5 * 1000;
-      const end = Date.now() + duration;
-
-      const frame = () => {
-        confetti({
-          particleCount: 2,
-          angle: 60,
-          spread: 60,
-          origin: { x: 0, y: 0.8 },
-          colors: ['#FFE600', '#FF007F', '#00F0FF', '#10B981', '#6366F1', '#EC4899', '#8B5CF6']
-        });
-        confetti({
-          particleCount: 2,
-          angle: 120,
-          spread: 60,
-          origin: { x: 1, y: 0.8 },
-          colors: ['#FFE600', '#FF007F', '#00F0FF', '#10B981', '#6366F1', '#EC4899', '#8B5CF6']
-        });
-
-        if (Date.now() < end) {
-          requestAnimationFrame(frame);
-        }
-      };
-      frame();
+      confetti({
+        particleCount: 40,
+        spread: 60,
+        origin: { y: 0.75 },
+        colors: ['#FFE600', '#FF007F', '#00F0FF', '#10B981', '#6366F1']
+      });
     }
   }, [todayHoliday]);
   const todayDay = getCurrentDayOfWeek();
