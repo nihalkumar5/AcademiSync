@@ -86,6 +86,7 @@ interface AppContextType {
   isSessionCancelled: (sessionId: string, dateStr?: string) => boolean;
   toastMessage: { id: number; title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error' } | null;
   showToast: (title: string, message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
+  showHolidayAnimation: boolean;
   resetAllData: () => Promise<void>;
 }
 
@@ -110,6 +111,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [exams, setExamsState] = useState<Exam[]>(storage.getExams());
   const [settings, setSettingsState] = useState<UserSettings>(storage.getSettings());
   const [cancelledSessions, setCancelledSessionsState] = useState<string[]>(storage.getCancelledSessions());
+  const [showHolidayAnimation, setShowHolidayAnimation] = useState(false);
 
   const { user, isLoaded: isClerkLoaded } = useUser();
   const [isCloudSynced, setIsCloudSynced] = useState(false);
@@ -313,6 +315,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
+    }
+
+    // Check for holiday to trigger balloons animation once per session
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const dateTodayStr = `${year}-${month}-${day}`;
+    
+    const todayHoliday = loadedEvents.find((e) => e.date === dateTodayStr && e.type === 'holiday');
+    if (todayHoliday && typeof window !== 'undefined' && !window.sessionStorage.getItem('holiday_anim_shown')) {
+      setShowHolidayAnimation(true);
+      window.sessionStorage.setItem('holiday_anim_shown', 'true');
     }
 
     if (!loadedProfile.onboardingCompleted) {
@@ -972,6 +987,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         isSessionCancelled,
         toastMessage,
         showToast,
+        showHolidayAnimation,
         resetAllData,
       }}
     >

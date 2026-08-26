@@ -25,11 +25,12 @@ import { SubjectListView } from '@/components/subjects/SubjectListView';
 import { AcademicCalendar } from '@/components/calendar/AcademicCalendar';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 import { SettingsView } from '@/components/settings/SettingsView';
+import { HolidayBalloons } from '@/components/ui/HolidayBalloons';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AppHome() {
-  const { activeView, isHydrated } = useApp();
+  const { activeView, isHydrated, showHolidayAnimation } = useApp();
 
   useEffect(() => {
     if (isHydrated && Capacitor.isNativePlatform()) {
@@ -83,6 +84,7 @@ export default function AppHome() {
       <CommandPalette />
       <OnboardingModal />
       <Toast />
+      {showHolidayAnimation && <HolidayBalloons />}
     </div>
   );
 }
