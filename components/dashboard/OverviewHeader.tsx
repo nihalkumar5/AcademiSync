@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { getCurrentDayOfWeek, formatCollegeBadge, getTodayDateString } from '@/lib/timetableUtils';
+import confetti from 'canvas-confetti';
 import {
   BookOpen,
   CheckSquare,
@@ -34,6 +35,36 @@ export const OverviewHeader: React.FC = () => {
 
   const dateTodayStr = getTodayDateString();
   const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
+
+  // Trigger gentle slow-falling holiday confetti celebration when dashboard opens on a holiday
+  useEffect(() => {
+    if (todayHoliday) {
+      const duration = 3.5 * 1000;
+      const end = Date.now() + duration;
+
+      const frame = () => {
+        confetti({
+          particleCount: 2,
+          angle: 60,
+          spread: 60,
+          origin: { x: 0, y: 0.8 },
+          colors: ['#FFE600', '#FF007F', '#00F0FF', '#10B981', '#6366F1', '#EC4899', '#8B5CF6']
+        });
+        confetti({
+          particleCount: 2,
+          angle: 120,
+          spread: 60,
+          origin: { x: 1, y: 0.8 },
+          colors: ['#FFE600', '#FF007F', '#00F0FF', '#10B981', '#6366F1', '#EC4899', '#8B5CF6']
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      };
+      frame();
+    }
+  }, [todayHoliday]);
   const todayDay = getCurrentDayOfWeek();
   const todayClasses = todayHoliday ? [] : timetable.filter((s) => s.day === todayDay);
   const pendingHw = homework.filter((h) => h.status !== 'Completed');

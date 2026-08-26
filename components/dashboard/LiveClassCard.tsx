@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { getLiveClassStatus, formatTime12Hour, getTodayDateString } from '@/lib/timetableUtils';
 import { Clock, MapPin, User, CheckCircle2, ChevronRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const LiveClassCard: React.FC = () => {
   const { timetable, subjects, events, isSessionCancelled } = useApp();
@@ -24,15 +25,39 @@ export const LiveClassCard: React.FC = () => {
     return () => clearInterval(interval);
   }, [timetable, subjects, isSessionCancelled]);
 
-  // High-Contrast Brutalist Holiday Display (On-Theme)
+  // High-Contrast Brutalist Holiday Display with Framer Motion animations
   if (todayHoliday) {
     return (
-      <div className="glass-card p-5 sm:p-6 text-left relative overflow-hidden border border-black dark:border-white">
+      <div className="glass-card p-5 sm:p-6 text-left relative overflow-hidden border border-black dark:border-white bg-[#FFFDF9] dark:bg-[#1C1A17]">
+        {/* Animated Background Sun */}
+        <motion.div
+          className="absolute -right-8 -top-8 w-32 h-32 rounded-full border border-black/10 dark:border-white/10 bg-yellow-400/20 dark:bg-yellow-400/10 shrink-0"
+          animate={{ scale: [1, 1.1, 1], rotate: 360 }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+        />
         
+        {/* Animated Floating Waves in the background */}
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 h-4 bg-indigo-500/5 dark:bg-indigo-400/5"
+          animate={{ y: [0, -4, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-1 left-0 right-0 h-2 bg-indigo-500/10 dark:bg-indigo-400/10"
+          animate={{ y: [0, -3, 0] }}
+          transition={{ duration: 3.5, delay: 0.5, repeat: Infinity, ease: "easeInOut" }}
+        />
+
         <div className="flex items-center gap-5 sm:gap-6 min-w-0 relative z-10">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-black dark:bg-white flex flex-col items-center justify-center shrink-0 border border-black dark:border-white">
+          <motion.div 
+            className="w-14 h-14 sm:w-16 sm:h-16 bg-black dark:bg-white flex flex-col items-center justify-center shrink-0 border border-black dark:border-white"
+            initial={{ rotate: -10, scale: 0.9 }}
+            animate={{ rotate: [0, 5, -5, 0], scale: 1 }}
+            transition={{ duration: 1, type: "spring", stiffness: 100 }}
+          >
             <span className="font-mono text-lg sm:text-xl font-black uppercase tracking-widest text-white dark:text-black">OFF</span>
-          </div>
+          </motion.div>
+          
           <div className="flex flex-col min-w-0">
             <div className="flex items-center mb-1.5">
               <span className="font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 border border-black dark:border-white bg-white dark:bg-black text-black dark:text-white">
