@@ -28,6 +28,7 @@ import {
   MessageSquare,
   Info,
   ChevronRight,
+  Share2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '@/components/ui/Modal';
@@ -578,13 +579,27 @@ export const SettingsView: React.FC = () => {
                 <p className="text-[11px] text-black/60 dark:text-white/60 leading-relaxed">
                   Your timetable updates automatically in real-time when the batch schedule changes.
                 </p>
-                <button
-                  type="button"
-                  onClick={disconnectBatchTimetable}
-                  className="self-start mt-1 px-3 py-1.5 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-[10.5px] font-bold uppercase cursor-pointer rounded-none"
-                >
-                  Disconnect & Customize
-                </button>
+                <div className="flex flex-wrap gap-2.5 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const link = `${window.location.origin}/?invite=${profile.batchKey}`;
+                      navigator.clipboard.writeText(link);
+                      showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
+                    }}
+                    className="px-3 py-1.5 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors text-[10.5px] font-bold uppercase cursor-pointer rounded-none flex items-center gap-1.5"
+                  >
+                    <Share2 className="w-3 h-3" />
+                    Copy Invite Link
+                  </button>
+                  <button
+                    type="button"
+                    onClick={disconnectBatchTimetable}
+                    className="px-3 py-1.5 border border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-[10.5px] font-bold uppercase cursor-pointer rounded-none text-black/60 dark:text-white/60"
+                  >
+                    Disconnect
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="flex flex-col gap-2">
