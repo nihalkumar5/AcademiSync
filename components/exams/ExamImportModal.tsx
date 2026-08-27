@@ -108,11 +108,11 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
     // Save to context
     const formattedExams = extractedExams.map((e, idx) => ({
       id: `exam_${Date.now()}_${idx}`,
-      subjectName: e.subjectName,
+      subjectName: e.subjectName || 'Exam',
       date: e.date,
-      syllabus: e.syllabus,
-      room: e.room,
-      durationMinutes: e.durationMinutes,
+      syllabus: e.syllabus || '',
+      room: e.room || '',
+      durationMinutes: e.durationMinutes || undefined,
       createdAt: new Date().toISOString(),
     }));
     // Overwrite old exams completely

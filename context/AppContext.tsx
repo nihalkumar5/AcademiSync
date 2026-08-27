@@ -25,6 +25,12 @@ import { db } from '@/lib/firebase';
 import { registerPushNotifications } from '@/lib/pushNotifications';
 import { triggerLocalNotification, scheduleTimetableLocalNotifications } from '@/lib/localNotifications';
 
+// Helper to remove any undefined fields before writing to Firestore
+export function sanitizeForFirestore<T>(data: T): T {
+  if (data === undefined) return null as any;
+  return JSON.parse(JSON.stringify(data));
+}
+
 export type ActiveView =
   | 'home'
   | 'timetable'
@@ -260,11 +266,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           setTimetableState(data.timetable);
           storage.setTimetable(data.timetable);
         }
-        if (data.events) {
+        if (Array.isArray(data.events) && data.events.length > 0) {
           setEventsState(data.events);
           storage.setEvents(data.events);
         }
-        if (data.exams) {
+        if (Array.isArray(data.exams) && data.exams.length > 0) {
           setExamsState(data.exams);
           storage.setExams(data.exams);
         }
@@ -316,21 +322,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     const timeout = setTimeout(() => {
       const userRef = doc(db, 'users', user.id);
-      setDoc(userRef, currentState, { merge: true })
+      const cleanState = sanitizeForFirestore(currentState);
+      setDoc(userRef, cleanState, { merge: true })
         .then(() => {
-          remoteStateString.current = JSON.stringify(currentState);
+          remoteStateString.current = JSON.stringify(cleanState);
         })
         .catch((e) => console.error('Firebase Sync Error', e));
 
       if (profile.isBatchSynced && profile.batchKey) {
         const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
-        const batchPayload = {
+        const batchPayload = sanitizeForFirestore({
           subjects: subjects,
           timetable: timetable,
           events: events,
           exams: exams,
           updatedAt: new Date().toISOString(),
-        };
+        });
         setDoc(batchDocRef, batchPayload, { merge: true })
           .catch((e) => console.error('Firebase Batch Sync Error', e));
       }
@@ -877,25 +884,52 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const addEvent = (eventData: Omit<AcademicEvent, 'id'>) => {
     const newEvent: AcademicEvent = {
-      ...eventData,
+      title: eventData.title || 'Event',
+      type: eventData.type || 'event',
+      date: eventData.date,
+      description: eventData.description || '',
+      location: eventData.location || '',
       id: `ev_${Date.now()}`,
     };
     const updated = [...events, newEvent];
     setEventsState(updated);
     storage.setEvents(updated);
     refreshCarryItems(timetable, subjects, updated);
+    
+    if (user) {
+      const userRef = doc(db, 'users', user.id);
+      setDoc(userRef, { events: sanitizeForFirestore(updated), lastUpdated: Date.now() }, { merge: true })
+        .catch(err => console.error('Error saving events:', err));
+    }
     showToast('Event Added', eventData.title, 'success');
   };
 
   const addEvents = (eventsData: Omit<AcademicEvent, 'id'>[], overwrite = false) => {
-    const newEvents = eventsData.map((ev, index) => ({
-      ...ev,
+    const newEvents: AcademicEvent[] = eventsData.map((ev, index) => ({
+      title: ev.title || 'Event',
+      type: ev.type || 'event',
+      date: ev.date,
+      description: ev.description || '',
+      location: ev.location || '',
       id: `ev_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 5)}`,
     }));
     const updated = overwrite ? newEvents : [...events, ...newEvents];
     setEventsState(updated);
     storage.setEvents(updated);
     refreshCarryItems(timetable, subjects, updated);
+
+    if (user) {
+      const userRef = doc(db, 'users', user.id);
+      setDoc(userRef, { events: sanitizeForFirestore(updated), lastUpdated: Date.now() }, { merge: true })
+        .catch(err => console.error('Error saving events:', err));
+
+      if (profile.isBatchSynced && profile.batchKey) {
+        const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
+        setDoc(batchDocRef, { events: sanitizeForFirestore(updated), updatedAt: new Date().toISOString() }, { merge: true })
+          .catch(err => console.error('Error saving events to batch:', err));
+      }
+    }
+
     if (newEvents.length > 0) {
       showToast('Calendar Updated', `${newEvents.length} event${newEvents.length > 1 ? 's' : ''} added to academic calendar`, 'success');
     }
@@ -903,13 +937,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const addExam = (examData: Omit<Exam, 'id' | 'createdAt'>): Exam => {
     const newExam: Exam = {
-      ...examData,
+      subjectName: examData.subjectName || '',
+      date: examData.date,
+      syllabus: examData.syllabus || '',
+      room: examData.room || '',
+      durationMinutes: examData.durationMinutes || undefined,
       id: `exam_${Date.now()}`,
       createdAt: new Date().toISOString(),
     };
     const updated = [...exams, newExam].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     setExamsState(updated);
     storage.setExams(updated);
+
+    if (user) {
+      const userRef = doc(db, 'users', user.id);
+      setDoc(userRef, { exams: sanitizeForFirestore(updated), lastUpdated: Date.now() }, { merge: true })
+        .catch(err => console.error('Error saving exams:', err));
+    }
     showToast('Exam Added', examData.subjectName, 'success');
     return newExam;
   };
@@ -918,13 +962,40 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const updated = exams.filter((e) => e.id !== id);
     setExamsState(updated);
     storage.setExams(updated);
+
+    if (user) {
+      const userRef = doc(db, 'users', user.id);
+      setDoc(userRef, { exams: sanitizeForFirestore(updated), lastUpdated: Date.now() }, { merge: true })
+        .catch(err => console.error('Error saving exams on delete:', err));
+    }
     showToast('Exam Deleted', 'Exam removed', 'info');
   };
 
   const setFullExams = (newExams: Exam[]) => {
-    const updated = [...newExams].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const cleanExams: Exam[] = newExams.map(ex => ({
+      id: ex.id || `exam_${Date.now()}`,
+      subjectName: ex.subjectName || '',
+      date: ex.date,
+      syllabus: ex.syllabus || '',
+      room: ex.room || '',
+      durationMinutes: ex.durationMinutes || undefined,
+      createdAt: ex.createdAt || new Date().toISOString(),
+    }));
+    const updated = [...cleanExams].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     setExamsState(updated);
     storage.setExams(updated);
+
+    if (user) {
+      const userRef = doc(db, 'users', user.id);
+      setDoc(userRef, { exams: sanitizeForFirestore(updated), lastUpdated: Date.now() }, { merge: true })
+        .catch(err => console.error('Error saving exams on full set:', err));
+
+      if (profile.isBatchSynced && profile.batchKey) {
+        const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
+        setDoc(batchDocRef, { exams: sanitizeForFirestore(updated), updatedAt: new Date().toISOString() }, { merge: true })
+          .catch(err => console.error('Error saving exams to batch:', err));
+      }
+    }
     showToast('Exams Updated', `${updated.length} exams loaded`, 'success');
   };
 
@@ -934,6 +1005,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setEventsState(updated);
     storage.setEvents(updated);
     refreshCarryItems(timetable, subjects, updated);
+
+    if (user) {
+      const userRef = doc(db, 'users', user.id);
+      setDoc(userRef, { events: sanitizeForFirestore(updated), lastUpdated: Date.now() }, { merge: true })
+        .catch(err => console.error('Error saving events on delete:', err));
+    }
     showToast('Event Removed', target?.title || 'Calendar event deleted', 'info');
   };
 
@@ -1078,7 +1155,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const canonicalKey = getCanonicalBatchKey(profile.college, profile.programme, profile.branch, profile.semester);
       const docRef = doc(db, 'shared_timetables', canonicalKey);
       
-      const payload = {
+      const payload = sanitizeForFirestore({
         id: canonicalKey,
         college: profile.college,
         programme: profile.programme,
@@ -1093,7 +1170,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         studentCount: 1,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      };
+      });
 
       await setDoc(docRef, payload, { merge: true });
 
@@ -1146,7 +1223,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       try {
         const userRef = doc(db, 'users', user.id);
         // Using setDoc without merge overwrites the document completely
-        await setDoc(userRef, { profile }, { merge: false });
+        await setDoc(userRef, { profile: sanitizeForFirestore(profile) }, { merge: false });
       } catch (e) {
         console.error('Failed to clear Firestore document during reset:', e);
       }
@@ -1158,7 +1235,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const canonicalKey = getCanonicalBatchKey(profile.college, profile.programme, profile.branch, profile.semester);
       const docRef = doc(db, 'shared_calendars', canonicalKey);
       
-      const payload = {
+      const payload = sanitizeForFirestore({
         id: canonicalKey,
         college: profile.college,
         programme: profile.programme,
@@ -1170,7 +1247,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         exams: exams,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      };
+      });
 
       await setDoc(docRef, payload, { merge: true });
       showToast('Calendar Shared', 'Your academic calendar is now live for your batchmates!', 'success');
@@ -1213,7 +1290,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const canonicalKey = getCanonicalBatchKey(profile.college, profile.programme, profile.branch, profile.semester);
       const docRef = doc(db, 'shared_exams', canonicalKey);
       
-      const payload = {
+      const payload = sanitizeForFirestore({
         id: canonicalKey,
         college: profile.college,
         programme: profile.programme,
@@ -1224,7 +1301,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         exams: exams,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      };
+      });
 
       await setDoc(docRef, payload, { merge: true });
       showToast('Exams Shared', 'Your exam schedule is now live for your batchmates!', 'success');

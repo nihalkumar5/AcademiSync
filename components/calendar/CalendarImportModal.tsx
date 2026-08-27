@@ -181,11 +181,11 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
 
       if (isNaN(end.getTime()) || end.getTime() <= start.getTime()) {
         expandedEvents.push({
-          title: ev.title,
-          type: ev.type,
+          title: ev.title || 'Event',
+          type: ev.type || 'event',
           date: dateVal,
-          description: ev.description,
-          location: ev.location,
+          description: ev.description || '',
+          location: ev.location || '',
         });
       } else {
         // Range: generate events day-by-day
@@ -193,11 +193,11 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
         while (current.getTime() <= end.getTime()) {
           const dateStr = getLocalDateString(current);
           expandedEvents.push({
-            title: ev.title,
-            type: ev.type,
+            title: ev.title || 'Event',
+            type: ev.type || 'event',
             date: dateStr,
-            description: ev.description,
-            location: ev.location,
+            description: ev.description || '',
+            location: ev.location || '',
           });
           current.setDate(current.getDate() + 1);
         }
