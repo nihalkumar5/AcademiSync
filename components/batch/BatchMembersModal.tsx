@@ -106,14 +106,19 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
       const userDocRef = doc(db, 'users', memberId);
 
       if (currentIsCR) {
-        // Demote to student
+        // Demote to student — but make sure at least one other CR remains
+        const otherCRs = (batchData?.crUserIds || []).filter((id: string) => id !== memberId);
+        const otherCREmails = (batchData?.crEmails || []).filter((e: string) => e !== memberEmail);
+        const primaryRemains = batchData?.creatorId && batchData?.creatorId !== memberId;
+        if (!primaryRemains && otherCRs.length === 0 && otherCREmails.length === 0) {
+          showToast('Cannot Demote', 'Batch must have at least one CR. Promote another student first.', 'error');
+          return;
+        }
         await updateDoc(batchDocRef, {
           crUserIds: arrayRemove(memberId),
           crEmails: arrayRemove(memberEmail),
         });
-        await updateDoc(userDocRef, {
-          'profile.role': 'student',
-        });
+        await updateDoc(userDocRef, { 'profile.role': 'student' });
         showToast('Role Updated', 'Student demoted from CR role.', 'info');
       } else {
         // Promote to CR
@@ -121,14 +126,47 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
           crUserIds: arrayUnion(memberId),
           crEmails: arrayUnion(memberEmail),
         });
-        await updateDoc(userDocRef, {
-          'profile.role': 'cr',
-        });
+        await updateDoc(userDocRef, { 'profile.role': 'cr' });
         showToast('CR Promoted', 'Student has been made a Class Representative (CR)!', 'success');
       }
     } catch (e) {
       console.error('Error updating CR role:', e);
       showToast('Error', 'Failed to update member role.', 'error');
+    }
+  };
+
+  // Handler: CR voluntarily gives up their own CR position (only if another CR exists)
+  const handleWithdrawSelfAsCR = async () => {
+    const otherCRs = (batchData?.crUserIds || []).filter((id: string) => id !== user?.id);
+    const otherCREmails = (batchData?.crEmails || []).filter((e: string) => e !== userEmail);
+    const primaryRemains = batchData?.creatorId && batchData?.creatorId !== user?.id;
+
+    if (!primaryRemains && otherCRs.length === 0 && otherCREmails.length === 0) {
+      showToast(
+        'Cannot Withdraw',
+        'You are the only CR! Promote another student to CR first before withdrawing.',
+        'error'
+      );
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to give up your CR role? Another CR must already exist.')) return;
+
+    try {
+      const batchDocRef = doc(db, 'shared_timetables', batchKey);
+      const userDocRef = user?.id ? doc(db, 'users', user.id) : null;
+
+      await updateDoc(batchDocRef, {
+        crUserIds: arrayRemove(user?.id),
+        crEmails: arrayRemove(userEmail),
+      });
+      if (userDocRef) {
+        await updateDoc(userDocRef, { 'profile.role': 'student' });
+      }
+      showToast('CR Role Withdrawn', 'You have stepped down as CR. Another CR is still active.', 'info');
+    } catch (e) {
+      console.error('Error withdrawing CR:', e);
+      showToast('Error', 'Failed to withdraw CR role.', 'error');
     }
   };
 
@@ -220,11 +258,22 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
 
         {/* CR Status Notice */}
         {isAuthorizedCR ? (
-          <div className="flex items-center gap-2 p-2.5 bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs font-medium">
-            <Crown className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
-            <span>
-              <strong>CR Access Active:</strong> You have permissions to promote other students to CR or remove unauthorized users from this batch.
-            </span>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-2.5 bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs font-medium">
+            <div className="flex items-center gap-2 flex-1">
+              <Crown className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+              <span>
+                <strong>CR Access Active:</strong> You can promote others to CR, demote them, or remove unauthorized students.
+              </span>
+            </div>
+            {!isPrimaryCreator && (
+              <button
+                onClick={handleWithdrawSelfAsCR}
+                className="shrink-0 px-2.5 py-1 border border-amber-600 dark:border-amber-400 text-amber-700 dark:text-amber-300 hover:bg-amber-600 hover:text-white dark:hover:bg-amber-400 dark:hover:text-black text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer rounded-none"
+                title="Give up your CR role (only if another CR exists)"
+              >
+                Step Down as CR
+              </button>
+            )}
           </div>
         ) : (
           <div className="flex items-center gap-2 p-2.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-xs text-black/60 dark:text-white/60">

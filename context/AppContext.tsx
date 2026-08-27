@@ -1239,8 +1239,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         storage.setExams(data.exams);
       }
 
+      const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
+      const isFirstPerson = !data.creatorId || (data.studentCount || 0) <= 0 || (!data.crUserIds?.length && !data.crEmails?.length);
+
+      const assignedRole: AdminRole = isFirstPerson 
+        ? 'cr' 
+        : (data.crUserIds?.includes(user?.id) || data.crEmails?.includes(userEmail) ? 'cr' : (profile.role === 'super_admin' ? 'super_admin' : 'student'));
+
       // Update profile fields to show it's synced
-      const updatedProfile = {
+      const updatedProfile: StudentProfile = {
         ...profile,
         college: data.college || profile.college,
         programme: data.programme || profile.programme,
@@ -1248,17 +1255,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         semester: data.semester || profile.semester,
         batchKey: batchKey,
         isBatchSynced: true,
+        role: assignedRole,
       };
 
       setProfileState(updatedProfile);
       storage.setProfile(updatedProfile);
 
-      // Increment batch student counter in Firestore
-      await updateDoc(docRef, {
+      // Increment batch student counter in Firestore (and set creator / CR if first person)
+      const updatePayload: any = {
         studentCount: increment(1),
-      });
+      };
+      if (isFirstPerson) {
+        updatePayload.creatorId = user?.id || 'anonymous';
+        updatePayload.creatorName = profile.name || user?.fullName || 'Batch Representative';
+        updatePayload.creatorEmail = userEmail;
+        updatePayload.crUserIds = [user?.id].filter(Boolean);
+        updatePayload.crEmails = [userEmail].filter(Boolean);
+      }
+      await updateDoc(docRef, updatePayload);
 
-      showToast('Synced with Batch', `Successfully joined ${data.college} - Sem ${data.semester}.`, 'success');
+      if (isFirstPerson) {
+        showToast('Batch Initialized as CR', `You are the first member and have been assigned as Class Representative (CR)!`, 'success');
+      } else {
+        showToast('Synced with Batch', `Successfully joined ${data.college} - Sem ${data.semester}.`, 'success');
+      }
     } catch (e) {
       console.error('Error joining batch timetable:', e);
       showToast('Join Failed', 'Failed to connect to batch timetable.', 'error');
