@@ -62,6 +62,16 @@ export default function AppHome() {
       const params = new URLSearchParams(window.location.search);
       const inviteParam = params.get('invite');
       if (inviteParam && inviteParam !== profile.batchKey) {
+        // If on Android mobile browser, try to launch app natively, fallback to Play Store
+        const ua = navigator.userAgent;
+        const isAndroidBrowser = /Android/i.test(ua) && !Capacitor.isNativePlatform();
+        
+        if (isAndroidBrowser) {
+          const intentUrl = `intent://invite?key=${inviteParam}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.intersemester.app;end`;
+          window.location.href = intentUrl;
+          return;
+        }
+
         const checkInvite = async () => {
           try {
             const docRef = doc(db, 'shared_timetables', inviteParam);
@@ -166,13 +176,35 @@ export default function AppHome() {
                 <p className="text-[11px] font-bold leading-normal">
                   Syncing is recommended on the native app for widgets & alarms!
                 </p>
+                <div className="flex gap-2">
+                  <a
+                    href="https://play.google.com/store/apps/details?id=com.intersemester.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 py-2 bg-[#01875f] text-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-[#016f4e] transition-colors cursor-pointer rounded-none"
+                  >
+                    Download App
+                  </a>
+                  <a
+                    href={`intent://invite?key=${inviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.intersemester.app;end`}
+                    className="flex-1 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+                  >
+                    Open in App
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {!Capacitor.isNativePlatform() && isIOS && (
+              <div className="flex flex-col gap-2 p-3 bg-blue-500/10 border border-blue-500 text-blue-500 dark:text-blue-300">
+                <p className="text-[11px] font-bold leading-normal">
+                  Open in the native iOS app if already installed:
+                </p>
                 <a
-                  href="https://play.google.com/store/apps/details?id=com.intersemester.app"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-2 bg-[#01875f] text-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-[#016f4e] transition-colors cursor-pointer rounded-none"
+                  href={`com.intersemester.app://invite?key=${inviteKey}`}
+                  className="w-full py-2 bg-blue-500 text-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-blue-600 transition-colors cursor-pointer rounded-none"
                 >
-                  Download on Google Play
+                  Open in App
                 </a>
               </div>
             )}
