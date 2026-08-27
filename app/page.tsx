@@ -94,6 +94,17 @@ export default function AppHome() {
         <Header />
 
         <main className="flex-1 px-4 sm:px-8 py-6 max-w-6xl mx-auto w-full relative">
+          {!Capacitor.isNativePlatform() && (isAndroid || isIOS) && isSignedIn && (
+            <div className="mb-4 p-3 bg-black text-white dark:bg-white dark:text-black text-xs font-bold flex justify-between items-center border border-black dark:border-white">
+              <span>Open this schedule inside the AcademiSync App!</span>
+              <a
+                href="com.intersemester.app://"
+                className="px-2.5 py-1 bg-white text-black dark:bg-black dark:text-white border border-black/20 dark:border-white/20 uppercase tracking-tight font-black text-[10px]"
+              >
+                Open App
+              </a>
+            </div>
+          )}
           <div className="w-full" key={activeView}>
             {activeView === 'home' && (
               <div className="flex flex-col gap-6">
