@@ -9,12 +9,12 @@ import { AddEditClassModal } from './AddEditClassModal';
 import { TimetableImportModal } from './TimetableImportModal';
 import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
-import { Plus, Sparkles, CalendarDays } from 'lucide-react';
+import { Plus, Sparkles, CalendarDays, Share2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useClerk, useUser } from '@clerk/nextjs';
 
 export const WeeklyTimetable: React.FC = () => {
-  const { timetable, subjects, deleteClassSession } = useApp();
+  const { timetable, subjects, deleteClassSession, profile, shareTimetableWithBatch, showToast } = useApp();
   const { isSignedIn } = useUser();
   const clerk = useClerk();
 
@@ -88,7 +88,7 @@ export const WeeklyTimetable: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 mt-4">
+        <div className="flex flex-wrap items-center gap-3 mt-4">
           <Button
             variant="outline"
             size="md"
@@ -96,6 +96,33 @@ export const WeeklyTimetable: React.FC = () => {
             className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
           >
             Magic Import
+          </Button>
+
+          <Button
+            variant="outline"
+            size="md"
+            onClick={async () => {
+              if (!isSignedIn) {
+                clerk.openSignIn();
+                return;
+              }
+              try {
+                if (profile.isBatchSynced && profile.batchKey) {
+                  const link = `${window.location.origin}/?invite=${profile.batchKey}`;
+                  navigator.clipboard.writeText(link);
+                  showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
+                } else {
+                  const code = await shareTimetableWithBatch();
+                  const link = `${window.location.origin}/?invite=${code}`;
+                  navigator.clipboard.writeText(link);
+                  showToast('Timetable Shared', 'Invite link copied to clipboard!', 'success');
+                }
+              } catch (err) {}
+            }}
+            className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors flex items-center gap-1.5"
+          >
+            <Share2 className="w-4 h-4" />
+            Share Batch
           </Button>
 
           <Button
