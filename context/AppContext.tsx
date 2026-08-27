@@ -163,8 +163,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         remoteStateString.current = "";
       }
       prevUserIdRef.current = user.id;
+
+      // Auto-populate name and email from Clerk if not already set in profile
+      const userEmail = user.primaryEmailAddress?.emailAddress || '';
+      let defaultName = user.fullName || user.firstName || '';
+      if (!defaultName && userEmail) {
+        defaultName = userEmail.split('@')[0];
+        defaultName = defaultName.split('.').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+      }
+
+      if (!profile.name || !profile.email) {
+        const updated = {
+          ...profile,
+          name: profile.name || defaultName,
+          email: profile.email || userEmail,
+        };
+        setProfileState(updated);
+        storage.setProfile(updated);
+      }
     }
-  }, [user, isClerkLoaded]);
+  }, [user, isClerkLoaded, profile]);
 
   // Firebase Realtime Down-Sync (Runs on Login / Cloud Data Change)
   useEffect(() => {
