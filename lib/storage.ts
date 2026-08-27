@@ -129,11 +129,9 @@ export const storage = {
   resetAll: () => {
     if (typeof window === 'undefined') return;
     Object.values(STORAGE_KEYS).forEach((k) => {
-      // Don't erase the user profile on reset
-      if (k !== STORAGE_KEYS.PROFILE) {
-        window.localStorage.removeItem(k);
-      }
+      window.localStorage.removeItem(k);
     });
+    window.localStorage.removeItem('iiitnr_last_updated');
     window.dispatchEvent(new Event('iiitnr-storage-updated'));
   },
 

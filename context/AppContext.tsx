@@ -1202,10 +1202,36 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const resetAllData = async () => {
-    // 1. Clear local storage (except profile, handled inside storage.ts)
-    storage.resetAll();
-    
-    // 2. Reset React state to empty/defaults for everything except profile
+    const userEmail = user?.primaryEmailAddress?.emailAddress || '';
+    let defaultName = user?.fullName || user?.firstName || '';
+    if (!defaultName && userEmail) {
+      defaultName = userEmail.split('@')[0];
+      defaultName = defaultName.split('.').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    }
+
+    const cleanProfile: StudentProfile = {
+      ...DEFAULT_PROFILE,
+      id: user?.id || 'guest',
+      name: defaultName || 'Student',
+      email: userEmail,
+      college: '',
+      programme: '',
+      branch: '',
+      semester: 1,
+      year: 1,
+      rollNumber: '',
+      isBatchSynced: false,
+      batchKey: undefined,
+      onboardingCompleted: false,
+    };
+
+    // 1. Clear local storage completely
+    storage.clearUserSession();
+    storage.setProfile(cleanProfile);
+    storage.setSettings(DEFAULT_SETTINGS);
+
+    // 2. Reset React state to clean empty defaults
+    setProfileState(cleanProfile);
     setSubjectsState([]);
     setTimetableState([]);
     setHomeworkState([]);
@@ -1215,15 +1241,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setExamsState([]);
     setCancelledSessionsState([]);
     setRescheduledSessionsState({});
-    // Settings could optionally be kept, but keeping with clear-all except profile:
-    // (If you want to keep settings, remove the next line and add settings to the Firestore save)
-    
-    // 3. Overwrite Firestore record to ONLY contain the profile, erasing everything else
+    setSettingsState(DEFAULT_SETTINGS);
+    remoteStateString.current = "";
+
+    // 3. Overwrite Firestore record completely with clean blank slate
     if (isClerkLoaded && user) {
       try {
         const userRef = doc(db, 'users', user.id);
-        // Using setDoc without merge overwrites the document completely
-        await setDoc(userRef, { profile: sanitizeForFirestore(profile) }, { merge: false });
+        const blankCloudDoc = sanitizeForFirestore({
+          profile: cleanProfile,
+          subjects: [],
+          timetable: [],
+          homework: [],
+          carryItems: [],
+          notifications: [],
+          events: [],
+          exams: [],
+          settings: DEFAULT_SETTINGS,
+          cancelledSessions: [],
+          rescheduledSessions: {},
+          lastUpdated: Date.now(),
+        });
+        await setDoc(userRef, blankCloudDoc, { merge: false });
       } catch (e) {
         console.error('Failed to clear Firestore document during reset:', e);
       }
