@@ -30,10 +30,12 @@ import {
   ChevronRight,
   Share2,
   Crown,
+  Users,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '@/components/ui/Modal';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
+import { BatchMembersModal } from '@/components/batch/BatchMembersModal';
 
 export const SettingsView: React.FC = () => {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -100,6 +102,7 @@ export const SettingsView: React.FC = () => {
 
   // High-friction Reset Modal states
   const [showResetModal, setShowResetModal] = useState(false);
+  const [showBatchMembersModal, setShowBatchMembersModal] = useState(false);
   const [holdProgress, setHoldProgress] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
   const holdIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -581,7 +584,15 @@ export const SettingsView: React.FC = () => {
                 <p className="text-[11px] text-black/60 dark:text-white/60 leading-relaxed">
                   Your timetable updates automatically in real-time when the batch schedule changes.
                 </p>
-                <div className="flex flex-wrap gap-2.5 mt-2">
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowBatchMembersModal(true)}
+                    className="px-3 py-1.5 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:opacity-90 transition-opacity text-[10.5px] font-bold uppercase cursor-pointer rounded-none flex items-center gap-1.5"
+                  >
+                    <Users className="w-3 h-3" />
+                    👥 Batch Members & CR
+                  </button>
                   <button
                     type="button"
                     onClick={async () => {
@@ -592,10 +603,10 @@ export const SettingsView: React.FC = () => {
                         showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
                       } catch (err) {}
                     }}
-                    className="px-3 py-1.5 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors text-[10.5px] font-bold uppercase cursor-pointer rounded-none flex items-center gap-1.5"
+                    className="px-3 py-1.5 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-[10.5px] font-bold uppercase cursor-pointer rounded-none flex items-center gap-1.5"
                   >
                     <Share2 className="w-3 h-3" />
-                    Copy Invite Link
+                    Copy Link
                   </button>
                   <button
                     type="button"
@@ -1038,6 +1049,12 @@ export const SettingsView: React.FC = () => {
           </div>
         </Modal>
       )}
+
+      {/* BATCH MEMBERS & CR CONTROL MODAL */}
+      <BatchMembersModal
+        isOpen={showBatchMembersModal}
+        onClose={() => setShowBatchMembersModal(false)}
+      />
     </div>
   );
 };

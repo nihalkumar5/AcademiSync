@@ -9,10 +9,11 @@ import { AddEditClassModal } from './AddEditClassModal';
 import { TimetableImportModal } from './TimetableImportModal';
 import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
-import { Plus, Sparkles, CalendarDays, Share2, UserPlus } from 'lucide-react';
+import { Plus, Sparkles, CalendarDays, Share2, UserPlus, Users } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useClerk, useUser } from '@clerk/nextjs';
 import { Modal } from '@/components/ui/Modal';
+import { BatchMembersModal } from '@/components/batch/BatchMembersModal';
 
 export const WeeklyTimetable: React.FC = () => {
   const { timetable, subjects, deleteClassSession, profile, shareTimetableWithBatch, showToast, joinBatchTimetable, searchBatchTimetable } = useApp();
@@ -24,6 +25,7 @@ export const WeeklyTimetable: React.FC = () => {
   const [editSession, setEditSession] = useState<ClassSession | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showBatchMembersModal, setShowBatchMembersModal] = useState(false);
   const [targetAddDay, setTargetAddDay] = useState<DayOfWeek>('Monday');
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [inviteInput, setInviteInput] = useState('');
@@ -158,6 +160,18 @@ export const WeeklyTimetable: React.FC = () => {
             <Share2 className="w-4 h-4" />
             Share Batch
           </Button>
+
+          {profile.isBatchSynced && profile.batchKey && (
+            <Button
+              variant="outline"
+              size="md"
+              onClick={() => setShowBatchMembersModal(true)}
+              className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors flex items-center gap-1.5"
+            >
+              <Users className="w-4 h-4" />
+              Batch Members
+            </Button>
+          )}
 
           <Button
             variant="outline"
@@ -402,6 +416,12 @@ export const WeeklyTimetable: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {/* BATCH MEMBERS MODAL */}
+      <BatchMembersModal
+        isOpen={showBatchMembersModal}
+        onClose={() => setShowBatchMembersModal(false)}
+      />
     </div>
   );
 };
