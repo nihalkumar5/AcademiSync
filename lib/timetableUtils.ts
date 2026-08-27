@@ -118,13 +118,28 @@ export interface LiveClassStatus {
 export const getLiveClassStatus = (
   timetable: ClassSession[],
   subjects: Subject[],
-  day: DayOfWeek = getCurrentDayOfWeek()
+  day: DayOfWeek = getCurrentDayOfWeek(),
+  dateStr: string = getTodayDateString(),
+  rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string }> = {}
 ): LiveClassStatus => {
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
   const daySessions = timetable
     .filter((s) => s.day === day)
+    .map((s) => {
+      const rescheduleKey = `${dateStr}_${s.id}`;
+      const reschedule = rescheduledSessions[rescheduleKey];
+      if (reschedule) {
+        return {
+          ...s,
+          startTime: reschedule.startTime,
+          endTime: reschedule.endTime,
+          room: reschedule.room || s.room,
+        };
+      }
+      return s;
+    })
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
   if (daySessions.length === 0) {

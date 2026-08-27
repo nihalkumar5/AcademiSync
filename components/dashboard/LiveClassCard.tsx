@@ -8,23 +8,23 @@ import { motion } from 'framer-motion';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 
 export const LiveClassCard: React.FC = () => {
-  const { timetable, subjects, events, isSessionCancelled } = useApp();
+  const { timetable, subjects, events, isSessionCancelled, rescheduledSessions } = useApp();
   
   const now = new Date();
   const dateTodayStr = getTodayDateString();
   const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
 
-  const getActiveTimetable = () => timetable.filter((s) => !isSessionCancelled(s.id));
+  const getActiveTimetable = () => timetable.filter((s) => !isSessionCancelled(s.id, dateTodayStr));
 
-  const [status, setStatus] = useState(() => getLiveClassStatus(getActiveTimetable(), subjects));
+  const [status, setStatus] = useState(() => getLiveClassStatus(getActiveTimetable(), subjects, undefined, dateTodayStr, rescheduledSessions));
 
   useEffect(() => {
-    setStatus(getLiveClassStatus(getActiveTimetable(), subjects));
+    setStatus(getLiveClassStatus(getActiveTimetable(), subjects, undefined, dateTodayStr, rescheduledSessions));
     const interval = setInterval(() => {
-      setStatus(getLiveClassStatus(getActiveTimetable(), subjects));
+      setStatus(getLiveClassStatus(getActiveTimetable(), subjects, undefined, dateTodayStr, rescheduledSessions));
     }, 15000);
     return () => clearInterval(interval);
-  }, [timetable, subjects, isSessionCancelled]);
+  }, [timetable, subjects, isSessionCancelled, rescheduledSessions]);
 
   // High-Contrast Brutalist Holiday Display (Minimal Design with Subtle Animation)
   if (todayHoliday) {
