@@ -27,7 +27,7 @@ import { useClerk, useUser } from '@clerk/nextjs';
 import { getTodayDateString } from '@/lib/timetableUtils';
 
 export const AcademicCalendar: React.FC = () => {
-  const { homework, events, addEvent, subjects, shareCalendarWithBatch, joinSharedCalendar, showToast } = useApp();
+  const { homework, events, addEvent, subjects, shareTimetableWithBatch, shareCalendarWithBatch, joinSharedCalendar, showToast } = useApp();
   const { isSignedIn } = useUser();
   const clerk = useClerk();
 
@@ -181,10 +181,10 @@ export const AcademicCalendar: React.FC = () => {
                 return;
               }
               try {
-                const key = await shareCalendarWithBatch();
-                const link = `${window.location.origin}/?calendar_invite=${key}`;
+                const key = await shareTimetableWithBatch();
+                const link = `${window.location.origin}/?invite=${key}`;
                 navigator.clipboard.writeText(link);
-                showToast('Calendar Shared', 'Invite link copied to clipboard!', 'success');
+                showToast('Batch Shared', 'Timetable, calendar, and exams link copied!', 'success');
               } catch (err) {}
             }}
             className="gap-1.5 rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"

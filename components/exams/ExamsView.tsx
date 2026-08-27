@@ -11,7 +11,7 @@ import { useClerk, useUser } from '@clerk/nextjs';
 import { Modal } from '@/components/ui/Modal';
 
 export const ExamsView: React.FC = () => {
-  const { exams, shareExamsWithBatch, joinSharedExams, showToast } = useApp();
+  const { exams, shareTimetableWithBatch, shareExamsWithBatch, joinSharedExams, showToast } = useApp();
   const { isSignedIn } = useUser();
   const clerk = useClerk();
   const [showImportModal, setShowImportModal] = useState(false);
@@ -118,10 +118,10 @@ export const ExamsView: React.FC = () => {
                 return;
               }
               try {
-                const key = await shareExamsWithBatch();
-                const link = `${window.location.origin}/?exams_invite=${key}`;
+                const key = await shareTimetableWithBatch();
+                const link = `${window.location.origin}/?invite=${key}`;
                 navigator.clipboard.writeText(link);
-                showToast('Exams Shared', 'Invite link copied to clipboard!', 'success');
+                showToast('Batch Shared', 'Timetable, calendar, and exams link copied!', 'success');
               } catch (err) {}
             }}
             className="flex items-center px-4 py-2.5 rounded-none border border-black dark:border-white text-black dark:text-white bg-transparent hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-xs font-bold uppercase cursor-pointer"

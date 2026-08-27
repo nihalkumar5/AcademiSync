@@ -272,6 +272,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           setTimetableState(data.timetable);
           storage.setTimetable(data.timetable);
         }
+        if (data.events) {
+          setEventsState(data.events);
+          storage.setEvents(data.events);
+        }
+        if (data.exams) {
+          setExamsState(data.exams);
+          storage.setExams(data.exams);
+        }
       }
     }, (err) => {
       console.error('Error listening to batch timetable updates:', err);
@@ -325,6 +333,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           remoteStateString.current = JSON.stringify(currentState);
         })
         .catch((e) => console.error('Firebase Sync Error', e));
+
+      if (profile.isBatchSynced && profile.batchKey) {
+        const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
+        const batchPayload = {
+          subjects: subjects,
+          timetable: timetable,
+          events: events,
+          exams: exams,
+          updatedAt: new Date().toISOString(),
+        };
+        setDoc(batchDocRef, batchPayload, { merge: true })
+          .catch((e) => console.error('Firebase Batch Sync Error', e));
+      }
     }, 100);
 
     return () => clearTimeout(timeout);
