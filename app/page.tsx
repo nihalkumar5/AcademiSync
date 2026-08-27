@@ -34,7 +34,7 @@ import { HolidayBalloons } from '@/components/ui/HolidayBalloons';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AppHome() {
-  const { activeView, isHydrated, showHolidayAnimation, joinBatchTimetable, joinSharedCalendar, profile, showToast } = useApp();
+  const { activeView, isHydrated, showHolidayAnimation, joinBatchTimetable, joinSharedCalendar, joinSharedExams, profile, showToast } = useApp();
   const { isSignedIn } = useUser();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [inviteKey, setInviteKey] = useState<string | null>(null);
@@ -42,6 +42,9 @@ export default function AppHome() {
   const [calendarInviteModalOpen, setCalendarInviteModalOpen] = useState(false);
   const [calendarInviteKey, setCalendarInviteKey] = useState<string | null>(null);
   const [calendarInviteData, setCalendarInviteData] = useState<any>(null);
+  const [examsInviteModalOpen, setExamsInviteModalOpen] = useState(false);
+  const [examsInviteKey, setExamsInviteKey] = useState<string | null>(null);
+  const [examsInviteData, setExamsInviteData] = useState<any>(null);
   const [isAndroid, setIsAndroid] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
 
@@ -121,6 +124,38 @@ export default function AppHome() {
           }
         };
         checkCalendarInvite();
+      }
+    }
+  }, [isHydrated]);
+
+  useEffect(() => {
+    if (isHydrated && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const examsInviteParam = params.get('exams_invite');
+      if (examsInviteParam) {
+        const ua = navigator.userAgent;
+        const isAndroidBrowser = /Android/i.test(ua) && !Capacitor.isNativePlatform();
+        
+        if (isAndroidBrowser) {
+          const intentUrl = `intent://exams_invite?key=${examsInviteParam}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.intersemester.app;end`;
+          window.location.href = intentUrl;
+          return;
+        }
+
+        const checkExamsInvite = async () => {
+          try {
+            const docRef = doc(db, 'shared_exams', examsInviteParam);
+            const snap = await getDoc(docRef);
+            if (snap.exists()) {
+              setExamsInviteData(snap.data());
+              setExamsInviteKey(examsInviteParam);
+              setExamsInviteModalOpen(true);
+            }
+          } catch (e) {
+            console.error('Error fetching exams invite:', e);
+          }
+        };
+        checkExamsInvite();
       }
     }
   }, [isHydrated]);
@@ -374,6 +409,110 @@ export default function AppHome() {
                   }
                   setCalendarInviteModalOpen(false);
                   await joinSharedCalendar(calendarInviteKey);
+                  if (typeof window !== 'undefined') {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                  }
+                }}
+                className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+              >
+                Accept & Import
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {examsInviteModalOpen && examsInviteData && examsInviteKey && (
+        <Modal
+          isOpen={examsInviteModalOpen}
+          onClose={() => {
+            setExamsInviteModalOpen(false);
+            if (typeof window !== 'undefined') {
+              window.history.replaceState({}, document.title, window.location.pathname);
+            }
+          }}
+          title="Import Exam Schedule?"
+          description="You have been invited to import this batch's academic exam timetable."
+        >
+          <div className="flex flex-col gap-4 mt-3 text-left">
+            <div className="p-4 border border-black dark:border-white bg-black/5 dark:bg-white/5 flex flex-col gap-2">
+              <h4 className="text-sm font-bold text-black dark:text-white">
+                {examsInviteData.college}
+              </h4>
+              <p className="text-xs text-black/75 dark:text-white/75 font-medium">
+                {examsInviteData.programme} - {examsInviteData.branch} (Sem {examsInviteData.semester})
+              </p>
+              <div className="h-px bg-black/20 dark:bg-white/20 my-1" />
+              <div className="flex items-center justify-between text-[11px] font-mono opacity-70">
+                <span>Created by: {examsInviteData.creatorName}</span>
+                <span>Exams: {examsInviteData.exams?.length || 0} exams scheduled</span>
+              </div>
+            </div>
+
+            {!Capacitor.isNativePlatform() && isAndroid && (
+              <div className="flex flex-col gap-2 p-3 bg-[#01875f]/10 border border-[#01875f] text-[#01875f] dark:text-[#00e699]">
+                <p className="text-[11px] font-bold leading-normal">
+                  Syncing is recommended on the native app for widgets & alarms!
+                </p>
+                <div className="flex gap-2">
+                  <a
+                    href="https://play.google.com/store/apps/details?id=com.intersemester.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 py-2 bg-[#01875f] text-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-[#016f4e] transition-colors cursor-pointer rounded-none"
+                  >
+                    Download App
+                  </a>
+                  <a
+                    href={`intent://exams_invite?key=${examsInviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.intersemester.app;end`}
+                    className="flex-1 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+                  >
+                    Open in App
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {!Capacitor.isNativePlatform() && isIOS && (
+              <div className="flex flex-col gap-2 p-3 bg-indigo-500/10 border border-indigo-500 text-indigo-700 dark:text-indigo-300">
+                <p className="text-[11px] font-bold leading-normal">
+                  PWA Quick Tip for iPhone Users:
+                </p>
+                <p className="text-[10px] leading-relaxed opacity-90 font-medium">
+                  Tap Safari's <span className="font-bold text-indigo-800 dark:text-indigo-400">Share</span> button (at the bottom) and select <span className="font-bold text-indigo-800 dark:text-indigo-400">"Add to Home Screen"</span> to run AcademiSync as a full-screen app!
+                </p>
+              </div>
+            )}
+
+            <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed">
+              Accepting will download the shared exam sessions, replacing your current exam calendar data.
+            </p>
+
+            <div className="flex gap-2.5 justify-end mt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setExamsInviteModalOpen(false);
+                  if (typeof window !== 'undefined') {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                  }
+                }}
+                className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
+              >
+                Dismiss
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!isSignedIn) {
+                    showToast('Login Required', 'Please log in or sign up to sync with an exam schedule.', 'info');
+                    if (typeof window !== 'undefined') {
+                      window.location.href = `/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`;
+                    }
+                    return;
+                  }
+                  setExamsInviteModalOpen(false);
+                  await joinSharedExams(examsInviteKey);
                   if (typeof window !== 'undefined') {
                     window.history.replaceState({}, document.title, window.location.pathname);
                   }

@@ -92,6 +92,8 @@ interface AppContextType {
   disconnectBatchTimetable: () => void;
   shareCalendarWithBatch: () => Promise<string>;
   joinSharedCalendar: (calendarKey: string) => Promise<void>;
+  shareExamsWithBatch: () => Promise<string>;
+  joinSharedExams: (examsKey: string) => Promise<void>;
   toastMessage: { id: number; title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error' } | null;
   showToast: (title: string, message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
   showHolidayAnimation: boolean;
@@ -1187,11 +1189,63 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const shareExamsWithBatch = async (): Promise<string> => {
+    try {
+      const canonicalKey = getCanonicalBatchKey(profile.college, profile.programme, profile.branch, profile.semester);
+      const docRef = doc(db, 'shared_exams', canonicalKey);
+      
+      const payload = {
+        id: canonicalKey,
+        college: profile.college,
+        programme: profile.programme,
+        branch: profile.branch,
+        semester: profile.semester,
+        creatorId: user?.id || 'anonymous',
+        creatorName: profile.name || 'Anonymous Student',
+        exams: exams,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      await setDoc(docRef, payload, { merge: true });
+      showToast('Exams Shared', 'Your exam schedule is now live for your batchmates!', 'success');
+      return canonicalKey;
+    } catch (e) {
+      console.error('Error sharing exam schedule:', e);
+      showToast('Share Failed', 'Failed to publish exams to batch.', 'error');
+      throw e;
+    }
+  };
+
+  const joinSharedExams = async (examsKey: string) => {
+    try {
+      const docRef = doc(db, 'shared_exams', examsKey);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        showToast('Exams Not Found', 'Could not locate shared exams in database.', 'error');
+        return;
+      }
+      const data = docSnap.data();
+
+      if (data.exams) {
+        setExamsState(data.exams);
+        storage.setExams(data.exams);
+      }
+
+      showToast('Exams Synced', `Successfully imported shared exam schedule.`, 'success');
+    } catch (e) {
+      console.error('Error joining shared exams:', e);
+      showToast('Sync Failed', 'Failed to connect to shared exams.', 'error');
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
         shareCalendarWithBatch,
         joinSharedCalendar,
+        shareExamsWithBatch,
+        joinSharedExams,
         isHydrated,
         activeView,
         setActiveView,
