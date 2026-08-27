@@ -46,6 +46,8 @@ export const SettingsView: React.FC = () => {
   const [name, setName] = useState(profile.name);
   const [college, setCollege] = useState(profile.college);
   const [showCollegeDropdown, setShowCollegeDropdown] = useState(false);
+  const [suggestedColleges, setSuggestedColleges] = useState<string[]>([]);
+  const [isLoadingColleges, setIsLoadingColleges] = useState(false);
   const [rollNumber, setRollNumber] = useState(profile.rollNumber);
   const [email, setEmail] = useState(profile.email);
   const [programme, setProgramme] = useState<string>(
@@ -54,6 +56,34 @@ export const SettingsView: React.FC = () => {
   const [branch, setBranch] = useState<string>(profile.branch || '');
   const [year, setYear] = useState(profile.year);
   const [semester, setSemester] = useState(profile.semester);
+
+  // Debounced SheerID organization search lookup
+  useEffect(() => {
+    if (college.trim().length < 3) {
+      setSuggestedColleges([]);
+      return;
+    }
+
+    const delayDebounce = setTimeout(async () => {
+      setIsLoadingColleges(true);
+      try {
+        const response = await fetch(
+          `https://orgsearch.sheerid.net/rest/organization/search?country=IN&type=UNIVERSITY&name=${encodeURIComponent(college)}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          const names = data.map((item: any) => item.name);
+          setSuggestedColleges(names);
+        }
+      } catch (err) {
+        console.error('Failed to fetch colleges from SheerID:', err);
+      } finally {
+        setIsLoadingColleges(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(delayDebounce);
+  }, [college]);
 
   // High-friction Reset Modal states
   const [showResetModal, setShowResetModal] = useState(false);
@@ -280,22 +310,39 @@ export const SettingsView: React.FC = () => {
                     className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none placeholder:text-black/30 dark:placeholder:text-white/30"
                   />
                 </div>
-                {showCollegeDropdown && college.length >= 2 && INDIAN_COLLEGES.filter(c => c.toLowerCase().includes(college.toLowerCase())).length > 0 && (
-                  <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-zinc-900 border border-black dark:border-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-50">
-                    {INDIAN_COLLEGES.filter(c => c.toLowerCase().includes(college.toLowerCase())).map(c => (
-                      <div
-                        key={c}
-                        onMouseDown={() => { setCollege(c); setShowCollegeDropdown(false); }}
-                        className="px-4 py-2.5 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-sm font-medium text-black dark:text-white border-b border-black/5 dark:border-white/5 last:border-0"
-                      >
-                        {c}
+                {showCollegeDropdown && college.length >= 2 && (
+                  <div className="absolute top-full left-0 w-full mt-1 max-h-56 overflow-y-auto bg-white dark:bg-zinc-900 border border-black dark:border-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-50">
+                    {isLoadingColleges && (
+                      <div className="px-4 py-2.5 text-xs font-mono font-medium text-black/50 dark:text-white/50 border-b border-black/5 dark:border-white/5">
+                        Searching Indian colleges...
                       </div>
-                    ))}
+                    )}
+                    {suggestedColleges.length > 0 ? (
+                      suggestedColleges.map((c) => (
+                        <div
+                          key={c}
+                          onMouseDown={() => { setCollege(c); setShowCollegeDropdown(false); }}
+                          className="px-4 py-2.5 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-sm font-medium text-black dark:text-white border-b border-black/5 dark:border-white/5 last:border-0"
+                        >
+                          {c}
+                        </div>
+                      ))
+                    ) : (
+                      !isLoadingColleges && INDIAN_COLLEGES.filter(c => c.toLowerCase().includes(college.toLowerCase())).slice(0, 15).map(c => (
+                        <div
+                          key={c}
+                          onMouseDown={() => { setCollege(c); setShowCollegeDropdown(false); }}
+                          className="px-4 py-2.5 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-sm font-medium text-black dark:text-white border-b border-black/5 dark:border-white/5 last:border-0"
+                        >
+                          {c}
+                        </div>
+                      ))
+                    )}
                   </div>
                 )}
               </div>
               <p className="text-[10px] text-black/50 dark:text-white/50 font-medium">
-                Type 2-3 letters to search, or simply type your full college name if it isn't listed.
+                Type 3 letters to search verified universities, or type manually if not found.
               </p>
             </div>
 
