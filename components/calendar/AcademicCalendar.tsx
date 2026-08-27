@@ -18,18 +18,26 @@ import {
   AlertTriangle,
   Flag,
   Sparkles,
+  Share2,
+  UserPlus,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useClerk, useUser } from '@clerk/nextjs';
 
 import { getTodayDateString } from '@/lib/timetableUtils';
 
 export const AcademicCalendar: React.FC = () => {
-  const { homework, events, addEvent, subjects } = useApp();
+  const { homework, events, addEvent, subjects, shareCalendarWithBatch, joinSharedCalendar, showToast } = useApp();
+  const { isSignedIn } = useUser();
+  const clerk = useClerk();
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string>(getTodayDateString());
   const [showAddEventModal, setShowAddEventModal] = useState(false);
   const [showImportCalendarModal, setShowImportCalendarModal] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [inviteInput, setInviteInput] = useState('');
+  const [isJoining, setIsJoining] = useState(false);
 
   // New Event Form State
   const [newTitle, setNewTitle] = useState('');
@@ -45,6 +53,42 @@ export const AcademicCalendar: React.FC = () => {
   };
   const nextMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+  };
+
+  const handleJoinSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isSignedIn) {
+      clerk.openSignIn();
+      return;
+    }
+
+    const input = inviteInput.trim();
+    if (!input) return;
+
+    setIsJoining(true);
+    let inviteKey = input;
+
+    try {
+      if (input.startsWith('http://') || input.startsWith('https://')) {
+        const url = new URL(input);
+        const inviteParam = url.searchParams.get('calendar_invite');
+        if (inviteParam) {
+          inviteKey = inviteParam;
+        }
+      }
+    } catch (err) {
+      console.error('Failed to parse calendar URL:', err);
+    }
+
+    try {
+      await joinSharedCalendar(inviteKey);
+      setShowJoinModal(false);
+      setInviteInput('');
+    } catch (err) {
+      console.error('Failed to join calendar:', err);
+    } finally {
+      setIsJoining(false);
+    }
   };
 
   // Days in month calculation
@@ -115,7 +159,7 @@ export const AcademicCalendar: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -125,6 +169,45 @@ export const AcademicCalendar: React.FC = () => {
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>AI Import Calendar</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={async () => {
+              if (!isSignedIn) {
+                clerk.openSignIn();
+                return;
+              }
+              try {
+                const key = await shareCalendarWithBatch();
+                const link = `${window.location.origin}/?calendar_invite=${key}`;
+                navigator.clipboard.writeText(link);
+                showToast('Calendar Shared', 'Invite link copied to clipboard!', 'success');
+              } catch (err) {}
+            }}
+            className="gap-1.5 rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span>Share Calendar</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() => {
+              if (!isSignedIn) {
+                clerk.openSignIn();
+                return;
+              }
+              setShowJoinModal(true);
+            }}
+            className="gap-1.5 rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>Join Calendar</span>
           </Button>
 
           <Button
@@ -362,6 +445,54 @@ export const AcademicCalendar: React.FC = () => {
         isOpen={showImportCalendarModal}
         onClose={() => setShowImportCalendarModal(false)}
       />
+
+      <Modal
+        isOpen={showJoinModal}
+        onClose={() => {
+          setShowJoinModal(false);
+          setInviteInput('');
+        }}
+        title="Join Shared Calendar"
+        description="Paste the calendar invite link or code shared by your classmate to import academic events and exams."
+      >
+        <form onSubmit={handleJoinSubmit} className="flex flex-col gap-4 mt-3 text-left">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[10px] font-black uppercase tracking-wider text-black/50 dark:text-white/50">
+              Calendar Link / Code
+            </label>
+            <div className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-zinc-950 border border-black dark:border-white">
+              <input
+                type="text"
+                value={inviteInput}
+                onChange={(e) => setInviteInput(e.target.value)}
+                placeholder="e.g. https://academi-sync-chi.vercel.app/?calendar_invite=..."
+                required
+                className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none placeholder:text-black/30 dark:placeholder:text-white/30"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-2.5 justify-end mt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowJoinModal(false);
+                setInviteInput('');
+              }}
+              className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isJoining}
+              className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none disabled:opacity-50"
+            >
+              {isJoining ? 'Syncing...' : 'Sync & Import'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

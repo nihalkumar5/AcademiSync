@@ -90,6 +90,8 @@ interface AppContextType {
   joinBatchTimetable: (batchKey: string) => Promise<void>;
   shareTimetableWithBatch: () => Promise<string>;
   disconnectBatchTimetable: () => void;
+  shareCalendarWithBatch: () => Promise<string>;
+  joinSharedCalendar: (calendarKey: string) => Promise<void>;
   toastMessage: { id: number; title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error' } | null;
   showToast: (title: string, message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
   showHolidayAnimation: boolean;
@@ -1130,9 +1132,66 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const shareCalendarWithBatch = async (): Promise<string> => {
+    try {
+      const canonicalKey = getCanonicalBatchKey(profile.college, profile.programme, profile.branch, profile.semester);
+      const docRef = doc(db, 'shared_calendars', canonicalKey);
+      
+      const payload = {
+        id: canonicalKey,
+        college: profile.college,
+        programme: profile.programme,
+        branch: profile.branch,
+        semester: profile.semester,
+        creatorId: user?.id || 'anonymous',
+        creatorName: profile.name || 'Anonymous Student',
+        events: events,
+        exams: exams,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      await setDoc(docRef, payload, { merge: true });
+      showToast('Calendar Shared', 'Your academic calendar is now live for your batchmates!', 'success');
+      return canonicalKey;
+    } catch (e) {
+      console.error('Error sharing academic calendar:', e);
+      showToast('Share Failed', 'Failed to publish calendar to batch.', 'error');
+      throw e;
+    }
+  };
+
+  const joinSharedCalendar = async (calendarKey: string) => {
+    try {
+      const docRef = doc(db, 'shared_calendars', calendarKey);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        showToast('Calendar Not Found', 'Could not locate shared calendar in database.', 'error');
+        return;
+      }
+      const data = docSnap.data();
+
+      if (data.events) {
+        setEventsState(data.events);
+        storage.setEvents(data.events);
+      }
+      if (data.exams) {
+        setExamsState(data.exams);
+        storage.setExams(data.exams);
+      }
+
+      showToast('Calendar Synced', `Successfully imported shared calendar events.`, 'success');
+    } catch (e) {
+      console.error('Error joining shared calendar:', e);
+      showToast('Sync Failed', 'Failed to connect to shared calendar.', 'error');
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
+        shareCalendarWithBatch,
+        joinSharedCalendar,
         isHydrated,
         activeView,
         setActiveView,
