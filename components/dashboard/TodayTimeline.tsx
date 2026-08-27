@@ -44,7 +44,9 @@ export const TodayTimeline: React.FC = () => {
     toggleSessionCancelled, 
     settings,
     rescheduledSessions,
-    rescheduleSession
+    rescheduleSession,
+    profile,
+    isBatchCR,
   } = useApp();
 
   const [openMenuSessionId, setOpenMenuSessionId] = useState<string | null>(null);
@@ -280,21 +282,43 @@ export const TodayTimeline: React.FC = () => {
                                   className="fixed inset-0 z-20"
                                   onClick={() => setOpenMenuSessionId(null)}
                                 />
-                                <div className="absolute right-0 mt-6 w-44 rounded-none bg-white dark:bg-zinc-950 border border-black dark:border-white shadow-lg py-1 z-30 text-left overflow-hidden">
-                                  {isCancelled ? (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setOpenMenuSessionId(null);
-                                        toggleSessionCancelled(session.id, targetDateStr);
-                                      }}
-                                      className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-bold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-left transition-colors cursor-pointer"
-                                    >
-                                      <RotateCcw className="w-3.5 h-3.5" />
-                                      <span>Restore Class</span>
-                                    </button>
+                                <div className="absolute right-0 mt-6 w-52 rounded-none bg-white dark:bg-zinc-950 border border-black dark:border-white shadow-lg py-1 z-30 text-left overflow-hidden">
+                                  {profile.isBatchSynced && !isBatchCR ? (
+                                    <div className="p-3 text-[11px] text-black/70 dark:text-white/70 flex flex-col gap-1">
+                                      <div className="font-bold text-black dark:text-white flex items-center gap-1.5 uppercase text-[10px]">
+                                        <Ban className="w-3.5 h-3.5 text-amber-500" />
+                                        <span>CR Managed Schedule</span>
+                                      </div>
+                                      <p className="text-[10px] text-black/60 dark:text-white/60 leading-tight mt-0.5">
+                                        Only your Class Representative (CR) can cancel or reschedule classes for this batch.
+                                      </p>
+                                    </div>
+                                  ) : isCancelled ? (
+                                    <>
+                                      {profile.isBatchSynced && (
+                                        <div className="px-3 py-1 bg-black/5 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-[9px] font-mono font-bold uppercase text-black/60 dark:text-white/60">
+                                          👑 CR Live Action
+                                        </div>
+                                      )}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setOpenMenuSessionId(null);
+                                          toggleSessionCancelled(session.id, targetDateStr);
+                                        }}
+                                        className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-bold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-left transition-colors cursor-pointer"
+                                      >
+                                        <RotateCcw className="w-3.5 h-3.5" />
+                                        <span>Restore Class for Batch</span>
+                                      </button>
+                                    </>
                                   ) : (
                                     <>
+                                      {profile.isBatchSynced && (
+                                        <div className="px-3 py-1 bg-black/5 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-[9px] font-mono font-bold uppercase text-black/60 dark:text-white/60">
+                                          👑 CR Live Controls
+                                        </div>
+                                      )}
                                       <button
                                         type="button"
                                         onClick={() => {
@@ -304,7 +328,7 @@ export const TodayTimeline: React.FC = () => {
                                         className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
                                       >
                                         <Ban className="w-3.5 h-3.5" />
-                                        <span>Cancel Class</span>
+                                        <span>Cancel Class for Batch</span>
                                       </button>
                                       
                                       <div className="h-px bg-black/10 dark:bg-white/10 my-0.5"></div>

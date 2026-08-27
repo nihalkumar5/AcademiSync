@@ -26,6 +26,7 @@ import { doc, collection, onSnapshot, setDoc, deleteDoc, getDoc, updateDoc, incr
 import { db } from '@/lib/firebase';
 import { registerPushNotifications } from '@/lib/pushNotifications';
 import { triggerLocalNotification, scheduleTimetableLocalNotifications } from '@/lib/localNotifications';
+import { isUserSuperAdmin } from '@/lib/adminAuth';
 
 // Helper to remove any undefined fields before writing to Firestore
 export function sanitizeForFirestore<T>(data: T): T {
@@ -44,11 +45,12 @@ export type ActiveView =
   | 'notifications'
   | 'settings';
 
-interface AppContextType {
+export interface AppContextType {
   isHydrated: boolean;
   activeView: ActiveView;
   setActiveView: (view: ActiveView) => void;
   profile: StudentProfile;
+  isBatchCR: boolean;
   updateProfile: (profile: Partial<StudentProfile>) => void;
   subjects: Subject[];
   addSubject: (subject: Omit<Subject, 'id'>) => Subject;
@@ -143,6 +145,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [rescheduledSessions, setRescheduledSessionsState] = useState<Record<string, { startTime: string; endTime: string; room?: string }>>(storage.getRescheduledSessions());
   const [showHolidayAnimation, setShowHolidayAnimation] = useState(false);
   const [proposedBatchTasks, setProposedBatchTasks] = useState<BatchProposedTask[]>([]);
+  const [currentBatchData, setCurrentBatchData] = useState<any>(null);
 
   const { user, isLoaded: isClerkLoaded } = useUser();
   const [isCloudSynced, setIsCloudSynced] = useState(false);
@@ -150,6 +153,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const isApplyingRemote = useRef(false);
   const prevUserIdRef = useRef<string | null>(null);
   const scheduleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Authority & CR verification for current batch
+  const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
+  const isSuperAdmin = isUserSuperAdmin(profile, userEmail);
+  const isPrimaryCreator = currentBatchData?.creatorId === user?.id || (currentBatchData?.creatorEmail && currentBatchData?.creatorEmail === userEmail);
+  const isCoCR = currentBatchData?.crUserIds?.includes(user?.id) || currentBatchData?.crEmails?.includes(userEmail) || profile.role === 'cr';
+  const isBatchCR = !profile.isBatchSynced || isSuperAdmin || isPrimaryCreator || isCoCR;
 
   // Handle User Logout / Switch Account Cleanup
   useEffect(() => {
@@ -271,6 +281,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (snapshot.exists()) {
         const data = snapshot.data();
         console.log('Real-time batch update received:', data);
+        setCurrentBatchData(data);
         
         if (data.subjects) {
           setSubjectsState(data.subjects);
@@ -287,6 +298,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (Array.isArray(data.exams) && data.exams.length > 0) {
           setExamsState(data.exams);
           storage.setExams(data.exams);
+        }
+        if (Array.isArray(data.cancelledSessions)) {
+          setCancelledSessionsState(data.cancelledSessions);
+          storage.setCancelledSessions(data.cancelledSessions);
+        }
+        if (data.rescheduledSessions && typeof data.rescheduledSessions === 'object') {
+          setRescheduledSessionsState(data.rescheduledSessions);
+          storage.setRescheduledSessions(data.rescheduledSessions);
         }
       }
     }, (err) => {
@@ -1089,22 +1108,40 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     showToast('Preferences Saved', 'Updated application settings', 'success');
   };
 
-  const toggleSessionCancelled = (sessionId: string, dateStr?: string) => {
+  const toggleSessionCancelled = async (sessionId: string, dateStr?: string) => {
+    // If synced to a batch, ensure only CR can cancel/restore classes
+    if (profile.isBatchSynced && profile.batchKey && !isBatchCR) {
+      showToast('CR Access Required', 'Only your Class Representative (CR) can cancel or restore classes for the batch.', 'error');
+      return;
+    }
+
     const targetDate = dateStr || new Date().toISOString().split('T')[0];
     const key = `${targetDate}_${sessionId}`;
     
-    setCancelledSessionsState((prev) => {
-      const isAlreadyCancelled = prev.includes(key);
-      const updated = isAlreadyCancelled ? prev.filter((k) => k !== key) : [...prev, key];
-      storage.setCancelledSessions(updated);
-      
-      if (!isAlreadyCancelled) {
-        showToast('Class Marked Cancelled', 'Session marked as cancelled for today.', 'info');
-      } else {
-        showToast('Class Restored', 'Session restored to regular schedule.', 'success');
+    const isAlreadyCancelled = cancelledSessions.includes(key);
+    const updated = isAlreadyCancelled ? cancelledSessions.filter((k) => k !== key) : [...cancelledSessions, key];
+    
+    setCancelledSessionsState(updated);
+    storage.setCancelledSessions(updated);
+    
+    if (!isAlreadyCancelled) {
+      showToast('Class Marked Cancelled', 'Session marked as cancelled for today.', 'info');
+    } else {
+      showToast('Class Restored', 'Session restored to regular schedule.', 'success');
+    }
+
+    // Sync to batch cloud in real-time if in batch
+    if (profile.isBatchSynced && profile.batchKey) {
+      try {
+        const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
+        await updateDoc(batchDocRef, {
+          cancelledSessions: updated,
+          updatedAt: new Date().toISOString(),
+        });
+      } catch (e) {
+        console.error('Error syncing cancelled sessions to batch:', e);
       }
-      return updated;
-    });
+    }
   };
 
   const isSessionCancelled = (sessionId: string, dateStr?: string) => {
@@ -1113,26 +1150,44 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return cancelledSessions.includes(key);
   };
 
-  const rescheduleSession = (
+  const rescheduleSession = async (
     sessionId: string,
     details: { startTime: string; endTime: string; room?: string } | null,
     dateStr?: string
   ) => {
+    // If synced to a batch, ensure only CR can reschedule classes
+    if (profile.isBatchSynced && profile.batchKey && !isBatchCR) {
+      showToast('CR Access Required', 'Only your Class Representative (CR) can reschedule classes for the batch.', 'error');
+      return;
+    }
+
     const targetDate = dateStr || new Date().toISOString().split('T')[0];
     const key = `${targetDate}_${sessionId}`;
 
-    setRescheduledSessionsState((prev) => {
-      const updated = { ...prev };
-      if (details === null) {
-        delete updated[key];
-        showToast('Reschedule Reverted', 'Class reverted to original scheduled time.', 'success');
-      } else {
-        updated[key] = details;
-        showToast('Class Rescheduled', `Class time updated to ${details.startTime} - ${details.endTime}.`, 'success');
+    const updated = { ...rescheduledSessions };
+    if (details === null) {
+      delete updated[key];
+      showToast('Reschedule Reverted', 'Class reverted to original scheduled time.', 'success');
+    } else {
+      updated[key] = details;
+      showToast('Class Rescheduled', `Class time updated to ${details.startTime} - ${details.endTime}.`, 'success');
+    }
+
+    setRescheduledSessionsState(updated);
+    storage.setRescheduledSessions(updated);
+
+    // Sync to batch cloud in real-time if in batch
+    if (profile.isBatchSynced && profile.batchKey) {
+      try {
+        const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
+        await updateDoc(batchDocRef, {
+          rescheduledSessions: updated,
+          updatedAt: new Date().toISOString(),
+        });
+      } catch (e) {
+        console.error('Error syncing rescheduled sessions to batch:', e);
       }
-      storage.setRescheduledSessions(updated);
-      return updated;
-    });
+    }
   };
 
   const searchBatchTimetable = async (
@@ -1574,6 +1629,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         activeView,
         setActiveView,
         profile,
+        isBatchCR,
         updateProfile,
         subjects,
         addSubject,
