@@ -6,7 +6,7 @@ import { useUser, UserButton, SignedIn, SignedOut, SignInButton } from '@clerk/n
 import { useApp } from '@/context/AppContext';
 import { Programme, Branch } from '@/lib/types';
 import { storage } from '@/lib/storage';
-import { INDIAN_COLLEGES } from '@/lib/colleges';
+import { INDIAN_COLLEGES, STANDARD_PROGRAMMES, STANDARD_BRANCHES } from '@/lib/colleges';
 import { scheduleTestNotification } from '@/lib/localNotifications';
 import {
   User,
@@ -48,6 +48,8 @@ export const SettingsView: React.FC = () => {
   const [showCollegeDropdown, setShowCollegeDropdown] = useState(false);
   const [suggestedColleges, setSuggestedColleges] = useState<string[]>([]);
   const [isLoadingColleges, setIsLoadingColleges] = useState(false);
+  const [showProgrammeDropdown, setShowProgrammeDropdown] = useState(false);
+  const [showBranchDropdown, setShowBranchDropdown] = useState(false);
   const [rollNumber, setRollNumber] = useState(profile.rollNumber);
   const [email, setEmail] = useState(profile.email);
   const [programme, setProgramme] = useState<string>(
@@ -396,31 +398,83 @@ export const SettingsView: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div className="flex flex-col gap-1.5">
                 <label className={labelClass}>Degree / Programme</label>
-                <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white">
-                  <GraduationCap className="w-4 h-4 text-black/40 dark:text-white/40 shrink-0" />
-                  <input
-                    type="text"
-                    value={programme}
-                    onChange={(e) => setProgramme(e.target.value)}
-                    placeholder="e.g. B.Tech, B.Sc, MBA, BCA, MBBS"
-                    required
-                    className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none"
-                  />
+                <div className="relative w-full">
+                  <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white">
+                    <GraduationCap className="w-4 h-4 text-black/40 dark:text-white/40 shrink-0" />
+                    <input
+                      type="text"
+                      value={programme}
+                      onChange={(e) => {
+                        setProgramme(e.target.value);
+                        setShowProgrammeDropdown(true);
+                      }}
+                      onFocus={() => setShowProgrammeDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowProgrammeDropdown(false), 200)}
+                      placeholder="e.g. B.Tech, B.Sc, MBA, BCA"
+                      required
+                      className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none placeholder:text-black/30 dark:placeholder:text-white/30"
+                    />
+                  </div>
+                  {showProgrammeDropdown && (
+                    <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-zinc-900 border border-black dark:border-white shadow-lg z-50">
+                      {STANDARD_PROGRAMMES.filter(p => p.toLowerCase().includes(programme.toLowerCase())).length > 0 ? (
+                        STANDARD_PROGRAMMES.filter(p => p.toLowerCase().includes(programme.toLowerCase())).map(p => (
+                          <div
+                            key={p}
+                            onMouseDown={() => { setProgramme(p); setShowProgrammeDropdown(false); }}
+                            className="px-4 py-2 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-xs font-semibold text-black dark:text-white border-b border-black/5 dark:border-white/5 last:border-0"
+                          >
+                            {p}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-2 text-xs text-black/40 dark:text-white/40 font-mono">
+                          Press Enter to use custom degree
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
                 <label className={labelClass}>Branch / Department / Major</label>
-                <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white">
-                  <Building2 className="w-4 h-4 text-black/40 dark:text-white/40 shrink-0" />
-                  <input
-                    type="text"
-                    value={branch}
-                    onChange={(e) => setBranch(e.target.value)}
-                    placeholder="e.g. Computer Science, Mechanical, Finance"
-                    required
-                    className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none"
-                  />
+                <div className="relative w-full">
+                  <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white">
+                    <Building2 className="w-4 h-4 text-black/40 dark:text-white/40 shrink-0" />
+                    <input
+                      type="text"
+                      value={branch}
+                      onChange={(e) => {
+                        setBranch(e.target.value);
+                        setShowBranchDropdown(true);
+                      }}
+                      onFocus={() => setShowBranchDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowBranchDropdown(false), 200)}
+                      placeholder="e.g. Computer Science, Mechanical..."
+                      required
+                      className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none placeholder:text-black/30 dark:placeholder:text-white/30"
+                    />
+                  </div>
+                  {showBranchDropdown && (
+                    <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-zinc-900 border border-black dark:border-white shadow-lg z-50">
+                      {STANDARD_BRANCHES.filter(b => b.toLowerCase().includes(branch.toLowerCase())).length > 0 ? (
+                        STANDARD_BRANCHES.filter(b => b.toLowerCase().includes(branch.toLowerCase())).map(b => (
+                          <div
+                            key={b}
+                            onMouseDown={() => { setBranch(b); setShowBranchDropdown(false); }}
+                            className="px-4 py-2 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-xs font-semibold text-black dark:text-white border-b border-black/5 dark:border-white/5 last:border-0"
+                          >
+                            {b}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-2 text-xs text-black/40 dark:text-white/40 font-mono">
+                          Press Enter to use custom branch
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

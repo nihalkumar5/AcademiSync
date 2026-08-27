@@ -500,3 +500,20 @@ export const getSubjectThemeStyle = (hexColor?: string, theme: 'light' | 'dark' 
     };
   }
 };
+
+export const getCanonicalBatchKey = (college: string, programme: string, branch: string, semester: number): string => {
+  const clean = (str: string) => {
+    return str
+      .toLowerCase()
+      .trim()
+      .replace(/computer\s+science\s*(?:and|&)?\s*(?:engineering|engg)?/g, 'cse')
+      .replace(/information\s+technology/g, 'it')
+      .replace(/electronics\s*(?:and|&)?\s*(?:communication|comm)?\s*(?:engineering|engg)?/g, 'ece')
+      .replace(/electrical\s*(?:and|&)?\s*(?:electronics|elect)?\s*(?:engineering|engg)?/g, 'eee')
+      .replace(/mechanical\s*(?:engineering|engg)?/g, 'me')
+      .replace(/civil\s*(?:engineering|engg)?/g, 'ce')
+      .replace(/[^a-z0-9]/g, '');
+  };
+
+  return `${clean(college)}_${clean(programme)}_${clean(branch)}_sem${semester}`;
+};

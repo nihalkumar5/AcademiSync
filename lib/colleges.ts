@@ -44,3 +44,36 @@ export const INDIAN_COLLEGES = [
   "LD College of Engineering",
   "Nirma University"
 ];
+
+export const STANDARD_PROGRAMMES = [
+  'B.Tech',
+  'B.E.',
+  'B.Sc',
+  'BCA',
+  'BBA',
+  'M.Tech',
+  'MCA',
+  'MBA',
+  'M.Sc',
+  'Ph.D'
+];
+
+export const STANDARD_BRANCHES = [
+  'Computer Science & Engineering (CSE)',
+  'Information Technology (IT)',
+  'Electronics & Communication Engineering (ECE)',
+  'Electrical & Electronics Engineering (EEE)',
+  'Electrical Engineering (EE)',
+  'Mechanical Engineering (ME)',
+  'Civil Engineering (CE)',
+  'Chemical Engineering (CHE)',
+  'Metallurgical & Materials Engineering (MME)',
+  'Biotechnology (BT)',
+  'Aerospace Engineering (AE)',
+  'Data Science & Artificial Intelligence (DS & AI)',
+  'Mathematics & Computing (MnC)',
+  'Master of Computer Applications (MCA)',
+  'Master of Business Administration (MBA)',
+  'Bachelor of Computer Applications (BCA)',
+  'Bachelor of Business Administration (BBA)'
+];
