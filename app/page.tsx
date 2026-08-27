@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useApp } from '@/context/AppContext';
+import { useUser } from '@clerk/nextjs';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { Header } from '@/components/layout/Header';
@@ -34,9 +35,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AppHome() {
   const { activeView, isHydrated, showHolidayAnimation, joinBatchTimetable, profile, showToast } = useApp();
+  const { isSignedIn } = useUser();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [inviteKey, setInviteKey] = useState<string | null>(null);
   const [inviteData, setInviteData] = useState<any>(null);
+  const [isAndroid, setIsAndroid] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const ua = navigator.userAgent;
+      setIsAndroid(/Android/i.test(ua));
+      setIsIOS(/iPhone|iPad|iPod/i.test(ua));
+    }
+  }, []);
 
   useEffect(() => {
     if (isHydrated && Capacitor.isNativePlatform()) {
@@ -138,6 +150,22 @@ export default function AppHome() {
               </div>
             </div>
 
+            {!Capacitor.isNativePlatform() && isAndroid && (
+              <div className="flex flex-col gap-2 p-3 bg-[#01875f]/10 border border-[#01875f] text-[#01875f] dark:text-[#00e699]">
+                <p className="text-[11px] font-bold leading-normal">
+                  Syncing is recommended on the native app for widgets & alarms!
+                </p>
+                <a
+                  href="https://play.google.com/store/apps/details?id=com.intersemester.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-2 bg-[#01875f] text-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-[#016f4e] transition-colors cursor-pointer rounded-none"
+                >
+                  Download on Google Play
+                </a>
+              </div>
+            )}
+
             <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed">
               Accepting will download the batch subjects and classes, replacing your current timetable. You will stay synced in real-time.
             </p>
@@ -158,6 +186,13 @@ export default function AppHome() {
               <button
                 type="button"
                 onClick={async () => {
+                  if (!isSignedIn) {
+                    showToast('Login Required', 'Please log in or sign up to sync with a batch.', 'info');
+                    if (typeof window !== 'undefined') {
+                      window.location.href = `/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`;
+                    }
+                    return;
+                  }
                   setInviteModalOpen(false);
                   await joinBatchTimetable(inviteKey);
                   if (typeof window !== 'undefined') {
