@@ -104,7 +104,7 @@ export default function AppHome() {
         <Header />
 
         <main className="flex-1 px-4 sm:px-8 py-6 max-w-6xl mx-auto w-full relative">
-          {!Capacitor.isNativePlatform() && (isAndroid || isIOS) && isSignedIn && (
+          {!Capacitor.isNativePlatform() && isAndroid && isSignedIn && (
             <div className="mb-4 p-3 bg-black text-white dark:bg-white dark:text-black text-xs font-bold flex justify-between items-center border border-black dark:border-white">
               <span>Open this schedule inside the AcademiSync App!</span>
               <a
@@ -196,16 +196,13 @@ export default function AppHome() {
             )}
 
             {!Capacitor.isNativePlatform() && isIOS && (
-              <div className="flex flex-col gap-2 p-3 bg-blue-500/10 border border-blue-500 text-blue-500 dark:text-blue-300">
+              <div className="flex flex-col gap-2 p-3 bg-indigo-500/10 border border-indigo-500 text-indigo-700 dark:text-indigo-300">
                 <p className="text-[11px] font-bold leading-normal">
-                  Open in the native iOS app if already installed:
+                  PWA Quick Tip for iPhone Users:
                 </p>
-                <a
-                  href={`com.intersemester.app://invite?key=${inviteKey}`}
-                  className="w-full py-2 bg-blue-500 text-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-blue-600 transition-colors cursor-pointer rounded-none"
-                >
-                  Open in App
-                </a>
+                <p className="text-[10px] leading-relaxed opacity-90 font-medium">
+                  Tap Safari's <span className="font-bold text-indigo-800 dark:text-indigo-400">Share</span> button (at the bottom) and select <span className="font-bold text-indigo-800 dark:text-indigo-400">"Add to Home Screen"</span> to run AcademiSync as a full-screen app!
+                </p>
               </div>
             )}
 
