@@ -315,7 +315,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           remoteStateString.current = JSON.stringify(currentState);
         })
         .catch((e) => console.error('Firebase Sync Error', e));
-    }, 1000);
+    }, 100);
 
     return () => clearTimeout(timeout);
   }, [profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions, rescheduledSessions, user, isClerkLoaded, isHydrated, isCloudSynced]);
