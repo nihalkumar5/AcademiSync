@@ -13,6 +13,8 @@ import {
   Exam,
   UserSettings,
   NotificationCategory,
+  BatchProposedTask,
+  HomeworkPriority,
 } from '@/lib/types';
 import { storage } from '@/lib/storage';
 import { DEFAULT_PROFILE, DEFAULT_SETTINGS } from '@/lib/initialData';
@@ -20,7 +22,7 @@ import { calculateTomorrowCarryItems, getCanonicalBatchKey } from '@/lib/timetab
 import { checkAndGenerateSmartNotifications } from '@/lib/notificationEngine';
 import confetti from 'canvas-confetti';
 import { useUser } from '@clerk/nextjs';
-import { doc, onSnapshot, setDoc, deleteDoc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { doc, collection, onSnapshot, setDoc, deleteDoc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { registerPushNotifications } from '@/lib/pushNotifications';
 import { triggerLocalNotification, scheduleTimetableLocalNotifications } from '@/lib/localNotifications';
@@ -102,6 +104,17 @@ interface AppContextType {
   joinSharedExams: (examsKey: string) => Promise<void>;
   toastMessage: { id: number; title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error' } | null;
   showToast: (title: string, message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
+  proposedBatchTasks: BatchProposedTask[];
+  proposeBatchTask: (task: {
+    title: string;
+    description?: string;
+    subjectId: string;
+    subjectName?: string;
+    deadline: string;
+    priority: HomeworkPriority;
+    attachmentName?: string;
+  }) => Promise<string>;
+  voteBatchTask: (proposalId: string, vote: 'approve' | 'reject') => Promise<void>;
   showHolidayAnimation: boolean;
   resetAllData: () => Promise<void>;
 }
@@ -129,6 +142,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [cancelledSessions, setCancelledSessionsState] = useState<string[]>(storage.getCancelledSessions());
   const [rescheduledSessions, setRescheduledSessionsState] = useState<Record<string, { startTime: string; endTime: string; room?: string }>>(storage.getRescheduledSessions());
   const [showHolidayAnimation, setShowHolidayAnimation] = useState(false);
+  const [proposedBatchTasks, setProposedBatchTasks] = useState<BatchProposedTask[]>([]);
 
   const { user, isLoaded: isClerkLoaded } = useUser();
   const [isCloudSynced, setIsCloudSynced] = useState(false);
@@ -279,7 +293,52 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.error('Error listening to batch timetable updates:', err);
     });
 
-    return () => unsubscribe();
+    // Listen to Batch Proposed Tasks for Voting & Auto-Sync
+    const proposalsRef = collection(db, 'shared_timetables', profile.batchKey, 'proposed_tasks');
+    const unsubProposals = onSnapshot(proposalsRef, (snapshot) => {
+      const fetched: BatchProposedTask[] = [];
+      snapshot.forEach((docSnap) => {
+        fetched.push({ id: docSnap.id, ...docSnap.data() } as BatchProposedTask);
+      });
+      setProposedBatchTasks(fetched);
+
+      // Check for approved proposals to auto-insert into local homework
+      fetched.forEach((prop) => {
+        if (prop.status === 'approved') {
+          setHomeworkState((prevHw) => {
+            const alreadyExists = prevHw.some(
+              (h) => h.proposalId === prop.id || (h.title === prop.title && h.deadline === prop.deadline)
+            );
+            if (alreadyExists) return prevHw;
+
+            const newHw: Homework = {
+              id: `hw_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+              subjectId: prop.subjectId,
+              subjectName: prop.subjectName,
+              title: prop.title,
+              description: prop.description || '',
+              deadline: prop.deadline,
+              priority: prop.priority,
+              status: 'Not Started',
+              attachmentName: prop.attachmentName || '',
+              createdAt: new Date().toISOString(),
+              isBatchShared: true,
+              proposalId: prop.id,
+            };
+            const updated = [newHw, ...prevHw];
+            storage.setHomework(updated);
+            return updated;
+          });
+        }
+      });
+    }, (err) => {
+      console.error('Error listening to batch proposals:', err);
+    });
+
+    return () => {
+      unsubscribe();
+      unsubProposals();
+    };
   }, [profile.isBatchSynced, profile.batchKey]);
 
   // Firebase Realtime Up-Sync (Saves edits to cloud for logged-in user)
@@ -1374,6 +1433,133 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const proposeBatchTask = async (taskData: {
+    title: string;
+    description?: string;
+    subjectId: string;
+    subjectName?: string;
+    deadline: string;
+    priority: HomeworkPriority;
+    attachmentName?: string;
+  }): Promise<string> => {
+    if (!profile.isBatchSynced || !profile.batchKey) {
+      throw new Error('Not connected to any batch');
+    }
+
+    let memberCount = 1;
+    try {
+      const batchSnap = await getDoc(doc(db, 'shared_timetables', profile.batchKey));
+      if (batchSnap.exists()) {
+        memberCount = batchSnap.data().studentCount || 1;
+      }
+    } catch (e) {}
+
+    const proposalId = `prop_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    const proposalDocRef = doc(db, 'shared_timetables', profile.batchKey, 'proposed_tasks', proposalId);
+
+    const creatorId = user?.id || 'anon';
+    const creatorName = profile.name || user?.fullName || 'Classmate';
+    const creatorEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
+
+    const initialVotes: Record<string, 'approve' | 'reject'> = {
+      [creatorId]: 'approve',
+    };
+
+    const newProposal: BatchProposedTask = {
+      id: proposalId,
+      batchKey: profile.batchKey,
+      title: taskData.title,
+      description: taskData.description || '',
+      subjectId: taskData.subjectId,
+      subjectName: taskData.subjectName || '',
+      deadline: taskData.deadline,
+      priority: taskData.priority,
+      attachmentName: taskData.attachmentName || '',
+      creatorId,
+      creatorName,
+      creatorEmail,
+      votes: initialVotes,
+      approvalsCount: 1,
+      rejectionsCount: 0,
+      status: memberCount <= 1 ? 'approved' : 'voting',
+      totalEligibleMembers: Math.max(memberCount, 1),
+      approvedAt: memberCount <= 1 ? new Date().toISOString() : undefined,
+      createdAt: new Date().toISOString(),
+    };
+
+    await setDoc(proposalDocRef, sanitizeForFirestore(newProposal));
+
+    // Also add to creator's local tasks immediately
+    addHomework({
+      subjectId: taskData.subjectId,
+      subjectName: taskData.subjectName,
+      title: taskData.title,
+      description: taskData.description,
+      deadline: taskData.deadline,
+      priority: taskData.priority,
+      status: 'Not Started',
+      attachmentName: taskData.attachmentName,
+      isBatchShared: true,
+      proposalId: proposalId,
+    });
+
+    showToast('Proposal Submitted', 'Batchmates will now vote to add this assignment.', 'success');
+    return proposalId;
+  };
+
+  const voteBatchTask = async (proposalId: string, vote: 'approve' | 'reject'): Promise<void> => {
+    if (!profile.isBatchSynced || !profile.batchKey || !user) {
+      showToast('Sign In Required', 'You must be signed in and connected to a batch to vote.', 'error');
+      return;
+    }
+
+    try {
+      const proposalDocRef = doc(db, 'shared_timetables', profile.batchKey, 'proposed_tasks', proposalId);
+      const propSnap = await getDoc(proposalDocRef);
+      if (!propSnap.exists()) {
+        showToast('Not Found', 'Proposal no longer exists.', 'error');
+        return;
+      }
+
+      const data = propSnap.data() as BatchProposedTask;
+      const currentVotes = { ...(data.votes || {}) };
+      currentVotes[user.id] = vote;
+
+      const approvals = Object.values(currentVotes).filter((v) => v === 'approve').length;
+      const rejections = Object.values(currentVotes).filter((v) => v === 'reject').length;
+
+      const totalMembers = Math.max(data.totalEligibleMembers || 1, 1);
+      const threshold = Math.ceil(totalMembers * 0.5);
+
+      let newStatus: 'voting' | 'approved' | 'rejected' = data.status;
+      let approvedAt = data.approvedAt;
+
+      if (approvals >= threshold) {
+        newStatus = 'approved';
+        approvedAt = new Date().toISOString();
+      } else if (rejections > totalMembers - threshold) {
+        newStatus = 'rejected';
+      }
+
+      await updateDoc(proposalDocRef, {
+        votes: currentVotes,
+        approvalsCount: approvals,
+        rejectionsCount: rejections,
+        status: newStatus,
+        approvedAt: approvedAt || null,
+      });
+
+      if (newStatus === 'approved') {
+        showToast('Assignment Approved!', '50% consensus reached! Assignment added to batch.', 'success');
+      } else {
+        showToast('Vote Recorded', `You voted ${vote === 'approve' ? '👍 Approve' : '👎 Reject'}.`, 'info');
+      }
+    } catch (e) {
+      console.error('Error voting on batch task:', e);
+      showToast('Vote Failed', 'Could not submit your vote.', 'error');
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -1381,6 +1567,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         joinSharedCalendar,
         shareExamsWithBatch,
         joinSharedExams,
+        proposedBatchTasks,
+        proposeBatchTask,
+        voteBatchTask,
         isHydrated,
         activeView,
         setActiveView,

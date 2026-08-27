@@ -6,6 +6,7 @@ import { Homework, HomeworkStatus, HomeworkPriority } from '@/lib/types';
 import { HomeworkCard } from './HomeworkCard';
 import { AddHomeworkModal } from './AddHomeworkModal';
 import { HomeworkScanModal } from './HomeworkScanModal';
+import { ProposedBatchTasksVoting } from './ProposedBatchTasksVoting';
 import { EmptyState } from '../ui/EmptyState';
 import { Plus, Sparkles, Search, CheckSquare, X } from 'lucide-react';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
@@ -109,6 +110,9 @@ export const HomeworkView: React.FC = () => {
           </motion.button>
         </div>
       </div>
+
+      {/* CROWD-VOTED BATCH PROPOSALS (50% CONSENSUS) */}
+      <ProposedBatchTasksVoting />
 
       {/* iOS Style Rounded Search Bar */}
       <div className="relative w-full">

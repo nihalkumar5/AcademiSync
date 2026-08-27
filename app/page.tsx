@@ -31,6 +31,7 @@ import { NotificationCenter } from '@/components/notifications/NotificationCente
 import { SettingsView } from '@/components/settings/SettingsView';
 import { HolidayBalloons } from '@/components/ui/HolidayBalloons';
 import { CampusSpotlightCard } from '@/components/ads/CampusSpotlightCard';
+import { ProposedBatchTasksVoting } from '@/components/homework/ProposedBatchTasksVoting';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -191,6 +192,7 @@ export default function AppHome() {
               <div className="flex flex-col gap-6">
                 <OverviewHeader />
                 <LiveClassCard />
+                <ProposedBatchTasksVoting />
                 <CampusSpotlightCard placement="home" />
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                   <TodayTimeline />

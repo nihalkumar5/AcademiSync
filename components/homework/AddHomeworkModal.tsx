@@ -6,6 +6,7 @@ import { Homework, HomeworkPriority, HomeworkStatus } from '@/lib/types';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input, Textarea, Select } from '../ui/Input';
+import { Vote, Users, Check } from 'lucide-react';
 
 export interface AddHomeworkModalProps {
   isOpen: boolean;
@@ -18,7 +19,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
   onClose,
   homeworkToEdit,
 }) => {
-  const { subjects, addHomework, updateHomework } = useApp();
+  const { subjects, addHomework, updateHomework, profile, proposeBatchTask } = useApp();
 
   const [subjectId, setSubjectId] = useState('');
   const [title, setTitle] = useState('');
@@ -27,6 +28,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
   const [priority, setPriority] = useState<HomeworkPriority>('Medium');
   const [status, setStatus] = useState<HomeworkStatus>('Not Started');
   const [attachmentName, setAttachmentName] = useState('');
+  const [shareWithBatch, setShareWithBatch] = useState(false);
 
   useEffect(() => {
     if (homeworkToEdit) {
@@ -37,6 +39,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
       setPriority(homeworkToEdit.priority);
       setStatus(homeworkToEdit.status);
       setAttachmentName(homeworkToEdit.attachmentName || '');
+      setShareWithBatch(false);
     } else {
       if (subjects.length > 0 && !subjectId) {
         setSubjectId(subjects[0].id);
@@ -51,32 +54,49 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
       setPriority('Medium');
       setStatus('Not Started');
       setAttachmentName('');
+      setShareWithBatch(!!(profile.isBatchSynced && profile.batchKey));
     }
-  }, [homeworkToEdit, isOpen, subjects]);
+  }, [homeworkToEdit, isOpen, subjects, profile.isBatchSynced, profile.batchKey]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !subjectId) return;
+
+    const selectedSubject = subjects.find((s) => s.id === subjectId);
+    const subjectName = selectedSubject?.name || '';
 
     if (homeworkToEdit) {
       updateHomework(homeworkToEdit.id, {
         subjectId,
+        subjectName,
         title: title.trim(),
-        description: description.trim() ,
+        description: description.trim(),
         deadline: new Date(deadline).toISOString(),
         priority,
         status,
-        attachmentName: attachmentName.trim() ,
+        attachmentName: attachmentName.trim(),
+      });
+    } else if (shareWithBatch && profile.isBatchSynced && profile.batchKey) {
+      // Propose as batch assignment (50% consensus vote)
+      await proposeBatchTask({
+        subjectId,
+        subjectName,
+        title: title.trim(),
+        description: description.trim(),
+        deadline: new Date(deadline).toISOString(),
+        priority,
+        attachmentName: attachmentName.trim(),
       });
     } else {
       addHomework({
         subjectId,
+        subjectName,
         title: title.trim(),
-        description: description.trim() ,
+        description: description.trim(),
         deadline: new Date(deadline).toISOString(),
         priority,
         status,
-        attachmentName: attachmentName.trim() ,
+        attachmentName: attachmentName.trim(),
       });
     }
     onClose();
@@ -158,12 +178,34 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
           />
         </div>
 
+        {/* BATCH PROPOSAL TOGGLE (50% CONSENSUS) */}
+        {!homeworkToEdit && profile.isBatchSynced && profile.batchKey && (
+          <div className="p-3 border border-black dark:border-white bg-black/5 dark:bg-white/5 flex items-start gap-2.5">
+            <input
+              type="checkbox"
+              id="batch_share_toggle"
+              checked={shareWithBatch}
+              onChange={(e) => setShareWithBatch(e.target.checked)}
+              className="w-4 h-4 mt-0.5 cursor-pointer accent-black dark:accent-white"
+            />
+            <label htmlFor="batch_share_toggle" className="cursor-pointer text-xs flex flex-col gap-0.5">
+              <span className="font-bold uppercase tracking-wider text-black dark:text-white flex items-center gap-1.5">
+                <Vote className="w-3.5 h-3.5 text-amber-500" />
+                <span>Share with Entire Batch (50% Consensus Vote)</span>
+              </span>
+              <span className="text-[11px] text-black/60 dark:text-white/60">
+                Submits this assignment to your batchmates. If 50% of batch members vote Approve, it automatically gets added to everyone's schedule!
+              </span>
+            </label>
+          </div>
+        )}
+
         <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
           <Button type="button" variant="ghost" size="sm" onClick={onClose}>
             Cancel
           </Button>
           <Button type="submit" variant="primary" size="sm">
-            {homeworkToEdit ? 'Save Changes' : 'Create Task'}
+            {homeworkToEdit ? 'Save Changes' : shareWithBatch ? 'Propose to Batch' : 'Create Task'}
           </Button>
         </div>
       </form>

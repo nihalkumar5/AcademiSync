@@ -60,6 +60,7 @@ export type HomeworkStatus = 'Not Started' | 'In Progress' | 'Completed';
 export interface Homework {
   id: string;
   subjectId: string;
+  subjectName?: string;
   title: string;
   description?: string;
   deadline: string; // ISO string
@@ -69,6 +70,30 @@ export interface Homework {
   attachmentUrl?: string;
   createdAt: string;
   completedAt?: string;
+  isBatchShared?: boolean;
+  proposalId?: string;
+}
+
+export interface BatchProposedTask {
+  id: string;
+  batchKey: string;
+  title: string;
+  description?: string;
+  subjectId: string;
+  subjectName?: string;
+  deadline: string; // ISO string
+  priority: HomeworkPriority;
+  attachmentName?: string;
+  creatorId: string;
+  creatorName: string;
+  creatorEmail?: string;
+  votes: Record<string, 'approve' | 'reject'>; // userId -> 'approve' | 'reject'
+  approvalsCount: number;
+  rejectionsCount: number;
+  status: 'voting' | 'approved' | 'rejected';
+  totalEligibleMembers: number;
+  approvedAt?: string;
+  createdAt: string;
 }
 
 export interface CarryItem {
