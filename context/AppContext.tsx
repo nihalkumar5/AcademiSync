@@ -1529,7 +1529,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const rejections = Object.values(currentVotes).filter((v) => v === 'reject').length;
 
       const totalMembers = Math.max(data.totalEligibleMembers || 1, 1);
-      const threshold = Math.ceil(totalMembers * 0.5);
+      const threshold = Math.max(Math.ceil(totalMembers * 0.3), 1);
 
       let newStatus: 'voting' | 'approved' | 'rejected' = data.status;
       let approvedAt = data.approvedAt;
@@ -1550,7 +1550,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
 
       if (newStatus === 'approved') {
-        showToast('Assignment Approved!', '50% consensus reached! Assignment added to batch.', 'success');
+        showToast('Assignment Approved!', '30% consensus reached! Assignment added to batch.', 'success');
       } else {
         showToast('Vote Recorded', `You voted ${vote === 'approve' ? '👍 Approve' : '👎 Reject'}.`, 'info');
       }

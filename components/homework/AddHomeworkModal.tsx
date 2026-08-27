@@ -178,7 +178,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
           />
         </div>
 
-        {/* BATCH PROPOSAL TOGGLE (50% CONSENSUS) */}
+        {/* BATCH PROPOSAL TOGGLE (30% CONSENSUS) */}
         {!homeworkToEdit && profile.isBatchSynced && profile.batchKey && (
           <div className="p-3 border border-black dark:border-white bg-black/5 dark:bg-white/5 flex items-start gap-2.5">
             <input
@@ -191,10 +191,10 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
             <label htmlFor="batch_share_toggle" className="cursor-pointer text-xs flex flex-col gap-0.5">
               <span className="font-bold uppercase tracking-wider text-black dark:text-white flex items-center gap-1.5">
                 <Vote className="w-3.5 h-3.5 text-amber-500" />
-                <span>Share with Entire Batch (50% Consensus Vote)</span>
+                <span>Share with Entire Batch (30% Consensus Vote)</span>
               </span>
               <span className="text-[11px] text-black/60 dark:text-white/60">
-                Submits this assignment to your batchmates. If 50% of batch members vote Approve, it automatically gets added to everyone's schedule!
+                Submits this assignment to your batchmates. If 30% of batch members vote Approve, it automatically gets added to everyone's schedule!
               </span>
             </label>
           </div>

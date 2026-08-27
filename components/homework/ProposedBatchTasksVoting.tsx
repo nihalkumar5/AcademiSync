@@ -43,7 +43,7 @@ export const ProposedBatchTasksVoting: React.FC = () => {
               </span>
             </h3>
             <p className="text-[11px] text-black/60 dark:text-white/60 font-mono">
-              Classmate proposed tasks. Reaching 50% approval automatically adds them to everyone's schedule.
+              Classmate proposed tasks. Reaching 30% approval automatically adds them to everyone's schedule.
             </p>
           </div>
         </div>
@@ -56,7 +56,7 @@ export const ProposedBatchTasksVoting: React.FC = () => {
             const currentUserId = user?.id || '';
             const userVote = currentUserId ? proposal.votes?.[currentUserId] : null;
             const totalMembers = Math.max(proposal.totalEligibleMembers || 1, 1);
-            const neededVotes = Math.ceil(totalMembers * 0.5);
+            const neededVotes = Math.max(Math.ceil(totalMembers * 0.3), 1);
             const progressPercent = Math.min(Math.round((proposal.approvalsCount / neededVotes) * 100), 100);
 
             const subject = subjects.find((s) => s.id === proposal.subjectId);
