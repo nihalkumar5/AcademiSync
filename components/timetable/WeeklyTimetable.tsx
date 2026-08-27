@@ -9,12 +9,13 @@ import { AddEditClassModal } from './AddEditClassModal';
 import { TimetableImportModal } from './TimetableImportModal';
 import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
-import { Plus, Sparkles, CalendarDays, Share2 } from 'lucide-react';
+import { Plus, Sparkles, CalendarDays, Share2, UserPlus } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useClerk, useUser } from '@clerk/nextjs';
+import { Modal } from '@/components/ui/Modal';
 
 export const WeeklyTimetable: React.FC = () => {
-  const { timetable, subjects, deleteClassSession, profile, shareTimetableWithBatch, showToast } = useApp();
+  const { timetable, subjects, deleteClassSession, profile, shareTimetableWithBatch, showToast, joinBatchTimetable, searchBatchTimetable } = useApp();
   const { isSignedIn } = useUser();
   const clerk = useClerk();
 
@@ -24,6 +25,9 @@ export const WeeklyTimetable: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [targetAddDay, setTargetAddDay] = useState<DayOfWeek>('Monday');
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [inviteInput, setInviteInput] = useState('');
+  const [isJoining, setIsJoining] = useState(false);
 
   const checkIsNow = (session: ClassSession) => {
     if (currentDay !== session.day) return false;
@@ -61,6 +65,42 @@ export const WeeklyTimetable: React.FC = () => {
       return;
     }
     setShowImportModal(true);
+  };
+
+  const handleJoinSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isSignedIn) {
+      clerk.openSignIn();
+      return;
+    }
+
+    const input = inviteInput.trim();
+    if (!input) return;
+
+    setIsJoining(true);
+    let inviteKey = input;
+
+    try {
+      if (input.startsWith('http://') || input.startsWith('https://')) {
+        const url = new URL(input);
+        const inviteParam = url.searchParams.get('invite');
+        if (inviteParam) {
+          inviteKey = inviteParam;
+        }
+      }
+    } catch (err) {
+      console.error('Failed to parse URL:', err);
+    }
+
+    try {
+      await joinBatchTimetable(inviteKey);
+      setShowJoinModal(false);
+      setInviteInput('');
+    } catch (err) {
+      console.error('Failed to join batch:', err);
+    } finally {
+      setIsJoining(false);
+    }
   };
 
   const handleEditSession = (session: ClassSession) => {
@@ -123,6 +163,22 @@ export const WeeklyTimetable: React.FC = () => {
           >
             <Share2 className="w-4 h-4" />
             Share Batch
+          </Button>
+
+          <Button
+            variant="outline"
+            size="md"
+            onClick={() => {
+              if (!isSignedIn) {
+                clerk.openSignIn();
+                return;
+              }
+              setShowJoinModal(true);
+            }}
+            className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors flex items-center gap-1.5"
+          >
+            <UserPlus className="w-4 h-4" />
+            Join Batch
           </Button>
 
           <Button
@@ -304,6 +360,54 @@ export const WeeklyTimetable: React.FC = () => {
         isOpen={showImportModal}
         onClose={() => setShowImportModal(false)}
       />
+
+      <Modal
+        isOpen={showJoinModal}
+        onClose={() => {
+          setShowJoinModal(false);
+          setInviteInput('');
+        }}
+        title="Join Batch Timetable"
+        description="Paste the invite link or batch code shared by your classmate to sync your schedule."
+      >
+        <form onSubmit={handleJoinSubmit} className="flex flex-col gap-4 mt-3 text-left">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[10px] font-black uppercase tracking-wider text-black/50 dark:text-white/50">
+              Invite Link / Batch Code
+            </label>
+            <div className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-zinc-950 border border-black dark:border-white">
+              <input
+                type="text"
+                value={inviteInput}
+                onChange={(e) => setInviteInput(e.target.value)}
+                placeholder="e.g. https://academi-sync-chi.vercel.app/?invite=..."
+                required
+                className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none placeholder:text-black/30 dark:placeholder:text-white/30"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-2.5 justify-end mt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowJoinModal(false);
+                setInviteInput('');
+              }}
+              className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isJoining}
+              className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none disabled:opacity-50"
+            >
+              {isJoining ? 'Syncing...' : 'Sync & Join'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
