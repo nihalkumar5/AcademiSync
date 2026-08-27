@@ -203,18 +203,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           return;
         }
 
-        // If cloud data is OLDER than our local last-updated timestamp,
-        // it means we just uploaded a change that echoed back — skip override.
-        const localLastUpdated = typeof window !== 'undefined'
-          ? parseInt(window.localStorage.getItem('iiitnr_last_updated') || '0', 10)
-          : 0;
-        const cloudLastUpdated = data.lastUpdated ?? 0;
-        if (localLastUpdated > 0 && cloudLastUpdated < localLastUpdated) {
-          // Cloud is behind our local state — just mark synced and wait for upload
-          remoteStateString.current = dataStr;
-          setIsCloudSynced(true);
-          return;
-        }
 
         remoteStateString.current = dataStr;
         isApplyingRemote.current = true;
