@@ -8,7 +8,8 @@ export const checkAndGenerateSmartNotifications = (
   events: AcademicEvent[],
   settings: UserSettings,
   existingNotifications: AppNotification[],
-  cancelledSessionKeys: string[] = []
+  cancelledSessionKeys: string[] = [],
+  rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string }> = {}
 ): AppNotification[] => {
   const newNotifications: AppNotification[] = [];
   const existingIds = new Set(existingNotifications.map((n) => n.relatedId || n.id));
@@ -40,6 +41,19 @@ export const checkAndGenerateSmartNotifications = (
   // 1. Daily Morning Schedule Summary — skip on holidays AND exam days (no classes on either)
   const todayClasses = isHolidayOrExam ? [] : timetable
     .filter((s) => s.day === todayDay && !cancelledSessionKeys.includes(`${dateTodayStr}_${s.id}`))
+    .map((s) => {
+      const rescheduleKey = `${dateTodayStr}_${s.id}`;
+      const reschedule = rescheduledSessions[rescheduleKey];
+      if (reschedule) {
+        return {
+          ...s,
+          startTime: reschedule.startTime,
+          endTime: reschedule.endTime,
+          room: reschedule.room || s.room,
+        };
+      }
+      return s;
+    })
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
   const dailySummaryKey = `daily_summary_${dateTodayStr}`;
@@ -63,13 +77,15 @@ export const checkAndGenerateSmartNotifications = (
     const startMinutes = timeToMinutes(session.startTime);
     const diff = startMinutes - currentMinutes;
     const sub = subjectMap.get(session.subjectId);
+    const rescheduleKey = `${dateTodayStr}_${session.id}`;
+    const isRescheduled = rescheduledSessions[rescheduleKey] !== undefined;
 
     // Reminder 5-30 mins before
     const remindKey = `class_remind_${session.id}_${dateTodayStr}`;
     if (diff > 0 && diff <= maxReminderMins && !existingIds.has(remindKey)) {
       newNotifications.push({
         id: `notif_${Date.now()}_cr_${session.id}`,
-        title: `⏰ Class in ${diff} mins: ${sub?.name || 'Lecture'}`,
+        title: `⏰ Class in ${diff} mins: ${sub?.name || 'Lecture'}${isRescheduled ? ' (Rescheduled)' : ''}`,
         message: `Starts at ${formatTime12Hour(session.startTime)} in ${session.room}${session.faculty ? ` with ${session.faculty}` : ''}.`,
         category: 'classes',
         timestamp: new Date().toISOString(),
@@ -83,7 +99,7 @@ export const checkAndGenerateSmartNotifications = (
     if (diff <= 0 && diff >= -5 && !existingIds.has(startingNowKey)) {
       newNotifications.push({
         id: `notif_${Date.now()}_cn_${session.id}`,
-        title: `🔔 Class Starting Now: ${sub?.name || 'Lecture'}`,
+        title: `🔔 Class Starting Now: ${sub?.name || 'Lecture'}${isRescheduled ? ' (Rescheduled)' : ''}`,
         message: `Class in ${session.room}${session.faculty ? ` with ${session.faculty}` : ''} has begun.`,
         category: 'classes',
         timestamp: new Date().toISOString(),

@@ -103,7 +103,9 @@ export const scheduleTimetableLocalNotifications = async (
   homework?: Homework[],
   exams?: Exam[],
   settingsParam?: UserSettings | number,
-  events?: AcademicEvent[]
+  events?: AcademicEvent[],
+  cancelledSessionKeys: string[] = [],
+  rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string }> = {}
 ) => {
   if (!Capacitor.isNativePlatform()) {
     console.log('Local notifications scheduling is skipped (not a native platform).');
@@ -174,21 +176,6 @@ export const scheduleTimetableLocalNotifications = async (
       const jsDay = dayNameToJsDay[session.day];
       if (jsDay === undefined) continue;
 
-      // Parse session.startTime robustly: "09:00", "09:00 AM", "14:30"
-      const cleanTime = session.startTime.trim();
-      const parts = cleanTime.split(' ');
-      const timeParts = parts[0].split(':');
-      let startH = parseInt(timeParts[0], 10);
-      let startM = parseInt(timeParts[1] || '0', 10);
-
-      if (parts[1]) {
-        const modifier = parts[1].toUpperCase();
-        if (modifier === 'PM' && startH < 12) startH += 12;
-        if (modifier === 'AM' && startH === 12) startH = 0;
-      }
-
-      if (isNaN(startH) || isNaN(startM)) continue;
-
       // Find the next N occurrences of this weekday and schedule individually
       const now = new Date();
       let occurrenceCount = 0;
@@ -196,20 +183,47 @@ export const scheduleTimetableLocalNotifications = async (
       for (let weekOffset = 0; weekOffset < WEEKS_AHEAD * 7 && occurrenceCount < WEEKS_AHEAD; weekOffset++) {
         const candidateDate = new Date(now);
         candidateDate.setDate(now.getDate() + weekOffset);
-        candidateDate.setHours(startH, startM, 0, 0);
 
         // Must be the right weekday and in the future
         if (candidateDate.getDay() !== jsDay) continue;
-        if (candidateDate.getTime() <= now.getTime()) continue;
+
+        // Get local date string YYYY-MM-DD
+        const dateStr = getLocalDateString(candidateDate);
 
         // Check if this specific date is a holiday — skip if yes
-        // Use getLocalDateString (local time) NOT toISOString (UTC) to avoid midnight IST → previous UTC date bug
-        const dateStr = getLocalDateString(candidateDate);
         if (skipDates.has(dateStr)) {
           console.log(`Skipping class notification on ${dateStr} — holiday or exam day.`);
           occurrenceCount++;
           continue;
         }
+
+        // Check if this class session is cancelled for this specific date
+        if (cancelledSessionKeys.includes(`${dateStr}_${session.id}`)) {
+          console.log(`Skipping class notification on ${dateStr} — class cancelled.`);
+          occurrenceCount++;
+          continue;
+        }
+
+        // Parse start time, taking reschedule into account!
+        const reschedule = rescheduledSessions[`${dateStr}_${session.id}`];
+        const cleanTime = reschedule ? reschedule.startTime.trim() : session.startTime.trim();
+        const targetRoom = reschedule?.room || session.room;
+
+        const parts = cleanTime.split(' ');
+        const timeParts = parts[0].split(':');
+        let startH = parseInt(timeParts[0], 10);
+        let startM = parseInt(timeParts[1] || '0', 10);
+
+        if (parts[1]) {
+          const modifier = parts[1].toUpperCase();
+          if (modifier === 'PM' && startH < 12) startH += 12;
+          if (modifier === 'AM' && startH === 12) startH = 0;
+        }
+
+        if (isNaN(startH) || isNaN(startM)) continue;
+
+        candidateDate.setHours(startH, startM, 0, 0);
+        if (candidateDate.getTime() <= now.getTime()) continue;
 
         // Schedule reminder 'reminderMinutes' before the class
         const reminderTime = new Date(candidateDate.getTime() - reminderMinutes * 60 * 1000);
@@ -221,8 +235,8 @@ export const scheduleTimetableLocalNotifications = async (
         const notifId = 1000 + (i * WEEKS_AHEAD) + occurrenceCount;
 
         notificationsToSchedule.push({
-          title: `⏰ Class in ${reminderMinutes} mins: ${sub.name}`,
-          body: `${session.isLab || sub.isLab ? 'Lab' : 'Lecture'} at ${session.room || sub.room || 'Classroom'} starts at ${formatTime12Hour(session.startTime)}`,
+          title: `⏰ Class in ${reminderMinutes} mins: ${sub.name}${reschedule ? ' (Rescheduled)' : ''}`,
+          body: `${session.isLab || sub.isLab ? 'Lab' : 'Lecture'} at ${targetRoom || 'Classroom'} starts at ${formatTime12Hour(cleanTime)}`,
           id: notifId,
           schedule: {
             at: reminderTime,

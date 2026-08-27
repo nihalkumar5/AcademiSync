@@ -1,14 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { motion } from 'framer-motion';
 import { getCurrentDayOfWeek, timeToMinutes, getTodayDateString, getTomorrowDayOfWeek, getTomorrowDateString, getSubjectThemeStyle } from '@/lib/timetableUtils';
-import { MapPin, User, Clock, FlaskConical, Ban, RotateCcw, MoreHorizontal } from 'lucide-react';
+import { MapPin, User, Clock, FlaskConical, Ban, RotateCcw, MoreVertical } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
-import { Subject } from '@/lib/types';
+import { Subject, ClassSession } from '@/lib/types';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
+import { Modal } from '../ui/Modal';
 
 // 10 distinct, elegant & engaging pastel paper colors (slightly lighter shades)
 const ELEGANT_PASTEL_PALETTE = [
@@ -34,7 +35,23 @@ const getSubjectPastelStyle = (sub?: Subject, fallbackId: string = '') => {
 };
 
 export const TodayTimeline: React.FC = () => {
-  const { timetable, subjects, events, setActiveView, isSessionCancelled, toggleSessionCancelled, settings } = useApp();
+  const { 
+    timetable, 
+    subjects, 
+    events, 
+    setActiveView, 
+    isSessionCancelled, 
+    toggleSessionCancelled, 
+    settings,
+    rescheduledSessions,
+    rescheduleSession
+  } = useApp();
+
+  const [openMenuSessionId, setOpenMenuSessionId] = useState<string | null>(null);
+  const [rescheduleTarget, setRescheduleTarget] = useState<ClassSession | null>(null);
+  const [rescheduleTimeStart, setRescheduleTimeStart] = useState('09:00');
+  const [rescheduleTimeEnd, setRescheduleTimeEnd] = useState('10:00');
+  const [rescheduleRoom, setRescheduleRoom] = useState('');
 
   const now = new Date();
   const currentHour = now.getHours();
@@ -47,6 +64,21 @@ export const TodayTimeline: React.FC = () => {
   const targetHoliday = events.find((e) => e.date === targetDateStr && e.type === 'holiday');
 
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
+
+  const handleRescheduleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rescheduleTarget) return;
+    rescheduleSession(
+      rescheduleTarget.id,
+      {
+        startTime: rescheduleTimeStart,
+        endTime: rescheduleTimeEnd,
+        room: rescheduleRoom || rescheduleTarget.room,
+      },
+      targetDateStr
+    );
+    setRescheduleTarget(null);
+  };
 
   const targetSessions = timetable
     .filter((s) => s.day === targetDay)
@@ -116,8 +148,9 @@ export const TodayTimeline: React.FC = () => {
         <div className="relative flex flex-col gap-0 border-l-[3px] border-slate-100 dark:border-zinc-800 ml-3 py-2">
           {targetSessions.map((session) => {
             const sub = subjectMap.get(session.subjectId);
-            const start = timeToMinutes(session.startTime);
-            const end = timeToMinutes(session.endTime);
+            const reschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
+            const start = timeToMinutes(reschedule ? reschedule.startTime : session.startTime);
+            const end = timeToMinutes(reschedule ? reschedule.endTime : session.endTime);
             const isCancelled = isSessionCancelled(session.id, targetDateStr);
             const isNow = !isAfter8PM && !isCancelled && currentMinutes >= start && currentMinutes < end;
             const isPassed = isCancelled || (isAfter8PM ? false : currentMinutes >= end);
@@ -158,11 +191,22 @@ export const TodayTimeline: React.FC = () => {
                     <div className={`flex flex-col sm:flex-row gap-3 transition-all ${isPassed && !isCancelled ? 'opacity-55' : 'opacity-100'}`}>
                       {/* Time */}
                       <div className="w-16 shrink-0 flex flex-col pt-0.5">
-                        <span className={`text-[13px] font-black tracking-tighter font-mono ${
-                          isCancelled ? 'line-through text-zinc-400 dark:text-zinc-600' : 'text-slate-800 dark:text-zinc-100'
-                        }`}>
-                          {session.startTime}
-                        </span>
+                        {reschedule ? (
+                          <div className="flex flex-col">
+                            <span className="text-[11px] line-through opacity-40 font-mono font-bold leading-none mb-0.5">
+                              {session.startTime}
+                            </span>
+                            <span className="text-[13px] font-black tracking-tighter font-mono text-black dark:text-white leading-none">
+                              {reschedule.startTime}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className={`text-[13px] font-black tracking-tighter font-mono ${
+                            isCancelled ? 'line-through text-zinc-400 dark:text-zinc-600' : 'text-slate-800 dark:text-zinc-100'
+                          }`}>
+                            {session.startTime}
+                          </span>
+                        )}
                       </div>
 
                       {/* Class Info Box */}
@@ -184,13 +228,19 @@ export const TodayTimeline: React.FC = () => {
                                 <span className="px-2 py-0.5 rounded-none bg-white text-black dark:bg-black dark:text-white text-[10px] font-bold uppercase tracking-wider animate-pulse border border-current">
                                   Now
                                 </span>
+                              ) : reschedule ? (
+                                <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider border ${
+                                  isNow ? 'bg-black text-white border-white' : 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800/60'
+                                }`}>
+                                  Rescheduled
+                                </span>
                               ) : null}
                             </div>
                             
                             <div className="flex items-center gap-3 text-xs opacity-75 font-medium flex-wrap mt-0.5">
                               <span className="flex items-center gap-1">
                                 <MapPin className="w-3.5 h-3.5" />
-                                {session.room}
+                                {reschedule?.room || session.room}
                               </span>
                               {session.faculty && (
                                 <span className="flex items-center gap-1">
@@ -205,29 +255,92 @@ export const TodayTimeline: React.FC = () => {
                                 </span>
                               )}
                             </div>
+
+                            {reschedule && (
+                              <span className="text-[10px] font-mono opacity-60 mt-1 font-semibold block">
+                                Rescheduled from {session.startTime} - {session.endTime}
+                              </span>
+                            )}
                           </div>
 
-                          {/* Quick Cancel / Restore Toggle Button */}
-                          <div className="shrink-0 flex items-center gap-1.5 self-start">
-                            {isCancelled ? (
-                              <button
-                                type="button"
-                                onClick={() => toggleSessionCancelled(session.id, targetDateStr)}
-                                className="flex items-center gap-1 px-2 py-0.5 text-[10.5px] font-bold bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300 transition-colors cursor-pointer"
-                                title={isAfter8PM ? "Restore this class for tomorrow" : "Restore this class for today"}
-                              >
-                                <RotateCcw className="w-3 h-3" />
-                                <span>Restore</span>
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => toggleSessionCancelled(session.id, targetDateStr)}
-                                className="p-1 text-black/30 dark:text-white/30 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-black/5 dark:hover:bg-white/10 transition-all opacity-30 group-hover:opacity-100 cursor-pointer rounded-none"
-                                title={isAfter8PM ? "Mark as cancelled for tomorrow" : "Mark as cancelled for today"}
-                              >
-                                <MoreHorizontal className="w-4 h-4" />
-                              </button>
+                          {/* Options Dropdown Menu */}
+                          <div className="shrink-0 flex items-center gap-1.5 self-start relative">
+                            <button
+                              type="button"
+                              onClick={() => setOpenMenuSessionId(openMenuSessionId === session.id ? null : session.id)}
+                              className="p-1.5 text-black/40 hover:text-black dark:text-white/40 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer rounded-none border border-transparent hover:border-black/10"
+                              title="More Options"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+
+                            {openMenuSessionId === session.id && (
+                              <>
+                                <div
+                                  className="fixed inset-0 z-20"
+                                  onClick={() => setOpenMenuSessionId(null)}
+                                />
+                                <div className="absolute right-0 mt-6 w-44 rounded-none bg-white dark:bg-zinc-950 border border-black dark:border-white shadow-lg py-1 z-30 text-left overflow-hidden">
+                                  {isCancelled ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenMenuSessionId(null);
+                                        toggleSessionCancelled(session.id, targetDateStr);
+                                      }}
+                                      className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-bold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-left transition-colors cursor-pointer"
+                                    >
+                                      <RotateCcw className="w-3.5 h-3.5" />
+                                      <span>Restore Class</span>
+                                    </button>
+                                  ) : (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setOpenMenuSessionId(null);
+                                          toggleSessionCancelled(session.id, targetDateStr);
+                                        }}
+                                        className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
+                                      >
+                                        <Ban className="w-3.5 h-3.5" />
+                                        <span>Cancel Class</span>
+                                      </button>
+                                      
+                                      <div className="h-px bg-black/10 dark:bg-white/10 my-0.5"></div>
+                                      
+                                      {reschedule ? (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setOpenMenuSessionId(null);
+                                            rescheduleSession(session.id, null, targetDateStr);
+                                          }}
+                                          className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-bold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
+                                        >
+                                          <RotateCcw className="w-3.5 h-3.5" />
+                                          <span>Revert Reschedule</span>
+                                        </button>
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setOpenMenuSessionId(null);
+                                            setRescheduleTimeStart(session.startTime.split(' ')[0]);
+                                            setRescheduleTimeEnd(session.endTime.split(' ')[0]);
+                                            setRescheduleRoom(session.room);
+                                            setRescheduleTarget(session);
+                                          }}
+                                          className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-bold text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 text-left transition-colors cursor-pointer"
+                                        >
+                                          <Clock className="w-3.5 h-3.5 opacity-60" />
+                                          <span>Reschedule Class</span>
+                                        </button>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              </>
                             )}
                           </div>
                         </div>
@@ -240,6 +353,70 @@ export const TodayTimeline: React.FC = () => {
           })}
         </div>
       </div>
+
+      <Modal
+        isOpen={rescheduleTarget !== null}
+        onClose={() => setRescheduleTarget(null)}
+        title="Reschedule Class"
+        description={`Reschedule this session for ${isAfter8PM ? 'tomorrow' : 'today'}. Changes will only reflect on the dashboard alerts and schedule.`}
+      >
+        <form onSubmit={handleRescheduleSubmit} className="flex flex-col gap-4 mt-3">
+          <div className="flex flex-col gap-1.5 text-left">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+              New Start Time
+            </label>
+            <input 
+              type="time" 
+              value={rescheduleTimeStart}
+              onChange={(e) => setRescheduleTimeStart(e.target.value)}
+              required
+              className="px-3 py-2 bg-transparent border border-black dark:border-white text-sm focus:outline-none rounded-none"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5 text-left">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+              New End Time
+            </label>
+            <input 
+              type="time" 
+              value={rescheduleTimeEnd}
+              onChange={(e) => setRescheduleTimeEnd(e.target.value)}
+              required
+              className="px-3 py-2 bg-transparent border border-black dark:border-white text-sm focus:outline-none rounded-none"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5 text-left">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+              New Room (Optional)
+            </label>
+            <input 
+              type="text" 
+              value={rescheduleRoom}
+              onChange={(e) => setRescheduleRoom(e.target.value)}
+              placeholder="e.g. LT-2, Lab-3"
+              className="px-3 py-2 bg-transparent border border-black dark:border-white text-sm focus:outline-none rounded-none"
+            />
+          </div>
+
+          <div className="flex gap-2 justify-end mt-4">
+            <button
+              type="button"
+              onClick={() => setRescheduleTarget(null)}
+              className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+            >
+              Save Schedule
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

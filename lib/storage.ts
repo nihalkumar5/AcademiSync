@@ -32,6 +32,7 @@ const STORAGE_KEYS = {
   SETTINGS: 'iiitnr_settings_v2',
   EXAMS: 'iiitnr_exams_v2',
   CANCELLED_SESSIONS: 'iiitnr_cancelled_sessions_v1',
+  RESCHEDULED_SESSIONS: 'iiitnr_rescheduled_sessions_v1',
 };
 
 // Safe LocalStorage helpers
@@ -122,6 +123,9 @@ export const storage = {
   getCancelledSessions: (): string[] => getStoredItem(STORAGE_KEYS.CANCELLED_SESSIONS, []),
   setCancelledSessions: (cancelled: string[]) => setStoredItem(STORAGE_KEYS.CANCELLED_SESSIONS, cancelled),
 
+  getRescheduledSessions: (): Record<string, { startTime: string; endTime: string; room?: string }> => getStoredItem(STORAGE_KEYS.RESCHEDULED_SESSIONS, {}),
+  setRescheduledSessions: (rescheduled: Record<string, { startTime: string; endTime: string; room?: string }>) => setStoredItem(STORAGE_KEYS.RESCHEDULED_SESSIONS, rescheduled),
+
   resetAll: () => {
     if (typeof window === 'undefined') return;
     Object.values(STORAGE_KEYS).forEach((k) => {
@@ -153,6 +157,7 @@ export const storage = {
       events: storage.getEvents(),
       exams: storage.getExams(),
       cancelledSessions: storage.getCancelledSessions(),
+      rescheduledSessions: storage.getRescheduledSessions(),
       exportedAt: new Date().toISOString(),
     }, null, 2);
   },
@@ -169,6 +174,7 @@ export const storage = {
       if (data.events) storage.setEvents(data.events);
       if (data.exams) storage.setExams(data.exams);
       if (data.cancelledSessions) storage.setCancelledSessions(data.cancelledSessions);
+      if (data.rescheduledSessions) storage.setRescheduledSessions(data.rescheduledSessions);
       return true;
     } catch (e) {
       console.error('Import failed:', e);

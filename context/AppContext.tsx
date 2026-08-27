@@ -84,6 +84,8 @@ interface AppContextType {
   cancelledSessions: string[];
   toggleSessionCancelled: (sessionId: string, dateStr?: string) => void;
   isSessionCancelled: (sessionId: string, dateStr?: string) => boolean;
+  rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string }>;
+  rescheduleSession: (sessionId: string, details: { startTime: string; endTime: string; room?: string } | null, dateStr?: string) => void;
   toastMessage: { id: number; title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error' } | null;
   showToast: (title: string, message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
   showHolidayAnimation: boolean;
@@ -111,6 +113,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [exams, setExamsState] = useState<Exam[]>(storage.getExams());
   const [settings, setSettingsState] = useState<UserSettings>(storage.getSettings());
   const [cancelledSessions, setCancelledSessionsState] = useState<string[]>(storage.getCancelledSessions());
+  const [rescheduledSessions, setRescheduledSessionsState] = useState<Record<string, { startTime: string; endTime: string; room?: string }>>(storage.getRescheduledSessions());
   const [showHolidayAnimation, setShowHolidayAnimation] = useState(false);
 
   const { user, isLoaded: isClerkLoaded } = useUser();
@@ -139,6 +142,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setExamsState([]);
       setSettingsState(DEFAULT_SETTINGS);
       setCancelledSessionsState([]);
+      setRescheduledSessionsState({});
       remoteStateString.current = "";
       setIsCloudSynced(false);
       prevUserIdRef.current = null;
@@ -199,6 +203,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (data.exams) { setExamsState(data.exams); storage.setExams(data.exams); }
         if (data.settings) { setSettingsState(data.settings); storage.setSettings(data.settings); }
         if (data.cancelledSessions) { setCancelledSessionsState(data.cancelledSessions); storage.setCancelledSessions(data.cancelledSessions); }
+        if (data.rescheduledSessions) { setRescheduledSessionsState(data.rescheduledSessions); storage.setRescheduledSessions(data.rescheduledSessions); }
 
         if (typeof window !== 'undefined' && data.lastUpdated) {
           window.localStorage.setItem('iiitnr_last_updated', data.lastUpdated.toString());
@@ -237,6 +242,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       exams,
       settings,
       cancelledSessions,
+      rescheduledSessions,
       lastUpdated: now,
     };
     
@@ -268,7 +274,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }, 1000);
 
     return () => clearTimeout(timeout);
-  }, [profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions, user, isClerkLoaded, isHydrated, isCloudSynced]);
+  }, [profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions, rescheduledSessions, user, isClerkLoaded, isHydrated, isCloudSynced]);
 
   // Hydration effect
   useEffect(() => {
@@ -281,6 +287,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const loadedEvents = storage.getEvents();
     const loadedSettings = storage.getSettings();
     const loadedCancelled = storage.getCancelledSessions();
+    const loadedRescheduled = storage.getRescheduledSessions();
     const loadedExams = storage.getExams();
 
     setProfileState(loadedProfile);
@@ -303,6 +310,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       storage.setCancelledSessions(prunedCancelled);
     }
     setCancelledSessionsState(prunedCancelled);
+
+    // Prune rescheduled session keys older than 30 days to prevent unbounded growth
+    const prunedRescheduled: Record<string, { startTime: string; endTime: string; room?: string }> = {};
+    let prunedRescheduledChanged = false;
+    Object.entries(loadedRescheduled).forEach(([key, val]) => {
+      const datePart = key.split('_')[0]; // "YYYY-MM-DD_sessId" format
+      const keyDate = new Date(datePart);
+      if (!isNaN(keyDate.getTime()) && keyDate >= thirtyDaysAgo) {
+        prunedRescheduled[key] = val;
+      } else {
+        prunedRescheduledChanged = true;
+      }
+    });
+    if (prunedRescheduledChanged) {
+      storage.setRescheduledSessions(prunedRescheduled);
+    }
+    setRescheduledSessionsState(prunedRescheduled);
 
     // Calculate carry items for tomorrow merging stored states & academic events/holidays
     const computedCarry = calculateTomorrowCarryItems(loadedTimetable, loadedSubjects, storedCarry, undefined, undefined, loadedEvents, loadedSettings);
@@ -356,7 +380,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           events,
           settings,
           prunedNotifications,
-          cancelledSessions
+          cancelledSessions,
+          rescheduledSessions
         );
         
         if (newNotifs.length > 0 || prunedNotifications.length !== prevNotifications.length) {
@@ -381,7 +406,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // Check every 60 seconds for time-based triggers
     const interval = setInterval(runCheck, 60000);
     return () => clearInterval(interval);
-  }, [timetable, subjects, homework, events, settings, carryItems, isHydrated]);
+  }, [timetable, subjects, homework, events, settings, carryItems, cancelledSessions, rescheduledSessions, isHydrated]);
 
   // Native Local Notification Scheduler Effect (debounced 500ms to avoid race conditions)
   useEffect(() => {
@@ -397,14 +422,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         homework,
         exams,
         settings,
-        events
+        events,
+        cancelledSessions,
+        rescheduledSessions
       );
     }, 500);
 
     return () => {
       if (scheduleDebounceRef.current) clearTimeout(scheduleDebounceRef.current);
     };
-  }, [timetable, subjects, homework, exams, settings, events, isHydrated]);
+  }, [timetable, subjects, homework, exams, settings, events, cancelledSessions, rescheduledSessions, isHydrated]);
 
 
 
@@ -887,6 +914,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return cancelledSessions.includes(key);
   };
 
+  const rescheduleSession = (
+    sessionId: string,
+    details: { startTime: string; endTime: string; room?: string } | null,
+    dateStr?: string
+  ) => {
+    const targetDate = dateStr || new Date().toISOString().split('T')[0];
+    const key = `${targetDate}_${sessionId}`;
+
+    setRescheduledSessionsState((prev) => {
+      const updated = { ...prev };
+      if (details === null) {
+        delete updated[key];
+        showToast('Reschedule Reverted', 'Class reverted to original scheduled time.', 'success');
+      } else {
+        updated[key] = details;
+        showToast('Class Rescheduled', `Class time updated to ${details.startTime} - ${details.endTime}.`, 'success');
+      }
+      storage.setRescheduledSessions(updated);
+      return updated;
+    });
+  };
+
   const resetAllData = async () => {
     // 1. Clear local storage (except profile, handled inside storage.ts)
     storage.resetAll();
@@ -899,6 +948,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setNotificationsState([]);
     setEventsState([]);
     setExamsState([]);
+    setCancelledSessionsState([]);
+    setRescheduledSessionsState({});
     // Settings could optionally be kept, but keeping with clear-all except profile:
     // (If you want to keep settings, remove the next line and add settings to the Firestore save)
     
@@ -964,6 +1015,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         cancelledSessions,
         toggleSessionCancelled,
         isSessionCancelled,
+        rescheduledSessions,
+        rescheduleSession,
         toastMessage,
         showToast,
         showHolidayAnimation,
