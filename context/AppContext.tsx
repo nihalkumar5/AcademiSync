@@ -16,11 +16,11 @@ import {
 } from '@/lib/types';
 import { storage } from '@/lib/storage';
 import { DEFAULT_PROFILE, DEFAULT_SETTINGS } from '@/lib/initialData';
-import { calculateTomorrowCarryItems } from '@/lib/timetableUtils';
+import { calculateTomorrowCarryItems, getCanonicalBatchKey } from '@/lib/timetableUtils';
 import { checkAndGenerateSmartNotifications } from '@/lib/notificationEngine';
 import confetti from 'canvas-confetti';
 import { useUser } from '@clerk/nextjs';
-import { doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, deleteDoc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { registerPushNotifications } from '@/lib/pushNotifications';
 import { triggerLocalNotification, scheduleTimetableLocalNotifications } from '@/lib/localNotifications';
@@ -86,6 +86,10 @@ interface AppContextType {
   isSessionCancelled: (sessionId: string, dateStr?: string) => boolean;
   rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string }>;
   rescheduleSession: (sessionId: string, details: { startTime: string; endTime: string; room?: string } | null, dateStr?: string) => void;
+  searchBatchTimetable: (college: string, programme: string, branch: string, semester: number) => Promise<any | null>;
+  joinBatchTimetable: (batchKey: string) => Promise<void>;
+  shareTimetableWithBatch: () => Promise<string>;
+  disconnectBatchTimetable: () => void;
   toastMessage: { id: number; title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error' } | null;
   showToast: (title: string, message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
   showHolidayAnimation: boolean;
@@ -225,6 +229,34 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     return () => unsubscribe();
   }, [user, isClerkLoaded]);
+
+  // Firestore Live Sync for Batch Timetables (for synced users)
+  useEffect(() => {
+    if (!profile.isBatchSynced || !profile.batchKey) return;
+
+    console.log(`Setting up real-time listener for batch: ${profile.batchKey}`);
+    const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
+    
+    const unsubscribe = onSnapshot(batchDocRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        console.log('Real-time batch update received:', data);
+        
+        if (data.subjects) {
+          setSubjectsState(data.subjects);
+          storage.setSubjects(data.subjects);
+        }
+        if (data.timetable) {
+          setTimetableState(data.timetable);
+          storage.setTimetable(data.timetable);
+        }
+      }
+    }, (err) => {
+      console.error('Error listening to batch timetable updates:', err);
+    });
+
+    return () => unsubscribe();
+  }, [profile.isBatchSynced, profile.batchKey]);
 
   // Firebase Realtime Up-Sync (Saves edits to cloud for logged-in user)
   useEffect(() => {
@@ -936,6 +968,121 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
 
+  const searchBatchTimetable = async (
+    college: string,
+    programme: string,
+    branch: string,
+    semester: number
+  ) => {
+    try {
+      const canonicalKey = getCanonicalBatchKey(college, programme, branch, semester);
+      const docRef = doc(db, 'shared_timetables', canonicalKey);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        return docSnap.data();
+      }
+      return null;
+    } catch (e) {
+      console.error('Error searching for batch timetable:', e);
+      return null;
+    }
+  };
+
+  const joinBatchTimetable = async (batchKey: string) => {
+    try {
+      const docRef = doc(db, 'shared_timetables', batchKey);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        showToast('Batch Not Found', 'Could not locate batch timetable in database.', 'error');
+        return;
+      }
+      const data = docSnap.data();
+
+      // Update local storage and React state
+      if (data.subjects) {
+        setSubjectsState(data.subjects);
+        storage.setSubjects(data.subjects);
+      }
+      if (data.timetable) {
+        setTimetableState(data.timetable);
+        storage.setTimetable(data.timetable);
+      }
+
+      // Update profile fields to show it's synced
+      const updatedProfile = {
+        ...profile,
+        college: data.college || profile.college,
+        programme: data.programme || profile.programme,
+        branch: data.branch || profile.branch,
+        semester: data.semester || profile.semester,
+        batchKey: batchKey,
+        isBatchSynced: true,
+      };
+
+      setProfileState(updatedProfile);
+      storage.setProfile(updatedProfile);
+
+      // Increment batch student counter in Firestore
+      await updateDoc(docRef, {
+        studentCount: increment(1),
+      });
+
+      showToast('Synced with Batch', `Successfully joined ${data.college} - Sem ${data.semester}.`, 'success');
+    } catch (e) {
+      console.error('Error joining batch timetable:', e);
+      showToast('Join Failed', 'Failed to connect to batch timetable.', 'error');
+    }
+  };
+
+  const shareTimetableWithBatch = async (): Promise<string> => {
+    try {
+      const canonicalKey = getCanonicalBatchKey(profile.college, profile.programme, profile.branch, profile.semester);
+      const docRef = doc(db, 'shared_timetables', canonicalKey);
+      
+      const payload = {
+        id: canonicalKey,
+        college: profile.college,
+        programme: profile.programme,
+        branch: profile.branch,
+        semester: profile.semester,
+        creatorId: user?.id || 'anonymous',
+        creatorName: profile.name || 'Anonymous Student',
+        subjects: subjects,
+        timetable: timetable,
+        studentCount: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      await setDoc(docRef, payload, { merge: true });
+
+      const updatedProfile = {
+        ...profile,
+        batchKey: canonicalKey,
+        isBatchSynced: true,
+      };
+      setProfileState(updatedProfile);
+      storage.setProfile(updatedProfile);
+
+      showToast('Timetable Shared', 'Your class schedule is now live for your batchmates!', 'success');
+      return canonicalKey;
+    } catch (e) {
+      console.error('Error sharing timetable:', e);
+      showToast('Share Failed', 'Failed to publish timetable to batch.', 'error');
+      throw e;
+    }
+  };
+
+  const disconnectBatchTimetable = () => {
+    const updatedProfile = {
+      ...profile,
+      isBatchSynced: false,
+    };
+    setProfileState(updatedProfile);
+    storage.setProfile(updatedProfile);
+    showToast('Batch Disconnected', 'You can now customize your schedule locally.', 'info');
+  };
+
   const resetAllData = async () => {
     // 1. Clear local storage (except profile, handled inside storage.ts)
     storage.resetAll();
@@ -1017,6 +1164,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         isSessionCancelled,
         rescheduledSessions,
         rescheduleSession,
+        searchBatchTimetable,
+        joinBatchTimetable,
+        shareTimetableWithBatch,
+        disconnectBatchTimetable,
         toastMessage,
         showToast,
         showHolidayAnimation,

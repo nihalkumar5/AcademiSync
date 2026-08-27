@@ -15,6 +15,8 @@ export interface StudentProfile {
   onboardingCompleted: boolean;
   avatarUrl?: string;
   createdAt: string;
+  batchKey?: string;
+  isBatchSynced?: boolean;
 }
 
 export interface Subject {

@@ -8,6 +8,7 @@ import { Programme, Branch } from '@/lib/types';
 import { storage } from '@/lib/storage';
 import { INDIAN_COLLEGES, STANDARD_PROGRAMMES, STANDARD_BRANCHES } from '@/lib/colleges';
 import { scheduleTestNotification } from '@/lib/localNotifications';
+import { getCanonicalBatchKey } from '@/lib/timetableUtils';
 import {
   User,
   GraduationCap,
@@ -29,6 +30,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Modal } from '@/components/ui/Modal';
 
 export const SettingsView: React.FC = () => {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -41,6 +43,10 @@ export const SettingsView: React.FC = () => {
     setShowOnboarding,
     triggerSimulatedAlert,
     resetAllData,
+    searchBatchTimetable,
+    joinBatchTimetable,
+    shareTimetableWithBatch,
+    disconnectBatchTimetable,
   } = useApp();
 
   const [name, setName] = useState(profile.name);
@@ -58,6 +64,8 @@ export const SettingsView: React.FC = () => {
   const [branch, setBranch] = useState<string>(profile.branch || '');
   const [year, setYear] = useState(profile.year);
   const [semester, setSemester] = useState(profile.semester);
+  const [pendingBatchKey, setPendingBatchKey] = useState<string | null>(null);
+  const [matchedBatchData, setMatchedBatchData] = useState<any>(null);
 
   // Debounced SheerID organization search lookup
   useEffect(() => {
@@ -130,17 +138,51 @@ export const SettingsView: React.FC = () => {
   const [eveningTime, setEveningTime] = useState(settings.eveningCarryReminderTime);
   const [hwDays, setHwDays] = useState(settings.homeworkWarningDays);
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateProfile({
-      college: college.trim(),
+    
+    const cleanCollege = college.trim();
+    const cleanProg = programme.trim();
+    const cleanBranch = branch.trim();
+    const cleanSem = Number(semester);
+
+    const hasAcademicChanges = 
+      cleanCollege !== profile.college ||
+      cleanProg !== profile.programme ||
+      cleanBranch !== profile.branch ||
+      cleanSem !== profile.semester;
+
+    const savedFields = {
       name: name.trim(),
       rollNumber: rollNumber.trim(),
       email: email.trim(),
-      programme,
-      branch,
       year: Number(year),
-      semester: Number(semester),
+    };
+
+    if (hasAcademicChanges) {
+      const newKey = getCanonicalBatchKey(cleanCollege, cleanProg, cleanBranch, cleanSem);
+      if (newKey !== profile.batchKey) {
+        setIsLoadingColleges(true);
+        const matched = await searchBatchTimetable(cleanCollege, cleanProg, cleanBranch, cleanSem);
+        setIsLoadingColleges(false);
+        
+        if (matched) {
+          setMatchedBatchData(matched);
+          setPendingBatchKey(newKey);
+          return; // Pause profile saving and show modal choice
+        }
+      }
+    }
+
+    // Normal profile save
+    updateProfile({
+      ...savedFields,
+      college: cleanCollege,
+      programme: cleanProg,
+      branch: cleanBranch,
+      semester: cleanSem,
+      batchKey: profile.batchKey,
+      isBatchSynced: profile.isBatchSynced,
     });
     showToast('Profile Saved', 'Academic records updated successfully', 'success');
   };
@@ -517,6 +559,53 @@ export const SettingsView: React.FC = () => {
               Save Academic Profile
             </motion.button>
           </form>
+
+          {/* Batch Sync / Share Status Card */}
+          <div className="mt-4 p-4 border border-dashed border-black/30 dark:border-white/30 bg-black/5 dark:bg-white/5 flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <div className={`w-2.5 h-2.5 rounded-full ${profile.isBatchSynced ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'}`} />
+              <span className="text-xs font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
+                Batch Sync Status
+              </span>
+            </div>
+            
+            {profile.isBatchSynced ? (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs font-semibold text-black dark:text-white">
+                  Connected to batch: <span className="font-mono bg-black/10 dark:bg-white/10 px-1 py-0.5">{profile.batchKey}</span>
+                </p>
+                <p className="text-[11px] text-black/60 dark:text-white/60 leading-relaxed">
+                  Your timetable updates automatically in real-time when the batch schedule changes.
+                </p>
+                <button
+                  type="button"
+                  onClick={disconnectBatchTimetable}
+                  className="self-start mt-1 px-3 py-1.5 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-[10.5px] font-bold uppercase cursor-pointer rounded-none"
+                >
+                  Disconnect & Customize
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs font-semibold text-black/60 dark:text-white/60">
+                  Not connected to any batch. Your edits remain local to your device.
+                </p>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const code = await shareTimetableWithBatch();
+                      navigator.clipboard.writeText(`https://academi-sync.vercel.app/?invite=${code}`);
+                      showToast('Link Copied', 'Invite link copied to clipboard!', 'success');
+                    } catch (err) {}
+                  }}
+                  className="self-start mt-1 px-3 py-1.5 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors text-[10.5px] font-bold uppercase cursor-pointer rounded-none"
+                >
+                  Publish & Share Timetable
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right Column */}
@@ -836,6 +925,71 @@ export const SettingsView: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Batch Join / Sync Modal */}
+      {pendingBatchKey && matchedBatchData && (
+        <Modal
+          isOpen={pendingBatchKey !== null}
+          onClose={() => setPendingBatchKey(null)}
+          title="Active Batch Timetable Found"
+          description="A shared timetable already exists for this college, branch, and semester."
+        >
+          <div className="flex flex-col gap-4 mt-3 text-left">
+            <div className="p-4 border border-black dark:border-white bg-black/5 dark:bg-white/5 flex flex-col gap-2">
+              <h4 className="text-sm font-bold text-black dark:text-white">
+                {matchedBatchData.college}
+              </h4>
+              <p className="text-xs text-black/75 dark:text-white/75 font-medium">
+                {matchedBatchData.programme} - {matchedBatchData.branch} (Sem {matchedBatchData.semester})
+              </p>
+              <div className="h-px bg-black/20 dark:bg-white/20 my-1" />
+              <div className="flex items-center justify-between text-[11px] font-mono opacity-70">
+                <span>Created by: {matchedBatchData.creatorName}</span>
+                <span>Synced: {matchedBatchData.studentCount || 1} students</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed">
+              Joining will download the batch subjects and classes, overwriting your current timetable. You will receive real-time updates when schedule changes occur.
+            </p>
+
+            <div className="flex gap-2.5 justify-end mt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setPendingBatchKey(null);
+                  updateProfile({
+                    name: name.trim(),
+                    rollNumber: rollNumber.trim(),
+                    email: email.trim(),
+                    year: Number(year),
+                    college: college.trim(),
+                    programme: programme.trim(),
+                    branch: branch.trim(),
+                    semester: Number(semester),
+                    batchKey: undefined,
+                    isBatchSynced: false,
+                  });
+                  showToast('Profile Saved', 'Saved manually without syncing to batch.', 'success');
+                }}
+                className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
+              >
+                Keep Local
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setPendingBatchKey(null);
+                  await joinBatchTimetable(pendingBatchKey);
+                }}
+                className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+              >
+                Sync & Join Batch
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
