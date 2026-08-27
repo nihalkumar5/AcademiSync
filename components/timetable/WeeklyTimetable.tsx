@@ -16,7 +16,7 @@ import { Modal } from '@/components/ui/Modal';
 import { BatchMembersModal } from '@/components/batch/BatchMembersModal';
 
 export const WeeklyTimetable: React.FC = () => {
-  const { timetable, subjects, deleteClassSession, profile, shareTimetableWithBatch, showToast, joinBatchTimetable, searchBatchTimetable } = useApp();
+  const { timetable, subjects, deleteClassSession, profile, isBatchCR, shareTimetableWithBatch, showToast, joinBatchTimetable, searchBatchTimetable } = useApp();
   const { isSignedIn } = useUser();
   const clerk = useClerk();
 

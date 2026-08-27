@@ -41,6 +41,7 @@ export const SettingsView: React.FC = () => {
   const { user, isLoaded, isSignedIn } = useUser();
   const {
     profile,
+    isBatchCR,
     updateProfile,
     settings,
     updateSettings,
@@ -591,7 +592,7 @@ export const SettingsView: React.FC = () => {
                     className="px-3 py-1.5 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:opacity-90 transition-opacity text-[10.5px] font-bold uppercase cursor-pointer rounded-none flex items-center gap-1.5"
                   >
                     <Users className="w-3 h-3" />
-                    👥 Batch Members & CR
+                    {isBatchCR ? '👥 Batch Members & CR' : '👥 Batch Members'}
                   </button>
                   <button
                     type="button"
@@ -600,13 +601,13 @@ export const SettingsView: React.FC = () => {
                         const code = await shareTimetableWithBatch();
                         const link = `${window.location.origin}/?invite=${code}`;
                         navigator.clipboard.writeText(link);
-                        showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
+                        showToast('Invite Link Copied', 'Share this link with your classmates to download the app!', 'success');
                       } catch (err) {}
                     }}
                     className="px-3 py-1.5 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-[10.5px] font-bold uppercase cursor-pointer rounded-none flex items-center gap-1.5"
                   >
                     <Share2 className="w-3 h-3" />
-                    Copy Link
+                    Copy Invite Link
                   </button>
                   <button
                     type="button"

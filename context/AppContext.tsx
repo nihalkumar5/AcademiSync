@@ -15,6 +15,7 @@ import {
   NotificationCategory,
   BatchProposedTask,
   HomeworkPriority,
+  AdminRole,
 } from '@/lib/types';
 import { storage } from '@/lib/storage';
 import { DEFAULT_PROFILE, DEFAULT_SETTINGS } from '@/lib/initialData';
@@ -1265,10 +1266,33 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const shareTimetableWithBatch = async (): Promise<string> => {
+    // If student is already synced to a batch, return the batch key so they can share it freely!
+    if (profile.isBatchSynced && profile.batchKey) {
+      // If student is CR or Super Admin, also push latest changes to Firestore
+      if (isBatchCR) {
+        try {
+          const docRef = doc(db, 'shared_timetables', profile.batchKey);
+          const payload = sanitizeForFirestore({
+            subjects,
+            timetable,
+            events,
+            exams,
+            updatedAt: new Date().toISOString(),
+          });
+          await updateDoc(docRef, payload);
+        } catch (e) {
+          console.error('Error updating batch timetable:', e);
+        }
+      }
+      return profile.batchKey;
+    }
+
     try {
       const canonicalKey = getCanonicalBatchKey(profile.college, profile.programme, profile.branch, profile.semester);
       const docRef = doc(db, 'shared_timetables', canonicalKey);
       
+      const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
+
       const payload = sanitizeForFirestore({
         id: canonicalKey,
         college: profile.college,
@@ -1277,21 +1301,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         semester: profile.semester,
         creatorId: user?.id || 'anonymous',
         creatorName: profile.name || 'Anonymous Student',
+        creatorEmail: userEmail,
+        crUserIds: [user?.id].filter(Boolean),
+        crEmails: [userEmail].filter(Boolean),
         subjects: subjects,
         timetable: timetable,
         events: events,
         exams: exams,
-        studentCount: 1,
-        createdAt: new Date().toISOString(),
+        studentCount: currentBatchData?.studentCount || 1,
+        createdAt: currentBatchData?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
 
       await setDoc(docRef, payload, { merge: true });
 
-      const updatedProfile = {
+      const updatedProfile: StudentProfile = {
         ...profile,
         batchKey: canonicalKey,
         isBatchSynced: true,
+        role: (profile.role === 'super_admin' ? 'super_admin' : 'cr') as AdminRole,
       };
       setProfileState(updatedProfile);
       storage.setProfile(updatedProfile);
