@@ -272,14 +272,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           setTimetableState(data.timetable);
           storage.setTimetable(data.timetable);
         }
-        if (data.events) {
-          setEventsState(data.events);
-          storage.setEvents(data.events);
-        }
-        if (data.exams) {
-          setExamsState(data.exams);
-          storage.setExams(data.exams);
-        }
       }
     }, (err) => {
       console.error('Error listening to batch timetable updates:', err);
