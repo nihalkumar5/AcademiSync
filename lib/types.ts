@@ -2,6 +2,8 @@ export type Programme = string;
 
 export type Branch = string;
 
+export type AdminRole = 'super_admin' | 'cr' | 'student';
+
 export interface StudentProfile {
   id: string;
   name: string;
@@ -17,6 +19,9 @@ export interface StudentProfile {
   createdAt: string;
   batchKey?: string;
   isBatchSynced?: boolean;
+  role?: AdminRole;
+  isPro?: boolean;
+  isBanned?: boolean;
 }
 
 export interface Subject {
@@ -150,4 +155,25 @@ export interface ExtractedExam {
   syllabus?: string;
   room?: string;
   durationMinutes?: number;
+}
+
+export type CampaignCategory = 'movie' | 'merch' | 'event' | 'deal' | 'general';
+
+export interface PromotionalCampaign {
+  id: string;
+  title: string;
+  subtitle: string;
+  description?: string;
+  imageUrl?: string;
+  ctaText: string; // e.g. "Pre-Order Now", "Watch Trailer", "Register Free"
+  targetUrl: string;
+  category: CampaignCategory;
+  badgeText?: string; // e.g. "CAMPUS SPOTLIGHT", "STUDENT PERK", "LIMITED DROP"
+  targetColleges?: string[]; // Empty = All Colleges
+  targetBranches?: string[]; // Empty = All Branches
+  isActive: boolean;
+  impressions: number;
+  clicks: number;
+  createdAt: string;
+  expiresAt?: string;
 }

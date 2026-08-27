@@ -29,9 +29,11 @@ import {
   Info,
   ChevronRight,
   Share2,
+  Crown,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '@/components/ui/Modal';
+import { isUserSuperAdmin } from '@/lib/adminAuth';
 
 export const SettingsView: React.FC = () => {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -811,6 +813,33 @@ export const SettingsView: React.FC = () => {
               </motion.button>
             </div>
           </div>
+
+          {/* Super Admin Control Center (Only for Authorized Admins) */}
+          {isUserSuperAdmin(profile, user?.primaryEmailAddress?.emailAddress) && (
+            <div className="border-2 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black p-5 flex flex-col gap-3">
+              <div className="flex items-center justify-between pb-2 border-b border-white/20 dark:border-black/20">
+                <div className="flex items-center gap-2">
+                  <Crown className="w-4 h-4 text-amber-400" />
+                  <h3 className="text-xs font-black uppercase tracking-widest">
+                    Super Admin Control Center
+                  </h3>
+                </div>
+                <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 border border-white/30 dark:border-black/30">
+                  MASTER ACCESS
+                </span>
+              </div>
+              <p className="text-xs opacity-80 leading-relaxed font-medium">
+                Manage registered students, assign CR roles, launch direct movie/merch ad campaigns, and audit batch timetables.
+              </p>
+              <Link
+                href="/admin"
+                className="flex items-center justify-between px-4 py-2.5 bg-white text-black dark:bg-black dark:text-white text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity mt-1 cursor-pointer"
+              >
+                <span>Open Super Admin Panel</span>
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+          )}
 
           {/* Legal, Privacy & Support */}
           <div className="glass-card p-6 flex flex-col gap-3">

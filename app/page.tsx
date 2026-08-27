@@ -30,6 +30,7 @@ import { AcademicCalendar } from '@/components/calendar/AcademicCalendar';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 import { SettingsView } from '@/components/settings/SettingsView';
 import { HolidayBalloons } from '@/components/ui/HolidayBalloons';
+import { CampusSpotlightCard } from '@/components/ads/CampusSpotlightCard';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -190,6 +191,7 @@ export default function AppHome() {
               <div className="flex flex-col gap-6">
                 <OverviewHeader />
                 <LiveClassCard />
+                <CampusSpotlightCard placement="home" />
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                   <TodayTimeline />
                   <SmartFocusList />
