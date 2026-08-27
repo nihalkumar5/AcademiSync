@@ -55,7 +55,15 @@ export const STANDARD_PROGRAMMES = [
   'MCA',
   'MBA',
   'M.Sc',
-  'Ph.D'
+  'Ph.D',
+  'MBBS',
+  'BDS',
+  'B.Pharm',
+  'M.D.',
+  'M.S.',
+  'BAMS',
+  'BHMS',
+  'BPT'
 ];
 
 export const STANDARD_BRANCHES = [
@@ -75,5 +83,18 @@ export const STANDARD_BRANCHES = [
   'Master of Computer Applications (MCA)',
   'Master of Business Administration (MBA)',
   'Bachelor of Computer Applications (BCA)',
-  'Bachelor of Business Administration (BBA)'
+  'Bachelor of Business Administration (BBA)',
+  'General Medicine',
+  'General Surgery',
+  'Pediatrics',
+  'Obstetrics & Gynecology',
+  'Anatomy',
+  'Physiology',
+  'Biochemistry',
+  'Pathology',
+  'Microbiology',
+  'Pharmacology',
+  'Community Medicine',
+  'Pharmacy',
+  'Physiotherapy'
 ];

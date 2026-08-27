@@ -512,6 +512,8 @@ export const getCanonicalBatchKey = (college: string, programme: string, branch:
       .replace(/electrical\s*(?:and|&)?\s*(?:electronics|elect)?\s*(?:engineering|engg)?/g, 'eee')
       .replace(/mechanical\s*(?:engineering|engg)?/g, 'me')
       .replace(/civil\s*(?:engineering|engg)?/g, 'ce')
+      .replace(/pharmaceutical\s+chemistry/g, 'pharmacy')
+      .replace(/pharmacology/g, 'pharmacy')
       .replace(/[^a-z0-9]/g, '');
   };
 
