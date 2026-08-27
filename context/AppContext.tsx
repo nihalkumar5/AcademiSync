@@ -23,7 +23,7 @@ import { calculateTomorrowCarryItems, getCanonicalBatchKey } from '@/lib/timetab
 import { checkAndGenerateSmartNotifications } from '@/lib/notificationEngine';
 import confetti from 'canvas-confetti';
 import { useUser } from '@clerk/nextjs';
-import { doc, collection, onSnapshot, setDoc, deleteDoc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { doc, collection, onSnapshot, setDoc, deleteDoc, getDoc, updateDoc, increment, arrayUnion } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { registerPushNotifications } from '@/lib/pushNotifications';
 import { triggerLocalNotification, scheduleTimetableLocalNotifications } from '@/lib/localNotifications';
@@ -154,6 +154,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const isApplyingRemote = useRef(false);
   const prevUserIdRef = useRef<string | null>(null);
   const scheduleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Track alert IDs already shown so we don't re-notify on every snapshot
+  const seenBatchAlertIds = useRef<Set<string>>(new Set());
+  // True until the very first snapshot fires — used to silently load existing alerts
+  const isFirstBatchSnapshot = useRef(true);
 
   // Authority & CR verification for current batch
   const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
@@ -271,46 +275,110 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return () => unsubscribe();
   }, [user, isClerkLoaded]);
 
+  // ─── Helper: fire a native-or-web notification for batch events ──────────────
+  // Uses Capacitor LocalNotifications on Android/iOS, Web Notification API on browser.
+  // Silent no-op if platform doesn't support or user hasn't granted permission.
+  const fireBatchNotification = (title: string, body: string) => {
+    try {
+      // Import is already at top: triggerLocalNotification handles Capacitor check internally
+      triggerLocalNotification(title, body).catch(() => {});
+    } catch (_) {}
+    // Also try Web Notification API (PWA / browser)
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification(title, {
+          body,
+          icon: '/icons/icon-192x192.png',
+          badge: '/icons/icon-192x192.png',
+          tag: 'academi-sync-batch-alert',
+        } as NotificationOptions);
+      } catch (_) { /* Safari private mode or unsupported */ }
+    }
+  };
+
+  // ─── Request Web Notification permission (called once when user joins a batch) ─
+  const requestBatchNotificationPermission = () => {
+    if (typeof window === 'undefined') return;
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'default') {
+      // Small delay so the app is fully loaded before the browser prompt appears
+      setTimeout(() => {
+        Notification.requestPermission().catch(() => {});
+      }, 3000);
+    }
+  };
+
   // Firestore Live Sync for Batch Timetables (for synced users)
   useEffect(() => {
     if (!profile.isBatchSynced || !profile.batchKey) return;
 
-    console.log(`Setting up real-time listener for batch: ${profile.batchKey}`);
+    // Ask for notification permission once the batch listener starts
+    requestBatchNotificationPermission();
+
+    // Reset the first-snapshot flag each time batchKey changes (re-join / switch batch)
+    isFirstBatchSnapshot.current = true;
+
     const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
-    
+
     const unsubscribe = onSnapshot(batchDocRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        console.log('Real-time batch update received:', data);
-        setCurrentBatchData(data);
-        
-        if (data.subjects) {
-          setSubjectsState(data.subjects);
-          storage.setSubjects(data.subjects);
-        }
-        if (data.timetable) {
-          setTimetableState(data.timetable);
-          storage.setTimetable(data.timetable);
-        }
-        if (Array.isArray(data.events) && data.events.length > 0) {
-          setEventsState(data.events);
-          storage.setEvents(data.events);
-        }
-        if (Array.isArray(data.exams) && data.exams.length > 0) {
-          setExamsState(data.exams);
-          storage.setExams(data.exams);
-        }
-        if (Array.isArray(data.cancelledSessions)) {
-          setCancelledSessionsState(data.cancelledSessions);
-          storage.setCancelledSessions(data.cancelledSessions);
-        }
-        if (data.rescheduledSessions && typeof data.rescheduledSessions === 'object') {
-          setRescheduledSessionsState(data.rescheduledSessions);
-          storage.setRescheduledSessions(data.rescheduledSessions);
+      if (!snapshot.exists()) return;
+
+      const data = snapshot.data();
+      setCurrentBatchData(data);
+
+      // ── Sync timetable & related data ────────────────────────────────────────
+      if (data.subjects) {
+        setSubjectsState(data.subjects);
+        storage.setSubjects(data.subjects);
+      }
+      if (data.timetable) {
+        setTimetableState(data.timetable);
+        storage.setTimetable(data.timetable);
+      }
+      if (Array.isArray(data.events) && data.events.length > 0) {
+        setEventsState(data.events);
+        storage.setEvents(data.events);
+      }
+      if (Array.isArray(data.exams) && data.exams.length > 0) {
+        setExamsState(data.exams);
+        storage.setExams(data.exams);
+      }
+      if (Array.isArray(data.cancelledSessions)) {
+        setCancelledSessionsState(data.cancelledSessions);
+        storage.setCancelledSessions(data.cancelledSessions);
+      }
+      if (data.rescheduledSessions && typeof data.rescheduledSessions === 'object') {
+        setRescheduledSessionsState(data.rescheduledSessions);
+        storage.setRescheduledSessions(data.rescheduledSessions);
+      }
+
+      // ── Handle batch alerts (CR class cancel / reschedule notifications) ─────
+      if (Array.isArray(data.batchAlerts) && data.batchAlerts.length > 0) {
+        if (isFirstBatchSnapshot.current) {
+          // On very first load: silently mark ALL existing alerts as seen.
+          // This prevents bombarding user with old notifications on every app open.
+          data.batchAlerts.forEach((alert: { id: string }) => {
+            seenBatchAlertIds.current.add(alert.id);
+          });
+        } else {
+          // On subsequent real-time updates: only show truly new alerts
+          data.batchAlerts.forEach((alert: { id: string; title: string; body: string; createdAt: string }) => {
+            if (seenBatchAlertIds.current.has(alert.id)) return;
+            seenBatchAlertIds.current.add(alert.id);
+            // Extra guard: ignore if somehow older than 5 minutes (stale)
+            const ageMs = Date.now() - new Date(alert.createdAt).getTime();
+            if (ageMs > 5 * 60 * 1000) return;
+            fireBatchNotification(alert.title, alert.body);
+            showToast(alert.title, alert.body, 'info');
+          });
         }
       }
+
+      // Mark first snapshot as done
+      isFirstBatchSnapshot.current = false;
+
     }, (err) => {
-      console.error('Error listening to batch timetable updates:', err);
+      console.error('Batch timetable listener error:', err);
     });
 
     // Listen to Batch Proposed Tasks for Voting & Auto-Sync
@@ -1110,37 +1178,68 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const toggleSessionCancelled = async (sessionId: string, dateStr?: string) => {
-    // If synced to a batch, ensure only CR can cancel/restore classes
+    // Non-CR batch users cannot cancel/restore — personal users always free
     if (profile.isBatchSynced && profile.batchKey && !isBatchCR) {
-      showToast('CR Access Required', 'Only your Class Representative (CR) can cancel or restore classes for the batch.', 'error');
+      showToast('CR Access Required', 'Only the CR can cancel or restore classes for the batch.', 'error');
       return;
     }
 
     const targetDate = dateStr || new Date().toISOString().split('T')[0];
     const key = `${targetDate}_${sessionId}`;
-    
     const isAlreadyCancelled = cancelledSessions.includes(key);
-    const updated = isAlreadyCancelled ? cancelledSessions.filter((k) => k !== key) : [...cancelledSessions, key];
-    
+    const updated = isAlreadyCancelled
+      ? cancelledSessions.filter((k) => k !== key)
+      : [...cancelledSessions, key];
+
     setCancelledSessionsState(updated);
     storage.setCancelledSessions(updated);
-    
+
+    const crName = profile.name || 'CR';
     if (!isAlreadyCancelled) {
-      showToast('Class Marked Cancelled', 'Session marked as cancelled for today.', 'info');
+      showToast('Class Cancelled', 'Session marked as cancelled for today.', 'info');
     } else {
       showToast('Class Restored', 'Session restored to regular schedule.', 'success');
     }
 
-    // Sync to batch cloud in real-time if in batch
+    // Sync to Firestore + push batch alert if in a batch
     if (profile.isBatchSynced && profile.batchKey) {
       try {
         const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
+
+        // Find subject name from timetable
+        const session = timetable.find((s) => s.id === sessionId);
+        const subject = session ? subjects.find((sub) => sub.id === session.subjectId) : null;
+        const subjectLabel = subject?.name || subject?.shortName || 'Class';
+
+        const alertPayload = !isAlreadyCancelled ? {
+          id: `cancel_${sessionId}_${targetDate}_${Date.now()}`,
+          title: '🚫 Class Cancelled',
+          body: `${subjectLabel} cancelled for today by ${crName} (CR)`,
+          type: 'cancel',
+          sessionId,
+          date: targetDate,
+          createdAt: new Date().toISOString(),
+        } : {
+          id: `restore_${sessionId}_${targetDate}_${Date.now()}`,
+          title: '✅ Class Restored',
+          body: `${subjectLabel} is back on schedule — update from ${crName} (CR)`,
+          type: 'restore',
+          sessionId,
+          date: targetDate,
+          createdAt: new Date().toISOString(),
+        };
+
+        // Keep only last 20 alerts to prevent unbounded growth
+        const existingAlerts: any[] = currentBatchData?.batchAlerts || [];
+        const trimmedAlerts = [...existingAlerts.slice(-19), alertPayload];
+
         await updateDoc(batchDocRef, {
           cancelledSessions: updated,
+          batchAlerts: trimmedAlerts,
           updatedAt: new Date().toISOString(),
         });
       } catch (e) {
-        console.error('Error syncing cancelled sessions to batch:', e);
+        console.error('Error syncing cancelled session to batch:', e);
       }
     }
   };
@@ -1156,37 +1255,62 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     details: { startTime: string; endTime: string; room?: string } | null,
     dateStr?: string
   ) => {
-    // If synced to a batch, ensure only CR can reschedule classes
+    // Non-CR batch users cannot reschedule — personal users always free
     if (profile.isBatchSynced && profile.batchKey && !isBatchCR) {
-      showToast('CR Access Required', 'Only your Class Representative (CR) can reschedule classes for the batch.', 'error');
+      showToast('CR Access Required', 'Only the CR can reschedule classes for the batch.', 'error');
       return;
     }
 
     const targetDate = dateStr || new Date().toISOString().split('T')[0];
     const key = `${targetDate}_${sessionId}`;
-
     const updated = { ...rescheduledSessions };
+    const crName = profile.name || 'CR';
+
     if (details === null) {
       delete updated[key];
-      showToast('Reschedule Reverted', 'Class reverted to original scheduled time.', 'success');
+      showToast('Reschedule Reverted', 'Class reverted to original time.', 'success');
     } else {
       updated[key] = details;
-      showToast('Class Rescheduled', `Class time updated to ${details.startTime} - ${details.endTime}.`, 'success');
+      showToast('Class Rescheduled', `Class moved to ${details.startTime}–${details.endTime}.`, 'success');
     }
 
     setRescheduledSessionsState(updated);
     storage.setRescheduledSessions(updated);
 
-    // Sync to batch cloud in real-time if in batch
+    // Sync to Firestore + push batch alert if in a batch
     if (profile.isBatchSynced && profile.batchKey) {
       try {
         const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
+
+        const session = timetable.find((s) => s.id === sessionId);
+        const subject = session ? subjects.find((sub) => sub.id === session.subjectId) : null;
+        const subjectLabel = subject?.name || subject?.shortName || 'Class';
+
+        let alertPayload: object | null = null;
+        if (details !== null) {
+          alertPayload = {
+            id: `reschedule_${sessionId}_${targetDate}_${Date.now()}`,
+            title: '⏰ Class Rescheduled',
+            body: `${subjectLabel} moved to ${details.startTime}–${details.endTime}${details.room ? ` in ${details.room}` : ''} by ${crName} (CR)`,
+            type: 'reschedule',
+            sessionId,
+            date: targetDate,
+            createdAt: new Date().toISOString(),
+          };
+        }
+
+        const existingAlerts: any[] = currentBatchData?.batchAlerts || [];
+        const trimmedAlerts = alertPayload
+          ? [...existingAlerts.slice(-19), alertPayload]
+          : existingAlerts;
+
         await updateDoc(batchDocRef, {
           rescheduledSessions: updated,
+          batchAlerts: trimmedAlerts,
           updatedAt: new Date().toISOString(),
         });
       } catch (e) {
-        console.error('Error syncing rescheduled sessions to batch:', e);
+        console.error('Error syncing rescheduled session to batch:', e);
       }
     }
   };
