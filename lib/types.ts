@@ -169,8 +169,10 @@ export interface PromotionalCampaign {
   targetUrl: string;
   category: CampaignCategory;
   badgeText?: string; // e.g. "CAMPUS SPOTLIGHT", "STUDENT PERK", "LIMITED DROP"
+  targetAudienceType?: 'all' | 'custom';
   targetColleges?: string[]; // Empty = All Colleges
   targetBranches?: string[]; // Empty = All Branches
+  targetSemesters?: number[]; // Empty = All Semesters
   isActive: boolean;
   impressions: number;
   clicks: number;

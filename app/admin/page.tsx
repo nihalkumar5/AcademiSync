@@ -31,7 +31,11 @@ import {
   Film,
   ShoppingBag,
   Calendar,
-  AlertTriangle
+  AlertTriangle,
+  Globe,
+  Crosshair,
+  Check,
+  X
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -62,8 +66,12 @@ export default function SuperAdminPage() {
     targetUrl: '',
     category: 'general' as CampaignCategory,
     badgeText: '',
-    targetCollege: '',
-    targetBranch: '',
+    targetAudienceType: 'all' as 'all' | 'custom',
+    targetColleges: [] as string[],
+    targetBranches: [] as string[],
+    targetSemesters: [] as number[],
+    customCollegeInput: '',
+    customBranchInput: '',
     isActive: true,
   });
 
@@ -117,8 +125,8 @@ export default function SuperAdminPage() {
           fetched.push({ id: d.id, ...d.data() } as PromotionalCampaign);
         });
         setCampaignsList(fetched);
-      }, (err) => {
-        // Fallback without orderBy index if index missing
+      }, () => {
+        // Fallback without orderBy index
         onSnapshot(collection(db, 'promotional_campaigns'), (snap) => {
           const fetched: PromotionalCampaign[] = [];
           snap.forEach((d) => {
@@ -133,6 +141,36 @@ export default function SuperAdminPage() {
       console.error(e);
     }
   }, [isAdmin]);
+
+  // Dynamic College & Branch Recommendations
+  const allAvailableColleges = Array.from(
+    new Set([
+      'International Institute of Information Technology, Naya Raipur',
+      'IIIT-NR',
+      'IIT Bombay',
+      'IIT Delhi',
+      'NIT Raipur',
+      'BITS Pilani',
+      'VIT Vellore',
+      ...usersList.map((u) => u.profile?.college).filter(Boolean),
+      ...batchesList.map((b) => b.college).filter(Boolean),
+    ])
+  );
+
+  const availableBranches = [
+    'CSE',
+    'DSAI',
+    'ECE',
+    'IT',
+    'EE',
+    'Mechanical',
+    'Civil',
+    'Chemical',
+    'Biotech',
+    'BBA',
+    'MBA',
+    'MCA',
+  ];
 
   // Loading state
   if (!isClerkLoaded) {
@@ -240,10 +278,7 @@ export default function SuperAdminPage() {
       const campaignId = editingCampaignId || `camp_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
       const docRef = doc(db, 'promotional_campaigns', campaignId);
 
-      const targetColleges = campaignForm.targetCollege ? [campaignForm.targetCollege.trim()] : [];
-      const targetBranches = campaignForm.targetBranch ? [campaignForm.targetBranch.trim()] : [];
-
-      const payload = {
+      const payload: PromotionalCampaign = {
         id: campaignId,
         title: campaignForm.title,
         subtitle: campaignForm.subtitle,
@@ -253,8 +288,10 @@ export default function SuperAdminPage() {
         targetUrl: campaignForm.targetUrl,
         category: campaignForm.category,
         badgeText: campaignForm.badgeText || '',
-        targetColleges,
-        targetBranches,
+        targetAudienceType: campaignForm.targetAudienceType,
+        targetColleges: campaignForm.targetAudienceType === 'all' ? [] : campaignForm.targetColleges,
+        targetBranches: campaignForm.targetAudienceType === 'all' ? [] : campaignForm.targetBranches,
+        targetSemesters: campaignForm.targetAudienceType === 'all' ? [] : campaignForm.targetSemesters,
         isActive: campaignForm.isActive,
         impressions: editingCampaignId ? (campaignsList.find(c => c.id === editingCampaignId)?.impressions || 0) : 0,
         clicks: editingCampaignId ? (campaignsList.find(c => c.id === editingCampaignId)?.clicks || 0) : 0,
@@ -274,8 +311,12 @@ export default function SuperAdminPage() {
         targetUrl: '',
         category: 'general',
         badgeText: '',
-        targetCollege: '',
-        targetBranch: '',
+        targetAudienceType: 'all',
+        targetColleges: [],
+        targetBranches: [],
+        targetSemesters: [],
+        customCollegeInput: '',
+        customBranchInput: '',
         isActive: true,
       });
     } catch (e) {
@@ -317,11 +358,80 @@ export default function SuperAdminPage() {
       targetUrl: camp.targetUrl,
       category: camp.category || 'general',
       badgeText: camp.badgeText || '',
-      targetCollege: camp.targetColleges?.[0] || '',
-      targetBranch: camp.targetBranches?.[0] || '',
+      targetAudienceType: camp.targetAudienceType || (camp.targetColleges?.length || camp.targetBranches?.length || camp.targetSemesters?.length ? 'custom' : 'all'),
+      targetColleges: camp.targetColleges || [],
+      targetBranches: camp.targetBranches || [],
+      targetSemesters: camp.targetSemesters || [],
+      customCollegeInput: '',
+      customBranchInput: '',
       isActive: camp.isActive,
     });
     setShowCampaignModal(true);
+  };
+
+  // Targeting Helpers
+  const toggleCollegeSelection = (col: string) => {
+    setCampaignForm((prev) => {
+      const exists = prev.targetColleges.includes(col);
+      return {
+        ...prev,
+        targetColleges: exists
+          ? prev.targetColleges.filter((c) => c !== col)
+          : [...prev.targetColleges, col],
+      };
+    });
+  };
+
+  const addCustomCollege = () => {
+    if (!campaignForm.customCollegeInput.trim()) return;
+    const val = campaignForm.customCollegeInput.trim();
+    if (!campaignForm.targetColleges.includes(val)) {
+      setCampaignForm((prev) => ({
+        ...prev,
+        targetColleges: [...prev.targetColleges, val],
+        customCollegeInput: '',
+      }));
+    } else {
+      setCampaignForm((prev) => ({ ...prev, customCollegeInput: '' }));
+    }
+  };
+
+  const toggleBranchSelection = (branch: string) => {
+    setCampaignForm((prev) => {
+      const exists = prev.targetBranches.includes(branch);
+      return {
+        ...prev,
+        targetBranches: exists
+          ? prev.targetBranches.filter((b) => b !== branch)
+          : [...prev.targetBranches, branch],
+      };
+    });
+  };
+
+  const addCustomBranch = () => {
+    if (!campaignForm.customBranchInput.trim()) return;
+    const val = campaignForm.customBranchInput.trim().toUpperCase();
+    if (!campaignForm.targetBranches.includes(val)) {
+      setCampaignForm((prev) => ({
+        ...prev,
+        targetBranches: [...prev.targetBranches, val],
+        customBranchInput: '',
+      }));
+    } else {
+      setCampaignForm((prev) => ({ ...prev, customBranchInput: '' }));
+    }
+  };
+
+  const toggleSemesterSelection = (sem: number) => {
+    setCampaignForm((prev) => {
+      const exists = prev.targetSemesters.includes(sem);
+      return {
+        ...prev,
+        targetSemesters: exists
+          ? prev.targetSemesters.filter((s) => s !== sem)
+          : [...prev.targetSemesters, sem],
+      };
+    });
   };
 
   // Aggregated Analytics
@@ -374,7 +484,7 @@ export default function SuperAdminPage() {
                   Super Admin Panel
                 </h1>
                 <p className="text-[10px] font-mono text-black/60 dark:text-white/60">
-                  Logged in as: {userEmail}
+                  Master Control: {userEmail}
                 </p>
               </div>
             </div>
@@ -468,8 +578,8 @@ export default function SuperAdminPage() {
                 className="border-2 border-black dark:border-white p-6 flex flex-col items-start gap-2 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all text-left cursor-pointer group"
               >
                 <Megaphone className="w-6 h-6 mb-1" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">Launch New Campaign / Ad</h3>
-                <p className="text-xs opacity-70">Create a movie promo, T-shirt drop, or fest announcement.</p>
+                <h3 className="text-sm font-bold uppercase tracking-wider">Launch Targeted Campaign / Ad</h3>
+                <p className="text-xs opacity-70">Target specific colleges, branches, semesters, or everyone.</p>
               </button>
 
               <button
@@ -679,9 +789,9 @@ export default function SuperAdminPage() {
           <div className="flex flex-col gap-6 text-left">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold uppercase tracking-tight">Direct Campaigns & Native Ads ({campaignsList.length})</h2>
+                <h2 className="text-xl font-bold uppercase tracking-tight">Direct Campaigns & Targeted Ads ({campaignsList.length})</h2>
                 <p className="text-xs text-black/60 dark:text-white/60 mt-1">
-                  Promote movies, merchandise drops, campus events, and student partner deals directly to users.
+                  Promote movies, merchandise drops, campus events, and student deals to specific colleges, branches, or everyone.
                 </p>
               </div>
 
@@ -697,8 +807,12 @@ export default function SuperAdminPage() {
                     targetUrl: '',
                     category: 'general',
                     badgeText: '',
-                    targetCollege: '',
-                    targetBranch: '',
+                    targetAudienceType: 'all',
+                    targetColleges: [],
+                    targetBranches: [],
+                    targetSemesters: [],
+                    customCollegeInput: '',
+                    customBranchInput: '',
                     isActive: true,
                   });
                   setShowCampaignModal(true);
@@ -716,20 +830,21 @@ export default function SuperAdminPage() {
                 <Megaphone className="w-10 h-10 text-black/40 dark:text-white/40" />
                 <h3 className="text-base font-bold uppercase tracking-wider">No Active Campaigns Yet</h3>
                 <p className="text-xs text-black/60 dark:text-white/60 max-w-sm">
-                  Launch your first sponsored banner, movie promo, or college T-shirt sale.
+                  Launch your first targeted sponsor banner, movie promo, or college T-shirt sale.
                 </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {campaignsList.map((camp) => {
                   const ctr = camp.impressions > 0 ? ((camp.clicks / camp.impressions) * 100).toFixed(1) : '0.0';
+                  const isUniversal = camp.targetAudienceType === 'all' || (!camp.targetColleges?.length && !camp.targetBranches?.length && !camp.targetSemesters?.length);
 
                   return (
                     <div
                       key={camp.id}
                       className={`border p-5 flex flex-col justify-between transition-all ${
                         camp.isActive
-                          ? 'border-black dark:border-white bg-white dark:bg-zinc-950'
+                          ? 'border-black dark:border-white bg-white dark:bg-zinc-950 shadow-sm'
                           : 'border-black/30 dark:border-white/30 opacity-60 bg-black/5 dark:bg-white/5'
                       }`}
                     >
@@ -773,9 +888,34 @@ export default function SuperAdminPage() {
                           {camp.subtitle || camp.description}
                         </p>
 
-                        <div className="mt-3 text-[11px] font-mono text-black/60 dark:text-white/60">
-                          <div>Target: {camp.targetColleges?.length ? camp.targetColleges.join(', ') : 'All Colleges'}</div>
-                          <div>Link: <a href={camp.targetUrl} target="_blank" rel="noreferrer" className="underline hover:text-black dark:hover:text-white">{camp.targetUrl}</a></div>
+                        {/* Target Scope Badge */}
+                        <div className="mt-3.5 p-2.5 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 flex flex-col gap-1 text-[11px] font-mono">
+                          <div className="flex items-center gap-1.5 font-bold">
+                            {isUniversal ? (
+                              <>
+                                <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                                <span>AUDIENCE: Everyone (All Colleges & Branches)</span>
+                              </>
+                            ) : (
+                              <>
+                                <Crosshair className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                                <span>AUDIENCE: Targeted Selection</span>
+                              </>
+                            )}
+                          </div>
+                          {!isUniversal && (
+                            <div className="text-[10px] text-black/70 dark:text-white/70 flex flex-col gap-0.5 pt-0.5">
+                              <div>Colleges: {camp.targetColleges?.length ? camp.targetColleges.join(', ') : 'All Colleges'}</div>
+                              <div>Branches: {camp.targetBranches?.length ? camp.targetBranches.join(', ') : 'All Branches'}</div>
+                              {camp.targetSemesters?.length ? (
+                                <div>Semesters: {camp.targetSemesters.map(s => `Sem ${s}`).join(', ')}</div>
+                              ) : null}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="mt-2 text-[10px] font-mono text-black/60 dark:text-white/60 truncate">
+                          Link: <a href={camp.targetUrl} target="_blank" rel="noreferrer" className="underline hover:text-black dark:hover:text-white">{camp.targetUrl}</a>
                         </div>
                       </div>
 
@@ -843,13 +983,13 @@ export default function SuperAdminPage() {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-lg bg-white dark:bg-zinc-950 border border-black dark:border-white shadow-2xl p-6 sm:p-7 z-10 text-left max-h-[90vh] overflow-y-auto"
+              className="relative w-full max-w-xl bg-white dark:bg-zinc-950 border border-black dark:border-white shadow-2xl p-6 sm:p-7 z-10 text-left max-h-[90vh] overflow-y-auto"
             >
               <h3 className="text-lg font-bold uppercase tracking-wider mb-1">
-                {editingCampaignId ? 'Edit Campaign' : 'Create New Campaign / Ad'}
+                {editingCampaignId ? 'Edit Campaign' : 'Create Targeted Campaign / Ad'}
               </h3>
               <p className="text-xs text-black/60 dark:text-white/60 mb-5">
-                Configure your native banner details, destination link, and target audience.
+                Configure your native promo banner details, destination link, and target audience.
               </p>
 
               <form onSubmit={handleSaveCampaign} className="flex flex-col gap-4 text-xs font-sans">
@@ -920,38 +1060,203 @@ export default function SuperAdminPage() {
                   <label className="block font-bold uppercase tracking-wider mb-1">Banner Image / Poster URL</label>
                   <input
                     type="url"
-                    placeholder="https://images.unsplash.com/... or poster link"
+                    placeholder="https://images.unsplash.com/... or poster image link"
                     value={campaignForm.imageUrl}
                     onChange={(e) => setCampaignForm({ ...campaignForm, imageUrl: e.target.value })}
                     className="w-full p-2.5 border border-black dark:border-white bg-transparent focus:outline-none font-mono"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold uppercase tracking-wider mb-1">Target College (Optional)</label>
-                    <input
-                      type="text"
-                      placeholder="Leave empty for all colleges"
-                      value={campaignForm.targetCollege}
-                      onChange={(e) => setCampaignForm({ ...campaignForm, targetCollege: e.target.value })}
-                      className="w-full p-2.5 border border-black dark:border-white bg-transparent focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold uppercase tracking-wider mb-1">Custom Badge Text (Optional)</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. LIMITED DROP"
-                      value={campaignForm.badgeText}
-                      onChange={(e) => setCampaignForm({ ...campaignForm, badgeText: e.target.value })}
-                      className="w-full p-2.5 border border-black dark:border-white bg-transparent focus:outline-none"
-                    />
-                  </div>
+                <div>
+                  <label className="block font-bold uppercase tracking-wider mb-1">Custom Badge Text (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. LIMITED MERCH DROP or MOVIE NIGHT"
+                    value={campaignForm.badgeText}
+                    onChange={(e) => setCampaignForm({ ...campaignForm, badgeText: e.target.value })}
+                    className="w-full p-2.5 border border-black dark:border-white bg-transparent focus:outline-none"
+                  />
                 </div>
 
-                <div className="flex items-center gap-2 pt-2">
+                {/* ADVANCED TARGETING SECTION */}
+                <div className="border border-black dark:border-white p-4 bg-black/5 dark:bg-white/5 flex flex-col gap-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-black/10 dark:border-white/10">
+                    <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px]">
+                      <Crosshair className="w-4 h-4 text-amber-500" />
+                      <span>Audience Targeting & Scope</span>
+                    </div>
+                  </div>
+
+                  {/* Radio Switcher */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setCampaignForm({ ...campaignForm, targetAudienceType: 'all' })}
+                      className={`flex items-center justify-center gap-2 p-2.5 border text-xs font-bold uppercase cursor-pointer transition-all ${
+                        campaignForm.targetAudienceType === 'all'
+                          ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
+                          : 'border-black/20 dark:border-white/20 hover:border-black'
+                      }`}
+                    >
+                      <Globe className="w-3.5 h-3.5" />
+                      <span>Everyone (All Colleges)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setCampaignForm({ ...campaignForm, targetAudienceType: 'custom' })}
+                      className={`flex items-center justify-center gap-2 p-2.5 border text-xs font-bold uppercase cursor-pointer transition-all ${
+                        campaignForm.targetAudienceType === 'custom'
+                          ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
+                          : 'border-black/20 dark:border-white/20 hover:border-black'
+                      }`}
+                    >
+                      <Crosshair className="w-3.5 h-3.5" />
+                      <span>Specific Colleges / Branches</span>
+                    </button>
+                  </div>
+
+                  {/* Custom Targeting Fields */}
+                  {campaignForm.targetAudienceType === 'custom' && (
+                    <div className="flex flex-col gap-4 pt-2">
+                      {/* 1. Target Colleges */}
+                      <div>
+                        <label className="block font-bold uppercase tracking-wider mb-1.5 text-[10px]">
+                          Target Colleges (Select or Add Multiple)
+                        </label>
+                        
+                        {/* College Chips */}
+                        <div className="flex flex-wrap gap-1.5 mb-2">
+                          {allAvailableColleges.map((col) => {
+                            const isSelected = campaignForm.targetColleges.includes(col);
+                            return (
+                              <button
+                                key={col}
+                                type="button"
+                                onClick={() => toggleCollegeSelection(col)}
+                                className={`px-2.5 py-1 text-[11px] font-medium border transition-all cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
+                                    : 'border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white'
+                                }`}
+                              >
+                                {isSelected ? '✓ ' : '+ '}
+                                {col}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Custom College Input */}
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Type any other college name..."
+                            value={campaignForm.customCollegeInput}
+                            onChange={(e) => setCampaignForm({ ...campaignForm, customCollegeInput: e.target.value })}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                addCustomCollege();
+                              }
+                            }}
+                            className="flex-1 p-2 border border-black dark:border-white bg-transparent focus:outline-none text-xs"
+                          />
+                          <button
+                            type="button"
+                            onClick={addCustomCollege}
+                            className="px-3 py-2 border border-black dark:border-white font-bold uppercase text-[10px] hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black cursor-pointer"
+                          >
+                            Add
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-black/50 dark:text-white/50 mt-1">
+                          {campaignForm.targetColleges.length === 0
+                            ? 'No specific colleges selected — will show across all colleges.'
+                            : `Selected Colleges (${campaignForm.targetColleges.length}): ${campaignForm.targetColleges.join(', ')}`}
+                        </p>
+                      </div>
+
+                      {/* 2. Target Branches */}
+                      <div>
+                        <label className="block font-bold uppercase tracking-wider mb-1.5 text-[10px]">
+                          Target Branches (Leave empty for All Branches)
+                        </label>
+                        <div className="flex flex-wrap gap-1.5 mb-2">
+                          {availableBranches.map((branch) => {
+                            const isSelected = campaignForm.targetBranches.includes(branch);
+                            return (
+                              <button
+                                key={branch}
+                                type="button"
+                                onClick={() => toggleBranchSelection(branch)}
+                                className={`px-2 py-0.5 text-[10px] font-bold uppercase border transition-all cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
+                                    : 'border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white'
+                                }`}
+                              >
+                                {isSelected ? '✓ ' : ''}{branch}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Custom Branch Input */}
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Type custom branch code (e.g. AI-ML, Robotics)..."
+                            value={campaignForm.customBranchInput}
+                            onChange={(e) => setCampaignForm({ ...campaignForm, customBranchInput: e.target.value })}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                addCustomBranch();
+                              }
+                            }}
+                            className="flex-1 p-2 border border-black dark:border-white bg-transparent focus:outline-none text-xs"
+                          />
+                          <button
+                            type="button"
+                            onClick={addCustomBranch}
+                            className="px-3 py-2 border border-black dark:border-white font-bold uppercase text-[10px] hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black cursor-pointer"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 3. Target Semesters */}
+                      <div>
+                        <label className="block font-bold uppercase tracking-wider mb-1.5 text-[10px]">
+                          Target Semesters (Leave empty for All Semesters)
+                        </label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => {
+                            const isSelected = campaignForm.targetSemesters.includes(sem);
+                            return (
+                              <button
+                                key={sem}
+                                type="button"
+                                onClick={() => toggleSemesterSelection(sem)}
+                                className={`px-3 py-1 text-[11px] font-mono border transition-all cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white font-bold'
+                                    : 'border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white'
+                                }`}
+                              >
+                                {isSelected ? `✓ Sem ${sem}` : `Sem ${sem}`}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
                   <input
                     type="checkbox"
                     id="is_active_checkbox"
@@ -976,7 +1281,7 @@ export default function SuperAdminPage() {
                     type="submit"
                     className="px-5 py-2.5 bg-black text-white dark:bg-white dark:text-black font-bold uppercase tracking-wider border border-black dark:border-white hover:opacity-90 transition-opacity cursor-pointer"
                   >
-                    Save & Publish
+                    Save & Publish Campaign
                   </button>
                 </div>
               </form>

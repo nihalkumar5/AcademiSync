@@ -39,19 +39,42 @@ export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({
         const fetched: PromotionalCampaign[] = [];
         snapshot.forEach((docSnap) => {
           const data = docSnap.data() as PromotionalCampaign;
-          // Filter by college if specified
+          
+          // If audience is universal 'all', it matches everyone
+          if (data.targetAudienceType === 'all') {
+            fetched.push({ ...data, id: docSnap.id });
+            return;
+          }
+
+          const userCollege = (profile.college || '').toLowerCase().trim();
+          const userBranch = (profile.branch || '').toLowerCase().trim();
+          const userSemester = profile.semester;
+
+          // 1. College Match
           const collegeMatch =
             !data.targetColleges ||
             data.targetColleges.length === 0 ||
-            (profile.college && data.targetColleges.includes(profile.college));
+            data.targetColleges.some((c) => {
+              const target = c.toLowerCase().trim();
+              return userCollege.includes(target) || target.includes(userCollege);
+            });
 
-          // Filter by branch if specified
+          // 2. Branch Match
           const branchMatch =
             !data.targetBranches ||
             data.targetBranches.length === 0 ||
-            (profile.branch && data.targetBranches.includes(profile.branch));
+            data.targetBranches.some((b) => {
+              const target = b.toLowerCase().trim();
+              return userBranch.includes(target) || target.includes(userBranch);
+            });
 
-          if (collegeMatch && branchMatch) {
+          // 3. Semester Match
+          const semesterMatch =
+            !data.targetSemesters ||
+            data.targetSemesters.length === 0 ||
+            (userSemester && data.targetSemesters.includes(userSemester));
+
+          if (collegeMatch && branchMatch && semesterMatch) {
             fetched.push({ ...data, id: docSnap.id });
           }
         });
