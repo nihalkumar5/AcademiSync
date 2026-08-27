@@ -571,8 +571,9 @@ export const SettingsView: React.FC = () => {
             
             {profile.isBatchSynced ? (
               <div className="flex flex-col gap-2">
-                <p className="text-xs font-semibold text-black dark:text-white">
-                  Connected to batch: <span className="font-mono bg-black/10 dark:bg-white/10 px-1 py-0.5">{profile.batchKey}</span>
+                <p className="text-xs font-semibold text-black dark:text-white flex flex-col gap-1">
+                  <span>Connected to batch:</span>
+                  <span className="font-mono bg-black/10 dark:bg-white/10 px-2 py-1 break-all text-[10px] block w-full">{profile.batchKey}</span>
                 </p>
                 <p className="text-[11px] text-black/60 dark:text-white/60 leading-relaxed">
                   Your timetable updates automatically in real-time when the batch schedule changes.
