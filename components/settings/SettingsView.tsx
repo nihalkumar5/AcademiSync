@@ -582,10 +582,13 @@ export const SettingsView: React.FC = () => {
                 <div className="flex flex-wrap gap-2.5 mt-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      const link = `${window.location.origin}/?invite=${profile.batchKey}`;
-                      navigator.clipboard.writeText(link);
-                      showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
+                    onClick={async () => {
+                      try {
+                        const code = await shareTimetableWithBatch();
+                        const link = `${window.location.origin}/?invite=${code}`;
+                        navigator.clipboard.writeText(link);
+                        showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
+                      } catch (err) {}
                     }}
                     className="px-3 py-1.5 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors text-[10.5px] font-bold uppercase cursor-pointer rounded-none flex items-center gap-1.5"
                   >

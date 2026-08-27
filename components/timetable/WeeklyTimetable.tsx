@@ -147,16 +147,10 @@ export const WeeklyTimetable: React.FC = () => {
                 return;
               }
               try {
-                if (profile.isBatchSynced && profile.batchKey) {
-                  const link = `${window.location.origin}/?invite=${profile.batchKey}`;
-                  navigator.clipboard.writeText(link);
-                  showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
-                } else {
-                  const code = await shareTimetableWithBatch();
-                  const link = `${window.location.origin}/?invite=${code}`;
-                  navigator.clipboard.writeText(link);
-                  showToast('Timetable Shared', 'Invite link copied to clipboard!', 'success');
-                }
+                const code = await shareTimetableWithBatch();
+                const link = `${window.location.origin}/?invite=${code}`;
+                navigator.clipboard.writeText(link);
+                showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
               } catch (err) {}
             }}
             className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors flex items-center gap-1.5"
