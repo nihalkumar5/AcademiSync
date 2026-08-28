@@ -54,28 +54,24 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   if (isCurrent) {
     cardColorClass = 'bg-black text-white dark:bg-white dark:text-black shadow-lg shadow-black/10 dark:shadow-white/10 border-transparent ring-1 ring-black/5 dark:ring-white/5';
   } else {
-    cardColorClass = 'text-black dark:text-white';
+    cardColorClass = getSubjectPastelStyle(subject, session.id) + ' text-black dark:text-white';
   }
 
-  const customStyle = isCurrent ? undefined : getSubjectThemeStyle(subject?.color, theme);
+  // Remove brutalist inline styles since we're using tailwind classes from the pastel palette now
+  const customStyle = isCurrent ? undefined : {};
 
   return (
     <div
       className={clsx(
-        "group relative flex flex-col p-4 text-left transition-all border rounded-none",
+        "group relative flex flex-col p-4 text-left transition-all border rounded-2xl",
         cardColorClass
       )}
       style={customStyle}
     >
       <div className="flex items-start justify-between gap-1.5 mb-2">
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 border border-current text-xs font-medium opacity-80">
-            <Clock className="w-3.5 h-3.5" />
-            <span>{session.startTime} – {session.endTime}</span>
-          </div>
-
           {session.isLab && (
-            <Badge variant="amber" size="sm" className="rounded-none px-2 border-black dark:border-white">
+            <Badge variant="amber" size="sm" className="rounded-full px-2 border-black/20 dark:border-white/20">
               <FlaskConical className="w-3 h-3 mr-1" />
               Lab
             </Badge>
