@@ -69,13 +69,13 @@ export const TodayTimeline: React.FC = () => {
 
   if (targetHoliday) {
     return (
-      <div className="flex flex-col gap-3 text-left">
-        <div className="flex items-center justify-between px-1">
-          <h3 className="text-xs font-bold tracking-widest uppercase text-black dark:text-white">
-            {isAfter8PM ? "Tomorrow's Schedule" : "Today's Schedule"}
+      <div className="flex flex-col text-left">
+        <div className="flex items-center justify-between px-1 mb-8">
+          <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
+            {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
           </h3>
-          <span className="text-[10px] font-mono font-bold border border-black dark:border-white px-2 py-0.5 uppercase">
-            {isAfter8PM ? "Tomorrow" : targetDay} · Holiday
+          <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wider">
+            {targetDay}
           </span>
         </div>
         <motion.div 
@@ -100,10 +100,15 @@ export const TodayTimeline: React.FC = () => {
 
   if (targetSessions.length === 0) {
     return (
-      <div className="flex flex-col gap-3 text-left">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 tracking-tight pl-1">
-          {isAfter8PM ? "Tomorrow's Schedule" : "Today's Schedule"}
-        </h3>
+      <div className="flex flex-col text-left">
+        <div className="flex items-center justify-between px-1 mb-8">
+          <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
+            {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
+          </h3>
+          <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wider">
+            {targetDay}
+          </span>
+        </div>
         <EmptyState
           icon={<MonochromeIllustration type="no-classes" size={48} />}
           title={isAfter8PM ? "No classes tomorrow" : "No classes scheduled today"}
@@ -116,8 +121,8 @@ export const TodayTimeline: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4 text-left">
-      <div className="flex items-center justify-between px-1 mb-1">
+    <div className="flex flex-col text-left">
+      <div className="flex items-center justify-between px-1 mb-8">
         <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
           {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
         </h3>
@@ -125,8 +130,7 @@ export const TodayTimeline: React.FC = () => {
           {targetDay}
         </span>
       </div>
-      <div className="bento-card p-4 sm:p-5">
-        <div className="relative flex flex-col gap-0 border-l-[3px] border-slate-100 dark:border-zinc-800 ml-3 py-2">
+      <div className="relative flex flex-col gap-0 border-l-[3px] border-slate-100 dark:border-zinc-800 ml-3">
           {(() => {
             let nextClassId: string | null = null;
             if (!isAfter8PM) {
@@ -386,7 +390,7 @@ export const TodayTimeline: React.FC = () => {
             });
           })()}
         </div>
-      </div>
+
 
       <Modal
         isOpen={rescheduleTarget !== null}
