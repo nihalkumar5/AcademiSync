@@ -30,6 +30,7 @@ export const WeeklyTimetable: React.FC = () => {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [inviteInput, setInviteInput] = useState('');
   const [isJoining, setIsJoining] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   const checkIsNow = (session: ClassSession) => {
     if (currentDay !== session.day) return false;
@@ -131,73 +132,82 @@ export const WeeklyTimetable: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 mt-4">
-          <Button
-            variant="outline"
-            size="md"
-            onClick={handleImportTimetable}
-            className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
-          >
-            Magic Import
-          </Button>
-
-          <Button
-            variant="outline"
-            size="md"
-            onClick={async () => {
-              if (!isSignedIn) {
-                clerk.openSignIn();
-                return;
-              }
-              try {
-                const code = await shareTimetableWithBatch();
-                const link = `${window.location.origin}/?invite=${code}`;
-                navigator.clipboard.writeText(link);
-                showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
-              } catch (err) {}
-            }}
-            className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors flex items-center gap-1.5"
-          >
-            <Share2 className="w-4 h-4" />
-            Share Batch
-          </Button>
-
-          {profile.isBatchSynced && profile.batchKey && (
+        <div className="flex flex-col gap-3 mt-4">
+          <div className="flex flex-wrap items-center gap-3">
             <Button
               variant="outline"
               size="md"
-              onClick={() => setShowBatchMembersModal(true)}
-              className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors flex items-center gap-1.5"
+              onClick={handleImportTimetable}
+              className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
             >
-              <Users className="w-4 h-4" />
-              Batch Members
+              Magic Import
             </Button>
-          )}
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => handleAddForDay(selectedMobileDay)}
+              className="rounded-none bg-black text-white dark:bg-white dark:text-black border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors flex items-center gap-1.5"
+            >
+              <Plus className="w-4 h-4" /> Add Class
+            </Button>
+          </div>
 
-          <Button
-            variant="outline"
-            size="md"
-            onClick={() => {
-              if (!isSignedIn) {
-                clerk.openSignIn();
-                return;
-              }
-              setShowJoinModal(true);
-            }}
-            className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors flex items-center gap-1.5"
-          >
-            <UserPlus className="w-4 h-4" />
-            Join Batch
-          </Button>
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="md"
+              onClick={() => setShowMoreMenu(!showMoreMenu)}
+              className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+            >
+              More <span className="ml-1 tracking-widest font-bold">···</span>
+            </Button>
 
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => handleAddForDay(selectedMobileDay)}
-            className="rounded-none bg-black text-white dark:bg-white dark:text-black border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors"
-          >
-            Add Class
-          </Button>
+            {showMoreMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowMoreMenu(false)} />
+                <div className="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-black border border-black dark:border-white shadow-xl z-50 flex flex-col">
+                  <button
+                    onClick={async () => {
+                      setShowMoreMenu(false);
+                      if (!isSignedIn) { clerk.openSignIn(); return; }
+                      try {
+                        const code = await shareTimetableWithBatch();
+                        const link = `${window.location.origin}/?invite=${code}`;
+                        navigator.clipboard.writeText(link);
+                        showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
+                      } catch (err) {}
+                    }}
+                    className="flex items-center gap-2 px-4 py-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left border-b border-black/10 dark:border-white/10"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    Share Batch
+                  </button>
+
+                  {profile.isBatchSynced && profile.batchKey && (
+                    <button
+                      onClick={() => { setShowMoreMenu(false); setShowBatchMembersModal(true); }}
+                      className="flex items-center gap-2 px-4 py-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left border-b border-black/10 dark:border-white/10"
+                    >
+                      <Users className="w-4 h-4" />
+                      Batch Members
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      setShowMoreMenu(false);
+                      if (!isSignedIn) { clerk.openSignIn(); return; }
+                      setShowJoinModal(true);
+                    }}
+                    className="flex items-center gap-2 px-4 py-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    Join Batch
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
