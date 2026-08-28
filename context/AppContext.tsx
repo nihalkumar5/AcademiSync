@@ -162,7 +162,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Authority & CR verification for current batch
   const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
   const isSuperAdmin = isUserSuperAdmin(profile, userEmail);
-  const isPrimaryCreator = currentBatchData?.creatorId === user?.id || (currentBatchData?.creatorEmail && currentBatchData?.creatorEmail === userEmail);
+  const isLegacyBatch = !currentBatchData?.crUserIds && !currentBatchData?.crEmails;
+  const isPrimaryCreator = isLegacyBatch && (currentBatchData?.creatorId === user?.id || (currentBatchData?.creatorEmail && currentBatchData?.creatorEmail === userEmail));
   const isCoCR = currentBatchData?.crUserIds?.includes(user?.id) || currentBatchData?.crEmails?.includes(userEmail) || profile.role === 'cr';
   const isBatchCR = !profile.isBatchSynced || isSuperAdmin || isPrimaryCreator || isCoCR;
 
@@ -1364,7 +1365,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
 
       const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
-      const isFirstPerson = !data.creatorId || (data.studentCount || 0) <= 0 || (!data.crUserIds?.length && !data.crEmails?.length);
+      
+      // Fix: A user is only the first person if there are NO existing CRs AND student count is 0
+      const isFirstPerson = ((data.studentCount || 0) <= 0) && (!data.crUserIds?.length && !data.crEmails?.length);
 
       const assignedRole: AdminRole = isFirstPerson 
         ? 'cr' 

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useUser, SignInButton } from '@clerk/nextjs';
 import { useApp } from '@/context/AppContext';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
-import { collection, onSnapshot, doc, updateDoc, setDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, setDoc, deleteDoc, query, orderBy, arrayRemove, arrayUnion } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PromotionalCampaign, CampaignCategory, AdminRole } from '@/lib/types';
 import {
@@ -231,10 +231,30 @@ export default function SuperAdminPage() {
   // Handlers for User Role Updates
   const handleUpdateUserRole = async (userId: string, targetRole: AdminRole) => {
     try {
+      const targetUser = usersList.find(u => u.id === userId);
       const userRef = doc(db, 'users', userId);
+      
       await updateDoc(userRef, {
         'profile.role': targetRole,
       });
+
+      // If user is synced to a batch, we MUST update the batch document as well
+      // Otherwise, the user will retain/lack CR powers because the batch doc is the source of truth
+      if (targetUser?.profile?.isBatchSynced && targetUser?.profile?.batchKey) {
+        const batchRef = doc(db, 'shared_timetables', targetUser.profile.batchKey);
+        if (targetRole === 'student') {
+          await updateDoc(batchRef, {
+            crUserIds: arrayRemove(userId),
+            crEmails: arrayRemove(targetUser.profile.email || ''),
+          }).catch(console.error);
+        } else if (targetRole === 'cr' || targetRole === 'super_admin') {
+          await updateDoc(batchRef, {
+            crUserIds: arrayUnion(userId),
+            crEmails: arrayUnion(targetUser.profile.email || ''),
+          }).catch(console.error);
+        }
+      }
+
       showToast('Role Updated', `User role changed to ${targetRole.toUpperCase()}`, 'success');
     } catch (e) {
       console.error(e);

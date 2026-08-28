@@ -90,7 +90,8 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
   if (!batchKey) return null;
 
   // Check if current user is a CR for this batch
-  const isPrimaryCreator = batchData?.creatorId === user?.id || (batchData?.creatorEmail && batchData?.creatorEmail === userEmail);
+  const isLegacyBatch = !batchData?.crUserIds && !batchData?.crEmails;
+  const isPrimaryCreator = isLegacyBatch && (batchData?.creatorId === user?.id || (batchData?.creatorEmail && batchData?.creatorEmail === userEmail));
   const isCoCR = batchData?.crUserIds?.includes(user?.id) || batchData?.crEmails?.includes(userEmail) || profile.role === 'cr';
   const isAuthorizedCR = isSuperAdmin || isPrimaryCreator || isCoCR;
 
@@ -109,7 +110,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
         // Demote to student — but make sure at least one other CR remains
         const otherCRs = (batchData?.crUserIds || []).filter((id: string) => id !== memberId);
         const otherCREmails = (batchData?.crEmails || []).filter((e: string) => e !== memberEmail);
-        const primaryRemains = batchData?.creatorId && batchData?.creatorId !== memberId;
+        const primaryRemains = isLegacyBatch && batchData?.creatorId && batchData?.creatorId !== memberId;
         if (!primaryRemains && otherCRs.length === 0 && otherCREmails.length === 0) {
           showToast('Cannot Demote', 'Batch must have at least one CR. Promote another student first.', 'error');
           return;
@@ -139,7 +140,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
   const handleWithdrawSelfAsCR = async () => {
     const otherCRs = (batchData?.crUserIds || []).filter((id: string) => id !== user?.id);
     const otherCREmails = (batchData?.crEmails || []).filter((e: string) => e !== userEmail);
-    const primaryRemains = batchData?.creatorId && batchData?.creatorId !== user?.id;
+    const primaryRemains = isLegacyBatch && batchData?.creatorId && batchData?.creatorId !== user?.id;
 
     if (!primaryRemains && otherCRs.length === 0 && otherCREmails.length === 0) {
       showToast(
@@ -312,7 +313,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
               const memberEmail = p.email || '';
               const memberRoll = p.rollNumber;
 
-              const isMemberCreator = batchData?.creatorId === m.id || (batchData?.creatorEmail && batchData?.creatorEmail === memberEmail);
+              const isMemberCreator = isLegacyBatch && (batchData?.creatorId === m.id || (batchData?.creatorEmail && batchData?.creatorEmail === memberEmail));
               const isMemberCR = isMemberCreator || batchData?.crUserIds?.includes(m.id) || batchData?.crEmails?.includes(memberEmail) || p.role === 'cr';
               const isCurrentUser = m.id === user?.id || (memberEmail && memberEmail === userEmail);
 
