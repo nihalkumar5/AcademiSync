@@ -68,8 +68,6 @@ export const SmartFocusList: React.FC = () => {
             let surfaceClass = '';
             if (isCompleted) {
               surfaceClass = 'bg-[#FAFAFA] dark:bg-[#1A1A1A] border-[#E0E0E0] dark:border-[#333333] opacity-60';
-            } else if (idx === 0) {
-              surfaceClass = 'bg-[#F5F5F5] dark:bg-[#1C1C1E] border-[#E5E5E5] dark:border-[#2C2C2E]'; // very light cool grey
             } else {
               surfaceClass = 'bg-[#FFFFFF] dark:bg-[#111111] border-[#E0E0E0] dark:border-[#333333]'; // white
             }
@@ -94,7 +92,7 @@ export const SmartFocusList: React.FC = () => {
               >
                 <div className="relative z-10 flex flex-col h-full">
                   {/* Large Subtle Top Number */}
-                  <span className="text-[48px] leading-none font-bold text-[#111111]/10 dark:text-[#FFFFFF]/10 mb-6 font-mono tracking-tighter">
+                  <span className="text-[48px] leading-none font-bold text-[#E2E2E2] dark:text-[#2A2A2A] mb-6 font-mono tracking-tighter">
                     {String(idx + 1).padStart(2, '0')}
                   </span>
 

@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className="min-h-[100dvh] bg-[#FAFAF8] dark:bg-[#111110] text-[#141413] dark:text-[#F5F5F3] antialiased flex flex-col font-sans selection:bg-[#96725B] selection:text-white">
+        <body className="min-h-[100dvh] bg-[#F7F7F5] dark:bg-[#111111] text-[#141413] dark:text-[#F5F5F3] antialiased flex flex-col font-sans selection:bg-[#96725B] selection:text-white">
           <AppProvider>
             {children}
             <Analytics />
