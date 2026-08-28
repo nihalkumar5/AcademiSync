@@ -185,8 +185,8 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
           </Select>
 
           <Input
-            label="Attachment URL (Drive, Notion, etc.)"
-            placeholder="Paste link to file (keeps DB light)"
+            label="Google Drive Link (Optional)"
+            placeholder="Paste Google Drive link here"
             type="url"
             value={attachmentName}
             onChange={(e) => setAttachmentName(e.target.value)}

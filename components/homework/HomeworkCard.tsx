@@ -279,7 +279,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
               onClick={(e) => e.stopPropagation()}
             >
               <Paperclip className="w-3 h-3" />
-              <span className="truncate max-w-[120px]">View Link</span>
+              <span className="truncate max-w-[120px]">Drive Link</span>
             </a>
           )}
         </div>
