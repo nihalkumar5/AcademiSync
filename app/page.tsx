@@ -180,7 +180,7 @@ export default function AppHome() {
             <div className="mb-4 p-3 bg-black text-white dark:bg-white dark:text-black text-xs font-bold flex justify-between items-center border border-black dark:border-white">
               <span>Open this schedule inside the AcademiSync App!</span>
               <a
-                href="com.intersemester.app://"
+                href="intent://open#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.intersemester.app;end"
                 className="px-2.5 py-1 bg-white text-black dark:bg-black dark:text-white border border-black/20 dark:border-white/20 uppercase tracking-tight font-black text-[10px]"
               >
                 Open App
