@@ -74,21 +74,21 @@ export const OverviewHeader: React.FC = () => {
     <div className="flex flex-col gap-6 mt-8 mb-4">
       {/* Huge Greeting */}
       <div>
-        <h2 className="text-5xl sm:text-7xl font-medium text-black dark:text-white tracking-tighter leading-[1.1]">
+        <h2 className="text-[40px] font-normal text-black dark:text-white tracking-tight leading-[44px]">
           {greeting},<br />
           <span className="inline-flex items-baseline gap-2">
             {profile.name.split(' ')[0]}
-            <span className="text-4xl sm:text-5xl">👋</span>
+            <span>👋</span>
           </span>
         </h2>
-        <div className="mt-6 flex flex-col gap-4">
-          <p className="text-[16px] text-black/60 dark:text-white/60 font-medium">
-            It is {timeFormatted} on {dateFormatted}.
-          </p>
+        
+        <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4">
+          {dateFormatted} · {timeFormatted}
+        </p>
 
-          <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6 mt-1 p-4 border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] relative group">
-            {/* Minimal accent line */}
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-black dark:bg-white" />
+        <div className="mt-5 flex flex-col md:flex-row md:items-center gap-3 md:gap-6 p-4 border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] relative group">
+          {/* Minimal accent line */}
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-black dark:bg-white" />
             
             {/* Programme & Branch */}
             {(profile.programme || profile.branch) && (
@@ -121,7 +121,6 @@ export const OverviewHeader: React.FC = () => {
               </span>
             </div>
           </div>
-        </div>
       </div>
 
       {/* Brutalist Stats Grid */}
