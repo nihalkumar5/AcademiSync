@@ -152,10 +152,13 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Input
-            label="Deadline Date & Time"
-            type="datetime-local"
-            value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}
+            label="Deadline Date"
+            type="date"
+            value={deadline.split('T')[0]}
+            onChange={(e) => {
+              // Ensure we maintain ISO format compatibility for the database even if time is stripped
+              setDeadline(e.target.value ? `${e.target.value}T23:59` : '');
+            }}
             required
           />
 
@@ -182,8 +185,9 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
           </Select>
 
           <Input
-            label="Attachment / Problem File (Optional)"
-            placeholder="e.g. Assignment_2_Specs.pdf"
+            label="Attachment URL (Drive, Notion, etc.)"
+            placeholder="Paste link to file (keeps DB light)"
+            type="url"
             value={attachmentName}
             onChange={(e) => setAttachmentName(e.target.value)}
           />

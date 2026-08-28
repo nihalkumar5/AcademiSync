@@ -65,7 +65,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
   const diffHours = Math.round((deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60));
   const diffDays = Math.ceil(diffHours / 24);
 
-  let deadlineLabel = `${deadlineDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · ${deadlineDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  let deadlineLabel = `${deadlineDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
   let isUrgent = diffDays <= 1 && !isDone;
 
   const priorityStyles: Record<string, string> = {
@@ -271,10 +271,16 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
           </span>
 
           {homework.attachmentName && (
-            <span className="flex items-center gap-1 text-[#8C7D70] truncate max-w-[120px]">
+            <a 
+              href={homework.attachmentName.startsWith('http') ? homework.attachmentName : `https://${homework.attachmentName}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
               <Paperclip className="w-3 h-3" />
-              <span className="truncate">{homework.attachmentName}</span>
-            </span>
+              <span className="truncate max-w-[120px]">View Link</span>
+            </a>
           )}
         </div>
 
