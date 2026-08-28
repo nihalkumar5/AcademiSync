@@ -501,6 +501,54 @@ export const getSubjectThemeStyle = (hexColor?: string, theme: 'light' | 'dark' 
   }
 };
 
+export const getShortCollegeName = (fullName: string): string => {
+  if (!fullName) return '';
+  const name = fullName.replace(/\([^)]+\)/g, '').trim();
+  
+  if (name.toLowerCase().includes('shyama prasad mukherjee')) {
+    return 'IIIT NAYA RAIPUR';
+  }
+  
+  if (name.length <= 15 && !name.toLowerCase().includes('institute') && !name.toLowerCase().includes('university')) {
+    return name.toUpperCase();
+  }
+
+  const lowerName = name.toLowerCase();
+  
+  if (lowerName.includes('institute of technology') || lowerName.includes('institute of information technology') || lowerName.includes('university of')) {
+    const stopWords = ['of', 'and', 'for', 'in', 'the', 'institute', 'technology', 'university', 'science', 'engineering', 'national', 'indian', 'international'];
+    const words = name.split(/[\s,]+/);
+    const hasStandardPrefix = lowerName.includes('national institute') || lowerName.includes('indian institute') || lowerName.includes('international institute');
+    
+    if (hasStandardPrefix) {
+      let prefix = '';
+      if (lowerName.includes('national institute')) prefix = 'NIT';
+      if (lowerName.includes('indian institute of technology')) prefix = 'IIT';
+      else if (lowerName.includes('indian institute of information technology')) prefix = 'IIIT';
+      else if (lowerName.includes('international institute of information technology')) prefix = 'IIIT';
+      else if (lowerName.includes('indian institute')) prefix = 'II';
+      
+      if (prefix) {
+        const lastWord = words[words.length - 1].replace(/[^a-zA-Z]/g, '');
+        return `${prefix} ${lastWord.toUpperCase()}`;
+      }
+    }
+  }
+
+  // Fallback: Acronym generator for long names
+  const stopWords = ['of', 'and', 'for', 'in', 'the'];
+  const words = name.split(/[\s,]+/).filter(w => !stopWords.includes(w.toLowerCase()) && w.length > 0);
+  if (words.length >= 3) {
+    const initials = words.slice(0, -1).map(w => w[0]).join('').toUpperCase();
+    const lastWord = words[words.length - 1].toUpperCase();
+    if (initials.length <= 4) {
+      return `${initials} ${lastWord}`;
+    }
+  }
+
+  return name.toUpperCase();
+};
+
 export const getCanonicalBatchKey = (college: string, programme: string, branch: string, semester: number): string => {
   const clean = (str: string) => {
     return str
@@ -517,5 +565,6 @@ export const getCanonicalBatchKey = (college: string, programme: string, branch:
       .replace(/[^a-z0-9]/g, '');
   };
 
-  return `${clean(college)}_${clean(programme)}_${clean(branch)}_sem${semester}`;
+  const shortCollege = getShortCollegeName(college);
+  return `${clean(shortCollege)}_${clean(programme)}_${clean(branch)}_sem${semester}`;
 };
