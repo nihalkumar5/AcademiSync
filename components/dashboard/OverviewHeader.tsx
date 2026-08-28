@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 
 
 import React, { useState, useEffect } from 'react';
+// Trigger Vercel sync build for academi-sync-chi
 import { useApp } from '@/context/AppContext';
 import { getCurrentDayOfWeek, formatCollegeBadge, getTodayDateString, getShortCollegeName } from '@/lib/timetableUtils';
 import {
