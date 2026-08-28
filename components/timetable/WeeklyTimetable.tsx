@@ -152,15 +152,14 @@ export const WeeklyTimetable: React.FC = () => {
             </Button>
           </div>
 
-          <div className="relative">
-            <Button
-              variant="outline"
-              size="md"
+          <div className="mt-2 relative inline-block">
+            <button
               onClick={() => setShowMoreMenu(!showMoreMenu)}
-              className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+              className="text-[11px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-widest flex items-center hover:opacity-70 transition-opacity"
             >
-              More <span className="ml-1 tracking-widest font-bold">···</span>
-            </Button>
+              BATCH · {profile.isBatchSynced && profile.batchKey ? `${profile.programme} ${profile.branch?.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')} · ${profile.year || new Date().getFullYear() + 2}` : 'NOT CONNECTED'}
+              <span className="ml-2 font-normal opacity-50">→</span>
+            </button>
 
             {showMoreMenu && (
               <>

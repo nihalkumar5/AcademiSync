@@ -95,6 +95,13 @@ export const OverviewHeader: React.FC = () => {
               <span className="text-[11px] leading-[16px] font-normal text-[#777777] uppercase truncate tracking-wide">
                 {profile.rollNumber ? `${profile.rollNumber} · ` : ''}{profile.college && profile.college.toLowerCase().includes('shyama') ? 'IIIT NAYA RAIPUR' : profile.college || 'IIIT NAYA RAIPUR'}
               </span>
+              
+              <button
+                onClick={() => setActiveView('timetable')}
+                className="text-[11px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-widest flex items-center mt-3 hover:opacity-70 transition-opacity w-fit"
+              >
+                BATCH · {profile.isBatchSynced && profile.batchKey ? `${profile.programme} ${profile.branch?.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')} · ${profile.year || new Date().getFullYear() + 2}` : 'NOT CONNECTED'} <span className="ml-2 font-normal opacity-50">→</span>
+              </button>
             </div>
           )}
         </div>
