@@ -143,7 +143,7 @@ export const TodayTimeline: React.FC = () => {
       </div>
       <div className="bento-card p-4 sm:p-5">
         {/* Stacked Cards Layout */}
-        <div className="flex flex-col -space-y-4 pt-2 pb-6 px-1">
+        <div className="flex flex-col -space-y-3 pt-2 pb-4 px-1">
           {targetSessions.map((session, index) => {
             const sub = subjectMap.get(session.subjectId);
             const reschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
@@ -159,47 +159,47 @@ export const TodayTimeline: React.FC = () => {
             return (
               <div 
                 key={session.id} 
-                className={`relative flex items-center justify-between p-6 rounded-[2rem] transition-all overflow-hidden border border-black/5 dark:border-white/5 ${
+                className={`relative flex items-center justify-between px-5 py-4 rounded-3xl transition-all overflow-hidden border border-black/5 dark:border-white/5 ${
                   isCancelled ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-500 opacity-60' : getSubjectPastelStyle(sub, session.id)
                 } ${isPassed && !isCancelled ? 'opacity-60' : 'opacity-100'}`}
                 style={{
                   zIndex: 10 + index,
                   boxShadow: '0 -4px 12px rgba(0,0,0,0.05)',
-                  minHeight: '110px'
+                  minHeight: '85px'
                 }}
               >
                 {/* Left side: Subject Name */}
-                <div className="flex flex-col pr-4">
-                  <h4 className={`text-4xl font-light tracking-tight ${isCancelled ? 'line-through' : ''}`}>
+                <div className="flex flex-col pr-3">
+                  <h4 className={`text-2xl font-light tracking-tight leading-tight ${isCancelled ? 'line-through' : ''}`}>
                     {sub?.name || 'Class'}
                   </h4>
                   {session.isLab && (
-                     <span className="mt-1 text-sm font-medium opacity-60">Lab Session</span>
+                     <span className="mt-0.5 text-[11px] font-medium opacity-60">Lab Session</span>
                   )}
                   {isCancelled && (
-                     <span className="mt-1 text-sm font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Cancelled</span>
+                     <span className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Cancelled</span>
                   )}
                   {isNow && (
-                     <span className="mt-1 text-sm font-bold uppercase tracking-wider flex items-center gap-2">
-                       <span className="w-2 h-2 rounded-full bg-current animate-ping"></span> Now
+                     <span className="mt-0.5 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                       <span className="w-1.5 h-1.5 rounded-full bg-current animate-ping"></span> Now
                      </span>
                   )}
                 </div>
 
                 {/* Right side: Time */}
-                <div className="flex flex-col items-end text-right mr-8">
-                  <span className="text-[10px] font-medium uppercase tracking-widest opacity-60 mb-0.5">Start</span>
+                <div className="flex flex-col items-end text-right mr-6 shrink-0">
+                  <span className="text-[9px] font-medium uppercase tracking-widest opacity-60 mb-0.5">Start</span>
                   {reschedule ? (
                     <div className="flex flex-col items-end">
-                      <span className="text-sm line-through opacity-40 font-mono">
+                      <span className="text-xs line-through opacity-40 font-mono">
                         {session.startTime}
                       </span>
-                      <span className="text-2xl font-light font-mono tracking-tight">
+                      <span className="text-xl font-light font-mono tracking-tight">
                         {reschedule.startTime}
                       </span>
                     </div>
                   ) : (
-                    <span className={`text-2xl font-light font-mono tracking-tight ${isCancelled ? 'line-through opacity-50' : ''}`}>
+                    <span className={`text-xl font-light font-mono tracking-tight ${isCancelled ? 'line-through opacity-50' : ''}`}>
                       {session.startTime}
                     </span>
                   )}
