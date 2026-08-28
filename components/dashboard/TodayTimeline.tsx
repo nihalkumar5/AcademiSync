@@ -11,22 +11,17 @@ import { Subject, ClassSession } from '@/lib/types';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { Modal } from '../ui/Modal';
 
-const SOLID_PASTEL_PALETTE = [
-  'bg-[#FBFBFB] dark:bg-[#222222] text-[#111111] dark:text-[#FBFBFB]', // Soft White / Off-black
-  'bg-[#EAFA84] dark:bg-[#D4E37A] text-[#1D2109] dark:text-[#1D2109]', // Lemon Yellow
-  'bg-[#A9B1A6] dark:bg-[#929A8F] text-[#181C16] dark:text-[#181C16]', // Warm Grey Green
-  'bg-[#FDE047] dark:bg-[#EAB308] text-[#3F2C00] dark:text-[#3F2C00]', // Warm Amber
-  'bg-[#FBCFE8] dark:bg-[#F472B6] text-[#4C0519] dark:text-[#4C0519]', // Soft Rose
-  'bg-[#BAE6FD] dark:bg-[#38BDF8] text-[#082F49] dark:text-[#082F49]', // Sky Blue
+const ELEGANT_STACK_PALETTE = [
+  'bg-[#E5E5EA] dark:bg-[#2C2C2E] text-[#1C1C1E] dark:text-[#F2F2F7]', // Titanium Gray
+  'bg-[#E0F0FF] dark:bg-[#0A2440] text-[#004080] dark:text-[#99C2FF]', // Soft Blue
+  'bg-[#E3F5E1] dark:bg-[#143311] text-[#1D4D1A] dark:text-[#99E693]', // Soft Green
+  'bg-[#FFE5EC] dark:bg-[#400015] text-[#660022] dark:text-[#FF99BC]', // Soft Pink
+  'bg-[#FFF0E0] dark:bg-[#402000] text-[#663300] dark:text-[#FFC299]', // Soft Orange/Cream
+  'bg-[#EBE0FF] dark:bg-[#200040] text-[#330066] dark:text-[#B399FF]', // Soft Purple
 ];
 
-const getSubjectPastelStyle = (sub?: Subject, fallbackId: string = '') => {
-  const key = sub?.name || sub?.id || fallbackId;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    hash = (hash * 31 + key.charCodeAt(i)) % SOLID_PASTEL_PALETTE.length;
-  }
-  return SOLID_PASTEL_PALETTE[Math.abs(hash)];
+const getStackedCardStyle = (index: number) => {
+  return ELEGANT_STACK_PALETTE[index % ELEGANT_STACK_PALETTE.length];
 };
 
 export const TodayTimeline: React.FC = () => {
@@ -159,8 +154,8 @@ export const TodayTimeline: React.FC = () => {
             return (
               <div 
                 key={session.id} 
-                className={`relative flex items-center justify-between px-5 py-4 rounded-3xl transition-all overflow-hidden border border-black/5 dark:border-white/5 ${
-                  isCancelled ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-500 opacity-60' : getSubjectPastelStyle(sub, session.id)
+                className={`relative flex items-center justify-between px-5 py-4 rounded-3xl transition-all overflow-hidden border border-black/10 dark:border-white/10 ${
+                  isCancelled ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-500 opacity-60' : getStackedCardStyle(index)
                 } ${isPassed && !isCancelled ? 'opacity-60' : 'opacity-100'}`}
                 style={{
                   zIndex: 10 + index,
