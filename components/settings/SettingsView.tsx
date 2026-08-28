@@ -256,10 +256,10 @@ export const SettingsView: React.FC = () => {
       {/* Editorial Stacked Header */}
       <div className="flex flex-col gap-4 pt-2 sm:pt-6">
         <div>
-          <h1 className="text-[clamp(3rem,12vw,5.5rem)] font-medium tracking-tight leading-none text-black dark:text-white">
+          <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
             Settings,<br />Profile
-          </h1>
-          <p className="text-sm sm:text-base text-black/60 dark:text-white/60 mt-3 font-normal leading-relaxed max-w-md">
+          </h2>
+          <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4 max-w-md">
             Manage your student identity, reminders, and data preferences.
           </p>
         </div>

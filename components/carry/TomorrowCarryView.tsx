@@ -121,24 +121,24 @@ export const TomorrowCarryView: React.FC = () => {
       {/* Editorial Stacked Header — matching App Design System */}
       <div className="flex flex-col gap-4 pt-2 sm:pt-6">
         <div>
-          <h1 className="text-[clamp(3rem,12vw,5.5rem)] font-medium tracking-tight leading-none text-black dark:text-white">
+          <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
             Bag,<br />Carry,<br />Pack
-          </h1>
-          <div className="flex items-center gap-2 mt-4 flex-wrap">
-            <span className="text-xs font-bold font-mono px-2.5 py-1 rounded-none border border-black dark:border-white text-black dark:text-white uppercase tracking-wider">
+          </h2>
+          <div className="flex items-center gap-3 mt-5 flex-wrap">
+            <span className="text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-none border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] text-black dark:text-white uppercase tracking-wider">
               {targetDay}
             </span>
             {targetHoliday ? (
-              <span className="text-xs font-bold font-mono px-3 py-1 rounded-none border border-black dark:border-white text-black dark:text-white uppercase tracking-wider">
+              <span className="text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-none border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] text-black dark:text-white uppercase tracking-wider">
                 Holiday: {targetHoliday.title}
               </span>
             ) : (
-              <span className="text-xs font-bold font-mono px-2.5 py-1 rounded-none border border-black dark:border-white text-black dark:text-white">
+              <span className="text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-none border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] text-black dark:text-white uppercase tracking-wider">
                 {packedCount}/{totalCount} packed
               </span>
             )}
           </div>
-          <p className="text-sm sm:text-base text-black/65 dark:text-white/65 mt-3 font-normal leading-relaxed max-w-md flex items-center gap-1.5">
+          <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4 flex items-center gap-1.5">
             <CalendarDays className="w-4 h-4 shrink-0 text-black/60 dark:text-white/60" />
             <span>Packing list for {isAfterReminderTime ? 'tomorrow' : 'today'} · {targetFormatted}</span>
           </p>

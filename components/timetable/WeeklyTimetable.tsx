@@ -120,13 +120,13 @@ export const WeeklyTimetable: React.FC = () => {
     <div className="flex flex-col gap-8 text-left">
       <div className="flex flex-col gap-6 mt-8 mb-4">
         <div>
-          <h2 className="text-5xl sm:text-7xl font-medium text-black dark:text-white tracking-tighter leading-[1.1]">
+          <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
             Weekly,<br />
             Schedule,<br />
             Timetable,<br />
             Classes
           </h2>
-          <p className="text-lg text-black/70 dark:text-white/70 mt-6 max-w-sm leading-snug">
+          <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4">
             Manage your lectures, lab slots, and classroom locations.
           </p>
         </div>

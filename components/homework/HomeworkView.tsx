@@ -141,17 +141,15 @@ export const HomeworkView: React.FC = () => {
       <div className="flex flex-col gap-4 pt-2 sm:pt-6">
         {/* Large stacked heading with badge inline */}
         <div>
-          <div className="flex items-start gap-3 flex-wrap">
-            <h1 className="text-[clamp(3rem,12vw,5.5rem)] font-medium tracking-tight leading-none text-black dark:text-white">
-              Tasks,<br />To-Do,<br />Pending
-            </h1>
-          </div>
-          <div className="flex items-center gap-2 mt-3">
-            <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-none border border-black dark:border-white text-black dark:text-white">
+          <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
+            Tasks,<br />To-Do,<br />Pending
+          </h2>
+          <div className="flex items-center gap-3 mt-5">
+            <span className="text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-none border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] text-black dark:text-white uppercase tracking-wider">
               {pendingCount} pending
             </span>
           </div>
-          <p className="text-sm sm:text-base text-black/60 dark:text-white/60 mt-3 font-normal leading-relaxed max-w-md">
+          <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4 max-w-md">
             Manage your assignments, project submissions, and daily priorities.
           </p>
         </div>
