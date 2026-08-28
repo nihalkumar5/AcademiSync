@@ -107,10 +107,10 @@ export const Header: React.FC = () => {
             </div>
           )}
 
-          {/* Quick Search Button */}
+          {/* Quick Search Button - Hidden on mobile as requested */}
           <button
             onClick={() => setCommandPaletteOpen(true)}
-            className="flex items-center gap-2 px-2 py-1.5 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+            className="hidden md:flex items-center gap-2 px-2 py-1.5 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
             title="Open Command Palette (⌘K)"
           >
             <Search className="w-4 h-4" />
@@ -120,11 +120,11 @@ export const Header: React.FC = () => {
             </kbd>
           </button>
 
-          {/* Quick Theme Switcher */}
+          {/* Quick Theme Switcher - Hidden on mobile as requested */}
           <button
             onClick={toggleTheme}
             aria-label="Toggle theme"
-            className="p-1.5 border border-transparent hover:border-black dark:hover:border-white transition-all"
+            className="hidden md:flex p-1.5 border border-transparent hover:border-black dark:hover:border-white transition-all"
             title={`Switch to ${settings.theme === 'dark' ? 'Light' : 'Dark'} Mode`}
           >
             {settings.theme === 'dark' ? (

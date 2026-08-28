@@ -31,6 +31,8 @@ import {
   Share2,
   Crown,
   Users,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '@/components/ui/Modal';
@@ -690,6 +692,44 @@ export const SettingsView: React.FC = () => {
                 </SignInButton>
               </div>
             </SignedOut>
+          </div>
+
+          {/* Appearance / Theme */}
+          <div className="glass-card p-6 flex flex-col gap-4">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-black/20 dark:border-white/20">
+              <div className="w-8 h-8 border border-black dark:border-white flex items-center justify-center text-black dark:text-white">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-bold text-black dark:text-white tracking-widest uppercase">
+                Appearance
+              </h3>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className={labelClass}>Theme Preference</label>
+              <div className="flex items-center gap-2 mt-1">
+                <button
+                  onClick={() => updateSettings({ theme: 'light' })}
+                  className={`flex-1 py-2.5 px-3 flex items-center justify-center gap-2 border transition-all text-sm font-bold ${
+                    settings.theme === 'light'
+                      ? 'bg-black text-white dark:bg-white dark:text-black border-transparent'
+                      : 'bg-transparent text-black/60 dark:text-white/60 border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  <Sun className="w-4 h-4" /> Light
+                </button>
+                <button
+                  onClick={() => updateSettings({ theme: 'dark' })}
+                  className={`flex-1 py-2.5 px-3 flex items-center justify-center gap-2 border transition-all text-sm font-bold ${
+                    settings.theme === 'dark'
+                      ? 'bg-black text-white dark:bg-white dark:text-black border-transparent'
+                      : 'bg-transparent text-black/60 dark:text-white/60 border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  <Moon className="w-4 h-4" /> Dark
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Notification Schedule */}
