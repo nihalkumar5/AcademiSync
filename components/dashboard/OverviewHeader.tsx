@@ -82,25 +82,18 @@ export const OverviewHeader: React.FC = () => {
           </span>
         </h2>
         
-        <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4">
-          {dateFormatted} · {timeFormatted}
-        </p>
+        <div className="flex flex-col gap-4 mt-2">
+          <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px]">
+            {dateFormatted} · {timeFormatted}
+          </p>
 
-        <div className="mt-5 p-4 border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] relative">
-          {/* Minimal accent line */}
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-black dark:bg-white" />
-            
           {(profile.programme || profile.branch) && (
-            <div className="flex flex-col gap-1 pl-2">
-              <span className="text-[10px] font-bold text-black/40 dark:text-white/40 uppercase tracking-widest flex items-center gap-1.5">
-                <GraduationCap className="w-3 h-3" />
-                Academic Profile
+            <div className="flex items-center gap-3">
+              <span className="bg-[#F1F1F1] dark:bg-[#1A1A1A] border border-[#DCDCDC] dark:border-[#333333] text-[11px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider px-2.5 py-[3px] rounded-[2px] leading-none">
+                SEM {profile.semester}
               </span>
-              <span className="text-[13px] font-bold text-black dark:text-white uppercase tracking-wide leading-snug">
-                {profile.programme}{profile.branch ? ` · ${profile.branch}` : ''}
-              </span>
-              <span className="text-[11px] font-bold text-black/60 dark:text-white/60 uppercase tracking-wide mt-1">
-                Semester {profile.semester}
+              <span className="text-[12px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wide truncate">
+                {profile.programme}{profile.branch ? ` · ${profile.branch}` : ''}{profile.rollNumber ? ` · ${profile.rollNumber}` : ''}
               </span>
             </div>
           )}
