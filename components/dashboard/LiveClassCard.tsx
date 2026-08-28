@@ -75,9 +75,6 @@ export const LiveClassCard: React.FC = () => {
 
     const renderFaculty = (facultyStr: string) => {
       const faculties = facultyStr.split(/[,/&]/).map(f => f.trim()).filter(Boolean);
-      if (faculties.length > 2) {
-        return `${faculties[0]} + ${faculties.length - 1} faculty`;
-      }
       return faculties.join(' / ');
     };
 
@@ -107,9 +104,9 @@ export const LiveClassCard: React.FC = () => {
         </div>
 
         {/* Metadata */}
-        <div className="flex items-center gap-2 text-[12px] text-[#BDBDBD] leading-none mb-5">
+        <div className="flex items-center gap-2 text-[12px] text-[#999999] leading-none mb-5">
           <span className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[12px]">⌖</span>
+            <MapPin className="w-3.5 h-3.5" />
             {session.room}
           </span>
           {session.faculty && (
@@ -165,9 +162,6 @@ export const LiveClassCard: React.FC = () => {
 
     const renderFaculty = (facultyStr: string) => {
       const faculties = facultyStr.split(/[,/&]/).map(f => f.trim()).filter(Boolean);
-      if (faculties.length > 2) {
-        return `${faculties[0]} + ${faculties.length - 1} faculty`;
-      }
       return faculties.join(' / ');
     };
 
@@ -186,7 +180,7 @@ export const LiveClassCard: React.FC = () => {
 
         <div className="flex items-center gap-2 text-[12px] text-[#6B6B6B] dark:text-[#999999] leading-none mb-4">
           <span className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[10px]">◉</span>
+            <MapPin className="w-3.5 h-3.5" />
             {session.room}
           </span>
           {session.faculty && (
