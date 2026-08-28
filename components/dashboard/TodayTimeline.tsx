@@ -11,28 +11,7 @@ import { Subject, ClassSession } from '@/lib/types';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { Modal } from '../ui/Modal';
 
-// 10 distinct, elegant & engaging pastel paper colors (slightly lighter shades)
-const ELEGANT_PASTEL_PALETTE = [
-  'bg-[#FEF9C3]/80 dark:bg-[#78350F]/25 border-[#FDE047]/60 dark:border-[#FACC15]/30', // Golden Cream
-  'bg-[#E0F2FE]/80 dark:bg-[#0C4A6E]/25 border-[#7DD3FC]/60 dark:border-[#38BDF8]/30', // Ice Denim Blue
-  'bg-[#FCE7F3]/80 dark:bg-[#831843]/25 border-[#F9A8D4]/60 dark:border-[#F472B6]/30', // Soft Rose Pink
-  'bg-[#DCFCE7]/80 dark:bg-[#064E3B]/25 border-[#86EFAC]/60 dark:border-[#4ADE80]/30', // Fresh Sage Mint
-  'bg-[#FFEDD5]/80 dark:bg-[#7C2D12]/25 border-[#FDBA74]/60 dark:border-[#FB923C]/30', // Peach Terracotta
-  'bg-[#F3E8FF]/80 dark:bg-[#3B0764]/25 border-[#D8B4FE]/60 dark:border-[#C084FC]/30', // Soft Lavender
-  'bg-[#CCFBF1]/80 dark:bg-[#134E4A]/25 border-[#5EEAD4]/60 dark:border-[#2DD4BF]/30', // Soft Teal
-  'bg-[#FFE4E6]/80 dark:bg-[#881337]/25 border-[#FDA4AF]/60 dark:border-[#FB7185]/30', // Blush Coral
-  'bg-[#FEF3C7]/80 dark:bg-[#78350F]/25 border-[#FCD34D]/60 dark:border-[#F59E0B]/30', // Warm Amber
-  'bg-[#ECFCCB]/80 dark:bg-[#365314]/25 border-[#BEF264]/60 dark:border-[#A3E635]/30', // Soft Lime
-];
 
-const getSubjectPastelStyle = (sub?: Subject, fallbackId: string = '') => {
-  const key = sub?.name || sub?.id || fallbackId;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    hash = (hash * 31 + key.charCodeAt(i)) % ELEGANT_PASTEL_PALETTE.length;
-  }
-  return ELEGANT_PASTEL_PALETTE[Math.abs(hash)];
-};
 
 export const TodayTimeline: React.FC = () => {
   const { 
@@ -148,47 +127,74 @@ export const TodayTimeline: React.FC = () => {
       </div>
       <div className="bento-card p-4 sm:p-5">
         <div className="relative flex flex-col gap-0 border-l-[3px] border-slate-100 dark:border-zinc-800 ml-3 py-2">
-          {targetSessions.map((session) => {
-            const sub = subjectMap.get(session.subjectId);
-            const reschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
-            const start = timeToMinutes(reschedule ? reschedule.startTime : session.startTime);
-            const end = timeToMinutes(reschedule ? reschedule.endTime : session.endTime);
-            const isCancelled = isSessionCancelled(session.id, targetDateStr);
-            const isNow = !isAfter8PM && !isCancelled && currentMinutes >= start && currentMinutes < end;
-            const isPassed = isCancelled || (isAfter8PM ? false : currentMinutes >= end);
-            
-            // Dynamic theme dot color
-            const subjectColor = isCancelled ? '#94A3B8' : (sub?.color || '#8C6B5D');
+          {(() => {
+            let nextClassId: string | null = null;
+            if (!isAfter8PM) {
+              const nextSession = targetSessions.find(s => {
+                const isCancelled = isSessionCancelled(s.id, targetDateStr);
+                const reschedule = rescheduledSessions[`${targetDateStr}_${s.id}`];
+                const start = timeToMinutes(reschedule ? reschedule.startTime : s.startTime);
+                return !isCancelled && currentMinutes < start;
+              });
+              if (nextSession) {
+                nextClassId = nextSession.id;
+              }
+            }
 
-            return (
-              <div key={session.id} className="relative pl-6 pb-6 last:pb-0 group">
-                {/* Node Dot */}
-                <div 
-                  className={`absolute left-[-6px] top-[2px] w-3 h-3 rounded-full border-2 border-white dark:border-[#1C1C1E] shadow-sm z-10 ${
-                    isCancelled ? 'bg-zinc-400 dark:bg-zinc-600' : ''
-                  }`}
-                  style={{ backgroundColor: isCancelled ? undefined : (isPassed ? '#94A3B8' : subjectColor) }}
-                />
-                
-                {isNow && (
+            return targetSessions.map((session) => {
+              const sub = subjectMap.get(session.subjectId);
+              const reschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
+              const start = timeToMinutes(reschedule ? reschedule.startTime : session.startTime);
+              const end = timeToMinutes(reschedule ? reschedule.endTime : session.endTime);
+              const isCancelled = isSessionCancelled(session.id, targetDateStr);
+              const isNow = !isAfter8PM && !isCancelled && currentMinutes >= start && currentMinutes < end;
+              const isPassed = isCancelled || (isAfter8PM ? false : currentMinutes >= end);
+              const isNextClass = session.id === nextClassId;
+
+              let dotClass = '';
+              if (isCancelled) {
+                dotClass = 'bg-[#FCA5A5] dark:bg-[#7f1d1d]'; // Muted red dot
+              } else if (isNow) {
+                dotClass = 'bg-[#111111] dark:bg-[#FFFFFF]'; // Black filled
+              } else if (isNextClass) {
+                dotClass = 'bg-[#111111] dark:bg-[#FFFFFF]'; // Black dot
+              } else {
+                dotClass = 'bg-[#D4D4D4] dark:bg-[#444444]'; // Grey dot
+              }
+
+              let cardColorClass = '';
+              let textColorClass = '';
+              if (isCancelled) {
+                cardColorClass = 'bg-[#FEF2F2] dark:bg-[#450a0a] border-[#FCA5A5] dark:border-[#7f1d1d] opacity-70';
+                textColorClass = 'text-[#991B1B] dark:text-[#fca5a5]';
+              } else if (isNow) {
+                cardColorClass = 'bg-[#111111] dark:bg-[#FFFFFF] border-[#111111] dark:border-[#FFFFFF] shadow-lg';
+                textColorClass = 'text-[#FFFFFF] dark:text-[#111111]';
+              } else if (isPassed) {
+                cardColorClass = 'bg-[#FAFAFA] dark:bg-[#1a1a1a] border-[#E0E0E0] dark:border-[#333333] opacity-60'; // Completed -> Light grey
+                textColorClass = 'text-[#111111] dark:text-[#FFFFFF]';
+              } else if (isNextClass) {
+                cardColorClass = 'bg-[#F9F9F9] dark:bg-[#1f1f1f] border-[#BDBDBD] dark:border-[#555555]'; // Next -> Very subtle accent
+                textColorClass = 'text-[#111111] dark:text-[#FFFFFF]';
+              } else {
+                cardColorClass = 'bg-[#FFFFFF] dark:bg-[#111111] border-[#E0E0E0] dark:border-[#333333]'; // Normal -> White
+                textColorClass = 'text-[#111111] dark:text-[#FFFFFF]';
+              }
+
+              return (
+                <div key={session.id} className="relative pl-6 pb-6 last:pb-0 group">
+                  {/* Node Dot */}
                   <div 
-                    className="absolute left-[-9px] top-[-1px] w-[18px] h-[18px] rounded-full animate-ping opacity-40 z-0"
-                    style={{ backgroundColor: subjectColor }}
+                    className={`absolute left-[-6px] top-[2px] w-3 h-3 rounded-full border-2 border-white dark:border-[#1C1C1E] shadow-sm z-10 ${dotClass}`}
                   />
-                )}
+                  
+                  {isNow && (
+                    <div 
+                      className="absolute left-[-9px] top-[-1px] w-[18px] h-[18px] rounded-full animate-ping opacity-40 z-0 bg-[#111111] dark:bg-[#FFFFFF]"
+                    />
+                  )}
 
-                 {(() => {
-                  let cardColorClass = '';
-                  if (isCancelled) {
-                    cardColorClass = 'bg-zinc-100/90 dark:bg-zinc-900/60 border-zinc-300/80 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 opacity-70';
-                  } else if (isNow) {
-                    cardColorClass = 'bg-black text-white dark:bg-white dark:text-black shadow-lg shadow-black/10 dark:shadow-white/10 border-transparent ring-1 ring-black/5 dark:ring-white/5';
-                  } else {
-                    cardColorClass = `${getSubjectPastelStyle(sub, session.id)} text-black dark:text-white`;
-                  }
-
-                  return (
-                    <div className={`flex flex-col sm:flex-row gap-3 transition-all ${isPassed && !isCancelled ? 'opacity-55' : 'opacity-100'}`}>
+                  <div className={`flex flex-col sm:flex-row gap-3 transition-all`}>
                       {/* Time */}
                       <div className="w-16 shrink-0 flex flex-col pt-0.5">
                         {reschedule ? (
@@ -213,31 +219,29 @@ export const TodayTimeline: React.FC = () => {
                       <div className={`flex-1 rounded-none p-3 sm:p-4 border transition-all ${cardColorClass}`}>
                         <div className="flex flex-wrap items-start justify-between gap-2">
                           <div className="flex flex-col gap-1 min-w-0 flex-1">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className={`text-[15px] font-bold truncate ${
-                                isCancelled ? 'line-through text-zinc-500 dark:text-zinc-400' : (isNow ? 'text-white dark:text-black' : 'text-current')
-                              }`}>
+                            <div className="flex items-start gap-2 flex-wrap">
+                              <h4 className={`text-[15px] font-bold line-clamp-2 leading-snug ${textColorClass} ${isCancelled ? 'line-through opacity-70' : ''}`}>
                                 {sub?.name || 'Class Session'}
                               </h4>
                               
                               {isCancelled ? (
-                                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800/60">
+                                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#FEF2F2] dark:bg-[#450a0a] text-[#991B1B] dark:text-[#fca5a5] border border-[#FCA5A5] dark:border-[#7f1d1d] shrink-0">
                                   Cancelled
                                 </span>
                               ) : isNow ? (
-                                <span className="px-2 py-0.5 rounded-none bg-white text-black dark:bg-black dark:text-white text-[10px] font-bold uppercase tracking-wider animate-pulse border border-current">
+                                <span className="px-2 py-0.5 rounded-none bg-white text-black dark:bg-black dark:text-white text-[10px] font-bold uppercase tracking-wider animate-pulse border border-current shrink-0">
                                   Now
                                 </span>
                               ) : reschedule ? (
-                                <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider border ${
-                                  isNow ? 'bg-black text-white border-white' : 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800/60'
+                                <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider border shrink-0 ${
+                                  isNow ? 'bg-black text-white border-white' : 'bg-[#FFFBEB] dark:bg-[#422006] text-[#B45309] dark:text-[#FCD34D] border-[#FDE68A] dark:border-[#78350F]'
                                 }`}>
                                   Rescheduled
                                 </span>
                               ) : null}
                             </div>
                             
-                            <div className="flex items-center gap-3 text-xs opacity-75 font-medium flex-wrap mt-0.5">
+                            <div className={`flex items-center gap-3 text-xs font-medium flex-wrap mt-0.5 ${textColorClass} opacity-75`}>
                               <span className="flex items-center gap-1">
                                 <MapPin className="w-3.5 h-3.5" />
                                 {reschedule?.room || session.room}
@@ -368,11 +372,10 @@ export const TodayTimeline: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                  );
-                })()}
-              </div>
-            );
-          })}
+                </div>
+              );
+            });
+          })()}
         </div>
       </div>
 
