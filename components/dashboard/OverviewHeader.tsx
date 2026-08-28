@@ -88,12 +88,12 @@ export const OverviewHeader: React.FC = () => {
           </p>
 
           {(profile.programme || profile.branch) && (
-            <div className="flex items-center gap-3">
-              <span className="bg-[#F1F1F1] dark:bg-[#1A1A1A] border border-[#DCDCDC] dark:border-[#333333] text-[11px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider px-2.5 py-[3px] rounded-[2px] leading-none">
-                SEM {profile.semester}
+            <div className="flex flex-col gap-0.5 mt-0.5">
+              <span className="text-[12px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider truncate">
+                SEM {profile.semester} · {profile.programme}{profile.branch ? ` · ${profile.branch.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI')}` : ''}
               </span>
-              <span className="text-[12px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wide truncate">
-                {profile.programme}{profile.branch ? ` · ${profile.branch}` : ''}{profile.rollNumber ? ` · ${profile.rollNumber}` : ''}
+              <span className="text-[11.5px] font-normal text-[#777777] uppercase truncate tracking-wide">
+                {profile.rollNumber ? `${profile.rollNumber} · ` : ''}{profile.college || 'IIIT NAYA RAIPUR'}
               </span>
             </div>
           )}
