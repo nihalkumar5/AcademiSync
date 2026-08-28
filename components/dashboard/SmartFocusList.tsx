@@ -8,18 +8,7 @@ import { EmptyState } from '../ui/EmptyState';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
 
-const ELEGANT_TASK_PALETTE = [
-  'bg-[#E5E5EA] dark:bg-[#2C2C2E] text-[#1C1C1E] dark:text-[#F2F2F7] border-black/5 dark:border-white/5', 
-  'bg-[#E0F0FF] dark:bg-[#0A2440] text-[#004080] dark:text-[#99C2FF] border-black/5 dark:border-white/5', 
-  'bg-[#E3F5E1] dark:bg-[#143311] text-[#1D4D1A] dark:text-[#99E693] border-black/5 dark:border-white/5', 
-  'bg-[#FFE5EC] dark:bg-[#400015] text-[#660022] dark:text-[#FF99BC] border-black/5 dark:border-white/5', 
-  'bg-[#FFF0E0] dark:bg-[#402000] text-[#663300] dark:text-[#FFC299] border-black/5 dark:border-white/5', 
-  'bg-[#EBE0FF] dark:bg-[#200040] text-[#330066] dark:text-[#B399FF] border-black/5 dark:border-white/5', 
-];
 
-const getTaskStyle = (index: number) => {
-  return ELEGANT_TASK_PALETTE[index % ELEGANT_TASK_PALETTE.length];
-};
 
 export const SmartFocusList: React.FC = () => {
   const { homework, timetable, subjects, toggleHomeworkStatus, setActiveView } = useApp();
@@ -85,7 +74,7 @@ export const SmartFocusList: React.FC = () => {
         <AnimatePresence>
           {focusItems.map((item, idx) => {
             const isCompleted = completingId === item.id;
-            const taskColorClass = getTaskStyle(idx);
+
             
             return (
               <motion.div
@@ -101,10 +90,10 @@ export const SmartFocusList: React.FC = () => {
                   }
                 }}
                 className={clsx(
-                  'flex items-center justify-between p-4 sm:p-5 rounded-3xl border transition-all group cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-0.5',
+                  'flex items-center justify-between p-4 sm:p-5 rounded-none border transition-all group cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-0.5',
                   isCompleted
-                    ? 'bg-zinc-200 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-500 opacity-60'
-                    : taskColorClass
+                    ? 'bg-[#FAFAFA] dark:bg-[#1a1a1a] border-[#E0E0E0] dark:border-[#333333] opacity-60'
+                    : 'bg-[#FFFFFF] dark:bg-[#111111] border-[#E0E0E0] dark:border-[#333333]'
                 )}
               >
                 <div className="flex items-center gap-4 min-w-0 flex-1">
@@ -116,12 +105,12 @@ export const SmartFocusList: React.FC = () => {
                       whileTap={{ scale: 0.9 }}
                       onClick={(e) => handleCheck(e, item.id, item.type)}
                       className={clsx(
-                        'w-6 h-6 flex items-center justify-center rounded-full border-2 transition-all shrink-0 cursor-pointer shadow-sm',
+                        'w-6 h-6 flex items-center justify-center rounded-full border-[1.5px] transition-all shrink-0 cursor-pointer shadow-sm',
                         item.status === 'Completed'
-                          ? 'bg-emerald-500 border-emerald-500 text-white'
+                          ? 'bg-[#111111] dark:bg-[#FFFFFF] border-[#111111] dark:border-[#FFFFFF] text-white dark:text-black'
                           : item.status === 'In Progress'
-                          ? 'border-amber-500 bg-amber-500/20 text-amber-600 dark:text-amber-400'
-                          : 'border-current bg-white/50 dark:bg-black/50 hover:bg-black/10 dark:hover:bg-white/10'
+                          ? 'border-blue-500 bg-blue-500/10 text-blue-500'
+                          : 'border-[#111111] dark:border-[#FFFFFF] bg-transparent hover:bg-black/5 dark:hover:bg-white/5'
                       )}
                       title={
                         item.status === 'Not Started'
@@ -142,7 +131,7 @@ export const SmartFocusList: React.FC = () => {
                         </motion.div>
                       )}
                       {item.status === 'In Progress' && (
-                        <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
                       )}
                     </motion.button>
                   ) : (
@@ -164,38 +153,40 @@ export const SmartFocusList: React.FC = () => {
                       {item.title}
                     </span>
 
-                    <div className="flex flex-col gap-2 text-xs font-semibold mt-0.5 opacity-80">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono px-2 py-0.5 rounded-full border border-current text-[10px] w-fit break-words max-w-full leading-tight uppercase tracking-wider">
-                          {item.tag}
+                    <div className="flex flex-col gap-1.5 mt-0.5">
+                      <span className="text-[12px] text-[#6B6B6B] dark:text-[#999999] font-normal truncate">
+                        {item.tag}
+                      </span>
+                      {item.type === 'homework' && item.status && (
+                        <span
+                          className={clsx(
+                            'text-[10px] font-bold uppercase tracking-widest',
+                            item.status === 'In Progress'
+                              ? 'text-blue-500'
+                              : item.status === 'Completed'
+                              ? 'text-[#111111] dark:text-[#FFFFFF]'
+                              : 'text-[#808080] dark:text-[#888888]'
+                          )}
+                        >
+                          {item.status === 'In Progress' ? 'IN PROGRESS' : item.status === 'Completed' ? 'COMPLETED' : 'NOT STARTED'}
                         </span>
-                        {item.type === 'homework' && item.status && (
-                          <span
-                            className={clsx(
-                              'font-mono text-[9px] font-black px-2 py-0.5 rounded-full border w-fit leading-tight uppercase tracking-widest',
-                              item.status === 'In Progress'
-                                ? 'bg-amber-500/20 border-amber-500 text-amber-700 dark:text-amber-400'
-                                : item.status === 'Completed'
-                                ? 'bg-emerald-500/20 border-emerald-500 text-emerald-700 dark:text-emerald-400'
-                                : 'bg-black/5 dark:bg-white/5 border-current'
-                            )}
-                          >
-                            {item.status === 'In Progress' ? 'IN PROGRESS ⏳' : item.status === 'Completed' ? 'COMPLETED 🎉' : 'NOT STARTED'}
-                          </span>
-                        )}
-                      </div>
+                      )}
                       
                       {item.deadlineText && (
                         <span
                           className={clsx(
-                            'font-mono flex items-center gap-1 w-fit mt-0.5',
+                            'text-[12px] flex items-center gap-1.5 w-fit mt-0.5',
                             item.urgency === 'high'
-                              ? 'text-rose-600 dark:text-rose-400 font-black'
-                              : ''
+                              ? 'text-[#DC2626] dark:text-[#F87171] font-medium'
+                              : 'text-[#808080] dark:text-[#888888] font-normal'
                           )}
                         >
-                          <Clock className="w-3.5 h-3.5 shrink-0" />
-                          <span className="truncate tracking-wide">{item.deadlineText}</span>
+                          {item.urgency === 'high' ? (
+                            <span className="text-[10px]">🔴</span>
+                          ) : (
+                            <Clock className="w-3.5 h-3.5 shrink-0 opacity-70" />
+                          )}
+                          <span className="truncate">{item.deadlineText}</span>
                         </span>
                       )}
                     </div>
