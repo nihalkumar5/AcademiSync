@@ -142,8 +142,8 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                     }}
                     className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-left text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors w-full cursor-pointer"
                   >
-                    <Link className="w-4 h-4" />
-                    Share via Link
+                    <Share2 className="w-4 h-4" />
+                    Share to your friend
                   </button>
                 )}
 
