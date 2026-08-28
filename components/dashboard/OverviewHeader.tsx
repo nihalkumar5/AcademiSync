@@ -89,11 +89,11 @@ export const OverviewHeader: React.FC = () => {
 
           {(profile.programme || profile.branch) && (
             <div className="flex flex-col gap-0.5 mt-0.5">
-              <span className="text-[11px] leading-[16px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider truncate">
+              <span className="text-[13px] leading-[18px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider truncate">
                 SEM {profile.semester} · {profile.programme}{profile.branch ? ` · ${profile.branch.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')}` : ''}
               </span>
               <span className="text-[11px] leading-[16px] font-normal text-[#777777] uppercase truncate tracking-wide">
-                {profile.rollNumber ? `${profile.rollNumber} · ` : ''}{(profile.college || 'IIIT NAYA RAIPUR').replace(/DR\.? SHYAMA PRASAD MUKHERJEE INTERNATIONAL INSTITUTE OF INFORMATION TECHNOLOGY(?:,\s*NAYA RAIPUR)?/i, 'IIIT NAYA RAIPUR (NAYA RAIPUR, CT)')}
+                {profile.rollNumber ? `${profile.rollNumber} · ` : ''}{profile.college && profile.college.toLowerCase().includes('shyama') ? 'IIIT NAYA RAIPUR' : profile.college || 'IIIT NAYA RAIPUR'}
               </span>
             </div>
           )}
