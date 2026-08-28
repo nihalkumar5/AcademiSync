@@ -81,8 +81,9 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-8 py-4 bg-[#FAFAF8]/80 dark:bg-[#111110]/80 backdrop-blur-md border-b border-black/10 dark:border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
-        <div className="flex items-center gap-3 select-none">
+      <header className="sticky top-0 z-30 flex items-center justify-center px-4 sm:px-8 py-4 bg-[#FAFAF8]/80 dark:bg-[#111110]/80 backdrop-blur-md border-b border-black/10 dark:border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
+        <div className="flex items-center justify-between w-full max-w-6xl mx-auto relative">
+          <div className="flex items-center gap-3 select-none">
           {/* Logo only shown on mobile where sidebar is hidden */}
           <h1 className="md:hidden text-xl sm:text-2xl text-[#1A1918] dark:text-[#F4F1EA] tracking-tighter font-sans">
             <span className="font-extrabold">inter</span>
@@ -142,7 +143,7 @@ export const Header: React.FC = () => {
           >
             <Bell className="w-4 h-4" />
             {unreadNotifs > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[9.5px] font-bold flex items-center justify-center border border-white dark:border-black leading-none">
+              <span className="absolute top-0 right-0 min-w-[14px] h-[14px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[9px] font-bold flex items-center justify-center border-2 border-[#FAFAF8] dark:border-[#111110] leading-none rounded-full translate-x-1/4 -translate-y-1/4">
                 {unreadNotifs > 99 ? '99+' : unreadNotifs}
               </span>
             )}
@@ -224,6 +225,7 @@ export const Header: React.FC = () => {
               </>
             )}
           </div>
+        </div>
         </div>
       </header>
 
