@@ -50,11 +50,11 @@ export const LiveClassCard: React.FC = () => {
           </div>
           
           <div className="flex flex-col gap-1.5">
-            <div className="flex items-start justify-between gap-4">
-              <h3 className="text-[24px] font-bold text-[#111111] uppercase leading-[1.1] tracking-tight pt-0.5">
+            <div className="flex items-center justify-between gap-4">
+              <h3 className="text-[24px] font-bold text-[#111111] uppercase leading-[1.1] tracking-tight">
                 {todayHoliday.title}
               </h3>
-              <div className="w-[52px] h-[52px] bg-[#111111] flex flex-col items-center justify-center shrink-0">
+              <div className="w-[50px] h-[50px] bg-[#111111] flex flex-col items-center justify-center shrink-0">
                 <span className="font-mono text-base font-black uppercase tracking-widest text-white">OFF</span>
               </div>
             </div>
