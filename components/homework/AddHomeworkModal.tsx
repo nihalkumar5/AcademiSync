@@ -50,7 +50,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
       setPriority(prefilledData.priority || 'Medium');
       setStatus(prefilledData.status || 'Not Started');
       setAttachmentName(prefilledData.attachmentName || '');
-      setShareWithBatch(!!(profile.isBatchSynced && profile.batchKey));
+      setShareWithBatch(false);
     } else {
       if (subjects.length > 0 && !subjectId) {
         setSubjectId(subjects[0].id);
@@ -65,7 +65,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
       setPriority('Medium');
       setStatus('Not Started');
       setAttachmentName('');
-      setShareWithBatch(!!(profile.isBatchSynced && profile.batchKey));
+      setShareWithBatch(false);
     }
   }, [homeworkToEdit, isOpen, subjects, profile.isBatchSynced, profile.batchKey]);
 
