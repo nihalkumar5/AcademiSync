@@ -117,12 +117,12 @@ export const TodayTimeline: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-4 text-left">
-      <div className="flex items-center justify-between px-1">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
-          {isAfter8PM ? "Tomorrow's Schedule" : "Today's Schedule"}
+      <div className="flex items-center justify-between px-1 mb-1">
+        <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
+          {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
         </h3>
-        <span className="text-xs font-semibold text-slate-400 bg-slate-200/50 dark:bg-zinc-800 px-2.5 py-1 rounded-full">
-          {isAfter8PM ? `Tomorrow (${targetDay})` : targetDay}
+        <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wider">
+          {targetDay}
         </span>
       </div>
       <div className="bento-card p-4 sm:p-5">
@@ -194,7 +194,7 @@ export const TodayTimeline: React.FC = () => {
                     />
                   )}
 
-                  <div className={`flex flex-col sm:flex-row gap-3 transition-all`}>
+                  <div className={`flex flex-col gap-3 transition-all`}>
                       {/* Time */}
                       <div className="w-16 shrink-0 flex flex-col pt-0.5">
                         {reschedule ? (
@@ -216,11 +216,11 @@ export const TodayTimeline: React.FC = () => {
                       </div>
 
                       {/* Class Info Box */}
-                      <div className={`flex-1 rounded-none p-3 sm:p-4 border transition-all ${cardColorClass}`}>
+                      <div className={`flex-1 rounded-none p-3 border transition-all ${cardColorClass}`}>
                         <div className="flex flex-wrap items-start justify-between gap-2">
                           <div className="flex flex-col gap-1 min-w-0 flex-1">
                             <div className="flex items-start gap-2 flex-wrap">
-                              <h4 className={`text-[15px] font-bold line-clamp-2 leading-snug ${textColorClass} ${isCancelled ? 'line-through opacity-70' : ''}`}>
+                              <h4 className={`text-[16px] leading-[21px] font-semibold line-clamp-2 ${textColorClass} ${isCancelled ? 'line-through opacity-70' : ''}`}>
                                 {sub?.name || 'Class Session'}
                               </h4>
                               
@@ -241,22 +241,31 @@ export const TodayTimeline: React.FC = () => {
                               ) : null}
                             </div>
                             
-                            <div className={`flex items-center gap-3 text-xs font-medium flex-wrap mt-0.5 ${textColorClass} opacity-75`}>
-                              <span className="flex items-center gap-1">
-                                <MapPin className="w-3.5 h-3.5" />
+                            <div className={`flex items-center gap-[6px] text-[12px] leading-[18px] font-normal flex-wrap mt-[4px] ${isNow ? textColorClass : 'text-[#666666] dark:text-[#A0A0A0]'} ${isNow ? 'opacity-80' : ''}`}>
+                              <span className="flex items-center gap-[4px]">
+                                <MapPin className="w-[14px] h-[14px]" />
                                 {reschedule?.room || session.room}
                               </span>
                               {session.faculty && (
-                                <span className="flex items-center gap-1">
-                                  <User className="w-3.5 h-3.5" />
-                                  {session.faculty}
-                                </span>
+                                <>
+                                  <span className="opacity-50">·</span>
+                                  <span className="flex items-center gap-[4px]">
+                                    {(() => {
+                                      const faculties = session.faculty.split(/[,/&]/).map(f => f.trim()).filter(Boolean);
+                                      if (faculties.length > 2) return `${faculties[0]} + ${faculties.length - 1} faculty`;
+                                      return faculties.join(' / ');
+                                    })()}
+                                  </span>
+                                </>
                               )}
                               {session.isLab && (
-                                <span className="flex items-center gap-1 font-bold font-mono text-[10px] px-1.5 border border-current">
-                                  <FlaskConical className="w-3 h-3" />
-                                  Lab
-                                </span>
+                                <>
+                                  <span className="opacity-50">·</span>
+                                  <span className="flex items-center gap-[4px] font-medium text-[12px]">
+                                    <FlaskConical className="w-[14px] h-[14px]" />
+                                    Lab
+                                  </span>
+                                </>
                               )}
                             </div>
 
