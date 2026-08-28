@@ -26,10 +26,8 @@
 body {
   color: var(--foreground);
   background-color: var(--background);
-  background-image: 
-    linear-gradient(to right, rgba(0, 0, 0, 0.014) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.014) 1px, transparent 1px);
-  background-size: 32px 32px;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
   font-feature-settings: "rlig" 1, "calt" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -37,9 +35,7 @@ body {
 
 .dark body, body.dark {
   background-color: var(--background);
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.014) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.014) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
 }
 
 /* Brutalist reset for existing cards */
