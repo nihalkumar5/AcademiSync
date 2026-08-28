@@ -18,6 +18,8 @@ import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '@/context/AppContext';
 import { useState, useRef, useEffect } from 'react';
+import { Modal } from '../ui/Modal';
+import { Button } from '../ui/Button';
 
 export interface HomeworkCardProps {
   homework: Homework;
@@ -36,8 +38,9 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
   onDelete,
   onShare,
 }) => {
-  const { profile, proposeBatchTask, updateHomework, isBatchCR } = useApp();
+  const { profile, proposeBatchTask, updateHomework, isBatchCR, showToast } = useApp();
   const [showMenu, setShowMenu] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -148,32 +151,15 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                   onClick={async () => {
                     setShowMenu(false);
                     if (!profile.isBatchSynced || !profile.batchKey) {
-                      alert("You must be in a batch to share tasks with batchmates.");
+                      showToast("Action Required", "You must join a batch to share tasks with batchmates.", "warning");
                       return;
                     }
                     if (homework.isBatchShared) {
-                      alert("This task has already been shared with your batch.");
+                      showToast("Already Shared", "This task has already been shared with your batch.", "info");
                       return;
                     }
 
-                    const isConfirmed = window.confirm(
-                      isBatchCR 
-                        ? "Are you sure you want to post this task to the entire batch? It will be automatically approved."
-                        : "Are you sure you want to propose this task to the entire batch? It will require 30% consensus to be approved."
-                    );
-                    
-                    if (isConfirmed) {
-                      await proposeBatchTask({
-                        subjectId: homework.subjectId,
-                        subjectName: homework.subjectName,
-                        title: homework.title,
-                        description: homework.description || '',
-                        deadline: homework.deadline,
-                        priority: homework.priority,
-                        attachmentName: homework.attachmentName,
-                      });
-                      updateHomework(homework.id, { isBatchShared: true });
-                    }
+                    setShowConfirmModal(true);
                   }}
                   className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-left text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors w-full cursor-pointer"
                 >
@@ -309,6 +295,45 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
           {homework.status === 'In Progress' ? 'In Progress ⏳' : homework.status === 'Completed' ? 'Completed 🎉' : 'Not Started'}
         </button>
       </div>
+
+      <Modal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        title={isBatchCR ? "Post to Entire Batch" : "Propose to Batch"}
+        maxWidth="sm"
+      >
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-black/70 dark:text-white/70">
+            {isBatchCR 
+              ? "Are you sure you want to post this task to the entire batch? As a CR, it will be automatically approved."
+              : "Are you sure you want to propose this task to the entire batch? It will require a 30% consensus to be approved."}
+          </p>
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <Button variant="ghost" size="sm" onClick={() => setShowConfirmModal(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="primary" 
+              size="sm"
+              onClick={async () => {
+                setShowConfirmModal(false);
+                await proposeBatchTask({
+                  subjectId: homework.subjectId,
+                  subjectName: homework.subjectName,
+                  title: homework.title,
+                  description: homework.description || '',
+                  deadline: homework.deadline,
+                  priority: homework.priority,
+                  attachmentName: homework.attachmentName,
+                });
+                updateHomework(homework.id, { isBatchShared: true });
+              }}
+            >
+              {isBatchCR ? "Yes, Post Task" : "Yes, Propose Task"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </motion.div>
   );
 };
