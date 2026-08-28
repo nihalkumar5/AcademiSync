@@ -157,7 +157,7 @@ export const WeeklyTimetable: React.FC = () => {
               onClick={() => setShowMoreMenu(!showMoreMenu)}
               className="text-[11px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-widest flex items-center hover:opacity-70 transition-opacity"
             >
-              BATCH · {profile.isBatchSynced && profile.batchKey ? `${profile.programme} ${profile.branch?.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')} · ${profile.year || new Date().getFullYear() + 2}` : 'NOT CONNECTED'}
+              BATCH · {profile.isBatchSynced && profile.batchKey ? `${profile.programme} ${profile.branch?.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')} · YEAR ${profile.year || 1}` : 'NOT CONNECTED'}
               <span className="ml-2 font-normal opacity-50">→</span>
             </button>
 

@@ -82,25 +82,26 @@ export const OverviewHeader: React.FC = () => {
           </span>
         </h2>
         
-        <div className="flex flex-col gap-4 mt-2">
+        <div className="flex flex-col gap-2 mt-2">
           <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px]">
             {dateFormatted} · {timeFormatted}
           </p>
 
           {(profile.programme || profile.branch) && (
-            <div className="flex flex-col gap-0.5 mt-0.5">
+            <div className="flex flex-col">
               <span className="text-[13px] leading-[18px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider truncate">
                 SEM {profile.semester} · {profile.programme}{profile.branch ? ` · ${profile.branch.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')}` : ''}
               </span>
-              <span className="text-[11px] leading-[16px] font-normal text-[#777777] uppercase truncate tracking-wide">
+              <span className="text-[11px] leading-[16px] font-normal text-[#777777] uppercase truncate tracking-wide mt-1">
                 {profile.rollNumber ? `${profile.rollNumber} · ` : ''}{profile.college && profile.college.toLowerCase().includes('shyama') ? 'IIIT NAYA RAIPUR' : profile.college || 'IIIT NAYA RAIPUR'}
               </span>
               
               <button
                 onClick={() => setActiveView('timetable')}
-                className="text-[11px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-widest flex items-center mt-3 hover:opacity-70 transition-opacity w-fit"
+                className="w-full text-[11px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-widest flex items-center justify-between mt-3 hover:opacity-70 transition-opacity"
               >
-                BATCH · {profile.isBatchSynced && profile.batchKey ? `${profile.programme} ${profile.branch?.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')} · ${profile.year || new Date().getFullYear() + 2}` : 'NOT CONNECTED'} <span className="ml-2 font-normal opacity-50">→</span>
+                <span className="truncate pr-4 text-left">BATCH · {profile.isBatchSynced && profile.batchKey ? `${profile.programme} ${profile.branch?.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')} · YEAR ${profile.year || 1}` : 'NOT CONNECTED'}</span>
+                <span className="font-normal opacity-50 shrink-0">→</span>
               </button>
             </div>
           )}
@@ -108,7 +109,7 @@ export const OverviewHeader: React.FC = () => {
       </div>
 
       {/* Brutalist Stats Grid */}
-      <div className="grid grid-cols-3 gap-0 py-4 mt-4 border-y border-black dark:border-white relative">
+      <div className="grid grid-cols-3 gap-0 py-4 mt-7 border-y border-black dark:border-white relative">
         {/* Vertical dividers (~70% height) */}
         <div className="absolute left-1/3 top-[15%] bottom-[15%] w-px bg-black/20 dark:bg-white/20" />
         <div className="absolute left-[66.666%] top-[15%] bottom-[15%] w-px bg-black/20 dark:bg-white/20" />
