@@ -192,7 +192,7 @@ export const LiveClassCard: React.FC = () => {
         </div>
 
         <div className="flex items-center justify-between text-[#111111] dark:text-[#FFFFFF]">
-          <span className="text-[13px] font-semibold leading-none">
+          <span className="text-[13px] font-medium leading-none">
             {formatCountdown(nextClass.minutesUntilStart)}
           </span>
           <ArrowRight className="w-4 h-4 text-[#BDBDBD] dark:text-[#666666] transition-transform group-hover:translate-x-1" />
