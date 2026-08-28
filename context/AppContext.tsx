@@ -1711,9 +1711,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       votes: initialVotes,
       approvalsCount: 1,
       rejectionsCount: 0,
-      status: memberCount <= 1 ? 'approved' : 'voting',
+      status: (memberCount <= 1 || isBatchCR) ? 'approved' : 'voting',
       totalEligibleMembers: Math.max(memberCount, 1),
-      approvedAt: memberCount <= 1 ? new Date().toISOString() : undefined,
+      approvedAt: (memberCount <= 1 || isBatchCR) ? new Date().toISOString() : undefined,
       createdAt: new Date().toISOString(),
     };
 
@@ -1733,7 +1733,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       proposalId: proposalId,
     });
 
-    showToast('Proposal Submitted', 'Batchmates will now vote to add this assignment.', 'success');
+    if (memberCount <= 1 || isBatchCR) {
+      showToast('Assignment Added', 'Task added and shared with batch automatically.', 'success');
+    } else {
+      showToast('Proposal Submitted', 'Batchmates will now vote to add this assignment.', 'success');
+    }
+    
     return proposalId;
   };
 

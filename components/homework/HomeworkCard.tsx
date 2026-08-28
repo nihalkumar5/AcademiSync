@@ -8,7 +8,7 @@ import {
   Paperclip,
   Trash2,
   Edit2,
-  Clock,
+  Share2,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
@@ -19,6 +19,7 @@ export interface HomeworkCardProps {
   onToggleStatus: (id: string) => void;
   onEdit: (homework: Homework) => void;
   onDelete: (id: string) => void;
+  onShare?: (homework: Homework) => void;
 }
 
 export const HomeworkCard: React.FC<HomeworkCardProps> = ({
@@ -27,6 +28,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
   onToggleStatus,
   onEdit,
   onDelete,
+  onShare,
 }) => {
   const isDone = homework.status === 'Completed';
 
@@ -85,6 +87,17 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
 
         {/* Edit & Delete Action Buttons */}
         <div className="flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
+          {onShare && (
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => onShare(homework)}
+              className="p-1.5 rounded-lg text-[#8C7D70] hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
+              title="Share Task"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+            </motion.button>
+          )}
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}

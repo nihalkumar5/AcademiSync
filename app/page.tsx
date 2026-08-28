@@ -36,7 +36,7 @@ import { ProposedBatchTasksVoting } from '@/components/homework/ProposedBatchTas
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AppHome() {
-  const { activeView, isHydrated, showHolidayAnimation, joinBatchTimetable, joinSharedCalendar, joinSharedExams, profile, showToast } = useApp();
+  const { activeView, setActiveView, isHydrated, showHolidayAnimation, joinBatchTimetable, joinSharedCalendar, joinSharedExams, profile, showToast } = useApp();
   const { isSignedIn } = useUser();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [inviteKey, setInviteKey] = useState<string | null>(null);
@@ -126,6 +126,11 @@ export default function AppHome() {
           }
         };
         checkCalendarInvite();
+      }
+
+      const taskParam = params.get('task');
+      if (taskParam) {
+        setActiveView('homework');
       }
     }
   }, [isHydrated]);

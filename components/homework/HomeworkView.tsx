@@ -28,6 +28,36 @@ export const HomeworkView: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showScanModal, setShowScanModal] = useState(false);
   const [editHomework, setEditHomework] = useState<Homework | null>(null);
+  const [prefilledData, setPrefilledData] = useState<Partial<Homework> | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const taskParam = params.get('task');
+      if (taskParam) {
+        try {
+          const decoded = JSON.parse(decodeURIComponent(atob(taskParam)));
+          setPrefilledData({
+            subjectName: decoded.s || '',
+            title: decoded.t || '',
+            description: decoded.d || '',
+            deadline: decoded.dl || new Date().toISOString(),
+            priority: decoded.p || 'Medium',
+            status: 'Not Started',
+          });
+          setEditHomework(null);
+          setShowAddModal(true);
+          
+          // Remove the task from URL
+          const url = new URL(window.location.href);
+          url.searchParams.delete('task');
+          window.history.replaceState({}, '', url);
+        } catch (e) {
+          console.error('Failed to parse shared task:', e);
+        }
+      }
+    }
+  }, []);
 
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
@@ -64,6 +94,35 @@ export const HomeworkView: React.FC = () => {
     { id: 'In Progress', label: 'Doing', count: homework.filter((h) => h.status === 'In Progress').length },
     { id: 'Completed', label: 'Done', count: completedCount },
   ] as const;
+
+  const handleShareTask = (hw: Homework) => {
+    const shareData = {
+      t: hw.title,
+      d: hw.description,
+      p: hw.priority,
+      dl: hw.deadline,
+      s: hw.subjectName,
+    };
+    try {
+      const b64 = btoa(encodeURIComponent(JSON.stringify(shareData)));
+      const shareUrl = `${window.location.origin}/?task=${b64}`;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: `Task: ${hw.title}`,
+          text: `Here is a task I shared with you from AcademiSync.`,
+          url: shareUrl,
+        }).catch((e) => {
+          if (e.name !== 'AbortError') console.error('Share error:', e);
+        });
+      } else {
+        navigator.clipboard.writeText(shareUrl);
+        // Fallback for clipboard
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-5 text-left max-w-4xl mx-auto w-full pb-10">
@@ -104,14 +163,14 @@ export const HomeworkView: React.FC = () => {
               setEditHomework(null);
               setShowAddModal(true);
             }}
-            className="flex items-center px-5 py-3 rounded-none bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors text-sm font-medium cursor-pointer"
+            className="flex items-center gap-2 px-6 py-3 rounded-none border border-black dark:border-white bg-black text-white dark:bg-white dark:text-black transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 text-sm font-bold cursor-pointer"
           >
+            <Plus className="w-4 h-4 stroke-[3]" />
             New Task
           </motion.button>
         </div>
       </div>
 
-      {/* CROWD-VOTED BATCH PROPOSALS (50% CONSENSUS) */}
       <ProposedBatchTasksVoting />
 
       {/* iOS Style Rounded Search Bar */}
@@ -136,17 +195,17 @@ export const HomeworkView: React.FC = () => {
         </div>
       </div>
 
-      {/* Segmented Pill Tabs Filter */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
         {filterTabs.map((tab) => {
           const isSelected = statusFilter === tab.id;
           return (
             <button
               key={tab.id}
-              onClick={() => setStatusFilter(tab.id as any)}
-              className={`relative flex items-center gap-2 px-4 py-2 text-xs font-bold border transition-all shrink-0 cursor-pointer ${
+              onClick={() => setStatusFilter(tab.id as 'All' | HomeworkStatus)}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-bold transition-all border whitespace-nowrap cursor-pointer hover:scale-105 active:scale-95 ${
                 isSelected
-                  ? 'rounded-2xl bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/20'
+                  ? 'bg-black text-white border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.2)] dark:bg-white dark:text-black dark:border-white dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.2)]'
                   : 'rounded-none bg-white text-black/70 border-black/20 hover:border-black dark:bg-zinc-950 dark:text-white/70 dark:border-white/20 dark:hover:border-white'
               }`}
             >
@@ -196,6 +255,7 @@ export const HomeworkView: React.FC = () => {
                 setShowAddModal(true);
               }}
               onDelete={deleteHomework}
+              onShare={handleShareTask}
             />
           ))}
         </div>
@@ -204,8 +264,12 @@ export const HomeworkView: React.FC = () => {
       {/* Modals */}
       <AddHomeworkModal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => {
+          setShowAddModal(false);
+          setPrefilledData(null);
+        }}
         homeworkToEdit={editHomework}
+        prefilledData={prefilledData}
       />
 
       <HomeworkScanModal

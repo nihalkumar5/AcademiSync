@@ -12,14 +12,16 @@ export interface AddHomeworkModalProps {
   isOpen: boolean;
   onClose: () => void;
   homeworkToEdit?: Homework | null;
+  prefilledData?: Partial<Homework> | null;
 }
 
 export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
   isOpen,
   onClose,
   homeworkToEdit,
+  prefilledData,
 }) => {
-  const { subjects, addHomework, updateHomework, profile, proposeBatchTask } = useApp();
+  const { subjects, addHomework, updateHomework, profile, proposeBatchTask, isBatchCR } = useApp();
 
   const [subjectId, setSubjectId] = useState('');
   const [title, setTitle] = useState('');
@@ -40,6 +42,15 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
       setStatus(homeworkToEdit.status);
       setAttachmentName(homeworkToEdit.attachmentName || '');
       setShareWithBatch(false);
+    } else if (prefilledData) {
+      setSubjectId(prefilledData.subjectId || (subjects.length > 0 ? subjects[0].id : ''));
+      setTitle(prefilledData.title || '');
+      setDescription(prefilledData.description || '');
+      setDeadline(prefilledData.deadline ? prefilledData.deadline.slice(0, 16) : new Date().toISOString().slice(0, 16));
+      setPriority(prefilledData.priority || 'Medium');
+      setStatus(prefilledData.status || 'Not Started');
+      setAttachmentName(prefilledData.attachmentName || '');
+      setShareWithBatch(!!(profile.isBatchSynced && profile.batchKey));
     } else {
       if (subjects.length > 0 && !subjectId) {
         setSubjectId(subjects[0].id);
@@ -178,7 +189,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
           />
         </div>
 
-        {/* BATCH PROPOSAL TOGGLE (30% CONSENSUS) */}
+        {/* BATCH PROPOSAL TOGGLE */}
         {!homeworkToEdit && profile.isBatchSynced && profile.batchKey && (
           <div className="p-3 border border-black dark:border-white bg-black/5 dark:bg-white/5 flex items-start gap-2.5">
             <input
@@ -190,11 +201,13 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
             />
             <label htmlFor="batch_share_toggle" className="cursor-pointer text-xs flex flex-col gap-0.5">
               <span className="font-bold uppercase tracking-wider text-black dark:text-white flex items-center gap-1.5">
-                <Vote className="w-3.5 h-3.5 text-amber-500" />
-                <span>Share with Entire Batch (30% Consensus Vote)</span>
+                {isBatchCR ? <Users className="w-3.5 h-3.5 text-blue-500" /> : <Vote className="w-3.5 h-3.5 text-amber-500" />}
+                <span>{isBatchCR ? 'Post to Entire Batch' : 'Share with Entire Batch (30% Consensus)'}</span>
               </span>
               <span className="text-[11px] text-black/60 dark:text-white/60">
-                Submits this assignment to your batchmates. If 30% of batch members vote Approve, it automatically gets added to everyone's schedule!
+                {isBatchCR 
+                  ? "As a CR, this task will be automatically approved and instantly added to everyone's schedule." 
+                  : "Submits this assignment to your batchmates. If 30% of batch members vote Approve, it automatically gets added to everyone's schedule!"}
               </span>
             </label>
           </div>
@@ -205,7 +218,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
             Cancel
           </Button>
           <Button type="submit" variant="primary" size="sm">
-            {homeworkToEdit ? 'Save Changes' : shareWithBatch ? 'Propose to Batch' : 'Create Task'}
+            {homeworkToEdit ? 'Save Changes' : shareWithBatch ? (isBatchCR ? 'Post to Batch' : 'Propose to Batch') : 'Create Task'}
           </Button>
         </div>
       </form>
