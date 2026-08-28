@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { getLiveClassStatus, formatTime12Hour, getTodayDateString } from '@/lib/timetableUtils';
-import { Clock, MapPin, User, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Clock, MapPin, User, CheckCircle2, ChevronRight, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 
@@ -154,46 +154,54 @@ export const LiveClassCard: React.FC = () => {
   if (nextClass) {
     const sub = nextClass.subject;
     const session = nextClass.session;
+    
+    const formatCountdown = (minutes: number) => {
+      if (minutes <= 0) return "Starting now";
+      if (minutes < 60) return `Starts in ${minutes} min`;
+      const hrs = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      return `Starts in ${hrs}h ${mins.toString().padStart(2, '0')}m`;
+    };
+
+    const renderFaculty = (facultyStr: string) => {
+      const faculties = facultyStr.split(/[,/&]/).map(f => f.trim()).filter(Boolean);
+      if (faculties.length > 2) {
+        return `${faculties[0]} + ${faculties.length - 1} faculty`;
+      }
+      return faculties.join(' / ');
+    };
+
     return (
-      <div className="glass-card p-5 sm:p-6 text-left flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <span className="text-[10.5px] font-mono font-bold border border-black dark:border-white text-black dark:text-white px-2 py-0.5">
-              {formatTime12Hour(session.startTime)}
-            </span>
-            <span className="text-[11px] font-bold text-black/50 dark:text-white/50 uppercase tracking-widest">Next Class</span>
-          </div>
-
-          <h3 className="text-lg font-bold text-black dark:text-white tracking-tight mt-1">
-            {sub?.name || 'Class Session'}
-          </h3>
-
-          <div className="flex items-center gap-3 text-xs text-black/50 dark:text-white/50 font-medium">
-            <span className="flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5" />
-              {session.room}
-            </span>
-            {session.faculty && (
-              <>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <User className="w-3.5 h-3.5" />
-                  {session.faculty}
-                </span>
-              </>
-            )}
-          </div>
+      <div 
+        className="w-full bg-[#FFFFFF] dark:bg-[#111111] border border-[#BDBDBD] dark:border-[#333333] rounded-none p-4 flex flex-col cursor-pointer relative group"
+      >
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-[11px] font-semibold text-[#808080] uppercase tracking-[1.4px] leading-none">NEXT CLASS</span>
+          <span className="text-[12px] font-semibold text-[#111111] dark:text-[#FFFFFF] leading-none">{formatTime12Hour(session.startTime)}</span>
         </div>
 
-        <div className="shrink-0">
-          <div className="flex items-center sm:flex-col justify-center px-4 py-2 sm:p-3 border border-black dark:border-white text-black dark:text-white">
-            <span className="text-xl sm:text-2xl font-black font-mono tracking-tight leading-none mr-1 sm:mr-0">
-              {nextClass.minutesUntilStart}
-            </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider">
-              {nextClass.minutesUntilStart === 1 ? 'min' : 'mins'}
-            </span>
-          </div>
+        <h3 className="text-[20px] font-semibold text-[#111111] dark:text-[#FFFFFF] leading-[24px] mb-[10px] pr-8 line-clamp-2">
+          {sub?.name || 'Class Session'}
+        </h3>
+
+        <div className="flex items-center gap-2 text-[12px] text-[#6B6B6B] dark:text-[#999999] leading-none mb-4">
+          <span className="flex items-center gap-1.5 shrink-0">
+            <span className="text-[10px]">◉</span>
+            {session.room}
+          </span>
+          {session.faculty && (
+            <>
+              <span className="opacity-50 shrink-0">·</span>
+              <span className="truncate">{renderFaculty(session.faculty)}</span>
+            </>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between text-[#111111] dark:text-[#FFFFFF]">
+          <span className="text-[13px] font-semibold leading-none">
+            {formatCountdown(nextClass.minutesUntilStart)}
+          </span>
+          <ArrowRight className="w-4 h-4 text-[#BDBDBD] dark:text-[#666666] transition-transform group-hover:translate-x-1" />
         </div>
       </div>
     );
