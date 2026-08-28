@@ -6,7 +6,7 @@ import {
   CalendarDays,
   CheckSquare,
   Backpack,
-  Settings,
+  User,
 } from 'lucide-react';
 import { useApp, ActiveView } from '@/context/AppContext';
 import { clsx } from 'clsx';
@@ -19,26 +19,26 @@ export const MobileNav: React.FC = () => {
   const unpackedCarry = carryItems.filter((i) => !i.isPacked).length;
 
   const tabs: { id: ActiveView; label: string; icon: React.ReactNode; badge?: number }[] = [
-    { id: 'home', label: 'Home', icon: <LayoutDashboard className="w-4.5 h-4.5" /> },
-    { id: 'timetable', label: 'Timetable', icon: <CalendarDays className="w-4.5 h-4.5" /> },
+    { id: 'home', label: 'Home', icon: <LayoutDashboard className="w-[18px] h-[18px]" /> },
+    { id: 'timetable', label: 'Timetable', icon: <CalendarDays className="w-[18px] h-[18px]" /> },
     {
       id: 'homework',
       label: 'Tasks',
-      icon: <CheckSquare className="w-4.5 h-4.5" />,
+      icon: <CheckSquare className="w-[18px] h-[18px]" />,
       badge: pendingHomework > 0 ? pendingHomework : undefined,
     },
     {
       id: 'carry',
       label: 'Bag Carry',
-      icon: <Backpack className="w-4.5 h-4.5" />,
+      icon: <Backpack className="w-[18px] h-[18px]" />,
       badge: unpackedCarry > 0 ? unpackedCarry : undefined,
     },
-    { id: 'settings', label: 'Profile', icon: <Settings className="w-4.5 h-4.5" /> },
+    { id: 'settings', label: 'Profile', icon: <User className="w-[18px] h-[18px]" /> },
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FAFAF8]/95 dark:bg-[#111110]/95 backdrop-blur-xl border-t border-black/10 dark:border-white/10 px-2 py-2 pb-safe shadow-[0_-4px_24px_rgba(0,0,0,0.04)]">
-      <div className="flex items-center justify-around max-w-md mx-auto">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FFFFFF] dark:bg-[#111111] border-t border-[#E0E0E0] dark:border-[#333333] px-2 pt-2 pb-safe">
+      <div className="flex items-center justify-around max-w-md mx-auto relative h-[56px]">
         {tabs.map((tab) => {
           const isActive = activeView === tab.id;
           return (
@@ -46,33 +46,37 @@ export const MobileNav: React.FC = () => {
               key={tab.id}
               onClick={() => setActiveView(tab.id)}
               className={clsx(
-                'flex flex-col items-center justify-center py-1 px-3 relative transition-all duration-150 cursor-pointer rounded-none select-none',
+                'flex flex-col items-center justify-center relative cursor-pointer flex-1 h-full select-none',
                 isActive
-                  ? 'text-black dark:text-white font-bold'
-                  : 'text-black/45 dark:text-white/45 hover:text-black dark:hover:text-white'
+                  ? 'text-[#111111] dark:text-[#FFFFFF]'
+                  : 'text-[#8A8A8A] dark:text-[#8A8A8A] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
               )}
             >
-              <div className="relative">
-                <div className={clsx(
-                  'p-1 transition-all',
-                  isActive ? 'scale-110' : 'scale-100'
-                )}>
-                  {tab.icon}
-                </div>
+              <div className="relative mb-1">
+                {tab.icon}
 
                 {tab.badge !== undefined && (
-                  <span className="absolute -top-1 -right-2 bg-black dark:bg-white text-white dark:text-black text-[9px] font-mono font-bold rounded-none px-1 py-0 border border-black dark:border-white flex items-center justify-center leading-none">
+                  <span className="absolute -top-1.5 -right-2 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] text-[11px] font-bold w-[14px] h-[14px] flex items-center justify-center leading-none rounded-none">
                     {tab.badge}
                   </span>
                 )}
               </div>
 
               <span className={clsx(
-                'text-[10px] tracking-tight mt-0.5 font-mono',
-                isActive ? 'font-black' : 'font-medium'
+                'text-[10px] tracking-wide',
+                isActive ? 'font-bold' : 'font-medium'
               )}>
                 {tab.label}
               </span>
+              
+              <div className="h-[2px] w-[16px] mt-1 relative flex justify-center">
+                {isActive && (
+                  <motion.div
+                    layoutId="mobile-nav-indicator"
+                    className="absolute inset-0 bg-[#111111] dark:bg-[#FFFFFF]"
+                  />
+                )}
+              </div>
             </button>
           );
         })}
