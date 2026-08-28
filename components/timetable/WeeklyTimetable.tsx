@@ -49,7 +49,7 @@ export const WeeklyTimetable: React.FC = () => {
   };
 
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
-  const hasSundayClasses = timetable.some(session => session.dayOfWeek === 'Sunday');
+  const hasSundayClasses = timetable.some(session => session.day === 'Sunday');
   const weekDays = hasSundayClasses ? DAYS_OF_WEEK : DAYS_OF_WEEK.slice(0, 6); // Monday to Saturday (and Sunday if active)
 
   const handleAddForDay = (day: DayOfWeek) => {

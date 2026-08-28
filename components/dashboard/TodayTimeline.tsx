@@ -184,10 +184,8 @@ export const TodayTimeline: React.FC = () => {
                   } else if (isNow) {
                     cardColorClass = 'bg-black text-white dark:bg-white dark:text-black shadow-lg shadow-black/10 dark:shadow-white/10 border-transparent ring-1 ring-black/5 dark:ring-white/5';
                   } else {
-                    cardColorClass = 'text-black dark:text-white';
+                    cardColorClass = `${getSubjectPastelStyle(sub, session.id)} text-black dark:text-white`;
                   }
-
-                  const customStyle = isCancelled || isNow ? undefined : getSubjectThemeStyle(sub?.color, settings.theme || 'light');
 
                   return (
                     <div className={`flex flex-col sm:flex-row gap-3 transition-all ${isPassed && !isCancelled ? 'opacity-55' : 'opacity-100'}`}>
@@ -212,12 +210,12 @@ export const TodayTimeline: React.FC = () => {
                       </div>
 
                       {/* Class Info Box */}
-                      <div className={`flex-1 rounded-none p-3 sm:p-4 border transition-all ${cardColorClass}`} style={customStyle}>
+                      <div className={`flex-1 rounded-none p-3 sm:p-4 border transition-all ${cardColorClass}`}>
                         <div className="flex flex-wrap items-start justify-between gap-2">
                           <div className="flex flex-col gap-1 min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
                               <h4 className={`text-[15px] font-bold truncate ${
-                                isCancelled ? 'line-through text-zinc-500 dark:text-zinc-400' : (isNow ? 'text-white dark:text-black' : 'text-black dark:text-white')
+                                isCancelled ? 'line-through text-zinc-500 dark:text-zinc-400' : (isNow ? 'text-white dark:text-black' : 'text-current')
                               }`}>
                                 {sub?.name || 'Class Session'}
                               </h4>
