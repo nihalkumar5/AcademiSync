@@ -144,39 +144,46 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                   </button>
                 )}
 
-                {profile.isBatchSynced && profile.batchKey && !homework.isBatchShared && (
-                  <button
-                    onClick={async () => {
-                      setShowMenu(false);
-                      const isConfirmed = window.confirm(
-                        isBatchCR 
-                          ? "Are you sure you want to post this task to the entire batch? It will be automatically approved."
-                          : "Are you sure you want to propose this task to the entire batch? It will require 30% consensus to be approved."
-                      );
-                      
-                      if (isConfirmed) {
-                        await proposeBatchTask({
-                          subjectId: homework.subjectId,
-                          subjectName: homework.subjectName,
-                          title: homework.title,
-                          description: homework.description || '',
-                          deadline: homework.deadline,
-                          priority: homework.priority,
-                          attachmentName: homework.attachmentName,
-                        });
-                        updateHomework(homework.id, { isBatchShared: true });
-                      }
-                    }}
-                    className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-left text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors w-full cursor-pointer"
-                  >
-                    {isBatchCR ? (
-                      <Users className="w-4 h-4" />
-                    ) : (
-                      <Vote className="w-4 h-4" />
-                    )}
-                    {isBatchCR ? 'Post to Entire Batch' : 'Propose to Batch'}
-                  </button>
-                )}
+                <button
+                  onClick={async () => {
+                    setShowMenu(false);
+                    if (!profile.isBatchSynced || !profile.batchKey) {
+                      alert("You must be in a batch to share tasks with batchmates.");
+                      return;
+                    }
+                    if (homework.isBatchShared) {
+                      alert("This task has already been shared with your batch.");
+                      return;
+                    }
+
+                    const isConfirmed = window.confirm(
+                      isBatchCR 
+                        ? "Are you sure you want to post this task to the entire batch? It will be automatically approved."
+                        : "Are you sure you want to propose this task to the entire batch? It will require 30% consensus to be approved."
+                    );
+                    
+                    if (isConfirmed) {
+                      await proposeBatchTask({
+                        subjectId: homework.subjectId,
+                        subjectName: homework.subjectName,
+                        title: homework.title,
+                        description: homework.description || '',
+                        deadline: homework.deadline,
+                        priority: homework.priority,
+                        attachmentName: homework.attachmentName,
+                      });
+                      updateHomework(homework.id, { isBatchShared: true });
+                    }
+                  }}
+                  className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-left text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors w-full cursor-pointer"
+                >
+                  {isBatchCR ? (
+                    <Users className="w-4 h-4" />
+                  ) : (
+                    <Vote className="w-4 h-4" />
+                  )}
+                  {isBatchCR ? 'Post to Entire Batch' : 'Propose to Batch'}
+                </button>
 
                 <button
                   onClick={() => {
