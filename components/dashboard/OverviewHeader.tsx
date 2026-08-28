@@ -108,44 +108,69 @@ export const OverviewHeader: React.FC = () => {
       </div>
 
       {/* Brutalist Stats Grid */}
-      <div className="grid grid-cols-3 gap-6 py-4 mt-4 border-y border-black dark:border-white">
+      <div className="grid grid-cols-3 gap-0 py-4 mt-4 border-y border-black dark:border-white relative">
+        {/* Vertical dividers (~70% height) */}
+        <div className="absolute left-1/3 top-[15%] bottom-[15%] w-px bg-black/20 dark:bg-white/20" />
+        <div className="absolute left-[66.666%] top-[15%] bottom-[15%] w-px bg-black/20 dark:bg-white/20" />
+
         {/* Classes */}
         <button
           onClick={() => setActiveView('timetable')}
-          className="flex flex-col items-start justify-center group hover:opacity-70 transition-opacity text-left"
+          className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center"
         >
-          <span className="text-4xl sm:text-5xl font-medium text-black dark:text-white tracking-tighter leading-none mb-2">
+          <span className="text-[32px] font-medium text-black dark:text-white tracking-tighter leading-none mb-1">
             {todayClasses.length}
           </span>
-          <span className="text-sm font-medium text-black/60 dark:text-white/60">
-            {todayHoliday ? 'Classes (Holiday)' : 'Classes Today'}
-          </span>
+          <div className="flex flex-col items-center">
+            <span className="text-[14px] font-medium text-black/60 dark:text-white/60 leading-tight">
+              Classes
+            </span>
+            {todayHoliday ? (
+              <span className="text-[13px] text-black/50 dark:text-white/50 leading-tight">
+                Holiday
+              </span>
+            ) : (
+              <span className="text-[13px] text-transparent leading-tight select-none" aria-hidden="true">
+                &nbsp;
+              </span>
+            )}
+          </div>
         </button>
 
         {/* Homework */}
         <button
           onClick={() => setActiveView('homework')}
-          className="flex flex-col items-start justify-center border-l border-black dark:border-white pl-6 group hover:opacity-70 transition-opacity text-left"
+          className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center"
         >
-          <span className="text-4xl sm:text-5xl font-medium text-black dark:text-white tracking-tighter leading-none mb-2">
+          <span className="text-[32px] font-medium text-black dark:text-white tracking-tighter leading-none mb-1">
             {pendingHw.length}
           </span>
-          <span className="text-sm font-medium text-black/60 dark:text-white/60">
-            Tasks Due
-          </span>
+          <div className="flex flex-col items-center">
+            <span className="text-[14px] font-medium text-black/60 dark:text-white/60 leading-tight">
+              Tasks Due
+            </span>
+            <span className="text-[13px] text-transparent leading-tight select-none" aria-hidden="true">
+              &nbsp;
+            </span>
+          </div>
         </button>
 
         {/* Exams */}
         <button
           onClick={() => setActiveView('homework')}
-          className="flex flex-col items-start justify-center border-l border-black dark:border-white pl-6 group hover:opacity-70 transition-opacity text-left"
+          className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center"
         >
-          <span className="text-4xl sm:text-5xl font-medium text-black dark:text-white tracking-tighter leading-none mb-2">
+          <span className="text-[32px] font-medium text-black dark:text-white tracking-tighter leading-none mb-1">
             {upcomingDeadlines.length}
           </span>
-          <span className="text-sm font-medium text-black/60 dark:text-white/60">
-            Deadlines
-          </span>
+          <div className="flex flex-col items-center">
+            <span className="text-[14px] font-medium text-black/60 dark:text-white/60 leading-tight">
+              Deadlines
+            </span>
+            <span className="text-[13px] text-transparent leading-tight select-none" aria-hidden="true">
+              &nbsp;
+            </span>
+          </div>
         </button>
       </div>
     </div>
