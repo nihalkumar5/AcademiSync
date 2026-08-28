@@ -92,8 +92,8 @@ export const OverviewHeader: React.FC = () => {
               <span className="text-[12px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider truncate">
                 SEM {profile.semester} · {profile.programme}{profile.branch ? ` · ${profile.branch.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI')}` : ''}
               </span>
-              <span className="text-[11.5px] font-normal text-[#777777] uppercase line-clamp-2 tracking-wide leading-snug pr-4">
-                {profile.rollNumber ? `${profile.rollNumber} · ` : ''}{profile.college || 'IIIT NAYA RAIPUR'}
+              <span className="text-[11.5px] font-normal text-[#777777] uppercase truncate tracking-wide">
+                {profile.rollNumber ? `${profile.rollNumber} · ` : ''}{(profile.college || 'IIIT NAYA RAIPUR').replace(/DR\.? SHYAMA PRASAD MUKHERJEE INTERNATIONAL INSTITUTE OF INFORMATION TECHNOLOGY(?:,\s*NAYA RAIPUR)?/i, 'IIIT NAYA RAIPUR')}
               </span>
             </div>
           )}
