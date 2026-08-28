@@ -11,6 +11,8 @@ import { EmptyState } from '../ui/EmptyState';
 import { Plus, Sparkles, Search, CheckSquare, X } from 'lucide-react';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
 
 export const HomeworkView: React.FC = () => {
   const {
@@ -95,7 +97,7 @@ export const HomeworkView: React.FC = () => {
     { id: 'Completed', label: 'Done', count: completedCount },
   ] as const;
 
-  const handleShareTask = (hw: Homework) => {
+  const handleShareTask = async (hw: Homework) => {
     const shareData = {
       t: hw.title,
       d: hw.description,
@@ -106,21 +108,30 @@ export const HomeworkView: React.FC = () => {
     try {
       const b64 = btoa(encodeURIComponent(JSON.stringify(shareData)));
       const shareUrl = `${window.location.origin}/?task=${b64}`;
+      const shareTitle = `Task: ${hw.title}`;
+      const shareText = `Here is a task I shared with you from AcademiSync.`;
       
-      if (navigator.share) {
-        navigator.share({
-          title: `Task: ${hw.title}`,
-          text: `Here is a task I shared with you from AcademiSync.`,
+      if (Capacitor.isNativePlatform()) {
+        await Share.share({
+          title: shareTitle,
+          text: shareText,
           url: shareUrl,
-        }).catch((e) => {
-          if (e.name !== 'AbortError') console.error('Share error:', e);
+          dialogTitle: 'Share Task',
+        });
+      } else if (navigator.share) {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
         });
       } else {
-        navigator.clipboard.writeText(shareUrl);
-        // Fallback for clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Task share link copied to clipboard!'); // Basic fallback
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      if (e.name !== 'AbortError' && e.message !== 'Share canceled') {
+        console.error('Share error:', e);
+      }
     }
   };
 
