@@ -257,24 +257,14 @@ export const WeeklyTimetable: React.FC = () => {
           }
 
           return sessions.map((session) => (
-            <div key={session.id} className="flex items-start gap-4">
-              <div className="w-16 shrink-0 flex flex-col items-end pt-3 text-right">
-                <span className="text-[11px] font-semibold text-black/40 dark:text-white/40">{session.startTime}</span>
-                <span className="text-[9px] font-medium text-black/30 dark:text-white/30">{session.endTime}</span>
-              </div>
-              <div className="flex-1 relative">
-                {/* Timeline connector line */}
-                <div className="absolute -left-2.5 top-0 bottom-[-14px] w-px bg-black/5 dark:bg-white/5 last:hidden"></div>
-                <div className="absolute -left-3 top-[17px] w-1.5 h-1.5 rounded-full bg-black/10 dark:bg-white/10"></div>
-                <ClassCard
-                  session={session}
-                  subject={subjectMap.get(session.subjectId)}
-                  onEdit={handleEditSession}
-                  onDelete={deleteClassSession}
-                  isCurrent={false}
-                />
-              </div>
-            </div>
+            <ClassCard
+              key={session.id}
+              session={session}
+              subject={subjectMap.get(session.subjectId)}
+              onEdit={handleEditSession}
+              onDelete={deleteClassSession}
+              isCurrent={false}
+            />
           ));
         })()}
       </div>
@@ -350,23 +340,14 @@ export const WeeklyTimetable: React.FC = () => {
                   </div>
                 ) : (
                   daySessions.map((session) => (
-                    <div key={session.id} className="flex items-start gap-2.5">
-                      <div className="w-10 shrink-0 flex flex-col items-end pt-3 text-right">
-                        <span className="text-[9px] font-semibold text-black/40 dark:text-white/40">{session.startTime}</span>
-                      </div>
-                      <div className="flex-1 relative">
-                        {/* Timeline connector line */}
-                        <div className="absolute -left-1.5 top-0 bottom-[-14px] w-px bg-black/5 dark:bg-white/5 last:hidden"></div>
-                        <div className="absolute -left-[7px] top-[16px] w-1 h-1 rounded-full bg-black/10 dark:bg-white/10"></div>
-                        <ClassCard
-                          session={session}
-                          subject={subjectMap.get(session.subjectId)}
-                          onEdit={handleEditSession}
-                          onDelete={deleteClassSession}
-                          isCurrent={false}
-                        />
-                      </div>
-                    </div>
+                    <ClassCard
+                      key={session.id}
+                      session={session}
+                      subject={subjectMap.get(session.subjectId)}
+                      onEdit={handleEditSession}
+                      onDelete={deleteClassSession}
+                      isCurrent={false}
+                    />
                   ))
                 )}
               </div>

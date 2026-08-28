@@ -63,15 +63,20 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   return (
     <div
       className={clsx(
-        "group relative flex flex-col p-4 text-left transition-all border rounded-2xl",
+        "group relative flex flex-col p-4 text-left transition-all border rounded-none",
         cardColorClass
       )}
       style={customStyle}
     >
       <div className="flex items-start justify-between gap-1.5 mb-2">
         <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 border border-current text-xs font-medium opacity-80">
+            <Clock className="w-3.5 h-3.5" />
+            <span>{session.startTime} – {session.endTime}</span>
+          </div>
+
           {session.isLab && (
-            <Badge variant="amber" size="sm" className="rounded-full px-2 border-black/20 dark:border-white/20">
+            <Badge variant="amber" size="sm" className="rounded-none px-2 border-black dark:border-white">
               <FlaskConical className="w-3 h-3 mr-1" />
               Lab
             </Badge>
