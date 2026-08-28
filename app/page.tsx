@@ -182,13 +182,20 @@ export default function AppHome() {
 
         <main className="flex-1 px-4 sm:px-8 py-6 max-w-6xl mx-auto w-full relative">
           {!Capacitor.isNativePlatform() && isAndroid && isSignedIn && (
-            <div className="mb-4 p-3 bg-black text-white dark:bg-white dark:text-black text-xs font-bold flex justify-between items-center border border-black dark:border-white">
-              <span>Open this schedule inside the AcademiSync App!</span>
+            <div className="mb-6 p-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] flex items-center justify-between rounded-none">
+              <div className="flex flex-col pr-4">
+                <span className="text-[10px] font-bold uppercase tracking-widest opacity-70 mb-1">
+                  Intersemester App
+                </span>
+                <span className="text-[14px] font-medium leading-snug">
+                  Open your schedule in the app.
+                </span>
+              </div>
               <a
                 href="intent://open#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.intersemester.app;end"
-                className="px-2.5 py-1 bg-white text-black dark:bg-black dark:text-white border border-black/20 dark:border-white/20 uppercase tracking-tight font-black text-[10px]"
+                className="px-4 py-2 bg-[#FFFFFF] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider font-bold text-[11px] shrink-0 flex items-center justify-center text-center"
               >
-                Open App
+                OPEN APP
               </a>
             </div>
           )}
