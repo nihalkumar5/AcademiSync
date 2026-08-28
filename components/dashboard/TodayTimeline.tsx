@@ -120,11 +120,55 @@ export const TodayTimeline: React.FC = () => {
     );
   }
 
+  let promotedClassId: string | null = null;
+  
+  if (!isAfter8PM) {
+    const liveSession = targetSessions.find(s => {
+      const isCancelled = isSessionCancelled(s.id, targetDateStr);
+      const reschedule = rescheduledSessions[`${targetDateStr}_${s.id}`];
+      const start = timeToMinutes(reschedule ? reschedule.startTime : s.startTime);
+      const end = timeToMinutes(reschedule ? reschedule.endTime : s.endTime);
+      return !isCancelled && currentMinutes >= start && currentMinutes < end;
+    });
+
+    const nextSession = targetSessions.find(s => {
+      const isCancelled = isSessionCancelled(s.id, targetDateStr);
+      const reschedule = rescheduledSessions[`${targetDateStr}_${s.id}`];
+      const start = timeToMinutes(reschedule ? reschedule.startTime : s.startTime);
+      return !isCancelled && currentMinutes < start;
+    });
+
+    if (liveSession) {
+      promotedClassId = liveSession.id;
+    } else if (nextSession) {
+      promotedClassId = nextSession.id;
+    }
+  }
+
+  const displaySessions = targetSessions.filter(session => {
+    if (isAfter8PM) return true;
+    if (session.id === promotedClassId) return false;
+    const reschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
+    const end = timeToMinutes(reschedule ? reschedule.endTime : session.endTime);
+    if (currentMinutes >= end) return false;
+    return true;
+  });
+
+  if (!isAfter8PM && displaySessions.length === 0) {
+    return null;
+  }
+
+  let firstValidVisibleId: string | null = null;
+  if (!isAfter8PM) {
+    const firstValid = displaySessions.find(s => !isSessionCancelled(s.id, targetDateStr));
+    if (firstValid) firstValidVisibleId = firstValid.id;
+  }
+
   return (
     <div className="flex flex-col text-left">
       <div className="flex items-center justify-between px-1 mb-8">
         <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
-          {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
+          {isAfter8PM ? "TOMORROW'S SCHEDULE" : "LATER TODAY"}
         </h3>
         <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wider">
           {targetDay}
@@ -132,20 +176,7 @@ export const TodayTimeline: React.FC = () => {
       </div>
       <div className="relative flex flex-col gap-0 border-l-[3px] border-slate-100 dark:border-zinc-800 ml-3">
           {(() => {
-            let nextClassId: string | null = null;
-            if (!isAfter8PM) {
-              const nextSession = targetSessions.find(s => {
-                const isCancelled = isSessionCancelled(s.id, targetDateStr);
-                const reschedule = rescheduledSessions[`${targetDateStr}_${s.id}`];
-                const start = timeToMinutes(reschedule ? reschedule.startTime : s.startTime);
-                return !isCancelled && currentMinutes < start;
-              });
-              if (nextSession) {
-                nextClassId = nextSession.id;
-              }
-            }
-
-            return targetSessions.map((session) => {
+            return displaySessions.map((session) => {
               const sub = subjectMap.get(session.subjectId);
               const reschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
               const start = timeToMinutes(reschedule ? reschedule.startTime : session.startTime);
@@ -153,7 +184,7 @@ export const TodayTimeline: React.FC = () => {
               const isCancelled = isSessionCancelled(session.id, targetDateStr);
               const isNow = !isAfter8PM && !isCancelled && currentMinutes >= start && currentMinutes < end;
               const isPassed = isCancelled || (isAfter8PM ? false : currentMinutes >= end);
-              const isNextClass = session.id === nextClassId;
+              const isNextClass = session.id === firstValidVisibleId;
 
               let dotClass = '';
               if (isCancelled) {
