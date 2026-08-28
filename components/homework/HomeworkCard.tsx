@@ -9,9 +9,15 @@ import {
   Trash2,
   Edit2,
   Share2,
+  MoreVertical,
+  Link,
+  Users,
+  Vote,
 } from 'lucide-react';
 import { clsx } from 'clsx';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useApp } from '@/context/AppContext';
+import { useState, useRef, useEffect } from 'react';
 
 export interface HomeworkCardProps {
   homework: Homework;
@@ -30,6 +36,24 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
   onDelete,
   onShare,
 }) => {
+  const { profile, proposeBatchTask, updateHomework, isBatchCR } = useApp();
+  const [showMenu, setShowMenu] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
+
   const isDone = homework.status === 'Completed';
 
   // Deadline calculation
@@ -85,37 +109,99 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
           </span>
         </div>
 
-        {/* Edit & Delete Action Buttons */}
-        <div className="flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
-          {onShare && (
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => onShare(homework)}
-              className="p-1.5 rounded-lg text-[#8C7D70] hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
-              title="Share Task"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-            </motion.button>
-          )}
+        {/* Action Dropdown */}
+        <div className="relative" ref={dropdownRef}>
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={() => onEdit(homework)}
-            className="p-1.5 rounded-lg text-[#8C7D70] hover:text-[#1A1918] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
-            title="Edit Task"
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-1.5 rounded-none text-[#8C7D70] hover:text-[#1A1918] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+            title="Options"
           >
-            <Edit2 className="w-3.5 h-3.5" />
+            <MoreVertical className="w-4 h-4" />
           </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => onDelete(homework.id)}
-            className="p-1.5 rounded-lg text-[#8C7D70] hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-            title="Delete Task"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </motion.button>
+
+          <AnimatePresence>
+            {showMenu && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                style={{ transformOrigin: 'top right' }}
+                transition={{ duration: 0.15 }}
+                className="absolute right-0 top-full mt-1 w-56 bg-white dark:bg-zinc-900 border border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] z-50 flex flex-col py-1"
+              >
+                {onShare && (
+                  <button
+                    onClick={() => {
+                      onShare(homework);
+                      setShowMenu(false);
+                    }}
+                    className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-left text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors w-full cursor-pointer"
+                  >
+                    <Link className="w-4 h-4" />
+                    Share via Link
+                  </button>
+                )}
+
+                {profile.isBatchSynced && profile.batchKey && !homework.isBatchShared && (
+                  <button
+                    onClick={async () => {
+                      setShowMenu(false);
+                      const isConfirmed = window.confirm(
+                        isBatchCR 
+                          ? "Are you sure you want to post this task to the entire batch? It will be automatically approved."
+                          : "Are you sure you want to propose this task to the entire batch? It will require 30% consensus to be approved."
+                      );
+                      
+                      if (isConfirmed) {
+                        await proposeBatchTask({
+                          subjectId: homework.subjectId,
+                          subjectName: homework.subjectName,
+                          title: homework.title,
+                          description: homework.description || '',
+                          deadline: homework.deadline,
+                          priority: homework.priority,
+                          attachmentName: homework.attachmentName,
+                        });
+                        updateHomework(homework.id, { isBatchShared: true });
+                      }
+                    }}
+                    className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-left text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors w-full cursor-pointer"
+                  >
+                    {isBatchCR ? (
+                      <Users className="w-4 h-4" />
+                    ) : (
+                      <Vote className="w-4 h-4" />
+                    )}
+                    {isBatchCR ? 'Post to Entire Batch' : 'Propose to Batch'}
+                  </button>
+                )}
+
+                <button
+                  onClick={() => {
+                    onEdit(homework);
+                    setShowMenu(false);
+                  }}
+                  className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-left text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors w-full cursor-pointer border-t border-black/10 dark:border-white/10"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  Edit Task
+                </button>
+                
+                <button
+                  onClick={() => {
+                    onDelete(homework.id);
+                    setShowMenu(false);
+                  }}
+                  className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-left text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors w-full cursor-pointer border-t border-black/10 dark:border-white/10"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete Task
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
