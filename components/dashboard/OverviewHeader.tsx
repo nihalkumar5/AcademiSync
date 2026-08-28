@@ -86,41 +86,25 @@ export const OverviewHeader: React.FC = () => {
           {dateFormatted} · {timeFormatted}
         </p>
 
-        <div className="mt-5 flex flex-col md:flex-row md:items-center gap-3 md:gap-6 p-4 border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] relative group">
+        <div className="mt-5 p-4 border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] relative">
           {/* Minimal accent line */}
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-black dark:bg-white" />
             
-            {/* Programme & Branch */}
-            {(profile.programme || profile.branch) && (
-              <div className="flex flex-col gap-1 pl-2 flex-1 min-w-0">
-                <span className="text-[10px] font-bold text-black/40 dark:text-white/40 uppercase tracking-widest flex items-center gap-1.5">
-                  <GraduationCap className="w-3 h-3" />
-                  Academic Profile
-                </span>
-                <span className="text-[13px] font-bold text-black dark:text-white uppercase tracking-wide leading-snug">
-                  {profile.programme} {profile.branch ? `• ${profile.branch}` : ''}
-                </span>
-              </div>
-            )}
-            
-            {/* Badges */}
-            <div className="flex flex-wrap items-center gap-2 pl-2 md:pl-0">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white dark:bg-black border border-black/10 dark:border-white/10 text-[11px] font-bold tracking-wide text-black/70 dark:text-white/70 uppercase shadow-sm">
-                <BookOpen size={12} strokeWidth={2.5} />
-                Sem {profile.semester}
+          {(profile.programme || profile.branch) && (
+            <div className="flex flex-col gap-1 pl-2">
+              <span className="text-[10px] font-bold text-black/40 dark:text-white/40 uppercase tracking-widest flex items-center gap-1.5">
+                <GraduationCap className="w-3 h-3" />
+                Academic Profile
               </span>
-              {profile.rollNumber && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white dark:bg-black border border-black/10 dark:border-white/10 text-[11px] font-bold tracking-wide text-black/70 dark:text-white/70 uppercase font-mono shadow-sm">
-                  <User size={12} strokeWidth={2.5} />
-                  {profile.rollNumber}
-                </span>
-              )}
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-[11px] font-bold tracking-wide uppercase shadow-sm truncate max-w-[160px]">
-                <Building2 size={12} strokeWidth={2.5} />
-                <span className="truncate">{formatCollegeBadge(profile.college)}</span>
+              <span className="text-[13px] font-bold text-black dark:text-white uppercase tracking-wide leading-snug">
+                {profile.programme}{profile.branch ? ` · ${profile.branch}` : ''}
+              </span>
+              <span className="text-[11px] font-bold text-black/60 dark:text-white/60 uppercase tracking-wide mt-1">
+                Semester {profile.semester}
               </span>
             </div>
-          </div>
+          )}
+        </div>
       </div>
 
       {/* Brutalist Stats Grid */}
