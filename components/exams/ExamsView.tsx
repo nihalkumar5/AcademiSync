@@ -1,5 +1,6 @@
 'use client';
 
+import { shareLink } from '@/lib/shareUtils';
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/Button';

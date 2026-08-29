@@ -1,5 +1,6 @@
 'use client';
 
+import { shareLink } from '@/lib/shareUtils';
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
@@ -23,22 +24,15 @@ export const InviteBatchmatesCard = () => {
 
   const handleInvite = async () => {
     if (!profile?.batchKey) return;
-    
     const inviteUrl = `${window.location.origin}/?invite=${profile.batchKey}`;
-    
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: 'Join our Batch Timetable',
-          text: 'Join our class batch on AcademiSync to sync the timetable, exams, and shared homework!',
-          url: inviteUrl,
-        });
-      } else {
-        await navigator.clipboard.writeText(inviteUrl);
-        showToast('Link Copied', 'Batch invite link copied to clipboard.', 'success');
-      }
-    } catch (err) {
-      console.error('Error sharing:', err);
+    const res = await shareLink({
+      title: 'Join our Batch Timetable',
+      text: 'Join our class batch on AcademiSync to sync the timetable, exams, and shared homework!',
+      url: inviteUrl,
+      dialogTitle: 'Invite Batchmates',
+    });
+    if (res === 'copied') {
+      showToast('Link Copied', 'Batch invite link copied to clipboard.', 'success');
     }
   };
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { shareLink } from '@/lib/shareUtils';
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { MessOnboarding } from './MessOnboarding';
@@ -127,10 +128,17 @@ export const MessView: React.FC = () => {
 
   const selectedMenu = messMenu.menu?.[selectedDay] || {};
 
-  const handleCopyLink = () => {
+  const handleShare = async () => {
     const url = `${window.location.origin}/join/${messMenu.id}`;
-    navigator.clipboard.writeText(url);
-    showToast('Copied', 'Invite link copied to clipboard!', 'success');
+    const res = await shareLink({
+      title: 'Hostel Mess Menu',
+      text: 'Check out our weekly hostel mess menu on Intersemester!',
+      url,
+      dialogTitle: 'Share Mess Menu',
+    });
+    if (res === 'copied') {
+      showToast('Copied', 'Invite link copied to clipboard!', 'success');
+    }
   };
 
   const handleJoinSubmit = async (e: React.FormEvent) => {
@@ -179,7 +187,7 @@ export const MessView: React.FC = () => {
 
         <div className="flex flex-wrap items-center gap-3 mt-8">
           <button
-            onClick={handleCopyLink}
+            onClick={handleShare}
             className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors gap-2 cursor-pointer"
           >
             <Share className="w-4 h-4" /> Share

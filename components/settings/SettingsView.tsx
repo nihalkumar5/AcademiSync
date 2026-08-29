@@ -1,5 +1,6 @@
 'use client';
 
+import { shareLink } from '@/lib/shareUtils';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useUser, UserButton, SignedIn, SignedOut, SignInButton, SignOutButton } from '@clerk/nextjs';
@@ -653,8 +654,8 @@ export const SettingsView: React.FC = () => {
                         try {
                           const code = await shareTimetableWithBatch();
                           const link = `${window.location.origin}/?invite=${code}`;
-                          navigator.clipboard.writeText(link);
-                          showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
+                          const res = await shareLink({ title: 'Join Batch Timetable', text: 'Join our class batch on AcademiSync!', url: link, dialogTitle: 'Invite Classmates' });
+                          if (res === 'copied') showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
                         } catch (err) {}
                       }} 
                       className="px-4 py-2 border border-[#D8D8D8] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] text-[#111111] dark:text-[#FFFFFF] text-[11px] font-bold uppercase tracking-wider rounded-none transition-colors"
@@ -678,8 +679,9 @@ export const SettingsView: React.FC = () => {
                   onClick={async () => {
                     try {
                       const code = await shareTimetableWithBatch();
-                      navigator.clipboard.writeText(`${window.location.origin}/?invite=${code}`);
-                      showToast('Link Copied', 'Invite link copied to clipboard!', 'success');
+                      const link = `${window.location.origin}/?invite=${code}`;
+                      const res = await shareLink({ title: 'Join Batch Timetable', text: 'Join our class batch on AcademiSync!', url: link, dialogTitle: 'Invite Classmates' });
+                      if (res === 'copied') showToast('Link Copied', 'Invite link copied to clipboard!', 'success');
                     } catch (err) {}
                   }}
                   className="self-start px-4 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity"

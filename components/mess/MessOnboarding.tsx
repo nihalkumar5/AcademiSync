@@ -1,5 +1,6 @@
 'use client';
 
+import { shareLink } from '@/lib/shareUtils';
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, Sparkles, X, ArrowRight, CheckCircle2, Image as ImageIcon, Check } from 'lucide-react';
@@ -146,11 +147,18 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
   };
 
   const [copying, setCopying] = useState(false);
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     const url = `${window.location.origin}/join/${messId}`;
-    navigator.clipboard.writeText(url);
-    setCopying(true);
-    setTimeout(() => setCopying(false), 2000);
+    const res = await shareLink({
+      title: 'Hostel Mess Menu',
+      text: 'Join and view our hostel mess menu on Intersemester!',
+      url,
+      dialogTitle: 'Share Mess Menu',
+    });
+    if (res === 'copied') {
+      setCopying(true);
+      setTimeout(() => setCopying(false), 2000);
+    }
   };
 
   return (

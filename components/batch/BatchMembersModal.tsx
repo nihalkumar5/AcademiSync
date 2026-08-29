@@ -1,5 +1,6 @@
-
 'use client';
+
+import { shareLink } from '@/lib/shareUtils';
 
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
