@@ -301,7 +301,7 @@ export const MessOnboarding: React.FC = () => {
                           {isEditing ? (
                             <input
                               type="text"
-                              value={items.join(', ')}
+                              value={Array.isArray(items) ? items.join(', ') : items}
                               onChange={(e) => {
                                 const newItems = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
                                 setExtractedData({
@@ -317,7 +317,7 @@ export const MessOnboarding: React.FC = () => {
                             />
                           ) : (
                             <p className="text-[15px] text-[#111111] dark:text-[#FFFFFF] leading-relaxed">
-                              {items.join(' · ')}
+                              {Array.isArray(items) ? items.join(' · ') : items}
                             </p>
                           )}
                         </div>
