@@ -138,6 +138,39 @@ export const AcademicCalendar: React.FC = () => {
   return (
     <div className="flex flex-col max-w-4xl mx-auto w-full pb-16 pt-2 sm:pt-6">
       
+      {/* Hero Header */}
+      <div className="mb-12">
+        <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
+          Academic,<br />
+          Calendar,<br />
+          Semester,<br />
+          Events
+        </h2>
+        <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4 max-w-[280px]">
+          Your semester deadlines, exams and important campus events.
+        </p>
+        <div className="flex items-center gap-3 mt-8">
+        <button
+          onClick={() => {
+             if (!isSignedIn) { clerk.openSignIn(); return; }
+             setShowImportCalendarModal(true)
+          }}
+          className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
+        >
+          AI Import
+        </button>
+        <button
+          onClick={() => {
+             if (!isSignedIn) { clerk.openSignIn(); return; }
+             setShowAddEventModal(true)
+          }}
+          className="flex items-center justify-center h-10 px-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold transition-colors gap-2"
+        >
+          <Plus className="w-4 h-4" /> Add event
+        </button>
+      </div>
+      </div>
+
       {/* YOUR SEMESTER (UP NEXT) */}
       <div className="mb-12">
         <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-6">
@@ -258,28 +291,6 @@ export const AcademicCalendar: React.FC = () => {
               </>
            )}
          </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex items-center gap-4 mt-16 pt-8 border-t border-[#E5E5E5] dark:border-[#333333]">
-        <button
-          onClick={() => {
-             if (!isSignedIn) { clerk.openSignIn(); return; }
-             setShowAddEventModal(true)
-          }}
-          className="flex items-center justify-center h-12 px-6 border border-[#111111] dark:border-[#FFFFFF] text-[#111111] dark:text-[#FFFFFF] text-[12px] font-bold tracking-[1px] uppercase hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors gap-2"
-        >
-          <Plus className="w-4 h-4" /> Add event
-        </button>
-        <button
-          onClick={() => {
-             if (!isSignedIn) { clerk.openSignIn(); return; }
-             setShowImportCalendarModal(true)
-          }}
-          className="flex items-center justify-center h-12 px-6 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[12px] font-bold tracking-[1px] uppercase transition-colors"
-        >
-          AI Import
-        </button>
       </div>
 
       <CalendarImportModal isOpen={showImportCalendarModal} onClose={() => setShowImportCalendarModal(false)} />
