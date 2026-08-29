@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { ClassSession, Subject } from '@/lib/types';
-import { MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Edit2, Trash2, MapPin } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useApp } from '@/context/AppContext';
 
@@ -36,16 +36,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
     ? 'text-[#FFFFFF]/70 dark:text-[#111111]/70'
     : 'text-[#6F6F6F] dark:text-[#999999]';
 
-  // Format Faculty string (handle "+ 2 faculty" logic)
-  const rawFaculty = session.faculty || subject?.facultyName || '';
-  let displayFaculty = rawFaculty;
-  if (rawFaculty) {
-    const facultyList = rawFaculty.split('/').map(f => f.trim()).filter(Boolean);
-    if (facultyList.length > 1) {
-      displayFaculty = `${facultyList[0]} + ${facultyList.length - 1} faculty`;
-    }
-  }
-
+  const displayFaculty = session.faculty || subject?.facultyName || '';
   const roomStr = session.room || (session.isLab ? subject?.labRoom : subject?.room) || 'TBA';
 
   return (
@@ -146,7 +137,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         "mt-2 ml-[13px] flex items-center gap-1.5 text-[12px] font-medium truncate",
         textSecondaryClass
       )}>
-        <span className="shrink-0">⌖ {roomStr}</span>
+        <span className="shrink-0 flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {roomStr}</span>
         {displayFaculty && (
           <>
             <span className="shrink-0">·</span>

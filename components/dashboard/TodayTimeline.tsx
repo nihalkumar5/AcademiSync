@@ -285,11 +285,7 @@ export const TodayTimeline: React.FC = () => {
                                 <>
                                   <span className="opacity-50">·</span>
                                   <span className="flex items-center gap-[4px]">
-                                    {(() => {
-                                      const faculties = session.faculty.split(/[,/&]/).map(f => f.trim()).filter(Boolean);
-                                      if (faculties.length > 2) return `${faculties[0]} + ${faculties.length - 1} faculty`;
-                                      return faculties.join(' / ');
-                                    })()}
+                                    {session.faculty}
                                   </span>
                                 </>
                               )}
