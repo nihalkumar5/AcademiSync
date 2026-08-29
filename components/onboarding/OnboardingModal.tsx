@@ -215,8 +215,11 @@ export const OnboardingModal = () => {
 
         <button
           onClick={() => {
-            changeSlide(currentIndex + 1);
-            if (currentIndex === 2) handleSkip();
+            if (currentIndex < 2) {
+              changeSlide(currentIndex + 1);
+            } else {
+              updateProfile({ onboardingCompleted: true });
+            }
           }}
           className="h-[48px] px-6 bg-[#111111] text-white rounded-2xl flex items-center gap-2 font-semibold text-[14px] hover:opacity-90 active:scale-95 transition-all"
         >

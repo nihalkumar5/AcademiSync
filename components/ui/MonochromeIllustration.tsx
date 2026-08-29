@@ -46,20 +46,22 @@ export const MonochromeIllustration: React.FC<MonochromeIllustrationProps> = ({
         </svg>
       );
 
-    case 'no-classes':
+        case 'no-classes':
       return (
-        <svg {...props}>
-          {/* Desk clock */}
-          <circle cx="9" cy="11.5" r="4.5" />
-          <path d="M9 9v2.5l2 1" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M7 7l-1.5-1.5M11 7l1.5-1.5" strokeLinecap="round" />
-          
-          {/* Coffee Cup / Mug */}
-          <path d="M17 12.5h1.5a1.5 1.5 0 001.5-1.5V9.5a1.5 1.5 0 00-1.5-1.5H17v4.5z" />
-          <path d="M14 14.5a3 3 0 003-3V8h-6v3.5a3 3 0 003 3z" />
-          
-          {/* Book / Journal under the mug */}
-          <path d="M6 18h12M6 19.5h12" strokeLinecap="round" />
+        <svg
+          width={size}
+          height={size}
+          viewBox="0 0 128 128"
+          fill="none"
+          stroke="currentColor"
+          className={`text-black/80 dark:text-white/80 ${className}`}
+        >
+          <rect x="22" y="30" width="84" height="76" rx="4" strokeWidth="5"/>
+          <path d="M22 50H106" strokeWidth="5"/>
+          <path d="M40 20V38M88 20V38" strokeWidth="7" strokeLinecap="round"/>
+          <path d="M47 69C50 64 55 61 61 61C70 61 77 68 77 77C77 86 70 93 61 93C55 93 50 90 47 85" strokeWidth="4.5" strokeLinecap="round"/>
+          <path d="M54 72V82M67 72V82" strokeWidth="4.5" strokeLinecap="round"/>
+          <path d="M84 63L96 51M88 51H96V59" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       );
 
