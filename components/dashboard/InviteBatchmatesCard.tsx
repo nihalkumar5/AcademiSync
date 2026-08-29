@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { MonochromeIllustration } from '@/components/ui/MonochromeIllustration';
+
 import { useApp } from '@/context/AppContext';
 
 export const InviteBatchmatesCard = () => {
@@ -72,8 +72,8 @@ export const InviteBatchmatesCard = () => {
         </button>
       </div>
 
-      <div className="absolute right-[-5px] bottom-[-10px] opacity-70 z-0">
-        <MonochromeIllustration type="teamwork" size={100} className="text-[#111111] dark:text-[#FFFFFF]" />
+      <div className="absolute right-0 bottom-0 z-0 flex items-end justify-end h-full p-2">
+        <img src="/invite.png" alt="Invite illustration" className="w-[110px] h-auto object-contain" />
       </div>
     </div>
   );
