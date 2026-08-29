@@ -17,7 +17,7 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 5000, // Fallback duration in case programmatic hide fails
       launchAutoHide: false,    // Wait for JS code to trigger hide
-      backgroundColor: '#FAFAF8',
+      backgroundColor: '#FFFFFF',
       androidScaleType: 'CENTER_CROP',
       showSpinner: false,
     }
