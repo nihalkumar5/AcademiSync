@@ -71,8 +71,8 @@ export const NotificationCenter: React.FC = () => {
           : 'py-4 border-b border-black/5 dark:border-white/5 last:border-0 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] -mx-4 px-4'
       } ${n.read ? 'opacity-60' : 'opacity-100'}`}
     >
-      <div className="flex items-start gap-4">
-        <span className="mt-0.5 opacity-80">{getCategoryIcon(n.category)}</span>
+      <div className="flex items-start">
+        
         <div className="flex flex-col gap-1">
           <h4 className={`text-[15px] text-black dark:text-white leading-snug tracking-tight ${isImportant ? 'font-bold' : 'font-semibold'}`}>
             {n.title}
