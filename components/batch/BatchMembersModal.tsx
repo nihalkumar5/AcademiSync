@@ -198,12 +198,19 @@ return () => unsubscribe();
     }
   };
 
-  const handleCopyInvite = () => {
+  const handleCopyInvite = async () => {
     const inviteUrl = `${window.location.origin}/?invite=${batchKey}`;
-    navigator.clipboard.writeText(inviteUrl);
-    setCopiedLink(true);
-    showToast('Link Copied', 'Master batch invite link copied to clipboard.', 'success');
-    setTimeout(() => setCopiedLink(false), 2000);
+    const res = await shareLink({
+      title: 'Join Batch Timetable',
+      text: 'Join our class batch on AcademiSync to sync timetable and schedules!',
+      url: inviteUrl,
+      dialogTitle: 'Invite Batchmate',
+    });
+    if (res === 'copied') {
+      setCopiedLink(true);
+      showToast('Link Copied', 'Batch invite link copied to clipboard.', 'success');
+      setTimeout(() => setCopiedLink(false), 2000);
+    }
   };
 
   const filteredMembers = members.filter((m) => {

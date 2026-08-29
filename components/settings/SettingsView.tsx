@@ -1270,8 +1270,8 @@ export const SettingsView: React.FC = () => {
                   try {
                     const code = await shareTimetableWithBatch();
                     const link = `${window.location.origin}/?invite=${code}`;
-                    navigator.clipboard.writeText(link);
-                    showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
+                    const res = await shareLink({ title: 'Join Batch Timetable', text: 'Join our class batch on AcademiSync!', url: link, dialogTitle: 'Invite Classmates' });
+                    if (res === 'copied') showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
                   } catch (err) {}
                 }}
                 className="flex items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333] hover:opacity-70 transition-opacity text-left"
