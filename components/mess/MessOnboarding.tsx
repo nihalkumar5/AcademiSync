@@ -154,7 +154,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
   };
 
   return (
-    <div className="flex flex-col max-w-lg mx-auto w-full pt-4 pb-12 px-4 min-h-[calc(100vh-80px)]">
+    <div className="flex flex-col w-full pt-4 pb-12 sm:px-0 min-h-[calc(100vh-80px)] text-left">
       <AnimatePresence mode="wait">
         {step === 1 && (
           <motion.div
@@ -162,7 +162,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex flex-col flex-1 max-w-4xl mx-auto w-full pt-2 sm:pt-6 pb-16"
+            className="flex flex-col flex-1 w-full pt-2 sm:pt-6 pb-16"
           >
             <div className="mb-12 relative">
               {onCancel && (

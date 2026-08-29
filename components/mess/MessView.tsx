@@ -128,7 +128,7 @@ export const MessView: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-4xl mx-auto w-full pb-12">
+    <div className="flex flex-col gap-6 w-full pb-12 text-left">
       <div className="flex flex-col items-start pt-2 sm:pt-6 mb-4">
         <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
           Hostel,<br />
