@@ -712,6 +712,98 @@ export const SettingsView: React.FC = () => {
             </div>
           </div>
 
+          {/* Appearance & Alerts */}
+          <div className="flex flex-col gap-0 mt-6">
+            <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D8D8D8] dark:border-[#333333]">
+              <Sparkles className="w-[18px] h-[18px] stroke-[1.5]" />
+              <span>Appearance & Alerts</span>
+            </div>
+            
+            {/* Theme Toggle */}
+            <div className="flex items-center justify-between py-5 border-b border-[#D8D8D8] dark:border-[#333333]">
+              <div className="flex items-center gap-3">
+                <Sun className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF] stroke-[1.5]" />
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none">Theme Preference</span>
+                  <span className="text-[12px] text-[#6F6F6F]">Switch between light and dark</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 bg-[#F4F4F4] dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] p-1">
+                <button
+                  onClick={() => updateSettings({ theme: 'light' })}
+                  className={`px-3 py-1 text-[11px] font-bold uppercase cursor-pointer transition-colors ${
+                    settings.theme === 'light' ? 'bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111]' : 'text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
+                  }`}
+                >
+                  Light
+                </button>
+                <button
+                  onClick={() => updateSettings({ theme: 'dark' })}
+                  className={`px-3 py-1 text-[11px] font-bold uppercase cursor-pointer transition-colors ${
+                    settings.theme === 'dark' ? 'bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111]' : 'text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
+                  }`}
+                >
+                  Dark
+                </button>
+              </div>
+            </div>
+
+            {/* Class Notification */}
+            <div 
+              onClick={() => { setActiveSetting('classReminder'); setShowSettingModal(true); }}
+              className="flex items-center justify-between py-5 border-b border-[#D8D8D8] dark:border-[#333333] cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors -mx-5 px-5 sm:mx-0 sm:px-0 sm:hover:bg-transparent group"
+            >
+              <div className="flex items-center gap-3">
+                <Bell className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF] stroke-[1.5]" />
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none group-hover:underline underline-offset-2">Class Reminder</span>
+                  <span className="text-[12px] text-[#6F6F6F]">Alert before class starts</span>
+                </div>
+              </div>
+              <span className="text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF]">{settings.classReminderMinutes} min</span>
+            </div>
+
+            {/* Carry Check */}
+            <div 
+              onClick={() => { setActiveSetting('eveningCheck'); setShowSettingModal(true); }}
+              className="flex items-center justify-between py-5 border-b border-[#D8D8D8] dark:border-[#333333] cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors -mx-5 px-5 sm:mx-0 sm:px-0 sm:hover:bg-transparent group"
+            >
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF] stroke-[1.5]" />
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none group-hover:underline underline-offset-2">Evening Carry Bag Check</span>
+                  <span className="text-[12px] text-[#6F6F6F]">Daily reminder to pack bag</span>
+                </div>
+              </div>
+              <span className="text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF]">{settings.eveningCarryReminderTime}</span>
+            </div>
+            
+            <div 
+              onClick={() => {
+                showToast('Testing Native Alarm', 'Closing app for 5 seconds to test background notification...', 'info');
+                setTimeout(() => {
+                  scheduleTestNotification('Test Notification', 'This is a test notification from AcademiSync! 🚀');
+                  if (typeof (navigator as any).app !== 'undefined') {
+                    (navigator as any).app.exitApp();
+                  } else {
+                    window.close();
+                  }
+                }, 1500);
+              }}
+              className="flex items-center justify-between py-5 border-b border-[#D8D8D8] dark:border-[#333333] cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors -mx-5 px-5 sm:mx-0 sm:px-0 sm:hover:bg-transparent group"
+            >
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF] stroke-[1.5]" />
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none group-hover:underline underline-offset-2">Test Native Alarm</span>
+                  <span className="text-[12px] text-[#6F6F6F]">Simulate an alert (closes app for 5s)</span>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-[#A0A0A0]" />
+            </div>
+
+          </div>
+
           <div className="flex flex-col gap-0 mt-6">
             <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D8D8D8] dark:border-[#333333]">
               <ShieldCheck className="w-[18px] h-[18px] stroke-[1.5]" />
