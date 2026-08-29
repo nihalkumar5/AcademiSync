@@ -170,33 +170,7 @@ export default function AppHome() {
   }, [isHydrated]);
 
   if (!isHydrated) {
-    return (
-      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#FAFAF8] dark:bg-[#0A0A0A]">
-        {/* Logo */}
-        <div className="flex flex-col items-center gap-3 mb-6">
-          <h1 className="text-[32px] tracking-tight text-[#111111] dark:text-[#FFFFFF]" style={{ fontWeight: 400 }}>
-            <span style={{ fontWeight: 800 }}>inter</span>semester
-          </h1>
-          <p className="text-[14px] text-[#6F6F6F] font-medium tracking-wide">
-            Plan better. Stay ahead.
-          </p>
-        </div>
-
-        {/* Illustration */}
-        <div className="w-[280px] h-[280px] sm:w-[320px] sm:h-[320px] flex items-center justify-center mb-10">
-          <img
-            src="/splash-illustration.png"
-            alt="Loading"
-            className="w-full h-full object-contain"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-          />
-        </div>
-
-        <p className="text-[12px] text-[#A0A0A0] font-medium tracking-wider">
-          Loading...
-        </p>
-      </div>
-    );
+    return null;
   }
 
   return (
