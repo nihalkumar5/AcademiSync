@@ -113,10 +113,10 @@ export const AcademicCalendar: React.FC = () => {
           className="h-10 flex flex-col items-center justify-center relative cursor-pointer group"
         >
           <div className={clsx(
-            "w-7 h-7 flex items-center justify-center text-[14px] transition-all",
-            isSelected ? "border border-black dark:border-white rounded-full text-black dark:text-white font-medium" :
-            isToday ? "ring-1 ring-[#D8D8D8] rounded-full text-black font-medium" : 
-            "text-[#6F6F6F] group-hover:text-black"
+            "w-7 h-7 flex items-center justify-center text-[14px] transition-all rounded-full",
+            isSelected ? "border-2 border-[#111111] dark:border-[#FFFFFF] text-[#111111] dark:text-[#FFFFFF] font-bold" :
+            isToday ? "border border-[#111111] dark:border-[#FFFFFF] text-[#111111] dark:text-[#FFFFFF] font-medium" : 
+            "text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]"
           )}>
             {dayNum}
           </div>
@@ -168,35 +168,46 @@ export const AcademicCalendar: React.FC = () => {
         </button>
       </div>
 
-      <div className="mt-12">
-        <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-4">
-          UPCOMING
-        </p>
-        <div className="w-full h-px bg-[#E5E5E5] dark:bg-[#333333] mb-4"></div>
+      <div className="mt-10">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#111111] dark:text-[#FFFFFF]">
+            UPCOMING
+          </p>
+        </div>
+        <div className="w-full h-px bg-[#111111] dark:bg-[#FFFFFF] mb-3 opacity-20"></div>
 
-        <div className="flex flex-col gap-6">
-          {upcomingItems.length === 0 ? (
+        <div className="flex flex-col gap-2">
+          {upcomingItems.slice(0, 3).length === 0 ? (
             <p className="text-[13px] text-[#6F6F6F]">No upcoming events</p>
           ) : (
-            upcomingItems.map((item, idx) => {
-              const dateObj = new Date(item.dateStr);
-              const dayStr = String(dateObj.getDate()).padStart(2, '0');
-              const monthStr = dateObj.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-              
-              return (
-                <div key={idx} className="flex flex-col">
-                  <p className="text-[12px] font-mono text-[#111111] dark:text-[#FFFFFF] mb-1">{dayStr} {monthStr}</p>
-                  <p className="text-[14px] text-[#6F6F6F]">
-                    {item.title} {item.subject && `· ${item.subject}`}
+            <>
+              {upcomingItems.slice(0, 3).map((item, idx) => {
+                const dateObj = new Date(item.dateStr);
+                const dayStr = String(dateObj.getDate()).padStart(2, '0');
+                const monthStr = dateObj.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+                
+                return (
+                  <div key={idx} className="flex items-baseline gap-4">
+                    <p className="text-[12px] font-mono text-[#111111] dark:text-[#FFFFFF] w-14 shrink-0">{dayStr} {monthStr}</p>
+                    <p className="text-[13px] text-[#111111] dark:text-[#FFFFFF] truncate">
+                      {item.title} {item.subject && `· ${item.subject}`}
+                    </p>
+                  </div>
+                );
+              })}
+              {allItems.filter(i => i.dateStr >= getTodayDateString()).length > 3 && (
+                <div className="mt-1">
+                  <p className="text-[12px] font-medium text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] cursor-pointer inline-flex items-center gap-1 transition-colors">
+                    View all <span>→</span>
                   </p>
                 </div>
-              );
-            })
+              )}
+            </>
           )}
         </div>
       </div>
 
-      <div className="mt-16">
+      <div className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[14px] font-bold tracking-[1px] text-[#111111] dark:text-[#FFFFFF]">
             {monthName}
@@ -225,23 +236,24 @@ export const AcademicCalendar: React.FC = () => {
         </div>
 
         {/* Selected Date Items */}
-        <div className="mt-12 pt-8 border-t border-[#E5E5E5] dark:border-[#333333]">
-           <p className="text-[13px] font-bold tracking-[1px] uppercase text-[#111111] dark:text-[#FFFFFF] mb-6">
+        <div className="mt-8">
+           <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#111111] dark:text-[#FFFFFF] mb-3">
               {selectedDateStr}
            </p>
+           <div className="w-full h-px bg-[#111111] dark:bg-[#FFFFFF] mb-4 opacity-20"></div>
            
-           <div className="flex flex-col gap-6">
+           <div className="flex flex-col gap-5">
              {(itemsByDate.get(selectedDate) || []).length === 0 ? (
                 <p className="text-[13px] text-[#6F6F6F]">No events scheduled.</p>
              ) : (
                 (itemsByDate.get(selectedDate) || []).map((item, idx) => (
                   <div key={idx} className="flex gap-6 items-start">
-                    <span className="text-[13px] font-mono text-[#A0A0A0] w-20 shrink-0">{item.time}</span>
+                    <span className="text-[13px] font-mono text-[#6F6F6F] w-16 shrink-0 pt-0.5">{item.time}</span>
                     <div className="flex flex-col gap-0.5">
-                      <p className="text-[14px] text-[#111111] dark:text-[#FFFFFF]">
+                      <p className="text-[14px] text-[#111111] dark:text-[#FFFFFF] font-medium">
                         {item.title} {item.subject && `• ${item.subject}`}
                       </p>
-                      <p className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#6F6F6F]">
+                      <p className="text-[11px] font-bold tracking-[1px] uppercase text-[#6F6F6F]">
                         {item.type.replace('-', ' ')}
                       </p>
                     </div>
