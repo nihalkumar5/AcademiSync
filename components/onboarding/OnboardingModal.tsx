@@ -6,8 +6,9 @@ import { ArrowRight, Calendar, Bell, Users, ArrowLeft } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
 export const OnboardingModal = () => {
-  const { profile, markOnboardingComplete } = useApp();
+  const { profile, updateProfile } = useApp();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
 
   // If we already finished, don't render (or maybe handled by parent)
   // But just in case:
@@ -19,7 +20,7 @@ export const OnboardingModal = () => {
     if (currentIndex < 2) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      markOnboardingComplete();
+      updateProfile({ onboardingCompleted: true });
     }
   };
 
@@ -30,7 +31,7 @@ export const OnboardingModal = () => {
   };
 
   const handleSkip = () => {
-    markOnboardingComplete();
+    updateProfile({ onboardingCompleted: true });
   };
 
   const slides = [
@@ -47,7 +48,7 @@ export const OnboardingModal = () => {
     {
       id: 1,
       image: '/onboard-2.png',
-      topNav: 'left', // left logo, right back arrow
+      topNav: 'left-skip', // left logo, right skip
       title: "Know what's next.",
       subtitle: "Import your timetable and let\nIntersemester build your week.",
       buttonText: 'Next',
@@ -74,29 +75,39 @@ export const OnboardingModal = () => {
 
   const slideVariants = {
     enter: (dir: number) => ({
-      x: dir > 0 ? 100 : -100,
+      x: dir > 0 ? 30 : -30,
       opacity: 0,
     }),
     center: {
       x: 0,
       opacity: 1,
       transition: {
-        x: { type: 'spring', stiffness: 300, damping: 30 },
-        opacity: { duration: 0.2 },
+        x: { type: 'tween', duration: 0.4, ease: [0.25, 1, 0.5, 1] },
+        opacity: { duration: 0.3, ease: 'linear' },
+        staggerChildren: 0.08,
       },
     },
     exit: (dir: number) => ({
-      x: dir < 0 ? 100 : -100,
+      x: dir < 0 ? 30 : -30,
       opacity: 0,
       transition: {
-        x: { type: 'spring', stiffness: 300, damping: 30 },
-        opacity: { duration: 0.2 },
+        x: { type: 'tween', duration: 0.4, ease: [0.25, 1, 0.5, 1] },
+        opacity: { duration: 0.3, ease: 'linear' },
       },
     }),
   };
 
+  const itemVariants = {
+    enter: { y: 15, opacity: 0 },
+    center: { 
+      y: 0, 
+      opacity: 1,
+      transition: { type: 'tween', duration: 0.5, ease: [0.25, 1, 0.5, 1] }
+    },
+    exit: { opacity: 0 }
+  };
+
   // We need to keep track of direction for animation
-  const [direction, setDirection] = useState(1);
 
   const changeSlide = (newIndex: number) => {
     setDirection(newIndex > currentIndex ? 1 : -1);
@@ -104,28 +115,28 @@ export const OnboardingModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-[#FAFAF8] flex flex-col font-sans overflow-hidden w-full h-[100dvh]">
+    <div className="fixed inset-0 z-[100] bg-white flex flex-col font-sans overflow-hidden w-full h-[100dvh]">
       
       {/* Top Nav */}
-      <div className="w-full flex items-center justify-between px-6 pt-12 pb-4 shrink-0 h-[80px]">
+      <div className="w-full flex items-start justify-between px-6 pt-8 pb-2 shrink-0 z-20 relative">
         {currentSlide.topNav === 'center' ? (
           <div className="w-full flex flex-col items-center justify-center">
             <h1 className="text-[28px] font-bold tracking-tighter text-[#111]">inter<span className="font-normal opacity-80">semester</span></h1>
-            <div className="w-[30px] h-[2px] bg-[#111] mt-6 mb-5" />
-            <p className="mt-6 text-[10px] tracking-[3px] font-medium text-[#111111]/60 uppercase whitespace-pre-line text-center leading-relaxed">
+            <div className="w-[24px] h-[1.5px] bg-[#111] mt-4 mb-4" />
+            <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mt-1 text-[10px] tracking-[3px] font-medium text-[#111111]/60 uppercase whitespace-pre-line text-center leading-relaxed">
               {currentSlide.topText}
-            </p>
+            </motion.p>
           </div>
         ) : (
           <>
-            <h1 className="text-xl font-bold tracking-tight">inter<span className="font-normal opacity-70">semester</span></h1>
+            <h1 className="text-[26px] font-bold tracking-tighter text-[#111]">inter<span className="font-normal opacity-80">semester</span></h1>
             {currentSlide.topNav === 'left' && (
               <button onClick={handlePrev} className="p-2 -mr-2 hover:bg-[#111111]/5 rounded-full transition-colors">
                 <ArrowLeft className="w-5 h-5 text-[#111111]" />
               </button>
             )}
             {currentSlide.topNav === 'left-skip' && (
-              <button onClick={handleSkip} className="px-3 py-1 -mr-3 text-sm font-medium text-[#111111]/60 hover:text-[#111111] transition-colors">
+              <button onClick={handleSkip} className="px-3 py-1 -mr-3 text-[15px] font-semibold text-[#111111]/50 hover:text-[#111111] transition-colors">
                 Skip
               </button>
             )}
@@ -135,7 +146,7 @@ export const OnboardingModal = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 w-full flex flex-col relative overflow-hidden">
-        <AnimatePresence initial={false} custom={direction} mode="popLayout">
+        <AnimatePresence custom={direction} mode="popLayout">
           <motion.div
             key={currentIndex}
             custom={direction}
@@ -146,25 +157,29 @@ export const OnboardingModal = () => {
             className="absolute inset-0 w-full h-full flex flex-col"
           >
             {/* Image Section */}
-            <div className={`flex-1 flex items-center justify-center p-6 ${currentSlide.id === 0 ? 'mt-8' : ''}`}>
+            <motion.div variants={itemVariants} className={`flex-1 min-h-0 w-full flex items-end justify-center overflow-visible ${currentSlide.id === 0 ? 'mb-0' : ''}`}>
               <img 
                 src={currentSlide.image} 
                 alt="Onboarding" 
-                className="w-full h-full max-h-[35vh] object-contain"
+                className={`w-full h-full object-contain object-bottom pointer-events-none translate-y-[8%] ${
+                  currentSlide.id === 0 ? 'scale-[1.2]' :
+                  currentSlide.id === 1 ? 'scale-[1.45]' :
+                  'scale-[1.35]'
+                }`}
               />
-            </div>
+            </motion.div>
 
             {/* Text & Features Section */}
-            <div className="w-full px-8 flex flex-col gap-3 pb-6 bg-[#FAFAF8] shrink-0">
-              <h2 className="text-[32px] leading-[1.1] font-bold text-[#111111] whitespace-pre-line">
+            <div className="w-full px-8 flex flex-col gap-3 pb-6 bg-[#F4F4F4] shrink-0 z-10 relative rounded-t-[40px] pt-8 -mt-6">
+              <motion.h2 variants={itemVariants} className="text-[32px] leading-[1.1] font-bold text-[#111111] whitespace-pre-line">
                 {currentSlide.title}
-              </h2>
-              <p className="text-[14px] text-[#111111]/60 font-medium leading-snug whitespace-pre-line mb-4">
+              </motion.h2>
+              <motion.p variants={itemVariants} className="text-[14px] text-[#111111]/60 font-medium leading-snug whitespace-pre-line mb-4">
                 {currentSlide.subtitle}
-              </p>
+              </motion.p>
 
               {currentSlide.features && (
-                <div className="flex flex-col">
+                <motion.div variants={itemVariants} className="flex flex-col">
                   {currentSlide.features.map((feat, idx) => (
                     <div key={idx} className="flex items-center gap-4 py-4 border-b border-black/5 last:border-0">
                       <div className="w-10 h-10 bg-[#F4F4F4] rounded-2xl flex items-center justify-center shrink-0">
@@ -176,7 +191,7 @@ export const OnboardingModal = () => {
                       </div>
                     </div>
                   ))}
-                </div>
+                </motion.div>
               )}
             </div>
           </motion.div>
@@ -184,14 +199,11 @@ export const OnboardingModal = () => {
       </div>
 
       {/* Footer Controls */}
-      <div className="w-full px-8 pb-10 pt-4 flex items-center justify-between shrink-0 bg-[#FAFAF8] z-10 relative">
+      <div className="w-full px-8 pb-10 pt-2 flex items-center justify-between shrink-0 bg-[#F4F4F4] z-10 relative">
         <div className="flex items-center gap-3">
           <div className="flex gap-2">
             {[0, 1, 2].map((i) => (
-              <div 
-                key={i} 
-                className={`h-[6px] rounded-full transition-all duration-300 ${i === currentIndex ? 'w-[6px] bg-[#111111]' : 'w-[6px] bg-[#111111]/15'}`}
-              />
+              <button key={i} onClick={() => changeSlide(i)} className={`h-[6px] rounded-full transition-all duration-300 cursor-pointer ${i === currentIndex ? 'w-[6px] bg-[#111111]' : 'w-[6px] bg-[#111111]/15 hover:bg-[#111111]/30'}`} />
             ))}
           </div>
           {currentIndex > 0 && (

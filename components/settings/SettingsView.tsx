@@ -893,7 +893,19 @@ export const SettingsView: React.FC = () => {
         )}
       </AnimatePresence>
 
+      
+      {/* Re-trigger Onboarding Button */}
+      <div className="flex justify-center mt-8">
+        <button
+          onClick={() => updateProfile({ onboardingCompleted: false })}
+          className="px-4 py-2 border border-[#D8D8D8] dark:border-[#333333] text-[12px] font-bold uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F4F4F4] dark:hover:bg-[#1A1A1A] transition-colors rounded-none"
+        >
+          View Onboarding
+        </button>
+      </div>
+
       {/* Batch Join / Sync Modal */}
+
       {pendingBatchKey && matchedBatchData && (
         <Modal
           isOpen={pendingBatchKey !== null}
