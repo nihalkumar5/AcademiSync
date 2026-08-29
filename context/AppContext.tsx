@@ -514,7 +514,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const loadedCancelled = storage.getCancelledSessions();
     const loadedRescheduled = storage.getRescheduledSessions();
     const loadedExams = storage.getExams();
+    const loadedMessMenuStr = typeof window !== 'undefined' ? window.localStorage.getItem('intersemester_mess_menu_v1') : null;
+    let loadedMessMenu = null;
+    try {
+      if (loadedMessMenuStr) loadedMessMenu = JSON.parse(loadedMessMenuStr);
+    } catch(e) {}
 
+    setMessMenu(loadedMessMenu);
     setProfileState(loadedProfile);
     setSubjectsState(loadedSubjects);
     setTimetableState(loadedTimetable);
