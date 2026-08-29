@@ -100,7 +100,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
 
     const subjectData = {
       name: name.trim(),
-      code: code.trim().toUpperCase() || 'CS300',
+      code: code.trim().toUpperCase() || '',
       shortName: computedShortName,
       facultyName: facultyName.trim() || 'Faculty Member',
       facultyEmail: facultyEmail.trim() || undefined,
@@ -145,7 +145,6 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
             placeholder="e.g. CS302"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            required
           />
         </div>
 

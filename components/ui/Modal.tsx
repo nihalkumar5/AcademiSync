@@ -59,7 +59,7 @@ export const Modal: React.FC<ModalProps> = ({
       {isOpen && (
         <div className={clsx(
           "fixed inset-0 z-50 flex justify-center overflow-y-auto",
-          mobileFullSheet ? "items-start sm:items-center p-0 sm:p-6" : "items-center p-4 sm:p-6"
+          mobileFullSheet ? "items-start sm:items-center p-0 sm:p-6" : "items-center p-0 sm:p-6"
         )}>
           {/* Backdrop */}
           <motion.div
@@ -81,7 +81,7 @@ export const Modal: React.FC<ModalProps> = ({
               clsx(
                 
                 'relative bg-white dark:bg-[#111111] border-[#D9D9D6] dark:border-[#333333] z-10 text-left rounded-none',
-                mobileFullSheet ? 'w-full' : 'w-[calc(100%-32px)] sm:w-full',
+                mobileFullSheet ? 'w-full' : 'w-full sm:w-full',
                 mobileFullSheet ? "min-h-[100dvh] sm:min-h-0 sm:h-auto border-0 sm:border flex flex-col" : "border my-auto",
                 maxWClasses[maxWidth]
               )
