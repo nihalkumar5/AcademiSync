@@ -7,7 +7,7 @@ import { ArrowRight, Share } from 'lucide-react';
 import { Button } from '../ui/Button';
 
 export const MessView: React.FC = () => {
-  const { messMenu, updateMessMenu } = useApp();
+  const { messMenu, updateMessMenu, showToast } = useApp();
   const [showThisWeek, setShowThisWeek] = useState(false);
   
   if (!messMenu) {
@@ -32,7 +32,7 @@ export const MessView: React.FC = () => {
   const handleCopyLink = () => {
     const url = window.location.origin + '/join/' + messMenu.id;
     navigator.clipboard.writeText(url);
-    alert('Invite link copied!');
+    showToast('Copied', 'Invite link copied to clipboard!', 'success');
   };
 
   if (showThisWeek) {

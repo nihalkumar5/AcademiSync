@@ -20,6 +20,7 @@ export const HomeworkView: React.FC = () => {
     subjects,
     toggleHomeworkStatus,
     deleteHomework,
+    showToast,
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -126,7 +127,7 @@ export const HomeworkView: React.FC = () => {
         });
       } else {
         await navigator.clipboard.writeText(shareUrl);
-        alert('Task share link copied to clipboard!'); // Basic fallback
+        showToast('Copied', 'Task share link copied to clipboard!', 'success');
       }
     } catch (e: any) {
       if (e.name !== 'AbortError' && e.message !== 'Share canceled') {
