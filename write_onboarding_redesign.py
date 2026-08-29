@@ -1,4 +1,4 @@
-'use client';
+code = r"""'use client';
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -569,3 +569,8 @@ export const OnboardingModal = () => {
     </div>
   );
 };
+"""
+
+with open('components/onboarding/OnboardingModal.tsx', 'w') as f:
+    f.write(code)
+print('Successfully written redesigned OnboardingModal.tsx')
