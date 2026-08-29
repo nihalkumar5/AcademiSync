@@ -48,17 +48,17 @@ export const InviteBatchmatesCard = () => {
   };
 
   return (
-    <div className="relative bg-[#F4F4F4] dark:bg-[#1A1A1A] p-4 sm:p-5 border border-[#D9D9D6] dark:border-[#333333] flex items-center justify-between overflow-hidden min-h-[140px]">
+    <div className="relative bg-[#F4F4F4] p-4 sm:p-5 border border-[#D9D9D6] flex items-center justify-between overflow-hidden min-h-[140px]">
       <button 
         onClick={handleDismiss}
-        className="absolute top-2 right-2 p-2 text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors z-20"
+        className="absolute top-2 right-2 p-2 text-[#6F6F6F] hover:text-[#111111] transition-colors z-20"
       >
         <X className="w-4 h-4" />
       </button>
 
       <div className="flex flex-col gap-3 max-w-[65%] sm:max-w-[70%] relative z-10">
         <div className="flex flex-col gap-1">
-          <h3 className="text-[16px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight">Invite your classmates</h3>
+          <h3 className="text-[16px] font-bold text-[#111111] tracking-tight">Invite your classmates</h3>
           <p className="text-[12px] text-[#6F6F6F] leading-tight pr-2">
             Keep everyone on the same timetable and tasks.
           </p>
@@ -66,7 +66,7 @@ export const InviteBatchmatesCard = () => {
         
         <button
           onClick={handleInvite}
-          className="self-start mt-1 px-4 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold tracking-[1px] uppercase transition-opacity hover:opacity-90 rounded-none"
+          className="self-start mt-1 px-4 py-2 bg-[#111111] text-[#FFFFFF] text-[11px] font-bold tracking-[1px] uppercase transition-opacity hover:opacity-90 rounded-none"
         >
           Invite classmates
         </button>
