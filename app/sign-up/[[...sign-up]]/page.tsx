@@ -1,47 +1,44 @@
 import { SignUp } from "@clerk/nextjs";
-import { IntersemesterLogo } from "@/components/ui/IntersemesterLogo";
 
 export default function Page() {
   return (
-    <div className="min-h-screen w-full flex flex-col md:flex-row bg-[#F5F7FA] dark:bg-[#0B0F19] selection:bg-indigo-600 selection:text-white">
+    <div className="min-h-[100dvh] w-full flex flex-col items-center justify-center px-4 py-8 bg-[#FFFFFF] dark:bg-[#111111] selection:bg-[#111111] selection:text-white transition-colors">
       
-      {/* Left side: Premium Branding (hidden on small screens) */}
-      <div className="hidden md:flex flex-1 flex-col justify-between p-12 bg-white dark:bg-[#111827] relative overflow-hidden border-r border-slate-200/80 dark:border-zinc-800">
-        
-        {/* Decorative background orbs */}
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/10 blur-[100px] pointer-events-none" />
-
-        <div className="relative z-10">
-          <IntersemesterLogo size="lg" showTagline={false} />
-        </div>
-
-        <div className="relative z-10 max-w-md mb-16">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#0F172A] dark:text-white leading-tight">
-            Join your <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
-              academic assistant.
-            </span>
-          </h1>
-          <p className="mt-6 text-[#64748B] dark:text-slate-400 font-medium text-base leading-relaxed">
-            Manage your classes, tasks, deadlines and everyday campus life with clarity and calm.
-          </p>
-        </div>
+      {/* Top Branding */}
+      <div className="flex flex-col items-center mb-6 text-center">
+        <h1 className="text-[28px] font-bold tracking-tighter text-[#111111] dark:text-[#FFFFFF]">
+          inter<span className="font-normal opacity-70">semester</span>
+        </h1>
+        <p className="text-[13px] text-[#6F6F6F] dark:text-[#A0A0A0] mt-1 font-medium">
+          Create an account to manage your academic schedule & tasks
+        </p>
       </div>
 
-      {/* Right side: Clerk Auth Form */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 relative">
-        <div className="absolute inset-0 bg-[radial-gradient(at_0%_0%,_rgba(99,102,241,0.06)_0px,_transparent_50%),radial-gradient(at_100%_100%,_rgba(167,139,250,0.06)_0px,_transparent_50%)] pointer-events-none" />
-        
-        {/* Mobile Logo */}
-        <div className="md:hidden flex flex-col items-center gap-3 mb-8 relative z-10">
-          <IntersemesterLogo size="lg" showTagline={true} />
-        </div>
-
-        <div className="relative z-10 w-full max-w-md flex justify-center">
-          <SignUp routing="path" path="/sign-up" />
-        </div>
+      {/* Clerk Auth Card */}
+      <div className="w-full max-w-md flex justify-center">
+        <SignUp
+          routing="path"
+          path="/sign-up"
+          appearance={{
+            elements: {
+              rootBox: "w-full flex justify-center",
+              card: "w-full shadow-none border border-[#E5E5E5] dark:border-[#262626] rounded-2xl bg-white dark:bg-[#161616] p-6 sm:p-8",
+              headerTitle: "text-[20px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight",
+              headerSubtitle: "text-[13px] text-[#6F6F6F] dark:text-[#A0A0A0]",
+              socialButtonsBlockButton: "rounded-xl border border-[#D9D9D6] dark:border-[#333333] hover:bg-[#F5F5F5] dark:hover:bg-[#222222] font-semibold text-[13px] text-[#111111] dark:text-white transition-all h-11",
+              socialButtonsBlockButtonText: "font-semibold text-[13px] text-[#111111] dark:text-white",
+              dividerLine: "bg-[#E5E5E5] dark:bg-[#262626]",
+              dividerText: "text-[11px] font-semibold text-[#888888] uppercase tracking-wider",
+              formFieldLabel: "text-[12px] font-bold text-[#444444] dark:text-[#CCCCCC] uppercase tracking-wider",
+              formFieldInput: "rounded-xl border border-[#D9D9D6] dark:border-[#333333] bg-[#FAFAF8] dark:bg-[#1E1E1E] text-[#111111] dark:text-white focus:border-[#111111] dark:focus:border-white focus:bg-white text-[14px] h-11 transition-all",
+              formButtonPrimary: "rounded-xl bg-[#111111] dark:bg-white hover:bg-black dark:hover:bg-zinc-200 text-white dark:text-[#111111] font-bold text-[14px] h-11 shadow-sm transition-all cursor-pointer",
+              footerActionLink: "text-[#111111] dark:text-white font-bold hover:underline",
+              footerActionText: "text-[#6F6F6F] dark:text-[#888888] text-[13px]",
+            }
+          }}
+        />
       </div>
+
     </div>
   );
 }
