@@ -192,26 +192,9 @@ export default function AppHome() {
           />
         </div>
 
-        {/* Progress Bar */}
-        <div className="w-[120px] h-[3px] bg-[#E5E5E3] dark:bg-[#333333] rounded-full overflow-hidden mb-3">
-          <div
-            className="h-full bg-[#111111] dark:bg-[#FFFFFF] rounded-full"
-            style={{
-              animation: 'splashProgress 2.5s ease-in-out infinite',
-            }}
-          />
-        </div>
         <p className="text-[12px] text-[#A0A0A0] font-medium tracking-wider">
-          Loading your semester...
+          Loading...
         </p>
-
-        <style>{`
-          @keyframes splashProgress {
-            0% { width: 0%; }
-            50% { width: 80%; }
-            100% { width: 100%; }
-          }
-        `}</style>
       </div>
     );
   }
