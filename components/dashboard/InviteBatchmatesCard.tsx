@@ -73,7 +73,7 @@ export const InviteBatchmatesCard = () => {
       </div>
 
       <div className="absolute right-0 bottom-0 z-0 flex items-end justify-end h-[100%] pr-4">
-        <img src="/invite.png" alt="Invite illustration" className="w-[160px] sm:w-[190px] h-[130px] sm:h-[140px] object-contain object-bottom" />
+        <img src="/invite.png" alt="Invite illustration" className="w-[160px] sm:w-[190px] h-[130px] sm:h-[140px] object-contain object-bottom drop-shadow-xl" />
       </div>
     </div>
   );
