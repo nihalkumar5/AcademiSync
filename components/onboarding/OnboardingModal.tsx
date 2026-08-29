@@ -319,12 +319,14 @@ export const OnboardingModal = () => {
               exit="exit"
               className="absolute inset-0 w-full h-full flex flex-col overflow-y-auto px-6 py-6 bg-[#FFFFFF]"
             >
-              {/* Header with Perfect Hierarchy */}
-              <div className="flex flex-col mb-6">
-                <h2 className="text-[26px] font-bold text-[#111111] tracking-tight">
-                  Connect your batch
+              {/* Signature Intersemester Editorial Header */}
+              <div className="flex flex-col mb-6 pt-1">
+                <h2 className="text-[34px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[38px]">
+                  Connect,<br />
+                  Batch,<br />
+                  Timetable
                 </h2>
-                <p className="text-[14px] text-[#6F6F6F] mt-1 leading-relaxed">
+                <p className="text-[13.5px] font-normal text-[#6B6B6B] leading-[19px] mt-3">
                   Join your classmates and sync your academic schedule.
                 </p>
               </div>
