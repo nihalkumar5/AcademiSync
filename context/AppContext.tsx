@@ -261,6 +261,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (data.settings) { setSettingsState(data.settings); storage.setSettings(data.settings); }
         if (data.cancelledSessions) { setCancelledSessionsState(data.cancelledSessions); storage.setCancelledSessions(data.cancelledSessions); }
         if (data.rescheduledSessions) { setRescheduledSessionsState(data.rescheduledSessions); storage.setRescheduledSessions(data.rescheduledSessions); }
+        if (data.messMenu !== undefined) { setMessMenu(data.messMenu); if(data.messMenu) { window.localStorage.setItem("intersemester_mess_menu_v1", JSON.stringify(data.messMenu)); } else { window.localStorage.removeItem("intersemester_mess_menu_v1"); } }
 
         if (typeof window !== 'undefined' && data.lastUpdated) {
           window.localStorage.setItem('iiitnr_last_updated', data.lastUpdated.toString());
@@ -454,6 +455,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       settings,
       cancelledSessions,
       rescheduledSessions,
+      messMenu,
       lastUpdated: now,
     };
     
@@ -499,7 +501,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }, 100);
 
     return () => clearTimeout(timeout);
-  }, [profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions, rescheduledSessions, user, isClerkLoaded, isHydrated, isCloudSynced]);
+  }, [profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions, rescheduledSessions, messMenu, user, isClerkLoaded, isHydrated, isCloudSynced]);
 
   // Hydration effect
   useEffect(() => {
