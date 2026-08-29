@@ -2,15 +2,21 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, X, ArrowRight, CheckCircle2, Image as ImageIcon, Check } from 'lucide-react';
+import { Upload, Sparkles, X, ArrowRight, CheckCircle2, Image as ImageIcon, Check } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '../ui/Button';
+import { Modal } from '../ui/Modal';
+import { MessImportModal } from './MessImportModal';
 
 export const MessOnboarding: React.FC = () => {
-  const { setActiveView, updateMessMenu } = useApp();
+  const { setActiveView, updateMessMenu, showToast } = useApp();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [showJoinInput, setShowJoinInput] = useState(false);
+  const [inviteInput, setInviteInput] = useState('');
+  const [isJoining, setIsJoining] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
@@ -19,6 +25,23 @@ export const MessOnboarding: React.FC = () => {
   const [extractedData, setExtractedData] = useState<any>(null);
   const [messId, setMessId] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleModalFileSelect = async (selected: File | 'sample') => {
+    if (selected === 'sample') {
+      setStep(2);
+      processMenu('sample');
+      return;
+    }
+    if (!selected) return;
+    if (selected.type.startsWith('image/')) {
+      setFile(selected);
+      setPreviewUrl(URL.createObjectURL(selected));
+      setStep(2);
+      processMenu(selected);
+    } else {
+      showToast('Invalid File', 'Please upload an image file (JPG, PNG).', 'error');
+    }
+  };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -30,11 +53,20 @@ export const MessOnboarding: React.FC = () => {
       setStep(2);
       processMenu(selected);
     } else {
-      alert('Please upload an image file (JPG, PNG)');
+      showToast('Invalid File', 'Please upload an image file (JPG, PNG).', 'error');
     }
   };
 
-  const processMenu = async (file: File) => {
+  
+  const handleJoinSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inviteInput.trim()) {
+      setIsJoining(true);
+      window.location.href = '/join/' + inviteInput.trim();
+    }
+  };
+
+  const processMenu = async (file: File | 'sample') => {
     setIsProcessing(true);
     setProgress(0);
 
@@ -47,15 +79,29 @@ export const MessOnboarding: React.FC = () => {
     }, 500);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/extract-mess', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
+      let data;
+      if (file === 'sample') {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        data = {
+          menu: {
+            Monday: { Breakfast: ["Aloo Paratha", "Curd", "Tea"], Lunch: ["Rajma", "Rice", "Roti", "Salad"], Snacks: ["Samosa", "Coffee"], Dinner: ["Paneer Butter Masala", "Roti", "Dal"] },
+            Tuesday: { Breakfast: ["Poha", "Jalebi", "Milk"], Lunch: ["Chole", "Bhature", "Rice"], Snacks: ["Maggi", "Tea"], Dinner: ["Mix Veg", "Dal Tadka", "Roti"] },
+            Wednesday: { Breakfast: ["Idli", "Sambar", "Chutney"], Lunch: ["Kadhi Pakora", "Rice", "Roti"], Snacks: ["Patties", "Coffee"], Dinner: ["Egg Curry", "Dal", "Roti"] },
+            Thursday: { Breakfast: ["Upma", "Sevai", "Tea"], Lunch: ["Dal Makhani", "Jeera Rice", "Roti"], Snacks: ["Bread Pakora", "Tea"], Dinner: ["Aloo Gobi", "Dal", "Roti"] },
+            Friday: { Breakfast: ["Masala Dosa", "Sambar", "Chutney"], Lunch: ["Soyabean Curry", "Rice", "Roti"], Snacks: ["Pasta", "Coffee"], Dinner: ["Chicken Curry", "Paneer Tikka", "Roti"] },
+            Saturday: { Breakfast: ["Puri", "Bhaji", "Halwa"], Lunch: ["Khichdi", "Kadhi", "Papad"], Snacks: ["Bhel Puri", "Tea"], Dinner: ["Malai Kofta", "Dal", "Roti"] },
+            Sunday: { Breakfast: ["Bread Omelette", "Toast", "Juice"], Lunch: ["Veg Biryani", "Raita"], Snacks: ["French Fries", "Cold Drink"], Dinner: ["Dal Bati", "Churma"] }
+          }
+        };
+      } else {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('/api/extract-mess', {
+          method: 'POST',
+          body: formData,
+        });
+        data = await res.json();
+      }
       
       clearInterval(interval);
       setProgress(100);
@@ -65,7 +111,7 @@ export const MessOnboarding: React.FC = () => {
           setExtractedData(data.data);
           setStep(3);
         } else {
-          alert('Failed to parse menu: ' + (data.error || 'Unknown error'));
+          showToast('Extraction Failed', data.error || 'Unknown error processing your menu.', 'error');
           setStep(1);
         }
         setIsProcessing(false);
@@ -74,7 +120,7 @@ export const MessOnboarding: React.FC = () => {
     } catch (error) {
       console.error(error);
       clearInterval(interval);
-      alert('Error extracting menu');
+      showToast('Upload Error', 'Failed to connect to extraction service.', 'error');
       setStep(1);
       setIsProcessing(false);
     }
@@ -96,7 +142,7 @@ export const MessOnboarding: React.FC = () => {
       setStep(4);
     } catch (e) {
       console.error('Failed to publish', e);
-      alert('Failed to publish mess. Make sure Firebase is configured.');
+      showToast('Publish Failed', 'Failed to publish mess. Make sure Firebase is configured.', 'error');
     }
   };
 
@@ -117,7 +163,7 @@ export const MessOnboarding: React.FC = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex flex-col justify-start mt-2 text-left w-full max-w-sm mx-auto"
+            className="flex flex-col flex-1 max-w-4xl mx-auto w-full pt-2 sm:pt-6 pb-16"
           >
             <div className="mb-12">
               <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
@@ -129,40 +175,40 @@ export const MessOnboarding: React.FC = () => {
               <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4 max-w-[280px]">
                 Upload the weekly menu once. We'll organise meals, timings and days automatically.
               </p>
+
+              <div className="flex items-center gap-3 mt-8">
+                <button
+                  onClick={() => setShowJoinInput(true)}
+                  className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
+                >
+                  Join Mess
+                </button>
+                <button
+                  onClick={() => setShowImportModal(true)}
+                  className="flex items-center justify-center h-10 px-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold transition-colors gap-2 cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4" /> Magic Import
+                </button>
+              </div>
             </div>
 
-            <input
-              type="file"
-              accept="image/*,application/pdf"
-              className="hidden"
-              ref={fileInputRef}
-              onChange={handleFileSelect}
-            />
-
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-[#D8D8D8] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-[#F7F7F5] dark:bg-[#1A1A1A] transition-colors cursor-pointer"
-            >
-              <Upload className="w-6 h-6 mb-3 text-[#111111] dark:text-[#FFFFFF]" />
-              <span className="text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] mb-1">
-                Upload weekly menu
-              </span>
-              <span className="text-[12px] text-[#6F6F6F]">
-                Photo or PDF
-              </span>
-            </button>
-            
-            <div className="mt-8 pt-6 border-t border-[#D8D8D8] dark:border-[#333333] w-full flex flex-col items-start text-left">
-              <p className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] mb-1">AI will organise</p>
-              <p className="text-[12px] text-[#6F6F6F] mb-6">Breakfast · Lunch · Snacks · Dinner</p>
-              
-              <div className="bg-[#F7F7F5] dark:bg-[#1A1A1A] p-4 border border-[#D8D8D8] dark:border-[#333333] w-full mt-4">
-                <p className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] mb-1">Have an invite code?</p>
-                <div className="flex gap-2 mt-2">
+            {/* JOIN EXISTING */}
+            {showJoinInput && (
+              <div className="mb-12 border border-[#E5E5E5] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-5 flex flex-col md:flex-row md:items-center justify-between group rounded-none gap-4">
+                <div className="flex flex-col">
+                  <p className="text-[14px] text-[#111111] dark:text-[#FFFFFF] font-medium leading-relaxed">
+                    Have an invite code?
+                  </p>
+                  <p className="text-[10px] font-bold tracking-[1px] uppercase text-[#6F6F6F] mt-1">
+                    ENTER MESS ID BELOW
+                  </p>
+                </div>
+                
+                <div className="flex items-center flex-1 md:max-w-xs relative w-full">
                   <input 
                     type="text" 
-                    placeholder="Enter Mess ID"
-                    className="flex-1 bg-white dark:bg-black border border-[#D8D8D8] dark:border-[#333333] px-3 py-2 text-[13px] focus:outline-none focus:border-black dark:focus:border-white"
+                    placeholder="e.g. 1a2b3c4d"
+                    className="w-full bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] px-3 py-2.5 text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && e.currentTarget.value) {
                         window.location.href = '/join/' + e.currentTarget.value;
@@ -171,10 +217,9 @@ export const MessOnboarding: React.FC = () => {
                   />
                 </div>
               </div>
-            </div>
+            )}
           </motion.div>
         )}
-
         {step === 2 && (
           <motion.div
             key="step2"
@@ -261,7 +306,7 @@ export const MessOnboarding: React.FC = () => {
                 Looks good <ArrowRight className="w-4 h-4" />
               </Button>
               <button 
-                onClick={() => alert('Edit mode would open here')}
+                onClick={() => showToast('Coming Soon', 'Edit mode is under construction.', 'info')}
                 className="w-full h-12 border border-[#D8D8D8] dark:border-[#333333] text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
               >
                 Edit menu
@@ -306,6 +351,37 @@ export const MessOnboarding: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+    
+      
+      <Modal isOpen={showJoinInput} onClose={() => setShowJoinInput(false)} title="Join Mess Menu">
+        <form onSubmit={handleJoinSubmit} className="flex flex-col gap-4">
+          <p className="text-[13px] text-[#6B6B6B]">
+            Enter a mess invite code or paste an invite link to view the shared menu.
+          </p>
+          <div className="flex flex-col gap-2">
+            <input
+              type="text"
+              placeholder="e.g., ext_..."
+              value={inviteInput}
+              onChange={(e) => setInviteInput(e.target.value)}
+              className="w-full px-4 py-2 border border-[#E5E5E5] dark:border-[#333333] bg-transparent text-[13px] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={isJoining}
+            className="h-10 px-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold flex items-center justify-center disabled:opacity-50"
+          >
+            {isJoining ? 'Joining...' : 'Join'}
+          </button>
+        </form>
+      </Modal>
+<MessImportModal 
+        isOpen={showImportModal} 
+        onClose={() => setShowImportModal(false)} 
+        onFileSelect={handleModalFileSelect} 
+      />
     </div>
   );
 };

@@ -83,133 +83,112 @@ export const ExamsView: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-5 text-left max-w-4xl mx-auto w-full pb-10">
+    <div className="flex flex-col flex-1 max-w-4xl mx-auto w-full pt-2 sm:pt-6 pb-16">
+      <div className="mb-12">
+        <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
+          Exam,<br />
+          Schedule,<br />
+          Countdown
+        </h2>
+        <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4 max-w-[280px]">
+          Track your upcoming exams, syllabus, and preparation time.
+        </p>
 
-      {/* Editorial stacked header — matches Tasks page */}
-      <div className="flex flex-col gap-4 pt-2 sm:pt-6">
-        <div>
-          <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
-            Exam,<br />Schedule,<br />Countdown
-          </h2>
-          <div className="flex items-center gap-3 mt-5">
-            <span className="text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-none border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] text-black dark:text-white uppercase tracking-wider">
-              {upcomingExams.length} upcoming
-            </span>
-          </div>
-          <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4 max-w-md">
-            Track your upcoming exams, syllabus, and preparation time.
-          </p>
-        </div>
-
-        {/* Action buttons — same style as Tasks */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={handleMagicImport}
-            className="flex items-center px-4 py-2.5 rounded-none border border-black dark:border-white text-black dark:text-white bg-transparent hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-xs font-bold uppercase cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5 mr-2" />
-            Magic Import
-          </button>
-
-          <button
-            onClick={async () => {
-              if (!isSignedIn) {
-                clerk.openSignIn();
-                return;
-              }
-              try {
-                const key = await shareTimetableWithBatch();
-                const link = `${window.location.origin}/?invite=${key}`;
-                navigator.clipboard.writeText(link);
-                showToast('Batch Shared', 'Timetable, calendar, and exams link copied!', 'success');
-              } catch (err) {}
-            }}
-            className="flex items-center px-4 py-2.5 rounded-none border border-black dark:border-white text-black dark:text-white bg-transparent hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-xs font-bold uppercase cursor-pointer"
-          >
-            <Share2 className="w-3.5 h-3.5 mr-2" />
-            Share Exams
-          </button>
-
+        <div className="flex flex-wrap items-center gap-3 mt-8">
           <button
             onClick={() => {
-              if (!isSignedIn) {
-                clerk.openSignIn();
-                return;
-              }
+              if (!isSignedIn) { clerk.openSignIn(); return; }
               setShowJoinModal(true);
             }}
-            className="flex items-center px-4 py-2.5 rounded-none border border-black dark:border-white text-black dark:text-white bg-transparent hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-xs font-bold uppercase cursor-pointer"
+            className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
           >
-            <UserPlus className="w-3.5 h-3.5 mr-2" />
             Join Exams
           </button>
+          <button
+            onClick={handleMagicImport}
+            className="flex items-center justify-center h-10 px-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold transition-colors gap-2 cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4" /> Magic Import
+          </button>
+          {exams.length > 0 && (
+            <button
+              onClick={async () => {
+                if (!isSignedIn) { clerk.openSignIn(); return; }
+                try {
+                  const key = await shareTimetableWithBatch();
+                  const link = `${window.location.origin}/?invite=${key}`;
+                  navigator.clipboard.writeText(link);
+                  showToast('Batch Shared', 'Timetable, calendar, and exams link copied!', 'success');
+                } catch (err) {}
+              }}
+              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors gap-2"
+            >
+              <Share2 className="w-4 h-4" /> Share
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Next Exam Countdown — flat brutalist card */}
       {nextExam && (
-        <div className="glass-card p-5 text-left border border-black dark:border-white">
-          <div className="flex items-center gap-2 mb-2 text-xs font-bold uppercase tracking-widest text-black/50 dark:text-white/50">
-            <AlertCircle className="w-3.5 h-3.5" />
-            Next Exam Countdown
+        <div className="mb-12 border border-[#E5E5E5] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-5 flex flex-col md:flex-row md:items-center justify-between rounded-none gap-4">
+          <div className="flex flex-col">
+            <p className="text-[14px] text-[#111111] dark:text-[#FFFFFF] font-medium leading-relaxed">
+              {nextExam.subjectName}
+            </p>
+            <p className="text-[10px] font-bold tracking-[1px] uppercase text-[#E55B4B] mt-1">
+              NEXT EXAM
+            </p>
           </div>
-          <h3 className="text-2xl font-black text-black dark:text-white">{nextExam.subjectName}</h3>
-          <p className="text-sm text-black/60 dark:text-white/60 mt-1">
-            {new Date(nextExam.date).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
-            {' '}at{' '}
-            {new Date(nextExam.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </p>
-          <div className="mt-3 inline-flex px-3 py-1 border border-black dark:border-white font-mono text-sm font-bold text-black dark:text-white">
-            {getCountdown(nextExam.date)}
+          <div className="flex items-center">
+            <span className="text-[20px] font-bold text-[#111111] dark:text-[#FFFFFF]">{getCountdown(nextExam.date)}</span>
           </div>
         </div>
       )}
 
-      {/* Exams list */}
-      <div className="flex flex-col gap-3 mt-1">
-        <h3 className="text-xs font-bold tracking-widest uppercase text-black/50 dark:text-white/50">
-          All Upcoming Exams
-        </h3>
+      <div className="flex flex-col">
+        <p className="text-[10px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-4">
+          ALL UPCOMING EXAMS
+        </p>
 
         {exams.length === 0 ? (
-          <EmptyState
-            icon={<MonochromeIllustration type="exam" size={48} />}
-            title="No exams scheduled"
-            description="Upload your exam timetable using magic scanner or add manually."
-            actionLabel="Import Timetable"
-            onAction={handleMagicImport}
-          />
+          <div className="flex flex-col py-8">
+            <p className="text-[18px] text-[#111111] dark:text-[#FFFFFF] font-medium leading-snug">
+              No exams scheduled.
+            </p>
+            <p className="text-[14px] text-[#6F6F6F] mt-1 mb-4">
+              Upload your exam timetable using magic scanner or add manually.
+            </p>
+          </div>
         ) : (
-          <div className="flex flex-col gap-3">
-            {exams.map(exam => {
-              const isPast = new Date(exam.date).getTime() < now.getTime();
+          <div className="flex flex-col gap-0">
+            {exams.map((exam, idx) => {
+              const dateObj = new Date(exam.date);
+              const dateDay = dateObj.getDate();
+              const dateMonth = dateObj.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+              const isPast = dateObj.getTime() < now.getTime();
+              
               return (
-                <div
-                  key={exam.id}
-                  className={`glass-card p-4 text-left border ${isPast ? 'opacity-50 border-black/20 dark:border-white/20' : 'border-black dark:border-white'}`}
-                >
-                  <div className="flex justify-between items-start gap-3">
-                    <h4 className="font-bold text-black dark:text-white text-base">{exam.subjectName}</h4>
-                    <span className="text-[11px] font-mono font-bold px-2 py-0.5 border border-black/20 dark:border-white/20 text-black/60 dark:text-white/60 shrink-0">
-                      {isPast ? 'Done' : getCountdown(exam.date)}
-                    </span>
+                <div key={exam.id} className={`border border-[#E5E5E5] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-5 flex flex-col md:flex-row md:items-start justify-between group rounded-none ${idx !== 0 ? 'border-t-0' : ''} ${isPast ? 'opacity-50' : ''}`}>
+                  <div className="flex items-start gap-5 w-full">
+                    <div className="flex flex-col items-center justify-center min-w-[40px]">
+                      <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none">{dateDay}</span>
+                      <span className="text-[10px] font-bold tracking-[1px] uppercase text-[#111111] dark:text-[#FFFFFF] mt-1">{dateMonth}</span>
+                    </div>
+                    <div className="flex flex-col flex-1">
+                      <p className="text-[15px] text-[#111111] dark:text-[#FFFFFF] font-medium leading-relaxed">
+                        {exam.subjectName}
+                      </p>
+                      <p className="text-[10px] font-bold tracking-[1.5px] uppercase text-[#6F6F6F] mt-1 mb-2">
+                        {isPast ? 'COMPLETED' : getCountdown(exam.date)}
+                      </p>
+                      
+                      {(exam.syllabus) && (
+                        <div className="mt-2 pt-3 border-t border-[#E5E5E5] dark:border-[#333333] w-full">
+                          <p className="text-[13px] text-[#6F6F6F] whitespace-pre-wrap leading-relaxed">{exam.syllabus}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4 text-xs text-black/50 dark:text-white/50 mt-2">
-                    <div className="flex items-center gap-1">
-                      <CalendarDays className="w-3.5 h-3.5" />
-                      {new Date(exam.date).toLocaleDateString()}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      {new Date(exam.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  </div>
-                  {exam.syllabus && (
-                    <div className="mt-3 p-2.5 bg-black/[0.03] dark:bg-white/[0.03] border border-black/10 dark:border-white/10 text-xs">
-                      <span className="font-bold text-black dark:text-white block mb-1 uppercase tracking-wider text-[10px]">Syllabus</span>
-                      <p className="text-black/60 dark:text-white/60 leading-relaxed">{exam.syllabus}</p>
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -219,54 +198,30 @@ export const ExamsView: React.FC = () => {
 
       <ExamImportModal isOpen={showImportModal} onClose={() => setShowImportModal(false)} />
 
-      <Modal
-        isOpen={showJoinModal}
-        onClose={() => {
-          setShowJoinModal(false);
-          setInviteInput('');
-        }}
-        title="Join Shared Exam Schedule"
-        description="Paste the exam invite link or code shared by your classmate to import upcoming exams."
-      >
-        <form onSubmit={handleJoinSubmit} className="flex flex-col gap-4 mt-3 text-left">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-black uppercase tracking-wider text-black/50 dark:text-white/50">
-              Exam Link / Code
-            </label>
-            <div className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-zinc-950 border border-black dark:border-white">
-              <input
-                type="text"
-                value={inviteInput}
-                onChange={(e) => setInviteInput(e.target.value)}
-                placeholder="e.g. https://academi-sync-chi.vercel.app/?exams_invite=..."
-                required
-                className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none placeholder:text-black/30 dark:placeholder:text-white/30"
-              />
-            </div>
+      <Modal isOpen={showJoinModal} onClose={() => setShowJoinModal(false)} title="Join Shared Exams">
+        <form onSubmit={handleJoinSubmit} className="flex flex-col gap-4">
+          <p className="text-[13px] text-[#6B6B6B]">
+            Enter an invite code or paste an invite link to sync exams with your batch.
+          </p>
+          <div className="flex flex-col gap-2">
+            <input
+              type="text"
+              placeholder="e.g., ext_..."
+              value={inviteInput}
+              onChange={(e) => setInviteInput(e.target.value)}
+              className="w-full px-4 py-2 border border-[#E5E5E5] dark:border-[#333333] bg-transparent text-[13px] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
+              required
+            />
           </div>
-
-          <div className="flex gap-2.5 justify-end mt-2">
-            <button
-              type="button"
-              onClick={() => {
-                setShowJoinModal(false);
-                setInviteInput('');
-              }}
-              className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isJoining}
-              className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none disabled:opacity-50"
-            >
-              {isJoining ? 'Syncing...' : 'Sync & Import'}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={isJoining}
+            className="h-10 px-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold flex items-center justify-center disabled:opacity-50"
+          >
+            {isJoining ? 'Joining...' : 'Join'}
+          </button>
         </form>
       </Modal>
     </div>
   );
 };
-

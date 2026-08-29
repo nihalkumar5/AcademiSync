@@ -38,9 +38,8 @@ export const MessView: React.FC = () => {
   if (showThisWeek) {
     return (
       <div className="flex flex-col gap-6 max-w-4xl mx-auto w-full pb-12">
-        <div className="flex justify-between items-start pt-2 sm:pt-6 mb-4">
-          <div>
-            <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
+        <div className="flex flex-col items-start pt-2 sm:pt-6 mb-4">
+          <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
             This,<br />
             Week,<br />
             All,<br />
@@ -49,13 +48,20 @@ export const MessView: React.FC = () => {
           <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4">
             Your complete week's dining schedule.
           </p>
+          <div className="flex items-center gap-3 mt-8">
+            <button
+              onClick={handleCopyLink}
+              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors gap-2"
+            >
+              <Share className="w-4 h-4" /> Share
+            </button>
+            <button
+              onClick={() => setShowThisWeek(false)}
+              className="flex items-center justify-center h-10 px-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold transition-colors gap-2 cursor-pointer"
+            >
+              View Today
+            </button>
           </div>
-          <button 
-            onClick={() => setShowThisWeek(false)}
-            className="text-[13px] font-bold tracking-wider uppercase text-[#111111] dark:text-[#FFFFFF] hover:opacity-70 flex items-center gap-1"
-          >
-            ← BACK
-          </button>
         </div>
 
         <div className="flex flex-col gap-8">
@@ -144,18 +150,7 @@ export const MessView: React.FC = () => {
         )}
       </div>
 
-      {/* Share Section */}
-      <div className="mt-12 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] p-6 rounded-none">
-        <h3 className="text-[16px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-2">
-          Share this mess
-        </h3>
-        <p className="text-[14px] text-[#6F6F6F] mb-6">
-          Anyone in your hostel can join using this link.
-        </p>
-        <Button onClick={handleCopyLink} className="w-full flex justify-center items-center gap-2 h-12 text-[14px]">
-          <Share className="w-4 h-4" /> Share invite
-        </Button>
-      </div>
+      
 
       <div className="mt-4 flex justify-between items-center">
         <span className="text-[12px] text-[#A0A0A0] font-mono">ID: {messMenu.id}</span>

@@ -136,17 +136,24 @@ export const WeeklyTimetable: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3 mb-[24px]">
             <button
               type="button"
-              onClick={handleImportTimetable}
-              className="flex items-center justify-center h-[36px] px-[14px] rounded-none border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-[12px] font-semibold cursor-pointer w-auto"
+              onClick={() => setShowJoinModal(true)}
+              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
             >
-              Magic Import
+              Join Batch
+            </button>
+            <button
+              type="button"
+              onClick={handleImportTimetable}
+              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors gap-2 cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4" /> Magic Import
             </button>
             <button
               type="button"
               onClick={() => handleAddForDay(selectedMobileDay)}
-              className="flex items-center justify-center gap-1.5 h-[36px] px-[14px] rounded-none bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] hover:opacity-90 transition-opacity text-[12px] font-semibold cursor-pointer w-auto"
+              className="flex items-center justify-center gap-1.5 h-10 px-4 rounded-none bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] hover:opacity-90 transition-opacity text-[13px] font-semibold cursor-pointer w-auto"
             >
-              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+              <Plus className="w-4 h-4 stroke-[2.5]" />
               Add Class
             </button>
           </div>

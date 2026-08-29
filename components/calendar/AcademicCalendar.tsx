@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { CalendarImportModal } from './CalendarImportModal';
-import { ChevronLeft, ChevronRight, Plus, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, ArrowRight, Sparkles } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useClerk, useUser } from '@clerk/nextjs';
 import { getTodayDateString } from '@/lib/timetableUtils';
@@ -61,7 +61,7 @@ export const AcademicCalendar: React.FC = () => {
       title: hw.title,
       type: 'assignment',
       dateStr: dStr,
-      subject: sub?.shortName,
+      subject: sub?.name,
       location: '',
       time: '11:59 PM',
     };
@@ -79,7 +79,7 @@ export const AcademicCalendar: React.FC = () => {
       title: ev.title,
       type: ev.type,
       dateStr: ev.date,
-      subject: sub?.shortName,
+      subject: sub?.name,
       location: ev.location,
       time: '10:00 AM', // Default fallback
     };
@@ -90,10 +90,15 @@ export const AcademicCalendar: React.FC = () => {
     itemsByDate.set(ev.date, existing);
   });
 
-  const upcomingItems = allItems
+  const allUpcoming = allItems
     .filter(i => i.dateStr >= getTodayDateString())
-    .sort((a, b) => a.dateStr.localeCompare(b.dateStr))
-    .slice(0, 2);
+    .sort((a, b) => a.dateStr.localeCompare(b.dateStr));
+  
+  let upcomingItems: any[] = [];
+  if (allUpcoming.length > 0) {
+    const nextDate = allUpcoming[0].dateStr;
+    upcomingItems = allUpcoming.filter(i => i.dateStr === nextDate);
+  }
 
   const renderCalendarDays = () => {
     const blanks = Array.from({ length: firstDayIndex }, (_, i) => <div key={`blank-${i}`} className="h-10" />);
@@ -111,10 +116,10 @@ export const AcademicCalendar: React.FC = () => {
         <div
           key={dateKey}
           onClick={() => setSelectedDate(dateKey)}
-          className="h-12 flex flex-col items-center justify-center relative cursor-pointer group"
+          className="h-14 flex flex-col items-center justify-center relative cursor-pointer group"
         >
           <div className={clsx(
-            "w-8 h-8 flex items-center justify-center text-[15px] transition-all rounded-full",
+            "w-9 h-9 flex items-center justify-center text-[15px] transition-all rounded-none",
             isSelected ? "bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] font-bold" :
             isToday ? "border border-[#111111] dark:border-[#FFFFFF] text-[#111111] dark:text-[#FFFFFF] font-semibold" : 
             "text-[#6F6F6F] group-hover:text-[#111111] dark:group-hover:text-[#FFFFFF] font-medium"
@@ -122,7 +127,12 @@ export const AcademicCalendar: React.FC = () => {
             {dayNum}
           </div>
           {hasEvents && (
-            <span className={clsx("w-[5px] h-[5px] rounded-full absolute bottom-0.5", hasImportantEvent ? "bg-[#E55B4B]" : "bg-[#111111] dark:bg-[#FFFFFF]")} />
+            <div className="absolute bottom-0 flex items-center gap-[3px]">
+              <span className={clsx("w-[3px] h-[3px] rounded-full", hasImportantEvent ? "bg-[#E55B4B]" : "bg-[#111111] dark:bg-[#FFFFFF]")} />
+              <span className={clsx("text-[9px] font-bold uppercase tracking-wider leading-none", hasImportantEvent ? "text-[#E55B4B]" : "text-[#808080]")}>
+                {dayItems[0].subject ? dayItems[0].subject.slice(0, 2) : dayItems[0].title.slice(0, 2)}
+              </span>
+            </div>
           )}
         </div>
       );
@@ -155,9 +165,9 @@ export const AcademicCalendar: React.FC = () => {
              if (!isSignedIn) { clerk.openSignIn(); return; }
              setShowImportCalendarModal(true)
           }}
-          className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
+          className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors gap-2"
         >
-          AI Import
+          <Sparkles className="w-4 h-4" /> Magic Import
         </button>
         <button
           onClick={() => {
@@ -179,26 +189,30 @@ export const AcademicCalendar: React.FC = () => {
 
         {upcomingItems.length > 0 ? (
           <div className="flex flex-col gap-3">
-            {upcomingItems.slice(0, 3).map((item, idx) => {
+            {upcomingItems.map((item, idx) => {
               const d = new Date(item.dateStr);
-              const dateStr = `${String(d.getDate()).padStart(2, '0')} ${d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}`;
               return (
-                <div key={idx} className="border border-[#E5E5E5] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-4 flex items-center justify-between group cursor-pointer hover:border-[#111111] dark:hover:border-[#FFFFFF] transition-colors rounded-none">
+                <div key={idx} className="border border-[#E5E5E5] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-5 flex items-center justify-between group cursor-pointer hover:border-[#111111] dark:hover:border-[#FFFFFF] transition-colors rounded-none">
                   <div className="flex items-center gap-5">
-                     <p className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] w-12 shrink-0">
-                       {dateStr}
-                     </p>
-                     <p className="text-[14px] text-[#111111] dark:text-[#FFFFFF] font-medium">
-                       {item.title} <span className="text-[#6F6F6F] font-normal">{item.subject && `· ${item.subject}`}</span>
+                     <div className="flex flex-col items-center justify-center w-10 shrink-0 gap-0.5">
+                       <p className="text-[12px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] leading-none">
+                         {String(d.getDate()).padStart(2, '0')}
+                       </p>
+                       <p className="text-[10px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] leading-none">
+                         {d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}
+                       </p>
+                     </div>
+                     <p className="text-[14px] text-[#111111] dark:text-[#FFFFFF] font-medium leading-relaxed line-clamp-2">
+                       {item.title} <span className="text-[#6F6F6F] font-normal">{item.subject ? `· ${item.subject}` : `· ${item.type.replace('-', ' ').toUpperCase()}`}</span>
                      </p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-[#D8D8D8] dark:text-[#333333] group-hover:text-[#111111] dark:group-hover:text-[#FFFFFF] transition-colors" />
+                  <ArrowRight className="w-4 h-4 text-[#D8D8D8] dark:text-[#333333] group-hover:text-[#111111] dark:group-hover:text-[#FFFFFF] transition-colors shrink-0 ml-4" />
                 </div>
               );
             })}
           </div>
         ) : (
-          <div className="border border-[#E5E5E5] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-4 text-center rounded-none">
+          <div className="border border-[#E5E5E5] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-5 text-center rounded-none">
             <p className="text-[13px] text-[#6F6F6F]">You're all caught up.</p>
           </div>
         )}
@@ -213,10 +227,10 @@ export const AcademicCalendar: React.FC = () => {
             {monthName}
           </h3>
           <div className="flex items-center gap-4">
-            <button onClick={prevMonth} className="text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors">
+            <button onClick={prevMonth} className="text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors gap-2">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <button onClick={nextMonth} className="text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors">
+            <button onClick={nextMonth} className="text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors gap-2">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -251,28 +265,23 @@ export const AcademicCalendar: React.FC = () => {
                    You're all clear.
                  </p>
                  <p className="text-[14px] text-[#6F6F6F] mt-1 mb-4">
-                   No classes, deadlines or events today.
+                   No deadlines or events today.
                  </p>
-                 <a href="/" className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF] hover:text-[#E55B4B] transition-colors uppercase tracking-[1px] inline-flex items-center gap-1">
-                   View timetable <span>→</span>
-                 </a>
+                 
               </div>
            ) : (
-              <>
+              <div className="flex flex-col border-t border-[#E5E5E5] dark:border-[#333333]">
                 {selectedItems.map((item, idx) => (
-                  <div key={idx} className="flex flex-col gap-1">
-                    <p className="text-[18px] text-[#111111] dark:text-[#FFFFFF] font-medium leading-tight">
-                      {item.title} {item.subject && `• ${item.subject}`}
+                  <div key={idx} className="flex flex-col py-4 border-b border-[#E5E5E5] dark:border-[#333333] last:border-0">
+                    <p className="text-[15px] text-[#111111] dark:text-[#FFFFFF] font-medium leading-relaxed mb-1.5">
+                      {item.title} <span className="text-[#6F6F6F] font-normal">{item.subject && `· ${item.subject}`}</span>
                     </p>
-                    <p className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#6F6F6F]">
+                    <p className="text-[10px] font-bold tracking-[1.5px] uppercase text-[#6F6F6F]">
                       {item.type.replace('-', ' ')}
                     </p>
                   </div>
                 ))}
-                <div className="mt-2">
-                  <p className="text-[13px] text-[#6F6F6F]">No classes scheduled.</p>
-                </div>
-              </>
+              </div>
            )}
          </div>
       </div>
