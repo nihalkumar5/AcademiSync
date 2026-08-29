@@ -782,7 +782,7 @@ export const SettingsView: React.FC = () => {
               onClick={() => {
                 showToast('Testing Native Alarm', 'Closing app for 5 seconds to test background notification...', 'info');
                 setTimeout(() => {
-                  scheduleTestNotification('Test Notification', 'This is a test notification from AcademiSync! 🚀');
+                  scheduleTestNotification(5);
                   if (typeof (navigator as any).app !== 'undefined') {
                     (navigator as any).app.exitApp();
                   } else {
