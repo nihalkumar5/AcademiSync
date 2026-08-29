@@ -26,10 +26,10 @@ export const InviteBatchmatesCard = () => {
     if (!profile?.batchKey) return;
     const inviteUrl = `${window.location.origin}/?invite=${profile.batchKey}`;
     const res = await shareLink({
-      title: 'Join our Batch Timetable',
-      text: 'Join our class batch on AcademiSync to sync the timetable, exams, and shared homework!',
+      title: 'Join our Class Timetable',
+      text: 'Hey! 👋 Join our class on Intersemester to get our synced timetable, next class alerts & shared updates:',
       url: inviteUrl,
-      dialogTitle: 'Invite Batchmates',
+      dialogTitle: 'Invite Classmates via',
     });
     if (res === 'copied') {
       showToast('Link Copied', 'Batch invite link copied to clipboard.', 'success');

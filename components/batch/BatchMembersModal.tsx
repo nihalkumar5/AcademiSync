@@ -201,10 +201,10 @@ return () => unsubscribe();
   const handleCopyInvite = async () => {
     const inviteUrl = `${window.location.origin}/?invite=${batchKey}`;
     const res = await shareLink({
-      title: 'Join Batch Timetable',
-      text: 'Join our class batch on AcademiSync to sync timetable and schedules!',
+      title: 'Join our Class Timetable',
+      text: 'Hey! 👋 Join our class on Intersemester to get our synced timetable, next class alerts & shared updates:',
       url: inviteUrl,
-      dialogTitle: 'Invite Batchmate',
+      dialogTitle: 'Invite Classmates via',
     });
     if (res === 'copied') {
       setCopiedLink(true);

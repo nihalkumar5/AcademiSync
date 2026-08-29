@@ -132,9 +132,9 @@ export const MessView: React.FC = () => {
     const url = `${window.location.origin}/join/${messMenu.id}`;
     const res = await shareLink({
       title: 'Hostel Mess Menu',
-      text: 'Check out our weekly hostel mess menu on Intersemester!',
+      text: '🍛 Check out our weekly hostel mess menu & live meal timings on Intersemester:',
       url,
-      dialogTitle: 'Share Mess Menu',
+      dialogTitle: 'Share Mess Menu via',
     });
     if (res === 'copied') {
       showToast('Copied', 'Invite link copied to clipboard!', 'success');

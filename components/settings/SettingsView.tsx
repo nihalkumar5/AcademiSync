@@ -654,7 +654,12 @@ export const SettingsView: React.FC = () => {
                         try {
                           const code = await shareTimetableWithBatch();
                           const link = `${window.location.origin}/?invite=${code}`;
-                          const res = await shareLink({ title: 'Join Batch Timetable', text: 'Join our class batch on AcademiSync!', url: link, dialogTitle: 'Invite Classmates' });
+                          const res = await shareLink({
+      title: 'Join our Class Timetable',
+      text: 'Hey! 👋 Join our class on Intersemester to get our synced timetable, next class alerts & shared updates:',
+      url: link,
+      dialogTitle: 'Invite Classmates via',
+    });
                           if (res === 'copied') showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
                         } catch (err) {}
                       }} 
@@ -680,7 +685,12 @@ export const SettingsView: React.FC = () => {
                     try {
                       const code = await shareTimetableWithBatch();
                       const link = `${window.location.origin}/?invite=${code}`;
-                      const res = await shareLink({ title: 'Join Batch Timetable', text: 'Join our class batch on AcademiSync!', url: link, dialogTitle: 'Invite Classmates' });
+                      const res = await shareLink({
+      title: 'Join our Class Timetable',
+      text: 'Hey! 👋 Join our class on Intersemester to get our synced timetable, next class alerts & shared updates:',
+      url: link,
+      dialogTitle: 'Invite Classmates via',
+    });
                       if (res === 'copied') showToast('Link Copied', 'Invite link copied to clipboard!', 'success');
                     } catch (err) {}
                   }}
@@ -1270,7 +1280,12 @@ export const SettingsView: React.FC = () => {
                   try {
                     const code = await shareTimetableWithBatch();
                     const link = `${window.location.origin}/?invite=${code}`;
-                    const res = await shareLink({ title: 'Join Batch Timetable', text: 'Join our class batch on AcademiSync!', url: link, dialogTitle: 'Invite Classmates' });
+                    const res = await shareLink({
+      title: 'Join our Class Timetable',
+      text: 'Hey! 👋 Join our class on Intersemester to get our synced timetable, next class alerts & shared updates:',
+      url: link,
+      dialogTitle: 'Invite Classmates via',
+    });
                     if (res === 'copied') showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
                   } catch (err) {}
                 }}

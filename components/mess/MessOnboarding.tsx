@@ -151,9 +151,9 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
     const url = `${window.location.origin}/join/${messId}`;
     const res = await shareLink({
       title: 'Hostel Mess Menu',
-      text: 'Join and view our hostel mess menu on Intersemester!',
+      text: '🍛 Check out our weekly hostel mess menu & live meal timings on Intersemester:',
       url,
-      dialogTitle: 'Share Mess Menu',
+      dialogTitle: 'Share Mess Menu via',
     });
     if (res === 'copied') {
       setCopying(true);
