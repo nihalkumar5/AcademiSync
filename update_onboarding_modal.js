@@ -1,12 +1,14 @@
-'use client';
+const fs = require('fs');
 
-import React, { useState } from 'react';
+const onboardingContent = `'use client';
+
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Calendar, Bell, Users, ArrowLeft, Sparkles, Search } from 'lucide-react';
+import { ArrowRight, Calendar, Bell, Users, ArrowLeft, School, GraduationCap, BookOpen, Layers, Hash, Sparkles, Check, Search } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { INDIAN_COLLEGES, STANDARD_PROGRAMMES } from '@/lib/colleges';
 import { getCanonicalBatchKey } from '@/lib/timetableUtils';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 const COMMON_BRANCHES = [
@@ -113,11 +115,11 @@ export const OnboardingModal = () => {
         const snap = await getDoc(batchDocRef);
         if (snap.exists()) {
           await joinBatchTimetable(canonicalKey);
-          showToast('Batch Found!', `Connected to ${finalBranch} Sem ${semester} timetable.`, 'success');
+          showToast('Batch Found!', \`Connected to \${finalBranch} Sem \${semester} timetable.\`, 'success');
         } else {
           // Initialize new batch
           await shareTimetableWithBatch();
-          showToast('Batch Created', 'Welcome! You are the first in your batch.', 'success');
+          showToast('Batch Created', \`Welcome! You are the first in your batch.\`, 'success');
         }
       } catch (err) {
         console.warn('Batch sync fallback:', err);
@@ -211,12 +213,12 @@ export const OnboardingModal = () => {
         ) : (
           <>
             <div className="flex items-center gap-2">
-              <button onClick={handlePrev} className="p-1.5 -ml-2 hover:bg-[#111111]/5 rounded-full transition-colors cursor-pointer">
+              <button onClick={handlePrev} className="p-1.5 -ml-2 hover:bg-[#111111]/5 rounded-full transition-colors">
                 <ArrowLeft className="w-5 h-5 text-[#111111]" />
               </button>
               <h1 className="text-[22px] font-bold tracking-tighter text-[#111]">inter<span className="font-normal opacity-80">semester</span></h1>
             </div>
-            <button onClick={handleSkip} className="px-3 py-1 -mr-2 text-[14px] font-semibold text-[#111111]/50 hover:text-[#111111] transition-colors cursor-pointer">
+            <button onClick={handleSkip} className="px-3 py-1 -mr-2 text-[14px] font-semibold text-[#111111]/50 hover:text-[#111111] transition-colors">
               Skip
             </button>
           </>
@@ -324,7 +326,7 @@ export const OnboardingModal = () => {
                 <button
                   type="button"
                   onClick={() => setJoinMode('details')}
-                  className={`flex-1 py-2 text-[12px] font-bold rounded-lg transition-all cursor-pointer ${
+                  className={`flex-1 py-2 text-[12px] font-bold rounded-lg transition-all ${
                     joinMode === 'details' ? 'bg-white text-[#111111] shadow-sm' : 'text-[#6F6F6F]'
                   }`}
                 >
@@ -333,7 +335,7 @@ export const OnboardingModal = () => {
                 <button
                   type="button"
                   onClick={() => setJoinMode('code')}
-                  className={`flex-1 py-2 text-[12px] font-bold rounded-lg transition-all cursor-pointer ${
+                  className={`flex-1 py-2 text-[12px] font-bold rounded-lg transition-all ${
                     joinMode === 'code' ? 'bg-white text-[#111111] shadow-sm' : 'text-[#6F6F6F]'
                   }`}
                 >
@@ -357,7 +359,7 @@ export const OnboardingModal = () => {
                       autoFocus
                     />
                     <p className="text-[12px] text-[#888888]">
-                      If your CR or classmate shared a link or code, paste it here.
+                      If your CR or classmate shared a link or 4-digit code, paste it here.
                     </p>
                   </div>
                 ) : (
@@ -409,7 +411,7 @@ export const OnboardingModal = () => {
                                 setCollege(col);
                                 setShowCollegeDropdown(false);
                               }}
-                              className="w-full text-left px-3.5 py-2 text-[12px] font-medium text-[#111111] hover:bg-[#F4F4F4] border-b border-black/5 last:border-0 cursor-pointer"
+                              className="w-full text-left px-3.5 py-2 text-[12px] font-medium text-[#111111] hover:bg-[#F4F4F4] border-b border-black/5 last:border-0"
                             >
                               {col}
                             </button>
@@ -418,7 +420,7 @@ export const OnboardingModal = () => {
                       )}
                     </div>
 
-                    {/* Programme & Section */}
+                    {/* Programme & Branch */}
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex flex-col gap-1">
                         <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
@@ -457,7 +459,7 @@ export const OnboardingModal = () => {
                       <select
                         value={branch}
                         onChange={(e) => setBranch(e.target.value)}
-                        className="w-full px-3 py-2.5 border border-[#D9D9D6] rounded-xl text-[13px] bg-[#FAFAF8] focus:bg-white focus:outline-none focus:border-[#111111]"
+                        className="w-full px-3.5 py-2.5 border border-[#D9D9D6] rounded-xl text-[13px] bg-[#FAFAF8] focus:bg-white focus:outline-none focus:border-[#111111]"
                       >
                         {COMMON_BRANCHES.map((b) => (
                           <option key={b} value={b}>{b}</option>
@@ -486,7 +488,7 @@ export const OnboardingModal = () => {
                             key={s}
                             type="button"
                             onClick={() => setSemester(s)}
-                            className={`py-2 text-[12px] font-bold rounded-xl border transition-all cursor-pointer ${
+                            className={`py-2 text-[12px] font-bold rounded-xl border transition-all ${
                               semester === s
                                 ? 'bg-[#111111] text-white border-[#111111] shadow-sm'
                                 : 'border-[#D9D9D6] bg-[#FAFAF8] text-[#444444] hover:bg-white'
@@ -527,3 +529,7 @@ export const OnboardingModal = () => {
     </div>
   );
 };
+`;
+
+fs.writeFileSync('components/onboarding/OnboardingModal.tsx', onboardingContent);
+console.log('OnboardingModal.tsx updated with comprehensive batch joining step!');

@@ -14,6 +14,7 @@ export interface StudentProfile {
   branch: Branch;
   year: number;
   semester: number;
+  section?: string;
   onboardingCompleted: boolean;
   avatarUrl?: string;
   createdAt: string;
