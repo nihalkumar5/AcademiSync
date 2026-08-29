@@ -117,17 +117,19 @@ export const MessOnboarding: React.FC = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex flex-col items-center justify-center h-full text-center"
+            className="flex flex-col justify-center h-full text-left w-full max-w-sm mx-auto"
           >
-            <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-6">
-              MESS
-            </p>
-            <h2 className="text-[32px] font-medium leading-[1.1] text-[#111111] dark:text-[#FFFFFF] mb-4">
-              Your mess, sorted.
-            </h2>
-            <p className="text-[#6F6F6F] text-[14px] leading-relaxed mb-8 max-w-[280px]">
-              Upload the weekly menu once. We'll organise meals, timings and days automatically.
-            </p>
+            <div className="mb-12">
+              <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
+                Hostel,<br />
+                Mess,<br />
+                Weekly,<br />
+                Menu
+              </h2>
+              <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4 max-w-[280px]">
+                Upload the weekly menu once. We'll organise meals, timings and days automatically.
+              </p>
+            </div>
 
             <input
               type="file"
@@ -139,7 +141,7 @@ export const MessOnboarding: React.FC = () => {
 
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="w-full sm:w-auto flex flex-col items-center justify-center p-8 border-2 border-dashed border-[#D8D8D8] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-[#F7F7F5] dark:bg-[#1A1A1A] transition-colors cursor-pointer"
+              className="w-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-[#D8D8D8] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-[#F7F7F5] dark:bg-[#1A1A1A] transition-colors cursor-pointer"
             >
               <Upload className="w-6 h-6 mb-3 text-[#111111] dark:text-[#FFFFFF]" />
               <span className="text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] mb-1">
@@ -150,7 +152,7 @@ export const MessOnboarding: React.FC = () => {
               </span>
             </button>
             
-            <div className="mt-8 pt-6 border-t border-[#D8D8D8] dark:border-[#333333] w-full max-w-[280px]">
+            <div className="mt-8 pt-6 border-t border-[#D8D8D8] dark:border-[#333333] w-full flex flex-col items-center text-center">
               <p className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] mb-1">AI will organise</p>
               <p className="text-[12px] text-[#6F6F6F]">Breakfast · Lunch · Snacks · Dinner</p>
             </div>

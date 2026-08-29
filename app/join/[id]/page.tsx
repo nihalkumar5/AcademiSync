@@ -60,16 +60,18 @@ export default function JoinMessPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#FAFAF8] dark:bg-[#111110] p-6 text-center">
-      <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-6">
-        YOU'VE BEEN INVITED
-      </p>
-      <h2 className="text-[32px] font-medium leading-[1.1] text-[#111111] dark:text-[#FFFFFF] mb-4">
-        Join your hostel mess
-      </h2>
-      <p className="text-[#6F6F6F] text-[14px] mb-12 max-w-sm mx-auto">
-        You'll get the current menu and meal timings.
-      </p>
+    <div className="flex flex-col justify-center min-h-screen bg-[#FAFAF8] dark:bg-[#111110] p-6 text-left max-w-sm mx-auto w-full">
+      <div className="mb-12">
+        <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
+          Join,<br />
+          Hostel,<br />
+          Mess,<br />
+          Menu
+        </h2>
+        <p className="text-[#6B6B6B] text-[14px] leading-[20px] mt-4 max-w-[280px]">
+          You'll get the current menu and meal timings.
+        </p>
+      </div>
 
       <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-6 w-full max-w-sm mb-8 text-left">
         <p className="text-[12px] text-[#A0A0A0] font-mono mb-2">MESS ID: {params.id}</p>
