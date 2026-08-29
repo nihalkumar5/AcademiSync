@@ -40,10 +40,15 @@ export const MessView: React.FC = () => {
       <div className="flex flex-col gap-6 max-w-4xl mx-auto w-full pb-12">
         <div className="flex justify-between items-start pt-2 sm:pt-6 mb-4">
           <div>
-            <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-1">MESS</p>
-            <h2 className="text-[32px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[1.1]">
-              THIS WEEK
-            </h2>
+            <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
+            This,<br />
+            Week,<br />
+            All,<br />
+            Meals
+          </h2>
+          <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4">
+            Your complete week's dining schedule.
+          </p>
           </div>
           <button 
             onClick={() => setShowThisWeek(false)}
@@ -87,12 +92,15 @@ export const MessView: React.FC = () => {
     <div className="flex flex-col gap-6 max-w-4xl mx-auto w-full pb-12">
       <div className="flex justify-between items-start pt-2 sm:pt-6">
         <div>
-          <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-1">
-            MESS
-          </p>
-          <h2 className="text-[32px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[1.1]">
-            HOSTEL MESS
+          <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
+            Hostel,<br />
+            Mess,<br />
+            Weekly,<br />
+            Menu
           </h2>
+          <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4">
+            Manage your daily hostel dining schedule.
+          </p>
         </div>
         <button 
           onClick={() => setShowThisWeek(true)}
