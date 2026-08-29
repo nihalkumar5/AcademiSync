@@ -78,16 +78,16 @@ export const MessView: React.FC = () => {
             <button
               key={day}
               onClick={() => setSelectedDay(day)}
-              className={`flex flex-col items-center justify-center min-w-[70px] h-[60px] border transition-colors cursor-pointer shrink-0 ${
+              className={`flex flex-col items-center justify-center min-w-[70px] h-[60px] transition-all cursor-pointer shrink-0 ${
                 isSelected 
-                  ? 'border-[#111111] dark:border-[#FFFFFF] bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111]' 
-                  : 'border-[#D9D9D6] dark:border-[#333333] bg-transparent text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A]'
+                  ? 'bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-600/20 border border-indigo-600' 
+                  : 'border border-[#D9D9D6] dark:border-[#333333] bg-transparent text-slate-600 dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50 rounded-none'
               }`}
             >
               <div className="flex items-center gap-1.5">
                 <span className="text-[13px] font-bold">{day.slice(0, 3)}</span>
                 {isToday && (
-                  <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white dark:bg-black' : 'bg-black dark:bg-white'}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-indigo-500'}`} />
                 )}
               </div>
             </button>
