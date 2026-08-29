@@ -673,7 +673,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setToastMessage({ id, title, message, type });
     setTimeout(() => {
       setToastMessage((current) => (current?.id === id ? null : current));
-    }, 4000);
+    }, 2500);
   };
 
   const triggerConfetti = () => {

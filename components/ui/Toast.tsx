@@ -63,7 +63,7 @@ export const Toast: React.FC = () => {
                   className={`h-full origin-left ${progressColor}`}
                   initial={{ scaleX: 1 }}
                   animate={{ scaleX: 0 }}
-                  transition={{ duration: 3.8, ease: "linear" }}
+                  transition={{ duration: 2.3, ease: "linear" }}
                 />
               </div>
             </div>

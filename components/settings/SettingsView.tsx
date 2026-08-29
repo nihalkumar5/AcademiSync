@@ -309,13 +309,21 @@ export const SettingsView: React.FC = () => {
           </div>
 
           <div className="flex flex-col mt-0.5 min-w-0">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h2 className="text-[18px] font-[600] text-[#111111] dark:text-[#FFFFFF] leading-none truncate">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="text-[32px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none truncate">
                 {name || 'Student Name'}
               </h2>
-              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 border border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] rounded-none">
-                <Check className="w-[10px] h-[10px] stroke-[3]" />
-                <span>Verified</span>
+              <span 
+                className="flex items-center gap-[6px] bg-[#F6F5F2] text-[#111111] rounded-full self-center"
+                style={{ padding: '6px 10px 6px 7px' }}
+              >
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="12" fill="#111111" />
+                  <path d="M7.5 12L10.5 15L17 8" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span className="text-[11px] font-semibold tracking-[1.5px] mt-[1px]">
+                  VERIFIED
+                </span>
               </span>
             </div>
             
