@@ -1,4 +1,4 @@
-'use client';
+code = r"""'use client';
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,10 +22,25 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { INDIAN_COLLEGES, STANDARD_PROGRAMMES, STANDARD_BRANCHES } from '@/lib/colleges';
+import { INDIAN_COLLEGES, STANDARD_PROGRAMMES } from '@/lib/colleges';
 import { getCanonicalBatchKey } from '@/lib/timetableUtils';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+
+const COMMON_BRANCHES = [
+  'Computer Science & Engg (CSE)',
+  'Information Technology (IT)',
+  'Artificial Intelligence & DS',
+  'Electronics & Comm (ECE)',
+  'Electrical Engineering (EE)',
+  'Mechanical Engineering (ME)',
+  'Civil Engineering (CE)',
+  'Data Science',
+  'Cyber Security',
+  'Business Administration',
+  'Commerce',
+  'Other / General',
+];
 
 export const OnboardingModal = () => {
   const { profile, updateProfile, joinBatchTimetable, shareTimetableWithBatch, showToast } = useApp();
@@ -41,16 +56,16 @@ export const OnboardingModal = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [foundBatchData, setFoundBatchData] = useState<any>(null);
 
-  // Form Fields (Profile / SettingsView Style)
-  const initialCollege = (profile?.college && profile.college !== 'Demo University') ? profile.college : '';
-  const [college, setCollege] = useState(initialCollege);
-  const [showCollegeDropdown, setShowCollegeDropdown] = useState(false);
+  // College Search Modal / Sheet State
+  const [showCollegeModal, setShowCollegeModal] = useState(false);
+  const [collegeQuery, setCollegeQuery] = useState('');
 
+  // Form Fields
+  const [college, setCollege] = useState(profile?.college || '');
   const [programme, setProgramme] = useState(profile?.programme || 'B.Tech');
   const [showProgrammeDropdown, setShowProgrammeDropdown] = useState(false);
-  const [customProgramme, setCustomProgramme] = useState('');
 
-  const [branch, setBranch] = useState(profile?.branch || 'Computer Science & Engineering (CSE)');
+  const [branch, setBranch] = useState(profile?.branch || 'Computer Science & Engg (CSE)');
   const [showBranchDropdown, setShowBranchDropdown] = useState(false);
   const [customBranch, setCustomBranch] = useState('');
 
@@ -116,15 +131,15 @@ export const OnboardingModal = () => {
   const handleFindBatch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!college.trim()) {
-      showToast('College Required', 'Please choose or type your college name.', 'error');
+      showToast('College Required', 'Please choose your college or university.', 'error');
+      setShowCollegeModal(true);
       return;
     }
 
     setIsSearching(true);
-    const finalProg = programme === 'Other / Diploma' ? (customProgramme.trim() || 'Diploma') : programme;
     const finalBranch = branch === 'Other / General' ? (customBranch.trim() || 'General') : branch;
     const cleanCollege = college.trim();
-    const canonicalKey = getCanonicalBatchKey(cleanCollege, finalProg, finalBranch, semester);
+    const canonicalKey = getCanonicalBatchKey(cleanCollege, programme, finalBranch, semester);
 
     try {
       const batchDocRef = doc(db, 'shared_timetables', canonicalKey);
@@ -159,15 +174,14 @@ export const OnboardingModal = () => {
   // 3. Step 2 -> Connect To Batch Action
   const handleConnectToBatch = async () => {
     setIsConnecting(true);
-    const finalProg = programme === 'Other / Diploma' ? (customProgramme.trim() || 'Diploma') : programme;
     const finalBranch = branch === 'Other / General' ? (customBranch.trim() || 'General') : branch;
     const cleanCollege = college.trim() || 'General College';
-    const canonicalKey = foundBatchData?.canonicalKey || getCanonicalBatchKey(cleanCollege, finalProg, finalBranch, semester);
+    const canonicalKey = foundBatchData?.canonicalKey || getCanonicalBatchKey(cleanCollege, programme, finalBranch, semester);
 
     try {
       updateProfile({
         college: cleanCollege,
-        programme: finalProg,
+        programme: programme,
         branch: finalBranch,
         semester: semester,
         section: section.trim() || 'A',
@@ -176,7 +190,7 @@ export const OnboardingModal = () => {
 
       if (foundBatchData?.exists) {
         await joinBatchTimetable(canonicalKey);
-        showToast('Batch Connected!', `Synced with ${finalProg} ${finalBranch} Sem ${semester}.`, 'success');
+        showToast('Batch Connected!', `Synced with ${finalBranch} Sem ${semester}.`, 'success');
       } else {
         await shareTimetableWithBatch();
         showToast('Batch Space Created', `You're the first in your batch! Invite your classmates to sync.`, 'success');
@@ -190,8 +204,8 @@ export const OnboardingModal = () => {
   };
 
   const filteredColleges = INDIAN_COLLEGES.filter((c) =>
-    c.toLowerCase().includes(college.toLowerCase())
-  ).slice(0, 15);
+    c.toLowerCase().includes(collegeQuery.toLowerCase())
+  );
 
   const slides = [
     {
@@ -355,9 +369,9 @@ export const OnboardingModal = () => {
               </div>
             </motion.div>
           ) : (
-            /* STEP 4: 2-STEP BATCH EXPERIENCE (LESS MODAL, CLEAN PROFILE-STYLE SEARCH) */
+            /* STEP 4: 2-STEP BATCH EXPERIENCE (LESS MODAL, CLEAN NATIVE FLOW) */
             <motion.div
-              key="step-4-batch-native-v2"
+              key="step-4-batch-native"
               custom={direction}
               variants={slideVariants}
               initial="enter"
@@ -367,7 +381,9 @@ export const OnboardingModal = () => {
             >
               <AnimatePresence mode="wait">
                 {subStep === 'find' ? (
-                  /* SUBSTEP 1: FIND YOUR BATCH */
+                  /* ======================================================== */
+                  /* SUBSTEP 1: FIND YOUR BATCH                               */
+                  /* ======================================================== */
                   <motion.div
                     key="substep-find"
                     initial={{ opacity: 0, y: 8 }}
@@ -422,79 +438,48 @@ export const OnboardingModal = () => {
                       <div className="flex-1 h-[1px] bg-[#EEEEEC]" />
                     </div>
 
-                    {/* 3. Direct Search Form (Comprehensive Programmes & Branches) */}
+                    {/* 3. Direct Native Search Form (Frictionless, No Enclosing Modal Card) */}
                     <form onSubmit={handleFindBatch} className="flex flex-col gap-4 flex-1">
-                      {/* College Input with Profile-Style Live Dropdown */}
-                      <div className="flex flex-col gap-1.5 relative">
+                      {/* College Trigger (Searchable Selector) */}
+                      <div className="flex flex-col gap-1.5">
                         <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
                           College / University
                         </label>
-                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] border border-[#D9D9D6] rounded-xl focus-within:border-[#111111] transition-colors">
-                          <Building2 className="w-4 h-4 text-[#A0A0A0] shrink-0" />
-                          <input
-                            type="text"
-                            value={college}
-                            onChange={(e) => {
-                              setCollege(e.target.value);
-                              setShowCollegeDropdown(true);
-                            }}
-                            onFocus={() => setShowCollegeDropdown(true)}
-                            onBlur={() => setTimeout(() => setShowCollegeDropdown(false), 250)}
-                            placeholder="e.g. AIIMS, NLSIU, IIT Delhi, NIT..."
-                            required
-                            className="w-full bg-transparent text-[13.5px] font-medium text-[#111111] focus:outline-none placeholder:text-[#A0A0A0]"
-                          />
-                        </div>
-
-                        {/* Live Dropdown Matching Profile Style */}
-                        {showCollegeDropdown && college.length >= 2 && (
-                          <div className="absolute top-full left-0 w-full mt-1.5 max-h-52 overflow-y-auto bg-white border border-[#D9D9D6] rounded-xl shadow-xl z-50 divide-y divide-black/5">
-                            {filteredColleges.length > 0 ? (
-                              filteredColleges.map((c) => (
-                                <div
-                                  key={c}
-                                  onMouseDown={() => {
-                                    setCollege(c);
-                                    setShowCollegeDropdown(false);
-                                  }}
-                                  className="px-4 py-2.5 hover:bg-[#F7F7F5] cursor-pointer text-[13px] font-medium text-[#111111] transition-colors"
-                                >
-                                  {c}
-                                </div>
-                              ))
-                            ) : (
-                              <div className="px-4 py-2.5 text-xs text-[#6F6F6F]">
-                                Press Enter to use <strong>"{college}"</strong>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        <p className="text-[11px] text-[#A0A0A0] font-medium">
-                          Type 2+ letters to search verified universities, or type manually if not found.
-                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCollegeQuery('');
+                            setShowCollegeModal(true);
+                          }}
+                          className="w-full h-12 px-4 bg-[#FAFAF8] hover:bg-[#F4F4F2] border border-[#D9D9D6] rounded-xl flex items-center justify-between text-left transition-all cursor-pointer group"
+                        >
+                          <span className={`text-[13.5px] truncate pr-2 ${college ? 'font-semibold text-[#111111]' : 'text-[#888888]'}`}>
+                            {college || 'Search or select your college...'}
+                          </span>
+                          <Search className="w-4 h-4 text-[#888888] group-hover:text-[#111111] shrink-0" />
+                        </button>
                       </div>
 
-                      {/* Programme Dropdown (Full Standard Programmes: Engineering, Medical, Law, Commerce, Arts) */}
+                      {/* Programme Dropdown */}
                       <div className="flex flex-col gap-1.5 relative">
                         <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
-                          Programme / Degree
+                          Programme
                         </label>
                         <button
                           type="button"
                           onClick={() => {
                             setShowProgrammeDropdown(!showProgrammeDropdown);
                             setShowBranchDropdown(false);
-                            setShowCollegeDropdown(false);
                           }}
-                          className="w-full h-11 px-3.5 bg-white border border-[#D9D9D6] rounded-xl text-[13px] font-medium text-[#111111] flex items-center justify-between hover:border-[#111111] transition-all cursor-pointer"
+                          className="w-full h-11 px-3.5 bg-[#FAFAF8] border border-[#D9D9D6] rounded-xl text-[13px] font-medium text-[#111111] flex items-center justify-between hover:border-[#111111] transition-all cursor-pointer"
                         >
                           <span>{programme}</span>
                           <ChevronDown className={`w-4 h-4 text-[#888888] transition-transform ${showProgrammeDropdown ? 'rotate-180 text-[#111111]' : ''}`} />
                         </button>
 
                         {showProgrammeDropdown && (
-                          <div className="absolute top-[100%] left-0 right-0 z-50 mt-1.5 max-h-56 overflow-y-auto bg-white border border-[#D9D9D6] rounded-xl shadow-xl">
-                            {STANDARD_PROGRAMMES.map((p) => (
+                          <div className="absolute top-[100%] left-0 right-0 z-50 mt-1.5 max-h-48 overflow-y-auto bg-white border border-[#D9D9D6] rounded-xl shadow-xl">
+                            {STANDARD_PROGRAMMES.slice(0, 10).map((p) => (
                               <button
                                 key={p}
                                 type="button"
@@ -512,20 +497,9 @@ export const OnboardingModal = () => {
                             ))}
                           </div>
                         )}
-
-                        {programme === 'Other / Diploma' && (
-                          <input
-                            type="text"
-                            placeholder="Type your degree name..."
-                            value={customProgramme}
-                            onChange={(e) => setCustomProgramme(e.target.value)}
-                            className="mt-1.5 w-full h-11 px-3.5 bg-white border border-[#D9D9D6] rounded-xl text-[13px] text-[#111111] focus:outline-none focus:border-[#111111]"
-                            required
-                          />
-                        )}
                       </div>
 
-                      {/* Branch Dropdown (Full Standard Branches: Engineering, Medical, Law, Management) */}
+                      {/* Branch Dropdown */}
                       <div className="flex flex-col gap-1.5 relative">
                         <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
                           Branch / Specialisation
@@ -535,17 +509,16 @@ export const OnboardingModal = () => {
                           onClick={() => {
                             setShowBranchDropdown(!showBranchDropdown);
                             setShowProgrammeDropdown(false);
-                            setShowCollegeDropdown(false);
                           }}
-                          className="w-full h-11 px-3.5 bg-white border border-[#D9D9D6] rounded-xl text-[13px] font-medium text-[#111111] flex items-center justify-between hover:border-[#111111] transition-all cursor-pointer text-left"
+                          className="w-full h-11 px-3.5 bg-[#FAFAF8] border border-[#D9D9D6] rounded-xl text-[13px] font-medium text-[#111111] flex items-center justify-between hover:border-[#111111] transition-all cursor-pointer text-left"
                         >
                           <span className="truncate pr-2">{branch}</span>
                           <ChevronDown className={`w-4 h-4 text-[#888888] shrink-0 transition-transform ${showBranchDropdown ? 'rotate-180 text-[#111111]' : ''}`} />
                         </button>
 
                         {showBranchDropdown && (
-                          <div className="absolute top-[100%] left-0 right-0 z-50 mt-1.5 max-h-60 overflow-y-auto bg-white border border-[#D9D9D6] rounded-xl shadow-xl">
-                            {STANDARD_BRANCHES.map((b) => (
+                          <div className="absolute top-[100%] left-0 right-0 z-50 mt-1.5 max-h-52 overflow-y-auto bg-white border border-[#D9D9D6] rounded-xl shadow-xl">
+                            {COMMON_BRANCHES.map((b) => (
                               <button
                                 key={b}
                                 type="button"
@@ -567,10 +540,10 @@ export const OnboardingModal = () => {
                         {branch === 'Other / General' && (
                           <input
                             type="text"
-                            placeholder="Type your branch / specialisation..."
+                            placeholder="Type your branch name..."
                             value={customBranch}
                             onChange={(e) => setCustomBranch(e.target.value)}
-                            className="mt-1.5 w-full h-11 px-3.5 bg-white border border-[#D9D9D6] rounded-xl text-[13px] text-[#111111] focus:outline-none focus:border-[#111111]"
+                            className="mt-1.5 w-full h-11 px-3.5 bg-[#FAFAF8] border border-[#D9D9D6] rounded-xl text-[13px] text-[#111111] focus:outline-none focus:border-[#111111]"
                             required
                           />
                         )}
@@ -590,7 +563,7 @@ export const OnboardingModal = () => {
                               className={`py-2 text-[12px] font-bold rounded-xl border transition-all cursor-pointer ${
                                 semester === s
                                   ? 'bg-[#111111] text-white border-[#111111] shadow-sm'
-                                  : 'border-[#D9D9D6] bg-white text-[#444444] hover:bg-[#FAFAF8]'
+                                  : 'border-[#D9D9D6] bg-[#FAFAF8] text-[#444444] hover:bg-white'
                               }`}
                             >
                               Sem {s}
@@ -620,7 +593,9 @@ export const OnboardingModal = () => {
                     </form>
                   </motion.div>
                 ) : (
-                  /* SUBSTEP 2: CONFIRM & SECTION SELECTION */
+                  /* ======================================================== */
+                  /* SUBSTEP 2: CONFIRM & SECTION SELECTION                   */
+                  /* ======================================================== */
                   <motion.div
                     key="substep-confirm"
                     initial={{ opacity: 0, x: 20 }}
@@ -651,7 +626,7 @@ export const OnboardingModal = () => {
                           {college}
                         </h3>
                         <p className="text-[14px] font-medium text-[#444444]">
-                          {programme === 'Other / Diploma' ? customProgramme : programme} · {branch === 'Other / General' ? customBranch : branch}
+                          {programme} · {branch === 'Other / General' ? customBranch : branch}
                         </p>
                         <span className="inline-block mt-2 px-2.5 py-0.5 bg-[#111111] text-white text-[11px] font-bold rounded-md">
                           Semester {semester}
@@ -728,6 +703,99 @@ export const OnboardingModal = () => {
         </AnimatePresence>
       </div>
 
+      {/* ======================================================== */}
+      {/* FULL-SCREEN / SHEET COLLEGE SEARCH SELECTOR             */}
+      {/* ======================================================== */}
+      <AnimatePresence>
+        {showCollegeModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[150] bg-black/40 flex flex-col justify-end sm:justify-center sm:items-center backdrop-blur-xs"
+          >
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'tween', duration: 0.25 }}
+              className="w-full sm:max-w-lg bg-white rounded-t-[28px] sm:rounded-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+            >
+              {/* Modal Header */}
+              <div className="p-5 border-b border-[#F0F0EE] flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2">
+                  <School className="w-5 h-5 text-[#111111]" />
+                  <h3 className="text-[16px] font-bold text-[#111111]">Select College / University</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowCollegeModal(false)}
+                  className="p-1.5 text-[#888888] hover:text-[#111111] rounded-full hover:bg-black/5 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Search Bar */}
+              <div className="p-4 border-b border-[#F0F0EE] shrink-0 bg-[#FAFAF8]">
+                <div className="relative">
+                  <Search className="w-4 h-4 text-[#888888] absolute left-3.5 top-3.5 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Search colleges (e.g. IIT, NIT, BITS...)"
+                    value={collegeQuery}
+                    onChange={(e) => setCollegeQuery(e.target.value)}
+                    autoFocus
+                    className="w-full h-11 pl-10 pr-4 bg-white border border-[#D9D9D6] rounded-xl text-[13.5px] text-[#111111] focus:outline-none focus:border-[#111111]"
+                  />
+                </div>
+              </div>
+
+              {/* Suggestions List */}
+              <div className="flex-1 overflow-y-auto divide-y divide-black/5 p-2">
+                {collegeQuery.trim() && !filteredColleges.some(c => c.toLowerCase() === collegeQuery.toLowerCase()) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCollege(collegeQuery.trim());
+                      setShowCollegeModal(false);
+                    }}
+                    className="w-full text-left p-3.5 hover:bg-[#F4F4F4] rounded-xl text-[13px] text-[#111111] flex items-center justify-between cursor-pointer group"
+                  >
+                    <span>Use custom: <strong className="text-indigo-600 font-bold">"{collegeQuery.trim()}"</strong></span>
+                    <ArrowRight className="w-4 h-4 text-[#888888] group-hover:text-[#111111]" />
+                  </button>
+                )}
+
+                {filteredColleges.map((col, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setCollege(col);
+                      setShowCollegeModal(false);
+                    }}
+                    className="w-full text-left p-3.5 hover:bg-[#F4F4F4] rounded-xl text-[13px] font-medium text-[#111111] flex items-center justify-between cursor-pointer group transition-colors"
+                  >
+                    <span className="truncate pr-2">{col}</span>
+                    {college === col ? (
+                      <Check className="w-4 h-4 text-[#111111] shrink-0" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-[#CCCCCC] group-hover:text-[#111111] shrink-0" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };
+"""
+
+with open('components/onboarding/OnboardingModal.tsx', 'w') as f:
+    f.write(code)
+print('Successfully written 2-step frictionless OnboardingModal.tsx')

@@ -46,7 +46,7 @@ export const DEFAULT_PROFILE = {
   name: 'Student',
   rollNumber: '',
   email: '',
-  college: 'Demo University',
+  college: '',
   programme: 'B.Tech' as const,
   branch: 'CSE' as const,
   year: 1,

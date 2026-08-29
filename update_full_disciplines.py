@@ -1,4 +1,4 @@
-export const INDIAN_COLLEGES = [
+colleges_code = '''export const INDIAN_COLLEGES = [
   "Indian Institute of Technology (IIT) Bombay",
   "Indian Institute of Technology (IIT) Delhi",
   "Indian Institute of Technology (IIT) Kanpur",
@@ -144,3 +144,9 @@ export const STANDARD_BRANCHES = [
   'Architecture & Design',
   'Other / General'
 ];
+'''
+
+with open('lib/colleges.ts', 'w') as f:
+    f.write(colleges_code)
+
+print('Updated lib/colleges.ts with all Medical, Law, Engineering, Management, Arts disciplines!')

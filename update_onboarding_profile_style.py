@@ -1,4 +1,6 @@
-'use client';
+import re
+
+code = r"""'use client';
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,6 +29,21 @@ import { getCanonicalBatchKey } from '@/lib/timetableUtils';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
+const COMMON_BRANCHES = [
+  'Computer Science & Engg (CSE)',
+  'Information Technology (IT)',
+  'Artificial Intelligence & DS',
+  'Electronics & Comm (ECE)',
+  'Electrical Engineering (EE)',
+  'Mechanical Engineering (ME)',
+  'Civil Engineering (CE)',
+  'Data Science',
+  'Cyber Security',
+  'Business Administration',
+  'Commerce',
+  'Other / General',
+];
+
 export const OnboardingModal = () => {
   const { profile, updateProfile, joinBatchTimetable, shareTimetableWithBatch, showToast } = useApp();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -42,15 +59,13 @@ export const OnboardingModal = () => {
   const [foundBatchData, setFoundBatchData] = useState<any>(null);
 
   // Form Fields (Profile / SettingsView Style)
-  const initialCollege = (profile?.college && profile.college !== 'Demo University') ? profile.college : '';
-  const [college, setCollege] = useState(initialCollege);
+  const [college, setCollege] = useState(profile?.college || '');
   const [showCollegeDropdown, setShowCollegeDropdown] = useState(false);
 
   const [programme, setProgramme] = useState(profile?.programme || 'B.Tech');
   const [showProgrammeDropdown, setShowProgrammeDropdown] = useState(false);
-  const [customProgramme, setCustomProgramme] = useState('');
 
-  const [branch, setBranch] = useState(profile?.branch || 'Computer Science & Engineering (CSE)');
+  const [branch, setBranch] = useState(profile?.branch || 'Computer Science & Engg (CSE)');
   const [showBranchDropdown, setShowBranchDropdown] = useState(false);
   const [customBranch, setCustomBranch] = useState('');
 
@@ -121,10 +136,9 @@ export const OnboardingModal = () => {
     }
 
     setIsSearching(true);
-    const finalProg = programme === 'Other / Diploma' ? (customProgramme.trim() || 'Diploma') : programme;
     const finalBranch = branch === 'Other / General' ? (customBranch.trim() || 'General') : branch;
     const cleanCollege = college.trim();
-    const canonicalKey = getCanonicalBatchKey(cleanCollege, finalProg, finalBranch, semester);
+    const canonicalKey = getCanonicalBatchKey(cleanCollege, programme, finalBranch, semester);
 
     try {
       const batchDocRef = doc(db, 'shared_timetables', canonicalKey);
@@ -159,15 +173,14 @@ export const OnboardingModal = () => {
   // 3. Step 2 -> Connect To Batch Action
   const handleConnectToBatch = async () => {
     setIsConnecting(true);
-    const finalProg = programme === 'Other / Diploma' ? (customProgramme.trim() || 'Diploma') : programme;
     const finalBranch = branch === 'Other / General' ? (customBranch.trim() || 'General') : branch;
     const cleanCollege = college.trim() || 'General College';
-    const canonicalKey = foundBatchData?.canonicalKey || getCanonicalBatchKey(cleanCollege, finalProg, finalBranch, semester);
+    const canonicalKey = foundBatchData?.canonicalKey || getCanonicalBatchKey(cleanCollege, programme, finalBranch, semester);
 
     try {
       updateProfile({
         college: cleanCollege,
-        programme: finalProg,
+        programme: programme,
         branch: finalBranch,
         semester: semester,
         section: section.trim() || 'A',
@@ -176,7 +189,7 @@ export const OnboardingModal = () => {
 
       if (foundBatchData?.exists) {
         await joinBatchTimetable(canonicalKey);
-        showToast('Batch Connected!', `Synced with ${finalProg} ${finalBranch} Sem ${semester}.`, 'success');
+        showToast('Batch Connected!', `Synced with ${finalBranch} Sem ${semester}.`, 'success');
       } else {
         await shareTimetableWithBatch();
         showToast('Batch Space Created', `You're the first in your batch! Invite your classmates to sync.`, 'success');
@@ -357,7 +370,7 @@ export const OnboardingModal = () => {
           ) : (
             /* STEP 4: 2-STEP BATCH EXPERIENCE (LESS MODAL, CLEAN PROFILE-STYLE SEARCH) */
             <motion.div
-              key="step-4-batch-native-v2"
+              key="step-4-batch-native"
               custom={direction}
               variants={slideVariants}
               initial="enter"
@@ -422,7 +435,7 @@ export const OnboardingModal = () => {
                       <div className="flex-1 h-[1px] bg-[#EEEEEC]" />
                     </div>
 
-                    {/* 3. Direct Search Form (Comprehensive Programmes & Branches) */}
+                    {/* 3. Direct Search Form (Profile Style with Live Suggestions) */}
                     <form onSubmit={handleFindBatch} className="flex flex-col gap-4 flex-1">
                       {/* College Input with Profile-Style Live Dropdown */}
                       <div className="flex flex-col gap-1.5 relative">
@@ -440,7 +453,7 @@ export const OnboardingModal = () => {
                             }}
                             onFocus={() => setShowCollegeDropdown(true)}
                             onBlur={() => setTimeout(() => setShowCollegeDropdown(false), 250)}
-                            placeholder="e.g. AIIMS, NLSIU, IIT Delhi, NIT..."
+                            placeholder="e.g. IIT Delhi, NIT Trichy, BITS..."
                             required
                             className="w-full bg-transparent text-[13.5px] font-medium text-[#111111] focus:outline-none placeholder:text-[#A0A0A0]"
                           />
@@ -474,10 +487,10 @@ export const OnboardingModal = () => {
                         </p>
                       </div>
 
-                      {/* Programme Dropdown (Full Standard Programmes: Engineering, Medical, Law, Commerce, Arts) */}
+                      {/* Programme Dropdown */}
                       <div className="flex flex-col gap-1.5 relative">
                         <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
-                          Programme / Degree
+                          Programme
                         </label>
                         <button
                           type="button"
@@ -493,8 +506,8 @@ export const OnboardingModal = () => {
                         </button>
 
                         {showProgrammeDropdown && (
-                          <div className="absolute top-[100%] left-0 right-0 z-50 mt-1.5 max-h-56 overflow-y-auto bg-white border border-[#D9D9D6] rounded-xl shadow-xl">
-                            {STANDARD_PROGRAMMES.map((p) => (
+                          <div className="absolute top-[100%] left-0 right-0 z-50 mt-1.5 max-h-48 overflow-y-auto bg-white border border-[#D9D9D6] rounded-xl shadow-xl">
+                            {STANDARD_PROGRAMMES.slice(0, 10).map((p) => (
                               <button
                                 key={p}
                                 type="button"
@@ -512,20 +525,9 @@ export const OnboardingModal = () => {
                             ))}
                           </div>
                         )}
-
-                        {programme === 'Other / Diploma' && (
-                          <input
-                            type="text"
-                            placeholder="Type your degree name..."
-                            value={customProgramme}
-                            onChange={(e) => setCustomProgramme(e.target.value)}
-                            className="mt-1.5 w-full h-11 px-3.5 bg-white border border-[#D9D9D6] rounded-xl text-[13px] text-[#111111] focus:outline-none focus:border-[#111111]"
-                            required
-                          />
-                        )}
                       </div>
 
-                      {/* Branch Dropdown (Full Standard Branches: Engineering, Medical, Law, Management) */}
+                      {/* Branch Dropdown */}
                       <div className="flex flex-col gap-1.5 relative">
                         <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
                           Branch / Specialisation
@@ -544,8 +546,8 @@ export const OnboardingModal = () => {
                         </button>
 
                         {showBranchDropdown && (
-                          <div className="absolute top-[100%] left-0 right-0 z-50 mt-1.5 max-h-60 overflow-y-auto bg-white border border-[#D9D9D6] rounded-xl shadow-xl">
-                            {STANDARD_BRANCHES.map((b) => (
+                          <div className="absolute top-[100%] left-0 right-0 z-50 mt-1.5 max-h-52 overflow-y-auto bg-white border border-[#D9D9D6] rounded-xl shadow-xl">
+                            {COMMON_BRANCHES.map((b) => (
                               <button
                                 key={b}
                                 type="button"
@@ -567,7 +569,7 @@ export const OnboardingModal = () => {
                         {branch === 'Other / General' && (
                           <input
                             type="text"
-                            placeholder="Type your branch / specialisation..."
+                            placeholder="Type your branch name..."
                             value={customBranch}
                             onChange={(e) => setCustomBranch(e.target.value)}
                             className="mt-1.5 w-full h-11 px-3.5 bg-white border border-[#D9D9D6] rounded-xl text-[13px] text-[#111111] focus:outline-none focus:border-[#111111]"
@@ -651,7 +653,7 @@ export const OnboardingModal = () => {
                           {college}
                         </h3>
                         <p className="text-[14px] font-medium text-[#444444]">
-                          {programme === 'Other / Diploma' ? customProgramme : programme} · {branch === 'Other / General' ? customBranch : branch}
+                          {programme} · {branch === 'Other / General' ? customBranch : branch}
                         </p>
                         <span className="inline-block mt-2 px-2.5 py-0.5 bg-[#111111] text-white text-[11px] font-bold rounded-md">
                           Semester {semester}
@@ -731,3 +733,8 @@ export const OnboardingModal = () => {
     </div>
   );
 };
+"""
+
+with open('components/onboarding/OnboardingModal.tsx', 'w') as f:
+    f.write(code)
+print('Updated OnboardingModal.tsx with exact profile college search UI!')
