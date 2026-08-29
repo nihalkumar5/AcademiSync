@@ -60,7 +60,7 @@ export default function JoinMessPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="flex flex-col justify-center min-h-screen bg-[#FAFAF8] dark:bg-[#111110] p-6 text-left max-w-sm mx-auto w-full">
+    <div className="flex flex-col justify-start pt-24 min-h-screen bg-[#FAFAF8] dark:bg-[#111110] p-6 text-left max-w-sm mx-auto w-full">
       <div className="mb-12">
         <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
           Join,<br />

@@ -109,7 +109,7 @@ export const MessOnboarding: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col max-w-lg mx-auto w-full pt-8 pb-12 px-4 h-[calc(100vh-80px)]">
+    <div className="flex flex-col max-w-lg mx-auto w-full pt-4 pb-12 px-4 min-h-[calc(100vh-80px)]">
       <AnimatePresence mode="wait">
         {step === 1 && (
           <motion.div
@@ -117,7 +117,7 @@ export const MessOnboarding: React.FC = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex flex-col justify-center h-full text-left w-full max-w-sm mx-auto"
+            className="flex flex-col justify-start mt-2 text-left w-full max-w-sm mx-auto"
           >
             <div className="mb-12">
               <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
@@ -152,9 +152,25 @@ export const MessOnboarding: React.FC = () => {
               </span>
             </button>
             
-            <div className="mt-8 pt-6 border-t border-[#D8D8D8] dark:border-[#333333] w-full flex flex-col items-center text-center">
+            <div className="mt-8 pt-6 border-t border-[#D8D8D8] dark:border-[#333333] w-full flex flex-col items-start text-left">
               <p className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] mb-1">AI will organise</p>
-              <p className="text-[12px] text-[#6F6F6F]">Breakfast · Lunch · Snacks · Dinner</p>
+              <p className="text-[12px] text-[#6F6F6F] mb-6">Breakfast · Lunch · Snacks · Dinner</p>
+              
+              <div className="bg-[#F7F7F5] dark:bg-[#1A1A1A] p-4 border border-[#D8D8D8] dark:border-[#333333] w-full mt-4">
+                <p className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] mb-1">Have an invite code?</p>
+                <div className="flex gap-2 mt-2">
+                  <input 
+                    type="text" 
+                    placeholder="Enter Mess ID"
+                    className="flex-1 bg-white dark:bg-black border border-[#D8D8D8] dark:border-[#333333] px-3 py-2 text-[13px] focus:outline-none focus:border-black dark:focus:border-white"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && e.currentTarget.value) {
+                        window.location.href = '/join/' + e.currentTarget.value;
+                      }
+                    }}
+                  />
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
@@ -165,7 +181,7 @@ export const MessOnboarding: React.FC = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex flex-col justify-center h-full max-w-sm mx-auto w-full"
+            className="flex flex-col justify-center flex-1 min-h-[500px] max-w-sm mx-auto w-full"
           >
             <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-10 text-center">
               READING YOUR MENU
@@ -259,7 +275,7 @@ export const MessOnboarding: React.FC = () => {
             key="step4"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center h-full text-center"
+            className="flex flex-col items-center justify-center flex-1 min-h-[500px] text-center"
           >
             <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-6">
               YOUR MESS IS READY 🎉
