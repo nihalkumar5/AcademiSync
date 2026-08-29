@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+const fs = require('fs');
+
+const newCode = `import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { MessOnboarding } from './MessOnboarding';
 import { format } from 'date-fns';
@@ -26,7 +28,7 @@ export const MessView: React.FC = () => {
   const todayMenu = messMenu.menu?.[today] || {};
 
   const handleCopyLink = () => {
-    const url = `${window.location.origin}/join/${messMenu.id}`;
+    const url = \`\${window.location.origin}/join/\${messMenu.id}\`;
     navigator.clipboard.writeText(url);
     showToast('Copied', 'Invite link copied to clipboard!', 'success');
   };
@@ -137,3 +139,6 @@ export const MessView: React.FC = () => {
     </div>
   );
 };
+`;
+
+fs.writeFileSync('components/mess/MessView.tsx', newCode);
