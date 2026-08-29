@@ -123,15 +123,15 @@ export const Header: React.FC = () => {
             </div>
           )}
 
-          {/* Quick Search Button - Hidden on mobile as requested */}
+          {/* Quick Search Button */}
           <button
             onClick={() => setCommandPaletteOpen(true)}
-            className="hidden md:flex items-center gap-2 px-2 py-1.5 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
-            title="Open Command Palette (⌘K)"
+            className="flex items-center justify-center p-1.5 sm:px-2 sm:py-1.5 border border-transparent hover:border-black dark:hover:border-white transition-colors cursor-pointer"
+            title="Search (⌘K)"
           >
-            <Search className="w-4 h-4" />
-            <span className="hidden sm:inline">Search</span>
-            <kbd className="hidden sm:inline text-[10px] font-mono border border-current px-1 py-0.5 opacity-60">
+            <Search className="w-4 h-4 sm:mr-1.5" />
+            <span className="hidden sm:inline text-sm font-medium">Search</span>
+            <kbd className="hidden sm:inline text-[10px] font-mono border border-current px-1 py-0.5 opacity-60 ml-2">
               ⌘K
             </kbd>
           </button>
