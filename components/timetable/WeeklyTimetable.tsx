@@ -9,6 +9,7 @@ import { AddEditClassModal } from './AddEditClassModal';
 import { TimetableImportModal } from './TimetableImportModal';
 import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
+import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { Plus, Sparkles, CalendarDays, Share2, UserPlus, Users } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useClerk, useUser } from '@clerk/nextjs';
@@ -225,8 +226,8 @@ export const WeeklyTimetable: React.FC = () => {
           if (sessions.length === 0) {
             return (
               <EmptyState
-                icon={<CalendarDays className="w-6 h-6 text-indigo-400" />}
-                title={`No classes on ${selectedMobileDay}`}
+                icon={<MonochromeIllustration type="no-classes" size={48} />}
+                title={`NO CLASSES ON ${selectedMobileDay.toUpperCase()}`}
                 description="Take a break or schedule a class manually."
                 actionLabel="Add Class for this day"
                 onAction={() => handleAddForDay(selectedMobileDay)}
