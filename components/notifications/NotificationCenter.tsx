@@ -115,14 +115,14 @@ export const NotificationCenter: React.FC = () => {
       </div>
 
       {/* Filter Tabs - Underline Style */}
-      <div className="flex items-center gap-6 overflow-x-auto border-b border-black/10 dark:border-white/10 no-scrollbar mt-2">
+      <div className="flex items-center justify-between w-full border-b border-black/10 dark:border-white/10 mt-2">
         {(['all', 'classes', 'homework', 'events'] as const).map((cat) => {
           const isSelected = categoryFilter === cat;
           return (
             <button
               key={cat}
               onClick={() => setCategoryFilter(cat)}
-              className={`pb-3 text-[11px] font-bold uppercase tracking-widest transition-colors relative whitespace-nowrap cursor-pointer ${
+              className={`flex-1 pb-3 text-center text-[11px] font-bold uppercase tracking-widest transition-colors relative whitespace-nowrap cursor-pointer ${
                 isSelected
                   ? 'text-black dark:text-white'
                   : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70'
