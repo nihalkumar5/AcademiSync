@@ -42,14 +42,14 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
         setExtractedExams([
           {
             subjectName: 'Data Structures and Algorithms',
-            date: '2024-11-15',
+            date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             time: '10:00 AM - 1:00 PM',
             syllabus: 'Trees, Graphs, DP, Sorting',
             durationMinutes: 180
           },
           {
             subjectName: 'Computer Networks',
-            date: '2024-11-18',
+            date: new Date(Date.now() + 13 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             time: '2:00 PM - 5:00 PM',
             syllabus: 'OSI Model, TCP/IP, Routing',
             durationMinutes: 180

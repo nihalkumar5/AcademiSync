@@ -82,8 +82,7 @@ export const MessOnboarding: React.FC = () => {
       let data;
       if (file === 'sample') {
         await new Promise(resolve => setTimeout(resolve, 2000));
-        data = {
-          menu: {
+        data = { success: true, data: {
             Monday: { Breakfast: ["Aloo Paratha", "Curd", "Tea"], Lunch: ["Rajma", "Rice", "Roti", "Salad"], Snacks: ["Samosa", "Coffee"], Dinner: ["Paneer Butter Masala", "Roti", "Dal"] },
             Tuesday: { Breakfast: ["Poha", "Jalebi", "Milk"], Lunch: ["Chole", "Bhature", "Rice"], Snacks: ["Maggi", "Tea"], Dinner: ["Mix Veg", "Dal Tadka", "Roti"] },
             Wednesday: { Breakfast: ["Idli", "Sambar", "Chutney"], Lunch: ["Kadhi Pakora", "Rice", "Roti"], Snacks: ["Patties", "Coffee"], Dinner: ["Egg Curry", "Dal", "Roti"] },
@@ -91,8 +90,7 @@ export const MessOnboarding: React.FC = () => {
             Friday: { Breakfast: ["Masala Dosa", "Sambar", "Chutney"], Lunch: ["Soyabean Curry", "Rice", "Roti"], Snacks: ["Pasta", "Coffee"], Dinner: ["Chicken Curry", "Paneer Tikka", "Roti"] },
             Saturday: { Breakfast: ["Puri", "Bhaji", "Halwa"], Lunch: ["Khichdi", "Kadhi", "Papad"], Snacks: ["Bhel Puri", "Tea"], Dinner: ["Malai Kofta", "Dal", "Roti"] },
             Sunday: { Breakfast: ["Bread Omelette", "Toast", "Juice"], Lunch: ["Veg Biryani", "Raita"], Snacks: ["French Fries", "Cold Drink"], Dinner: ["Dal Bati", "Churma"] }
-          }
-        };
+        } };
       } else {
         const formData = new FormData();
         formData.append('file', file);
