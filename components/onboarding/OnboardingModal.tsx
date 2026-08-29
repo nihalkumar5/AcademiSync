@@ -164,7 +164,7 @@ export const OnboardingModal = () => {
                 className={`w-full h-full object-contain object-bottom pointer-events-none translate-y-[8%] ${
                   currentSlide.id === 0 ? 'scale-[1.2]' :
                   currentSlide.id === 1 ? 'scale-[1.45]' :
-                  'scale-[1.35]'
+                  'scale-[1.15]'
                 }`}
               />
             </motion.div>
