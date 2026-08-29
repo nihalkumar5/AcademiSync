@@ -310,7 +310,7 @@ export const SettingsView: React.FC = () => {
 
           <div className="flex flex-col mt-0.5 min-w-0">
             <div className="flex items-center gap-[12px] flex-wrap w-full">
-              <h2 className="text-[30px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none break-words">
+              <h2 className="text-[24px] font-medium text-[#111111] dark:text-[#FFFFFF] leading-none break-words">
                 {name || 'Student Name'}
               </h2>
               <span 
@@ -997,7 +997,7 @@ export const SettingsView: React.FC = () => {
                     setIsHolding(false);
                     setShowResetModal(false);
                   }}
-                  className="w-full py-1 text-[13px] font-semibold text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer text-center"
+                  className="w-full py-1 text-[13px] font-medium text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer text-center"
                 >
                   Cancel
                 </button>
