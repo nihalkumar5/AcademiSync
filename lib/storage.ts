@@ -31,6 +31,8 @@ const STORAGE_KEYS = {
   EVENTS: 'iiitnr_events_v2',
   SETTINGS: 'iiitnr_settings_v2',
   EXAMS: 'iiitnr_exams_v2',
+
+
   CANCELLED_SESSIONS: 'iiitnr_cancelled_sessions_v1',
   RESCHEDULED_SESSIONS: 'iiitnr_rescheduled_sessions_v1',
 };

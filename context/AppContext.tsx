@@ -44,7 +44,8 @@ export type ActiveView =
   | 'calendar'
   | 'exams'
   | 'notifications'
-  | 'settings';
+  | 'settings'
+  | 'mess';
 
 export interface AppContextType {
   isHydrated: boolean;
@@ -88,6 +89,10 @@ export interface AppContextType {
   settings: UserSettings;
   updateSettings: (settings: Partial<UserSettings>) => void;
   showOnboarding: boolean;
+  messMenu: any | null;
+  updateMessMenu: (menu: any) => void;
+  showMessOnboarding: boolean;
+  setShowMessOnboarding: (show: boolean) => void;
   setShowOnboarding: (show: boolean) => void;
   commandPaletteOpen: boolean;
   setCommandPaletteOpen: (open: boolean) => void;
@@ -128,6 +133,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isHydrated, setIsHydrated] = useState(false);
   const [activeView, setActiveView] = useState<ActiveView>('home');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [messMenu, setMessMenu] = useState<any | null>(null);
+  const [showMessOnboarding, setShowMessOnboarding] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<{ id: number; title: string; message: string; type?: 'info' | 'success' | 'warning' | 'error' } | null>(null);
   const toastIdRef = useRef(0);
@@ -1504,6 +1511,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     showToast('Batch Disconnected', 'You can now customize your schedule locally.', 'info');
   };
 
+  const updateMessMenu = (menu: any) => {
+    setMessMenu(menu);
+    if (menu) { localStorage.setItem('intersemester_mess_menu_v1', JSON.stringify(menu)); } else { localStorage.removeItem('intersemester_mess_menu_v1'); }
+  };
+
   const resetAllData = async () => {
     const userEmail = user?.primaryEmailAddress?.emailAddress || '';
     let defaultName = user?.fullName || user?.firstName || '';
@@ -1877,6 +1889,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         showToast,
         showHolidayAnimation,
         resetAllData,
+        messMenu,
+        updateMessMenu,
+        showMessOnboarding,
+        setShowMessOnboarding,
       }}
     >
       {children}

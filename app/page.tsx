@@ -29,6 +29,7 @@ import { TomorrowCarryView } from '@/components/carry/TomorrowCarryView';
 import { SubjectListView } from '@/components/subjects/SubjectListView';
 import { AcademicCalendar } from '@/components/calendar/AcademicCalendar';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
+import { MessView } from '@/components/mess/MessView';
 import { SettingsView } from '@/components/settings/SettingsView';
 import { HolidayBalloons } from '@/components/ui/HolidayBalloons';
 import { CampusSpotlightCard } from '@/components/ads/CampusSpotlightCard';
@@ -223,6 +224,7 @@ export default function AppHome() {
             {activeView === 'calendar' && <AcademicCalendar />}
             {activeView === 'notifications' && <NotificationCenter />}
             {activeView === 'settings' && <SettingsView />}
+            {activeView === 'mess' && <MessView />}
           </div>
         </main>
       </div>

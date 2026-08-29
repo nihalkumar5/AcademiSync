@@ -98,6 +98,16 @@ export const CommandPalette: React.FC = () => {
       },
     },
     {
+      id: 'nav_mess',
+      title: 'Mess Menu',
+      category: 'Navigation',
+      icon: <Sparkles className="w-4 h-4" />,
+      action: () => {
+        setActiveView('mess');
+        setCommandPaletteOpen(false);
+      },
+    },
+    {
       id: 'nav_exams',
       title: 'Exam Timetable',
       category: 'Navigation',
