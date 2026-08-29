@@ -171,62 +171,36 @@ export const AcademicCalendar: React.FC = () => {
       </div>
       </div>
 
-      {/* YOUR SEMESTER HERO */}
+      {/* UPCOMING CARDS */}
       <div className="mb-12">
-        <p className="text-[10px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-8">
-          YOUR SEMESTER
+        <p className="text-[10px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-4">
+          UPCOMING
         </p>
 
         {upcomingItems.length > 0 ? (
-          <div className="flex flex-col">
-            {/* Primary Event */}
-            <div className="flex flex-col group cursor-pointer">
-               <div className="flex items-center gap-2 mb-3">
-                 <span className="w-1.5 h-1.5 rounded-full bg-[#E55B4B]" />
-                 <p className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#E55B4B]">
-                   {(() => {
-                     const d = new Date(upcomingItems[0].dateStr);
-                     return `${d.getDate()} ${d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}`;
-                   })()}
-                 </p>
-               </div>
-               <h2 className="text-[32px] sm:text-[36px] font-medium text-[#111111] dark:text-[#FFFFFF] leading-none tracking-tight group-hover:opacity-80 transition-opacity">
-                 {upcomingItems[0].title}
-               </h2>
-               {upcomingItems[0].subject && (
-                 <p className="text-[12px] font-bold tracking-[1px] uppercase text-[#6F6F6F] mt-3">
-                   {upcomingItems[0].subject}
-                 </p>
-               )}
-            </div>
-            
-            {/* Secondary Events */}
-            {upcomingItems.length > 1 && (
-              <div className="mt-8 border-t border-[#E5E5E5] dark:border-[#333333] flex flex-col">
-                {upcomingItems.slice(1, 3).map((item, idx) => {
-                  const d = new Date(item.dateStr);
-                  const dateStr = `${d.getDate()} ${d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}`;
-                  return (
-                    <div key={idx} className="flex items-center justify-between py-4 cursor-pointer group border-b border-[#E5E5E5] dark:border-[#333333] last:border-0">
-                      <div className="flex items-center gap-6">
-                         <p className="text-[11px] font-bold tracking-[1px] uppercase text-[#111111] dark:text-[#FFFFFF] w-10 shrink-0">
-                           {dateStr}
-                         </p>
-                         <p className="text-[14px] text-[#111111] dark:text-[#FFFFFF] font-medium group-hover:opacity-80 transition-opacity">
-                           {item.title} <span className="text-[#6F6F6F] font-normal">{item.subject && `· ${item.subject}`}</span>
-                         </p>
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-[#A0A0A0] group-hover:text-[#111111] dark:group-hover:text-[#FFFFFF] transition-colors" />
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+          <div className="flex flex-col gap-3">
+            {upcomingItems.slice(0, 3).map((item, idx) => {
+              const d = new Date(item.dateStr);
+              const dateStr = `${String(d.getDate()).padStart(2, '0')} ${d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}`;
+              return (
+                <div key={idx} className="border border-[#E5E5E5] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-4 flex items-center justify-between group cursor-pointer hover:border-[#111111] dark:hover:border-[#FFFFFF] transition-colors rounded-none">
+                  <div className="flex items-center gap-5">
+                     <p className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] w-12 shrink-0">
+                       {dateStr}
+                     </p>
+                     <p className="text-[14px] text-[#111111] dark:text-[#FFFFFF] font-medium">
+                       {item.title} <span className="text-[#6F6F6F] font-normal">{item.subject && `· ${item.subject}`}</span>
+                     </p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-[#D8D8D8] dark:text-[#333333] group-hover:text-[#111111] dark:group-hover:text-[#FFFFFF] transition-colors" />
+                </div>
+              );
+            })}
           </div>
         ) : (
-          <h2 className="text-[28px] font-normal text-[#111111] dark:text-[#FFFFFF] leading-tight tracking-tight">
-            You're all caught up.
-          </h2>
+          <div className="border border-[#E5E5E5] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-4 text-center rounded-none">
+            <p className="text-[13px] text-[#6F6F6F]">You're all caught up.</p>
+          </div>
         )}
       </div>
 
