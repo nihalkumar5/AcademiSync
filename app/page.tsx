@@ -211,7 +211,7 @@ export default function AppHome() {
                   <TodayTimeline />
                   <SmartFocusList />
                 </div>
-                <InviteBatchmatesCard />
+                <div className="mt-6"><InviteBatchmatesCard /></div>
               </div>
             )}
 
