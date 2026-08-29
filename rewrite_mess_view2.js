@@ -1,4 +1,6 @@
-'use client';
+const fs = require('fs');
+
+const code = `'use client';
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
@@ -27,7 +29,7 @@ export const MessView: React.FC = () => {
   const selectedMenu = messMenu.menu?.[selectedDay] || {};
 
   const handleCopyLink = () => {
-    const url = `${window.location.origin}/join/${messMenu.id}`;
+    const url = \`\${window.location.origin}/join/\${messMenu.id}\`;
     navigator.clipboard.writeText(url);
     showToast('Copied', 'Invite link copied to clipboard!', 'success');
   };
@@ -75,16 +77,16 @@ export const MessView: React.FC = () => {
             <button
               key={day}
               onClick={() => setSelectedDay(day)}
-              className={`flex flex-col items-center justify-center min-w-[70px] h-[60px] border transition-colors cursor-pointer shrink-0 ${
+              className={\`flex flex-col items-center justify-center min-w-[70px] h-[60px] border transition-colors cursor-pointer shrink-0 \${
                 isSelected 
                   ? 'border-[#111111] dark:border-[#FFFFFF] bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111]' 
                   : 'border-[#D9D9D6] dark:border-[#333333] bg-transparent text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A]'
-              }`}
+              }\`}
             >
               <div className="flex items-center gap-1.5">
                 <span className="text-[13px] font-bold">{day.slice(0, 3)}</span>
                 {isToday && (
-                  <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white dark:bg-black' : 'bg-black dark:bg-white'}`} />
+                  <span className={\`w-1.5 h-1.5 rounded-full \${isSelected ? 'bg-white dark:bg-black' : 'bg-black dark:bg-white'}\`} />
                 )}
               </div>
             </button>
@@ -128,3 +130,6 @@ export const MessView: React.FC = () => {
     </div>
   );
 };
+`;
+
+fs.writeFileSync('components/mess/MessView.tsx', code);
