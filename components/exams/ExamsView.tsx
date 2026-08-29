@@ -147,8 +147,9 @@ export const ExamsView: React.FC = () => {
           </div>
           <h3 className="text-[18px] font-bold text-indigo-950 dark:text-white mb-2">{nextExam.subjectName}</h3>
           <p className="text-[14px] font-medium text-indigo-800/80 dark:text-indigo-200/80 leading-relaxed">
-            {new Date(nextExam.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-            {nextExam.time && ` • ${nextExam.time}`}
+                        {new Date(nextExam.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+            {' • '}
+            {new Date(nextExam.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
           </p>
         </div>
       )}
