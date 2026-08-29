@@ -2,6 +2,7 @@
 
 import React from 'react';
 import {
+  Sparkles,
   LayoutDashboard,
   CalendarDays,
   CheckSquare,
@@ -51,6 +52,7 @@ export const Sidebar: React.FC = () => {
   ];
 
   const secondaryNav: { id: ActiveView; label: string; icon: React.ReactNode; badge?: number }[] = [
+    { id: 'mess', label: 'Hostel Mess', icon: <Sparkles className="w-4 h-4" /> },
     { id: 'subjects', label: 'Subject Directory', icon: <BookOpen className="w-4 h-4" /> },
     {
       id: 'notifications',

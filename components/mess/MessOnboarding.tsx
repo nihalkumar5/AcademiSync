@@ -120,13 +120,13 @@ export const MessOnboarding: React.FC = () => {
             className="flex flex-col items-center justify-center h-full text-center"
           >
             <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-6">
-              YOUR MESS MENU
+              MESS
             </p>
             <h2 className="text-[32px] font-medium leading-[1.1] text-[#111111] dark:text-[#FFFFFF] mb-4">
-              Upload your weekly menu
+              Your mess, sorted.
             </h2>
             <p className="text-[#6F6F6F] text-[14px] leading-relaxed mb-8 max-w-[280px]">
-              We'll automatically organise the menu by day and meal. User kuch type nahi karega.
+              Upload the weekly menu once. We'll organise meals, timings and days automatically.
             </p>
 
             <input
@@ -143,12 +143,17 @@ export const MessOnboarding: React.FC = () => {
             >
               <Upload className="w-6 h-6 mb-3 text-[#111111] dark:text-[#FFFFFF]" />
               <span className="text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] mb-1">
-                Choose menu file
+                Upload weekly menu
               </span>
               <span className="text-[12px] text-[#6F6F6F]">
                 Photo or PDF
               </span>
             </button>
+            
+            <div className="mt-8 pt-6 border-t border-[#D8D8D8] dark:border-[#333333] w-full max-w-[280px]">
+              <p className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] mb-1">AI will organise</p>
+              <p className="text-[12px] text-[#6F6F6F]">Breakfast · Lunch · Snacks · Dinner</p>
+            </div>
           </motion.div>
         )}
 

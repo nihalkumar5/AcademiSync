@@ -65,19 +65,19 @@ export default function JoinMessPage({ params }: { params: { id: string } }) {
         YOU'VE BEEN INVITED
       </p>
       <h2 className="text-[32px] font-medium leading-[1.1] text-[#111111] dark:text-[#FFFFFF] mb-4">
-        Join Hostel Mess Menu
+        Join your hostel mess
       </h2>
       <p className="text-[#6F6F6F] text-[14px] mb-12 max-w-sm mx-auto">
-        Get instant access to the daily breakfast, lunch, snacks, and dinner schedule.
+        You'll get the current menu and meal timings.
       </p>
 
       <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-6 w-full max-w-sm mb-8 text-left">
         <p className="text-[12px] text-[#A0A0A0] font-mono mb-2">MESS ID: {params.id}</p>
         <h3 className="text-[16px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-2">
-          Weekly Dining Menu
+          Hostel Mess Menu
         </h3>
         <p className="text-[13px] text-[#6F6F6F]">
-          Includes 4 meals across 7 days.
+          Breakfast · Lunch · Snacks · Dinner
         </p>
       </div>
 

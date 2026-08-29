@@ -3,92 +3,153 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { MessOnboarding } from './MessOnboarding';
-import { ChevronLeft, ChevronRight, Share } from 'lucide-react';
+import { ArrowRight, Share } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 export const MessView: React.FC = () => {
   const { messMenu, updateMessMenu } = useApp();
-  const [selectedDay, setSelectedDay] = useState(
-    new Date().toLocaleDateString('en-US', { weekday: 'long' })
-  );
-
+  const [showThisWeek, setShowThisWeek] = useState(false);
+  
   if (!messMenu) {
     return <MessOnboarding />;
   }
 
+  const todayDate = new Date();
+  const currentDay = todayDate.toLocaleDateString('en-US', { weekday: 'long' });
+  const dateFormatted = todayDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }).toUpperCase();
+  const dayShort = currentDay.substring(0, 3).toUpperCase();
+
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const todayMenu = messMenu.menu?.[selectedDay] || {};
+  
+  // Hardcoded standard hostel timings as fallback/display
+  const mealTimings: Record<string, string> = {
+    'Breakfast': '8:00 — 10:00',
+    'Lunch': '12:30 — 2:30',
+    'Snacks': '4:30 — 5:30',
+    'Dinner': '7:30 — 9:30'
+  };
 
   const handleCopyLink = () => {
-    const url = `${window.location.origin}/join/${messMenu.id}`;
+    const url = window.location.origin + '/join/' + messMenu.id;
     navigator.clipboard.writeText(url);
     alert('Invite link copied!');
   };
 
-  return (
-    <div className="flex flex-col gap-6 max-w-4xl mx-auto w-full pb-12">
-      <div className="flex flex-col gap-4 pt-2 sm:pt-6">
-        <div className="flex justify-between items-start">
+  if (showThisWeek) {
+    return (
+      <div className="flex flex-col gap-6 max-w-4xl mx-auto w-full pb-12">
+        <div className="flex justify-between items-start pt-2 sm:pt-6 mb-4">
           <div>
-            <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
-              Mess<br />Menu
+            <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-1">MESS</p>
+            <h2 className="text-[32px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[1.1]">
+              THIS WEEK
             </h2>
-            <p className="text-[14px] font-normal text-[#6F6F6F] leading-[20px] mt-4">
-              Your weekly hostel dining schedule.
-            </p>
           </div>
           <button 
-            onClick={handleCopyLink}
-            className="flex items-center justify-center p-2 border border-[#D8D8D8] dark:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors rounded-none"
-            title="Share Invite Link"
+            onClick={() => setShowThisWeek(false)}
+            className="text-[13px] font-bold tracking-wider uppercase text-[#111111] dark:text-[#FFFFFF] hover:opacity-70 flex items-center gap-1"
           >
-            <Share className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF]" />
+            ← BACK
           </button>
         </div>
+
+        <div className="flex flex-col gap-8">
+          {days.map(day => {
+            const dayMenu = messMenu.menu?.[day];
+            if (!dayMenu) return null;
+            return (
+              <div key={day} className="border-t border-[#D8D8D8] dark:border-[#333333] pt-6">
+                <h3 className="text-[16px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-4 uppercase tracking-widest">{day}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+                  {['Breakfast', 'Lunch', 'Snacks', 'Dinner'].map(meal => {
+                    const items = dayMenu[meal];
+                    if (!items || items.length === 0) return null;
+                    return (
+                      <div key={meal}>
+                        <h4 className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#6F6F6F] mb-1">{meal}</h4>
+                        <p className="text-[11px] font-mono text-[#A0A0A0] mb-2">{mealTimings[meal]}</p>
+                        <p className="text-[14px] text-[#111111] dark:text-[#FFFFFF] leading-snug">{items.join(' · ')}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  const todayMenu = messMenu.menu?.[currentDay] || {};
+
+  return (
+    <div className="flex flex-col gap-6 max-w-4xl mx-auto w-full pb-12">
+      <div className="flex justify-between items-start pt-2 sm:pt-6">
+        <div>
+          <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-1">
+            MESS
+          </p>
+          <h2 className="text-[32px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[1.1]">
+            HOSTEL MESS
+          </h2>
+        </div>
+        <button 
+          onClick={() => setShowThisWeek(true)}
+          className="text-[13px] font-bold tracking-wider uppercase text-[#111111] dark:text-[#FFFFFF] hover:opacity-70 flex items-center gap-1"
+        >
+          THIS WEEK <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
 
-      <div className="flex overflow-x-auto hide-scrollbar gap-2 pb-2">
-        {days.map(day => (
-          <button
-            key={day}
-            onClick={() => setSelectedDay(day)}
-            className={`px-4 py-2 text-[13px] font-medium tracking-wide rounded-none transition-colors whitespace-nowrap ${
-              selectedDay === day 
-                ? 'bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111]' 
-                : 'bg-transparent border border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
-            }`}
-          >
-            {day.substring(0, 3).toUpperCase()}
-          </button>
-        ))}
+      <div className="mt-4 mb-2">
+        <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-1">
+          TODAY
+        </p>
+        <h3 className="text-[20px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wide">
+          {dayShort} · {dateFormatted}
+        </h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="flex flex-col gap-6">
         {['Breakfast', 'Lunch', 'Snacks', 'Dinner'].map(meal => {
           const items = todayMenu[meal];
           if (!items || items.length === 0) return null;
           return (
-            <div key={meal} className="border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-[20px] rounded-none">
-              <h4 className="text-[12px] font-bold tracking-[1px] uppercase text-[#6F6F6F] mb-4 flex items-center gap-2">
+            <div key={meal} className="flex flex-col">
+              <h4 className="text-[13px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] mb-0.5">
                 {meal}
               </h4>
-              <div className="flex flex-col gap-2">
-                {items.map((item: string, idx: number) => (
-                  <p key={idx} className="text-[15px] font-medium text-[#111111] dark:text-[#FFFFFF] leading-snug">
-                    {item}
-                  </p>
-                ))}
-              </div>
+              <p className="text-[12px] font-mono text-[#A0A0A0] mb-2">
+                {mealTimings[meal]}
+              </p>
+              <p className="text-[15px] text-[#111111] dark:text-[#FFFFFF] leading-relaxed">
+                {items.join(' · ')}
+              </p>
             </div>
           );
         })}
         {Object.keys(todayMenu).length === 0 && (
-          <div className="col-span-1 md:col-span-2 p-8 border border-dashed border-[#D8D8D8] dark:border-[#333333] text-center">
-            <p className="text-[14px] text-[#6F6F6F]">No menu data available for {selectedDay}.</p>
+          <div className="p-8 border border-dashed border-[#D8D8D8] dark:border-[#333333] text-center">
+            <p className="text-[14px] text-[#6F6F6F]">No menu data available for today.</p>
           </div>
         )}
       </div>
 
-      <div className="mt-8 border-t border-[#D8D8D8] dark:border-[#333333] pt-6 flex justify-between items-center">
+      {/* Share Section */}
+      <div className="mt-12 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] p-6 rounded-none">
+        <h3 className="text-[16px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-2">
+          Share this mess
+        </h3>
+        <p className="text-[14px] text-[#6F6F6F] mb-6">
+          Anyone in your hostel can join using this link.
+        </p>
+        <Button onClick={handleCopyLink} className="w-full flex justify-center items-center gap-2 h-12 text-[14px]">
+          <Share className="w-4 h-4" /> Share invite
+        </Button>
+      </div>
+
+      <div className="mt-4 flex justify-between items-center">
         <span className="text-[12px] text-[#A0A0A0] font-mono">ID: {messMenu.id}</span>
         <button 
           onClick={() => {
