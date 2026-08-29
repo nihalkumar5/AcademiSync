@@ -70,7 +70,7 @@ export interface AppContextType {
   toggleHomeworkStatus: (id: string) => void;
   carryItems: CarryItem[];
   toggleCarryItemPacked: (id: string) => void;
-  addCustomCarryItem: (title: string, dateStr?: string, reminderNote?: string) => void;
+  addCustomCarryItem: (title: string, subjectId?: string, reminderNote?: string) => void;
   deleteCarryItem: (id: string) => void;
   notifications: AppNotification[];
   markNotificationAsRead: (id: string) => void;
@@ -948,20 +948,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  const addCustomCarryItem = (title: string, dateStr?: string, reminderNote?: string) => {
+  const addCustomCarryItem = (title: string, subjectId?: string, reminderNote?: string) => {
     const now = new Date();
     const currentHour = now.getHours();
     const defaultDate = currentHour >= 18 
       ? new Date(Date.now() + 86400000).toISOString().split('T')[0] // Tomorrow
       : new Date().toISOString().split('T')[0];                     // Today
 
-    const targetDate = dateStr || defaultDate;
+    let subjectName;
+    if (subjectId) {
+      const sub = subjects.find(s => s.id === subjectId);
+      if (sub) subjectName = sub.name;
+    }
+
     const newItem: CarryItem = {
-      id: `carry_cust_${Date.now()}`,
+      id: `carry_cust_${Date.now()}_${Math.random().toString(36).substring(2,7)}`,
       title,
       source: 'custom',
+      subjectId,
+      subjectName,
       isPacked: false,
-      date: targetDate,
+      date: defaultDate,
       reminderNote,
     };
     const updated = [...carryItems, newItem];
@@ -971,6 +978,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const deleteCarryItem = (id: string) => {
+    const item = carryItems.find(i => i.id === id);
+    if (item?.source === 'subject') {
+      const updated = carryItems.map(i => i.id === id ? { ...i, isHidden: true } : i);
+      setCarryItemsState(updated);
+      storage.setCarryItems(updated);
+      return;
+    }
     const updated = carryItems.filter((i) => i.id !== id);
     setCarryItemsState(updated);
     storage.setCarryItems(updated);

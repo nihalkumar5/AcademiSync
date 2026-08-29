@@ -292,6 +292,7 @@ export const calculateTomorrowCarryItems = (
       subjectId: meta.subjectId,
       subjectName: meta.subjectName,
       isPacked: existing?.isPacked ?? false,
+      isHidden: existing?.isHidden ?? false,
       date: resolvedDateStr,
     });
   });
@@ -312,7 +313,8 @@ export const calculateTomorrowCarryItems = (
 export const calculateTodayFocus = (
   homework: Homework[],
   timetable: ClassSession[],
-  subjects: Subject[]
+  subjects: Subject[],
+  warningDays: number = 3
 ): {
   id: string;
   title: string;
@@ -322,6 +324,7 @@ export const calculateTodayFocus = (
   deadlineText?: string;
   completed: boolean;
   status?: HomeworkStatus;
+  originalPriority?: 'Low' | 'Medium' | 'High';
 }[] => {
   const items: {
     id: string;
@@ -332,6 +335,7 @@ export const calculateTodayFocus = (
     deadlineText?: string;
     completed: boolean;
     status?: HomeworkStatus;
+    originalPriority?: 'Low' | 'Medium' | 'High';
   }[] = [];
 
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
@@ -345,6 +349,16 @@ export const calculateTodayFocus = (
   incompleteHw.forEach((hw) => {
     const subject = subjectMap.get(hw.subjectId);
     const deadlineDate = new Date(hw.deadline);
+    
+    const timeDiff = deadlineDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+    // Only show tasks that are within the user's warning days threshold,
+    // or if they are already overdue (diffDays < 0).
+    if (diffDays > warningDays) {
+      return;
+    }
+
     const isDueToday = deadlineDate.toDateString() === today.toDateString();
     const isDueTomorrow = deadlineDate.toDateString() === tomorrow.toDateString();
 
@@ -374,6 +388,7 @@ export const calculateTodayFocus = (
       deadlineText,
       completed: false,
       status: hw.status,
+      originalPriority: hw.priority,
     });
   });
 

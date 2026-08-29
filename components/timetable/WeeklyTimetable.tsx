@@ -132,80 +132,41 @@ export const WeeklyTimetable: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex flex-col gap-3 mt-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              variant="outline"
-              size="md"
+        <div className="flex flex-col mt-4">
+          <div className="flex flex-wrap items-center gap-3 mb-[24px]">
+            <button
+              type="button"
               onClick={handleImportTimetable}
-              className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+              className="flex items-center justify-center h-[36px] px-[14px] rounded-none border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-[12px] font-semibold cursor-pointer w-auto"
             >
               Magic Import
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
+            </button>
+            <button
+              type="button"
               onClick={() => handleAddForDay(selectedMobileDay)}
-              className="rounded-none bg-black text-white dark:bg-white dark:text-black border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors flex items-center gap-1.5"
+              className="flex items-center justify-center gap-1.5 h-[36px] px-[14px] rounded-none bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] hover:opacity-90 transition-opacity text-[12px] font-semibold cursor-pointer w-auto"
             >
-              <Plus className="w-4 h-4" /> Add Class
-            </Button>
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+              Add Class
+            </button>
           </div>
 
-          <div className="mt-2 relative inline-block">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold tracking-widest text-[#6F6F6F] uppercase mb-1.5">BATCH</span>
             <button
-              onClick={() => setShowMoreMenu(!showMoreMenu)}
-              className="text-[11px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-widest flex items-center hover:opacity-70 transition-opacity"
+              onClick={() => setShowBatchMembersModal(true)}
+              className="flex items-center justify-between p-4 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left"
             >
-              BATCH · {profile.isBatchSynced && profile.batchKey ? `${profile.programme} ${profile.branch?.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')} · YEAR ${profile.year || 1}` : 'NOT CONNECTED'}
-              <span className="ml-2 font-normal opacity-50">→</span>
+              <div className="flex flex-col gap-1">
+                <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wide">
+                  {profile.isBatchSynced && profile.batchKey ? `${profile.programme} · ${profile.branch?.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')}` : 'NOT CONNECTED'}
+                </span>
+                <span className="text-[12px] font-medium text-[#6F6F6F] uppercase">
+                  YEAR {profile.year || 1} {profile.isBatchSynced ? '· MEMBERS' : ''}
+                </span>
+              </div>
+              <span className="text-[#6F6F6F]">→</span>
             </button>
-
-            {showMoreMenu && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowMoreMenu(false)} />
-                <div className="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-black border border-black dark:border-white shadow-xl z-50 flex flex-col">
-                  <button
-                    onClick={async () => {
-                      setShowMoreMenu(false);
-                      if (!isSignedIn) { clerk.openSignIn(); return; }
-                      try {
-                        const code = await shareTimetableWithBatch();
-                        const link = `${window.location.origin}/?invite=${code}`;
-                        navigator.clipboard.writeText(link);
-                        showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
-                      } catch (err) {}
-                    }}
-                    className="flex items-center gap-2 px-4 py-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left border-b border-black/10 dark:border-white/10"
-                  >
-                    <Share2 className="w-4 h-4" />
-                    Share Batch
-                  </button>
-
-                  {profile.isBatchSynced && profile.batchKey && (
-                    <button
-                      onClick={() => { setShowMoreMenu(false); setShowBatchMembersModal(true); }}
-                      className="flex items-center gap-2 px-4 py-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left border-b border-black/10 dark:border-white/10"
-                    >
-                      <Users className="w-4 h-4" />
-                      Batch Members
-                    </button>
-                  )}
-
-                  <button
-                    onClick={() => {
-                      setShowMoreMenu(false);
-                      if (!isSignedIn) { clerk.openSignIn(); return; }
-                      setShowJoinModal(true);
-                    }}
-                    className="flex items-center gap-2 px-4 py-3 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left"
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    Join Batch
-                  </button>
-                </div>
-              </>
-            )}
           </div>
         </div>
       </div>
@@ -431,6 +392,10 @@ export const WeeklyTimetable: React.FC = () => {
       <BatchMembersModal
         isOpen={showBatchMembersModal}
         onClose={() => setShowBatchMembersModal(false)}
+        onJoinBatch={() => {
+          setShowBatchMembersModal(false);
+          setShowJoinModal(true);
+        }}
       />
     </div>
   );

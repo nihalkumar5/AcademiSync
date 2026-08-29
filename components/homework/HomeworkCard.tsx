@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Homework, Subject } from '@/lib/types';
 import {
   Calendar,
@@ -17,13 +17,13 @@ import {
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '@/context/AppContext';
-import { useState, useRef, useEffect } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 
 export interface HomeworkCardProps {
   homework: Homework;
   subject?: Subject;
+  index: number;
   onToggleStatus: (id: string) => void;
   onEdit: (homework: Homework) => void;
   onDelete: (id: string) => void;
@@ -33,6 +33,7 @@ export interface HomeworkCardProps {
 export const HomeworkCard: React.FC<HomeworkCardProps> = ({
   homework,
   subject,
+  index,
   onToggleStatus,
   onEdit,
   onDelete,
@@ -62,244 +63,195 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
   // Deadline calculation
   const deadlineDate = new Date(homework.deadline);
   const now = new Date();
-  const diffHours = Math.round((deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60));
-  const diffDays = Math.ceil(diffHours / 24);
+  
+  // Set times to midnight to calculate pure day differences
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfDeadline = new Date(deadlineDate.getFullYear(), deadlineDate.getMonth(), deadlineDate.getDate());
+  
+  const diffTime = startOfDeadline.getTime() - startOfToday.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-  let deadlineLabel = `${deadlineDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-  let isUrgent = diffDays <= 1 && !isDone;
+  let deadlineLabel = '';
+  if (diffDays === 0) {
+    deadlineLabel = 'today';
+  } else if (diffDays === 1) {
+    deadlineLabel = 'tomorrow';
+  } else {
+    deadlineLabel = `${deadlineDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+  }
 
-  const priorityStyles: Record<string, string> = {
-    High: 'bg-transparent text-rose-600 dark:text-rose-400 border border-rose-500 rounded-none',
-    Medium: 'bg-transparent text-amber-600 dark:text-amber-400 border border-amber-500 rounded-none',
-    Low: 'bg-transparent text-zinc-500 dark:text-zinc-400 border border-zinc-500 dark:border-zinc-700 rounded-none',
-  };
+  const isUrgent = diffDays <= 1 && !isDone;
+  
+  const formattedIndex = String(index + 1).padStart(2, '0');
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.96 }}
-      transition={{ duration: 0.2 }}
-      className={clsx(
-        'glass-card group flex flex-col p-4 transition-all text-left relative',
-        isDone ? 'opacity-55' : 'opacity-100'
-      )}
-    >
-      {/* Top Header: Subject Badge, Priority & Actions */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 flex-wrap">
-          {subject && (
-            <span
-              className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-none border"
-              style={{
-                backgroundColor: `${subject.color}15`,
-                color: subject.color,
-                borderColor: `${subject.color}35`,
-              }}
-            >
-              {subject.name || subject.code}
-            </span>
-          )}
-
-          <span
-            className={clsx(
-              'text-[10px] font-semibold font-mono px-2 py-0.5',
-              priorityStyles[homework.priority] || priorityStyles.Low
+    <div className={clsx(
+      "relative flex flex-col p-[16px] bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] w-full overflow-hidden transition-opacity",
+      isDone ? 'opacity-60' : 'opacity-100'
+    )}>
+      <div className="relative z-10 flex flex-col">
+        {/* Number and Menu Row */}
+        <div className="flex items-start justify-between">
+          <div className="text-[44px] font-bold text-black/10 dark:text-white/10 select-none pointer-events-none leading-[40px] tracking-tighter">
+            {formattedIndex}
+          </div>
+          <div className="flex items-center gap-2">
+            {!isDone && homework.priority !== 'Low' && (
+              <span className={clsx(
+                "text-[9px] font-bold uppercase tracking-widest border px-2 py-0.5",
+                homework.priority === 'High' ? "text-amber-600 border-amber-600/30 bg-amber-500/5" : "text-amber-600/70 border-amber-600/20 bg-amber-500/5"
+              )}>
+                {homework.priority}
+              </span>
             )}
-          >
-            {homework.priority}
-          </span>
-        </div>
+            <div className="relative shrink-0 ml-2" ref={dropdownRef}>
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="p-1 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer text-[#6F6F6F]"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+            <AnimatePresence>
+              {showMenu && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] shadow-xl z-50 py-1"
+                >
+                  {homework.attachmentName && (
+                    <a
+                      href={homework.attachmentName.startsWith('http') ? homework.attachmentName : `https://${homework.attachmentName}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors w-full cursor-pointer"
+                    >
+                      <Link className="w-3.5 h-3.5" />
+                      Open Attachment
+                    </a>
+                  )}
 
-        {/* Action Dropdown */}
-        <div className="relative" ref={dropdownRef}>
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setShowMenu(!showMenu)}
-            className="p-1.5 rounded-none text-[#8C7D70] hover:text-[#1A1918] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
-            title="Options"
-          >
-            <MoreVertical className="w-4 h-4" />
-          </motion.button>
+                  {onShare && (
+                    <button
+                      onClick={() => {
+                        onShare(homework);
+                        setShowMenu(false);
+                      }}
+                      className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors w-full cursor-pointer"
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                      Share Task
+                    </button>
+                  )}
 
-          <AnimatePresence>
-            {showMenu && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                style={{ transformOrigin: 'top right' }}
-                transition={{ duration: 0.15 }}
-                className="absolute right-0 top-full mt-1 w-56 bg-white dark:bg-zinc-900 border border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] z-50 flex flex-col py-1"
-              >
-                {onShare && (
                   <button
                     onClick={() => {
-                      onShare(homework);
+                      if (profile?.role !== 'CLASS_REPRESENTATIVE') {
+                        showToast("Not Allowed", "Only Class Representatives can propose tasks to the batch.", "error");
+                        return;
+                      }
+                      if (homework.isBatchShared) {
+                        showToast("Already Shared", "This task has already been shared with your batch.", "info");
+                        return;
+                      }
+                      setShowConfirmModal(true);
+                    }}
+                    className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors w-full cursor-pointer"
+                  >
+                    {isBatchCR ? (
+                      <Users className="w-3.5 h-3.5" />
+                    ) : (
+                      <Vote className="w-3.5 h-3.5" />
+                    )}
+                    {isBatchCR ? 'Post to Entire Batch' : 'Propose to Batch'}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      onEdit(homework);
                       setShowMenu(false);
                     }}
-                    className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-left text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors w-full cursor-pointer"
+                    className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors w-full cursor-pointer border-t border-[#D9D9D6] dark:border-[#333333]"
                   >
-                    <Share2 className="w-4 h-4" />
-                    Share to your friend
+                    <Edit2 className="w-3.5 h-3.5" />
+                    Edit Task
                   </button>
-                )}
-
-                <button
-                  onClick={async () => {
-                    setShowMenu(false);
-                    if (!profile.isBatchSynced || !profile.batchKey) {
-                      showToast("Action Required", "You must join a batch to share tasks with batchmates.", "warning");
-                      return;
-                    }
-                    if (homework.isBatchShared) {
-                      showToast("Already Shared", "This task has already been shared with your batch.", "info");
-                      return;
-                    }
-
-                    setShowConfirmModal(true);
-                  }}
-                  className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-left text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors w-full cursor-pointer"
-                >
-                  {isBatchCR ? (
-                    <Users className="w-4 h-4" />
-                  ) : (
-                    <Vote className="w-4 h-4" />
-                  )}
-                  {isBatchCR ? 'Post to Entire Batch' : 'Propose to Batch'}
-                </button>
-
-                <button
-                  onClick={() => {
-                    onEdit(homework);
-                    setShowMenu(false);
-                  }}
-                  className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-left text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors w-full cursor-pointer border-t border-black/10 dark:border-white/10"
-                >
-                  <Edit2 className="w-4 h-4" />
-                  Edit Task
-                </button>
-                
-                <button
-                  onClick={() => {
-                    onDelete(homework.id);
-                    setShowMenu(false);
-                  }}
-                  className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-left text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors w-full cursor-pointer border-t border-black/10 dark:border-white/10"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete Task
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  
+                  <button
+                    onClick={() => {
+                      onDelete(homework.id);
+                      setShowMenu(false);
+                    }}
+                    className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors w-full cursor-pointer border-t border-[#D9D9D6] dark:border-[#333333]"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete Task
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          </div>
         </div>
-      </div>
 
-      {/* Task Content: Interactive Checkbox & Title */}
-      <div className="flex items-start gap-3 mt-3">
-        {/* Tactile Square Checkbox */}
-        <motion.button
-          type="button"
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.92 }}
-          onClick={() => onToggleStatus(homework.id)}
-          className={clsx(
-            'w-5 h-5 rounded-none flex items-center justify-center border transition-all mt-0.5 shrink-0 cursor-pointer shadow-none',
-            homework.status === 'Completed'
-              ? 'bg-emerald-500 border-emerald-500 text-white'
-              : homework.status === 'In Progress'
-              ? 'border-amber-500 bg-amber-500/15 text-amber-600 dark:text-amber-400'
-              : 'border-black dark:border-white bg-transparent hover:bg-black/5 dark:hover:bg-white/5'
-          )}
-          title={
-            homework.status === 'Not Started'
-              ? 'Click to mark In Progress'
-              : homework.status === 'In Progress'
-              ? 'Click to mark Completed'
-              : 'Click to reset to Not Started'
-          }
-          aria-label="Toggle task status"
-        >
-          {homework.status === 'Completed' && (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.15 }}
-            >
-              <Check className="w-3.5 h-3.5 stroke-[3.5]" />
-            </motion.div>
-          )}
-          {homework.status === 'In Progress' && (
-            <div className="w-2 h-2 bg-amber-500 animate-pulse" />
-          )}
-        </motion.button>
+        {/* Course Name */}
+        <span className="text-[10px] font-semibold uppercase tracking-[1.3px] text-[#817B75] break-words pr-2 mt-4">
+          {subject?.name || homework.subjectName || 'GENERAL'}
+        </span>
 
-        <div className="flex flex-col min-w-0 flex-1">
-          <h4
+        {/* Title Row with Checkbox */}
+        <div className="flex items-start gap-3 mt-[12px]">
+          <button 
+            type="button"
+            onClick={() => onToggleStatus(homework.id)}
             className={clsx(
-              'text-[15px] font-semibold tracking-tight leading-snug transition-colors',
-              isDone
-                ? 'line-through text-[#9E9084] dark:text-[#7A736C]'
-                : 'text-[#1A1918] dark:text-[#F4F1EA]'
+              "mt-[3px] shrink-0 w-[20px] h-[20px] rounded-full border-[1.5px] flex items-center justify-center transition-colors cursor-pointer",
+              isDone 
+                ? "bg-[#111111] border-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:border-[#FFFFFF] dark:text-[#111111]" 
+                : "border-[#D9D9D6] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-transparent"
             )}
           >
-            {homework.title}
-          </h4>
-
-          {homework.description && (
-            <p className="text-xs text-[#7A6D61] dark:text-[#9A9188] mt-1 line-clamp-2 leading-relaxed font-normal">
-              {homework.description}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Footer Info: Deadline, Status, Attachment */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mt-3.5 pt-2.5 border-t border-[#EFEAE2] dark:border-[#282624] text-[11px]">
-        <div className="flex items-center gap-3 text-[#7A6D61] dark:text-[#9A9188]">
-          <span
-            className={clsx(
-              'flex items-center gap-1.5 font-mono font-medium',
-              isUrgent ? 'text-rose-600 dark:text-rose-400 font-bold' : ''
+            {isDone ? (
+              <Check className="w-3.5 h-3.5" strokeWidth={3} />
+            ) : null}
+          </button>
+          <div className="flex flex-col">
+            <h4 className={clsx(
+              "text-[17px] font-semibold leading-[21px]",
+              isDone ? "text-[#6F6F6F] line-through" : "text-[#111111] dark:text-[#FFFFFF]"
+            )}>
+              {homework.title}
+            </h4>
+            {homework.description && (
+              <p className="text-[13px] text-[#6F6F6F] mt-1.5 line-clamp-2 leading-relaxed">
+                {homework.description}
+              </p>
             )}
-          >
-            <Calendar className="w-3.5 h-3.5" />
-            {deadlineLabel}
+          </div>
+        </div>
+
+        {/* Bottom row metadata */}
+        <div className="flex items-center justify-between mt-[20px] text-[11px] font-semibold uppercase tracking-[1px] leading-none">
+          {/* Date */}
+          <span className={clsx(isUrgent ? "text-red-600" : "text-[#6F6F6F]")}>
+            DUE {deadlineLabel.toUpperCase()}
           </span>
-
-          {homework.attachmentName && (
-            <a 
-              href={homework.attachmentName.startsWith('http') ? homework.attachmentName : `https://${homework.attachmentName}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Paperclip className="w-3 h-3" />
-              <span className="truncate max-w-[120px]">Drive Link</span>
-            </a>
-          )}
+          
+          {/* Status indicators */}
+          <div className="flex items-center gap-3">
+            {homework.status === 'In Progress' && (
+              <span className="flex items-center gap-1 text-blue-600">
+                ● IN PROGRESS
+              </span>
+            )}
+            {isDone && (
+              <span className="flex items-center gap-1 text-[#6F6F6F]">
+                ● COMPLETED
+              </span>
+            )}
+          </div>
         </div>
-
-        {/* Status Indicator Button */}
-        <button
-          type="button"
-          onClick={() => onToggleStatus(homework.id)}
-          className={clsx(
-            'text-[10px] font-mono font-bold px-2 py-0.5 rounded-none border cursor-pointer hover:scale-105 active:scale-95 transition-all',
-            isDone
-              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/40'
-              : homework.status === 'In Progress'
-              ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/40'
-              : 'bg-transparent border-black/30 dark:border-white/30 text-black/70 dark:text-white/70'
-          )}
-          title="Click to cycle status"
-        >
-          {homework.status === 'In Progress' ? 'In Progress ⏳' : homework.status === 'Completed' ? 'Completed 🎉' : 'Not Started'}
-        </button>
       </div>
 
       <Modal
@@ -309,18 +261,22 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
         maxWidth="sm"
       >
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-black/70 dark:text-white/70">
+          <p className="text-[14px] text-[#111111] dark:text-[#FFFFFF]">
             {isBatchCR 
               ? "Are you sure you want to post this task to the entire batch? As a CR, it will be automatically approved."
               : "Are you sure you want to propose this task to the entire batch? It will require a 30% consensus to be approved."}
           </p>
-          <div className="flex items-center justify-end gap-2 pt-2">
-            <Button variant="ghost" size="sm" onClick={() => setShowConfirmModal(false)}>
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#D9D9D6] dark:border-[#333333] mt-2">
+            <button 
+              type="button"
+              className="text-[13px] font-bold uppercase text-[#111111] dark:text-[#FFFFFF] px-4 py-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              onClick={() => setShowConfirmModal(false)}
+            >
               Cancel
-            </Button>
-            <Button 
-              variant="primary" 
-              size="sm"
+            </button>
+            <button 
+              type="button"
+              className="text-[13px] font-bold uppercase bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] px-6 py-2.5 hover:opacity-90 transition-opacity"
               onClick={async () => {
                 setShowConfirmModal(false);
                 await proposeBatchTask({
@@ -336,10 +292,10 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
               }}
             >
               {isBatchCR ? "Yes, Post Task" : "Yes, Propose Task"}
-            </Button>
+            </button>
           </div>
         </div>
       </Modal>
-    </motion.div>
+    </div>
   );
 };

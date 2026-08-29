@@ -84,7 +84,7 @@ export const OverviewHeader: React.FC = () => {
         </h2>
         
         <div className="flex flex-col gap-2 mt-2">
-          <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px]">
+          <p className="text-[14px] font-normal text-[#6F6F6F] leading-[20px]">
             {dateFormatted} · {timeFormatted}
           </p>
 
@@ -93,7 +93,7 @@ export const OverviewHeader: React.FC = () => {
               <span className="text-[13px] leading-[18px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider truncate">
                 SEM {profile.semester} · {profile.programme}{profile.branch ? ` · ${profile.branch.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')}` : ''}
               </span>
-              <span className="text-[13px] leading-[18px] font-normal text-[#777777] uppercase truncate tracking-wide mt-1">
+              <span className="text-[13px] leading-[18px] font-normal text-[#6F6F6F] uppercase truncate tracking-wide mt-1">
                 {profile.rollNumber ? `${profile.rollNumber} · ` : ''}{getShortCollegeName(profile.college)}
               </span>
             </div>

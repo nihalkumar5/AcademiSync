@@ -2,34 +2,9 @@
 
 import React, { useState } from 'react';
 import { ClassSession, Subject } from '@/lib/types';
-import { MapPin, User, MoreHorizontal, Edit2, Trash2, FlaskConical, Clock } from 'lucide-react';
-import { Badge } from '../ui/Badge';
+import { MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useApp } from '@/context/AppContext';
-import { getSubjectThemeStyle } from '@/lib/timetableUtils';
-
-// 10 distinct, elegant & engaging pastel paper colors (slightly lighter shades)
-const ELEGANT_PASTEL_PALETTE = [
-  'bg-[#FEF9C3]/80 dark:bg-[#78350F]/25 border-[#FDE047]/60 dark:border-[#FACC15]/30', // Golden Cream
-  'bg-[#E0F2FE]/80 dark:bg-[#0C4A6E]/25 border-[#7DD3FC]/60 dark:border-[#38BDF8]/30', // Ice Denim Blue
-  'bg-[#FCE7F3]/80 dark:bg-[#831843]/25 border-[#F9A8D4]/60 dark:border-[#F472B6]/30', // Soft Rose Pink
-  'bg-[#DCFCE7]/80 dark:bg-[#064E3B]/25 border-[#86EFAC]/60 dark:border-[#4ADE80]/30', // Fresh Sage Mint
-  'bg-[#FFEDD5]/80 dark:bg-[#7C2D12]/25 border-[#FDBA74]/60 dark:border-[#FB923C]/30', // Peach Terracotta
-  'bg-[#F3E8FF]/80 dark:bg-[#3B0764]/25 border-[#D8B4FE]/60 dark:border-[#C084FC]/30', // Soft Lavender
-  'bg-[#CCFBF1]/80 dark:bg-[#134E4A]/25 border-[#5EEAD4]/60 dark:border-[#2DD4BF]/30', // Soft Teal
-  'bg-[#FFE4E6]/80 dark:bg-[#881337]/25 border-[#FDA4AF]/60 dark:border-[#FB7185]/30', // Blush Coral
-  'bg-[#FEF3C7]/80 dark:bg-[#78350F]/25 border-[#FCD34D]/60 dark:border-[#F59E0B]/30', // Warm Amber
-  'bg-[#ECFCCB]/80 dark:bg-[#365314]/25 border-[#BEF264]/60 dark:border-[#A3E635]/30', // Soft Lime
-];
-
-const getSubjectPastelStyle = (sub?: Subject, fallbackId: string = '') => {
-  const key = sub?.name || sub?.id || fallbackId;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    hash = (hash * 31 + key.charCodeAt(i)) % ELEGANT_PASTEL_PALETTE.length;
-  }
-  return ELEGANT_PASTEL_PALETTE[Math.abs(hash)];
-};
 
 export interface ClassCardProps {
   session: ClassSession;
@@ -46,51 +21,60 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   onDelete,
   isCurrent = false,
 }) => {
-  const { settings } = useApp();
   const [menuOpen, setMenuOpen] = useState(false);
-  const theme = settings.theme || 'light';
 
-  let cardColorClass = '';
-  if (isCurrent) {
-    cardColorClass = 'bg-black text-white dark:bg-white dark:text-black shadow-lg shadow-black/10 dark:shadow-white/10 border-transparent ring-1 ring-black/5 dark:ring-white/5';
-  } else {
-    cardColorClass = getSubjectPastelStyle(subject, session.id) + ' text-black dark:text-white';
+  // Colors
+  const cardBgClass = isCurrent 
+    ? 'bg-[#111111] dark:bg-[#FFFFFF] border-[#111111] dark:border-[#FFFFFF]' 
+    : 'bg-[#FFFFFF] dark:bg-[#111111] border-[#D9D9D6] dark:border-[#333333]';
+
+  const textPrimaryClass = isCurrent
+    ? 'text-[#FFFFFF] dark:text-[#111111]'
+    : 'text-[#111111] dark:text-[#FFFFFF]';
+    
+  const textSecondaryClass = isCurrent
+    ? 'text-[#FFFFFF]/70 dark:text-[#111111]/70'
+    : 'text-[#6F6F6F] dark:text-[#999999]';
+
+  // Format Faculty string (handle "+ 2 faculty" logic)
+  const rawFaculty = session.faculty || subject?.facultyName || '';
+  let displayFaculty = rawFaculty;
+  if (rawFaculty) {
+    const facultyList = rawFaculty.split('/').map(f => f.trim()).filter(Boolean);
+    if (facultyList.length > 1) {
+      displayFaculty = `${facultyList[0]} + ${facultyList.length - 1} faculty`;
+    }
   }
 
-  // Remove brutalist inline styles since we're using tailwind classes from the pastel palette now
-  const customStyle = isCurrent ? undefined : {};
+  const roomStr = session.room || (session.isLab ? subject?.labRoom : subject?.room) || 'TBA';
 
   return (
     <div
       className={clsx(
-        "group relative flex flex-col p-4 text-left transition-all border rounded-none",
-        cardColorClass
+        "group relative flex flex-col p-[14px] text-left transition-all border rounded-none",
+        cardBgClass
       )}
-      style={customStyle}
     >
-      <div className="flex items-start justify-between gap-1.5 mb-2">
+      {/* Top Bar: Time & Actions */}
+      <div className="flex items-start justify-between gap-1.5">
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 border border-current text-xs font-medium opacity-80">
-            <Clock className="w-3.5 h-3.5" />
-            <span>{session.startTime} – {session.endTime}</span>
-          </div>
-
+          <span className={clsx("text-[12px] font-semibold tracking-wide font-mono", textPrimaryClass)}>
+            {session.startTime} — {session.endTime}
+          </span>
           {session.isLab && (
-            <Badge variant="amber" size="sm" className="rounded-none px-2 border-black dark:border-white">
-              <FlaskConical className="w-3 h-3 mr-1" />
-              Lab
-            </Badge>
+            <span className={clsx(
+              "text-[10px] font-bold tracking-widest px-1.5 py-0.5 uppercase",
+              isCurrent 
+                ? "text-black bg-white/20 dark:text-white dark:bg-black/20" 
+                : "text-[#B35900] dark:text-[#FFA033] bg-[#B35900]/10 dark:bg-[#FFA033]/10"
+            )}>
+              LAB
+            </span>
           )}
           {isCurrent && (
-            <span className="flex h-2 w-2 relative ml-1">
-              <span className={clsx(
-                "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
-                isCurrent ? "bg-white dark:bg-black" : "bg-black dark:bg-white"
-              )}></span>
-              <span className={clsx(
-                "relative inline-flex rounded-full h-2 w-2",
-                isCurrent ? "bg-white dark:bg-black" : "bg-black dark:bg-white"
-              )}></span>
+            <span className="flex h-1.5 w-1.5 relative ml-1">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-current"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-current"></span>
             </span>
           )}
         </div>
@@ -100,10 +84,11 @@ export const ClassCard: React.FC<ClassCardProps> = ({
           <button
             onClick={() => setMenuOpen((prev) => !prev)}
             className={clsx(
-              "p-1.5 rounded-lg transition-colors",
+              "p-1 rounded-none transition-colors",
+              textSecondaryClass,
               isCurrent 
-                ? "text-indigo-600 hover:bg-indigo-500/10 dark:text-indigo-400"
-                : "text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-zinc-200 dark:hover:bg-zinc-800"
+                ? "hover:text-white dark:hover:text-black hover:bg-white/10 dark:hover:bg-black/10"
+                : "hover:text-[#111111] dark:hover:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5"
             )}
           >
             <MoreHorizontal className="w-4 h-4" />
@@ -115,26 +100,25 @@ export const ClassCard: React.FC<ClassCardProps> = ({
                 className="fixed inset-0 z-20"
                 onClick={() => setMenuOpen(false)}
               />
-              <div className="absolute right-0 mt-2 w-32 rounded-xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 shadow-xl shadow-slate-200/20 dark:shadow-none py-1.5 z-30 text-left overflow-hidden">
+              <div className="absolute right-0 mt-1 w-32 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] py-1 z-30 text-left rounded-none shadow-sm">
                 <button
                   onClick={() => {
                     setMenuOpen(false);
                     onEdit(session);
                   }}
-                  className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 text-left transition-colors"
+                  className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 text-left transition-colors"
                 >
-                  <Edit2 className="w-3.5 h-3.5 text-slate-400" />
+                  <Edit2 className="w-3.5 h-3.5" />
                   Edit Class
                 </button>
-                <div className="h-px w-full bg-slate-100 dark:bg-zinc-800 my-0.5"></div>
                 <button
                   onClick={() => {
                     setMenuOpen(false);
                     onDelete(session.id);
                   }}
-                  className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-left transition-colors"
+                  className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] font-medium text-[#D32F2F] hover:bg-[#D32F2F]/5 text-left transition-colors"
                 >
-                  <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                  <Trash2 className="w-3.5 h-3.5" />
                   Remove
                 </button>
               </div>
@@ -143,28 +127,31 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         </div>
       </div>
 
-      {/* Subject Name & Code */}
-      <div className="mt-1 flex items-start gap-2.5">
+      {/* Title */}
+      <div className="mt-3 flex items-start gap-[10px]">
         <div
-          className="w-1.5 h-6 rounded-none shrink-0 mt-0.5"
-          style={{ backgroundColor: subject?.color || '#000000' }}
+          className="w-[3px] self-stretch shrink-0"
+          style={{ backgroundColor: subject?.color || (isCurrent ? 'currentColor' : '#111111') }}
         />
-        <h4 className="text-[15px] leading-snug font-bold">
+        <h4 className={clsx(
+          "text-[16px] leading-[20px] font-semibold tracking-tight break-words",
+          textPrimaryClass
+        )}>
           {subject?.name || 'Subject'}
         </h4>
       </div>
 
-      {/* Room & Faculty */}
-      <div className="mt-3.5 flex items-center gap-4 text-xs font-medium opacity-80">
-        <div className="flex items-center gap-1.5 border border-current px-2 py-1 rounded-none">
-          <MapPin className="w-3.5 h-3.5" />
-          <span>{session.room || (session.isLab ? subject?.labRoom : subject?.room) || 'TBA'}</span>
-        </div>
-        {(session.faculty || subject?.facultyName) && (
-          <div className="flex items-center gap-1.5 truncate">
-            <User className="w-3.5 h-3.5" />
-            <span className="truncate">{session.faculty || subject?.facultyName}</span>
-          </div>
+      {/* Metadata */}
+      <div className={clsx(
+        "mt-2 ml-[13px] flex items-center gap-1.5 text-[12px] font-medium truncate",
+        textSecondaryClass
+      )}>
+        <span className="shrink-0">⌖ {roomStr}</span>
+        {displayFaculty && (
+          <>
+            <span className="shrink-0">·</span>
+            <span className="truncate">{displayFaculty}</span>
+          </>
         )}
       </div>
     </div>

@@ -37,7 +37,7 @@ export const MobileNav: React.FC = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FFFFFF] dark:bg-[#111111] border-t border-[#E0E0E0] dark:border-[#333333] px-2 pt-2 pb-safe">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FFFFFF] dark:bg-[#111111] border-t border-[#D9D9D6] dark:border-[#333333] px-2 pt-2 pb-safe">
       <div className="flex items-center justify-around max-w-md mx-auto relative h-[56px]">
         {tabs.map((tab) => {
           const isActive = activeView === tab.id;
@@ -56,7 +56,7 @@ export const MobileNav: React.FC = () => {
                 {tab.icon}
 
                 {tab.badge !== undefined && (
-                  <span className="absolute -top-1.5 -right-2 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] text-[11px] font-bold w-[14px] h-[14px] flex items-center justify-center leading-none rounded-none">
+                  <span className="absolute -top-1.5 -right-2 min-w-[14px] h-[14px] px-1 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] font-mono text-[9px] font-bold flex items-center justify-center leading-none rounded-full border border-white dark:border-[#111111]">
                     {tab.badge}
                   </span>
                 )}

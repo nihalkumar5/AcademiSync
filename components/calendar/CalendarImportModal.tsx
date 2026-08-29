@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
@@ -6,7 +7,7 @@ import { AcademicEvent, CalendarEventType } from '@/lib/types';
 import { getLocalDateString, getTodayDateString } from '@/lib/timetableUtils';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
-import { Upload, Sparkles, Check, Trash2, CalendarDays } from 'lucide-react';
+import {  Upload, Sparkles, Check, Trash2, CalendarDays , Bot, Plus , X, ChevronDown} from 'lucide-react';
 
 export interface CalendarImportModalProps {
   isOpen: boolean;
@@ -161,10 +162,11 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
     setExtractedEvents((prev) => [
       ...prev,
       {
-        title: 'New Event',
-        type: 'exam',
+        title: '',
+        type: 'EVENT',
         date: todayStr,
-      },
+        location: '',
+      }
     ]);
   };
 
@@ -211,174 +213,193 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
   };
 
   return (
+    
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Import Academic Calendar via Magic"
-      description="Upload your institute academic calendar photo or PDF to extract exam dates, holidays, and events."
-      maxWidth={step === 'review' ? '4xl' : 'lg'}
+      title="Import Calendar"
+      description="Upload a photo or PDF and we'll extract key dates and events."
+      maxWidth={step === 'review' ? '4xl' : 'md'}
+      mobileFullSheet={step === 'review'}
     >
       {step === 'upload' && (
-        <div className="flex flex-col gap-6 text-center">
-          <div className="relative group transition-all">
-            <div className="relative flex flex-col items-center justify-center p-10 border-2 border-dashed border-black dark:border-white hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-300 cursor-pointer overflow-hidden">
-              <input
-                type="file"
-                accept="image/*,.pdf"
-                multiple
-                onChange={handleFileUpload}
-                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-              />
-              <div className="w-14 h-14 bg-black text-white dark:bg-white dark:text-black flex items-center justify-center mb-4 transition-transform group-hover:-translate-y-1 group-hover:scale-110">
-                <Upload className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-black dark:text-white mb-2 tracking-tight">
-                Upload Academic Calendar Document
-              </h3>
-              <p className="text-sm text-black/60 dark:text-white/60 max-w-[280px] mx-auto leading-relaxed">
-                Powered by Gemini Vision OCR. Drop your official academic calendar to auto-extract holidays and exams.
-              </p>
+        <div className="flex flex-col text-center">
+          <div className="relative group w-full h-[220px] sm:h-[240px] flex flex-col items-center justify-center border border-dashed border-[#D9D9D6] dark:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer mb-5">
+            <input
+              type="file"
+              accept="image/*,.pdf" multiple
+              onChange={handleFileUpload}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+            />
+            <Upload className="w-5 h-5 mb-3 text-[#111111] dark:text-[#FFFFFF]" />
+            <h3 className="text-[15px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-1">
+              Choose a calendar file
+            </h3>
+            <p className="text-[13px] text-[#6F6F6F] mb-4">
+              Photo or PDF
+            </p>
+            
+            <div className="px-6 h-[44px] flex items-center justify-center bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto mb-3">
+              Choose file
+            </div>
 
-              <div className="mt-6 pointer-events-none">
-                <Button variant="primary" className="rounded-xl shadow-lg shadow-black/10 dark:shadow-white/10 ring-1 ring-black/5 dark:ring-white/5">
-                  Choose Files
-                </Button>
-              </div>
+            <div className="text-[11px] text-[#999999] font-medium tracking-[0.5px] uppercase">
+              JPG · PNG · PDF
             </div>
           </div>
 
-          <div className="flex items-center justify-center gap-4 text-xs font-bold text-black/40 dark:text-white/40 tracking-widest uppercase">
-            <span className="w-12 h-px bg-black/10 dark:bg-white/10" />
-            Or Try Demo
-            <span className="w-12 h-px bg-black/10 dark:bg-white/10" />
+          <div className="flex items-center justify-center gap-4 text-[9px] font-bold text-[#A0A0A0] tracking-[2px] uppercase mb-4">
+            <span className="flex-1 h-px bg-[#EAEAEA] dark:bg-[#222222]" />
+            OR TRY SAMPLE
+            <span className="flex-1 h-px bg-[#EAEAEA] dark:bg-[#222222]" />
           </div>
 
-          <Button
-            variant="outline"
+          <button 
             type="button"
-            onClick={() => runExtraction('IIITNR_Academic_Calendar_2026.pdf')}
-            className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black gap-2 w-full justify-center"
+            onClick={() => runExtraction('Academic_Calendar_2024.pdf')}
+            className="flex items-center justify-between px-4 w-full h-[40px] border border-[#EAEAEA] dark:border-[#222222] hover:border-[#D9D9D6] dark:hover:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer"
           >
-            <Sparkles className="w-4 h-4" />
-            Scan Sample IIIT-NR Academic Calendar
-          </Button>
+            <div className="flex items-center gap-2 text-[12px] font-bold text-[#6F6F6F] dark:text-[#999999]">
+              <Sparkles className="w-3.5 h-3.5" />
+              Use sample calendar
+            </div>
+            <span className="text-[#6F6F6F] dark:text-[#999999] text-[14px]">→</span>
+          </button>
         </div>
       )}
 
       {step === 'extracting' && (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center animate-pulse mb-4 shadow-sm">
-            <Sparkles className="w-7 h-7" />
+        <div className="flex flex-col items-center justify-center py-6 sm:py-10 text-center w-full">
+          <div className="relative mb-6">
+            <div className="w-24 h-24 rounded-full bg-[#F7F7F5] dark:bg-[#1A1A1A] flex items-center justify-center relative">
+              <Bot className="w-12 h-12 text-[#111111] dark:text-[#FFFFFF] animate-pulse" />
+              <Sparkles className="w-6 h-6 absolute top-1 right-0 text-[#111111] dark:text-[#FFFFFF] animate-bounce" />
+            </div>
           </div>
-          <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
-            Reading Calendar via Magic...
+          
+          <h4 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+            Analyzing your calendar...
           </h4>
-          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 font-medium">
-            Analyzing {fileName || 'document'} for exam schedules, holidays, and semester deadlines.
+          <p className="text-[14px] text-[#6F6F6F] mt-1 mb-8 max-w-[280px]">
+            Reading holidays, exam dates and important events.
           </p>
+
+          <div className="flex items-center gap-3 w-full max-w-[280px] mx-auto mb-10">
+            <div className="flex-1 h-3 bg-[#EAEAEA] dark:bg-[#333333] rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-[#111111] dark:bg-[#FFFFFF]"
+                initial={{ width: "0%" }}
+                animate={{ width: "90%" }}
+                transition={{ duration: 15, ease: "easeOut" }}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-4 bg-[#F7F7F5] dark:bg-[#1A1A1A] text-left border border-[#D9D9D6] dark:border-[#333333] w-full max-w-[320px] rounded-none">
+            <Sparkles className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF] shrink-0 mt-0.5" />
+            <div className="flex flex-col">
+              <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">AI is working...</span>
+              <span className="text-[13px] text-[#6F6F6F] mt-0.5">This usually takes 10–20 seconds.</span>
+            </div>
+          </div>
         </div>
       )}
 
       {step === 'review' && (
-        <div className="flex flex-col gap-4 text-left">
-          <div className="flex items-center gap-2 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200">
-            <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
-            <span>
-              <strong>Review Extracted Events:</strong> AI extracted {extractedEvents.length} calendar events. Verify details before saving.
-            </span>
-          </div>
-
-          <div className="max-h-[380px] overflow-y-auto rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm">
-            <table className="w-full text-xs text-left">
-              <thead className="bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-bold border-b border-slate-200 dark:border-zinc-700">
-                <tr>
-                  <th className="p-3">Date / Range</th>
-                  <th className="p-3">Title</th>
-                  <th className="p-3">Type</th>
-                  <th className="p-3">Location / Notes</th>
-                  <th className="p-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
-                {extractedEvents.map((item, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/80 dark:hover:bg-zinc-800/40">
-                    <td className="p-2.5">
-                      <div className="flex flex-col gap-1 min-w-[125px]">
+        <div className="flex flex-col text-left">
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-3">
+              <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase">Extracted Events</span>
+              
+              <div className="flex flex-col gap-4">
+                {extractedEvents.map((event, index) => (
+                  <div key={index} className="flex flex-col gap-3 p-4 border border-[#D9D9D6] dark:border-[#333333] relative group">
+                    <button
+                      type="button"
+                      onClick={() => removeExtractedRow(index)}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] flex items-center justify-center text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors z-10"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                    
+                    <div className="grid grid-cols-[1fr_120px] gap-3">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Event Title</label>
                         <input
-                          type="date"
-                          value={item.startDate || item.date}
-                          onChange={(e) => updateExtractedRow(idx, { startDate: e.target.value })}
-                          className="bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-0.5 text-xs w-full"
-                        />
-                        <span className="text-[10px] text-slate-400 dark:text-zinc-500 text-center font-bold block leading-none">to</span>
-                        <input
-                          type="date"
-                          value={item.endDate || item.date || item.startDate}
-                          onChange={(e) => updateExtractedRow(idx, { endDate: e.target.value })}
-                          className="bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-0.5 text-xs w-full"
+                          type="text"
+                          value={event.title}
+                          onChange={(e) => updateExtractedRow(index, { title: e.target.value })}
+                          className="w-full px-2 py-1.5 h-[36px] bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
                         />
                       </div>
-                    </td>
-                    <td className="p-2.5">
-                      <input
-                        type="text"
-                        value={item.title}
-                        onChange={(e) => updateExtractedRow(idx, { title: e.target.value })}
-                        className="w-full bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-1 font-medium"
-                      />
-                    </td>
-                    <td className="p-2.5">
-                      <select
-                        value={item.type}
-                        onChange={(e) => updateExtractedRow(idx, { type: e.target.value as CalendarEventType })}
-                        className="bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs"
-                      >
-                        <option value="exam">Exam</option>
-                        <option value="holiday">Holiday</option>
-                        <option value="event">Event</option>
-                        <option value="assignment">Assignment</option>
-                      </select>
-                    </td>
-                    <td className="p-2.5">
-                      <input
-                        type="text"
-                        value={item.location || item.description || ''}
-                        placeholder="Location or description"
-                        onChange={(e) => updateExtractedRow(idx, { description: e.target.value })}
-                        className="w-full bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs"
-                      />
-                    </td>
-                    <td className="p-2.5 text-right">
-                      <button
-                        type="button"
-                        onClick={() => removeExtractedRow(idx)}
-                        className="p-1 text-slate-400 hover:text-rose-500 rounded"
-                        title="Delete event"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Type</label>
+                        <div className="relative">
+                          <select
+                            value={event.type}
+                            onChange={(e) => updateExtractedRow(index, { type: e.target.value as any })}
+                            className="w-full px-2 py-1.5 h-[36px] bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors appearance-none"
+                          >
+                            <option value="EXAM" className="dark:bg-[#111111]">Exam</option>
+                            <option value="HOLIDAY" className="dark:bg-[#111111]">Holiday</option>
+                            <option value="DEADLINE" className="dark:bg-[#111111]">Deadline</option>
+                            <option value="EVENT" className="dark:bg-[#111111]">Event</option>
+                          </select>
+                          <ChevronDown className="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 text-[#111111] dark:text-[#FFFFFF] pointer-events-none" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Date</label>
+                        <input
+                          type="date"
+                          value={event.date}
+                          onChange={(e) => updateExtractedRow(index, { date: e.target.value })}
+                          className="w-full px-2 py-1.5 h-[36px] bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Location / Info</label>
+                        <input
+                          type="text"
+                          value={event.location || ''}
+                          onChange={(e) => updateExtractedRow(index, { location: e.target.value })}
+                          placeholder="Optional"
+                          className="w-full px-2 py-1.5 h-[36px] bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors placeholder:text-[#6F6F6F]/50"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+
+                <button
+                  type="button"
+                  onClick={addExtractedRow}
+                  className="w-full flex items-center justify-center gap-2 py-2 h-[44px] text-[12px] font-bold uppercase text-[#111111] dark:text-[#FFFFFF] border border-[#D9D9D6] dark:border-[#333333] bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Row
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2">
-            <Button type="button" variant="outline" size="sm" onClick={addExtractedRow} className="gap-1 rounded-xl">
-              <CalendarDays className="w-3.5 h-3.5" />
-              Add Event Row
-            </Button>
-
-            <div className="flex items-center gap-2">
-              <Button type="button" variant="ghost" size="sm" onClick={resetState}>
-                Back
-              </Button>
-              <Button type="button" variant="primary" size="sm" onClick={handleSaveConfirmed} className="gap-1.5 rounded-xl bg-[#8C6B5D] hover:bg-[#7B5B4D] text-white">
-                <Check className="w-4 h-4" />
-                Confirm & Save Calendar
-              </Button>
-            </div>
+          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 mt-6 border-t border-[#D9D9D6] dark:border-[#333333]">
+            <button 
+              type="button" 
+              onClick={resetState}
+              className="w-full sm:w-auto px-4 py-2.5 text-[13px] font-bold uppercase text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            >
+              Scan Another
+            </button>
+            <button 
+              type="button"
+              onClick={handleSaveConfirmed}
+              className="w-full sm:w-auto px-6 py-2.5 bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] text-[13px] font-bold uppercase hover:opacity-90 transition-opacity"
+            >
+              Save to Calendar
+            </button>
           </div>
         </div>
       )}

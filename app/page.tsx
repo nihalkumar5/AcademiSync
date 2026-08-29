@@ -18,6 +18,7 @@ import { db } from '@/lib/firebase';
 
 // Views
 import { OverviewHeader } from '@/components/dashboard/OverviewHeader';
+import { InviteBatchmatesCard } from '@/components/dashboard/InviteBatchmatesCard';
 import { LiveClassCard } from '@/components/dashboard/LiveClassCard';
 import { TodayTimeline } from '@/components/dashboard/TodayTimeline';
 import { SmartFocusList } from '@/components/dashboard/SmartFocusList';
@@ -210,6 +211,7 @@ export default function AppHome() {
                   <TodayTimeline />
                   <SmartFocusList />
                 </div>
+                <InviteBatchmatesCard />
               </div>
             )}
 

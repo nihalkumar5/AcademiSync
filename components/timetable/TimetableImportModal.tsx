@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
@@ -6,7 +7,7 @@ import { ExtractedClassSession, DayOfWeek, ClassSession, Subject } from '@/lib/t
 import { DAYS_OF_WEEK, mergeConsecutiveSessions } from '@/lib/timetableUtils';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
-import { Upload, Sparkles, Check, Trash2, Plus, ShieldAlert } from 'lucide-react';
+import { Upload, Sparkles, Check, Trash2, Plus, ShieldAlert , Bot, X, ChevronDown} from 'lucide-react';
 import { useUser, SignInButton } from '@clerk/nextjs';
 
 export interface TimetableImportModalProps {
@@ -109,14 +110,17 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
 
   const addExtractedRow = () => {
     setExtractedSessions((prev) => [
+      ...prev,
       {
         day: 'Monday',
-        startTime: '09:00',
-        endTime: '10:00',
-        subjectName: 'New Subject',
+        startTime: '',
+        endTime: '',
+        subjectCode: '',
+        subjectName: '',
+        room: '',
+        faculty: '',
         isLab: false,
-      },
-      ...prev,
+      }
     ]);
   };
 
@@ -166,12 +170,14 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
   };
 
   return (
+    
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Import Timetable via Magic"
-      description="Upload your institute timetable image or PDF to extract your weekly schedule."
-      maxWidth={step === 'review' ? '4xl' : 'lg'}
+      title="Import Timetable"
+      description="Upload your timetable photo or PDF and we'll build your weekly schedule."
+      maxWidth={step === 'review' ? '4xl' : 'md'}
+      mobileFullSheet={step === 'review'}
     >
       {!isLoaded ? (
         <div className="flex justify-center items-center py-12">
@@ -199,190 +205,218 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
       ) : (
         <>
           {step === 'upload' && (
-            <div className="flex flex-col gap-6 text-center">
-              <div className="relative group transition-all">
-                <div className="relative flex flex-col items-center justify-center p-10 border-2 border-dashed border-black dark:border-white hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-300 cursor-pointer overflow-hidden">
-                  <input
-                    type="file"
-                    accept="image/*,.pdf"
-                    multiple
-                    onChange={handleFileUpload}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-                  />
-                  <div className="w-14 h-14 bg-black text-white dark:bg-white dark:text-black flex items-center justify-center mb-4 transition-transform group-hover:-translate-y-1 group-hover:scale-110">
-                    <Upload className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-xl font-bold text-black dark:text-white mb-2 tracking-tight">
-                    Upload Timetable Photo
-                  </h3>
-                  <p className="text-sm text-black/60 dark:text-white/60 max-w-[260px] mx-auto leading-relaxed">
-                    Powered by Gemini Vision OCR. Drop your official timetable to auto-extract your schedule.
-                  </p>
-                  
-                  <div className="mt-6 pointer-events-none">
-                    <Button variant="primary" className="rounded-xl shadow-lg shadow-black/10 dark:shadow-white/10 ring-1 ring-black/5 dark:ring-white/5">
-                      Choose Files
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-center gap-4 text-xs font-bold text-black/40 dark:text-white/40 tracking-widest uppercase">
-                <span className="w-12 h-px bg-black/10 dark:bg-white/10" />
-                Or Try Demo
-                <span className="w-12 h-px bg-black/10 dark:bg-white/10" />
-              </div>
-
-              <Button 
-                variant="outline" 
-                onClick={() => runExtraction('IIITNR_BTech_CSE_Sem6_Timetable.pdf')}
-                className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black gap-2 w-full justify-center"
-              >
-                <Sparkles className="w-4 h-4" />
-                Scan Sample IIIT-NR B.Tech Timetable
-              </Button>
+        <div className="flex flex-col text-center">
+          <div className="relative group w-full h-[220px] sm:h-[240px] flex flex-col items-center justify-center border border-dashed border-[#D9D9D6] dark:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer mb-5">
+            <input
+              type="file"
+              accept="image/*,.pdf"
+              onChange={handleFileUpload}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+            />
+            <Upload className="w-5 h-5 mb-3 text-[#111111] dark:text-[#FFFFFF]" />
+            <h3 className="text-[15px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-1">
+              Choose a timetable file
+            </h3>
+            <p className="text-[13px] text-[#6F6F6F] mb-4">
+              Photo or PDF
+            </p>
+            
+            <div className="px-6 h-[44px] flex items-center justify-center bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto mb-3">
+              Choose file
             </div>
-          )}
 
-          {step === 'extracting' && (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="relative mb-4">
-                <div className="w-14 h-14 rounded-2xl bg-[#8C6B5D]/10 dark:bg-[#8C6B5D]/20 text-[#8C6B5D] dark:text-[#CBB5A1] flex items-center justify-center animate-pulse shadow-sm">
-                  <Sparkles className="w-7 h-7" />
-                </div>
-              </div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
-                Reading Timetable via Magic...
-              </h4>
-              <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 font-medium">
-                Analyzing {fileName || 'document'} for lecture timings, room tags, and faculty.
-              </p>
+            <div className="text-[11px] text-[#999999] font-medium tracking-[0.5px] uppercase">
+              JPG · PNG · PDF
             </div>
-          )}
+          </div>
 
-          {step === 'review' && (
-            <div className="flex flex-col gap-4 text-left">
-              <div className="flex items-center justify-between p-3.5 rounded-xl bg-[#8C6B5D]/5 dark:bg-[#8C6B5D]/10 border border-[#8C6B5D]/20 dark:border-[#8C6B5D]/30 text-xs text-[#6E5643] dark:text-[#CBB5A1]">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-[#8C6B5D] shrink-0" />
-                  <span>
-                    <strong>Review Extracted Classes:</strong> AI extracted {extractedSessions.length} sessions. Please verify details before saving.
-                  </span>
-                </div>
-              </div>
+          <div className="flex items-center justify-center gap-4 text-[9px] font-bold text-[#A0A0A0] tracking-[2px] uppercase mb-4">
+            <span className="flex-1 h-px bg-[#EAEAEA] dark:bg-[#222222]" />
+            OR TRY SAMPLE
+            <span className="flex-1 h-px bg-[#EAEAEA] dark:bg-[#222222]" />
+          </div>
 
-              <div className="max-h-[380px] overflow-y-auto rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-bold border-b border-slate-200 dark:border-zinc-700">
-                    <tr>
-                      <th className="p-3">Day</th>
-                      <th className="p-3">Time</th>
-                      <th className="p-3">Subject</th>
-                      <th className="p-3">Room</th>
-                      <th className="p-3">Faculty</th>
-                      <th className="p-3 text-center">Lab?</th>
-                      <th className="p-3 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
-                    {extractedSessions.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/80 dark:hover:bg-zinc-800/40">
-                        <td className="p-2.5">
+          <button 
+            type="button"
+            onClick={() => runExtraction('IIITNR_BTech_CSE_Sem6_Timetable.pdf')}
+            className="flex items-center justify-between px-4 w-full h-[40px] border border-[#EAEAEA] dark:border-[#222222] hover:border-[#D9D9D6] dark:hover:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-2 text-[12px] font-bold text-[#6F6F6F] dark:text-[#999999]">
+              <Sparkles className="w-3.5 h-3.5" />
+              Use sample timetable
+            </div>
+            <span className="text-[#6F6F6F] dark:text-[#999999] text-[14px]">→</span>
+          </button>
+        </div>
+      )}
+
+      {step === 'extracting' && (
+        <div className="flex flex-col items-center justify-center py-6 sm:py-10 text-center w-full">
+          <div className="relative mb-6">
+            <div className="w-24 h-24 rounded-full bg-[#F7F7F5] dark:bg-[#1A1A1A] flex items-center justify-center relative">
+              <Bot className="w-12 h-12 text-[#111111] dark:text-[#FFFFFF] animate-pulse" />
+              <Sparkles className="w-6 h-6 absolute top-1 right-0 text-[#111111] dark:text-[#FFFFFF] animate-bounce" />
+            </div>
+          </div>
+          
+          <h4 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+            Analyzing your timetable...
+          </h4>
+          <p className="text-[14px] text-[#6F6F6F] mt-1 mb-8 max-w-[280px]">
+            Reading subjects, times, rooms and days.
+          </p>
+
+          <div className="flex items-center gap-3 w-full max-w-[280px] mx-auto mb-10">
+            <div className="flex-1 h-3 bg-[#EAEAEA] dark:bg-[#333333] rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-[#111111] dark:bg-[#FFFFFF]"
+                initial={{ width: "0%" }}
+                animate={{ width: "90%" }}
+                transition={{ duration: 15, ease: "easeOut" }}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-4 bg-[#F7F7F5] dark:bg-[#1A1A1A] text-left border border-[#D9D9D6] dark:border-[#333333] w-full max-w-[320px] rounded-none">
+            <Sparkles className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF] shrink-0 mt-0.5" />
+            <div className="flex flex-col">
+              <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">AI is working...</span>
+              <span className="text-[13px] text-[#6F6F6F] mt-0.5">This usually takes 10–20 seconds.</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {step === 'review' && (
+        <div className="flex flex-col text-left">
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-3">
+              <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase">Extracted Sessions</span>
+              
+              <div className="flex flex-col gap-4">
+                {extractedSessions.map((session, index) => (
+                  <div key={index} className="flex flex-col gap-3 p-4 border border-[#D9D9D6] dark:border-[#333333] relative group">
+                    <button
+                      type="button"
+                      onClick={() => removeExtractedRow(index)}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] flex items-center justify-center text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors z-10"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Day</label>
+                        <div className="relative">
                           <select
-                            value={item.day}
-                            onChange={(e) => updateExtractedRow(idx, { day: e.target.value as DayOfWeek })}
-                            className="bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs"
+                            value={session.day}
+                            onChange={(e) => updateExtractedRow(index, { day: e.target.value as any })}
+                            className="w-full px-2 py-1.5 h-[36px] bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors appearance-none"
                           >
-                            {DAYS_OF_WEEK.map((d) => (
-                              <option key={d} value={d}>
-                                {d}
-                              </option>
-                            ))}
+                            <option value="Monday" className="dark:bg-[#111111]">Monday</option>
+                            <option value="Tuesday" className="dark:bg-[#111111]">Tuesday</option>
+                            <option value="Wednesday" className="dark:bg-[#111111]">Wednesday</option>
+                            <option value="Thursday" className="dark:bg-[#111111]">Thursday</option>
+                            <option value="Friday" className="dark:bg-[#111111]">Friday</option>
+                            <option value="Saturday" className="dark:bg-[#111111]">Saturday</option>
+                            <option value="Sunday" className="dark:bg-[#111111]">Sunday</option>
                           </select>
-                        </td>
-                        <td className="p-2.5">
-                          <div className="flex items-center gap-1 font-mono text-[11px]">
-                            <input
-                              type="text"
-                              value={item.startTime}
-                              onChange={(e) => updateExtractedRow(idx, { startTime: e.target.value })}
-                              className="w-12 bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-1.5 py-1"
-                            />
-                            <span>-</span>
-                            <input
-                              type="text"
-                              value={item.endTime}
-                              onChange={(e) => updateExtractedRow(idx, { endTime: e.target.value })}
-                              className="w-12 bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-1.5 py-1"
-                            />
-                          </div>
-                        </td>
-                        <td className="p-2.5">
+                          <ChevronDown className="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 text-[#111111] dark:text-[#FFFFFF] pointer-events-none" />
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                          <label className="text-[10px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase truncate">Start</label>
                           <input
-                            type="text"
-                            value={item.subjectName}
-                            onChange={(e) => updateExtractedRow(idx, { subjectName: e.target.value })}
-                            className="w-full bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-1 font-medium"
+                            type="time"
+                            value={session.startTime}
+                            onChange={(e) => updateExtractedRow(index, { startTime: e.target.value })}
+                            className="w-full px-2 py-1.5 h-[36px] bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
                           />
-                        </td>
-                        <td className="p-2.5">
+                        </div>
+                        <span className="text-[#D9D9D6] dark:text-[#333333] mt-5">-</span>
+                        <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                          <label className="text-[10px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase truncate">End</label>
                           <input
-                            type="text"
-                            value={item.room || ''}
-                            onChange={(e) => updateExtractedRow(idx, { room: e.target.value })}
-                            className="w-20 bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-1"
+                            type="time"
+                            value={session.endTime}
+                            onChange={(e) => updateExtractedRow(index, { endTime: e.target.value })}
+                            className="w-full px-2 py-1.5 h-[36px] bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
                           />
-                        </td>
-                        <td className="p-2.5">
-                          <input
-                            type="text"
-                            value={item.faculty || ''}
-                            onChange={(e) => updateExtractedRow(idx, { faculty: e.target.value })}
-                            className="w-28 bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-1"
-                          />
-                        </td>
-                        <td className="p-2.5 text-center">
-                           <input
-                            type="checkbox"
-                            checked={item.isLab || false}
-                            onChange={(e) => updateExtractedRow(idx, { isLab: e.target.checked })}
-                            className="w-4 h-4 rounded text-[#8C6B5D] focus:ring-[#8C6B5D]"
-                          />
-                        </td>
-                        <td className="p-2.5 text-right">
-                          <button
-                            onClick={() => removeExtractedRow(idx)}
-                            className="p-1 text-slate-400 hover:text-rose-500 rounded"
-                            title="Delete slot"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        </div>
+                      </div>
+                    </div>
 
-              <div className="flex items-center justify-between pt-2">
-                <Button variant="outline" size="sm" onClick={addExtractedRow} className="gap-1 rounded-xl">
-                  <Plus className="w-3.5 h-3.5" />
-                  Add Row
-                </Button>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[10px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Subject Details</label>
+                      <div className="grid grid-cols-[80px_1fr] sm:grid-cols-[100px_1fr] gap-2">
+                        <input
+                          type="text"
+                          placeholder="Code"
+                          value={session.subjectCode}
+                          onChange={(e) => updateExtractedRow(index, { subjectCode: e.target.value })}
+                          className="w-full px-2 py-1.5 h-[36px] bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Subject Name"
+                          value={session.subjectName}
+                          onChange={(e) => updateExtractedRow(index, { subjectName: e.target.value })}
+                          className="w-full px-2 py-1.5 h-[36px] bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
+                        />
+                      </div>
+                    </div>
 
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" onClick={resetState}>
-                    Back
-                  </Button>
-                  <Button variant="primary" size="sm" onClick={handleSaveConfirmed} className="gap-1.5 rounded-xl bg-[#8C6B5D] hover:bg-[#7B5B4D] text-white">
-                    <Check className="w-4 h-4" />
-                    Confirm & Save Timetable
-                  </Button>
-                </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Room / Lab"
+                        value={session.room}
+                        onChange={(e) => updateExtractedRow(index, { room: e.target.value })}
+                        className="w-full px-2 py-1.5 h-[36px] bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Faculty"
+                        value={session.faculty}
+                        onChange={(e) => updateExtractedRow(index, { faculty: e.target.value })}
+                        className="w-full px-2 py-1.5 h-[36px] bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={addExtractedRow}
+                  className="w-full flex items-center justify-center gap-2 py-2 h-[44px] text-[12px] font-bold uppercase text-[#111111] dark:text-[#FFFFFF] border border-[#D9D9D6] dark:border-[#333333] bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Row
+                </button>
               </div>
             </div>
-          )}
-        </>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 mt-6 border-t border-[#D9D9D6] dark:border-[#333333]">
+            <button 
+              type="button" 
+              onClick={resetState}
+              className="w-full sm:w-auto px-4 py-2.5 text-[13px] font-bold uppercase text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            >
+              Scan Another
+            </button>
+            <button 
+              type="button"
+              onClick={handleSaveConfirmed}
+              className="w-full sm:w-auto px-6 py-2.5 bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] text-[13px] font-bold uppercase hover:opacity-90 transition-opacity"
+            >
+              Save to Timetable
+            </button>
+          </div>
+        </div>
+      )}
+            </>
       )}
     </Modal>
   );

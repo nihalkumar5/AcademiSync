@@ -155,48 +155,44 @@ export const HomeworkView: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+        <div className="flex flex-wrap items-center gap-3 mb-1">
+          <button
             onClick={() => setShowScanModal(true)}
-            className="flex items-center px-5 py-3 rounded-none border border-black dark:border-white text-black dark:text-white bg-transparent hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-sm font-medium cursor-pointer"
+            className="flex items-center justify-center h-[36px] px-[14px] rounded-none border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-[12px] font-semibold cursor-pointer w-auto"
           >
             Magic Scanner
-          </motion.button>
+          </button>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <button
             onClick={() => {
               setEditHomework(null);
               setShowAddModal(true);
             }}
-            className="flex items-center gap-2 px-6 py-3 rounded-none border border-black dark:border-white bg-black text-white dark:bg-white dark:text-black transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 text-sm font-bold cursor-pointer"
+            className="flex items-center justify-center gap-1.5 h-[36px] px-[14px] rounded-none bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] hover:opacity-90 transition-opacity text-[12px] font-semibold cursor-pointer w-auto"
           >
-            <Plus className="w-4 h-4 stroke-[3]" />
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
             New Task
-          </motion.button>
+          </button>
         </div>
       </div>
 
       <ProposedBatchTasksVoting />
 
-      {/* iOS Style Rounded Search Bar */}
+      {/* Search Bar */}
       <div className="relative w-full">
-        <div className="flex items-center gap-3 px-4 py-3 rounded-none bg-white dark:bg-zinc-950 border border-black dark:border-white">
-          <Search className="w-4 h-4 text-black/50 dark:text-white/50 shrink-0" />
+        <div className="flex items-center gap-3 px-4 py-2.5 h-[44px] rounded-none bg-white dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333]">
+          <Search className="w-4 h-4 text-[#6F6F6F] shrink-0" />
           <input
             type="text"
             placeholder="Search assignments, topics, or notes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-transparent text-sm text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none font-medium"
+            className="w-full bg-transparent text-[14px] text-[#111111] dark:text-[#FFFFFF] placeholder:text-[#6F6F6F] focus:outline-none font-medium"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="p-1 rounded-none text-black/50 hover:text-black dark:text-white/50 dark:hover:text-white transition-colors"
+              className="p-1 rounded-none text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -205,29 +201,24 @@ export const HomeworkView: React.FC = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex items-center w-full mt-4 mb-2 h-[44px] border-b border-[#D9D9D6] dark:border-[#333333]">
         {filterTabs.map((tab) => {
           const isSelected = statusFilter === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => setStatusFilter(tab.id as 'All' | HomeworkStatus)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-bold transition-all border whitespace-nowrap cursor-pointer hover:scale-105 active:scale-95 ${
+              className={`relative flex-1 flex items-center justify-center gap-1.5 h-full text-[11px] font-semibold tracking-[1px] uppercase transition-colors whitespace-nowrap cursor-pointer ${
                 isSelected
-                  ? 'bg-black text-white border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.2)] dark:bg-white dark:text-black dark:border-white dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.2)]'
-                  : 'rounded-none bg-white text-black/70 border-black/20 hover:border-black dark:bg-zinc-950 dark:text-white/70 dark:border-white/20 dark:hover:border-white'
+                  ? 'text-[#111111] dark:text-[#FFFFFF]'
+                  : 'text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
               }`}
             >
-              <span className="relative z-10">{tab.label}</span>
-              <span
-                className={`relative z-10 text-[10px] font-mono px-1.5 py-0.2 rounded-none border ${
-                  isSelected
-                    ? 'bg-white/20 text-white border-white/30'
-                    : 'bg-black/5 dark:bg-white/5 border-transparent opacity-75'
-                }`}
-              >
-                {tab.count}
-              </span>
+              <span>{tab.label}</span>
+              <span className="font-mono text-[11px] font-bold">{tab.count}</span>
+              {isSelected && (
+                <span className="absolute bottom-[-1px] left-1/2 -translate-x-1/2 w-[38px] h-[2px] bg-[#111111] dark:bg-[#FFFFFF]" />
+              )}
             </button>
           );
         })}
@@ -252,10 +243,11 @@ export const HomeworkView: React.FC = () => {
           />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-          {filtered.map((hw) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[12px] mt-2">
+          {filtered.map((hw, index) => (
             <HomeworkCard
               key={hw.id}
+              index={index}
               homework={hw}
               subject={subjectMap.get(hw.subjectId)}
               onToggleStatus={toggleHomeworkStatus}

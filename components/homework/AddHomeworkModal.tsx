@@ -1,18 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
-import { Homework, HomeworkPriority, HomeworkStatus } from '@/lib/types';
+import { Homework, Subject, HomeworkPriority, HomeworkStatus } from '@/lib/types';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
-import { Input, Textarea, Select } from '../ui/Input';
-import { Vote, Users, Check } from 'lucide-react';
+import { clsx } from 'clsx';
+import { Users, Vote, Search, ChevronDown, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-export interface AddHomeworkModalProps {
+interface AddHomeworkModalProps {
   isOpen: boolean;
   onClose: () => void;
-  homeworkToEdit?: Homework | null;
-  prefilledData?: Partial<Homework> | null;
+  homeworkToEdit?: Homework;
+  prefilledData?: Partial<Homework>;
 }
 
 export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
@@ -31,6 +32,13 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
   const [status, setStatus] = useState<HomeworkStatus>('Not Started');
   const [attachmentName, setAttachmentName] = useState('');
   const [shareWithBatch, setShareWithBatch] = useState(false);
+
+  // Modals for selects
+  const [showSubjectModal, setShowSubjectModal] = useState(false);
+  const [showPriorityModal, setShowPriorityModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  
+  const [subjectSearch, setSubjectSearch] = useState('');
 
   useEffect(() => {
     if (homeworkToEdit) {
@@ -55,7 +63,6 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
       if (subjects.length > 0 && !subjectId) {
         setSubjectId(subjects[0].id);
       }
-      // Default deadline to 3 days from now at 23:59
       const defaultDate = new Date();
       defaultDate.setDate(defaultDate.getDate() + 3);
       defaultDate.setHours(23, 59, 0, 0);
@@ -88,7 +95,6 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
         attachmentName: attachmentName.trim(),
       });
     } else if (shareWithBatch && profile.isBatchSynced && profile.batchKey) {
-      // Propose as batch assignment (50% consensus vote)
       await proposeBatchTask({
         subjectId,
         subjectName,
@@ -113,119 +119,294 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
     onClose();
   };
 
+  const selectedSubject = subjects.find(s => s.id === subjectId);
+  const filteredSubjects = subjects.filter(s => 
+    s.name.toLowerCase().includes(subjectSearch.toLowerCase()) ||
+    (s.code && s.code.toLowerCase().includes(subjectSearch.toLowerCase()))
+  );
+
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={homeworkToEdit ? 'Edit Homework / Task' : 'Create Homework Task'}
-      description="Track submissions, lab journals, and assignment deadlines."
-    >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-left">
-        <Select
-          label="Subject"
-          value={subjectId}
-          onChange={(e) => setSubjectId(e.target.value)}
-          required
-        >
-          {subjects.map((sub) => (
-            <option key={sub.id} value={sub.id}>
-              {sub.code && sub.code !== 'UNK' ? `[${sub.code}] ` : ''}{sub.name}
-            </option>
-          ))}
-        </Select>
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={homeworkToEdit ? 'Edit Homework Task' : 'Create Homework Task'}
+        description="Track submissions, lab journals, and assignment deadlines."
+        mobileFullSheet
+      >
+        <div className="-m-5">
+          <form onSubmit={handleSubmit} className="flex flex-col text-left bg-[#F7F7F5] dark:bg-[#1A1A1A] min-h-full">
+            <div className="flex flex-col gap-[24px] p-5 pb-24">
+              
+              {/* SECTION 1: TASK */}
+              <div className="flex flex-col gap-[16px]">
+                <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase">TASK</span>
+                
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Subject</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowSubjectModal(true)}
+                    className="w-full px-3 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] text-[14px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors text-left flex items-center justify-between h-[44px]"
+                  >
+                    <span className="truncate pr-2">
+                      {selectedSubject ? (selectedSubject.code && selectedSubject.code !== 'UNK' ? `[${selectedSubject.code}] ${selectedSubject.name}` : selectedSubject.name) : 'Select Subject...'}
+                    </span>
+                    <ChevronDown className="w-4 h-4 shrink-0 text-[#111111] dark:text-[#FFFFFF]" />
+                  </button>
+                </div>
 
-        <Input
-          label="Task / Assignment Title"
-          placeholder="e.g. Assignment 2: Gradient Descent & Regularization"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          autoFocus
-        />
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Task / Assignment Title</label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    required
+                    autoFocus
+                    placeholder="e.g. Assignment 2"
+                    className="w-full px-3 h-[44px] bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] text-[14px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] focus:border-[1.5px] dark:focus:border-[#FFFFFF] transition-colors"
+                  />
+                </div>
 
-        <Textarea
-          label="Description / Problem Details (Optional)"
-          placeholder="Include question numbers, dataset URLs, or Jupyter Notebook requirements..."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Description</label>
+                    <span className="text-[10px] font-bold text-[#6F6F6F] uppercase tracking-wider">OPTIONAL</span>
+                  </div>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Problem details..."
+                    className="w-full p-3 min-h-[76px] bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] text-[14px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] focus:border-[1.5px] dark:focus:border-[#FFFFFF] transition-colors resize-y"
+                  />
+                </div>
+              </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Input
-            label="Deadline Date"
-            type="date"
-            value={deadline.split('T')[0]}
-            onChange={(e) => {
-              // Ensure we maintain ISO format compatibility for the database even if time is stripped
-              setDeadline(e.target.value ? `${e.target.value}T23:59` : '');
-            }}
-            required
-          />
+              {/* SECTION 2: DEADLINE */}
+              <div className="flex flex-col gap-[16px]">
+                <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase">DEADLINE</span>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Deadline Date</label>
+                    <input
+                      type="date"
+                      value={deadline.split('T')[0]}
+                      onChange={(e) => setDeadline(e.target.value ? `${e.target.value}T23:59` : '')}
+                      required
+                      className="w-full px-3 h-[44px] bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] text-[14px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] focus:border-[1.5px] dark:focus:border-[#FFFFFF] transition-colors"
+                    />
+                  </div>
 
-          <Select
-            label="Priority Level"
-            value={priority}
-            onChange={(e) => setPriority(e.target.value as HomeworkPriority)}
-          >
-            <option value="Low">Low Priority</option>
-            <option value="Medium">Medium Priority</option>
-            <option value="High">High Priority</option>
-          </Select>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Priority Level</label>
+                    <button
+                      type="button"
+                      onClick={() => setShowPriorityModal(true)}
+                      className="w-full px-3 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] text-[14px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors text-left flex items-center justify-between h-[44px]"
+                    >
+                      <span className="truncate pr-2">{priority}</span>
+                      <ChevronDown className="w-4 h-4 shrink-0 text-[#111111] dark:text-[#FFFFFF]" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Status</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowStatusModal(true)}
+                    className="w-full px-3 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] text-[14px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors text-left flex items-center justify-between h-[44px]"
+                  >
+                    <span className="truncate pr-2">{status}</span>
+                    <ChevronDown className="w-4 h-4 shrink-0 text-[#111111] dark:text-[#FFFFFF]" />
+                  </button>
+                </div>
+              </div>
+
+              {/* SECTION 3: ATTACHMENT */}
+              <div className="flex flex-col gap-[16px]">
+                <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase">ATTACHMENT</span>
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Google Drive Link</label>
+                    <span className="text-[10px] font-bold text-[#6F6F6F] uppercase tracking-wider">OPTIONAL</span>
+                  </div>
+                  <input
+                    type="url"
+                    value={attachmentName}
+                    onChange={(e) => setAttachmentName(e.target.value)}
+                    placeholder="Paste link..."
+                    className="w-full px-3 h-[44px] bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] text-[14px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] focus:border-[1.5px] dark:focus:border-[#FFFFFF] transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* SECTION 4: VISIBILITY */}
+              {!homeworkToEdit && profile.isBatchSynced && profile.batchKey && (
+                <div className="flex flex-col gap-[16px]">
+                  <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase">VISIBILITY</span>
+                  <div 
+                    onClick={() => setShareWithBatch(!shareWithBatch)}
+                    className="w-full p-4 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] flex items-center justify-between cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={clsx(
+                        "w-5 h-5 border-[1.5px] flex items-center justify-center shrink-0 transition-colors",
+                        shareWithBatch ? "bg-[#111111] border-[#111111] dark:bg-[#FFFFFF] dark:border-[#FFFFFF]" : "border-[#D9D9D6] dark:border-[#333333]"
+                      )}>
+                        {shareWithBatch && <Check className="w-3.5 h-3.5 text-white dark:text-black" strokeWidth={3} />}
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[13px] font-bold uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF]">
+                          POST TO ENTIRE BATCH
+                        </span>
+                        <span className="text-[11px] text-[#6F6F6F]">
+                          {isBatchCR ? 'Automatically approve & share' : 'Propose to batch for consensus'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Sticky Footer */}
+            <div className="sticky bottom-0 left-0 right-0 p-5 bg-[#F7F7F5] dark:bg-[#1A1A1A] border-t border-[#D9D9D6] dark:border-[#333333] flex items-center justify-between z-20">
+              <button 
+                type="button" 
+                onClick={onClose}
+                className="px-4 py-2.5 text-[13px] font-bold uppercase text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                className="px-6 py-2.5 bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] text-[13px] font-bold uppercase hover:opacity-90 transition-opacity"
+              >
+                {homeworkToEdit ? 'Save Changes' : shareWithBatch ? (isBatchCR ? 'Post Task' : 'Propose Task') : 'Create Task'}
+              </button>
+            </div>
+          </form>
         </div>
+      </Modal>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Select
-            label="Status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as HomeworkStatus)}
-          >
-            <option value="Not Started">Not Started</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
-          </Select>
-
-          <Input
-            label="Google Drive Link (Optional)"
-            placeholder="Paste Google Drive link here"
-            type="url"
-            value={attachmentName}
-            onChange={(e) => setAttachmentName(e.target.value)}
-          />
-        </div>
-
-        {/* BATCH PROPOSAL TOGGLE */}
-        {!homeworkToEdit && profile.isBatchSynced && profile.batchKey && (
-          <div className="p-3 border border-black dark:border-white bg-black/5 dark:bg-white/5 flex items-start gap-2.5">
-            <input
-              type="checkbox"
-              id="batch_share_toggle"
-              checked={shareWithBatch}
-              onChange={(e) => setShareWithBatch(e.target.checked)}
-              className="w-4 h-4 mt-0.5 cursor-pointer accent-black dark:accent-white"
+      {/* SELECTION MODALS */}
+      <Modal
+        isOpen={showSubjectModal}
+        onClose={() => setShowSubjectModal(false)}
+        title="SEARCH SUBJECTS"
+      >
+        <div className="flex flex-col max-h-[60vh] sm:max-h-[50vh] -mx-5 sm:-mx-6 -mb-5 sm:-mb-6">
+          <div className="relative border-b border-[#D9D9D6] dark:border-[#333333] shrink-0 bg-white dark:bg-[#111111] px-5 sm:px-6">
+            <span className="absolute left-9 sm:left-10 top-1/2 -translate-y-1/2 text-[#111111] dark:text-[#FFFFFF]">
+              <Search className="w-4 h-4" />
+            </span>
+            <input 
+              type="text"
+              placeholder="Search subjects..."
+              value={subjectSearch}
+              onChange={(e) => setSubjectSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-4 bg-transparent text-[14px] focus:outline-none text-[#111111] dark:text-[#FFFFFF]"
             />
-            <label htmlFor="batch_share_toggle" className="cursor-pointer text-xs flex flex-col gap-0.5">
-              <span className="font-bold uppercase tracking-wider text-black dark:text-white flex items-center gap-1.5">
-                {isBatchCR ? <Users className="w-3.5 h-3.5 text-blue-500" /> : <Vote className="w-3.5 h-3.5 text-amber-500" />}
-                <span>{isBatchCR ? 'Post to Entire Batch' : 'Share with Entire Batch (30% Consensus)'}</span>
-              </span>
-              <span className="text-[11px] text-black/60 dark:text-white/60">
-                {isBatchCR 
-                  ? "As a CR, this task will be automatically approved and instantly added to everyone's schedule." 
-                  : "Submits this assignment to your batchmates. If 30% of batch members vote Approve, it automatically gets added to everyone's schedule!"}
-              </span>
-            </label>
           </div>
-        )}
-
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
-          <Button type="button" variant="ghost" size="sm" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="primary" size="sm">
-            {homeworkToEdit ? 'Save Changes' : shareWithBatch ? (isBatchCR ? 'Post to Batch' : 'Propose to Batch') : 'Create Task'}
-          </Button>
+          <div className="flex-1 overflow-y-auto bg-[#F7F7F5] dark:bg-[#1A1A1A]">
+            {filteredSubjects.map(sub => (
+              <button
+                key={sub.id}
+                type="button"
+                onClick={() => {
+                  setSubjectId(sub.id);
+                  setShowSubjectModal(false);
+                  setSubjectSearch('');
+                }}
+                className={clsx(
+                  "w-full text-left p-4 sm:p-5 border-b border-[#D9D9D6] dark:border-[#333333] bg-white dark:bg-[#111111] transition-colors flex items-center justify-between",
+                  subjectId === sub.id ? "bg-black/5 dark:bg-white/5" : "hover:bg-black/5 dark:hover:bg-white/5"
+                )}
+              >
+                <div className="flex flex-col pr-4">
+                  {sub.code && sub.code !== 'UNK' && (
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#6F6F6F] mb-0.5">
+                      {sub.code}
+                    </span>
+                  )}
+                  <span className="text-[14px] font-semibold text-[#111111] dark:text-[#FFFFFF]">
+                    {sub.name}
+                  </span>
+                </div>
+                {subjectId === sub.id && <Check className="w-5 h-5 shrink-0 text-[#111111] dark:text-[#FFFFFF]" />}
+              </button>
+            ))}
+            {filteredSubjects.length === 0 && (
+              <div className="p-8 text-center text-[13px] text-[#6F6F6F]">
+                No subjects found.
+              </div>
+            )}
+          </div>
         </div>
-      </form>
-    </Modal>
+      </Modal>
+
+      <Modal
+        isOpen={showPriorityModal}
+        onClose={() => setShowPriorityModal(false)}
+        title="PRIORITY LEVEL"
+      >
+        <div className="flex flex-col -mx-5 sm:-mx-6 -mb-5 sm:-mb-6">
+          <div className="flex-1 bg-[#F7F7F5] dark:bg-[#1A1A1A]">
+            {(['High', 'Medium', 'Low'] as HomeworkPriority[]).map(p => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => {
+                  setPriority(p);
+                  setShowPriorityModal(false);
+                }}
+                className={clsx(
+                  "w-full text-left p-4 sm:p-5 border-b border-[#D9D9D6] dark:border-[#333333] bg-white dark:bg-[#111111] transition-colors flex items-center justify-between",
+                  priority === p ? "bg-black/5 dark:bg-white/5" : "hover:bg-black/5 dark:hover:bg-white/5"
+                )}
+              >
+                <span className="text-[14px] font-semibold text-[#111111] dark:text-[#FFFFFF]">
+                  {p}
+                </span>
+                {priority === p && <Check className="w-5 h-5 shrink-0 text-[#111111] dark:text-[#FFFFFF]" />}
+              </button>
+            ))}
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showStatusModal}
+        onClose={() => setShowStatusModal(false)}
+        title="STATUS"
+      >
+        <div className="flex flex-col -mx-5 sm:-mx-6 -mb-5 sm:-mb-6">
+          <div className="flex-1 bg-[#F7F7F5] dark:bg-[#1A1A1A]">
+            {(['Not Started', 'In Progress', 'Completed'] as HomeworkStatus[]).map(s => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => {
+                  setStatus(s);
+                  setShowStatusModal(false);
+                }}
+                className={clsx(
+                  "w-full text-left p-4 sm:p-5 border-b border-[#D9D9D6] dark:border-[#333333] bg-white dark:bg-[#111111] transition-colors flex items-center justify-between",
+                  status === s ? "bg-black/5 dark:bg-white/5" : "hover:bg-black/5 dark:hover:bg-white/5"
+                )}
+              >
+                <span className="text-[14px] font-semibold text-[#111111] dark:text-[#FFFFFF]">
+                  {s}
+                </span>
+                {status === s && <Check className="w-5 h-5 shrink-0 text-[#111111] dark:text-[#FFFFFF]" />}
+              </button>
+            ))}
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 };

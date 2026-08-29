@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export type IllustrationType = 'holiday' | 'no-classes' | 'no-homework' | 'backpack' | 'exam' | 'calendar';
+export type IllustrationType = 'holiday' | 'no-classes' | 'no-homework' | 'backpack' | 'exam' | 'calendar' | 'teamwork';
 
 interface MonochromeIllustrationProps {
   type: IllustrationType;
@@ -107,6 +107,23 @@ export const MonochromeIllustration: React.FC<MonochromeIllustrationProps> = ({
           <circle cx="16" cy="14.5" r="0.5" fill="currentColor" />
           <circle cx="8" cy="17.5" r="0.5" fill="currentColor" />
           <circle cx="12" cy="17.5" r="0.5" fill="currentColor" />
+        </svg>
+      );
+
+    
+    case 'teamwork':
+      return (
+        <svg {...props}>
+          {/* Two people high fiving (minimalist) */}
+          <circle cx="8" cy="8" r="2.5" />
+          <circle cx="16" cy="8" r="2.5" />
+          {/* Bodies */}
+          <path d="M5 18c0-3 1.5-5 3-5s3 2 3 5" strokeLinecap="round" />
+          <path d="M19 18c0-3-1.5-5-3-5s-3 2-3 5" strokeLinecap="round" />
+          {/* High five arms */}
+          <path d="M9 13l3-4 3 4" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Action lines */}
+          <path d="M12 6v-1M10.5 7l-1-1M13.5 7l1-1" strokeLinecap="round" />
         </svg>
       );
 

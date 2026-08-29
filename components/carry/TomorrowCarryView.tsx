@@ -12,25 +12,25 @@ import {
 } from '@/lib/timetableUtils';
 import { CarryItemRow } from './CarryItemRow';
 import { AddCustomItemModal } from './AddCustomItemModal';
+import { SubjectDetailModal } from './SubjectDetailModal';
+import { ClassSession } from '@/lib/types';
 import { EmptyState } from '../ui/EmptyState';
-import { Button } from '../ui/Button';
-import { Backpack, Plus, MapPin, CalendarDays, Clock, FlaskConical, CheckCircle2, Sparkles } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Backpack, Plus, CalendarDays, Clock, ChevronRight } from 'lucide-react';
 import { Subject } from '@/lib/types';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 
 // Signature pastel paper palette
 const ELEGANT_PASTEL_PALETTE = [
-  'bg-[#FEF9C3]/80 dark:bg-[#78350F]/25 border-[#FDE047]/60 dark:border-[#FACC15]/30', // Golden Cream
-  'bg-[#E0F2FE]/80 dark:bg-[#0C4A6E]/25 border-[#7DD3FC]/60 dark:border-[#38BDF8]/30', // Ice Denim Blue
-  'bg-[#FCE7F3]/80 dark:bg-[#831843]/25 border-[#F9A8D4]/60 dark:border-[#F472B6]/30', // Soft Rose Pink
-  'bg-[#DCFCE7]/80 dark:bg-[#064E3B]/25 border-[#86EFAC]/60 dark:border-[#4ADE80]/30', // Fresh Sage Mint
-  'bg-[#FFEDD5]/80 dark:bg-[#7C2D12]/25 border-[#FDBA74]/60 dark:border-[#FB923C]/30', // Peach Terracotta
-  'bg-[#F3E8FF]/80 dark:bg-[#3B0764]/25 border-[#D8B4FE]/60 dark:border-[#C084FC]/30', // Soft Lavender
-  'bg-[#CCFBF1]/80 dark:bg-[#134E4A]/25 border-[#5EEAD4]/60 dark:border-[#2DD4BF]/30', // Soft Teal
-  'bg-[#FFE4E6]/80 dark:bg-[#881337]/25 border-[#FDA4AF]/60 dark:border-[#FB7185]/30', // Blush Coral
-  'bg-[#FEF3C7]/80 dark:bg-[#78350F]/25 border-[#FCD34D]/60 dark:border-[#F59E0B]/30', // Warm Amber
-  'bg-[#ECFCCB]/80 dark:bg-[#365314]/25 border-[#BEF264]/60 dark:border-[#A3E635]/30', // Soft Lime
+  'bg-[#FEF9C3]/80 dark:bg-[#78350F]/25 border-[#FDE047]/60 dark:border-[#FACC15]/30', 
+  'bg-[#E0F2FE]/80 dark:bg-[#0C4A6E]/25 border-[#7DD3FC]/60 dark:border-[#38BDF8]/30', 
+  'bg-[#FCE7F3]/80 dark:bg-[#831843]/25 border-[#F9A8D4]/60 dark:border-[#F472B6]/30', 
+  'bg-[#DCFCE7]/80 dark:bg-[#064E3B]/25 border-[#86EFAC]/60 dark:border-[#4ADE80]/30', 
+  'bg-[#FFEDD5]/80 dark:bg-[#7C2D12]/25 border-[#FDBA74]/60 dark:border-[#FB923C]/30', 
+  'bg-[#F3E8FF]/80 dark:bg-[#3B0764]/25 border-[#D8B4FE]/60 dark:border-[#C084FC]/30', 
+  'bg-[#CCFBF1]/80 dark:bg-[#134E4A]/25 border-[#5EEAD4]/60 dark:border-[#2DD4BF]/30', 
+  'bg-[#FFE4E6]/80 dark:bg-[#881337]/25 border-[#FDA4AF]/60 dark:border-[#FB7185]/30', 
+  'bg-[#FEF3C7]/80 dark:bg-[#78350F]/25 border-[#FCD34D]/60 dark:border-[#F59E0B]/30', 
+  'bg-[#ECFCCB]/80 dark:bg-[#365314]/25 border-[#BEF264]/60 dark:border-[#A3E635]/30', 
 ];
 
 const getSubjectPastelStyle = (sub?: Subject, fallbackId: string = '') => {
@@ -54,6 +54,8 @@ export const TomorrowCarryView: React.FC = () => {
   } = useApp();
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [preselectedSubjectId, setPreselectedSubjectId] = useState<string>('');
+  const [detailSession, setDetailSession] = useState<ClassSession | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -65,7 +67,7 @@ export const TomorrowCarryView: React.FC = () => {
   const currentMinute = now.getMinutes();
   const currentMinutes = currentHour * 60 + currentMinute;
 
-  let limitMinutes = 18 * 60; // Default 6 PM (1080 mins)
+  let limitMinutes = 18 * 60;
   if (settings?.eveningCarryReminderTime) {
     const parts = settings.eveningCarryReminderTime.trim().split(' ');
     const timeParts = parts[0].split(':');
@@ -82,24 +84,20 @@ export const TomorrowCarryView: React.FC = () => {
   }
 
   const isAfterReminderTime = currentMinutes >= limitMinutes;
-
   const targetDay = isAfterReminderTime ? getTomorrowDayOfWeek() : getCurrentDayOfWeek();
   const targetDateStr = isAfterReminderTime ? getTomorrowDateString() : getTodayDateString();
   const targetHoliday = events.find((e) => e.date === targetDateStr && e.type === 'holiday');
-
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
-  // Target day's classes (if holiday, 0 active classes)
   const rawTargetClasses = timetable
     .filter((s) => s.day === targetDay)
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
   const targetClasses = targetHoliday ? [] : rawTargetClasses;
 
-  // Carry items for target day
-  const packedCount = carryItems.filter((i) => i.isPacked).length;
-  const totalCount = carryItems.length;
-  const progressPercent = totalCount > 0 ? Math.round((packedCount / totalCount) * 100) : 0;
+  const visibleCarryItems = carryItems.filter(i => !i.isHidden);
+  const packedCount = visibleCarryItems.filter((i) => i.isPacked).length;
+  const totalCount = visibleCarryItems.length;
 
   const targetDateObj = new Date(targetDateStr + 'T12:00:00');
   const targetFormatted = new Intl.DateTimeFormat('en-US', {
@@ -108,17 +106,10 @@ export const TomorrowCarryView: React.FC = () => {
     day: 'numeric',
   }).format(isNaN(targetDateObj.getTime()) ? (isAfterReminderTime ? new Date(Date.now() + 86400000) : new Date()) : targetDateObj);
 
-  if (!mounted) {
-    return (
-      <div className="flex justify-center items-center py-24">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black dark:border-white" />
-      </div>
-    );
-  }
+  if (!mounted) return null;
 
   return (
     <div className="flex flex-col gap-8 text-left max-w-5xl mx-auto w-full pb-16 font-sans">
-      {/* Editorial Stacked Header — matching App Design System */}
       <div className="flex flex-col gap-4 pt-2 sm:pt-6">
         <div>
           <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
@@ -143,188 +134,163 @@ export const TomorrowCarryView: React.FC = () => {
             <span>Packing list for {isAfterReminderTime ? 'tomorrow' : 'today'} · {targetFormatted}</span>
           </p>
         </div>
-
-        {/* Action Button */}
-        <div className="flex items-center gap-3 mt-4">
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => setShowAddModal(true)}
-            className="rounded-none bg-black text-white dark:bg-white dark:text-black border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors"
-          >
-            Add Custom Item
-          </Button>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Schedule Preview */}
-        <div className="lg:col-span-5 flex flex-col gap-4">
-          <div className="flex items-center justify-between pb-1 border-b border-black/10 dark:border-white/10">
-            <h2 className="text-xs font-black text-black dark:text-white tracking-widest uppercase flex items-center gap-2">
-              <Clock className="w-3.5 h-3.5" />
-              {isAfterReminderTime ? "Tomorrow's Schedule" : "Today's Schedule"}
-            </h2>
-            <span className="text-[11px] font-mono font-bold border border-black/20 dark:border-white/20 text-black/70 dark:text-white/70 px-2 py-0.5 rounded-none">
-              {targetHoliday ? '0 lectures (Holiday)' : `${targetClasses.length} ${targetClasses.length === 1 ? 'lecture' : 'lectures'}`}
-            </span>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            {targetHoliday ? (
-              <div className="p-6 relative overflow-hidden border border-black dark:border-white !bg-yellow-50 dark:!bg-yellow-900/20 flex flex-col gap-2 text-left">
-                
-                <div className="relative z-10">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded-none border border-black/20 dark:border-white/20 bg-white/50 dark:bg-black/50 text-black dark:text-white">
-                      Campus Holiday
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-black text-black dark:text-white mt-1 uppercase leading-none">
-                    {targetHoliday.title}
-                  </h3>
-                  <p className="text-sm text-black/75 dark:text-white/75 leading-relaxed font-medium mt-2">
-                    {targetHoliday.description || `Take a break! Regular classes are suspended on ${targetFormatted}.`}
-                  </p>
-                </div>
-              </div>
-            ) : targetClasses.length === 0 ? (
-              <div className="p-6 border border-black/20 dark:border-white/20 text-center text-xs text-black/60 dark:text-white/60 font-medium">
-                No classes scheduled for {isAfterReminderTime ? 'tomorrow' : 'today'}. Enjoy your break!
-              </div>
-            ) : (
-              targetClasses.map((sess) => {
-                const sub = subjectMap.get(sess.subjectId);
-                const customStyle = getSubjectThemeStyle(sub?.color, settings?.theme || 'light');
-
-                return (
-                  <div
-                    key={sess.id}
-                    className="p-4 border rounded-none flex items-center justify-between text-left transition-all text-black dark:text-white"
-                    style={customStyle}
-                  >
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <div className="w-14 shrink-0 flex flex-col pt-0.5">
-                        <span className="text-[13px] font-black tracking-tighter font-mono text-black dark:text-white">
-                          {sess.startTime}
-                        </span>
-                      </div>
-
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-sm font-bold text-black dark:text-white truncate">
-                          {sub?.name || 'Class'}
-                        </span>
-                        <div className="flex items-center gap-2 text-xs opacity-75 font-medium flex-wrap mt-0.5">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3.5 h-3.5" />
-                            {sess.room}
-                          </span>
-                          {sess.isLab && (
-                            <span className="font-bold font-mono text-[10px] px-1.5 border border-current">
-                              LAB
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-
+        
         {/* Right Column: Things to Carry List */}
         <div className="lg:col-span-7 flex flex-col gap-4">
-          <div className="bento-card border border-black/20 dark:border-white/20 rounded-none flex flex-col gap-5 p-5 sm:p-6">
-            {/* Header & Progress */}
-            <div className="flex flex-col gap-3 pb-4 border-b border-black/10 dark:border-white/10">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 border border-black dark:border-white text-black dark:text-white flex items-center justify-center">
-                    <Backpack className="w-4.5 h-4.5" />
-                  </div>
-                  <div>
-                    <h2 className="text-base font-bold text-black dark:text-white tracking-tight">
-                      Things to Carry
-                    </h2>
-                    <p className="text-xs text-black/60 dark:text-white/60 font-medium">
-                      {packedCount} of {totalCount} packed ({progressPercent}%)
-                    </p>
-                  </div>
+          {totalCount === 0 && !targetHoliday ? (
+            <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-5 flex flex-col items-start rounded-none">
+              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+                <Backpack className="w-[18px] h-[18px] stroke-[1.5]" />
+                <span>Things to Carry</span>
+              </div>
+              <div className="flex flex-col mt-4 mb-5">
+                <span className="text-[14px] text-[#6F6F6F]">Nothing packed yet.</span>
+                <span className="text-[14px] text-[#6F6F6F]">Add what you need for {isAfterReminderTime ? 'tomorrow' : 'today'}.</span>
+              </div>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="h-[44px] px-6 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] flex items-center justify-center gap-2 font-medium text-[14px] hover:opacity-90 transition-opacity rounded-none"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add item</span>
+              </button>
+            </div>
+          ) : (
+            <div className="border border-[#D8D8D8] dark:border-[#333333] rounded-none flex flex-col p-5 sm:p-6 bg-[#FFFFFF] dark:bg-[#111111]">
+              <div className="flex items-center justify-between pb-[14px] border-b border-[#D8D8D8] dark:border-[#333333] mb-[16px]">
+                <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+                  <Backpack className="w-[18px] h-[18px] stroke-[1.5]" />
+                  <span>Things to Carry</span>
                 </div>
-
-                <span
-                  className={`text-[11px] font-mono font-bold px-2.5 py-1 border rounded-none ${
-                    progressPercent === 100
-                      ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400 bg-emerald-500/10'
-                      : 'border-black dark:border-white text-black dark:text-white'
-                  }`}
-                >
-                  {progressPercent === 100 ? 'All Packed 🎉' : `${progressPercent}% Ready`}
-                </span>
+                <div className="text-[12px] font-bold font-mono tracking-widest text-[#111111] dark:text-[#FFFFFF]">
+                  {packedCount} / {totalCount}
+                </div>
               </div>
 
-              {/* Progress Bar */}
-              {totalCount > 0 && (
-                <div className="w-full bg-black/10 dark:bg-white/10 h-1.5 rounded-none overflow-hidden mt-1">
-                  <motion.div
-                    className={`h-full ${
-                      progressPercent === 100
-                        ? 'bg-emerald-600'
-                        : 'bg-black dark:bg-white'
-                    }`}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progressPercent}%` }}
-                    transition={{ duration: 0.4, ease: 'easeOut' }}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Checklist Items */}
-            {carryItems.length === 0 ? (
-              targetHoliday ? (
+              {visibleCarryItems.length === 0 && targetHoliday ? (
                 <EmptyState
                   icon={<MonochromeIllustration type="holiday" size={48} />}
                   title="NO PACKING NEEDED — HOLIDAY!"
                   description={`${targetFormatted} is an official campus holiday (${targetHoliday.title}). Enjoy your break!`}
                 />
               ) : (
-                <EmptyState
-                  icon={<MonochromeIllustration type="backpack" size={48} />}
-                  title={`Nothing special to carry ${isAfterReminderTime ? 'tomorrow' : 'today'}`}
-                  description={`Either ${isAfterReminderTime ? 'tomorrow' : 'today'} is a free day or no carry requirements are configured for ${isAfterReminderTime ? "tomorrow's" : "today's"} classes.`}
-                />
-              )
-            ) : (
-              <div className="flex flex-col gap-3">
-                {carryItems.map((item) => (
-                  <CarryItemRow
-                    key={item.id}
-                    item={item}
-                    onToggle={toggleCarryItemPacked}
-                    onDelete={deleteCarryItem}
-                  />
-                ))}
-              </div>
-            )}
+                <div className="flex flex-col gap-3">
+                  {visibleCarryItems.map((item) => (
+                    <CarryItemRow
+                      key={item.id}
+                      item={item}
+                      onToggle={toggleCarryItemPacked}
+                      onDelete={deleteCarryItem}
+                    />
+                  ))}
+                </div>
+              )}
 
-            {/* Add Custom Item Quick Action */}
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 text-xs font-bold text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white py-2.5 px-3 border border-dashed border-black/30 dark:border-white/30 hover:border-black dark:hover:border-white transition-all w-fit cursor-pointer mt-1"
-            >
-              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Add custom item to list</span>
-            </button>
+              {visibleCarryItems.length > 0 && (
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="flex items-center gap-2 text-[14px] font-bold text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-all w-fit cursor-pointer mt-[18px]"
+                >
+                  <Plus className="w-4 h-4 stroke-[2]" />
+                  <span>Add another item</span>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Left Column: Schedule Preview */}
+        <div className="lg:col-span-5 flex flex-col mt-4 lg:mt-0">
+          <div className="flex items-center justify-between pb-[14px] border-b border-[#D8D8D8] dark:border-[#333333]">
+            <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+              <Clock className="w-[18px] h-[18px] stroke-[1.5]" />
+              <span>{isAfterReminderTime ? "Tomorrow's Schedule" : "Today's Schedule"}</span>
+            </div>
+            <div className="text-[12px] font-bold font-mono tracking-widest text-[#111111] dark:text-[#FFFFFF]">
+              {targetHoliday ? '0' : targetClasses.length}
+            </div>
+          </div>
+
+          <div className="flex flex-col">
+            {targetHoliday ? (
+              <div className="py-6 text-center text-[#6F6F6F] text-[14px]">
+                No classes today. Enjoy your holiday!
+              </div>
+            ) : targetClasses.length === 0 ? (
+              <div className="py-6 text-center text-[#6F6F6F] text-[14px]">
+                No classes scheduled for {isAfterReminderTime ? 'tomorrow' : 'today'}.
+              </div>
+            ) : (
+              targetClasses.map((sess) => {
+                const subject = subjectMap.get(sess.subjectId);
+                const reqs = subject?.carryRequirements || [];
+                return (
+                  <button
+                    key={sess.id}
+                    onClick={() => {
+                      setDetailSession(sess);
+                    }}
+                    className="flex items-start gap-4 py-[16px] border-b border-[#D8D8D8] dark:border-[#333333] last:border-b-0 group text-left transition-colors cursor-pointer"
+                  >
+                    <div className="w-[52px] shrink-0 pt-[1px]">
+                      <span className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF]">
+                        {sess.startTime}
+                      </span>
+                    </div>
+                    
+                    <div className="flex-1 flex flex-col min-w-0">
+                      <div className="flex items-start justify-between gap-4">
+                        <span className="text-[14px] font-[600] text-[#111111] dark:text-[#FFFFFF] leading-[18px] line-clamp-2">
+                          {subject?.name || 'Unknown Subject'}
+                        </span>
+                        <span className="text-[#A0A0A0] group-hover:text-[#111111] dark:group-hover:text-[#FFFFFF] transition-colors shrink-0 mt-0.5">
+                          <ChevronRight className="w-4 h-4 stroke-[2]" />
+                        </span>
+                      </div>
+                      
+                      {sess.room && (
+                        <span className="text-[12px] text-[#6F6F6F] flex items-center gap-1.5 mt-1">
+                          <span className="text-[14px] leading-none mb-[2px]">⌖</span>
+                          <span>{sess.room}</span>
+                        </span>
+                      )}
+                      
+                      {reqs.length > 0 && (
+                        <div className="mt-2 text-[12px] text-[#8C6B5D] dark:text-[#B5988C] flex items-center gap-1.5 truncate font-medium">
+                          <Backpack className="w-[11px] h-[11px] shrink-0 stroke-[2.5]" />
+                          <span className="truncate">{reqs.join(' · ')}</span>
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })
+            )}
           </div>
         </div>
+
       </div>
+
+      <SubjectDetailModal
+        isOpen={!!detailSession}
+        onClose={() => setDetailSession(null)}
+        session={detailSession}
+        onOpenAdd={() => {
+          if (detailSession) setPreselectedSubjectId(detailSession.subjectId);
+          setShowAddModal(true);
+        }}
+      />
 
       <AddCustomItemModal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => {
+          setShowAddModal(false);
+          setPreselectedSubjectId('');
+        }}
+        preselectedSubjectId={preselectedSubjectId}
       />
     </div>
   );

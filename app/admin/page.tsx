@@ -14,6 +14,7 @@ import {
   Megaphone,
   Plus,
   Trash2,
+  ChevronDown,
   Edit2,
   ExternalLink,
   Eye,
@@ -23,6 +24,7 @@ import {
   Search,
   Lock,
   ArrowLeft,
+  ArrowRight,
   Sparkles,
   BarChart3,
   Award,
@@ -35,7 +37,8 @@ import {
   Globe,
   Crosshair,
   Check,
-  X
+  X,
+  Upload
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -55,6 +58,7 @@ export default function SuperAdminPage() {
   const [searchBatchQuery, setSearchBatchQuery] = useState('');
 
   // Modal for Campaign creation/editing
+  const [activeRoleDropdown, setActiveRoleDropdown] = useState<string | null>(null);
   const [showCampaignModal, setShowCampaignModal] = useState(false);
   const [editingCampaignId, setEditingCampaignId] = useState<string | null>(null);
   const [campaignForm, setCampaignForm] = useState({
@@ -68,12 +72,16 @@ export default function SuperAdminPage() {
     badgeText: '',
     targetAudienceType: 'all' as 'all' | 'custom',
     targetColleges: [] as string[],
+    branchTargeting: 'all' as 'all' | 'custom',
     targetBranches: [] as string[],
+    semesterTargeting: 'all' as 'all' | 'custom',
     targetSemesters: [] as number[],
     customCollegeInput: '',
     customBranchInput: '',
     isActive: true,
   });
+  
+  const [collegeSearchQuery, setCollegeSearchQuery] = useState('');
 
   const userEmail = user?.primaryEmailAddress?.emailAddress || '';
   const isAdmin = isUserSuperAdmin(profile, userEmail);
@@ -310,8 +318,8 @@ export default function SuperAdminPage() {
         badgeText: campaignForm.badgeText || '',
         targetAudienceType: campaignForm.targetAudienceType,
         targetColleges: campaignForm.targetAudienceType === 'all' ? [] : campaignForm.targetColleges,
-        targetBranches: campaignForm.targetAudienceType === 'all' ? [] : campaignForm.targetBranches,
-        targetSemesters: campaignForm.targetAudienceType === 'all' ? [] : campaignForm.targetSemesters,
+        targetBranches: campaignForm.targetAudienceType === 'all' || campaignForm.branchTargeting === 'all' ? [] : campaignForm.targetBranches,
+        targetSemesters: campaignForm.targetAudienceType === 'all' || campaignForm.semesterTargeting === 'all' ? [] : campaignForm.targetSemesters,
         isActive: campaignForm.isActive,
         impressions: editingCampaignId ? (campaignsList.find(c => c.id === editingCampaignId)?.impressions || 0) : 0,
         clicks: editingCampaignId ? (campaignsList.find(c => c.id === editingCampaignId)?.clicks || 0) : 0,
@@ -333,6 +341,8 @@ export default function SuperAdminPage() {
         badgeText: '',
         targetAudienceType: 'all',
         targetColleges: [],
+        branchTargeting: 'all',
+        semesterTargeting: 'all',
         targetBranches: [],
         targetSemesters: [],
         customCollegeInput: '',
@@ -380,7 +390,9 @@ export default function SuperAdminPage() {
       badgeText: camp.badgeText || '',
       targetAudienceType: camp.targetAudienceType || (camp.targetColleges?.length || camp.targetBranches?.length || camp.targetSemesters?.length ? 'custom' : 'all'),
       targetColleges: camp.targetColleges || [],
+      branchTargeting: camp.targetBranches?.length ? 'custom' : 'all',
       targetBranches: camp.targetBranches || [],
+      semesterTargeting: camp.targetSemesters?.length ? 'custom' : 'all',
       targetSemesters: camp.targetSemesters || [],
       customCollegeInput: '',
       customBranchInput: '',
@@ -483,54 +495,51 @@ export default function SuperAdminPage() {
   });
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white font-sans selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
+    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] font-sans selection:bg-[#111111] selection:text-[#FFFFFF] dark:selection:bg-[#FFFFFF] dark:selection:text-[#111111]">
       {/* Top Super Admin Header */}
-      <header className="sticky top-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-md border-b border-black dark:border-white px-4 sm:px-8 py-4">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-40 bg-[#F7F7F5] dark:bg-[#111111]">
+        <div className="px-4 sm:px-8 pt-8 pb-6 border-b border-[#D8D8D8] dark:border-[#333333]">
+          <div className="max-w-7xl w-full mx-auto flex flex-col gap-3">
             <Link
               href="/"
-              className="p-2 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
-              title="Return to App"
+              className="inline-flex items-center gap-2 text-[12px] font-bold text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] uppercase tracking-wider transition-colors w-fit"
             >
               <ArrowLeft className="w-4 h-4" />
+              <Crown className="w-3.5 h-3.5 ml-1" />
+              <span>SUPER ADMIN</span>
             </Link>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-black text-white dark:bg-white dark:text-black flex items-center justify-center font-black">
-                <Crown className="w-4 h-4" />
-              </div>
-              <div>
-                <h1 className="text-base sm:text-lg font-black uppercase tracking-widest">
-                  Super Admin Panel
-                </h1>
-                <p className="text-[10px] font-mono text-black/60 dark:text-white/60">
-                  Master Control: {userEmail}
-                </p>
-              </div>
-            </div>
+            <h1 className="text-[32px] sm:text-[40px] font-bold tracking-tight leading-none text-[#111111] dark:text-[#FFFFFF]">
+              Control Center
+            </h1>
           </div>
+        </div>
 
-          {/* Navigation Tabs */}
-          <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-            {[
-              { id: 'overview', label: 'Overview', icon: BarChart3 },
-              { id: 'users', label: `Users (${usersList.length})`, icon: Users },
-              { id: 'batches', label: `Batches (${batchesList.length})`, icon: Layers },
-              { id: 'campaigns', label: `Campaigns (${campaignsList.length})`, icon: Megaphone },
-            ].map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setActiveTab(id as AdminTab)}
-                className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold uppercase tracking-wider transition-all border cursor-pointer shrink-0 ${
-                  activeTab === id
-                    ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
-                    : 'border-transparent text-black/60 dark:text-white/60 hover:border-black/20 dark:hover:border-white/20 hover:text-black dark:hover:text-white'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{label}</span>
-              </button>
-            ))}
+        {/* Navigation Tabs */}
+        <div className="border-b border-[#D8D8D8] dark:border-[#333333]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8">
+            <div className="flex items-center gap-8 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {[
+                { id: 'overview', label: 'Overview' },
+                { id: 'users', label: `Users ${usersList.length}` },
+                { id: 'batches', label: `Batches ${batchesList.length}` },
+                { id: 'campaigns', label: `Campaigns ${campaignsList.length}` },
+              ].map(({ id, label }) => (
+                <button
+                  key={id}
+                  onClick={() => setActiveTab(id as AdminTab)}
+                  className={`relative py-4 text-[13px] font-medium whitespace-nowrap transition-colors ${
+                    activeTab === id
+                      ? 'text-[#111111] dark:text-[#FFFFFF]'
+                      : 'text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
+                  }`}
+                >
+                  {label}
+                  {activeTab === id && (
+                    <motion.div layoutId="tab-indicator" className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-[#111111] dark:bg-[#FFFFFF]" />
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </header>
@@ -541,84 +550,85 @@ export default function SuperAdminPage() {
         {activeTab === 'overview' && (
           <div className="flex flex-col gap-6 text-left">
             <div>
-              <h2 className="text-xl font-bold uppercase tracking-tight">Platform Performance & Metrics</h2>
-              <p className="text-xs text-black/60 dark:text-white/60 mt-1">
-                Real-time insights across all student registrations, batch networks, and direct ad campaigns.
+              <h2 className="text-[14px] font-bold uppercase tracking-[1.5px] text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#F0F0F0] dark:border-[#333333]">Overview</h2>
+              <p className="text-[12px] text-[#6F6F6F] mt-3 font-medium">
+                Live snapshot of your student network.
               </p>
             </div>
 
-            {/* KPI Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="border border-black dark:border-white p-5 flex flex-col justify-between bg-black/5 dark:bg-white/5">
-                <div className="flex items-center justify-between text-black/60 dark:text-white/60 text-xs font-mono">
-                  <span>TOTAL USERS</span>
-                  <Users className="w-4 h-4" />
-                </div>
-                <div className="text-3xl font-black mt-3">{usersList.length}</div>
-                <div className="text-[10px] text-black/50 dark:text-white/50 mt-1">Registered Accounts</div>
+            {/* Primary Metrics */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col py-2">
+                <div className="text-[32px] font-black leading-none text-[#111111] dark:text-[#FFFFFF]">{usersList.length}</div>
+                <div className="text-[11px] font-bold text-[#A0A0A0] uppercase tracking-widest mt-2">Total Users</div>
               </div>
 
-              <div className="border border-black dark:border-white p-5 flex flex-col justify-between bg-black/5 dark:bg-white/5">
-                <div className="flex items-center justify-between text-black/60 dark:text-white/60 text-xs font-mono">
-                  <span>ACTIVE BATCHES</span>
-                  <Layers className="w-4 h-4" />
-                </div>
-                <div className="text-3xl font-black mt-3">{batchesList.length}</div>
-                <div className="text-[10px] text-black/50 dark:text-white/50 mt-1">Shared Class Schedules</div>
+              <div className="flex flex-col py-2">
+                <div className="text-[32px] font-black leading-none text-[#111111] dark:text-[#FFFFFF]">{batchesList.length}</div>
+                <div className="text-[11px] font-bold text-[#A0A0A0] uppercase tracking-widest mt-2">Active Batches</div>
               </div>
-
-              <div className="border border-black dark:border-white p-5 flex flex-col justify-between bg-black/5 dark:bg-white/5">
-                <div className="flex items-center justify-between text-black/60 dark:text-white/60 text-xs font-mono">
-                  <span>AD IMPRESSIONS</span>
-                  <Eye className="w-4 h-4" />
+            </div>
+            
+            {/* Campaign Performance */}
+            <div className="mt-4 border-t border-[#D8D8D8] dark:border-[#333333] pt-6">
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#A0A0A0] mb-4">Campaign Performance</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="flex flex-col">
+                  <div className="text-[20px] font-bold leading-none text-[#111111] dark:text-[#FFFFFF]">{totalImpressions}</div>
+                  <div className="text-[10px] text-[#6F6F6F] mt-1 font-medium uppercase tracking-wider">Impressions</div>
                 </div>
-                <div className="text-3xl font-black mt-3">{totalImpressions}</div>
-                <div className="text-[10px] text-black/50 dark:text-white/50 mt-1">Total Views on Promos</div>
-              </div>
-
-              <div className="border border-black dark:border-white p-5 flex flex-col justify-between bg-black/5 dark:bg-white/5">
-                <div className="flex items-center justify-between text-black/60 dark:text-white/60 text-xs font-mono">
-                  <span>CLICKS / CTR</span>
-                  <MousePointer className="w-4 h-4" />
+                <div className="flex flex-col">
+                  <div className="text-[20px] font-bold leading-none text-[#111111] dark:text-[#FFFFFF]">{totalClicks}</div>
+                  <div className="text-[10px] text-[#6F6F6F] mt-1 font-medium uppercase tracking-wider">Clicks</div>
                 </div>
-                <div className="text-3xl font-black mt-3">
-                  {totalClicks} <span className="text-sm font-mono text-black/60 dark:text-white/60">({overallCTR}%)</span>
+                <div className="flex flex-col">
+                  <div className="text-[20px] font-bold leading-none text-[#111111] dark:text-[#FFFFFF]">{overallCTR}%</div>
+                  <div className="text-[10px] text-[#6F6F6F] mt-1 font-medium uppercase tracking-wider">CTR</div>
                 </div>
-                <div className="text-[10px] text-black/50 dark:text-white/50 mt-1">Conversion Engagement</div>
               </div>
             </div>
 
-            {/* Quick Action Shortcuts */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-              <button
-                onClick={() => {
-                  setShowCampaignModal(true);
-                  setEditingCampaignId(null);
-                }}
-                className="border-2 border-black dark:border-white p-6 flex flex-col items-start gap-2 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all text-left cursor-pointer group"
-              >
-                <Megaphone className="w-6 h-6 mb-1" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">Launch Targeted Campaign / Ad</h3>
-                <p className="text-xs opacity-70">Target specific colleges, branches, semesters, or everyone.</p>
-              </button>
+            {/* Admin Actions */}
+            <div className="mt-8">
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#A0A0A0] mb-2 border-b border-[#F0F0F0] dark:border-[#333333] pb-2">Admin Actions</h3>
+              
+              <div className="flex flex-col gap-0">
+                <button
+                  onClick={() => {
+                    setShowCampaignModal(true);
+                    setEditingCampaignId(null);
+                  }}
+                  className="flex items-center justify-between py-4 border-b border-[#F0F0F0] dark:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer text-left group"
+                >
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider">Launch Campaign</span>
+                    <span className="text-[12px] text-[#6F6F6F] font-medium">Target colleges, branches, semesters or individual batches.</span>
+                  </div>
+                  <ArrowRight className="w-[14px] h-[14px] text-[#111111] dark:text-[#FFFFFF] opacity-50 group-hover:opacity-100 transition-opacity" />
+                </button>
 
-              <button
-                onClick={() => setActiveTab('users')}
-                className="border border-black dark:border-white p-6 flex flex-col items-start gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-all text-left cursor-pointer"
-              >
-                <Award className="w-6 h-6 mb-1" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">Assign CR / Manage Roles</h3>
-                <p className="text-xs opacity-70">Elevate class representatives or grant Pro status to students.</p>
-              </button>
+                <button
+                  onClick={() => setActiveTab('users')}
+                  className="flex items-center justify-between py-4 border-b border-[#F0F0F0] dark:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer text-left group"
+                >
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider">Manage Users & Roles</span>
+                    <span className="text-[12px] text-[#6F6F6F] font-medium">Assign CRs, manage access and student permissions.</span>
+                  </div>
+                  <ArrowRight className="w-[14px] h-[14px] text-[#111111] dark:text-[#FFFFFF] opacity-50 group-hover:opacity-100 transition-opacity" />
+                </button>
 
-              <button
-                onClick={() => setActiveTab('batches')}
-                className="border border-black dark:border-white p-6 flex flex-col items-start gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-all text-left cursor-pointer"
-              >
-                <Layers className="w-6 h-6 mb-1" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">Audit Batch Timetables</h3>
-                <p className="text-xs opacity-70">Review active college schedules and remove spam/duplicate entries.</p>
-              </button>
+                <button
+                  onClick={() => setActiveTab('batches')}
+                  className="flex items-center justify-between py-4 border-b border-[#F0F0F0] dark:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer text-left group"
+                >
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider">Manage Batches</span>
+                    <span className="text-[12px] text-[#6F6F6F] font-medium">Review active schedules and remove spam entries.</span>
+                  </div>
+                  <ArrowRight className="w-[14px] h-[14px] text-[#111111] dark:text-[#FFFFFF] opacity-50 group-hover:opacity-100 transition-opacity" />
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -647,71 +657,173 @@ export default function SuperAdminPage() {
               </div>
             </div>
 
-            {/* Users Table */}
-            <div className="border border-black dark:border-white overflow-x-auto">
-              <table className="w-full text-xs text-left border-collapse">
+            {/* Mobile Users List (Cards) */}
+            <div className="flex flex-col gap-4 sm:hidden">
+              {filteredUsers.length === 0 ? (
+                <div className="p-8 text-center text-[#6F6F6F] border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A]">
+                  No registered users match your search.
+                </div>
+              ) : (
+                filteredUsers.map((u) => {
+                  const p = u.profile || {};
+                  const currentRole = p.role || 'student';
+                  const isPro = !!p.isPro;
+
+                  return (
+                    <div key={u.id} className="border border-[#D8D8D8] dark:border-[#333333] p-4 flex flex-col gap-4 bg-white dark:bg-[#111111]">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-[14px] text-[#111111] dark:text-[#FFFFFF]">{p.name || 'Anonymous'}</span>
+                          <span className="text-[11px] font-mono text-[#6F6F6F]">{p.email || u.id}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] text-[#A0A0A0] font-mono block">Joined {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#A0A0A0]">Academic</span>
+                        <span className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] leading-tight line-clamp-2">{p.college || 'Not Set'}</span>
+                        <span className="text-[11px] text-[#6F6F6F]">
+                          {p.programme || ''} {p.branch ? `- ${p.branch}` : ''} {p.semester ? `(Sem ${p.semester})` : ''} • {p.rollNumber || '—'}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3 pt-3 border-t border-[#F0F0F0] dark:border-[#222222]">
+                        <div className="relative flex-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveRoleDropdown(activeRoleDropdown === u.id ? null : u.id);
+                            }}
+                            className="w-full h-full flex items-center justify-between px-3 py-2 border border-[#D8D8D8] dark:border-[#333333] bg-transparent text-[11px] font-bold uppercase cursor-pointer rounded-none focus:outline-none"
+                          >
+                            <span>{currentRole === 'super_admin' ? 'Super Admin' : currentRole === 'cr' ? 'CR (Class Rep)' : 'Student'}</span>
+                            <ChevronDown className="w-3.5 h-3.5 opacity-50" />
+                          </button>
+                          
+                          {activeRoleDropdown === u.id && (
+                            <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] z-50 shadow-[0_20px_40px_rgba(0,0,0,0.1)] flex flex-col rounded-none">
+                              {['student', 'cr', 'super_admin'].map(role => (
+                                <button
+                                  key={role}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUpdateUserRole(u.id, role as any);
+                                    setActiveRoleDropdown(null);
+                                  }}
+                                  className="px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-[1px] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
+                                >
+                                  {role === 'super_admin' ? 'Super Admin' : role === 'cr' ? 'CR (Class Rep)' : 'Student'}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <button
+                          onClick={() => handleToggleUserPro(u.id, isPro)}
+                          className={`flex-1 px-3 py-2 text-[10px] font-bold uppercase tracking-wider border cursor-pointer rounded-none transition-colors ${
+                            isPro
+                              ? 'bg-[#111111] text-[#FFFFFF] border-[#111111] dark:bg-[#FFFFFF] dark:text-[#111111] dark:border-[#FFFFFF]'
+                              : 'border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
+                          }`}
+                        >
+                          {isPro ? '★ PRO ACTIVE' : 'FREE USER'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Desktop Users Table */}
+            <div className="hidden sm:block border border-[#D8D8D8] dark:border-[#333333] overflow-x-auto bg-white dark:bg-[#111111]">
+              <table className="w-full text-[12px] text-left border-collapse min-w-[800px]">
                 <thead>
-                  <tr className="border-b border-black dark:border-white bg-black/5 dark:bg-white/10 font-bold uppercase tracking-wider text-[11px]">
-                    <th className="p-3">Student</th>
-                    <th className="p-3">College & Branch</th>
-                    <th className="p-3">Roll No</th>
-                    <th className="p-3">Role</th>
-                    <th className="p-3">Pro Tier</th>
-                    <th className="p-3 text-right">Actions</th>
+                  <tr className="border-b border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] font-bold uppercase tracking-[1px] text-[10px] text-[#A0A0A0]">
+                    <th className="p-4 font-bold">Student</th>
+                    <th className="p-4 font-bold">College & Branch</th>
+                    <th className="p-4 font-bold">Roll No</th>
+                    <th className="p-4 font-bold">Role</th>
+                    <th className="p-4 font-bold">Pro Tier</th>
+                    <th className="p-4 font-bold text-right">Joined</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-black/10 dark:divide-white/10 font-sans">
+                <tbody className="divide-y divide-[#F0F0F0] dark:divide-[#222222] font-sans">
                   {filteredUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="p-8 text-center text-black/50 dark:text-white/50">
+                      <td colSpan={6} className="p-8 text-center text-[#6F6F6F]">
                         No registered users match your search.
                       </td>
                     </tr>
                   ) : (
                     filteredUsers.map((u) => {
                       const p = u.profile || {};
-                      const currentRole: AdminRole = p.role || 'student';
+                      const currentRole = p.role || 'student';
                       const isPro = !!p.isPro;
 
                       return (
-                        <tr key={u.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                          <td className="p-3">
-                            <div className="font-bold">{p.name || 'Anonymous'}</div>
-                            <div className="text-[11px] font-mono text-black/60 dark:text-white/60">{p.email || u.id}</div>
+                        <tr key={u.id} className="hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors">
+                          <td className="p-4">
+                            <div className="font-bold text-[13px] text-[#111111] dark:text-[#FFFFFF]">{p.name || 'Anonymous'}</div>
+                            <div className="text-[11px] font-mono text-[#6F6F6F]">{p.email || u.id}</div>
                           </td>
-                          <td className="p-3">
-                            <div className="font-medium">{p.college || 'Not Set'}</div>
-                            <div className="text-[11px] opacity-70">
+                          <td className="p-4 max-w-[250px]">
+                            <div className="font-medium text-[#111111] dark:text-[#FFFFFF] truncate" title={p.college || 'Not Set'}>{p.college || 'Not Set'}</div>
+                            <div className="text-[11px] text-[#6F6F6F]">
                               {p.programme || ''} {p.branch ? `- ${p.branch}` : ''} {p.semester ? `(Sem ${p.semester})` : ''}
                             </div>
                           </td>
-                          <td className="p-3 font-mono">
+                          <td className="p-4 font-mono text-[#111111] dark:text-[#FFFFFF]">
                             {p.rollNumber || '—'}
                           </td>
-                          <td className="p-3">
-                            <select
-                              value={currentRole}
-                              onChange={(e) => handleUpdateUserRole(u.id, e.target.value as AdminRole)}
-                              className="px-2 py-1 border border-black dark:border-white bg-white dark:bg-black text-[11px] font-bold uppercase cursor-pointer"
-                            >
-                              <option value="student">Student</option>
-                              <option value="cr">CR (Class Rep)</option>
-                              <option value="super_admin">Super Admin</option>
-                            </select>
+                          <td className="p-4">
+                            <div className="relative min-w-[140px]">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveRoleDropdown(activeRoleDropdown === u.id ? null : u.id);
+                            }}
+                            className="w-full h-full flex items-center justify-between px-3 py-2 border border-[#D8D8D8] dark:border-[#333333] bg-transparent text-[11px] font-bold uppercase cursor-pointer rounded-none focus:outline-none"
+                          >
+                            <span>{currentRole === 'super_admin' ? 'Super Admin' : currentRole === 'cr' ? 'CR (Class Rep)' : 'Student'}</span>
+                            <ChevronDown className="w-3.5 h-3.5 opacity-50" />
+                          </button>
+                          
+                          {activeRoleDropdown === u.id && (
+                            <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] z-50 shadow-[0_20px_40px_rgba(0,0,0,0.1)] flex flex-col rounded-none">
+                              {['student', 'cr', 'super_admin'].map(role => (
+                                <button
+                                  key={role}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUpdateUserRole(u.id, role as any);
+                                    setActiveRoleDropdown(null);
+                                  }}
+                                  className="px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-[1px] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
+                                >
+                                  {role === 'super_admin' ? 'Super Admin' : role === 'cr' ? 'CR (Class Rep)' : 'Student'}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                           </td>
-                          <td className="p-3">
+                          <td className="p-4">
                             <button
                               onClick={() => handleToggleUserPro(u.id, isPro)}
-                              className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider border cursor-pointer ${
+                              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border cursor-pointer rounded-none transition-colors ${
                                 isPro
-                                  ? 'bg-amber-400 text-black border-amber-500'
-                                  : 'border-black/20 dark:border-white/20 text-black/50 dark:text-white/50 hover:border-black'
+                                  ? 'bg-[#111111] text-[#FFFFFF] border-[#111111] dark:bg-[#FFFFFF] dark:text-[#111111] dark:border-[#FFFFFF]'
+                                  : 'border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
                               }`}
                             >
                               {isPro ? '★ PRO ACTIVE' : 'FREE USER'}
                             </button>
                           </td>
-                          <td className="p-3 text-right font-mono text-[11px]">
+                          <td className="p-4 text-right font-mono text-[11px] text-[#6F6F6F]">
                             {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}
                           </td>
                         </tr>
@@ -747,49 +859,97 @@ export default function SuperAdminPage() {
               </div>
             </div>
 
-            <div className="border border-black dark:border-white overflow-x-auto">
-              <table className="w-full text-xs text-left border-collapse">
+            {/* Mobile Batches List (Cards) */}
+            <div className="flex flex-col gap-4 sm:hidden">
+              {filteredBatches.length === 0 ? (
+                <div className="p-8 text-center text-[#6F6F6F] border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A]">
+                  No shared batches found.
+                </div>
+              ) : (
+                filteredBatches.map((b) => (
+                  <div key={b.id} className="border border-[#D8D8D8] dark:border-[#333333] p-4 flex flex-col gap-4 bg-white dark:bg-[#111111]">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex flex-col flex-1">
+                        <span className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#A0A0A0]">Batch ID</span>
+                        <span className="font-mono text-[11px] text-[#111111] dark:text-[#FFFFFF] break-all">{b.id}</span>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteBatch(b.id)}
+                        className="p-2 border border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer rounded-none shrink-0"
+                        title="Delete Batch"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="flex flex-col gap-1 pt-3 border-t border-[#F0F0F0] dark:border-[#222222]">
+                      <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-tight line-clamp-2" title={b.college}>{b.college}</span>
+                      <span className="text-[11px] text-[#6F6F6F]">
+                        {b.programme} • {b.branch} (Sem {b.semester})
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col gap-2 pt-3 border-t border-[#F0F0F0] dark:border-[#222222]">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] text-[#A0A0A0] uppercase font-bold tracking-[1px]">Creator</span>
+                        <span className="text-[11px] font-medium text-[#111111] dark:text-[#FFFFFF]">{b.creatorName || 'Anonymous'}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] text-[#A0A0A0] uppercase font-bold tracking-[1px]">Data</span>
+                        <span className="text-[11px] font-mono text-[#6F6F6F]">
+                          {b.subjects?.length || 0} Sub • {b.events?.length || 0} Evt
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Desktop Batches Table */}
+            <div className="hidden sm:block border border-[#D8D8D8] dark:border-[#333333] overflow-x-auto bg-white dark:bg-[#111111]">
+              <table className="w-full text-[12px] text-left border-collapse min-w-[900px]">
                 <thead>
-                  <tr className="border-b border-black dark:border-white bg-black/5 dark:bg-white/10 font-bold uppercase tracking-wider text-[11px]">
-                    <th className="p-3">Batch Key / ID</th>
-                    <th className="p-3">College & Programme</th>
-                    <th className="p-3">Branch & Semester</th>
-                    <th className="p-3">Creator</th>
-                    <th className="p-3">Subjects / Events</th>
-                    <th className="p-3 text-right">Actions</th>
+                  <tr className="border-b border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] font-bold uppercase tracking-[1px] text-[10px] text-[#A0A0A0]">
+                    <th className="p-4 font-bold">Batch Key / ID</th>
+                    <th className="p-4 font-bold">College & Programme</th>
+                    <th className="p-4 font-bold">Branch & Semester</th>
+                    <th className="p-4 font-bold">Creator</th>
+                    <th className="p-4 font-bold">Data</th>
+                    <th className="p-4 font-bold text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-black/10 dark:divide-white/10 font-sans">
+                <tbody className="divide-y divide-[#F0F0F0] dark:divide-[#222222] font-sans">
                   {filteredBatches.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="p-8 text-center text-black/50 dark:text-white/50">
+                      <td colSpan={6} className="p-8 text-center text-[#6F6F6F]">
                         No shared batches found.
                       </td>
                     </tr>
                   ) : (
                     filteredBatches.map((b) => (
-                      <tr key={b.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                        <td className="p-3 font-mono font-bold">{b.id}</td>
-                        <td className="p-3">
-                          <div className="font-bold">{b.college}</div>
-                          <div className="text-[11px] opacity-70">{b.programme}</div>
+                      <tr key={b.id} className="hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors">
+                        <td className="p-4 font-mono font-bold text-[11px] max-w-[200px] truncate" title={b.id}>{b.id}</td>
+                        <td className="p-4 max-w-[250px]">
+                          <div className="font-medium text-[#111111] dark:text-[#FFFFFF] truncate" title={b.college}>{b.college}</div>
+                          <div className="text-[11px] text-[#6F6F6F]">{b.programme}</div>
                         </td>
-                        <td className="p-3">
-                          <div>{b.branch}</div>
-                          <div className="text-[11px] opacity-70">Semester {b.semester}</div>
+                        <td className="p-4">
+                          <div className="text-[#111111] dark:text-[#FFFFFF] font-medium">{b.branch}</div>
+                          <div className="text-[11px] text-[#6F6F6F]">Semester {b.semester}</div>
                         </td>
-                        <td className="p-3">
-                          <div className="font-medium">{b.creatorName || 'Anonymous'}</div>
-                          <div className="text-[10px] font-mono text-black/60 dark:text-white/60">{b.creatorId}</div>
+                        <td className="p-4">
+                          <div className="font-medium text-[#111111] dark:text-[#FFFFFF]">{b.creatorName || 'Anonymous'}</div>
+                          <div className="text-[10px] font-mono text-[#6F6F6F] truncate max-w-[120px]" title={b.creatorId}>{b.creatorId}</div>
                         </td>
-                        <td className="p-3 font-mono text-[11px]">
-                          <div>{b.subjects?.length || 0} Subjects</div>
-                          <div className="text-black/60 dark:text-white/60">{b.events?.length || 0} Calendar Events</div>
+                        <td className="p-4 font-mono text-[11px] text-[#6F6F6F]">
+                          <div>{b.subjects?.length || 0} Sub</div>
+                          <div>{b.events?.length || 0} Evt</div>
                         </td>
-                        <td className="p-3 text-right">
+                        <td className="p-4 text-right">
                           <button
                             onClick={() => handleDeleteBatch(b.id)}
-                            className="p-1.5 border border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer"
+                            className="p-1.5 border border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer rounded-none inline-flex items-center justify-center"
                             title="Delete Batch"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -829,6 +989,8 @@ export default function SuperAdminPage() {
                     badgeText: '',
                     targetAudienceType: 'all',
                     targetColleges: [],
+        branchTargeting: 'all',
+        semesterTargeting: 'all',
                     targetBranches: [],
                     targetSemesters: [],
                     customCollegeInput: '',
@@ -990,318 +1152,362 @@ export default function SuperAdminPage() {
       {/* CREATE / EDIT CAMPAIGN MODAL */}
       <AnimatePresence>
         {showCampaignModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-[#F7F7F5] dark:bg-[#111111] overflow-y-auto font-sans">
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowCampaignModal(false)}
-              className="fixed inset-0 bg-black/70 backdrop-blur-sm"
-            />
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-xl bg-white dark:bg-zinc-950 border border-black dark:border-white shadow-2xl p-6 sm:p-7 z-10 text-left max-h-[90vh] overflow-y-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="min-h-screen flex flex-col max-w-4xl mx-auto"
             >
-              <h3 className="text-lg font-bold uppercase tracking-wider mb-1">
-                {editingCampaignId ? 'Edit Campaign' : 'Create Targeted Campaign / Ad'}
-              </h3>
-              <p className="text-xs text-black/60 dark:text-white/60 mb-5">
-                Configure your native promo banner details, destination link, and target audience.
-              </p>
-
-              <form onSubmit={handleSaveCampaign} className="flex flex-col gap-4 text-xs font-sans">
+              {/* Header */}
+              <div className="flex items-center justify-between py-6 px-4 sm:px-8 border-b border-[#D8D8D8] dark:border-[#333333] sticky top-0 bg-[#F7F7F5] dark:bg-[#111111] z-20">
                 <div>
-                  <label className="block font-bold uppercase tracking-wider mb-1">Campaign Title *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Official Batch '26 Hoodie Drop"
-                    value={campaignForm.title}
-                    onChange={(e) => setCampaignForm({ ...campaignForm, title: e.target.value })}
-                    className="w-full p-2.5 border border-black dark:border-white bg-transparent focus:outline-none font-medium"
-                  />
+                  <h3 className="text-[24px] sm:text-[32px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-none">
+                    {editingCampaignId ? 'Edit Campaign' : 'Launch Campaign'}
+                  </h3>
+                  <p className="text-[14px] text-[#6F6F6F] mt-2">
+                    Configure your promo banner, link, and target audience.
+                  </p>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setShowCampaignModal(false)}
+                  className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider hover:opacity-70 transition-opacity cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                  <span>Close</span>
+                </button>
+              </div>
 
-                <div>
-                  <label className="block font-bold uppercase tracking-wider mb-1">Subtitle / Tagline</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Limited pre-orders open now. Custom college embroidery."
-                    value={campaignForm.subtitle}
-                    onChange={(e) => setCampaignForm({ ...campaignForm, subtitle: e.target.value })}
-                    className="w-full p-2.5 border border-black dark:border-white bg-transparent focus:outline-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold uppercase tracking-wider mb-1">Category</label>
-                    <select
-                      value={campaignForm.category}
-                      onChange={(e) => setCampaignForm({ ...campaignForm, category: e.target.value as CampaignCategory })}
-                      className="w-full p-2.5 border border-black dark:border-white bg-white dark:bg-black focus:outline-none font-medium cursor-pointer"
-                    >
-                      <option value="merch">Merchandise / T-Shirts</option>
-                      <option value="movie">Movie Promotion</option>
-                      <option value="event">Campus Event / Fest</option>
-                      <option value="deal">Student Perk / Deal</option>
-                      <option value="general">General Spotlight</option>
-                    </select>
+              <form onSubmit={handleSaveCampaign} className="flex flex-col flex-1 px-4 sm:px-8 py-8 gap-12">
+                
+                {/* 1. CAMPAIGN DETAILS */}
+                <section className="flex flex-col gap-6">
+                  <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D9D9D6] dark:border-[#333333]">
+                    01 Campaign Details
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Campaign title <span className="text-red-500">*</span></label>
+                      <input
+                        type="text"
+                        required
+                        value={campaignForm.title}
+                        onChange={(e) => setCampaignForm({ ...campaignForm, title: e.target.value })}
+                        className="w-full px-4 py-3 bg-white dark:bg-[#1A1A1A] border border-[#D9D9D6] dark:border-[#333333] text-[14px] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors rounded-none placeholder:text-[#999999]"
+                        placeholder="Official Batch '26 Hoodie Drop"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Tagline</label>
+                      <input
+                        type="text"
+                        value={campaignForm.subtitle}
+                        onChange={(e) => setCampaignForm({ ...campaignForm, subtitle: e.target.value })}
+                        className="w-full px-4 py-3 bg-white dark:bg-[#1A1A1A] border border-[#D9D9D6] dark:border-[#333333] text-[14px] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors rounded-none placeholder:text-[#999999]"
+                        placeholder="Limited pre-orders open now"
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block font-bold uppercase tracking-wider mb-1">Button CTA Text</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Category</label>
+                      <select
+                        value={campaignForm.category}
+                        onChange={(e) => setCampaignForm({ ...campaignForm, category: e.target.value as any })}
+                        className="w-full px-4 py-3 bg-white dark:bg-[#1A1A1A] border border-[#D9D9D6] dark:border-[#333333] text-[14px] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors rounded-none appearance-none"
+                      >
+                        <option value="General Spotlight">General Spotlight</option>
+                        <option value="Placement Drive">Placement Drive</option>
+                        <option value="Club Recruitment">Club Recruitment</option>
+                        <option value="Event Promotion">Event Promotion</option>
+                        <option value="Academic Notice">Academic Notice</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">CTA button text</label>
+                      <input
+                        type="text"
+                        value={campaignForm.ctaText}
+                        onChange={(e) => setCampaignForm({ ...campaignForm, ctaText: e.target.value })}
+                        className="w-full px-4 py-3 bg-white dark:bg-[#1A1A1A] border border-[#D9D9D6] dark:border-[#333333] text-[14px] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors rounded-none placeholder:text-[#999999]"
+                        placeholder="Learn More"
+                      />
+                    </div>
+                  </div>
+                </section>
+
+                {/* 2. CREATIVE & DESTINATION */}
+                <section className="flex flex-col gap-6">
+                  <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D9D9D6] dark:border-[#333333]">
+                    02 Creative & Destination
+                  </div>
+                  
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Destination link <span className="text-red-500">*</span></label>
                     <input
-                      type="text"
-                      placeholder="e.g. Pre-Order Now"
-                      value={campaignForm.ctaText}
-                      onChange={(e) => setCampaignForm({ ...campaignForm, ctaText: e.target.value })}
-                      className="w-full p-2.5 border border-black dark:border-white bg-transparent focus:outline-none"
+                      type="url"
+                      required
+                      value={campaignForm.targetUrl}
+                      onChange={(e) => setCampaignForm({ ...campaignForm, targetUrl: e.target.value })}
+                      className="w-full px-4 py-3 bg-white dark:bg-[#1A1A1A] border border-[#D9D9D6] dark:border-[#333333] text-[14px] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors rounded-none placeholder:text-[#999999]"
+                      placeholder="https://..."
                     />
                   </div>
-                </div>
 
-                <div>
-                  <label className="block font-bold uppercase tracking-wider mb-1">Destination Target Link *</label>
-                  <input
-                    type="url"
-                    required
-                    placeholder="https://..."
-                    value={campaignForm.targetUrl}
-                    onChange={(e) => setCampaignForm({ ...campaignForm, targetUrl: e.target.value })}
-                    className="w-full p-2.5 border border-black dark:border-white bg-transparent focus:outline-none font-mono"
-                  />
-                </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Banner image</label>
+                    {campaignForm.imageUrl ? (
+                      <div className="relative w-full aspect-[21/9] bg-black">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={campaignForm.imageUrl} alt="Banner" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setCampaignForm({ ...campaignForm, imageUrl: '' })}
+                          className="absolute top-2 right-2 p-2 bg-[#111111] text-[#FFFFFF] hover:bg-black transition-colors cursor-pointer"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        <label className="w-full py-12 border-2 border-dashed border-[#D8D8D8] dark:border-[#333333] flex flex-col items-center justify-center gap-3 text-[#6F6F6F] hover:border-[#111111] dark:hover:border-[#FFFFFF] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer bg-white dark:bg-[#1A1A1A]">
+                          <Upload className="w-6 h-6" />
+                          <span className="text-[13px] font-medium">Click to upload image</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  setCampaignForm({ ...campaignForm, imageUrl: reader.result as string });
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                </section>
 
-                <div>
-                  <label className="block font-bold uppercase tracking-wider mb-1">Banner Image / Poster URL</label>
-                  <input
-                    type="url"
-                    placeholder="https://images.unsplash.com/... or poster image link"
-                    value={campaignForm.imageUrl}
-                    onChange={(e) => setCampaignForm({ ...campaignForm, imageUrl: e.target.value })}
-                    className="w-full p-2.5 border border-black dark:border-white bg-transparent focus:outline-none font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold uppercase tracking-wider mb-1">Custom Badge Text (Optional)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. LIMITED MERCH DROP or MOVIE NIGHT"
-                    value={campaignForm.badgeText}
-                    onChange={(e) => setCampaignForm({ ...campaignForm, badgeText: e.target.value })}
-                    className="w-full p-2.5 border border-black dark:border-white bg-transparent focus:outline-none"
-                  />
-                </div>
-
-                {/* ADVANCED TARGETING SECTION */}
-                <div className="border border-black dark:border-white p-4 bg-black/5 dark:bg-white/5 flex flex-col gap-3">
-                  <div className="flex items-center justify-between pb-2 border-b border-black/10 dark:border-white/10">
-                    <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px]">
-                      <Crosshair className="w-4 h-4 text-amber-500" />
-                      <span>Audience Targeting & Scope</span>
-                    </div>
+                {/* 3. TARGETING */}
+                <section className="flex flex-col gap-6">
+                  <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D9D9D6] dark:border-[#333333]">
+                    03 Audience Targeting
                   </div>
 
-                  {/* Radio Switcher */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setCampaignForm({ ...campaignForm, targetAudienceType: 'all' })}
-                      className={`flex items-center justify-center gap-2 p-2.5 border text-xs font-bold uppercase cursor-pointer transition-all ${
-                        campaignForm.targetAudienceType === 'all'
-                          ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
-                          : 'border-black/20 dark:border-white/20 hover:border-black'
-                      }`}
-                    >
-                      <Globe className="w-3.5 h-3.5" />
-                      <span>Everyone (All Colleges)</span>
-                    </button>
+                  <div className="flex flex-col gap-4">
+                    <label className="flex items-center gap-3 cursor-pointer p-4 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#1A1A1A]">
+                      <input
+                        type="radio"
+                        checked={campaignForm.targetAudienceType === 'all'}
+                        onChange={() => setCampaignForm({ ...campaignForm, targetAudienceType: 'all' })}
+                        className="w-4 h-4 accent-[#111111] dark:accent-[#FFFFFF]"
+                      />
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">Everyone</span>
+                        <span className="text-[12px] text-[#6F6F6F]">Show to all active users on Intersemester</span>
+                      </div>
+                    </label>
 
-                    <button
-                      type="button"
-                      onClick={() => setCampaignForm({ ...campaignForm, targetAudienceType: 'custom' })}
-                      className={`flex items-center justify-center gap-2 p-2.5 border text-xs font-bold uppercase cursor-pointer transition-all ${
-                        campaignForm.targetAudienceType === 'custom'
-                          ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
-                          : 'border-black/20 dark:border-white/20 hover:border-black'
-                      }`}
-                    >
-                      <Crosshair className="w-3.5 h-3.5" />
-                      <span>Specific Colleges / Branches</span>
-                    </button>
+                    <label className="flex items-center gap-3 cursor-pointer p-4 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#1A1A1A]">
+                      <input
+                        type="radio"
+                        checked={campaignForm.targetAudienceType === 'custom'}
+                        onChange={() => setCampaignForm({ ...campaignForm, targetAudienceType: 'custom' })}
+                        className="w-4 h-4 accent-[#111111] dark:accent-[#FFFFFF]"
+                      />
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">Specific Audience</span>
+                        <span className="text-[12px] text-[#6F6F6F]">Filter by college, branch, and semester</span>
+                      </div>
+                    </label>
                   </div>
 
-                  {/* Custom Targeting Fields */}
                   {campaignForm.targetAudienceType === 'custom' && (
-                    <div className="flex flex-col gap-4 pt-2">
-                      {/* 1. Target Colleges */}
-                      <div>
-                        <label className="block font-bold uppercase tracking-wider mb-1.5 text-[10px]">
-                          Target Colleges (Select or Add Multiple)
-                        </label>
-                        
-                        {/* College Chips */}
-                        <div className="flex flex-wrap gap-1.5 mb-2">
-                          {allAvailableColleges.map((col) => {
-                            const isSelected = campaignForm.targetColleges.includes(col);
+                    <div className="flex flex-col gap-6 p-6 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#111111]">
+                      
+                      {/* Colleges */}
+                      <div className="flex flex-col gap-3">
+                        <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Target Colleges</label>
+                        <div className="flex flex-wrap gap-2">
+                          {Array.from(new Set(usersList.map(u => u.college).filter(Boolean))).map(college => {
+                            const isSelected = campaignForm.targetColleges.includes(college);
                             return (
                               <button
-                                key={col}
+                                key={college}
                                 type="button"
-                                onClick={() => toggleCollegeSelection(col)}
-                                className={`px-2.5 py-1 text-[11px] font-medium border transition-all cursor-pointer ${
+                                onClick={() => toggleCollegeSelection(college)}
+                                className={`px-4 py-2 text-[13px] font-medium border transition-colors ${
                                   isSelected
-                                    ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
-                                    : 'border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white'
+                                    ? 'border-[#111111] bg-[#111111] text-[#FFFFFF] dark:border-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111]'
+                                    : 'border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-white dark:bg-[#1A1A1A]'
                                 }`}
                               >
-                                {isSelected ? '✓ ' : '+ '}
-                                {col}
-                              </button>
-                            );
-                          })}
-                        </div>
-
-                        {/* Custom College Input */}
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            placeholder="Type any other college name..."
-                            value={campaignForm.customCollegeInput}
-                            onChange={(e) => setCampaignForm({ ...campaignForm, customCollegeInput: e.target.value })}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                addCustomCollege();
-                              }
-                            }}
-                            className="flex-1 p-2 border border-black dark:border-white bg-transparent focus:outline-none text-xs"
-                          />
-                          <button
-                            type="button"
-                            onClick={addCustomCollege}
-                            className="px-3 py-2 border border-black dark:border-white font-bold uppercase text-[10px] hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black cursor-pointer"
-                          >
-                            Add
-                          </button>
-                        </div>
-                        <p className="text-[10px] text-black/50 dark:text-white/50 mt-1">
-                          {campaignForm.targetColleges.length === 0
-                            ? 'No specific colleges selected — will show across all colleges.'
-                            : `Selected Colleges (${campaignForm.targetColleges.length}): ${campaignForm.targetColleges.join(', ')}`}
-                        </p>
-                      </div>
-
-                      {/* 2. Target Branches */}
-                      <div>
-                        <label className="block font-bold uppercase tracking-wider mb-1.5 text-[10px]">
-                          Target Branches (Leave empty for All Branches)
-                        </label>
-                        <div className="flex flex-wrap gap-1.5 mb-2">
-                          {availableBranches.map((branch) => {
-                            const isSelected = campaignForm.targetBranches.includes(branch);
-                            return (
-                              <button
-                                key={branch}
-                                type="button"
-                                onClick={() => toggleBranchSelection(branch)}
-                                className={`px-2 py-0.5 text-[10px] font-bold uppercase border transition-all cursor-pointer ${
-                                  isSelected
-                                    ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
-                                    : 'border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white'
-                                }`}
-                              >
-                                {isSelected ? '✓ ' : ''}{branch}
-                              </button>
-                            );
-                          })}
-                        </div>
-
-                        {/* Custom Branch Input */}
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            placeholder="Type custom branch code (e.g. AI-ML, Robotics)..."
-                            value={campaignForm.customBranchInput}
-                            onChange={(e) => setCampaignForm({ ...campaignForm, customBranchInput: e.target.value })}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                addCustomBranch();
-                              }
-                            }}
-                            className="flex-1 p-2 border border-black dark:border-white bg-transparent focus:outline-none text-xs"
-                          />
-                          <button
-                            type="button"
-                            onClick={addCustomBranch}
-                            className="px-3 py-2 border border-black dark:border-white font-bold uppercase text-[10px] hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black cursor-pointer"
-                          >
-                            Add
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* 3. Target Semesters */}
-                      <div>
-                        <label className="block font-bold uppercase tracking-wider mb-1.5 text-[10px]">
-                          Target Semesters (Leave empty for All Semesters)
-                        </label>
-                        <div className="flex flex-wrap gap-1.5">
-                          {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => {
-                            const isSelected = campaignForm.targetSemesters.includes(sem);
-                            return (
-                              <button
-                                key={sem}
-                                type="button"
-                                onClick={() => toggleSemesterSelection(sem)}
-                                className={`px-3 py-1 text-[11px] font-mono border transition-all cursor-pointer ${
-                                  isSelected
-                                    ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white font-bold'
-                                    : 'border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white'
-                                }`}
-                              >
-                                {isSelected ? `✓ Sem ${sem}` : `Sem ${sem}`}
+                                {college}
                               </button>
                             );
                           })}
                         </div>
                       </div>
+
+                      {/* Branches */}
+                      {campaignForm.targetColleges.length > 0 && (
+                        <div className="flex flex-col gap-3">
+                          <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Branches</label>
+                          <div className="flex gap-6">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                checked={campaignForm.branchTargeting === 'all'}
+                                onChange={() => setCampaignForm({ ...campaignForm, branchTargeting: 'all', targetBranches: [] })}
+                                className="w-3.5 h-3.5 accent-[#111111] dark:accent-[#FFFFFF]"
+                              />
+                              <span className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF]">All branches</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                checked={campaignForm.branchTargeting === 'custom'}
+                                onChange={() => setCampaignForm({ ...campaignForm, branchTargeting: 'custom' })}
+                                className="w-3.5 h-3.5 accent-[#111111] dark:accent-[#FFFFFF]"
+                              />
+                              <span className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF]">Specific branches</span>
+                            </label>
+                          </div>
+
+                          {campaignForm.branchTargeting === 'custom' && (
+                            <div className="flex flex-col gap-3">
+                              <div className="flex flex-wrap gap-2">
+                                {Array.from(new Set(
+                                  usersList
+                                    .filter(u => campaignForm.targetColleges.includes(u.college))
+                                    .map(u => u.branch)
+                                    .filter(Boolean)
+                                )).map(branch => {
+                                  const isSelected = campaignForm.targetBranches.includes(branch);
+                                  return (
+                                    <button
+                                      key={branch}
+                                      type="button"
+                                      onClick={() => toggleBranchSelection(branch)}
+                                      className={`px-4 py-2 text-[13px] font-medium border transition-colors ${
+                                        isSelected
+                                          ? 'border-[#111111] bg-[#111111] text-[#FFFFFF] dark:border-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111]'
+                                          : 'border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-white dark:bg-[#1A1A1A]'
+                                      }`}
+                                    >
+                                      {branch}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Semesters */}
+                      {campaignForm.targetColleges.length > 0 && (
+                        <div className="flex flex-col gap-3">
+                          <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Semesters</label>
+                          <div className="flex gap-6">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                checked={campaignForm.semesterTargeting === 'all'}
+                                onChange={() => setCampaignForm({ ...campaignForm, semesterTargeting: 'all', targetSemesters: [] })}
+                                className="w-3.5 h-3.5 accent-[#111111] dark:accent-[#FFFFFF]"
+                              />
+                              <span className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF]">All semesters</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                checked={campaignForm.semesterTargeting === 'custom'}
+                                onChange={() => setCampaignForm({ ...campaignForm, semesterTargeting: 'custom' })}
+                                className="w-3.5 h-3.5 accent-[#111111] dark:accent-[#FFFFFF]"
+                              />
+                              <span className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF]">Specific semesters</span>
+                            </label>
+                          </div>
+
+                          {campaignForm.semesterTargeting === 'custom' && (
+                            <div className="flex flex-wrap gap-2 pt-2">
+                              {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => {
+                                const isSelected = campaignForm.targetSemesters.includes(sem);
+                                return (
+                                  <button
+                                    key={sem}
+                                    type="button"
+                                    onClick={() => toggleSemesterSelection(sem)}
+                                    className={`px-4 py-2 text-[13px] font-medium border transition-colors ${
+                                      isSelected
+                                        ? 'border-[#111111] bg-[#111111] text-[#FFFFFF] dark:border-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111]'
+                                        : 'border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-white dark:bg-[#1A1A1A]'
+                                    }`}
+                                  >
+                                    Sem {sem}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
-                </div>
 
-                <div className="flex items-center gap-2 pt-1">
-                  <input
-                    type="checkbox"
-                    id="is_active_checkbox"
-                    checked={campaignForm.isActive}
-                    onChange={(e) => setCampaignForm({ ...campaignForm, isActive: e.target.checked })}
-                    className="w-4 h-4 cursor-pointer"
-                  />
-                  <label htmlFor="is_active_checkbox" className="font-bold cursor-pointer">
-                    Set Campaign Active immediately upon saving
-                  </label>
-                </div>
+                  {/* Reach Estimate */}
+                  <div className="p-6 bg-white dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] mt-2">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#A0A0A0]">Estimated Reach</span>
+                      <span className="text-[24px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+                        {(() => {
+                          if (campaignForm.targetAudienceType === 'all') return `${usersList.length} students (Everyone)`;
+                          if (campaignForm.targetColleges.length === 0) return '0 students';
+                          let matchCount = 0;
+                          usersList.forEach(u => {
+                            const cMatch = campaignForm.targetColleges.includes(u.college);
+                            const bMatch = campaignForm.branchTargeting === 'all' || campaignForm.targetBranches.some(b => b.toLowerCase() === (u.branch || '').toLowerCase());
+                            const sMatch = campaignForm.semesterTargeting === 'all' || campaignForm.targetSemesters.some(s => String(s) === String(u.semester).replace(/[^0-9]/g, ''));
+                            if (cMatch && bMatch && sMatch) matchCount++;
+                          });
+                          return `~${matchCount} students`;
+                        })()}
+                      </span>
+                    </div>
+                  </div>
+                </section>
 
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-black/10 dark:border-white/10 mt-2">
+                <div className="flex flex-col sm:flex-row items-center gap-4 pt-6 border-t border-[#D8D8D8] dark:border-[#333333] mt-4 mb-20">
                   <button
                     type="button"
-                    onClick={() => setShowCampaignModal(false)}
-                    className="px-4 py-2.5 border border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white transition-colors cursor-pointer uppercase font-bold"
+                    onClick={(e) => {
+                      campaignForm.isActive = false;
+                      handleSaveCampaign(e as any);
+                    }}
+                    className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] hover:border-[#111111] dark:hover:border-[#FFFFFF] transition-colors cursor-pointer text-[13px] font-bold uppercase tracking-[1.5px]"
                   >
-                    Cancel
+                    Save as Draft
                   </button>
+
                   <button
-                    type="submit"
-                    className="px-5 py-2.5 bg-black text-white dark:bg-white dark:text-black font-bold uppercase tracking-wider border border-black dark:border-white hover:opacity-90 transition-opacity cursor-pointer"
+                    type="button"
+                    onClick={(e) => {
+                      campaignForm.isActive = true;
+                      handleSaveCampaign(e as any);
+                    }}
+                    className="w-full sm:w-auto px-12 py-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] font-bold text-[13px] uppercase tracking-[1.5px] hover:opacity-90 transition-opacity cursor-pointer rounded-none"
                   >
-                    Save & Publish Campaign
+                    Publish Campaign
                   </button>
                 </div>
               </form>

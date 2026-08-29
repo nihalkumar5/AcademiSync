@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
@@ -6,7 +7,7 @@ import { HomeworkPriority } from '@/lib/types';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input, Textarea, Select } from '../ui/Input';
-import { Upload, Sparkles, Check, Camera } from 'lucide-react';
+import {  Upload, Sparkles, Check, Camera , Bot, ChevronDown , X} from 'lucide-react';
 
 export interface HomeworkScanModalProps {
   isOpen: boolean;
@@ -74,7 +75,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
         setExtractedTitle(hw.title || 'Assignment');
         setExtractedDescription(hw.description || '');
         setExtractedDeadline(
-          hw.deadline ? new Date(hw.deadline).toISOString().slice(0, 16) : defaultDeadline.toISOString().slice(0, 16)
+          hw.deadline ? new Date(hw.deadline).toISOString().slice(0, 10) : defaultDeadline.toISOString().slice(0, 10)
         );
         setExtractedPriority(hw.priority || 'High');
       } else {
@@ -90,7 +91,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
       setExtractedSubjectId(mlSub ? mlSub.id : '');
       setExtractedTitle('Assignment 3: Neural Networks & Backpropagation');
       setExtractedDescription('Derive the gradient update rules for a 3-layer MLP with Cross-Entropy loss. Submit handwritten derivations + Python code.');
-      setExtractedDeadline(defaultDeadline.toISOString().slice(0, 16));
+      setExtractedDeadline(defaultDeadline.toISOString().slice(0, 10));
       setExtractedPriority('High');
     }
 
@@ -128,140 +129,199 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
   };
 
   return (
+    
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Scan Homework / Assignment"
-      description="Upload an assignment sheet, problem photo, or syllabus notice to extract task details."
-      maxWidth="lg"
+      title="Scan Homework"
+      description="Upload a photo or PDF and we'll extract the assignment details."
+      maxWidth="md"
+      mobileFullSheet={step === 'review'}
     >
       {step === 'upload' && (
-        <div className="flex flex-col gap-6 text-center">
-          <div className="relative group transition-all">
-            <div className="relative flex flex-col items-center justify-center p-10 border-2 border-dashed border-black dark:border-white hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-300 cursor-pointer overflow-hidden">
-              <input
-                type="file"
-                accept="image/*,.pdf"
-                onChange={handleFileUpload}
-                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-              />
-              <div className="w-14 h-14 bg-black text-white dark:bg-white dark:text-black flex items-center justify-center mb-4 transition-transform group-hover:-translate-y-1 group-hover:scale-110">
-                <Upload className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-black dark:text-white mb-2 tracking-tight">
-                Upload Assignment Photo
-              </h3>
-              <p className="text-sm text-black/60 dark:text-white/60 max-w-[260px] mx-auto leading-relaxed">
-                Powered by Gemini Vision OCR. Drop an image to auto-extract task details and deadlines.
-              </p>
-              
-              <div className="mt-6 pointer-events-none">
-                <Button variant="primary" className="rounded-xl shadow-lg shadow-black/10 dark:shadow-white/10 ring-1 ring-black/5 dark:ring-white/5">
-                  Choose Files
-                </Button>
-              </div>
+        <div className="flex flex-col text-center">
+          <div className="relative group w-full h-[220px] sm:h-[240px] flex flex-col items-center justify-center border border-dashed border-[#D9D9D6] dark:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer mb-5">
+            <input
+              type="file"
+              accept="image/*,.pdf"
+              onChange={handleFileUpload}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+            />
+            <Upload className="w-5 h-5 mb-3 text-[#111111] dark:text-[#FFFFFF]" />
+            <h3 className="text-[15px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-1">
+              Choose a assignment file
+            </h3>
+            <p className="text-[13px] text-[#6F6F6F] mb-4">
+              Photo or PDF
+            </p>
+            
+            <div className="px-6 h-[44px] flex items-center justify-center bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto mb-3">
+              Choose file
+            </div>
+
+            <div className="text-[11px] text-[#999999] font-medium tracking-[0.5px] uppercase">
+              JPG · PNG · PDF
             </div>
           </div>
 
-          <div className="flex items-center justify-center gap-4 text-xs font-bold text-black/40 dark:text-white/40 tracking-widest uppercase">
-            <span className="w-12 h-px bg-black/10 dark:bg-white/10" />
-            Or Try Demo
-            <span className="w-12 h-px bg-black/10 dark:bg-white/10" />
+          <div className="flex items-center justify-center gap-4 text-[9px] font-bold text-[#A0A0A0] tracking-[2px] uppercase mb-4">
+            <span className="flex-1 h-px bg-[#EAEAEA] dark:bg-[#222222]" />
+            OR TRY SAMPLE
+            <span className="flex-1 h-px bg-[#EAEAEA] dark:bg-[#222222]" />
           </div>
 
-          <Button 
-            variant="outline" 
+          <button 
+            type="button"
             onClick={() => runScan('demo_ml_assignment.jpg')}
-            className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black gap-2 w-full justify-center"
+            className="flex items-center justify-between px-4 w-full h-[40px] border border-[#EAEAEA] dark:border-[#222222] hover:border-[#D9D9D6] dark:hover:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer"
           >
-            <Sparkles className="w-4 h-4" />
-            Scan Sample: ML Neural Networks
-          </Button>
+            <div className="flex items-center gap-2 text-[12px] font-bold text-[#6F6F6F] dark:text-[#999999]">
+              <Sparkles className="w-3.5 h-3.5" />
+              Use sample assignment
+            </div>
+            <span className="text-[#6F6F6F] dark:text-[#999999] text-[14px]">→</span>
+          </button>
         </div>
       )}
 
       {step === 'scanning' && (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center animate-pulse mb-4 shadow-sm">
-            <Sparkles className="w-7 h-7" />
+        <div className="flex flex-col items-center justify-center py-6 sm:py-10 text-center w-full">
+          <div className="relative mb-6">
+            <div className="w-24 h-24 rounded-full bg-[#F7F7F5] dark:bg-[#1A1A1A] flex items-center justify-center relative">
+              <Bot className="w-12 h-12 text-[#111111] dark:text-[#FFFFFF] animate-pulse" />
+              <Sparkles className="w-6 h-6 absolute top-1 right-0 text-[#111111] dark:text-[#FFFFFF] animate-bounce" />
+            </div>
           </div>
-          <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
-            Reading Assignment Details via Magic...
+          
+          <h4 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+            Analyzing your assignment...
           </h4>
-          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 font-medium">
-            Analyzing {fileName} for subject codes, questions, and submission dates.
+          <p className="text-[14px] text-[#6F6F6F] mt-1 mb-8 max-w-[280px]">
+            Reading subjects, questions, and submission dates.
           </p>
+
+          <div className="flex items-center gap-3 w-full max-w-[280px] mx-auto mb-10">
+            <div className="flex-1 h-3 bg-[#EAEAEA] dark:bg-[#333333] rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-[#111111] dark:bg-[#FFFFFF]"
+                initial={{ width: "0%" }}
+                animate={{ width: "90%" }}
+                transition={{ duration: 15, ease: "easeOut" }}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-4 bg-[#F7F7F5] dark:bg-[#1A1A1A] text-left border border-[#D9D9D6] dark:border-[#333333] w-full max-w-[320px] rounded-none">
+            <Sparkles className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF] shrink-0 mt-0.5" />
+            <div className="flex flex-col">
+              <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">AI is working...</span>
+              <span className="text-[13px] text-[#6F6F6F] mt-0.5">This usually takes 10–20 seconds.</span>
+            </div>
+          </div>
         </div>
       )}
 
       {step === 'review' && (
-        <form onSubmit={handleConfirmSave} className="flex flex-col gap-4 text-left">
-          <div className="p-3.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-xs text-purple-900 dark:text-purple-200 flex items-start gap-2">
-            <Sparkles className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
-            <span>
-              <strong>Review Extracted Details:</strong> Please review and adjust the extracted task details before saving to your planner.
-            </span>
-          </div>
-
-          <Select
-            label="Matched Subject"
-            value={extractedSubjectId}
-            onChange={(e) => setExtractedSubjectId(e.target.value)}
-            required
-          >
-            {subjects.map((sub) => (
-              <option key={sub.id} value={sub.id}>
-                {sub.code && sub.code !== 'UNK' ? `[${sub.code}] ` : ''}{sub.name}
-              </option>
-            ))}
-          </Select>
-
-          <Input
-            label="Extracted Task Title"
-            value={extractedTitle}
-            onChange={(e) => setExtractedTitle(e.target.value)}
-            required
-          />
-
-          <Textarea
-            label="Extracted Description / Details"
-            value={extractedDescription}
-            onChange={(e) => setExtractedDescription(e.target.value)}
-          />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Extracted Deadline"
-              type="datetime-local"
-              value={extractedDeadline}
-              onChange={(e) => setExtractedDeadline(e.target.value)}
-              required
-            />
-
-            <Select
-              label="Priority"
-              value={extractedPriority}
-              onChange={(e) => setExtractedPriority(e.target.value as HomeworkPriority)}
-            >
-              <option value="Low">Low Priority</option>
-              <option value="Medium">Medium Priority</option>
-              <option value="High">High Priority</option>
-            </Select>
-          </div>
-
-          <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-zinc-800">
-            <Button type="button" variant="ghost" size="sm" onClick={resetState}>
-              Scan Another File
-            </Button>
-            <div className="flex items-center gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={handleClose} className="rounded-xl">
-                Cancel
-              </Button>
-              <Button type="submit" variant="primary" size="sm" className="gap-1.5 rounded-xl bg-[#8C6B5D] hover:bg-[#7B5B4D] text-white">
-                <Check className="w-4 h-4" />
-                Confirm & Save Task
-              </Button>
+        <form onSubmit={handleConfirmSave} className="flex flex-col text-left">
+          <div className="flex flex-col gap-6">
+            {/* SECTION 1: MATCHED SUBJECT */}
+            <div className="flex flex-col gap-3">
+              <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase">Matched Subject</span>
+              
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Subject</label>
+                <div className="relative">
+                  <select
+                    value={extractedSubjectId}
+                    onChange={(e) => setExtractedSubjectId(e.target.value)}
+                    required
+                    className="w-full px-3 py-2.5 h-[44px] bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[14px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors appearance-none"
+                  >
+                    {subjects.map((sub) => (
+                      <option key={sub.id} value={sub.id} className="dark:bg-[#111111]">
+                        {sub.code && sub.code !== 'UNK' ? `[${sub.code}] ` : ''}{sub.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[#111111] dark:text-[#FFFFFF] pointer-events-none" />
+                </div>
+              </div>
             </div>
+
+            {/* SECTION 2: TASK DETAILS */}
+            <div className="flex flex-col gap-3">
+              <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase">Task Details</span>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Task / Assignment Title</label>
+                <input
+                  type="text"
+                  value={extractedTitle}
+                  onChange={(e) => setExtractedTitle(e.target.value)}
+                  required
+                  className="w-full px-3 py-2.5 bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[14px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Description</label>
+                <textarea
+                  value={extractedDescription}
+                  onChange={(e) => setExtractedDescription(e.target.value)}
+                  className="w-full p-3 min-h-[76px] bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[14px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors resize-y"
+                />
+              </div>
+            </div>
+
+            {/* SECTION 3: SCHEDULE & PRIORITY */}
+            <div className="flex flex-col gap-3">
+              <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase">Schedule & Priority</span>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Deadline</label>
+                  <input
+                    type="date"
+                    value={extractedDeadline}
+                    onChange={(e) => setExtractedDeadline(e.target.value)}
+                    required
+                    className="w-full px-3 py-2.5 h-[44px] bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[14px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase">Priority</label>
+                  <div className="relative">
+                    <select
+                      value={extractedPriority}
+                      onChange={(e) => setExtractedPriority(e.target.value as any)}
+                      className="w-full px-3 py-2.5 h-[44px] bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[14px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors appearance-none"
+                    >
+                      <option value="Low" className="dark:bg-[#111111]">Low Priority</option>
+                      <option value="Medium" className="dark:bg-[#111111]">Medium Priority</option>
+                      <option value="High" className="dark:bg-[#111111]">High Priority</option>
+                    </select>
+                    <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[#111111] dark:text-[#FFFFFF] pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 mt-6 border-t border-[#D9D9D6] dark:border-[#333333]">
+            <button 
+              type="button" 
+              onClick={resetState}
+              className="w-full sm:w-auto px-4 py-2.5 text-[13px] font-bold uppercase text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            >
+              Scan Another
+            </button>
+            <button 
+              type="submit"
+              className="w-full sm:w-auto px-6 py-2.5 bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] text-[13px] font-bold uppercase hover:opacity-90 transition-opacity"
+            >
+              Save Task
+            </button>
           </div>
         </form>
       )}

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useUser, UserButton, SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
+import { useUser, UserButton, SignedIn, SignedOut, SignInButton, SignOutButton } from '@clerk/nextjs';
 import { useApp } from '@/context/AppContext';
 import { Programme, Branch } from '@/lib/types';
 import { storage } from '@/lib/storage';
@@ -13,7 +13,7 @@ import {
   User,
   GraduationCap,
   Bell,
-  Download,
+
   Upload,
   RefreshCw,
   Sparkles,
@@ -33,6 +33,12 @@ import {
   Users,
   Sun,
   Moon,
+  Check,
+  CalendarDays,
+  MoreHorizontal, Download,
+  Cloud,
+
+  LogOut,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '@/components/ui/Modal';
@@ -106,6 +112,9 @@ export const SettingsView: React.FC = () => {
   // High-friction Reset Modal states
   const [showResetModal, setShowResetModal] = useState(false);
   const [showBatchMembersModal, setShowBatchMembersModal] = useState(false);
+  const [showBatchSettingsModal, setShowBatchSettingsModal] = useState(false);
+  const [showCloudSyncModal, setShowCloudSyncModal] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [holdProgress, setHoldProgress] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
   const holdIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -143,9 +152,24 @@ export const SettingsView: React.FC = () => {
     }, 600);
   };
 
+  const [isEditingAcademic, setIsEditingAcademic] = useState(false);
+  const [avatarSeed, setAvatarSeed] = useState(profile.avatarUrl || profile.id || 'default');
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [activeSetting, setActiveSetting] = useState<'classReminder' | 'eveningCheck' | 'hwWarning' | null>(null);
+  const [showSettingModal, setShowSettingModal] = useState(false);
   const [classReminderMinutes, setClassReminderMinutes] = useState(settings.classReminderMinutes);
   const [eveningTime, setEveningTime] = useState(settings.eveningCarryReminderTime);
   const [hwDays, setHwDays] = useState(settings.homeworkWarningDays);
+
+  const handleAvatarSelect = (seed: string) => {
+    setAvatarSeed(seed);
+    setShowAvatarModal(false);
+    updateProfile({
+      ...profile,
+      avatarUrl: seed,
+    });
+    showToast('Avatar Updated', 'Your profile picture has been changed.', 'success');
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -206,10 +230,7 @@ export const SettingsView: React.FC = () => {
     showToast('Preferences Saved', 'Notification schedules updated', 'success');
   };
 
-  const handleTestNotification = async () => {
-    await scheduleTestNotification(5);
-    showToast('Test Alert Scheduled', 'Close or lock your phone now! Notification arrives in 5 seconds.', 'info');
-  };
+
 
   const handleExportBackup = () => {
     const json = storage.exportBackup();
@@ -263,380 +284,399 @@ export const SettingsView: React.FC = () => {
             Manage your student identity, reminders, and data preferences.
           </p>
         </div>
-        <div>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setShowOnboarding(true)}
-            className="flex items-center px-5 py-3 rounded-none border border-black dark:border-white text-black dark:text-white bg-transparent hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-sm font-medium cursor-pointer w-fit"
-          >
-            Onboarding Wizard
-          </motion.button>
-        </div>
+
       </div>
 
-      {/* Student ID Card — Brutalist flat style */}
-      <div className="relative overflow-hidden border border-black dark:border-white bg-black dark:bg-white text-white dark:text-black p-6 sm:p-7">
-        {/* Watermark */}
-        <div className="absolute -right-4 -bottom-8 font-black text-[140px] leading-none opacity-5 select-none pointer-events-none tracking-tighter text-white dark:text-black">
-          is
-        </div>
-
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative z-10">
-          <div className="flex items-center gap-4">
-            {/* Avatar */}
-            <div className="relative w-16 h-16 border-2 border-white/40 dark:border-black/30 flex items-center justify-center font-black text-2xl tracking-tighter shrink-0 overflow-hidden bg-white/10 dark:bg-black/10">
-              <SignedIn>
-                {user?.imageUrl ? (
-                  <img
-                    src={user.imageUrl}
-                    alt={name || 'User profile'}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span>{initials}</span>
-                )}
-              </SignedIn>
-              <SignedOut>
-                <span>{initials}</span>
-              </SignedOut>
+      {/* Student Identity Card */}
+      <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-[20px] rounded-none">
+        <div className="flex items-start gap-5">
+          {/* Avatar & Change Photo Column */}
+          <div className="flex flex-col gap-3 items-center shrink-0">
+            <div className="w-[64px] h-[64px] border border-[#D8D8D8] dark:border-[#333333] flex items-center justify-center overflow-hidden bg-[#F7F7F5] dark:bg-[#1A1A1A]">
+              <img
+                src={`https://api.dicebear.com/7.x/notionists/svg?seed=${avatarSeed}&backgroundColor=transparent`}
+                alt="avatar"
+                className="w-full h-full object-contain"
+              />
             </div>
+            <button
+              type="button"
+              onClick={() => setShowAvatarModal(true)}
+              className="text-[11px] font-medium text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors underline underline-offset-2 cursor-pointer"
+            >
+              Change photo
+            </button>
+          </div>
 
-            <div className="flex flex-col min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white dark:text-black truncate">
-                  {name || 'Student Name'}
-                </h2>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 border border-white/40 dark:border-black/30 text-white dark:text-black">
-                  Verified
-                </span>
-              </div>
-              <p className="text-xs sm:text-sm text-white/80 dark:text-black/70 font-medium mt-0.5 truncate">
-                {college || 'University Name'}
-              </p>
-              <div className="flex items-center gap-2 text-xs text-white/60 dark:text-black/50 font-mono mt-2 flex-wrap">
-                <span>{programme} {branch}</span>
-                <span>•</span>
-                <span>Sem {semester} (Year {year})</span>
-                {rollNumber && (
-                  <>
-                    <span>•</span>
-                    <span>Roll #{rollNumber}</span>
-                  </>
-                )}
-              </div>
+          <div className="flex flex-col mt-0.5 min-w-0">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="text-[18px] font-[600] text-[#111111] dark:text-[#FFFFFF] leading-none truncate">
+                {name || 'Student Name'}
+              </h2>
+              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 border border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] rounded-none">
+                <Check className="w-[10px] h-[10px] stroke-[3]" />
+                <span>Verified</span>
+              </span>
+            </div>
+            
+            <p className="text-[13px] text-[#6F6F6F] mt-2.5 leading-snug max-w-md truncate">
+              {programme} · {branch}
+            </p>
+            
+            <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[1px] text-[#A0A0A0] mt-3 flex-wrap">
+              <span>Sem {semester}</span>
+              <span>·</span>
+              <span>Year {year}</span>
+              {rollNumber && (
+                <>
+                  <span>·</span>
+                  <span>Roll #{rollNumber}</span>
+                </>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Academic Profile Form */}
-        <div className="lg:col-span-7 glass-card p-6 flex flex-col gap-5">
-          <div className="flex items-center gap-2.5 pb-3 border-b border-black/20 dark:border-white/20">
-            <div className="w-8 h-8 border border-black dark:border-white flex items-center justify-center text-black dark:text-white">
-              <GraduationCap className="w-4 h-4" />
+        
+        {/* Left Column: Academic Profile & Batch Content */}
+        <div className="lg:col-span-7 flex flex-col gap-6">
+        
+          <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-0 flex flex-col rounded-none">
+            <div className="flex items-center justify-between p-5 pb-4 border-b border-[#D8D8D8] dark:border-[#333333]">
+              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+                <GraduationCap className="w-[18px] h-[18px] stroke-[1.5]" />
+                <span>Academic Information</span>
+              </div>
+              {!isEditingAcademic && (
+                <button
+                  onClick={() => setIsEditingAcademic(true)}
+                  className="text-[11px] font-bold tracking-widest uppercase text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer"
+                >
+                  Edit
+                </button>
+              )}
             </div>
-            <h3 className="text-sm font-bold text-black dark:text-white tracking-widest uppercase">
-              Academic Information
-            </h3>
-          </div>
 
-          <form onSubmit={handleSaveProfile} className="flex flex-col gap-4">
-            {/* College Name */}
-            <div className="flex flex-col gap-1.5">
-              <label className={labelClass}>College / University</label>
-              <div className="relative w-full">
-                <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white">
-                  <Building2 className="w-4 h-4 text-black/40 dark:text-white/40 shrink-0" />
-                  <input
-                    type="text"
-                    value={college}
-                    onChange={(e) => {
-                      setCollege(e.target.value);
-                      setShowCollegeDropdown(true);
-                    }}
-                    onFocus={() => setShowCollegeDropdown(true)}
-                    onBlur={() => setTimeout(() => setShowCollegeDropdown(false), 200)}
-                    placeholder="e.g. NIT Trichy, IIT Bombay..."
-                    required
-                    className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none placeholder:text-black/30 dark:placeholder:text-white/30"
-                  />
+            <div className="p-5 sm:p-6">
+              {!isEditingAcademic ? (
+                <div className="flex flex-col gap-6">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">College / University</span>
+                    <span className="text-[15px] font-[600] text-[#111111] dark:text-[#FFFFFF] leading-snug">{college || 'Not specified'}</span>
+                  </div>
+                  
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Programme</span>
+                    <span className="text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF]">{programme} {branch ? `· ${branch}` : ''}</span>
+                  </div>
+                  
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Roll Number</span>
+                    <span className="text-[14px] font-mono font-medium text-[#111111] dark:text-[#FFFFFF]">{rollNumber || 'Not specified'}</span>
+                  </div>
+                  
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Institute Email</span>
+                    <a href={`mailto:${email}`} className="text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:underline underline-offset-2 w-fit">{email || 'Not specified'}</a>
+                  </div>
                 </div>
-                {showCollegeDropdown && college.length >= 2 && (
-                  <div className="absolute top-full left-0 w-full mt-1 max-h-56 overflow-y-auto bg-white dark:bg-zinc-900 border border-black dark:border-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-50">
-                    {isLoadingColleges && (
-                      <div className="px-4 py-2.5 text-xs font-mono font-medium text-black/50 dark:text-white/50 border-b border-black/5 dark:border-white/5">
-                        Searching Indian colleges...
+              ) : (
+                <form onSubmit={async (e) => { 
+                  await handleSaveProfile(e); 
+                  setIsEditingAcademic(false); 
+                }} className="flex flex-col gap-5">
+                  {/* College Name */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">College / University</label>
+                    <div className="relative w-full">
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
+                        <Building2 className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                        <input
+                          type="text"
+                          value={college}
+                          onChange={(e) => {
+                            setCollege(e.target.value);
+                            setShowCollegeDropdown(true);
+                          }}
+                          onFocus={() => setShowCollegeDropdown(true)}
+                          onBlur={() => setTimeout(() => setShowCollegeDropdown(false), 200)}
+                          placeholder="e.g. NIT Trichy, IIT Bombay..."
+                          required
+                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
+                        />
                       </div>
-                    )}
-                    {suggestedColleges.length > 0 ? (
-                      suggestedColleges.map((c) => (
-                        <div
-                          key={c}
-                          onMouseDown={() => { setCollege(c); setShowCollegeDropdown(false); }}
-                          className="px-4 py-2.5 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-sm font-medium text-black dark:text-white border-b border-black/5 dark:border-white/5 last:border-0"
-                        >
-                          {c}
-                        </div>
-                      ))
-                    ) : (
-                      !isLoadingColleges && INDIAN_COLLEGES.filter(c => c.toLowerCase().includes(college.toLowerCase())).slice(0, 15).map(c => (
-                        <div
-                          key={c}
-                          onMouseDown={() => { setCollege(c); setShowCollegeDropdown(false); }}
-                          className="px-4 py-2.5 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-sm font-medium text-black dark:text-white border-b border-black/5 dark:border-white/5 last:border-0"
-                        >
-                          {c}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-              <p className="text-[10px] text-black/50 dark:text-white/50 font-medium">
-                Type 3 letters to search verified universities, or type manually if not found.
-              </p>
-            </div>
-
-            {/* Full Name */}
-            <div className="flex flex-col gap-1.5">
-              <label className={labelClass}>Full Name</label>
-              <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white">
-                <User className="w-4 h-4 text-black/40 dark:text-white/40 shrink-0" />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Roll Number & Email */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div className="flex flex-col gap-1.5">
-                <label className={labelClass}>Roll Number</label>
-                <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white">
-                  <User className="w-4 h-4 text-black/40 dark:text-white/40 shrink-0" />
-                  <input
-                    type="text"
-                    value={rollNumber}
-                    onChange={(e) => setRollNumber(e.target.value)}
-                    required
-                    className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className={labelClass}>Institute Email</label>
-                <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white">
-                  <Mail className="w-4 h-4 text-black/40 dark:text-white/40 shrink-0" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Programme & Branch */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div className="flex flex-col gap-1.5">
-                <label className={labelClass}>Degree / Programme</label>
-                <div className="relative w-full">
-                  <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white">
-                    <GraduationCap className="w-4 h-4 text-black/40 dark:text-white/40 shrink-0" />
-                    <input
-                      type="text"
-                      value={programme}
-                      onChange={(e) => {
-                        setProgramme(e.target.value);
-                        setShowProgrammeDropdown(true);
-                      }}
-                      onFocus={() => setShowProgrammeDropdown(true)}
-                      onBlur={() => setTimeout(() => setShowProgrammeDropdown(false), 200)}
-                      placeholder="e.g. B.Tech, B.Sc, MBA, BCA"
-                      required
-                      className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none placeholder:text-black/30 dark:placeholder:text-white/30"
-                    />
-                  </div>
-                  {showProgrammeDropdown && (
-                    <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-zinc-900 border border-black dark:border-white shadow-lg z-50">
-                      {STANDARD_PROGRAMMES.filter(p => p.toLowerCase().includes(programme.toLowerCase())).length > 0 ? (
-                        STANDARD_PROGRAMMES.filter(p => p.toLowerCase().includes(programme.toLowerCase())).map(p => (
-                          <div
-                            key={p}
-                            onMouseDown={() => { setProgramme(p); setShowProgrammeDropdown(false); }}
-                            className="px-4 py-2 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-xs font-semibold text-black dark:text-white border-b border-black/5 dark:border-white/5 last:border-0"
-                          >
-                            {p}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="px-4 py-2 text-xs text-black/40 dark:text-white/40 font-mono">
-                          Press Enter to use custom degree
+                      {showCollegeDropdown && college.length >= 2 && (
+                        <div className="absolute top-full left-0 w-full mt-1 max-h-56 overflow-y-auto bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] shadow-lg z-50">
+                          {isLoadingColleges && (
+                            <div className="px-4 py-2.5 text-xs font-mono font-medium text-[#6F6F6F] border-b border-[#D8D8D8] dark:border-[#333333]">
+                              Searching...
+                            </div>
+                          )}
+                          {suggestedColleges.length > 0 ? (
+                            suggestedColleges.map((c) => (
+                              <div
+                                key={c}
+                                onMouseDown={() => { setCollege(c); setShowCollegeDropdown(false); }}
+                                className="px-4 py-2.5 hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] border-b border-[#D8D8D8] dark:border-[#333333] last:border-0"
+                              >
+                                {c}
+                              </div>
+                            ))
+                          ) : (
+                            !isLoadingColleges && INDIAN_COLLEGES.filter(c => c.toLowerCase().includes(college.toLowerCase())).slice(0, 15).map(c => (
+                              <div
+                                key={c}
+                                onMouseDown={() => { setCollege(c); setShowCollegeDropdown(false); }}
+                                className="px-4 py-2.5 hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] border-b border-[#D8D8D8] dark:border-[#333333] last:border-0"
+                              >
+                                {c}
+                              </div>
+                            ))
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className={labelClass}>Branch / Department / Major</label>
-                <div className="relative w-full">
-                  <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white">
-                    <Building2 className="w-4 h-4 text-black/40 dark:text-white/40 shrink-0" />
-                    <input
-                      type="text"
-                      value={branch}
-                      onChange={(e) => {
-                        setBranch(e.target.value);
-                        setShowBranchDropdown(true);
-                      }}
-                      onFocus={() => setShowBranchDropdown(true)}
-                      onBlur={() => setTimeout(() => setShowBranchDropdown(false), 200)}
-                      placeholder="e.g. Computer Science, Mechanical..."
-                      required
-                      className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none placeholder:text-black/30 dark:placeholder:text-white/30"
-                    />
+                    <p className="text-[11px] text-[#A0A0A0] font-medium mt-0.5">
+                      Type 3 letters to search verified universities, or type manually if not found.
+                    </p>
                   </div>
-                  {showBranchDropdown && (
-                    <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-zinc-900 border border-black dark:border-white shadow-lg z-50">
-                      {STANDARD_BRANCHES.filter(b => b.toLowerCase().includes(branch.toLowerCase())).length > 0 ? (
-                        STANDARD_BRANCHES.filter(b => b.toLowerCase().includes(branch.toLowerCase())).map(b => (
-                          <div
-                            key={b}
-                            onMouseDown={() => { setBranch(b); setShowBranchDropdown(false); }}
-                            className="px-4 py-2 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-xs font-semibold text-black dark:text-white border-b border-black/5 dark:border-white/5 last:border-0"
-                          >
-                            {b}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="px-4 py-2 text-xs text-black/40 dark:text-white/40 font-mono">
-                          Press Enter to use custom branch
-                        </div>
-                      )}
+
+                  {/* Roll Number & Email */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Roll Number</label>
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
+                        <Hash className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                        <input
+                          type="text"
+                          value={rollNumber}
+                          onChange={(e) => setRollNumber(e.target.value)}
+                          required
+                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                        />
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Institute Email</label>
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
+                        <Mail className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Programme & Branch */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Degree / Programme</label>
+                      <div className="relative w-full">
+                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
+                          <GraduationCap className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                          <input
+                            type="text"
+                            value={programme}
+                            onChange={(e) => {
+                              setProgramme(e.target.value);
+                              setShowProgrammeDropdown(true);
+                            }}
+                            onFocus={() => setShowProgrammeDropdown(true)}
+                            onBlur={() => setTimeout(() => setShowProgrammeDropdown(false), 200)}
+                            placeholder="e.g. B.Tech, B.Sc"
+                            required
+                            className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
+                          />
+                        </div>
+                        {showProgrammeDropdown && (
+                          <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] shadow-lg z-50">
+                            {STANDARD_PROGRAMMES.filter(p => p.toLowerCase().includes(programme.toLowerCase())).length > 0 ? (
+                              STANDARD_PROGRAMMES.filter(p => p.toLowerCase().includes(programme.toLowerCase())).map(p => (
+                                <div
+                                  key={p}
+                                  onMouseDown={() => { setProgramme(p); setShowProgrammeDropdown(false); }}
+                                  className="px-4 py-2 hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] border-b border-[#D8D8D8] dark:border-[#333333] last:border-0"
+                                >
+                                  {p}
+                                </div>
+                              ))
+                            ) : (
+                              <div className="px-4 py-2 text-xs text-[#6F6F6F] font-mono">
+                                Press Enter to use custom degree
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Major / Branch</label>
+                      <div className="relative w-full">
+                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
+                          <Building2 className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                          <input
+                            type="text"
+                            value={branch}
+                            onChange={(e) => {
+                              setBranch(e.target.value);
+                              setShowBranchDropdown(true);
+                            }}
+                            onFocus={() => setShowBranchDropdown(true)}
+                            onBlur={() => setTimeout(() => setShowBranchDropdown(false), 200)}
+                            placeholder="e.g. Computer Science"
+                            required
+                            className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
+                          />
+                        </div>
+                        {showBranchDropdown && (
+                          <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] shadow-lg z-50">
+                            {STANDARD_BRANCHES.filter(b => b.toLowerCase().includes(branch.toLowerCase())).length > 0 ? (
+                              STANDARD_BRANCHES.filter(b => b.toLowerCase().includes(branch.toLowerCase())).map(b => (
+                                <div
+                                  key={b}
+                                  onMouseDown={() => { setBranch(b); setShowBranchDropdown(false); }}
+                                  className="px-4 py-2 hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] border-b border-[#D8D8D8] dark:border-[#333333] last:border-0"
+                                >
+                                  {b}
+                                </div>
+                              ))
+                            ) : (
+                              <div className="px-4 py-2 text-xs text-[#6F6F6F] font-mono">
+                                Press Enter to use custom branch
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Year & Semester */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Year</label>
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
+                        <CalendarDays className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                        <input
+                          type="number"
+                          min="1"
+                          max="7"
+                          value={year}
+                          onChange={(e) => setYear(Number(e.target.value))}
+                          required
+                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Semester</label>
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
+                        <CalendarDays className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                        <input
+                          type="number"
+                          min="1"
+                          max="14"
+                          value={semester}
+                          onChange={(e) => setSemester(Number(e.target.value))}
+                          required
+                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-3">
+                    <button type="submit" className="bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] px-5 py-2.5 text-[13px] font-bold hover:opacity-90 transition-opacity cursor-pointer">
+                      Save Changes
+                    </button>
+                    <button type="button" onClick={() => setIsEditingAcademic(false)} className="px-4 py-2.5 text-[13px] font-bold text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer">
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
-
-            {/* Year & Semester */}
-            <div className="grid grid-cols-2 gap-3.5">
-              <div className="flex flex-col gap-1.5">
-                <label className={labelClass}>Academic Year</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={4}
-                  value={year}
-                  onChange={(e) => setYear(Number(e.target.value))}
-                  required
-                  className={inputClass}
-                />
+          </div>
+          
+          {/* YOUR BATCH */}
+          <div className="flex flex-col gap-0 mt-6">
+            <div className="flex items-center justify-between pb-3 border-b border-[#D8D8D8] dark:border-[#333333]">
+              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+                <Users className="w-[18px] h-[18px] stroke-[1.5]" />
+                <span>Your Batch</span>
               </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className={labelClass}>Semester</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={8}
-                  value={semester}
-                  onChange={(e) => setSemester(Number(e.target.value))}
-                  required
-                  className={inputClass}
-                />
-              </div>
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              className="mt-2 w-full py-3 rounded-none bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors text-sm font-semibold cursor-pointer"
-            >
-              Save Academic Profile
-            </motion.button>
-          </form>
-
-          {/* Batch Sync / Share Status Card */}
-          <div className="mt-4 p-4 border border-dashed border-black/30 dark:border-white/30 bg-black/5 dark:bg-white/5 flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <div className={`w-2.5 h-2.5 rounded-full ${profile.isBatchSynced ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'}`} />
-              <span className="text-xs font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
-                Batch Sync Status
-              </span>
             </div>
             
             {profile.isBatchSynced ? (
-              <div className="flex flex-col gap-2">
-                <p className="text-xs font-semibold text-black dark:text-white flex flex-col gap-1">
-                  <span>Connected to batch:</span>
-                  <span className="font-mono bg-black/10 dark:bg-white/10 px-2 py-1 break-all text-[10px] block w-full">{profile.batchKey}</span>
-                </p>
-                <p className="text-[11px] text-black/60 dark:text-white/60 leading-relaxed">
-                  Your timetable updates automatically in real-time when the batch schedule changes.
-                </p>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowBatchMembersModal(true)}
-                    className="px-3 py-1.5 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:opacity-90 transition-opacity text-[10.5px] font-bold uppercase cursor-pointer rounded-none flex items-center gap-1.5"
+              <div className="flex flex-col py-5 border-b border-[#D8D8D8] dark:border-[#333333]">
+                <div className="flex items-start justify-between">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wide">
+                      {profile.programme} {profile.branch ? `· ${profile.branch}` : ''}
+                    </span>
+                    <div className="flex items-center gap-2 text-[13px] text-[#6F6F6F]">
+                      <span>Semester {profile.semester} · Year {Math.ceil((profile.semester || 1) / 2)}</span>
+                    </div>
+                  </div>
+                  {isBatchCR && (
+                    <span className="text-[10px] font-bold tracking-widest text-[#111111] dark:text-[#FFFFFF] border border-[#111111] dark:border-[#FFFFFF] px-1.5 py-0.5 uppercase">
+                      CR
+                    </span>
+                  )}
+                </div>
+                
+                <div className="flex items-center justify-between mt-6">
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => setShowBatchMembersModal(true)} 
+                      className="px-4 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity"
+                    >
+                      {isBatchCR ? 'Manage members' : 'View members'}
+                    </button>
+                    <button 
+                      onClick={async () => {
+                        try {
+                          const code = await shareTimetableWithBatch();
+                          const link = `${window.location.origin}/?invite=${code}`;
+                          navigator.clipboard.writeText(link);
+                          showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
+                        } catch (err) {}
+                      }} 
+                      className="px-4 py-2 border border-[#D8D8D8] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] text-[#111111] dark:text-[#FFFFFF] text-[11px] font-bold uppercase tracking-wider rounded-none transition-colors"
+                    >
+                      Invite
+                    </button>
+                  </div>
+                  <button 
+                    onClick={() => setShowBatchSettingsModal(true)} 
+                    className="p-2 -mr-2 text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors"
                   >
-                    <Users className="w-3 h-3" />
-                    {isBatchCR ? '👥 Batch Members & CR' : '👥 Batch Members'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        const code = await shareTimetableWithBatch();
-                        const link = `${window.location.origin}/?invite=${code}`;
-                        navigator.clipboard.writeText(link);
-                        showToast('Invite Link Copied', 'Share this link with your classmates to download the app!', 'success');
-                      } catch (err) {}
-                    }}
-                    className="px-3 py-1.5 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-[10.5px] font-bold uppercase cursor-pointer rounded-none flex items-center gap-1.5"
-                  >
-                    <Share2 className="w-3 h-3" />
-                    Copy Invite Link
-                  </button>
-                  <button
-                    type="button"
-                    onClick={disconnectBatchTimetable}
-                    className="px-3 py-1.5 border border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-[10.5px] font-bold uppercase cursor-pointer rounded-none text-black/60 dark:text-white/60"
-                  >
-                    Disconnect
+                    <MoreHorizontal className="w-5 h-5" />
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col gap-2">
-                <p className="text-xs font-semibold text-black/60 dark:text-white/60">
-                  Not connected to any batch. Your edits remain local to your device.
-                </p>
+              <div className="flex flex-col py-5 border-b border-[#D8D8D8] dark:border-[#333333] gap-4">
+                <span className="text-[13px] text-[#6F6F6F]">You are not connected to any batch.</span>
                 <button
                   type="button"
                   onClick={async () => {
                     try {
                       const code = await shareTimetableWithBatch();
-                      navigator.clipboard.writeText(`https://academi-sync.vercel.app/?invite=${code}`);
+                      navigator.clipboard.writeText(`${window.location.origin}/?invite=${code}`);
                       showToast('Link Copied', 'Invite link copied to clipboard!', 'success');
                     } catch (err) {}
                   }}
-                  className="self-start mt-1 px-3 py-1.5 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors text-[10.5px] font-bold uppercase cursor-pointer rounded-none"
+                  className="self-start px-4 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity"
                 >
-                  Publish & Share Timetable
+                  Create & Invite Classmates
                 </button>
               </div>
             )}
@@ -646,285 +686,98 @@ export const SettingsView: React.FC = () => {
         {/* Right Column */}
         <div className="lg:col-span-5 flex flex-col gap-6">
           {/* Account & Cloud Sync */}
-          <div className="glass-card p-6 flex flex-col gap-4">
-            <div className="flex items-center gap-2.5 pb-3 border-b border-black/20 dark:border-white/20">
-              <div className="w-8 h-8 border border-black dark:border-white flex items-center justify-center text-black dark:text-white">
-                <User className="w-4 h-4" />
-              </div>
-              <h3 className="text-sm font-bold text-black dark:text-white tracking-widest uppercase">
-                Account & Cloud Sync
-              </h3>
+          <div className="flex flex-col gap-0 mt-6 lg:mt-0">
+            <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D8D8D8] dark:border-[#333333]">
+              <Cloud className="w-[18px] h-[18px] stroke-[1.5]" />
+              <span>Account & Cloud Sync</span>
             </div>
-
-            <SignedIn>
-              <div className="flex items-center justify-between p-3.5 border border-black/20 dark:border-white/20 bg-white dark:bg-zinc-950">
-                <div className="flex items-center gap-3 min-w-0">
-                  <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: 'w-10 h-10' } }} />
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-bold text-black dark:text-white truncate">
-                      {user?.fullName || user?.firstName || 'Connected Account'}
-                    </span>
-                    <span className="text-[11px] text-black/50 dark:text-white/50 font-mono truncate max-w-[170px]">
-                      {user?.primaryEmailAddress?.emailAddress}
-                    </span>
-                  </div>
+            
+            <div 
+              onClick={() => setShowCloudSyncModal(true)}
+              className="flex items-center justify-between py-5 border-b border-[#D8D8D8] dark:border-[#333333] cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors -mx-5 px-5 sm:mx-0 sm:px-0 sm:hover:bg-transparent group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 border border-[#D8D8D8] dark:border-[#333333] flex items-center justify-center overflow-hidden bg-[#F4F4F4] dark:bg-[#1A1A1A]">
+                  <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${avatarSeed}&backgroundColor=transparent`} className="w-full h-full object-contain" />
                 </div>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 border border-emerald-600 text-emerald-700 dark:text-emerald-400 shrink-0">
-                  Cloud Active
-                </span>
-              </div>
-            </SignedIn>
-
-            <SignedOut>
-              <div className="flex flex-col gap-3 p-4 border border-black/20 dark:border-white/20">
-                <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed font-medium">
-                  Sign in to backup your schedule and carry list so you never lose your timetable data.
-                </p>
-                <SignInButton mode="modal">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full py-2.5 rounded-none bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors text-xs font-bold cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <User className="w-3.5 h-3.5" />
-                    <span>Sign In / Create Account</span>
-                  </motion.button>
-                </SignInButton>
-              </div>
-            </SignedOut>
-          </div>
-
-          {/* Appearance / Theme */}
-          <div className="glass-card p-6 flex flex-col gap-4">
-            <div className="flex items-center gap-2.5 pb-3 border-b border-black/20 dark:border-white/20">
-              <div className="w-8 h-8 border border-black dark:border-white flex items-center justify-center text-black dark:text-white">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <h3 className="text-sm font-bold text-black dark:text-white tracking-widest uppercase">
-                Appearance
-              </h3>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className={labelClass}>Theme Preference</label>
-              <div className="flex items-center gap-2 mt-1">
-                <button
-                  onClick={() => updateSettings({ theme: 'light' })}
-                  className={`flex-1 py-2.5 px-3 flex items-center justify-center gap-2 border transition-all text-sm font-bold ${
-                    settings.theme === 'light'
-                      ? 'bg-black text-white dark:bg-white dark:text-black border-transparent'
-                      : 'bg-transparent text-black/60 dark:text-white/60 border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  <Sun className="w-4 h-4" /> Light
-                </button>
-                <button
-                  onClick={() => updateSettings({ theme: 'dark' })}
-                  className={`flex-1 py-2.5 px-3 flex items-center justify-center gap-2 border transition-all text-sm font-bold ${
-                    settings.theme === 'dark'
-                      ? 'bg-black text-white dark:bg-white dark:text-black border-transparent'
-                      : 'bg-transparent text-black/60 dark:text-white/60 border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  <Moon className="w-4 h-4" /> Dark
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Notification Schedule */}
-          <div className="glass-card p-6 flex flex-col gap-5">
-            <div className="flex items-center gap-2.5 pb-3 border-b border-black/20 dark:border-white/20">
-              <div className="w-8 h-8 border border-black dark:border-white flex items-center justify-center text-black dark:text-white">
-                <Bell className="w-4 h-4" />
-              </div>
-              <h3 className="text-sm font-bold text-black dark:text-white tracking-widest uppercase">
-                Notification Engine
-              </h3>
-            </div>
-
-            <form onSubmit={handleSaveSettings} className="flex flex-col gap-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="flex flex-col gap-1.5">
-                  <label className={labelClass}>Class Reminder</label>
-                  <input
-                    type="number"
-                    min={5}
-                    max={60}
-                    value={classReminderMinutes}
-                    onChange={(e) => setClassReminderMinutes(Number(e.target.value))}
-                    className={inputClass}
-                  />
-                  <span className="text-[10px] text-black/40 dark:text-white/40 font-medium">Minutes before class</span>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className={labelClass}>Evening Bag Check</label>
-                  <input
-                    type="time"
-                    value={eveningTime}
-                    onChange={(e) => setEveningTime(e.target.value)}
-                    className={inputClass}
-                  />
-                  <span className="text-[10px] text-black/40 dark:text-white/40 font-medium">Daily evening check</span>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none group-hover:underline underline-offset-2">{user?.fullName || 'Student'}</span>
+                  <span className="text-[12px] text-[#6F6F6F]">{email}</span>
                 </div>
               </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className={labelClass}>Homework Early Warning</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={7}
-                  value={hwDays}
-                  onChange={(e) => setHwDays(Number(e.target.value))}
-                  className={inputClass}
-                />
-                <span className="text-[10px] text-black/40 dark:text-white/40 font-medium">Days before deadline</span>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-2 mt-1">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="submit"
-                  className="flex-1 py-2.5 rounded-none border border-black dark:border-white text-black dark:text-white text-xs font-semibold hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer"
-                >
-                  Update Schedule
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="button"
-                  onClick={handleTestNotification}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-none border border-black/30 dark:border-white/30 text-black dark:text-white text-xs font-semibold hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Test Closed-App Alert (5s)</span>
-                </motion.button>
-              </div>
-
-              <div className="p-3 bg-black/[0.02] dark:bg-white/[0.02] border border-black/10 dark:border-white/10 flex items-start gap-2 text-[11px] text-black/60 dark:text-white/60">
-                <Info className="w-4 h-4 text-[#8C6B5D] shrink-0 mt-0.5" />
-                <span>
-                  <strong>Tip for Android:</strong> If alarms don&apos;t sound when the app is swiped away, ensure App Info &rarr; Battery is set to &ldquo;Unrestricted&rdquo; and &ldquo;Allow alarms &amp; reminders&rdquo; is enabled in your phone Settings.
-                </span>
-              </div>
-            </form>
-          </div>
-
-          {/* Backup & Privacy */}
-          <div className="glass-card p-6 flex flex-col gap-4">
-            <div className="flex items-center gap-2.5 pb-3 border-b border-black/20 dark:border-white/20">
-              <div className="w-8 h-8 border border-black dark:border-white flex items-center justify-center text-black dark:text-white">
-                <ShieldCheck className="w-4 h-4" />
-              </div>
-              <h3 className="text-sm font-bold text-black dark:text-white tracking-widest uppercase">
-                Data & Storage
-              </h3>
-            </div>
-
-            <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed font-medium">
-              Your academic timetable and tasks are encrypted and synced to your private account.
-            </p>
-
-            <div className="flex flex-col gap-2.5 pt-1">
               <div className="flex items-center gap-2">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleExportBackup}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 border border-black dark:border-white text-xs font-semibold text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Export JSON</span>
-                </motion.button>
-
-                <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 border border-black dark:border-white text-xs font-semibold text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer">
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>Import JSON</span>
-                  <input
-                    type="file"
-                    accept=".json"
-                    onChange={handleImportBackup}
-                    className="hidden"
-                  />
-                </label>
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[11px] font-bold uppercase tracking-widest text-[#6F6F6F] hidden sm:inline-block">Cloud Active</span>
               </div>
-
-              {/* High Friction Reset Button */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setShowResetModal(true)}
-                className="w-full flex items-center justify-center gap-2 py-2.5 border border-rose-500 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white text-xs font-semibold transition-colors cursor-pointer"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Clear All Workspace Data</span>
-              </motion.button>
             </div>
           </div>
 
-          {/* Super Admin Control Center (Only for Authorized Admins) */}
+          <div className="flex flex-col gap-0 mt-6">
+            <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D8D8D8] dark:border-[#333333]">
+              <ShieldCheck className="w-[18px] h-[18px] stroke-[1.5]" />
+              <span>Data & Storage</span>
+            </div>
+
+            <button type="button" onClick={handleExportBackup} className="flex items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer text-left">
+              <span className="text-[17px] font-medium text-[#111111] dark:text-[#FFFFFF]">Export data</span>
+              <ChevronRight className="w-[14px] h-[14px] text-[#A0A0A0]" />
+            </button>
+
+            <label className="flex items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer text-left">
+              <span className="text-[17px] font-medium text-[#111111] dark:text-[#FFFFFF]">Import data</span>
+              <ChevronRight className="w-[14px] h-[14px] text-[#A0A0A0]" />
+              <input type="file" accept=".json" onChange={handleImportBackup} className="hidden" />
+            </label>
+
+            <button type="button" onClick={() => setShowResetModal(true)} className="flex items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer text-left">
+              <span className="text-[17px] font-medium text-rose-500">Clear workspace data</span>
+              <ChevronRight className="w-[14px] h-[14px] text-rose-500/50" />
+            </button>
+          </div>
+
+          {/* Super Admin */}
           {isUserSuperAdmin(profile, user?.primaryEmailAddress?.emailAddress) && (
-            <div className="border-2 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black p-5 flex flex-col gap-3">
-              <div className="flex items-center justify-between pb-2 border-b border-white/20 dark:border-black/20">
-                <div className="flex items-center gap-2">
-                  <Crown className="w-4 h-4 text-amber-400" />
-                  <h3 className="text-xs font-black uppercase tracking-widest">
-                    Super Admin Control Center
-                  </h3>
-                </div>
-                <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 border border-white/30 dark:border-black/30">
-                  MASTER ACCESS
-                </span>
+            <div className="flex flex-col gap-0 mt-6">
+              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D8D8D8] dark:border-[#333333]">
+                <ShieldCheck className="w-[18px] h-[18px] stroke-[1.5]" />
+                <span>Super Admin</span>
               </div>
-              <p className="text-xs opacity-80 leading-relaxed font-medium">
-                Manage registered students, assign CR roles, launch direct movie/merch ad campaigns, and audit batch timetables.
-              </p>
+              
               <Link
                 href="/admin"
-                className="flex items-center justify-between px-4 py-2.5 bg-white text-black dark:bg-black dark:text-white text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity mt-1 cursor-pointer"
+                className="flex items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer text-left"
               >
-                <span>Open Super Admin Panel</span>
-                <ChevronRight className="w-4 h-4" />
+                <span className="text-[17px] font-medium text-[#111111] dark:text-[#FFFFFF]">Control Center</span>
+                <ChevronRight className="w-[14px] h-[14px] text-[#A0A0A0]" />
               </Link>
             </div>
           )}
 
           {/* Legal, Privacy & Support */}
-          <div className="glass-card p-6 flex flex-col gap-3">
-            <div className="flex items-center gap-2.5 pb-2 border-b border-black/20 dark:border-white/20">
-              <div className="w-8 h-8 border border-black dark:border-white flex items-center justify-center text-black dark:text-white">
-                <Shield className="w-4 h-4" />
-              </div>
-              <h3 className="text-sm font-bold text-black dark:text-white tracking-widest uppercase">
-                Legal & Support
-              </h3>
+          <div className="flex flex-col gap-0 mt-6">
+            <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D8D8D8] dark:border-[#333333]">
+              <Shield className="w-[18px] h-[18px] stroke-[1.5]" />
+              <span>Legal & Support</span>
             </div>
-
-            <div className="flex flex-col gap-0 pt-1">
-              {[
-                { href: '/privacy', icon: Shield, label: 'Privacy Policy' },
-                { href: '/terms', icon: FileText, label: 'Terms & Conditions' },
-                { href: '/contact', icon: MessageSquare, label: 'Contact Support' },
-                { href: '/delete-data', icon: AlertTriangle, label: 'Data Deletion Request' },
-                { href: '/about', icon: Info, label: 'About Intersemester (v1.2.0)' },
-              ].map(({ href, icon: Icon, label }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="flex items-center justify-between p-2.5 border-b border-black/10 dark:border-white/10 last:border-b-0 hover:bg-black/5 dark:hover:bg-white/5 transition-colors group text-xs font-semibold text-black dark:text-white"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Icon className="w-4 h-4 text-black/50 dark:text-white/50" />
-                    <span>{label}</span>
-                  </div>
-                  <ChevronRight className="w-3.5 h-3.5 opacity-30 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
-                </Link>
-              ))}
-            </div>
+            
+            {[
+              { href: '/privacy', icon: Shield, label: 'Privacy Policy' },
+              { href: '/terms', icon: FileText, label: 'Terms & Conditions' },
+              { href: '/contact', icon: MessageSquare, label: 'Contact Support' },
+              { href: '/delete-data', icon: AlertTriangle, label: 'Data Deletion Request' },
+              { href: '/about', icon: Info, label: 'About Intersemester (v1.2.0)' },
+            ].map(({ href, icon: Icon, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer text-left"
+              >
+                <div className="flex items-center gap-2.5 text-[#111111] dark:text-[#FFFFFF]">
+                  <span className="text-[17px] font-medium">{label}</span>
+                </div>
+                <ChevronRight className="w-[14px] h-[14px] text-[#A0A0A0]" />
+              </Link>
+            ))}
           </div>
         </div>
       </div>
@@ -951,76 +804,90 @@ export const SettingsView: React.FC = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.94, y: 12 }}
               transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-              className="relative w-full max-w-md bg-white dark:bg-black border border-black dark:border-white shadow-2xl p-6 sm:p-7 overflow-hidden z-10 text-left flex flex-col gap-4 font-sans"
+              className="relative w-full max-w-sm bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] shadow-2xl p-6 sm:p-7 overflow-hidden z-10 text-left flex flex-col gap-5 font-sans"
             >
               {/* Close Button */}
               <button
+                type="button"
                 onClick={() => {
                   setIsHolding(false);
                   setShowResetModal(false);
                 }}
-                className="absolute top-5 right-5 p-1.5 text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white transition-colors cursor-pointer border border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white"
+                className="absolute top-5 right-5 p-1 text-[#A0A0A0] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
 
               {/* Warning Icon Header */}
-              <div className="w-12 h-12 border border-rose-500 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6" />
+              <div className="w-10 h-10 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5" />
               </div>
 
-              <div>
-                <h3 className="text-lg font-bold text-black dark:text-white tracking-tight">
-                  Erase All Workspace Data?
+              <div className="flex flex-col gap-2">
+                <h3 className="text-[20px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-snug">
+                  Erase all workspace data?
                 </h3>
-                <p className="text-xs sm:text-sm text-black/60 dark:text-white/60 leading-relaxed mt-1.5">
-                  This action will <strong className="text-rose-600 dark:text-rose-400 font-semibold">permanently erase</strong> all your classes, homework assignments, exams, and custom items, giving you a completely blank workspace.
-                </p>
+                
+                <div className="text-[13px] text-[#6F6F6F] leading-relaxed flex flex-col gap-2 mt-1">
+                  <p className="font-medium">This will permanently delete:</p>
+                  <ul className="flex flex-col gap-1 pl-1 text-[#6F6F6F] font-medium">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                      <span>Classes & timetable</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                      <span>Tasks & assignments</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                      <span>Custom bag items</span>
+                    </li>
+                  </ul>
+                  <p className="font-medium mt-1">This cannot be undone.</p>
+                </div>
               </div>
 
               {/* Hold-to-Confirm Button */}
-              <div className="flex flex-col gap-2 mt-2">
+              <div className="flex flex-col gap-3 mt-1">
                 <div
                   onMouseDown={() => setIsHolding(true)}
                   onMouseUp={() => setIsHolding(false)}
                   onMouseLeave={() => setIsHolding(false)}
                   onTouchStart={() => setIsHolding(true)}
                   onTouchEnd={() => setIsHolding(false)}
-                  className="relative overflow-hidden w-full h-13 border-2 border-rose-500 flex items-center justify-center text-rose-700 dark:text-rose-300 text-xs sm:text-sm font-bold tracking-tight cursor-pointer select-none touch-manipulation active:scale-[0.99] transition-transform"
+                  className="relative overflow-hidden w-full h-12 border border-rose-600 dark:border-rose-500 bg-white dark:bg-[#1A1A1A] flex items-center justify-center text-rose-600 dark:text-rose-400 text-[13px] font-bold tracking-wide cursor-pointer select-none touch-manipulation transition-transform"
                 >
                   <motion.div
                     style={{ width: `${holdProgress}%` }}
-                    className="absolute inset-0 bg-rose-600 pointer-events-none"
+                    className="absolute inset-0 bg-rose-600 dark:bg-rose-500 pointer-events-none"
                     transition={{ ease: 'linear' }}
                   />
                   <span
                     className={`relative z-10 transition-colors ${
-                      holdProgress > 45 ? 'text-white' : 'text-rose-700 dark:text-rose-300'
+                      holdProgress > 45 ? 'text-white' : 'text-rose-600 dark:text-rose-400'
                     }`}
                   >
                     {holdProgress >= 100
-                      ? 'Clearing Data...'
+                      ? 'Erasing workspace data...'
                       : isHolding
-                      ? `Hold to confirm (${Math.round((100 - holdProgress) / 40)}s)`
-                      : 'Press & Hold for 2.5s to Clear'}
+                      ? `Hold to erase · ${(2.5 * (1 - holdProgress / 100)).toFixed(1)}s`
+                      : 'Hold to erase · 2.5s'}
                   </span>
                 </div>
 
-                <p className="text-[11px] text-center text-black/40 dark:text-white/40 font-medium">
-                  {isHolding ? 'Keep holding down until complete...' : 'Deliberate safety hold to prevent accidental data loss.'}
-                </p>
+                {/* Cancel Link */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsHolding(false);
+                    setShowResetModal(false);
+                  }}
+                  className="w-full py-1 text-[13px] font-semibold text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer text-center"
+                >
+                  Cancel
+                </button>
               </div>
-
-              {/* Cancel Button */}
-              <button
-                onClick={() => {
-                  setIsHolding(false);
-                  setShowResetModal(false);
-                }}
-                className="w-full py-2.5 border border-black/20 dark:border-white/20 text-xs font-semibold text-black/60 dark:text-white/60 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white transition-colors cursor-pointer text-center"
-              >
-                Cancel, Keep My Data
-              </button>
             </motion.div>
           </div>
         )}
@@ -1091,7 +958,241 @@ export const SettingsView: React.FC = () => {
         </Modal>
       )}
 
+      
+            {/* NOTIFICATION SETTING MODAL */}
+      <Modal
+        isOpen={showSettingModal}
+        onClose={() => setShowSettingModal(false)}
+        title={
+          activeSetting === 'classReminder' ? 'Class Reminder' :
+          activeSetting === 'eveningCheck' ? 'Evening Bag Check' :
+          'Homework Early Warning'
+        }
+      >
+        <div className="p-5 flex flex-col gap-5">
+          {activeSetting === 'classReminder' && (
+            <div className="flex flex-col gap-3">
+              <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Remind me before class</span>
+              <div className="grid grid-cols-2 gap-2">
+                {[5, 10, 15, 30].map(mins => (
+                  <button
+                    key={mins}
+                    type="button"
+                    onClick={() => {
+                      updateSettings({ classReminderMinutes: mins });
+                      setShowSettingModal(false);
+                      showToast('Updated', 'Class reminder updated', 'success');
+                    }}
+                    className={`flex items-center gap-2 py-2.5 px-3 border text-[13px] font-bold cursor-pointer ${
+                      settings.classReminderMinutes === mins
+                        ? 'border-[#111111] dark:border-[#FFFFFF] bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111]'
+                        : 'border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#1A1A1A] text-[#111111] dark:text-[#FFFFFF]'
+                    }`}
+                  >
+                    <div className={`w-3 h-3 rounded-full border ${settings.classReminderMinutes === mins ? 'border-[#FFFFFF] dark:border-[#111111] bg-[#FFFFFF] dark:bg-[#111111]' : 'border-[#A0A0A0] bg-transparent'}`} />
+                    {mins} min
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeSetting === 'eveningCheck' && (
+            <div className="flex flex-col gap-3">
+              <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Daily evening check time</span>
+              <div className="flex flex-col gap-2">
+                <input
+                  type="time"
+                  value={settings.eveningCarryReminderTime}
+                  onChange={(e) => {
+                    updateSettings({ eveningCarryReminderTime: e.target.value });
+                  }}
+                  className="w-full px-3.5 py-3 bg-[#FFFFFF] dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSettingModal(false);
+                    showToast('Updated', 'Evening reminder updated', 'success');
+                  }}
+                  className="w-full mt-2 py-2.5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-bold hover:opacity-90 transition-opacity cursor-pointer"
+                >
+                  Save Time
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeSetting === 'hwWarning' && (
+            <div className="flex flex-col gap-3">
+              <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Days before deadline</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[1, 2, 3, 5].map(days => (
+                  <button
+                    key={days}
+                    type="button"
+                    onClick={() => {
+                      updateSettings({ homeworkWarningDays: days });
+                      setShowSettingModal(false);
+                      showToast('Updated', 'Homework warning updated', 'success');
+                    }}
+                    className={`flex items-center gap-2 py-2.5 px-3 border text-[13px] font-bold cursor-pointer ${
+                      settings.homeworkWarningDays === days
+                        ? 'border-[#111111] dark:border-[#FFFFFF] bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111]'
+                        : 'border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#1A1A1A] text-[#111111] dark:text-[#FFFFFF]'
+                    }`}
+                  >
+                    <div className={`w-3 h-3 rounded-full border ${settings.homeworkWarningDays === days ? 'border-[#FFFFFF] dark:border-[#111111] bg-[#FFFFFF] dark:bg-[#111111]' : 'border-[#A0A0A0] bg-transparent'}`} />
+                    {days} {days === 1 ? 'day' : 'days'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      {/* AVATAR SELECTION MODAL */}
+      <Modal
+        isOpen={showAvatarModal}
+        onClose={() => setShowAvatarModal(false)}
+        title="Choose Avatar"
+      >
+        <div className="p-5 flex flex-col gap-4 max-h-[60vh] overflow-y-auto">
+          <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+            {[...['Felix', 'Oliver', 'Jack', 'Leo', 'Max', 'Sam', 'Tom', 'Alex', 'Ryan', 'David'], ...['Mia', 'Lily', 'Zoe', 'Ava', 'Emma', 'Ruby', 'Sara', 'Maya', 'Luna', 'Cleo']].map((seed) => (
+              <button
+                key={seed}
+                type="button"
+                onClick={() => handleAvatarSelect(seed)}
+                className={`aspect-square bg-[#FFFFFF] dark:bg-[#1A1A1A] border ${avatarSeed === seed ? 'border-[#111111] dark:border-[#FFFFFF] ring-1 ring-[#111111] dark:ring-[#FFFFFF]' : 'border-[#D8D8D8] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF]'} flex items-center justify-center p-2 transition-all cursor-pointer`}
+              >
+                <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${seed}&backgroundColor=transparent`} className="w-full h-full object-contain" />
+              </button>
+            ))}
+          </div>
+        </div>
+      </Modal>
+
+      {/* CLOUD SYNC MODAL */}
+      <Modal
+        isOpen={showCloudSyncModal}
+        onClose={() => setShowCloudSyncModal(false)}
+        title="Account & Cloud Sync"
+      >
+        <div className="p-5 flex flex-col gap-6">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 border border-[#D8D8D8] dark:border-[#333333] flex items-center justify-center overflow-hidden bg-[#F4F4F4] dark:bg-[#1A1A1A]">
+              <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${avatarSeed}&backgroundColor=transparent`} className="w-full h-full object-contain" />
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[16px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none">{user?.fullName || 'Student'}</span>
+              <span className="text-[13px] text-[#6F6F6F]">{email}</span>
+            </div>
+          </div>
+          
+          <div className="flex flex-col gap-2 p-4 border border-[#D8D8D8] dark:border-[#333333] bg-[#F9F9F9] dark:bg-[#1A1A1A]">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[12px] font-bold uppercase tracking-widest text-[#111111] dark:text-[#FFFFFF]">Cloud Active</span>
+            </div>
+            <p className="text-[13px] text-[#6F6F6F] leading-snug">
+              Your timetable, tasks and bag are synced to your account.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <button 
+              onClick={() => { setShowCloudSyncModal(false); handleExportBackup(); }}
+              className="w-full py-3 border border-[#D8D8D8] dark:border-[#333333] text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] flex items-center justify-center gap-2 hover:bg-[#F4F4F4] dark:hover:bg-[#1A1A1A] transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Export data
+            </button>
+            <SignOutButton>
+              <button className="w-full py-3 border border-[#D8D8D8] dark:border-[#333333] text-[13px] font-bold text-red-600 flex items-center justify-center gap-2 hover:bg-[#F4F4F4] dark:hover:bg-[#1A1A1A] transition-colors">
+                <LogOut className="w-4 h-4" />
+                Sign out
+              </button>
+            </SignOutButton>
+          </div>
+        </div>
+      </Modal>
+
+      {/* BATCH SETTINGS MODAL */}
+      <Modal
+        isOpen={showBatchSettingsModal}
+        onClose={() => { setShowBatchSettingsModal(false); setShowLeaveConfirm(false); }}
+        title="Batch Options"
+      >
+        <div className="p-5 flex flex-col">
+          {!showLeaveConfirm ? (
+            <>
+              <button 
+                onClick={() => { setShowBatchSettingsModal(false); setShowBatchMembersModal(true); }}
+                className="flex items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333] hover:opacity-70 transition-opacity text-left"
+              >
+                <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">View members</span>
+                <Users className="w-4 h-4 text-[#6F6F6F]" />
+              </button>
+              
+              <button 
+                onClick={async () => {
+                  setShowBatchSettingsModal(false);
+                  try {
+                    const code = await shareTimetableWithBatch();
+                    const link = `${window.location.origin}/?invite=${code}`;
+                    navigator.clipboard.writeText(link);
+                    showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
+                  } catch (err) {}
+                }}
+                className="flex items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333] hover:opacity-70 transition-opacity text-left"
+              >
+                <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">Copy invite link</span>
+                <Share2 className="w-4 h-4 text-[#6F6F6F]" />
+              </button>
+
+              <button 
+                onClick={() => setShowLeaveConfirm(true)}
+                className="flex items-center justify-between py-4 hover:opacity-70 transition-opacity text-left mt-2"
+              >
+                <span className="text-[14px] font-bold text-red-600">Leave batch</span>
+                <LogOut className="w-4 h-4 text-red-600" />
+              </button>
+            </>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div className="p-4 border border-red-600/30 bg-red-600/10 text-red-600 flex flex-col gap-2">
+                <span className="text-[14px] font-bold">Are you sure you want to leave?</span>
+                <span className="text-[12px] opacity-90 leading-snug">
+                  You will no longer receive real-time updates for classes and tasks from this batch.
+                </span>
+              </div>
+              <div className="flex items-center justify-end gap-2 mt-2">
+                <button 
+                  onClick={() => setShowLeaveConfirm(false)}
+                  className="px-4 py-2 border border-[#D8D8D8] dark:border-[#333333] text-[12px] font-bold uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F4F4F4] dark:hover:bg-[#1A1A1A] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowBatchSettingsModal(false);
+                    setShowLeaveConfirm(false);
+                    disconnectBatchTimetable();
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white text-[12px] font-bold uppercase tracking-wider hover:bg-red-700 transition-colors"
+                >
+                  Confirm & Leave
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
+
       {/* BATCH MEMBERS & CR CONTROL MODAL */}
+
       <BatchMembersModal
         isOpen={showBatchMembersModal}
         onClose={() => setShowBatchMembersModal(false)}

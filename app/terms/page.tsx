@@ -1,109 +1,57 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, FileText, CheckCircle2, ShieldAlert, Scale, HelpCircle } from 'lucide-react';
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'Terms & Conditions — Intersemester',
-  description: 'Terms of service and user agreement for Intersemester.',
-};
+import { ArrowLeft } from 'lucide-react';
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-[#FAFAF8] dark:bg-[#111110] text-[#1A1918] dark:text-[#F4F1EA] py-10 px-4 sm:px-6 max-w-3xl mx-auto font-sans">
-      {/* Top Back Navigation */}
-      <div className="mb-8">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-[#8C6B5D] hover:text-[#6E4F36] dark:text-[#CBB5A1] transition-colors bg-white/80 dark:bg-[#1E1C1A] border border-[#E6DDD2] dark:border-[#2C2926] px-3.5 py-2 rounded-2xl shadow-2xs"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to App</span>
-        </Link>
-      </div>
+    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] py-12 px-4 sm:px-6 max-w-2xl mx-auto font-sans">
+      <Link
+        href="/"
+        className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors mb-12"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span>Back to App</span>
+      </Link>
 
-      {/* Header */}
-      <div className="flex flex-col gap-2 pb-6 border-b border-[#E6DDD2] dark:border-[#2C2926]">
-        <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#8C6B5D] dark:text-[#CBB5A1] uppercase tracking-wider">
-          <FileText className="w-4 h-4" />
-          <span>User Agreement</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-          Terms &amp; Conditions
+      <div className="flex flex-col gap-3 mb-12">
+        <span className="text-[10px] font-bold tracking-[1.5px] uppercase text-[#999999]">
+          Legal & Support
+        </span>
+        <h1 className="text-[40px] font-bold tracking-tight leading-none text-[#111111] dark:text-[#FFFFFF]">
+          Terms & Conditions
         </h1>
-        <p className="text-xs text-[#7A6D61] dark:text-[#9E958C] font-mono">
-          Effective Date: August 2026
+        <p className="text-[14px] text-[#6F6F6F] leading-relaxed mt-1">
+          Please read these terms carefully before using Intersemester.
         </p>
       </div>
 
-      {/* Content */}
-      <div className="mt-8 flex flex-col gap-8 text-sm leading-relaxed text-[#3B322C] dark:text-[#D1C7BD]">
-        <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-bold text-[#1A1918] dark:text-[#F4F1EA] flex items-center gap-2">
-            <Scale className="w-4 h-4 text-[#8C6B5D]" />
-            1. Acceptance of Terms
-          </h2>
-          <p>
-            By downloading, installing, accessing, or using <strong>Intersemester</strong>, you agree to be bound by these Terms and Conditions. If you do not agree with any part of these terms, please do not use the application.
+      <div className="flex flex-col gap-12 text-[#111111] dark:text-[#FFFFFF]">
+        <section className="flex flex-col">
+          <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D9D9D6] dark:border-[#333333] mb-6">
+            01 Acceptance of Terms
+          </div>
+          <p className="text-[14px] leading-relaxed">
+            By accessing and using Intersemester, you accept and agree to be bound by the terms and provision of this agreement.
           </p>
         </section>
 
-        <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-bold text-[#1A1918] dark:text-[#F4F1EA]">
-            2. License &amp; Permitted Use
-          </h2>
-          <p>
-            Intersemester grants you a personal, non-exclusive, non-transferable, revocable license to use the app for personal academic management, subject schedule organization, assignment tracking, and campus planning.
-          </p>
-          <p>You agree not to:</p>
-          <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
-            <li>Reverse engineer, decompile, or attempt to extract the source code of the application.</li>
-            <li>Use the platform for any unlawful purpose or to distribute malicious software.</li>
-            <li>Abuse AI extraction endpoints with spam or non-academic payloads.</li>
-          </ul>
+        <section className="flex flex-col">
+          <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D9D9D6] dark:border-[#333333] mb-6">
+            02 User Accounts
+          </div>
+          <div className="text-[14px] leading-relaxed flex flex-col gap-4">
+            <p>You are responsible for safeguarding the password that you use to access the service and for any activities or actions under your password. We encourage the use of strong passwords.</p>
+          </div>
         </section>
 
-        <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-bold text-[#1A1918] dark:text-[#F4F1EA] flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-[#8C6B5D]" />
-            3. Disclaimer &amp; Academic Responsibility
-          </h2>
-          <p>
-            While Intersemester strives for accuracy in timetable calculations, attendance metrics, and AI scanning, the ultimate responsibility for attending classes, submitting academic assignments on time, and meeting institute requirements rests solely with the student.
-          </p>
-          <p>
-            Intersemester is provided on an <strong>&quot;AS IS&quot; and &quot;AS AVAILABLE&quot;</strong> basis without warranties of any kind, whether express or implied.
-          </p>
-        </section>
-
-        <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-bold text-[#1A1918] dark:text-[#F4F1EA]">
-            4. AI OCR &amp; Scanning Feature
-          </h2>
-          <p>
-            The timetable and assignment scanner uses optical character recognition and multimodal intelligence. While highly reliable, users are encouraged to verify extracted slots before confirming their semester schedule.
-          </p>
-        </section>
-
-        <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-bold text-[#1A1918] dark:text-[#F4F1EA]">
-            5. Modifications to the Service
-          </h2>
-          <p>
-            We reserve the right to modify, enhance, or discontinue any feature of the application with or without prior notice.
-          </p>
-        </section>
-
-        <section className="flex flex-col gap-3 p-5 rounded-2xl bg-white dark:bg-[#1E1C1A] border border-[#E6DDD2] dark:border-[#2C2926]">
-          <h2 className="text-base font-bold text-[#1A1918] dark:text-[#F4F1EA] flex items-center gap-2">
-            <HelpCircle className="w-4 h-4 text-[#8C6B5D]" />
-            6. Questions &amp; Support
-          </h2>
-          <p className="text-xs sm:text-sm text-[#7A6D61] dark:text-[#9E958C]">
-            For inquiries regarding these Terms &amp; Conditions, please contact:
-          </p>
-          <div className="font-mono text-xs font-bold text-[#8C6B5D] dark:text-[#CBB5A1]">
-            kumarnihal829@gmail.com
+        <section className="flex flex-col">
+          <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D9D9D6] dark:border-[#333333] mb-6">
+            03 Acceptable Use
+          </div>
+          <div className="text-[14px] leading-relaxed flex flex-col gap-4">
+            <p>You agree not to misuse the Intersemester service. You may not use the service to store or transmit malicious code, or to engage in any activity that interferes with or disrupts the service.</p>
           </div>
         </section>
       </div>

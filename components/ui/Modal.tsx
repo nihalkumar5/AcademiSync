@@ -14,6 +14,7 @@ export interface ModalProps {
   children: ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl';
   showCloseButton?: boolean;
+  mobileFullSheet?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -24,6 +25,7 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   maxWidth = 'md',
   showCloseButton = true,
+  mobileFullSheet = false,
 }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -55,7 +57,10 @@ export const Modal: React.FC<ModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <div className={clsx(
+          "fixed inset-0 z-50 flex justify-center overflow-y-auto",
+          mobileFullSheet ? "items-start sm:items-center p-0 sm:p-6" : "items-center p-4 sm:p-6"
+        )}>
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -68,27 +73,33 @@ export const Modal: React.FC<ModalProps> = ({
 
           {/* Dialog Card */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            initial={mobileFullSheet ? { opacity: 0, y: 40, scale: 0.98 } : { opacity: 0, scale: 0.96, y: 0 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={mobileFullSheet ? { opacity: 0, y: 40, scale: 0.98 } : { opacity: 0, scale: 0.96, y: 0 }}
+            transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
             className={twMerge(
               clsx(
-                'relative w-full bg-white dark:bg-black border border-black dark:border-white z-10 my-auto text-left rounded-none',
+                
+                'relative bg-white dark:bg-[#111111] border-[#D9D9D6] dark:border-[#333333] z-10 text-left rounded-none',
+                mobileFullSheet ? 'w-full' : 'w-[calc(100%-32px)] sm:w-full',
+                mobileFullSheet ? "min-h-[100dvh] sm:min-h-0 sm:h-auto border-0 sm:border flex flex-col" : "border my-auto",
                 maxWClasses[maxWidth]
               )
             )}
           >
             {(title || showCloseButton) && (
-              <div className="flex items-start justify-between p-5 border-b border-black dark:border-white">
+              <div className={clsx(
+                "flex items-start justify-between p-5 border-b border-[#D9D9D6] dark:border-[#333333] bg-white dark:bg-[#111111]",
+                mobileFullSheet ? "sticky top-0 z-20" : ""
+              )}>
                 <div>
                   {title && (
-                    <h2 className="text-xl font-bold text-black dark:text-white tracking-tighter">
+                    <h2 className="text-[24px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-none">
                       {title}
                     </h2>
                   )}
                   {description && (
-                    <p className="mt-1 text-sm text-black/60 dark:text-white/60 leading-snug">
+                    <p className="mt-2 text-[14px] text-[#6F6F6F] leading-snug">
                       {description}
                     </p>
                   )}
@@ -96,7 +107,7 @@ export const Modal: React.FC<ModalProps> = ({
                 {showCloseButton && (
                   <button
                     onClick={onClose}
-                    className="p-1.5 shrink-0 transition-colors text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black border border-transparent hover:border-black dark:hover:border-white"
+                    className="p-1.5 shrink-0 transition-opacity text-[#111111] dark:text-[#FFFFFF] hover:opacity-70 cursor-pointer"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -104,7 +115,11 @@ export const Modal: React.FC<ModalProps> = ({
               </div>
             )}
 
-            <div className="p-5">{children}</div>
+            <div className={clsx(mobileFullSheet ? "flex-1 overflow-y-auto flex flex-col" : "")}>
+              <div className={clsx("p-5", mobileFullSheet ? "flex-1 flex flex-col" : "")}>
+                {children}
+              </div>
+            </div>
           </motion.div>
         </div>
       )}

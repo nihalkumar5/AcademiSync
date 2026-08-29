@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Bell,
   Search,
@@ -33,7 +33,22 @@ export const Header: React.FC = () => {
     setCommandPaletteOpen,
   } = useApp();
 
-  const [addMenuOpen, setAddMenuOpen] = useState(false);
+    const [addMenuOpen, setAddMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setAddMenuOpen(false);
+      }
+    };
+    if (addMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [addMenuOpen]);
   const [showAddHwModal, setShowAddHwModal] = useState(false);
   const [showAddCarryModal, setShowAddCarryModal] = useState(false);
   const [showTimetableImportModal, setShowTimetableImportModal] = useState(false);
@@ -150,29 +165,26 @@ export const Header: React.FC = () => {
           </button>
           
           {/* Quick Create Dropdown */}
-          <div className="relative">
+          <div className="relative" ref={menuRef}>
             <button
               onClick={() => setAddMenuOpen(!addMenuOpen)}
-              className="flex items-center justify-center p-1.5 border border-black dark:border-white bg-black text-white dark:bg-white dark:text-black hover:bg-transparent hover:text-black dark:hover:text-white transition-colors"
+              className="flex items-center justify-center w-10 h-10 text-[#111111] dark:text-[#FFFFFF] hover:opacity-70 transition-opacity cursor-pointer"
             >
-              <Plus className={`w-4 h-4 transition-transform ${addMenuOpen ? 'rotate-45' : ''}`} />
+              <Plus className={`w-6 h-6 transition-transform ${addMenuOpen ? 'rotate-45' : ''}`} />
             </button>
 
             {addMenuOpen && (
               <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setAddMenuOpen(false)}
-                />
-                <div className="absolute right-0 mt-3 w-56 bg-white dark:bg-black border border-black dark:border-white shadow-[4px_4px_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_rgba(255,255,255,1)] py-2 z-50 text-left">
+                
+                <div className="absolute right-0 mt-2 w-[300px] sm:w-[320px] bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] shadow-[0_8px_24px_rgba(0,0,0,0.10)] py-2 z-50 text-left rounded-none">
                   <button
                     onClick={() => {
                       setAddMenuOpen(false);
                       setShowAddHwModal(true);
                     }}
-                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-left"
+                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors text-left cursor-pointer"
                   >
-                    <CheckSquare className="w-4 h-4" />
+                    <CheckSquare className="w-5 h-5" />
                     New Homework
                   </button>
 
@@ -181,9 +193,9 @@ export const Header: React.FC = () => {
                       setAddMenuOpen(false);
                       setShowHwScanModal(true);
                     }}
-                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-left"
+                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors text-left cursor-pointer"
                   >
-                    <Sparkles className="w-4 h-4" />
+                    <Sparkles className="w-5 h-5" />
                     Scan Homework
                   </button>
 
@@ -192,22 +204,22 @@ export const Header: React.FC = () => {
                       setAddMenuOpen(false);
                       setShowAddCarryModal(true);
                     }}
-                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-left"
+                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors text-left cursor-pointer"
                   >
-                    <Backpack className="w-4 h-4" />
+                    <Backpack className="w-5 h-5" />
                     Add Bag Item
                   </button>
 
-                  <div className="my-1 border-t border-black dark:border-white mx-0" />
+                  <div className="my-2 border-t border-[#D8D8D8] dark:border-[#333333] mx-0" />
 
                   <button
                     onClick={() => {
                       setAddMenuOpen(false);
                       setShowTimetableImportModal(true);
                     }}
-                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-left"
+                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors text-left cursor-pointer"
                   >
-                    <Upload className="w-4 h-4" />
+                    <Upload className="w-5 h-5" />
                     Import Timetable
                   </button>
 
@@ -216,9 +228,9 @@ export const Header: React.FC = () => {
                       setAddMenuOpen(false);
                       setShowCalendarImportModal(true);
                     }}
-                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-left"
+                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors text-left cursor-pointer"
                   >
-                    <Calendar className="w-4 h-4" />
+                    <Calendar className="w-5 h-5" />
                     Import Academic Calendar
                   </button>
                 </div>

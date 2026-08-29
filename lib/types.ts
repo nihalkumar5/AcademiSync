@@ -103,6 +103,7 @@ export interface CarryItem {
   subjectId?: string;
   subjectName?: string;
   isPacked: boolean;
+  isHidden?: boolean;
   date: string; // YYYY-MM-DD
   reminderNote?: string;
 }

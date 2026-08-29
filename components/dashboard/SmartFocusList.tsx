@@ -9,10 +9,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
 
 export const SmartFocusList: React.FC = () => {
-  const { homework, timetable, subjects, toggleHomeworkStatus, setActiveView } = useApp();
+  const { homework, timetable, subjects, toggleHomeworkStatus, setActiveView, settings } = useApp();
   const [completingId, setCompletingId] = useState<string | null>(null);
 
-  const focusItems = calculateTodayFocus(homework, timetable, subjects);
+  const focusItems = calculateTodayFocus(homework, timetable, subjects, settings.homeworkWarningDays);
 
   // handleCheck is no longer used for immediate clicks since we removed the checkbox,
   // but kept for structure. Active view takes them to homework module.
@@ -86,76 +86,66 @@ export const SmartFocusList: React.FC = () => {
                   }
                 }}
                 className={clsx(
-                  'flex flex-col p-5 sm:p-6 rounded-none border transition-all group cursor-pointer relative overflow-hidden',
-                  surfaceClass
+                  'relative flex flex-col p-[16px] bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] w-full overflow-hidden transition-opacity cursor-pointer group hover:bg-[#FDFDFD] dark:hover:bg-[#151515]',
+                  isCompleted ? 'opacity-60' : 'opacity-100'
                 )}
               >
                 <div className="relative z-10 flex flex-col h-full">
-                  {/* Large Subtle Top Number */}
-                  <span className="text-[48px] leading-none font-bold text-[#E2E2E2] dark:text-[#2A2A2A] mb-6 font-mono tracking-tighter">
-                    {String(idx + 1).padStart(2, '0')}
-                  </span>
-
-                  {/* Title and Subject */}
-                  <div className="flex flex-col gap-1 mb-8">
-                    <span
-                      className={clsx(
-                        'text-[18px] sm:text-[20px] font-bold leading-tight tracking-tight text-[#111111] dark:text-[#FFFFFF]',
-                        isCompleted ? 'line-through opacity-70' : ''
-                      )}
-                    >
-                      {item.title}
-                    </span>
-                    <span className="text-[13px] text-[#6B6B6B] dark:text-[#999999] font-normal truncate">
-                      {item.tag}
-                    </span>
+                  {/* Number Row */}
+                  <div className="flex items-start justify-between">
+                    <div className="text-[44px] font-bold text-black/10 dark:text-white/10 select-none pointer-events-none leading-[40px] tracking-tighter">
+                      {String(idx + 1).padStart(2, '0')}
+                    </div>
+                    {item.type === 'homework' && item.originalPriority && item.originalPriority !== 'Low' && !isCompleted && (
+                      <span className={clsx(
+                        "text-[9px] font-bold uppercase tracking-widest border px-2 py-0.5",
+                        item.originalPriority === 'High' ? "text-amber-600 border-amber-600/30 bg-amber-500/5" : "text-amber-600/70 border-amber-600/20 bg-amber-500/5"
+                      )}>
+                        {item.originalPriority}
+                      </span>
+                    )}
                   </div>
 
-                  {/* Semantic Status */}
-                  <div className="flex flex-col gap-4 mt-auto">
-                    {item.type === 'homework' && item.status && (
-                      <div className="flex items-center gap-2">
-                        {item.status === 'In Progress' ? (
-                          <span className="text-[12px] font-bold uppercase tracking-widest text-blue-500 flex items-center gap-2">
-                            <span className="text-[10px]">●</span>
-                            IN PROGRESS
-                          </span>
-                        ) : item.status === 'Completed' ? (
-                          <span className="text-[12px] font-bold uppercase tracking-widest text-[#111111] dark:text-[#FFFFFF] flex items-center gap-2">
-                            <Check className="w-3.5 h-3.5" />
-                            COMPLETED
-                          </span>
-                        ) : (
-                          <span className="text-[12px] font-bold uppercase tracking-widest text-[#808080] dark:text-[#888888] flex items-center gap-2">
-                            <span className="text-[10px]">○</span>
-                            NOT STARTED
-                          </span>
-                        )}
-                      </div>
-                    )}
+                  {/* Course Name */}
+                  <span className="text-[10px] font-semibold uppercase tracking-[1.3px] text-[#817B75] break-words pr-2 mt-4">
+                    {item.tag}
+                  </span>
 
-                    {/* Urgency and Arrow Row */}
-                    <div className="flex items-center justify-between mt-1">
-                      {item.deadlineText ? (
-                        <span
-                          className={clsx(
-                            'text-[12px] font-bold uppercase tracking-widest flex items-center gap-2',
-                            item.urgency === 'high'
-                              ? 'text-[#DC2626] dark:text-[#F87171]'
-                              : 'text-[#808080] dark:text-[#888888]'
-                          )}
-                        >
-                          {item.urgency === 'high' ? (
-                            <span className="text-[10px]">●</span>
-                          ) : (
-                            <span className="text-[10px]">○</span>
-                          )}
-                          <span className="truncate">{item.deadlineText}</span>
+                  {/* Title Row Without Checkbox */}
+                  <div className="flex items-start mt-[12px]">
+                    <div className="flex flex-col">
+                      <h4 className={clsx(
+                        "text-[17px] font-semibold leading-[21px]",
+                        isCompleted ? "text-[#6F6F6F] line-through" : "text-[#111111] dark:text-[#FFFFFF]"
+                      )}>
+                        {item.title}
+                      </h4>
+                    </div>
+                  </div>
+
+                  {/* Bottom row metadata */}
+                  <div className="flex items-center justify-between mt-[20px] text-[11px] font-semibold uppercase tracking-[1px] leading-none">
+                    {/* Date */}
+                    {item.deadlineText ? (
+                      <span className={clsx(item.urgency === 'high' ? "text-red-600" : "text-[#6F6F6F]")}>
+                        {item.deadlineText.toUpperCase()}
+                      </span>
+                    ) : (
+                      <span />
+                    )}
+                    
+                    {/* Status indicators */}
+                    <div className="flex items-center gap-3">
+                      {item.type === 'homework' && item.status === 'In Progress' && (
+                        <span className="flex items-center gap-1 text-blue-600">
+                          ● IN PROGRESS
                         </span>
-                      ) : (
-                        <span />
                       )}
-                      <ArrowRight className="w-5 h-5 text-[#BDBDBD] dark:text-[#666666] transition-transform group-hover:translate-x-1" />
+                      {item.type === 'homework' && item.status === 'Completed' && (
+                        <span className="flex items-center gap-1 text-[#6F6F6F]">
+                          ● COMPLETED
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
