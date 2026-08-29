@@ -43,8 +43,8 @@ export const AddCustomItemModal: React.FC<AddCustomItemModalProps> = ({
   }, [isOpen, preselectedSubjectId]);
 
   const activeSubject = subjects.find(s => s.id === selectedSubjectId);
-  const currentSuggestions = activeSubject?.carryRequirements?.length > 0 
-    ? activeSubject.carryRequirements 
+  const currentSuggestions = (activeSubject?.carryRequirements?.length ?? 0) > 0 
+    ? (activeSubject?.carryRequirements || DEFAULT_SUGGESTIONS) 
     : DEFAULT_SUGGESTIONS;
 
   const toggleSuggestion = (item: string) => {

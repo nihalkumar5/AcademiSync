@@ -147,7 +147,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
 
                   <button
                     onClick={() => {
-                      if (profile?.role !== 'CLASS_REPRESENTATIVE') {
+                      if (profile?.role !== 'cr') {
                         showToast("Not Allowed", "Only Class Representatives can propose tasks to the batch.", "error");
                         return;
                       }

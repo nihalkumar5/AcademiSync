@@ -163,7 +163,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
       ...prev,
       {
         title: '',
-        type: 'EVENT',
+        type: 'event',
         date: todayStr,
         location: '',
       }
@@ -340,10 +340,10 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
                             onChange={(e) => updateExtractedRow(index, { type: e.target.value as any })}
                             className="w-full px-2 py-1.5 h-[36px] bg-transparent border border-[#D9D9D6] dark:border-[#333333] text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors appearance-none"
                           >
-                            <option value="EXAM" className="dark:bg-[#111111]">Exam</option>
-                            <option value="HOLIDAY" className="dark:bg-[#111111]">Holiday</option>
-                            <option value="DEADLINE" className="dark:bg-[#111111]">Deadline</option>
-                            <option value="EVENT" className="dark:bg-[#111111]">Event</option>
+                            <option value="exam" className="dark:bg-[#111111]">Exam</option>
+                            <option value="holiday" className="dark:bg-[#111111]">Holiday</option>
+                            <option value="assignment" className="dark:bg-[#111111]">Deadline</option>
+                            <option value="event" className="dark:bg-[#111111]">Event</option>
                           </select>
                           <ChevronDown className="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 text-[#111111] dark:text-[#FFFFFF] pointer-events-none" />
                         </div>

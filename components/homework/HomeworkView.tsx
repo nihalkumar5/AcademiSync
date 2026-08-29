@@ -269,8 +269,8 @@ export const HomeworkView: React.FC = () => {
           setShowAddModal(false);
           setPrefilledData(null);
         }}
-        homeworkToEdit={editHomework}
-        prefilledData={prefilledData}
+        homeworkToEdit={editHomework || undefined}
+        prefilledData={prefilledData || undefined}
       />
 
       <HomeworkScanModal
