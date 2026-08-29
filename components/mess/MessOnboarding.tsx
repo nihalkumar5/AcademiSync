@@ -10,13 +10,13 @@ import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 import { MessImportModal } from './MessImportModal';
 
-export const MessOnboarding: React.FC = () => {
+export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: 'join' | 'import' | null }> = ({ onCancel, initialAction }) => {
   const { setActiveView, updateMessMenu, showToast } = useApp();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-  const [showJoinInput, setShowJoinInput] = useState(false);
+  const [showJoinInput, setShowJoinInput] = useState(initialAction === "join");
   const [inviteInput, setInviteInput] = useState('');
   const [isJoining, setIsJoining] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(initialAction === "import");
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
@@ -164,7 +164,12 @@ export const MessOnboarding: React.FC = () => {
             exit={{ opacity: 0, y: -10 }}
             className="flex flex-col flex-1 max-w-4xl mx-auto w-full pt-2 sm:pt-6 pb-16"
           >
-            <div className="mb-12">
+            <div className="mb-12 relative">
+              {onCancel && (
+                <button onClick={onCancel} className="absolute top-0 right-0 p-2 text-[#6B6B6B] hover:text-[#111111] dark:hover:text-[#FFFFFF]">
+                  <X className="w-6 h-6" />
+                </button>
+              )}
               <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
                 Hostel,<br />
                 Mess,<br />

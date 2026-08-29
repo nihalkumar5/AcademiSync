@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { MessOnboarding } from './MessOnboarding';
 import { format } from 'date-fns';
-import { Share } from 'lucide-react';
+import { Share, Sparkles } from 'lucide-react';
 
 const mealTimings: Record<string, string> = {
   Breakfast: '8:00 - 10:00',
@@ -18,12 +18,13 @@ const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
 export const MessView: React.FC = () => {
   const { messMenu, updateMessMenu, showToast } = useApp();
   
-  if (!messMenu) {
-    return <MessOnboarding />;
-  }
-
   const today = format(new Date(), 'EEEE');
   const [selectedDay, setSelectedDay] = useState(today);
+  const [isReplacing, setIsReplacing] = useState<"join" | "import" | null>(null);
+
+  if (!messMenu || isReplacing !== null) {
+    return <MessOnboarding onCancel={messMenu ? () => setIsReplacing(null) : undefined} initialAction={isReplacing} />;
+  }
   const selectedMenu = messMenu.menu?.[selectedDay] || {};
 
   const handleCopyLink = () => {
@@ -52,7 +53,18 @@ export const MessView: React.FC = () => {
           >
             <Share className="w-4 h-4" /> Share
           </button>
-          
+          <button
+            onClick={() => setIsReplacing("join")}
+            className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
+          >
+            Join Mess
+          </button>
+          <button
+            onClick={() => setIsReplacing("import")}
+            className="flex items-center justify-center h-10 px-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold transition-colors gap-2 cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4" /> Magic Import
+          </button>
         </div>
       </div>
 
