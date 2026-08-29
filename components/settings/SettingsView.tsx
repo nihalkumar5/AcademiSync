@@ -309,19 +309,19 @@ export const SettingsView: React.FC = () => {
           </div>
 
           <div className="flex flex-col mt-0.5 min-w-0">
-            <div className="flex items-center gap-[12px] flex-nowrap w-full">
-              <h2 className="text-[30px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none truncate">
+            <div className="flex items-center gap-[12px] flex-wrap w-full">
+              <h2 className="text-[30px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none break-words">
                 {name || 'Student Name'}
               </h2>
               <span 
-                className="flex items-center gap-[6px] bg-[#F3F2EF] dark:bg-[#F3F2EF] text-[#111111] rounded-[16px] shrink-0 h-[30px]"
+                className="flex items-center gap-[5px] bg-[#F3F2EF] dark:bg-[#F3F2EF] text-[#111111] rounded-[16px] shrink-0 h-[30px]"
                 style={{ padding: '0px 10px 0px 5px' }}
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
                   <circle cx="12" cy="12" r="12" fill="#111111" />
                   <path d="M7.5 12L10.5 15L17 8" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                <span className="text-[10px] font-[600] mt-[1px]" style={{ letterSpacing: '1.8px' }}>
+                <span className="text-[10px] font-[600] mt-[1px]" style={{ letterSpacing: '1.6px' }}>
                   VERIFIED
                 </span>
               </span>
