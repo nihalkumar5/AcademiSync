@@ -1,180 +1,93 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useApp } from '@/context/AppContext';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, CheckSquare, Bell } from 'lucide-react';
-import Image from 'next/image';
+import { ArrowRight, Calendar, Bell, Users, ArrowLeft } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
 
-const slides = [
-  {
-    id: 1,
-    bg: '/onboarding/w1.jpeg',
-    iconType: 'logo',
-    titleMain: 'Welcome to',
-    titleAccent: (
-      <>
-        <span className="font-black">inter</span>
-        <span className="font-normal opacity-85">semester.</span>
-      </>
-    ),
-    description: 'Your all-in-one planner to manage classes, tasks and deadlines effortlessly.',
-  },
-  {
-    id: 2,
-    bg: '/onboarding/w2.jpeg',
-    iconType: 'calendar',
-    titleMain: 'Plan your',
-    titleAccent: 'day.',
-    description: 'Create a timetable that fits your classes and schedule perfectly.',
-  },
-  {
-    id: 3,
-    bg: '/onboarding/w3.jpeg',
-    iconType: 'tasks',
-    titleMain: 'Stay on top of',
-    titleAccent: 'your tasks.',
-    description: 'Add tasks, set priorities and track your progress every single day.',
-  },
-  {
-    id: 4,
-    bg: '/onboarding/w4.jpeg',
-    iconType: 'bell',
-    titleMain: 'Never miss a',
-    titleAccent: 'deadline.',
-    description: 'Get timely reminders and stay organized so you can focus on what matters.',
-  },
-];
-
-export const OnboardingModal: React.FC = () => {
-  const { showOnboarding, setShowOnboarding, profile, updateProfile } = useApp();
+export const OnboardingModal = () => {
+  const { profile, markOnboardingComplete } = useApp();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [direction, setDirection] = useState(1); // 1 = forward, -1 = back
 
-  // Preload all onboarding background images immediately on mount for zero-lag transitions
-  useEffect(() => {
-    slides.forEach((slide) => {
-      const img = new window.Image();
-      img.src = slide.bg;
-    });
-  }, []);
+  // If we already finished, don't render (or maybe handled by parent)
+  // But just in case:
+  const isComplete = profile?.onboardingCompleted;
 
-  const handleNext = useCallback(() => {
-    if (currentIndex < slides.length - 1) {
-      setDirection(1);
-      setCurrentIndex((prev) => prev + 1);
+  if (isComplete) return null;
+
+  const handleNext = () => {
+    if (currentIndex < 2) {
+      setCurrentIndex(currentIndex + 1);
     } else {
-      handleFinish();
+      markOnboardingComplete();
     }
-  }, [currentIndex]);
-
-  const handlePrev = useCallback(() => {
-    if (currentIndex > 0) {
-      setDirection(-1);
-      setCurrentIndex((prev) => prev - 1);
-    }
-  }, [currentIndex]);
-
-  const handleFinish = () => {
-    updateProfile({ ...profile, onboardingCompleted: true });
-    setShowOnboarding(false);
   };
 
-  if (!showOnboarding) return null;
+  const handlePrev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  const handleSkip = () => {
+    markOnboardingComplete();
+  };
+
+  const slides = [
+    {
+      id: 0,
+      image: '/onboard-1.png',
+      topNav: 'center', // centered logo
+      topText: 'PLAN TODAY.\nOWN TOMORROW.',
+      title: "We'll remind you.",
+      subtitle: "Stay ahead with smart reminders\nso you never miss what matters.",
+      buttonText: 'Next',
+      features: null
+    },
+    {
+      id: 1,
+      image: '/onboard-2.png',
+      topNav: 'left', // left logo, right back arrow
+      title: "Know what's next.",
+      subtitle: "Import your timetable and let\nIntersemester build your week.",
+      buttonText: 'Next',
+      features: [
+        { icon: Calendar, title: "Smart timetable", desc: "All your classes in one place." },
+        { icon: Bell, title: "Timely reminders", desc: "Never miss a class or deadline." },
+        { icon: Users, title: "Stay in sync", desc: "Connect with your batch." }
+      ]
+    },
+    {
+      id: 2,
+      image: '/onboard-3.png',
+      topNav: 'left-skip', // left logo, right skip
+      title: "Your batch,\ntogether.",
+      subtitle: "Share schedules, stay in sync\nand work better with your classmates.",
+      buttonText: 'Get started',
+      features: [
+        { icon: Users, title: "Work as a team", desc: "Invite your batch and stay connected." }
+      ]
+    }
+  ];
 
   const currentSlide = slides[currentIndex];
 
-  const renderIcon = (type: string) => {
-    if (type === 'logo') {
-      return (
-        <motion.div
-          initial={{ scale: 0.5, rotate: -8, opacity: 0 }}
-          animate={{
-            scale: 1,
-            rotate: 0,
-            opacity: 1,
-          }}
-          transition={{ type: 'spring', stiffness: 340, damping: 20 }}
-          style={{ width: '76px', height: '76px', minWidth: '76px', minHeight: '76px' }}
-          className="aspect-square shrink-0 rounded-[1.6rem] bg-gradient-to-br from-[#A27E5C] via-[#8E6C4C] to-[#75553A] text-[#FDF8F4] flex items-center justify-center font-black text-3xl sm:text-4xl tracking-tighter shadow-lg shadow-[#75553A]/30 border-2 border-[#C9B099]/80 relative overflow-hidden"
-        >
-          <Image
-            src="/logo1.png"
-            alt="Intersemester logo"
-            width={76}
-            height={76}
-            className="w-full h-full object-cover"
-          />
-        </motion.div>
-      );
-    }
-
-    const iconClass = 'w-10 h-10 text-[#6E4F36]';
-    return (
-      <motion.div
-        initial={{ scale: 0.5, rotate: 8, opacity: 0 }}
-        animate={{ scale: 1, rotate: 0, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 340, damping: 20 }}
-        style={{ width: '76px', height: '76px', minWidth: '76px', minHeight: '76px' }}
-        className="aspect-square shrink-0 rounded-[1.6rem] border-2 border-[#D5C1AE] bg-[#EADBCA]/90 backdrop-blur-md flex items-center justify-center shadow-md shadow-[#8C6B5D]/15"
-      >
-        {type === 'calendar' && (
-          <motion.div
-            animate={{ rotate: [0, -6, 6, -3, 3, 0] }}
-            transition={{ repeat: Infinity, duration: 3.5, repeatDelay: 1 }}
-          >
-            <Calendar className={iconClass} strokeWidth={2.4} />
-          </motion.div>
-        )}
-        {type === 'tasks' && (
-          <motion.div
-            animate={{ scale: [1, 1.12, 1] }}
-            transition={{ repeat: Infinity, duration: 2.2, repeatDelay: 1 }}
-          >
-            <CheckSquare className={iconClass} strokeWidth={2.4} />
-          </motion.div>
-        )}
-        {type === 'bell' && (
-          <motion.div
-            animate={{
-              rotate: [0, -18, 16, -14, 12, -8, 5, 0],
-            }}
-            transition={{
-              repeat: Infinity,
-              duration: 1.8,
-              repeatDelay: 1.5,
-              ease: 'easeInOut',
-            }}
-            style={{ transformOrigin: 'top center' }}
-          >
-            <Bell className={iconClass} strokeWidth={2.4} />
-          </motion.div>
-        )}
-      </motion.div>
-    );
-  };
-
-  // Slide animation variants
   const slideVariants = {
     enter: (dir: number) => ({
-      x: dir > 0 ? 80 : -80,
+      x: dir > 0 ? 100 : -100,
       opacity: 0,
-      scale: 0.98,
     }),
     center: {
       x: 0,
       opacity: 1,
-      scale: 1,
       transition: {
         x: { type: 'spring', stiffness: 300, damping: 30 },
-        opacity: { duration: 0.28 },
-        scale: { duration: 0.3 },
+        opacity: { duration: 0.2 },
       },
     },
     exit: (dir: number) => ({
-      x: dir > 0 ? -80 : 80,
+      x: dir < 0 ? 100 : -100,
       opacity: 0,
-      scale: 0.98,
       transition: {
         x: { type: 'spring', stiffness: 300, damping: 30 },
         opacity: { duration: 0.2 },
@@ -182,153 +95,124 @@ export const OnboardingModal: React.FC = () => {
     }),
   };
 
+  // We need to keep track of direction for animation
+  const [direction, setDirection] = useState(1);
+
+  const changeSlide = (newIndex: number) => {
+    setDirection(newIndex > currentIndex ? 1 : -1);
+    setCurrentIndex(newIndex);
+  };
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-md p-0 sm:p-6 select-none font-sans overflow-hidden">
-      {/* Hidden preloader images in DOM to keep warm in cache */}
-      <div className="hidden">
-        {slides.map((s) => (
-          <img key={s.id} src={s.bg} alt="preload" />
-        ))}
+    <div className="fixed inset-0 z-[100] bg-[#FAFAF8] flex flex-col font-sans overflow-hidden w-full h-[100dvh]">
+      
+      {/* Top Nav */}
+      <div className="w-full flex items-center justify-between px-6 pt-12 pb-4 shrink-0 h-[80px]">
+        {currentSlide.topNav === 'center' ? (
+          <div className="w-full flex flex-col items-center justify-center">
+            <h1 className="text-[28px] font-bold tracking-tighter text-[#111]">inter<span className="font-normal opacity-80">semester</span></h1>
+            <div className="w-[30px] h-[2px] bg-[#111] mt-6 mb-5" />
+            <p className="mt-6 text-[10px] tracking-[3px] font-medium text-[#111111]/60 uppercase whitespace-pre-line text-center leading-relaxed">
+              {currentSlide.topText}
+            </p>
+          </div>
+        ) : (
+          <>
+            <h1 className="text-xl font-bold tracking-tight">inter<span className="font-normal opacity-70">semester</span></h1>
+            {currentSlide.topNav === 'left' && (
+              <button onClick={handlePrev} className="p-2 -mr-2 hover:bg-[#111111]/5 rounded-full transition-colors">
+                <ArrowLeft className="w-5 h-5 text-[#111111]" />
+              </button>
+            )}
+            {currentSlide.topNav === 'left-skip' && (
+              <button onClick={handleSkip} className="px-3 py-1 -mr-3 text-sm font-medium text-[#111111]/60 hover:text-[#111111] transition-colors">
+                Skip
+              </button>
+            )}
+          </>
+        )}
       </div>
 
-      <div className="relative w-full h-full sm:w-[420px] sm:h-[860px] sm:max-h-[92dvh] sm:rounded-[2.75rem] overflow-hidden bg-[#F2E8DB] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] border sm:border-[#DECBB8]">
-        
-        {/* Animated Background Layer */}
+      {/* Main Content Area */}
+      <div className="flex-1 w-full flex flex-col relative overflow-hidden">
         <AnimatePresence initial={false} custom={direction} mode="popLayout">
           <motion.div
-            key={`bg-${currentIndex}`}
+            key={currentIndex}
             custom={direction}
             variants={slideVariants}
             initial="enter"
             animate="center"
             exit="exit"
-            className="absolute inset-0 w-full h-full"
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.2}
-            onDragEnd={(_, info) => {
-              if (info.offset.x < -40) handleNext();
-              else if (info.offset.x > 40) handlePrev();
-            }}
+            className="absolute inset-0 w-full h-full flex flex-col"
           >
-            <Image
-              src={currentSlide.bg}
-              alt="Onboarding"
-              fill
-              unoptimized
-              priority
-              className="object-cover pointer-events-none select-none"
-            />
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Dynamic Animated Content Container with Right-Aligned 1.6x Square Icon */}
-        <div className="absolute top-0 inset-x-0 pt-20 sm:pt-24 px-7 sm:px-8 z-20 flex flex-col pointer-events-none">
-          <AnimatePresence mode="wait" custom={direction}>
-            <motion.div
-              key={`text-${currentIndex}`}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="flex flex-col gap-2 text-left"
-            >
-              {/* Row with Title on Left, 1.6x Enlarged Perfect Square Icon Badge on Right */}
-              <div className="flex items-start justify-between gap-3">
-                <motion.h1
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: 0.05, ease: 'easeOut' }}
-                  className="text-[27px] sm:text-[31px] leading-[1.12] font-black tracking-tight text-[#2B1F16]"
-                >
-                  <span className="font-cursive text-[36px] sm:text-[42px] font-medium tracking-normal text-[#8C6B5D] block mb-1">
-                    {currentSlide.titleMain}
-                  </span>
-                  <span className="text-[#2B1F16] dark:text-[#FDF8F4] drop-shadow-sm">
-                    {currentSlide.titleAccent}
-                  </span>
-                </motion.h1>
-
-                {/* Right-aligned 1.6x Enlarged Square Icon */}
-                <div className="shrink-0 pt-0.5">
-                  {renderIcon(currentSlide.iconType)}
-                </div>
-              </div>
-
-              {/* Description Paragraph */}
-              <motion.p
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.36, delay: 0.1, ease: 'easeOut' }}
-                className="text-[#6E5643] text-[13.5px] sm:text-[14.5px] leading-snug font-medium max-w-[250px] sm:max-w-[270px] mt-2"
-              >
-                {currentSlide.description}
-              </motion.p>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* Bottom Controls Area (Black Button above Dots & Skip) */}
-        <div className="absolute bottom-0 inset-x-0 p-7 sm:p-8 flex flex-col gap-5 z-20">
-          {/* Black Next / Get Started Button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleNext}
-            className="w-full py-4 rounded-2xl bg-[#1A1918] hover:bg-[#2B2927] text-[#FDF8F4] font-bold text-sm tracking-wide transition-colors flex items-center justify-center cursor-pointer touch-manipulation shadow-md"
-          >
-            {currentIndex === slides.length - 1 ? 'Get Started' : 'Next'}
-          </motion.button>
-
-          {/* Dots & Skip Row */}
-          <div className="flex items-center justify-between w-full">
-            {/* Skip Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleFinish}
-              className="text-[#664F3C] hover:text-[#2C2016] font-bold text-sm tracking-wide px-3 py-1.5 rounded-full hover:bg-black/5 active:bg-black/10 transition-all cursor-pointer touch-manipulation w-16 text-left"
-            >
-              Skip
-            </motion.button>
-
-            {/* Animated Dots */}
-            <div className="flex items-center gap-1.5">
-              {slides.map((s, i) => {
-                const isActive = i === currentIndex;
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => {
-                      setDirection(i > currentIndex ? 1 : -1);
-                      setCurrentIndex(i);
-                    }}
-                    className="p-2.5 -m-1 flex items-center justify-center cursor-pointer focus:outline-none touch-manipulation group"
-                    aria-label={`Go to slide ${i + 1}`}
-                  >
-                    <motion.div
-                      animate={{
-                        width: isActive ? 28 : 8,
-                        backgroundColor: isActive ? '#8C6B5D' : '#D1BCA9',
-                        opacity: isActive ? 1 : 0.6,
-                      }}
-                      whileHover={{ scale: 1.25, opacity: 1 }}
-                      whileTap={{ scale: 0.9 }}
-                      transition={{ type: 'spring', stiffness: 380, damping: 26 }}
-                      className="h-2.5 rounded-full"
-                    />
-                  </button>
-                );
-              })}
+            {/* Image Section */}
+            <div className={`flex-1 flex items-center justify-center p-6 ${currentSlide.id === 0 ? 'mt-8' : ''}`}>
+              <img 
+                src={currentSlide.image} 
+                alt="Onboarding" 
+                className="w-full h-full max-h-[35vh] object-contain"
+              />
             </div>
 
-            {/* Spacer to center dots */}
-            <div className="w-16" />
+            {/* Text & Features Section */}
+            <div className="w-full px-8 flex flex-col gap-3 pb-6 bg-[#FAFAF8] shrink-0">
+              <h2 className="text-[32px] leading-[1.1] font-bold text-[#111111] whitespace-pre-line">
+                {currentSlide.title}
+              </h2>
+              <p className="text-[14px] text-[#111111]/60 font-medium leading-snug whitespace-pre-line mb-4">
+                {currentSlide.subtitle}
+              </p>
+
+              {currentSlide.features && (
+                <div className="flex flex-col">
+                  {currentSlide.features.map((feat, idx) => (
+                    <div key={idx} className="flex items-center gap-4 py-4 border-b border-black/5 last:border-0">
+                      <div className="w-10 h-10 bg-[#F4F4F4] rounded-2xl flex items-center justify-center shrink-0">
+                        <feat.icon className="w-5 h-5 text-[#111111]" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[13px] font-bold text-[#111111]">{feat.title}</span>
+                        <span className="text-[12px] text-[#111111]/60 mt-0.5">{feat.desc}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Footer Controls */}
+      <div className="w-full px-8 pb-10 pt-4 flex items-center justify-between shrink-0 bg-[#FAFAF8] z-10 relative">
+        <div className="flex items-center gap-3">
+          <div className="flex gap-2">
+            {[0, 1, 2].map((i) => (
+              <div 
+                key={i} 
+                className={`h-[6px] rounded-full transition-all duration-300 ${i === currentIndex ? 'w-[6px] bg-[#111111]' : 'w-[6px] bg-[#111111]/15'}`}
+              />
+            ))}
           </div>
+          {currentIndex > 0 && (
+            <span className="text-[12px] font-mono text-[#111111]/40 font-medium tracking-widest ml-2">
+              {currentIndex + 1} / 3
+            </span>
+          )}
         </div>
 
+        <button
+          onClick={() => {
+            changeSlide(currentIndex + 1);
+            if (currentIndex === 2) handleSkip();
+          }}
+          className="h-[48px] px-6 bg-[#111111] text-white rounded-2xl flex items-center gap-2 font-semibold text-[14px] hover:opacity-90 active:scale-95 transition-all"
+        >
+          {currentSlide.buttonText}
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
+
     </div>
   );
 };
