@@ -10,6 +10,7 @@ import { db } from '@/lib/firebase';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 import { MessImportModal } from './MessImportModal';
+import { processMultipleFilesForAi } from '@/lib/fileCompressor';
 
 export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: 'join' | 'import' | null }> = ({ onCancel, initialAction }) => {
   const { setActiveView, updateMessMenu, showToast, user } = useApp();
@@ -46,23 +47,13 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
     const selected = Array.from(e.target.files || []);
     if (selected.length === 0) return;
 
-    const readers = selected.map((file) => {
-      return new Promise<{ name: string; base64: string; mimeType: string }>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          resolve({
-            name: file.name,
-            base64: event.target?.result as string,
-            mimeType: file.type || (file.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
-          });
-        };
-        reader.readAsDataURL(file);
-      });
-    });
-
-    const results = await Promise.all(readers);
-    setStep(2);
-    processMenu(results);
+    try {
+      const results = await processMultipleFilesForAi(selected);
+      setStep(2);
+      processMenu(results);
+    } catch (err) {
+      showToast('File Error', 'Failed to process files. Please try again.', 'error');
+    }
   };
 
   const handleJoinSubmit = (e: React.FormEvent) => {

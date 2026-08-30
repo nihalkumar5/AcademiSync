@@ -5,6 +5,8 @@ import { Modal } from '../ui/Modal';
 import { Upload, Sparkles } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
+import { processMultipleFilesForAi } from '@/lib/fileCompressor';
+
 export interface MessImportModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -14,27 +16,16 @@ export interface MessImportModalProps {
 export const MessImportModal: React.FC<MessImportModalProps> = ({ isOpen, onClose, onFileSelect }) => {
   const { showToast } = useApp();
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
-      const readers = files.map((file) => {
-        return new Promise<{ name: string; base64: string; mimeType: string }>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            resolve({
-              name: file.name,
-              base64: event.target?.result as string,
-              mimeType: file.type || (file.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
-            });
-          };
-          reader.readAsDataURL(file);
-        });
-      });
-
-      Promise.all(readers).then((results) => {
+      try {
+        const results = await processMultipleFilesForAi(files);
         onFileSelect(results);
         onClose();
-      });
+      } catch (err) {
+        showToast('File Error', 'Failed to read files. Please try again.', 'error');
+      }
     }
   };
 

@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   try {
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
@@ -31,11 +34,10 @@ export async function POST(req: Request) {
     }
 
     if (apiKey && imageList.length > 0) {
-      try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
+      const candidateModels = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+      const genAI = new GoogleGenerativeAI(apiKey);
 
-        const prompt = `You are a culinary expert & OCR assistant specializing in Indian hostel and university mess menus.
+      const prompt = `You are a culinary expert & OCR assistant specializing in Indian hostel and university mess menus.
 Analyze the attached mess menu document(s) / image(s) / PDF(s) and extract the full weekly meal plan.
 
 CRITICAL INSTRUCTIONS:
@@ -97,36 +99,38 @@ Return ONLY valid JSON matching this exact structure:
 }
 Do not include any markdown backticks or explanations, return ONLY raw JSON.`;
 
-        const imageParts = imageList.map((img) => ({
-          inlineData: {
-            data: img.base64.replace(/^data:[^;]+;base64,/, ''),
-            mimeType: img.mimeType || 'image/jpeg',
-          },
-        }));
+      const imageParts = imageList.map((img) => ({
+        inlineData: {
+          data: img.base64.replace(/^data:[^;]+;base64,/, ''),
+          mimeType: img.mimeType || 'image/jpeg',
+        },
+      }));
 
-        const result = await model.generateContent([prompt, ...imageParts]);
-        let text = result.response.text();
-        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      for (const modelName of candidateModels) {
+        try {
+          const model = genAI.getGenerativeModel({ model: modelName });
+          const result = await model.generateContent([prompt, ...imageParts]);
+          let text = result.response.text();
+          text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
 
-        const parsed = JSON.parse(text);
+          const parsed = JSON.parse(text);
+          const menuObj = parsed.menu || parsed;
+          const timingsObj = parsed.timings || {
+            Breakfast: '8:00 - 10:00',
+            Lunch: '12:30 - 2:30',
+            Snacks: '4:30 - 5:30',
+            Dinner: '7:30 - 9:30',
+          };
 
-        // Normalize data format
-        const menuObj = parsed.menu || parsed;
-        const timingsObj = parsed.timings || {
-          Breakfast: '8:00 - 10:00',
-          Lunch: '12:30 - 2:30',
-          Snacks: '4:30 - 5:30',
-          Dinner: '7:30 - 9:30',
-        };
-
-        return NextResponse.json({
-          success: true,
-          data: menuObj,
-          timings: timingsObj,
-          source: 'Gemini Vision AI',
-        });
-      } catch (aiErr) {
-        console.error('Gemini Mess Menu extraction error:', aiErr);
+          return NextResponse.json({
+            success: true,
+            data: menuObj,
+            timings: timingsObj,
+            source: `Gemini Vision AI (${modelName})`,
+          });
+        } catch (modelErr) {
+          console.warn(`Gemini model ${modelName} error:`, modelErr);
+        }
       }
     }
 
