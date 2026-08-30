@@ -15,8 +15,9 @@ import {
 import { getCanonicalBatchKey } from '@/lib/timetableUtils';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Search, Sparkles, Users, CheckCircle2, ArrowRight, ShieldCheck, School, BookOpen, Layers } from 'lucide-react';
+import { Search, Sparkles, Users, CheckCircle2, ArrowRight, ShieldCheck, School, BookOpen, Layers, Crown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { CRApplicationModal } from '@/components/cr/CRApplicationModal';
 
 interface BatchDiscoveryModalProps {
   isOpen: boolean;
@@ -47,6 +48,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
 
   // Invite code tab
   const [inviteCodeInput, setInviteCodeInput] = useState('');
+  const [showCRModal, setShowCRModal] = useState(false);
 
   const cleanSection = (secStr: string) => {
     if (!secStr || secStr.toLowerCase().includes('no section') || secStr.toLowerCase().includes('single')) return 'A';
@@ -372,26 +374,45 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                     {isJoining ? 'Syncing...' : '⚡ 1-Tap Sync with This Batch'}
                   </button>
                 </div>
-              ) : (
+              ) : profile.role === 'cr' || profile.role === 'super_admin' ? (
                 <div className="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 flex flex-col gap-2.5">
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-indigo-600" />
                     <span className="text-[13px] font-bold text-indigo-900 dark:text-indigo-200">
-                      Be the First to Setup Section {section}!
+                      Setup Official Section {section} Timetable
                     </span>
                   </div>
                   <p className="text-[12px] text-indigo-700/80 dark:text-indigo-300 leading-relaxed">
-                    No timetable has been created for this section yet. Scan your timetable once with AI and invite your classmates with 1-click!
+                    As the verified Class Representative, scan your timetable once with AI to publish and broadcast the schedule to your classmates!
                   </p>
                   <Button
                     onClick={() => {
                       onClose();
-                      // Trigger timetable import
                     }}
                     className="w-full h-10 text-[13px]"
                   >
                     Scan & Create Section {section} Timetable
                   </Button>
+                </div>
+              ) : (
+                <div className="p-4 rounded-2xl bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 flex flex-col gap-2.5">
+                  <div className="flex items-center gap-2">
+                    <Crown className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                    <span className="text-[13px] font-bold text-amber-950 dark:text-amber-200">
+                      Are you the CR of Section {section}?
+                    </span>
+                  </div>
+                  <p className="text-[12px] text-amber-800/90 dark:text-amber-300 leading-relaxed">
+                    To prevent inaccurate schedules and duplicate batches, only verified Class Representatives (CRs) can publish official timetables.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowCRModal(true)}
+                    className="w-full h-10 bg-amber-500 hover:bg-amber-600 text-black text-[13px] font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm shadow-amber-500/20 transition-all cursor-pointer"
+                  >
+                    <Crown className="w-4 h-4" />
+                    Apply for CR Access
+                  </button>
                 </div>
               )}
             </div>
@@ -423,6 +444,11 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
           </form>
         )}
       </div>
+
+      <CRApplicationModal
+        isOpen={showCRModal}
+        onClose={() => setShowCRModal(false)}
+      />
     </Modal>
   );
 };

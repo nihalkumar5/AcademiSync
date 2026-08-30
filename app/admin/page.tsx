@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
-import { collection, onSnapshot, doc, updateDoc, setDoc, deleteDoc, query, orderBy, arrayRemove, arrayUnion } from 'firebase/firestore';
+import { collection, onSnapshot, doc, getDoc, updateDoc, setDoc, deleteDoc, query, orderBy, arrayRemove, arrayUnion } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PromotionalCampaign, CampaignCategory, AdminRole } from '@/lib/types';
 import {
@@ -37,12 +37,15 @@ import {
   Crosshair,
   Check,
   X,
-  Upload
+  Upload,
+  Phone,
+  Mail,
+  Clock
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
-type AdminTab = 'overview' | 'users' | 'batches' | 'campaigns';
+type AdminTab = 'overview' | 'users' | 'batches' | 'campaigns' | 'cr_requests';
 
 export default function SuperAdminPage() {
   const { profile, showToast, user, isClerkLoaded } = useApp();
@@ -51,6 +54,8 @@ export default function SuperAdminPage() {
   const [usersList, setUsersList] = useState<any[]>([]);
   const [batchesList, setBatchesList] = useState<any[]>([]);
   const [campaignsList, setCampaignsList] = useState<PromotionalCampaign[]>([]);
+  const [crRequestsList, setCrRequestsList] = useState<any[]>([]);
+  const [crStatusFilter, setCrStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
 
   const [searchUserQuery, setSearchUserQuery] = useState('');
   const [searchBatchQuery, setSearchBatchQuery] = useState('');
@@ -141,6 +146,29 @@ export default function SuperAdminPage() {
           setCampaignsList(fetched);
         });
       });
+
+      return () => unsubscribe();
+    } catch (e) {
+      console.error(e);
+    }
+  }, [isAdmin]);
+
+  // 4. Stream CR Verification Requests from Firestore
+  useEffect(() => {
+    if (!isAdmin) return;
+    try {
+      const unsubscribe = onSnapshot(collection(db, 'cr_requests'), (snapshot) => {
+        const fetched: any[] = [];
+        snapshot.forEach((d) => {
+          fetched.push({ id: d.id, ...d.data() });
+        });
+        fetched.sort((a, b) => {
+          if (a.status === 'pending' && b.status !== 'pending') return -1;
+          if (a.status !== 'pending' && b.status === 'pending') return 1;
+          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        });
+        setCrRequestsList(fetched);
+      }, (err) => console.error('Error fetching CR requests:', err));
 
       return () => unsubscribe();
     } catch (e) {
@@ -289,6 +317,76 @@ export default function SuperAdminPage() {
     } catch (e) {
       console.error(e);
       showToast('Error', 'Failed to delete batch', 'error');
+    }
+  };
+
+  const handleApproveCRRequest = async (req: any) => {
+    try {
+      // 1. Update cr_requests status
+      await updateDoc(doc(db, 'cr_requests', req.id), {
+        status: 'approved',
+        approvedAt: new Date().toISOString()
+      });
+
+      // 2. Update user profile to CR role & bind batch
+      const userRef = doc(db, 'users', req.userId);
+      await updateDoc(userRef, {
+        'profile.role': 'cr',
+        'profile.isBatchSynced': true,
+        'profile.batchKey': req.batchKey,
+        'profile.college': req.college,
+        'profile.branch': req.branch,
+        'profile.semester': req.semester,
+        'profile.section': req.section || 'A'
+      }).catch(console.error);
+
+      // 3. Update or create shared_timetables doc
+      const batchRef = doc(db, 'shared_timetables', req.batchKey);
+      const batchSnap = await getDoc(batchRef);
+      if (batchSnap.exists()) {
+        await updateDoc(batchRef, {
+          crUserIds: arrayUnion(req.userId),
+          crEmails: arrayUnion(req.email || '')
+        });
+      } else {
+        await setDoc(batchRef, {
+          id: req.batchKey,
+          college: req.college,
+          programme: req.programme || 'B.Tech',
+          branch: req.branch,
+          semester: req.semester,
+          section: req.section || 'A',
+          creatorId: req.userId,
+          creatorName: req.name,
+          creatorEmail: req.email,
+          crUserIds: [req.userId],
+          crEmails: [req.email],
+          inviteCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
+          subjects: [],
+          timetable: [],
+          studentCount: 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+      }
+
+      showToast('CR Approved! 👑', `${req.name} is now verified CR for ${req.branch} (Sec ${req.section || 'A'}).`, 'success');
+    } catch (e) {
+      console.error('Error approving CR request:', e);
+      showToast('Approval Failed', 'Could not approve CR request.', 'error');
+    }
+  };
+
+  const handleRejectCRRequest = async (req: any) => {
+    try {
+      await updateDoc(doc(db, 'cr_requests', req.id), {
+        status: 'rejected',
+        rejectedAt: new Date().toISOString()
+      });
+      showToast('Request Rejected', `CR application for ${req.name} rejected.`, 'info');
+    } catch (e) {
+      console.error('Error rejecting CR request:', e);
+      showToast('Error', 'Failed to reject CR request.', 'error');
     }
   };
 
@@ -516,16 +614,20 @@ export default function SuperAdminPage() {
         <div className="border-b border-[#D8D8D8] dark:border-[#333333]">
           <div className="max-w-7xl mx-auto px-4 sm:px-8">
             <div className="flex items-center gap-8 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-              {[
-                { id: 'overview', label: 'Overview' },
-                { id: 'users', label: `Users ${usersList.length}` },
-                { id: 'batches', label: `Batches ${batchesList.length}` },
-                { id: 'campaigns', label: `Campaigns ${campaignsList.length}` },
-              ].map(({ id, label }) => (
+              {(() => {
+                const pendingCRCount = crRequestsList.filter(r => r.status === 'pending').length;
+                return [
+                  { id: 'overview', label: 'Overview' },
+                  { id: 'cr_requests', label: `👑 CR Requests ${pendingCRCount > 0 ? `(${pendingCRCount})` : ''}` },
+                  { id: 'users', label: `Users ${usersList.length}` },
+                  { id: 'batches', label: `Batches ${batchesList.length}` },
+                  { id: 'campaigns', label: `Campaigns ${campaignsList.length}` },
+                ];
+              })().map(({ id, label }) => (
                 <button
                   key={id}
                   onClick={() => setActiveTab(id as AdminTab)}
-                  className={`relative py-4 text-[13px] font-medium whitespace-nowrap transition-colors ${
+                  className={`relative py-4 text-[13px] font-medium whitespace-nowrap transition-colors cursor-pointer ${
                     activeTab === id
                       ? 'text-[#111111] dark:text-[#FFFFFF]'
                       : 'text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
@@ -1143,6 +1245,208 @@ export default function SuperAdminPage() {
                 })}
               </div>
             )}
+          </div>
+        )}
+
+        {/* TAB 5: CR VERIFICATION REQUESTS */}
+        {activeTab === 'cr_requests' && (
+          <div className="flex flex-col gap-6 text-left">
+            {/* Tab Header & Filter Row */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#D8D8D8] dark:border-[#333333]">
+              <div>
+                <h2 className="text-xl font-bold tracking-tight text-[#111111] dark:text-[#FFFFFF] flex items-center gap-2">
+                  <Crown className="w-5 h-5 text-amber-500" />
+                  Class Representative (CR) Requests
+                </h2>
+                <p className="text-xs text-[#6F6F6F] mt-1">
+                  Approve verified student leaders to create, publish & broadcast official schedules for their college section.
+                </p>
+              </div>
+
+              {/* Status Filter Chips */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+                {(['pending', 'all', 'approved', 'rejected'] as const).map((filter) => {
+                  const count = filter === 'all' 
+                    ? crRequestsList.length 
+                    : crRequestsList.filter(r => r.status === filter).length;
+                  return (
+                    <button
+                      key={filter}
+                      onClick={() => setCrStatusFilter(filter)}
+                      className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
+                        crStatusFilter === filter
+                          ? 'bg-[#111111] text-white dark:bg-white dark:text-black shadow-sm'
+                          : 'bg-white dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-white'
+                      }`}
+                    >
+                      {filter} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Requests Grid / List */}
+            {(() => {
+              const filteredRequests = crRequestsList.filter((r) => {
+                if (crStatusFilter === 'all') return true;
+                return r.status === crStatusFilter;
+              });
+
+              if (filteredRequests.length === 0) {
+                return (
+                  <div className="p-12 text-center border border-dashed border-[#D8D8D8] dark:border-[#333333] rounded-2xl flex flex-col items-center justify-center gap-2">
+                    <Crown className="w-8 h-8 text-slate-300 dark:text-zinc-700" />
+                    <span className="text-sm font-medium text-[#6F6F6F]">
+                      No {crStatusFilter === 'all' ? '' : crStatusFilter} CR requests found.
+                    </span>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {filteredRequests.map((req) => {
+                    const isPending = req.status === 'pending';
+                    const isApproved = req.status === 'approved';
+                    const isRejected = req.status === 'rejected';
+
+                    return (
+                      <div
+                        key={req.id}
+                        className={`p-5 rounded-2xl border flex flex-col justify-between gap-4 transition-all ${
+                          isPending
+                            ? 'bg-amber-50/40 dark:bg-amber-950/10 border-amber-300 dark:border-amber-900/60 shadow-sm'
+                            : isApproved
+                            ? 'bg-white dark:bg-[#1A1A1A] border-emerald-300 dark:border-emerald-900/50'
+                            : 'bg-white dark:bg-[#1A1A1A] border-slate-200 dark:border-zinc-800 opacity-60'
+                        }`}
+                      >
+                        <div className="flex flex-col gap-3">
+                          {/* Card Header: Name + Status Badge */}
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                                  {req.name}
+                                </h3>
+                                {req.rollNumber && (
+                                  <span className="text-[11px] font-mono px-2 py-0.5 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 rounded-md">
+                                    {req.rollNumber}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[11px] text-slate-400 font-mono">
+                                Applied: {new Date(req.createdAt).toLocaleDateString()} at {new Date(req.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+
+                            <span
+                              className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${
+                                isPending
+                                  ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800'
+                                  : isApproved
+                                  ? 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800'
+                                  : 'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950 dark:text-rose-200 dark:border-rose-800'
+                              }`}
+                            >
+                              {req.status}
+                            </span>
+                          </div>
+
+                          {/* Academic Target Info */}
+                          <div className="p-3 bg-white/80 dark:bg-zinc-900/80 border border-slate-200/80 dark:border-zinc-800/80 rounded-xl flex flex-col gap-1 text-[12px]">
+                            <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
+                              <span>🏛️</span>
+                              <span className="truncate">{req.college}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-slate-600 dark:text-zinc-400 font-medium">
+                              <span>📚</span>
+                              <span>{req.branch} · Sem {req.semester} · Sec {req.section || 'A'}</span>
+                            </div>
+                            <div className="text-[10px] font-mono text-slate-400 pt-0.5 truncate">
+                              Batch Key: {req.batchKey}
+                            </div>
+                          </div>
+
+                          {/* Contact Details */}
+                          <div className="flex flex-wrap items-center gap-3 text-[12px] font-medium text-slate-600 dark:text-zinc-400">
+                            {req.email && (
+                              <a
+                                href={`mailto:${req.email}`}
+                                className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 underline underline-offset-2"
+                              >
+                                <Mail className="w-3.5 h-3.5" />
+                                <span>{req.email}</span>
+                              </a>
+                            )}
+                            {req.phone && (
+                              <a
+                                href={`https://wa.me/${req.phone.replace(/[^0-9]/g, '')}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline font-mono"
+                              >
+                                <Phone className="w-3.5 h-3.5" />
+                                <span>WhatsApp: {req.phone}</span>
+                              </a>
+                            )}
+                          </div>
+
+                          {/* Reason / Proof Note */}
+                          {req.note && (
+                            <div className="text-[12px] text-slate-700 dark:text-zinc-300 italic bg-slate-50 dark:bg-zinc-900/50 p-2.5 rounded-lg border border-slate-100 dark:border-zinc-800/50">
+                              &ldquo;{req.note}&rdquo;
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Action Footer */}
+                        <div className="pt-3 border-t border-slate-200/80 dark:border-zinc-800 flex items-center justify-end gap-2">
+                          {isPending ? (
+                            <>
+                              <button
+                                onClick={() => handleRejectCRRequest(req)}
+                                className="px-3 py-1.5 border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 text-xs font-bold uppercase rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                              >
+                                Reject
+                              </button>
+                              <button
+                                onClick={() => handleApproveCRRequest(req)}
+                                className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase rounded-lg flex items-center gap-1.5 shadow-sm shadow-emerald-600/20 transition-colors cursor-pointer"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                Approve as CR
+                              </button>
+                            </>
+                          ) : isApproved ? (
+                            <div className="flex items-center justify-between w-full">
+                              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                Verified Class Representative
+                              </span>
+                              <button
+                                onClick={() => handleRejectCRRequest(req)}
+                                className="text-[11px] text-rose-500 hover:underline uppercase font-bold cursor-pointer"
+                              >
+                                Revoke CR
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleApproveCRRequest(req)}
+                              className="text-[11px] text-emerald-600 hover:underline uppercase font-bold cursor-pointer"
+                            >
+                              Re-approve as CR
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         )}
       </main>

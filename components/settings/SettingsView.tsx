@@ -47,6 +47,7 @@ import { Modal } from '@/components/ui/Modal';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
 import { BatchMembersModal } from '@/components/batch/BatchMembersModal';
 import { BatchDiscoveryModal } from '@/components/batch/BatchDiscoveryModal';
+import { ApplyForCRCard } from '@/components/cr/ApplyForCRCard';
 
 export const SettingsView: React.FC = () => {
   const { user, isClerkLoaded } = useApp();
@@ -674,6 +675,10 @@ export const SettingsView: React.FC = () => {
               </div>
             </div>
             
+            <div className="pt-3">
+              <ApplyForCRCard />
+            </div>
+
             {profile.isBatchSynced ? (
               <div className="flex flex-col py-5 border-b border-[#D8D8D8] dark:border-[#333333]">
                 <div className="flex items-start justify-between">
