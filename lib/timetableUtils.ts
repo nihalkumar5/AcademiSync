@@ -524,7 +524,15 @@ export const getShortCollegeName = (name: string): string => {
   const clean = name.toLowerCase().replace(/[.\-_,]/g, ' ').replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim();
   
   // 1. Specific top landmark institute aliases
-  if (clean.includes('shyama prasad') || (clean.includes('iiit') && (clean.includes('naya raipur') || clean.includes('nr') || clean.includes('raipur')))) {
+  if (
+    clean.includes('naya raipur') || 
+    clean.includes('atal nagar') || 
+    clean.includes('shyama prasad') || 
+    clean.includes('iiitnr') || 
+    clean.includes('iiit nr') || 
+    clean.includes('dspm') || 
+    (clean.includes('iiit') && (clean.includes('raipur') || clean.includes('nr')))
+  ) {
     return 'IIIT NAYA RAIPUR';
   }
   if (clean.includes('iiit') && (clean.includes('hyderabad') || clean.includes(' hyd') || clean === 'iiith' || clean === 'iiit h')) {
@@ -575,7 +583,7 @@ export const getShortCollegeName = (name: string): string => {
   if (clean.includes('nit') && (clean.includes('rourkela') || clean === 'nitrkl' || clean === 'nit rkl')) {
     return 'NIT ROURKELA';
   }
-  if (clean.includes('nit') && (clean.includes('raipur') || clean === 'nitrr')) {
+  if (clean.includes('nit') && (clean.includes('raipur') || clean === 'nitrr') && !clean.includes('naya')) {
     return 'NIT RAIPUR';
   }
   if (clean.includes('bits') && (clean.includes('pilani') || clean.includes('rajasthan'))) {
