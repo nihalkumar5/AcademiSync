@@ -24,10 +24,19 @@ export const InviteBatchmatesCard = () => {
 
   const handleInvite = async () => {
     if (!profile?.batchKey) return;
+    const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
     const inviteUrl = `${window.location.origin}/?invite=${profile.batchKey}`;
+    const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
+
+⚡ Realtime Class Cancellation & Reschedule Alerts
+📊 75% Attendance Tracker & Bunk Calculator
+📅 Live Exam Schedule, Room Numbers & Lab Sessions
+
+👉 Tap link to sync your schedule in 1-tap:`;
+
     const res = await shareLink({
-      title: 'Join our Class Timetable',
-      text: 'Hey! 👋 Join our class on Intersemester to get our synced timetable, next class alerts & shared updates:',
+      title: `Join ${batchTitle} Schedule`,
+      text: shareText,
       url: inviteUrl,
       dialogTitle: 'Invite Classmates via',
     });

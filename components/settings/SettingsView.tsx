@@ -46,6 +46,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '@/components/ui/Modal';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
 import { BatchMembersModal } from '@/components/batch/BatchMembersModal';
+import { BatchDiscoveryModal } from '@/components/batch/BatchDiscoveryModal';
 
 export const SettingsView: React.FC = () => {
   const { user, isClerkLoaded } = useApp();
@@ -86,6 +87,7 @@ export const SettingsView: React.FC = () => {
   const [section, setSection] = useState<string>(profile.section || 'A');
   const [pendingBatchKey, setPendingBatchKey] = useState<string | null>(null);
   const [matchedBatchData, setMatchedBatchData] = useState<any>(null);
+  const [showDiscoveryModal, setShowDiscoveryModal] = useState(false);
 
   // Debounced SheerID organization search lookup
   useEffect(() => {
@@ -730,25 +732,43 @@ export const SettingsView: React.FC = () => {
             ) : (
               <div className="flex flex-col py-5 border-b border-[#D8D8D8] dark:border-[#333333] gap-4">
                 <span className="text-[13px] text-[#6F6F6F]">You are not connected to any batch.</span>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    try {
-                      const code = await shareTimetableWithBatch();
-                      const link = `${window.location.origin}/?invite=${code}`;
-                      const res = await shareLink({
-      title: 'Join our Class Timetable',
-      text: 'Hey! 👋 Join our class on Intersemester to get our synced timetable, next class alerts & shared updates:',
-      url: link,
-      dialogTitle: 'Invite Classmates via',
-    });
-                      if (res === 'copied') showToast('Link Copied', 'Invite link copied to clipboard!', 'success');
-                    } catch (err) {}
-                  }}
-                  className="self-start px-4 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity"
-                >
-                  Create & Invite Classmates
-                </button>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowDiscoveryModal(true)}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer shadow-sm shadow-indigo-600/20"
+                  >
+                    🏫 Find & Join My Batch
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const code = await shareTimetableWithBatch();
+                        const link = `${window.location.origin}/?invite=${code}`;
+                        const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
+                        const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
+
+⚡ Realtime Class Cancellation & Reschedule Alerts
+📊 75% Attendance Tracker & Bunk Calculator
+📅 Live Exam Schedule, Room Numbers & Lab Sessions
+
+👉 Tap link to sync your schedule in 1-tap:`;
+
+                        const res = await shareLink({
+                          title: `Join ${batchTitle} Schedule`,
+                          text: shareText,
+                          url: link,
+                          dialogTitle: 'Invite Classmates via',
+                        });
+                        if (res === 'copied') showToast('Link Copied', 'Invite link copied to clipboard!', 'success');
+                      } catch (err) {}
+                    }}
+                    className="px-4 py-2 border border-[#D8D8D8] dark:border-[#333333] hover:border-[#111111] dark:hover:border-white text-[#111111] dark:text-[#FFFFFF] text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                  >
+                    Create & Invite
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -1470,10 +1490,15 @@ export const SettingsView: React.FC = () => {
       </Modal>
 
       {/* BATCH MEMBERS & CR CONTROL MODAL */}
-
       <BatchMembersModal
         isOpen={showBatchMembersModal}
         onClose={() => setShowBatchMembersModal(false)}
+      />
+
+      {/* BATCH DISCOVERY MODAL */}
+      <BatchDiscoveryModal
+        isOpen={showDiscoveryModal}
+        onClose={() => setShowDiscoveryModal(false)}
       />
     </div>
   );

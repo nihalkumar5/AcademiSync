@@ -15,6 +15,7 @@ import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
 import { BatchMembersModal } from '@/components/batch/BatchMembersModal';
+import { BatchDiscoveryModal } from '@/components/batch/BatchDiscoveryModal';
 
 export const WeeklyTimetable: React.FC = () => {
   const { timetable, subjects, deleteClassSession, profile, isBatchCR, shareTimetableWithBatch, showToast, joinBatchTimetable, searchBatchTimetable, user } = useApp();
@@ -348,53 +349,11 @@ export const WeeklyTimetable: React.FC = () => {
         onClose={() => setShowImportModal(false)}
       />
 
-      <Modal
+      {/* BATCH DISCOVERY & JOIN MODAL */}
+      <BatchDiscoveryModal
         isOpen={showJoinModal}
-        onClose={() => {
-          setShowJoinModal(false);
-          setInviteInput('');
-        }}
-        title="Join Batch Timetable"
-        description="Paste the invite link or batch code shared by your classmate to sync your schedule."
-      >
-        <form onSubmit={handleJoinSubmit} className="flex flex-col gap-4 mt-3 text-left">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-black uppercase tracking-wider text-black/50 dark:text-white/50">
-              Invite Link / Batch Code
-            </label>
-            <div className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-zinc-950 border border-black dark:border-white">
-              <input
-                type="text"
-                value={inviteInput}
-                onChange={(e) => setInviteInput(e.target.value)}
-                placeholder="e.g. https://academi-sync-chi.vercel.app/?invite=..."
-                required
-                className="w-full bg-transparent text-sm font-medium text-black dark:text-white focus:outline-none placeholder:text-black/30 dark:placeholder:text-white/30"
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-2.5 justify-end mt-2">
-            <button
-              type="button"
-              onClick={() => {
-                setShowJoinModal(false);
-                setInviteInput('');
-              }}
-              className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isJoining}
-              className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none disabled:opacity-50"
-            >
-              {isJoining ? 'Syncing...' : 'Sync & Join'}
-            </button>
-          </div>
-        </form>
-      </Modal>
+        onClose={() => setShowJoinModal(false)}
+      />
 
       {/* BATCH MEMBERS MODAL */}
       <BatchMembersModal
