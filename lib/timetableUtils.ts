@@ -738,13 +738,17 @@ export const getCanonicalBatchKey = (
   programme: string, 
   branch: string, 
   semester: number, 
-  section: string = 'A'
+  section?: string
 ): string => {
   const shortCollege = getShortCollegeName(college);
   const cleanCollegeKey = shortCollege.toLowerCase().replace(/[^a-z0-9]/g, '');
   const cleanProgKey = normalizeProgrammeName(programme);
   const cleanBranchKey = normalizeBranchName(branch);
-  const cleanSectionKey = normalizeSection(section);
 
-  return `${cleanCollegeKey}_${cleanProgKey}_${cleanBranchKey}_sem${semester}_${cleanSectionKey}`;
+  if (section && section.trim() && section.toUpperCase() !== 'A') {
+    const cleanSectionKey = normalizeSection(section);
+    return `${cleanCollegeKey}_${cleanProgKey}_${cleanBranchKey}_sem${semester}_${cleanSectionKey}`;
+  }
+
+  return `${cleanCollegeKey}_${cleanProgKey}_${cleanBranchKey}_sem${semester}`;
 };

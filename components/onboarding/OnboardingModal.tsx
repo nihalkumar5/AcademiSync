@@ -754,52 +754,26 @@ export const OnboardingModal = () => {
                         )}
                       </div>
 
-                      {/* Semester & Section Grid */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Semester */}
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
-                            Semester
-                          </label>
-                          <div className="grid grid-cols-4 gap-1.5">
-                            {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-                              <button
-                                key={s}
-                                type="button"
-                                onClick={() => setSemester(s)}
-                                className={`py-2 text-[12px] font-bold rounded-none border transition-all cursor-pointer ${
-                                  semester === s
-                                    ? 'bg-[#111111] text-white border-[#111111]'
-                                    : 'border-[#D8D8D8] bg-white text-[#111111] hover:bg-[#F7F7F5]'
-                                }`}
-                              >
-                                S{s}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Section */}
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
-                            Section
-                          </label>
-                          <div className="grid grid-cols-4 gap-1.5">
-                            {['A', 'B', 'C', 'D'].map((sec) => (
-                              <button
-                                key={sec}
-                                type="button"
-                                onClick={() => setSection(sec)}
-                                className={`py-2 text-[12px] font-bold rounded-none border transition-all cursor-pointer ${
-                                  section === sec
-                                    ? 'bg-[#111111] text-white border-[#111111]'
-                                    : 'border-[#D8D8D8] bg-white text-[#111111] hover:bg-[#F7F7F5]'
-                                }`}
-                              >
-                                Sec {sec}
-                              </button>
-                            ))}
-                          </div>
+                      {/* Semester Grid */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
+                          Semester
+                        </label>
+                        <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
+                          {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
+                            <button
+                              key={s}
+                              type="button"
+                              onClick={() => setSemester(s)}
+                              className={`py-2.5 text-[13px] font-bold rounded-none border transition-all cursor-pointer ${
+                                semester === s
+                                  ? 'bg-[#111111] text-white border-[#111111]'
+                                  : 'border-[#D8D8D8] bg-white text-[#111111] hover:bg-[#F7F7F5]'
+                              }`}
+                            >
+                              S{s}
+                            </button>
+                          ))}
                         </div>
                       </div>
 

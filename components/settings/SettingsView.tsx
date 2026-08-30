@@ -592,9 +592,8 @@ export const SettingsView: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Semester</label>
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Semester (1-14)</label>
                       <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
-                        <CalendarDays className="w-4 h-4 text-[#A0A0A0] shrink-0" />
                         <input
                           type="number"
                           min="1"
@@ -603,19 +602,6 @@ export const SettingsView: React.FC = () => {
                           onChange={(e) => setSemester(Number(e.target.value))}
                           required
                           className="w-full bg-transparent text-[13.5px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Section</label>
-                      <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
-                        <input
-                          type="text"
-                          maxLength={3}
-                          value={section}
-                          onChange={(e) => setSection(e.target.value.toUpperCase())}
-                          placeholder="A"
-                          className="w-full bg-transparent text-[13.5px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none text-center uppercase"
                         />
                       </div>
                     </div>
@@ -651,7 +637,7 @@ export const SettingsView: React.FC = () => {
                       {profile.programme} {profile.branch ? `· ${profile.branch}` : ''}
                     </span>
                     <div className="flex items-center gap-2 text-[13px] text-[#6F6F6F]">
-                      <span>Semester {profile.semester} {profile.section ? `(Sec ${profile.section})` : ''} · Year {Math.ceil((profile.semester || 1) / 2)}</span>
+                      <span>Semester {profile.semester} · Year {Math.ceil((profile.semester || 1) / 2)}</span>
                     </div>
                   </div>
                   {isBatchCR && (
