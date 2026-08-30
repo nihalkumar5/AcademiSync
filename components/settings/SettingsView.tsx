@@ -360,13 +360,17 @@ export const SettingsView: React.FC = () => {
             </div>
             
             <p className="text-[13px] text-[#6F6F6F] mt-2.5 leading-snug max-w-md truncate">
-              {programme} · {branch}
+              {programme || branch ? (
+                `${programme}${branch ? ` · ${branch}` : ''}`
+              ) : (
+                <span className="italic text-amber-600 dark:text-amber-400 font-medium">Academic details not setup yet</span>
+              )}
             </p>
             
             <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[1px] text-[#A0A0A0] mt-3 flex-wrap">
-              <span>Sem {semester}</span>
+              <span>Sem {semester || 1}</span>
               <span>·</span>
-              <span>Year {year}</span>
+              <span>Year {year || 1}</span>
               {rollNumber && (
                 <>
                   <span>·</span>
@@ -693,11 +697,13 @@ export const SettingsView: React.FC = () => {
 
                   <div className="flex items-center gap-3 pt-3">
                     <button type="submit" className="bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] px-5 py-2.5 text-[13px] font-bold hover:opacity-90 transition-opacity cursor-pointer">
-                      Save Changes
+                      {profile.college && profile.branch ? 'Save Changes' : 'Create Profile'}
                     </button>
-                    <button type="button" onClick={() => setIsEditingAcademic(false)} className="px-4 py-2.5 text-[13px] font-bold text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer">
-                      Cancel
-                    </button>
+                    {profile.college && (
+                      <button type="button" onClick={() => setIsEditingAcademic(false)} className="px-4 py-2.5 text-[13px] font-bold text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer">
+                        Cancel
+                      </button>
+                    )}
                   </div>
                 </form>
               )}
