@@ -11,6 +11,19 @@ const nextConfig = {
     "@capacitor/local-notifications",
     "@capacitor/push-notifications"
   ],
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@capacitor/core': false,
+        '@capacitor/splash-screen': false,
+        '@capacitor/share': false,
+        '@capacitor/local-notifications': false,
+        '@capacitor/push-notifications': false,
+      };
+    }
+    return config;
+  }
 };
 
 export default nextConfig;
