@@ -22,16 +22,16 @@ export default function Page() {
           appearance={{
             elements: {
               rootBox: "w-full flex justify-center",
-              card: "w-full shadow-none border border-[#E5E5E5] dark:border-[#262626] rounded-2xl bg-white dark:bg-[#161616] p-6 sm:p-8",
+              card: "w-full shadow-none border border-[#E5E5E5] dark:border-[#262626] rounded-none bg-white dark:bg-[#161616] p-6 sm:p-8",
               headerTitle: "text-[20px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight",
               headerSubtitle: "text-[13px] text-[#6F6F6F] dark:text-[#A0A0A0]",
-              socialButtonsBlockButton: "rounded-xl border border-[#D9D9D6] dark:border-[#333333] hover:bg-[#F5F5F5] dark:hover:bg-[#222222] font-semibold text-[13px] text-[#111111] dark:text-white transition-all h-11",
+              socialButtonsBlockButton: "rounded-none border border-[#D9D9D6] dark:border-[#333333] hover:bg-[#F5F5F5] dark:hover:bg-[#222222] font-semibold text-[13px] text-[#111111] dark:text-white transition-all h-11",
               socialButtonsBlockButtonText: "font-semibold text-[13px] text-[#111111] dark:text-white",
               dividerLine: "bg-[#E5E5E5] dark:bg-[#262626]",
               dividerText: "text-[11px] font-semibold text-[#888888] uppercase tracking-wider",
               formFieldLabel: "text-[12px] font-bold text-[#444444] dark:text-[#CCCCCC] uppercase tracking-wider",
-              formFieldInput: "rounded-xl border border-[#D9D9D6] dark:border-[#333333] bg-[#FAFAF8] dark:bg-[#1E1E1E] text-[#111111] dark:text-white focus:border-[#111111] dark:focus:border-white focus:bg-white text-[14px] h-11 transition-all",
-              formButtonPrimary: "rounded-xl bg-[#111111] dark:bg-white hover:bg-black dark:hover:bg-zinc-200 text-white dark:text-[#111111] font-bold text-[14px] h-11 shadow-sm transition-all cursor-pointer",
+              formFieldInput: "rounded-none border border-[#D9D9D6] dark:border-[#333333] bg-[#FAFAF8] dark:bg-[#1E1E1E] text-[#111111] dark:text-white focus:border-[#111111] dark:focus:border-white focus:bg-white text-[14px] h-11 transition-all",
+              formButtonPrimary: "rounded-none bg-[#111111] dark:bg-white hover:bg-black dark:hover:bg-zinc-200 text-white dark:text-[#111111] font-bold text-[14px] h-11 shadow-sm transition-all cursor-pointer",
               footerActionLink: "text-[#111111] dark:text-white font-bold hover:underline",
               footerActionText: "text-[#6F6F6F] dark:text-[#888888] text-[13px]",
             }
