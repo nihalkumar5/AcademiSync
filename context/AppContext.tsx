@@ -516,7 +516,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         })
         .catch((e) => console.error('Firebase Sync Error', e));
 
-      if (profile.isBatchSynced && profile.batchKey) {
+      if (profile.isBatchSynced && profile.batchKey && isBatchCR) {
         const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
         const batchPayload = sanitizeForFirestore({
           subjects: subjects,
@@ -531,7 +531,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }, 100);
 
     return () => clearTimeout(timeout);
-  }, [profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions, rescheduledSessions, messMenu, user, isClerkLoaded, isHydrated, isCloudSynced]);
+  }, [profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions, rescheduledSessions, messMenu, user, isClerkLoaded, isHydrated, isCloudSynced, isBatchCR]);
 
   // Hydration effect
   useEffect(() => {
@@ -1130,7 +1130,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setDoc(userRef, { events: sanitizeForFirestore(updated), lastUpdated: Date.now() }, { merge: true })
         .catch(err => console.error('Error saving events:', err));
 
-      if (profile.isBatchSynced && profile.batchKey) {
+      if (profile.isBatchSynced && profile.batchKey && isBatchCR) {
         const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
         setDoc(batchDocRef, { events: sanitizeForFirestore(updated), updatedAt: new Date().toISOString() }, { merge: true })
           .catch(err => console.error('Error saving events to batch:', err));
@@ -1197,7 +1197,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setDoc(userRef, { exams: sanitizeForFirestore(updated), lastUpdated: Date.now() }, { merge: true })
         .catch(err => console.error('Error saving exams on full set:', err));
 
-      if (profile.isBatchSynced && profile.batchKey) {
+      if (profile.isBatchSynced && profile.batchKey && isBatchCR) {
         const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
         setDoc(batchDocRef, { exams: sanitizeForFirestore(updated), updatedAt: new Date().toISOString() }, { merge: true })
           .catch(err => console.error('Error saving exams to batch:', err));
