@@ -2,7 +2,7 @@ export interface CollegeItem {
   id: string;
   name: string;
   shortName: string;
-  state: string;
+  state?: string;
   aliases: string[];
 }
 
@@ -87,7 +87,64 @@ export const STANDARD_BRANCHES = [
   'General Management'
 ];
 
-export const STANDARD_SECTIONS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', '1', '2', '3', '4'];
+export const STANDARD_SECTIONS = [
+  'No Section (Single Batch)',
+  'Section A',
+  'Section B',
+  'Section C',
+  'Section D',
+  'Section E',
+  'Section F',
+  'Group 1',
+  'Group 2',
+  'Batch 1',
+  'Batch 2'
+];
+
+// Hybrid search: local instant acronyms + live SheerID university search
+export async function searchCollegesAsync(query: string): Promise<CollegeItem[]> {
+  const q = query.toLowerCase().trim();
+  if (!q) return POPULAR_INDIAN_COLLEGES.slice(0, 8);
+
+  const localMatches = POPULAR_INDIAN_COLLEGES.filter(c => 
+    c.name.toLowerCase().includes(q) ||
+    c.shortName.toLowerCase().includes(q) ||
+    (c.state && c.state.toLowerCase().includes(q)) ||
+    c.aliases.some(a => a.toLowerCase().includes(q))
+  );
+
+  // If query is 3+ chars, also query SheerID API in parallel to cover all 45,000+ colleges across India
+  if (q.length >= 3) {
+    try {
+      const res = await fetch(
+        `https://orgsearch.sheerid.net/rest/organization/search?country=IN&type=UNIVERSITY&name=${encodeURIComponent(query)}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const sheerIdItems: CollegeItem[] = data.map((item: any) => ({
+          id: `sheer_${item.id || Math.random().toString(36).substring(2, 7)}`,
+          name: item.name,
+          shortName: item.name,
+          state: item.city || item.state || 'India',
+          aliases: [item.name.toLowerCase()]
+        }));
+
+        // Merge without duplicates
+        const seen = new Set(localMatches.map(m => m.name.toLowerCase()));
+        for (const s of sheerIdItems) {
+          if (!seen.has(s.name.toLowerCase())) {
+            localMatches.push(s);
+            seen.add(s.name.toLowerCase());
+          }
+        }
+      }
+    } catch (e) {
+      // Fallback cleanly to local matches
+    }
+  }
+
+  return localMatches.slice(0, 12);
+}
 
 export function searchColleges(query: string): CollegeItem[] {
   const q = query.toLowerCase().trim();
@@ -96,7 +153,7 @@ export function searchColleges(query: string): CollegeItem[] {
   return POPULAR_INDIAN_COLLEGES.filter(c => 
     c.name.toLowerCase().includes(q) ||
     c.shortName.toLowerCase().includes(q) ||
-    c.state.toLowerCase().includes(q) ||
+    (c.state && c.state.toLowerCase().includes(q)) ||
     c.aliases.some(a => a.toLowerCase().includes(q))
   ).slice(0, 10);
 }

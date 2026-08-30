@@ -48,15 +48,29 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
   // Invite code tab
   const [inviteCodeInput, setInviteCodeInput] = useState('');
 
-  // Update college autocomplete list
+  const cleanSection = (secStr: string) => {
+    if (!secStr || secStr.toLowerCase().includes('no section') || secStr.toLowerCase().includes('single')) return 'A';
+    return secStr.replace(/section\s*/i, '').trim() || 'A';
+  };
+
+  // Update college autocomplete list with debounced SheerID search
   useEffect(() => {
-    setFilteredColleges(searchColleges(collegeSearch));
+    let isMounted = true;
+    const delay = setTimeout(async () => {
+      const results = await searchCollegesAsync(collegeSearch);
+      if (isMounted) setFilteredColleges(results);
+    }, 200);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(delay);
+    };
   }, [collegeSearch]);
 
   // Query Firestore whenever college, branch, sem, or section changes
   useEffect(() => {
     if (!isOpen || activeTab !== 'directory') return;
-    if (!selectedCollege.trim() || !branch.trim() || !semester || !section.trim()) {
+    if (!selectedCollege.trim() || !branch.trim() || !semester) {
       setFoundBatch(null);
       return;
     }
@@ -65,7 +79,8 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
     const checkBatch = async () => {
       setIsCheckingBatch(true);
       try {
-        const canonicalKey = getCanonicalBatchKey(selectedCollege, programme, branch, semester, section);
+        const secVal = cleanSection(section);
+        const canonicalKey = getCanonicalBatchKey(selectedCollege, programme, branch, semester, secVal);
         const docRef = doc(db, 'shared_timetables', canonicalKey);
         const snap = await getDoc(docRef);
 
@@ -76,14 +91,15 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
             // Also try fuzzy search
             const q = query(
               collection(db, 'shared_timetables'),
-              where('semester', '==', Number(semester)),
-              where('section', '==', section.trim().toUpperCase())
+              where('semester', '==', Number(semester))
             );
             const querySnap = await getDocs(q);
             const matched = querySnap.docs.find(d => {
               const data = d.data();
+              const secMatch = !data.section || data.section.toUpperCase() === secVal.toUpperCase() || secVal === 'A';
               return data.college?.toLowerCase().includes(selectedCollege.toLowerCase().trim().slice(0, 5)) &&
-                     data.branch?.toLowerCase().includes(branch.toLowerCase().trim().slice(0, 3));
+                     data.branch?.toLowerCase().includes(branch.toLowerCase().trim().slice(0, 3)) &&
+                     secMatch;
             });
 
             if (matched) {
