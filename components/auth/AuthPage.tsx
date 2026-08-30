@@ -19,12 +19,18 @@ interface AuthPageProps {
 
 export const AuthPage: React.FC<AuthPageProps> = ({ mode }) => {
   const router = useRouter();
-  const { showToast } = useApp();
+  const { showToast, user } = useApp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  React.useEffect(() => {
+    if (user) {
+      router.push('/');
+    }
+  }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
