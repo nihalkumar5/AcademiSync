@@ -710,20 +710,16 @@ export const SettingsView: React.FC = () => {
             </div>
           </div>
           
-          {/* YOUR BATCH */}
-          <div className="flex flex-col gap-0 mt-6">
-            <div className="flex items-center justify-between pb-3 border-b border-[#D8D8D8] dark:border-[#333333]">
-              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF]">
-                <Users className="w-[18px] h-[18px] stroke-[1.5]" />
-                <span>Your Batch</span>
+          {/* YOUR BATCH (Only rendered when user is connected to an active synced batch) */}
+          {profile.isBatchSynced && (
+            <div className="flex flex-col gap-0 mt-6">
+              <div className="flex items-center justify-between pb-3 border-b border-[#D8D8D8] dark:border-[#333333]">
+                <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+                  <Users className="w-[18px] h-[18px] stroke-[1.5]" />
+                  <span>Your Batch</span>
+                </div>
               </div>
-            </div>
-            
-            <div className="pt-3">
-              <ApplyForCRCard />
-            </div>
 
-            {profile.isBatchSynced ? (
               <div className="flex flex-col py-5 border-b border-[#D8D8D8] dark:border-[#333333]">
                 <div className="flex items-start justify-between">
                   <div className="flex flex-col gap-1">
@@ -777,11 +773,11 @@ export const SettingsView: React.FC = () => {
                           const code = await shareTimetableWithBatch();
                           const link = `${window.location.origin}/?invite=${code}`;
                           const res = await shareLink({
-      title: 'Join our Class Timetable',
-      text: 'Hey! 👋 Join our class on Intersemester to get our synced timetable, next class alerts & shared updates:',
-      url: link,
-      dialogTitle: 'Invite Classmates via',
-    });
+                            title: 'Join our Class Timetable',
+                            text: 'Hey! 👋 Join our class on Intersemester to get our synced timetable, next class alerts & shared updates:',
+                            url: link,
+                            dialogTitle: 'Invite Classmates via',
+                          });
                           if (res === 'copied') showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
                         } catch (err) {}
                       }} 
@@ -798,8 +794,8 @@ export const SettingsView: React.FC = () => {
                   </button>
                 </div>
               </div>
-            ) : null}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Right Column */}
