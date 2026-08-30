@@ -17,6 +17,13 @@ const firebaseConfig = {
   appId: sanitizeConfigValue(process.env.NEXT_PUBLIC_FIREBASE_APP_ID)
 };
 
+if (typeof window !== 'undefined') {
+  console.log('Firebase Config loaded:', {
+    ...firebaseConfig,
+    apiKey: firebaseConfig.apiKey ? `${firebaseConfig.apiKey.substring(0, 6)}... (length: ${firebaseConfig.apiKey.length})` : 'undefined'
+  });
+}
+
 // Initialize Firebase only once
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
