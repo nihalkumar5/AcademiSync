@@ -208,41 +208,60 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
         {/* TAB 1: DIRECTORY AUTO-DISCOVERY */}
         {activeTab === 'directory' && (
           <div className="flex flex-col gap-4">
-            {/* College Autocomplete Input */}
+            {/* College Selector (Strict Verification) */}
             <div className="relative">
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400 mb-1.5">
                 College / University
               </label>
-              <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="e.g. VIT Vellore, IIT Delhi, KIIT, DTU..."
-                  value={collegeSearch}
-                  onChange={(e) => {
-                    setCollegeSearch(e.target.value);
-                    setSelectedCollege(e.target.value);
-                    setShowCollegeDropdown(true);
-                  }}
-                  onFocus={() => setShowCollegeDropdown(true)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              {/* Autocomplete suggestions dropdown */}
-              {showCollegeDropdown && filteredColleges.length > 0 && (
-                <div className="absolute z-50 left-0 right-0 top-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-xl divide-y divide-slate-100 dark:divide-zinc-800">
-                  {filteredColleges.map((col) => (
-                    <button
-                      key={col.id}
-                      type="button"
-                      onClick={() => handleSelectCollege(col)}
-                      className="w-full px-4 py-2.5 text-left text-[13px] text-slate-800 dark:text-zinc-200 hover:bg-indigo-50 dark:hover:bg-zinc-800 transition-colors flex items-center justify-between"
-                    >
-                      <span className="font-medium">{col.name}</span>
-                      <span className="text-[11px] text-slate-400 font-mono ml-2 shrink-0">{col.state}</span>
-                    </button>
-                  ))}
+              
+              {selectedCollege ? (
+                <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 shadow-sm">
+                  <div className="flex items-center gap-2.5 overflow-hidden">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                    <span className="text-[13px] font-bold text-indigo-950 dark:text-indigo-200 truncate">{selectedCollege}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCollege('');
+                      setCollegeSearch('');
+                      setShowCollegeDropdown(true);
+                    }}
+                    className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline uppercase tracking-wider shrink-0 ml-3 cursor-pointer"
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search e.g. IIIT Naya Raipur, VIT, IIT Delhi..."
+                    value={collegeSearch}
+                    onChange={(e) => {
+                      setCollegeSearch(e.target.value);
+                      setShowCollegeDropdown(true);
+                    }}
+                    onFocus={() => setShowCollegeDropdown(true)}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    autoFocus
+                  />
+                  {showCollegeDropdown && filteredColleges.length > 0 && (
+                    <div className="absolute z-50 left-0 right-0 top-full mt-1 max-h-52 overflow-y-auto bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-xl divide-y divide-slate-100 dark:divide-zinc-800">
+                      {filteredColleges.map((col) => (
+                        <button
+                          key={col.id}
+                          type="button"
+                          onClick={() => handleSelectCollege(col)}
+                          className="w-full px-4 py-2.5 text-left text-[13px] text-slate-800 dark:text-zinc-200 hover:bg-indigo-50 dark:hover:bg-zinc-800 transition-colors flex items-center justify-between cursor-pointer"
+                        >
+                          <span className="font-medium">{col.name}</span>
+                          <span className="text-[11px] text-slate-400 font-mono ml-2 shrink-0">{col.state}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

@@ -427,59 +427,79 @@ export const SettingsView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* College Name */}
+                  {/* College Name (Strict Verification) */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">College / University</label>
                     <div className="relative w-full">
-                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
-                        <Building2 className="w-4 h-4 text-[#A0A0A0] shrink-0" />
-                        <input
-                          type="text"
-                          value={college}
-                          onChange={(e) => {
-                            setCollege(e.target.value);
-                            setShowCollegeDropdown(true);
-                          }}
-                          onFocus={() => setShowCollegeDropdown(true)}
-                          onBlur={() => setTimeout(() => setShowCollegeDropdown(false), 200)}
-                          placeholder="e.g. NIT Trichy, IIT Bombay..."
-                          required
-                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
-                        />
-                      </div>
-                      {showCollegeDropdown && college.length >= 2 && (
-                        <div className="absolute top-full left-0 w-full mt-1 max-h-56 overflow-y-auto bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] shadow-lg z-50">
-                          {isLoadingColleges && (
-                            <div className="px-4 py-2.5 text-xs font-mono font-medium text-[#6F6F6F] border-b border-[#D8D8D8] dark:border-[#333333]">
-                              Searching...
+                      {college ? (
+                        <div className="flex items-center justify-between px-3.5 py-2.5 bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60">
+                          <div className="flex items-center gap-2.5 overflow-hidden">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                            <span className="text-[13px] font-bold text-indigo-950 dark:text-indigo-200 truncate">{college}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCollege('');
+                              setShowCollegeDropdown(true);
+                            }}
+                            className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline uppercase tracking-wider shrink-0 ml-3 cursor-pointer"
+                          >
+                            Change
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
+                            <Building2 className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                            <input
+                              type="text"
+                              value={college}
+                              onChange={(e) => {
+                                setCollege(e.target.value);
+                                setShowCollegeDropdown(true);
+                              }}
+                              onFocus={() => setShowCollegeDropdown(true)}
+                              placeholder="Search e.g. IIIT Naya Raipur, VIT, IIT Delhi..."
+                              required
+                              className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
+                            />
+                          </div>
+                          {showCollegeDropdown && (
+                            <div className="absolute top-full left-0 w-full mt-1 max-h-56 overflow-y-auto bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] shadow-lg z-50">
+                              {isLoadingColleges && (
+                                <div className="px-4 py-2.5 text-xs font-mono font-medium text-[#6F6F6F] border-b border-[#D8D8D8] dark:border-[#333333]">
+                                  Searching campus directory...
+                                </div>
+                              )}
+                              {suggestedColleges.length > 0 ? (
+                                suggestedColleges.map((c) => (
+                                  <div
+                                    key={c}
+                                    onMouseDown={() => { setCollege(c); setShowCollegeDropdown(false); }}
+                                    className="px-4 py-2.5 hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] border-b border-[#D8D8D8] dark:border-[#333333] last:border-0"
+                                  >
+                                    {c}
+                                  </div>
+                                ))
+                              ) : (
+                                !isLoadingColleges && INDIAN_COLLEGES.filter(c => c.toLowerCase().includes(college.toLowerCase())).slice(0, 15).map(c => (
+                                  <div
+                                    key={c}
+                                    onMouseDown={() => { setCollege(c); setShowCollegeDropdown(false); }}
+                                    className="px-4 py-2.5 hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] border-b border-[#D8D8D8] dark:border-[#333333] last:border-0"
+                                  >
+                                    {c}
+                                  </div>
+                                ))
+                              )}
                             </div>
-                          )}
-                          {suggestedColleges.length > 0 ? (
-                            suggestedColleges.map((c) => (
-                              <div
-                                key={c}
-                                onMouseDown={() => { setCollege(c); setShowCollegeDropdown(false); }}
-                                className="px-4 py-2.5 hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] border-b border-[#D8D8D8] dark:border-[#333333] last:border-0"
-                              >
-                                {c}
-                              </div>
-                            ))
-                          ) : (
-                            !isLoadingColleges && INDIAN_COLLEGES.filter(c => c.toLowerCase().includes(college.toLowerCase())).slice(0, 15).map(c => (
-                              <div
-                                key={c}
-                                onMouseDown={() => { setCollege(c); setShowCollegeDropdown(false); }}
-                                className="px-4 py-2.5 hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] border-b border-[#D8D8D8] dark:border-[#333333] last:border-0"
-                              >
-                                {c}
-                              </div>
-                            ))
                           )}
                         </div>
                       )}
                     </div>
                     <p className="text-[11px] text-[#A0A0A0] font-medium mt-0.5">
-                      Type 3 letters to search verified universities, or type manually if not found.
+                      Select your official university from the verified directory to ensure seamless batch syncing.
                     </p>
                   </div>
 
