@@ -629,7 +629,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setShowOnboarding(true);
     }
 
+    // Realtime Cross-tab Sync
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'intersemester_mess_menu_v1') {
+        try {
+          const freshMenu = e.newValue ? JSON.parse(e.newValue) : null;
+          setMessMenu(freshMenu);
+        } catch (err) {}
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
     setIsHydrated(true);
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+    };
   }, []);
 
   // Periodic notification check & sync
@@ -1670,7 +1685,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const updateMessMenu = (menu: any) => {
     setMessMenu(menu);
-    if (menu) { localStorage.setItem('intersemester_mess_menu_v1', JSON.stringify(menu)); } else { localStorage.removeItem('intersemester_mess_menu_v1'); }
+    if (typeof window !== 'undefined') {
+      if (menu) {
+        localStorage.setItem('intersemester_mess_menu_v1', JSON.stringify(menu));
+      } else {
+        localStorage.removeItem('intersemester_mess_menu_v1');
+      }
+    }
+    // Instant Firestore sync so tablets and other devices receive the update in real-time
+    if (user?.id) {
+      const userRef = doc(db, 'users', user.id);
+      setDoc(userRef, { messMenu: menu || null, lastUpdated: Date.now() }, { merge: true }).catch((err) =>
+        console.error('Firebase Mess sync error:', err)
+      );
+    }
   };
 
   const resetAllData = async () => {

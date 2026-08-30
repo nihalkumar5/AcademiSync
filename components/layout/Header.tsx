@@ -96,7 +96,7 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex items-center justify-center px-4 sm:px-8 py-4 bg-[#FAFAF8]/80 dark:bg-[#111110]/80 backdrop-blur-md border-b border-black/10 dark:border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
+      <header className="sticky top-0 z-40 w-full flex items-center justify-center px-4 sm:px-8 py-3.5 sm:py-4 bg-[#FAFAF8]/95 dark:bg-[#111110]/95 backdrop-blur-md border-b border-[#D8D8D8] dark:border-[#333333] shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-colors">
         <div className="flex items-center justify-between w-full max-w-6xl mx-auto relative">
           <div className="flex items-center gap-3 select-none">
           {/* Logo only shown on mobile where sidebar is hidden */}

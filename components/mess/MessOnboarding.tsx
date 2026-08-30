@@ -12,54 +12,59 @@ import { Modal } from '../ui/Modal';
 import { MessImportModal } from './MessImportModal';
 
 export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: 'join' | 'import' | null }> = ({ onCancel, initialAction }) => {
-  const { setActiveView, updateMessMenu, showToast } = useApp();
+  const { setActiveView, updateMessMenu, showToast, user } = useApp();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [showJoinInput, setShowJoinInput] = useState(initialAction === "join");
   const [inviteInput, setInviteInput] = useState('');
   const [isJoining, setIsJoining] = useState(false);
   const [showImportModal, setShowImportModal] = useState(initialAction === "import");
-  const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [extractedData, setExtractedData] = useState<any>(null);
+  const [extractedTimings, setExtractedTimings] = useState<Record<string, string>>({
+    Breakfast: '8:00 - 10:00',
+    Lunch: '12:30 - 2:30',
+    Snacks: '4:30 - 5:30',
+    Dinner: '7:30 - 9:30',
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [messId, setMessId] = useState<string>('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleModalFileSelect = async (selected: File | 'sample') => {
+  const handleModalFileSelect = async (selected: { name: string; base64: string; mimeType: string }[] | 'sample') => {
     if (selected === 'sample') {
       setStep(2);
       processMenu('sample');
       return;
     }
-    if (!selected) return;
-    if (selected.type.startsWith('image/')) {
-      setFile(selected);
-      setPreviewUrl(URL.createObjectURL(selected));
-      setStep(2);
-      processMenu(selected);
-    } else {
-      showToast('Invalid File', 'Please upload an image file (JPG, PNG).', 'error');
-    }
+    if (!selected || selected.length === 0) return;
+    setStep(2);
+    processMenu(selected);
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (!selected) return;
+    const selected = Array.from(e.target.files || []);
+    if (selected.length === 0) return;
 
-    if (selected.type.startsWith('image/')) {
-      setFile(selected);
-      setPreviewUrl(URL.createObjectURL(selected));
-      setStep(2);
-      processMenu(selected);
-    } else {
-      showToast('Invalid File', 'Please upload an image file (JPG, PNG).', 'error');
-    }
+    const readers = selected.map((file) => {
+      return new Promise<{ name: string; base64: string; mimeType: string }>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          resolve({
+            name: file.name,
+            base64: event.target?.result as string,
+            mimeType: file.type || (file.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    const results = await Promise.all(readers);
+    setStep(2);
+    processMenu(results);
   };
 
-  
   const handleJoinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inviteInput.trim()) {
@@ -68,59 +73,68 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
     }
   };
 
-  const processMenu = async (file: File | 'sample') => {
+  const processMenu = async (filesOrSample: { name: string; base64: string; mimeType: string }[] | 'sample') => {
     setIsProcessing(true);
     setProgress(0);
 
-    // Simulate progress animation while API runs
     const interval = setInterval(() => {
       setProgress((p) => {
         if (p >= 90) return 90;
-        return p + Math.random() * 10;
+        return p + Math.random() * 12;
       });
-    }, 500);
+    }, 400);
 
     try {
       let data;
-      if (file === 'sample') {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        data = { success: true, data: {
-            Monday: { Breakfast: ["Aloo Paratha", "Curd", "Tea"], Lunch: ["Rajma", "Rice", "Roti", "Salad"], Snacks: ["Samosa", "Coffee"], Dinner: ["Paneer Butter Masala", "Roti", "Dal"] },
-            Tuesday: { Breakfast: ["Poha", "Jalebi", "Milk"], Lunch: ["Chole", "Bhature", "Rice"], Snacks: ["Maggi", "Tea"], Dinner: ["Mix Veg", "Dal Tadka", "Roti"] },
-            Wednesday: { Breakfast: ["Idli", "Sambar", "Chutney"], Lunch: ["Kadhi Pakora", "Rice", "Roti"], Snacks: ["Patties", "Coffee"], Dinner: ["Egg Curry", "Dal", "Roti"] },
-            Thursday: { Breakfast: ["Upma", "Sevai", "Tea"], Lunch: ["Dal Makhani", "Jeera Rice", "Roti"], Snacks: ["Bread Pakora", "Tea"], Dinner: ["Aloo Gobi", "Dal", "Roti"] },
-            Friday: { Breakfast: ["Masala Dosa", "Sambar", "Chutney"], Lunch: ["Soyabean Curry", "Rice", "Roti"], Snacks: ["Pasta", "Coffee"], Dinner: ["Chicken Curry", "Paneer Tikka", "Roti"] },
-            Saturday: { Breakfast: ["Puri", "Bhaji", "Halwa"], Lunch: ["Khichdi", "Kadhi", "Papad"], Snacks: ["Bhel Puri", "Tea"], Dinner: ["Malai Kofta", "Dal", "Roti"] },
-            Sunday: { Breakfast: ["Bread Omelette", "Toast", "Juice"], Lunch: ["Veg Biryani", "Raita"], Snacks: ["French Fries", "Cold Drink"], Dinner: ["Dal Bati", "Churma"] }
-        } };
+      if (filesOrSample === 'sample') {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        data = {
+          success: true,
+          data: {
+            Monday: { Breakfast: ["Aloo Paratha", "Curd", "Tea", "Banana"], Lunch: ["Rajma", "Jeera Rice", "Roti", "Salad"], Snacks: ["Samosa", "Mint Chutney", "Tea"], Dinner: ["Paneer Butter Masala", "Dal Makhani", "Roti", "Gulab Jamun"] },
+            Tuesday: { Breakfast: ["Poha", "Sev", "Jalebi", "Milk"], Lunch: ["Chole", "Bhature", "Rice", "Pickle"], Snacks: ["Veg Patties", "Coffee"], Dinner: ["Mix Veg", "Dal Tadka", "Roti", "Kheer"] },
+            Wednesday: { Breakfast: ["Idli", "Medu Vada", "Sambar", "Chutney"], Lunch: ["Kadhi Pakora", "Khichdi", "Papad"], Snacks: ["Bread Pakora", "Tea"], Dinner: ["Egg Curry / Shahi Paneer", "Dal", "Roti"] },
+            Thursday: { Breakfast: ["Upma", "Chutney", "Tea"], Lunch: ["Dal Makhani", "Jeera Rice", "Roti", "Raita"], Snacks: ["Maggi", "Coffee"], Dinner: ["Aloo Gobi Matar", "Yellow Dal", "Roti"] },
+            Friday: { Breakfast: ["Masala Dosa", "Sambar", "Chutney"], Lunch: ["Soyabean Curry", "Rice", "Roti"], Snacks: ["Pasta", "Tea"], Dinner: ["Butter Chicken / Kadhai Paneer", "Naan", "Sweets"] },
+            Saturday: { Breakfast: ["Puri Bhaji", "Halwa", "Tea"], Lunch: ["Moong Dal Khichdi", "Aloo Chokha", "Papad"], Snacks: ["Bhel Puri", "Tea"], Dinner: ["Malai Kofta", "Dal Fry", "Roti"] },
+            Sunday: { Breakfast: ["Bread Omelette / Sandwich", "Juice"], Lunch: ["Hyderabadi Veg Biryani", "Raita"], Snacks: ["French Fries", "Cold Drink"], Dinner: ["Dal Baati Churma", "Kheer"] },
+          },
+          timings: {
+            Breakfast: '8:00 - 10:00',
+            Lunch: '12:30 - 2:30',
+            Snacks: '4:30 - 5:30',
+            Dinner: '7:30 - 9:30',
+          },
+        };
       } else {
-        const formData = new FormData();
-        formData.append('file', file);
         const res = await fetch('/api/extract-mess', {
           method: 'POST',
-          body: formData,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ images: filesOrSample }),
         });
         data = await res.json();
       }
-      
+
       clearInterval(interval);
       setProgress(100);
 
       setTimeout(() => {
         if (data.success && data.data) {
           setExtractedData(data.data);
+          if (data.timings) {
+            setExtractedTimings(data.timings);
+          }
           setStep(3);
         } else {
-          showToast('Extraction Failed', data.error || 'Unknown error processing your menu.', 'error');
+          showToast('Extraction Failed', data.error || 'Could not parse the mess menu document.', 'error');
           setStep(1);
         }
         setIsProcessing(false);
-      }, 500);
-
+      }, 400);
     } catch (error) {
       console.error(error);
       clearInterval(interval);
-      showToast('Upload Error', 'Failed to connect to extraction service.', 'error');
+      showToast('Upload Error', 'Failed to connect to menu extraction service.', 'error');
       setStep(1);
       setIsProcessing(false);
     }
@@ -133,6 +147,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
       id: newId,
       createdAt: new Date().toISOString(),
       menu: extractedData,
+      timings: extractedTimings,
     };
 
     try {
@@ -140,9 +155,13 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
       setMessId(newId);
       updateMessMenu(messDoc);
       setStep(4);
+      showToast('Mess Menu Published', 'Your weekly menu has been saved and synced.', 'success');
     } catch (e) {
       console.error('Failed to publish', e);
-      showToast('Publish Failed', 'Failed to publish mess. Make sure Firebase is configured.', 'error');
+      // Fallback local save
+      updateMessMenu(messDoc);
+      setMessId(newId);
+      setStep(4);
     }
   };
 
@@ -291,6 +310,45 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
             </p>
 
             <div className="flex-1 overflow-y-auto mb-8 pr-2 flex flex-col gap-6">
+              {/* Meal Timings Card */}
+              <div className="bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] p-6">
+                <div className="flex items-center justify-between mb-4 border-b border-[#D8D8D8] dark:border-[#333333] pb-2">
+                  <h3 className="text-[14px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF]">
+                    MEAL TIMINGS
+                  </h3>
+                  <span className="text-[11px] text-[#6F6F6F]">
+                    Used for live notifications & meal tracker
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {['Breakfast', 'Lunch', 'Snacks', 'Dinner'].map((meal) => (
+                    <div key={meal} className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
+                        {meal}
+                      </label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={extractedTimings[meal] || ''}
+                          onChange={(e) =>
+                            setExtractedTimings({
+                              ...extractedTimings,
+                              [meal]: e.target.value,
+                            })
+                          }
+                          placeholder="e.g. 8:00 - 10:00"
+                          className="bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] px-3 py-2 text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF]"
+                        />
+                      ) : (
+                        <p className="text-[14px] font-mono font-medium text-[#111111] dark:text-[#FFFFFF]">
+                          {extractedTimings[meal] || '8:00 - 10:00'}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
                 const dayData = extractedData[day] || {};
                 // If not editing, maybe only show Monday to save space, but let's just show all to be thorough
