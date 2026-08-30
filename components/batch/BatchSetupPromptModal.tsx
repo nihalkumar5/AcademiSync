@@ -88,74 +88,74 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
     <>
       <Modal isOpen={isOpen && !showCRModal} onClose={onClose} title="Setup Batch Timetable" maxWidth="md">
         <div className="flex flex-col gap-5 py-1 text-left">
-          {/* Header Banner */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-indigo-500/10 to-purple-500/10 border border-amber-500/20 flex flex-col gap-2">
+          {/* Header Banner - Editorial Brutalist Card */}
+          <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] p-4 flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-amber-700 dark:text-amber-300 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" />
-                No Live Batch Yet
-              </span>
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[1.5px] text-[#A0A0A0]">
+                <div className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                <span>No Live Batch Sync</span>
+              </div>
               {hasMultipleSections && (
-                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 bg-amber-500/20 text-amber-900 dark:text-amber-200 rounded-full">
-                  Section {cleanSec}
+                <span className="font-mono text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 border border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] bg-white dark:bg-[#111111]">
+                  Sec {cleanSec}
                 </span>
               )}
             </div>
 
             <div className="flex flex-col gap-0.5">
-              <h3 className="text-[16px] font-bold text-slate-900 dark:text-white leading-tight truncate">
+              <h3 className="text-[17px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-tight truncate">
                 {shortCollege}
               </h3>
-              <p className="text-[12.5px] text-slate-600 dark:text-zinc-300 font-medium">
+              <p className="text-[13px] text-[#6F6F6F] font-medium">
                 {activeBranch} · Semester {activeSem} {hasMultipleSections ? `· Section ${cleanSec}` : ''}
               </p>
             </div>
           </div>
 
-          {/* Feature Showcase Grid: What is Batch Sync? */}
+          {/* Feature Showcase Grid - 2x2 Clean Monochromatic Grid */}
           <div className="flex flex-col gap-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#A0A0A0]">
               Why Sync With Your Batch?
             </span>
             
-            <div className="grid grid-cols-2 gap-2.5">
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-900/70 border border-slate-100 dark:border-zinc-800 flex flex-col gap-1">
-                <div className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 font-bold text-[12px]">
-                  <Calendar className="w-3.5 h-3.5 shrink-0" />
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-3 border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] flex flex-col gap-1">
+                <div className="flex items-center gap-1.5 text-[#111111] dark:text-[#FFFFFF] font-bold text-[12px]">
+                  <Calendar className="w-3.5 h-3.5 shrink-0 stroke-[1.75]" />
                   <span>1-Click Sync</span>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-tight">
-                  Timetable changes & room swaps update for the entire class instantly.
+                <p className="text-[11px] text-[#6F6F6F] leading-tight">
+                  Timetable & room updates push to all classmates instantly.
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-900/70 border border-slate-100 dark:border-zinc-800 flex flex-col gap-1">
-                <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold text-[12px]">
-                  <Bell className="w-3.5 h-3.5 shrink-0" />
-                  <span>Next Class Alerts</span>
+              <div className="p-3 border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] flex flex-col gap-1">
+                <div className="flex items-center gap-1.5 text-[#111111] dark:text-[#FFFFFF] font-bold text-[12px]">
+                  <Bell className="w-3.5 h-3.5 shrink-0 stroke-[1.75]" />
+                  <span>Class Alerts</span>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-tight">
-                  Auto notifications 10m before class with room and professor info.
+                <p className="text-[11px] text-[#6F6F6F] leading-tight">
+                  Reminders 10m before class with room & prof details.
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-900/70 border border-slate-100 dark:border-zinc-800 flex flex-col gap-1">
-                <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold text-[12px]">
-                  <Clock className="w-3.5 h-3.5 shrink-0" />
+              <div className="p-3 border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] flex flex-col gap-1">
+                <div className="flex items-center gap-1.5 text-[#111111] dark:text-[#FFFFFF] font-bold text-[12px]">
+                  <Clock className="w-3.5 h-3.5 shrink-0 stroke-[1.75]" />
                   <span>Shared Tasks</span>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-tight">
-                  Assignment deadlines & lab submissions synced across batchmates.
+                <p className="text-[11px] text-[#6F6F6F] leading-tight">
+                  Assignments & lab deadlines stay in sync across batch.
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-900/70 border border-slate-100 dark:border-zinc-800 flex flex-col gap-1">
-                <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400 font-bold text-[12px]">
-                  <Users className="w-3.5 h-3.5 shrink-0" />
+              <div className="p-3 border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] flex flex-col gap-1">
+                <div className="flex items-center gap-1.5 text-[#111111] dark:text-[#FFFFFF] font-bold text-[12px]">
+                  <Users className="w-3.5 h-3.5 shrink-0 stroke-[1.75]" />
                   <span>Classmate Hub</span>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-tight">
-                  Never ask "which class is next?" in WhatsApp groups again.
+                <p className="text-[11px] text-[#6F6F6F] leading-tight">
+                  No more asking &ldquo;which class next?&rdquo; in WhatsApp groups.
                 </p>
               </div>
             </div>
@@ -163,7 +163,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
 
           {/* Action Pathways */}
           <div className="flex flex-col gap-2.5 pt-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#A0A0A0]">
               Choose an Option to Continue
             </span>
 
@@ -171,52 +171,52 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
             <button
               type="button"
               onClick={() => setShowCRModal(true)}
-              className="p-3.5 rounded-xl border border-amber-300 dark:border-amber-900/60 bg-amber-500/10 hover:bg-amber-500/15 transition-all text-left flex items-center justify-between group cursor-pointer"
+              className="p-3.5 border border-[#111111] dark:border-[#FFFFFF] bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] hover:opacity-95 transition-all text-left flex items-center justify-between group cursor-pointer"
             >
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-amber-500 text-black flex items-center justify-center font-bold shrink-0 shadow-sm">
-                  <Crown className="w-5 h-5" />
+                <div className="w-8 h-8 border border-white dark:border-black flex items-center justify-center font-bold shrink-0">
+                  <Crown className="w-4 h-4 text-amber-400 dark:text-amber-600" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[13px] font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <span className="text-[13px] font-bold flex items-center gap-1.5">
                     I am the CR (Setup this batch)
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 bg-amber-500 text-black rounded uppercase">Admin</span>
+                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-amber-400 text-black uppercase">ADMIN</span>
                   </span>
-                  <span className="text-[11.5px] text-slate-500 dark:text-zinc-400">
-                    Apply for CR verification to publish and broadcast the timetable.
+                  <span className="text-[11px] opacity-80">
+                    Apply for CR verification to publish & broadcast the timetable.
                   </span>
                 </div>
               </div>
-              <ArrowRight className="w-4 h-4 text-amber-600 dark:text-amber-400 group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
             </button>
 
             {/* Option 2: Share to WhatsApp */}
             <button
               type="button"
               onClick={handleShareToWhatsApp}
-              className="p-3.5 rounded-xl border border-emerald-300 dark:border-emerald-900/60 bg-emerald-500/10 hover:bg-emerald-500/15 transition-all text-left flex items-center justify-between group cursor-pointer"
+              className="p-3.5 border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-all text-left flex items-center justify-between group cursor-pointer"
             >
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold shrink-0 shadow-sm">
-                  <MessageCircle className="w-5 h-5" />
+                <div className="w-8 h-8 border border-[#D8D8D8] dark:border-[#333333] flex items-center justify-center font-bold shrink-0 bg-[#F7F7F5] dark:bg-[#1A1A1A]">
+                  <MessageCircle className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[13px] font-bold text-slate-900 dark:text-white">
+                  <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF]">
                     Tell Class CR to Setup Batch
                   </span>
-                  <span className="text-[11.5px] text-slate-500 dark:text-zinc-400">
+                  <span className="text-[11px] text-[#6F6F6F]">
                     Share invite link to your class WhatsApp group in 1-tap.
                   </span>
                 </div>
               </div>
-              <Share2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform shrink-0 ml-2" />
+              <Share2 className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] group-hover:scale-110 transition-transform shrink-0 ml-2" />
             </button>
 
             {/* Option 3: Personal Timetable */}
             <button
               type="button"
               onClick={handlePersonalTimetable}
-              className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all text-center text-[12.5px] font-bold text-slate-700 dark:text-zinc-300 cursor-pointer"
+              className="w-full py-2.5 px-3 border border-dashed border-[#D8D8D8] dark:border-[#333333] text-[12px] font-medium text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] hover:border-[#111111] dark:hover:border-[#FFFFFF] transition-all text-center cursor-pointer"
             >
               Continue with Personal Timetable for now
             </button>
