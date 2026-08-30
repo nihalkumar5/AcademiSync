@@ -16,14 +16,6 @@ export default function Page() {
         <SignUp
           routing="path"
           path="/sign-up"
-          localization={{
-            signUp: {
-              start: {
-                title: "Create your account",
-                subtitle: "Welcome. Sign up to continue."
-              }
-            }
-          }}
           appearance={{
             elements: {
               rootBox: "w-full flex justify-center",

@@ -22,7 +22,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      localization={{
+        signIn: {
+          start: {
+            title: "Sign in to InterSemester",
+            subtitle: "Welcome back. Sign in to continue."
+          }
+        },
+        signUp: {
+          start: {
+            title: "Create your account",
+            subtitle: "Welcome. Sign up to continue."
+          }
+        }
+      }}
+    >
       <html lang="en" suppressHydrationWarning>
         <body className="min-h-[100dvh] bg-[#F7F7F5] dark:bg-[#111111] text-[#111111] dark:text-[#F7F7F5] antialiased flex flex-col font-sans selection:bg-[#96725B] selection:text-white">
           <AppProvider>

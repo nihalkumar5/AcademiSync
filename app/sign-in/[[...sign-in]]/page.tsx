@@ -16,14 +16,6 @@ export default function Page() {
         <SignIn
           routing="path"
           path="/sign-in"
-          localization={{
-            signIn: {
-              start: {
-                title: "Sign in to InterSemester",
-                subtitle: "Welcome back. Sign in to continue."
-              }
-            }
-          }}
           appearance={{
             elements: {
               rootBox: "w-full flex justify-center",
