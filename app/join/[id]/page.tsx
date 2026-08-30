@@ -6,15 +6,26 @@ import { useApp } from '@/context/AppContext';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/Button';
+import { Smartphone } from 'lucide-react';
 
 export default function JoinMessPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { updateMessMenu, setActiveView } = useApp();
+  const { updateMessMenu, setActiveView, showToast } = useApp();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [messData, setMessData] = useState<any>(null);
+  const [isMobileBrowser, setIsMobileBrowser] = useState(false);
 
   useEffect(() => {
+    // Check if on mobile browser
+    if (typeof window !== 'undefined') {
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      const isNative = (window as any)?.Capacitor?.isNativePlatform?.();
+      if (isAndroid && !isNative) {
+        setIsMobileBrowser(true);
+      }
+    }
+
     const fetchMess = async () => {
       try {
         const docRef = doc(db, 'messes', params.id);
@@ -36,9 +47,20 @@ export default function JoinMessPage({ params }: { params: { id: string } }) {
   }, [params.id]);
 
   const handleJoin = () => {
-    updateMessMenu(messData);
-    setActiveView('mess');
-    router.push('/');
+    if (messData) {
+      updateMessMenu(messData);
+      setActiveView('mess');
+      showToast('Joined Mess', 'Mess menu successfully loaded into your app!', 'success');
+      router.push('/');
+    }
+  };
+
+  const handleOpenApp = () => {
+    if (typeof window !== 'undefined') {
+      const host = window.location.host || 'academi-sync-chi.vercel.app';
+      const intentUrl = `intent://${host}/join/${params.id}#Intent;scheme=https;package=com.intersemester.app;end`;
+      window.location.href = intentUrl;
+    }
   };
 
   if (loading) {
@@ -60,8 +82,8 @@ export default function JoinMessPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="flex flex-col justify-start pt-24 min-h-screen bg-[#FAFAF8] dark:bg-[#111110] p-6 text-left max-w-sm mx-auto w-full">
-      <div className="mb-12">
+    <div className="flex flex-col justify-start pt-20 min-h-screen bg-[#FAFAF8] dark:bg-[#111110] p-6 text-left max-w-sm mx-auto w-full">
+      <div className="mb-8">
         <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
           Join,<br />
           Hostel,<br />
@@ -69,13 +91,13 @@ export default function JoinMessPage({ params }: { params: { id: string } }) {
           Menu
         </h2>
         <p className="text-[#6B6B6B] text-[14px] leading-[20px] mt-4 max-w-[280px]">
-          You'll get the current menu and meal timings.
+          Sync your hostel's live meal countdowns, daily dishes & serving hours.
         </p>
       </div>
 
-      <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-6 w-full max-w-sm mb-8 text-left">
-        <p className="text-[12px] text-[#A0A0A0] font-mono mb-2">MESS ID: {params.id}</p>
-        <h3 className="text-[16px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-2">
+      <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-6 w-full max-w-sm mb-6 text-left shadow-sm">
+        <p className="text-[11px] font-bold tracking-widest text-[#A0A0A0] uppercase mb-2">INVITE CODE: {params.id}</p>
+        <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-1.5">
           Hostel Mess Menu
         </h3>
         <p className="text-[13px] text-[#6F6F6F]">
@@ -83,15 +105,28 @@ export default function JoinMessPage({ params }: { params: { id: string } }) {
         </p>
       </div>
 
-      <Button onClick={handleJoin} className="w-full max-w-sm h-12 text-[14px] mb-4">
-        Join Mess
-      </Button>
-      <button 
-        onClick={() => router.push('/')}
-        className="text-[14px] font-medium text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors"
-      >
-        Cancel
-      </button>
+      <div className="flex flex-col gap-3 w-full max-w-sm">
+        {isMobileBrowser && (
+          <button
+            type="button"
+            onClick={handleOpenApp}
+            className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white text-[14px] font-semibold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 cursor-pointer transition-all"
+          >
+            <Smartphone className="w-4 h-4" /> Open in Android App
+          </button>
+        )}
+
+        <Button onClick={handleJoin} className="w-full h-12 text-[14px]">
+          Join on Web
+        </Button>
+
+        <button 
+          onClick={() => router.push('/')}
+          className="mt-2 text-[14px] font-medium text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors text-center"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }
