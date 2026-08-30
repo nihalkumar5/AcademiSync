@@ -89,6 +89,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode }) => {
         msg = 'Login popup was closed before completion.';
       } else if (err.code === 'auth/unauthorized-domain') {
         msg = 'Domain not authorized for Google Sign-In.';
+      } else {
+        msg = `Google Auth Error: ${err.message || err.code || err}`;
       }
       setErrorMsg(msg);
       showToast('Auth Error', msg, 'error');
