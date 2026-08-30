@@ -48,6 +48,7 @@ import { BatchMembersModal } from '@/components/batch/BatchMembersModal';
 
 export const SettingsView: React.FC = () => {
   const { user, isLoaded, isSignedIn } = useUser();
+  const clerk = useClerk();
   const {
     profile,
     isBatchCR,
