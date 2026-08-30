@@ -4,7 +4,7 @@ import { getMessaging, isSupported } from 'firebase/messaging';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD4zcondRUy9_EDnBo7cU72jjqcUHbwysc",
+  apiKey: "AIzaSyD5H_kryH_ujdm0e3lZgaDLPjQ8kvr_VDs",
   authDomain: "academisync-c1a37.firebaseapp.com",
   projectId: "academisync-c1a37",
   storageBucket: "academisync-c1a37.firebasestorage.app",
