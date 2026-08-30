@@ -30,7 +30,7 @@ import {
 import { checkAndGenerateSmartNotifications } from '@/lib/notificationEngine';
 import confetti from 'canvas-confetti';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, collection, onSnapshot, setDoc, deleteDoc, getDoc, getDocs, query, where, updateDoc, increment, arrayUnion } from 'firebase/firestore';
+import { doc, collection, onSnapshot, setDoc, deleteDoc, getDoc, getDocs, query, where, updateDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { registerPushNotifications } from '@/lib/pushNotifications';
 import { triggerLocalNotification, scheduleTimetableLocalNotifications } from '@/lib/localNotifications';

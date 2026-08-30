@@ -9,7 +9,8 @@ import {
   STANDARD_PROGRAMMES, 
   STANDARD_BRANCHES, 
   STANDARD_SECTIONS, 
-  searchColleges, 
+  searchColleges,
+  searchCollegesAsync, 
   CollegeItem 
 } from '@/lib/collegeDirectory';
 import { getCanonicalBatchKey } from '@/lib/timetableUtils';
