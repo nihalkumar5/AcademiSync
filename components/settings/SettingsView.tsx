@@ -39,7 +39,7 @@ import {
   CalendarDays,
   MoreHorizontal, Download,
   Cloud,
-
+  LogIn,
   LogOut, Clock,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -754,24 +754,64 @@ export const SettingsView: React.FC = () => {
               <span>Account & Cloud Sync</span>
             </div>
             
-            <div 
-              onClick={() => setShowCloudSyncModal(true)}
-              className="flex items-center justify-between py-5 border-b border-[#D8D8D8] dark:border-[#333333] cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors -mx-5 px-5 sm:mx-0 sm:px-0 sm:hover:bg-transparent group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 border border-[#D8D8D8] dark:border-[#333333] flex items-center justify-center overflow-hidden bg-[#F4F4F4] dark:bg-[#1A1A1A]">
-                  <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${avatarSeed}&backgroundColor=transparent`} className="w-full h-full object-contain" />
+            {user ? (
+              <div 
+                onClick={() => setShowCloudSyncModal(true)}
+                className="flex items-center justify-between py-5 border-b border-[#D8D8D8] dark:border-[#333333] cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors -mx-5 px-5 sm:mx-0 sm:px-0 sm:hover:bg-transparent group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 border border-[#D8D8D8] dark:border-[#333333] flex items-center justify-center overflow-hidden bg-[#F4F4F4] dark:bg-[#1A1A1A]">
+                    <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${avatarSeed}&backgroundColor=transparent`} className="w-full h-full object-contain" />
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none group-hover:underline underline-offset-2">
+                      {user.fullName || profile.name || 'Student'}
+                    </span>
+                    <span className="text-[12px] text-[#6F6F6F]">
+                      {user.primaryEmailAddress?.emailAddress || profile.email || 'Connected'}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none group-hover:underline underline-offset-2">{user?.fullName || 'Student'}</span>
-                  <span className="text-[12px] text-[#6F6F6F]">{email}</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-[#6F6F6F] hidden sm:inline-block">Cloud Active</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[11px] font-bold uppercase tracking-widest text-[#6F6F6F] hidden sm:inline-block">Cloud Active</span>
+            ) : (
+              <div className="flex flex-col gap-3 py-5 border-b border-[#D8D8D8] dark:border-[#333333]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 border border-[#D8D8D8] dark:border-[#333333] flex items-center justify-center overflow-hidden bg-[#F4F4F4] dark:bg-[#1A1A1A] font-bold text-[13px] text-[#888888]">
+                      G
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none">Guest User</span>
+                      <span className="text-[12px] text-[#888888]">Local mode · Not connected</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-amber-400" />
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-[#888888] hidden sm:inline-block">Local Only</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                  <Link
+                    href="/sign-in"
+                    className="px-4 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity inline-flex items-center gap-1.5"
+                  >
+                    <LogIn className="w-3.5 h-3.5" />
+                    Sign In / Sync
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setShowCloudSyncModal(true)}
+                    className="px-3 py-2 border border-[#D8D8D8] dark:border-[#333333] text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors"
+                  >
+                    Details
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Appearance & Alerts */}
@@ -1261,45 +1301,85 @@ export const SettingsView: React.FC = () => {
         title="Account & Cloud Sync"
       >
         <div className="p-5 flex flex-col gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 border border-[#D8D8D8] dark:border-[#333333] flex items-center justify-center overflow-hidden bg-[#F4F4F4] dark:bg-[#1A1A1A]">
-              <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${avatarSeed}&backgroundColor=transparent`} className="w-full h-full object-contain" />
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[16px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none">{user?.fullName || 'Student'}</span>
-              <span className="text-[13px] text-[#6F6F6F]">{email}</span>
-            </div>
-          </div>
-          
-          <div className="flex flex-col gap-2 p-4 border border-[#D8D8D8] dark:border-[#333333] bg-[#F9F9F9] dark:bg-[#1A1A1A]">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[12px] font-bold uppercase tracking-widest text-[#111111] dark:text-[#FFFFFF]">Cloud Active</span>
-            </div>
-            <p className="text-[13px] text-[#6F6F6F] leading-snug">
-              Your timetable, tasks and bag are synced to your account.
-            </p>
-          </div>
+          {user ? (
+            <>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 border border-[#D8D8D8] dark:border-[#333333] flex items-center justify-center overflow-hidden bg-[#F4F4F4] dark:bg-[#1A1A1A]">
+                  <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${avatarSeed}&backgroundColor=transparent`} className="w-full h-full object-contain" />
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[16px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none">
+                    {user.fullName || profile.name || 'Student'}
+                  </span>
+                  <span className="text-[13px] text-[#6F6F6F]">
+                    {user.primaryEmailAddress?.emailAddress || profile.email}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex flex-col gap-2 p-4 border border-[#D8D8D8] dark:border-[#333333] bg-[#F9F9F9] dark:bg-[#1A1A1A]">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[12px] font-bold uppercase tracking-widest text-[#111111] dark:text-[#FFFFFF]">Cloud Active</span>
+                </div>
+                <p className="text-[13px] text-[#6F6F6F] leading-snug">
+                  Your timetable, tasks and bag are synced to your cloud account.
+                </p>
+              </div>
 
-          <div className="flex flex-col gap-2">
-            <button 
-              onClick={() => { setShowCloudSyncModal(false); handleExportBackup(); }}
-              className="w-full py-3 border border-[#D8D8D8] dark:border-[#333333] text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] flex items-center justify-center gap-2 hover:bg-[#F4F4F4] dark:hover:bg-[#1A1A1A] transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Export data
-            </button>
-            <button 
-              onClick={async () => {
-                await signOut(auth);
-                window.location.href = '/sign-in';
-              }}
-              className="w-full py-3 border border-[#D8D8D8] dark:border-[#333333] text-[13px] font-bold text-red-600 flex items-center justify-center gap-2 hover:bg-[#F4F4F4] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign out
-            </button>
-          </div>
+              <div className="flex flex-col gap-2">
+                <button 
+                  onClick={() => { setShowCloudSyncModal(false); handleExportBackup(); }}
+                  className="w-full py-3 border border-[#D8D8D8] dark:border-[#333333] text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] flex items-center justify-center gap-2 hover:bg-[#F4F4F4] dark:hover:bg-[#1A1A1A] transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Export data
+                </button>
+                <button 
+                  onClick={async () => {
+                    await signOut(auth);
+                    setShowCloudSyncModal(false);
+                    showToast('Signed Out', 'You have been signed out.', 'info');
+                    window.location.href = '/sign-in';
+                  }}
+                  className="w-full py-3 border border-[#D8D8D8] dark:border-[#333333] text-[13px] font-bold text-red-600 flex items-center justify-center gap-2 hover:bg-[#F4F4F4] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign out
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex flex-col gap-2 p-4 border border-[#D8D8D8] dark:border-[#333333] bg-[#F9F9F9] dark:bg-[#1A1A1A]">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-amber-400" />
+                  <span className="text-[12px] font-bold uppercase tracking-widest text-[#111111] dark:text-[#FFFFFF]">Local Device Mode</span>
+                </div>
+                <p className="text-[13px] text-[#6F6F6F] leading-snug">
+                  You are using Intersemester in local storage mode. Sign in to sync your schedule across devices and link with your batch.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Link
+                  href="/sign-in"
+                  onClick={() => setShowCloudSyncModal(false)}
+                  className="w-full py-3 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] text-[13px] font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity uppercase tracking-wider"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Sign In / Create Account
+                </Link>
+                <button 
+                  onClick={() => { setShowCloudSyncModal(false); handleExportBackup(); }}
+                  className="w-full py-3 border border-[#D8D8D8] dark:border-[#333333] text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] flex items-center justify-center gap-2 hover:bg-[#F4F4F4] dark:hover:bg-[#1A1A1A] transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Export local data
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
 
