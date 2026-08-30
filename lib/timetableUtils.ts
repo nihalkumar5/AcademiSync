@@ -86,8 +86,9 @@ export const formatCollegeBadge = (collegeStr?: string): string => {
   if (trimmed.length <= 22) return trimmed;
 
   return trimmed
-    .replace(/Indian Institute of Technology/gi, 'IIT')
+    .replace(/International Institute of Information Technology/gi, 'IIIT')
     .replace(/Indian Institute of Information Technology/gi, 'IIIT')
+    .replace(/Indian Institute of Technology/gi, 'IIT')
     .replace(/National Institute of Technology/gi, 'NIT')
     .replace(/Birla Institute of Technology and Science/gi, 'BITS')
     .replace(/College of Engineering/gi, 'COE')
@@ -523,7 +524,7 @@ export const getShortCollegeName = (name: string): string => {
   const clean = name.toLowerCase().replace(/[.\-_,]/g, ' ').replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim();
   
   // 1. Specific top landmark institute aliases
-  if (clean.includes('iiit') && (clean.includes('naya raipur') || clean.includes('nr') || clean.includes('raipur') || clean.includes('shyama prasad'))) {
+  if (clean.includes('shyama prasad') || (clean.includes('iiit') && (clean.includes('naya raipur') || clean.includes('nr') || clean.includes('raipur')))) {
     return 'IIIT NAYA RAIPUR';
   }
   if (clean.includes('iiit') && (clean.includes('hyderabad') || clean.includes(' hyd') || clean === 'iiith' || clean === 'iiit h')) {
@@ -574,6 +575,9 @@ export const getShortCollegeName = (name: string): string => {
   if (clean.includes('nit') && (clean.includes('rourkela') || clean === 'nitrkl' || clean === 'nit rkl')) {
     return 'NIT ROURKELA';
   }
+  if (clean.includes('nit') && (clean.includes('raipur') || clean === 'nitrr')) {
+    return 'NIT RAIPUR';
+  }
   if (clean.includes('bits') && (clean.includes('pilani') || clean.includes('rajasthan'))) {
     return 'BITS PILANI';
   }
@@ -591,18 +595,25 @@ export const getShortCollegeName = (name: string): string => {
   }
 
   // 2. Generic institute prefix handling
-  if (clean.includes('institute of technology') || clean.includes('institute of information technology') || clean.includes('university of')) {
+  if (clean.includes('institute of technology') || clean.includes('institute of information technology') || clean.includes('university')) {
     const words = clean.split(/\s+/).filter(Boolean);
     let prefix = '';
-    if (clean.includes('national institute')) prefix = 'NIT';
-    else if (clean.includes('indian institute of technology')) prefix = 'IIT';
-    else if (clean.includes('indian institute of information technology') || clean.includes('international institute of information technology')) prefix = 'IIIT';
-    else if (clean.includes('indian institute')) prefix = 'II';
+    
+    // Check IIIT first before IIT or NIT
+    if (clean.includes('international institute of information technology') || clean.includes('indian institute of information technology') || clean.includes('iiit')) {
+      prefix = 'IIIT';
+    } else if (clean.includes('indian institute of technology') || (/\biit\b/.test(clean) && !clean.includes('iiit'))) {
+      prefix = 'IIT';
+    } else if (/\bnational institute of technology\b/.test(clean) || (/\bnit\b/.test(clean) && !clean.includes('unit'))) {
+      prefix = 'NIT';
+    } else if (clean.includes('indian institute')) {
+      prefix = 'II';
+    }
     
     if (prefix) {
-      const meaningfulWords = words.filter(w => !['of', 'and', '&', 'for', 'in', 'the', 'institute', 'technology', 'university', 'science', 'engineering', 'national', 'indian', 'international', 'dr', 'dr.'].includes(w));
+      const meaningfulWords = words.filter(w => !['of', 'and', '&', 'for', 'in', 'the', 'institute', 'technology', 'university', 'science', 'engineering', 'national', 'indian', 'international', 'dr', 'dr.', 'shyama', 'prasad', 'mukherjee'].includes(w));
       const loc = meaningfulWords.slice(-2).join(' ').trim();
-      return `${prefix} ${loc ? loc.toUpperCase() : 'MAIN'}`;
+      return `${prefix} ${loc ? loc.toUpperCase() : 'CAMPUS'}`;
     }
   }
 
