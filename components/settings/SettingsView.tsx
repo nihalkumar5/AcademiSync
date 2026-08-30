@@ -710,16 +710,16 @@ export const SettingsView: React.FC = () => {
             </div>
           </div>
           
-          {/* YOUR BATCH (Only rendered when user is connected to an active synced batch) */}
-          {profile.isBatchSynced && (
-            <div className="flex flex-col gap-0 mt-6">
-              <div className="flex items-center justify-between pb-3 border-b border-[#D8D8D8] dark:border-[#333333]">
-                <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF]">
-                  <Users className="w-[18px] h-[18px] stroke-[1.5]" />
-                  <span>Your Batch</span>
-                </div>
+          {/* YOUR BATCH */}
+          <div className="flex flex-col gap-0 mt-6">
+            <div className="flex items-center justify-between pb-3 border-b border-[#D8D8D8] dark:border-[#333333]">
+              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+                <Users className="w-[18px] h-[18px] stroke-[1.5]" />
+                <span>Your Batch</span>
               </div>
+            </div>
 
+            {profile.isBatchSynced ? (
               <div className="flex flex-col py-5 border-b border-[#D8D8D8] dark:border-[#333333]">
                 <div className="flex items-start justify-between">
                   <div className="flex flex-col gap-1">
@@ -794,8 +794,27 @@ export const SettingsView: React.FC = () => {
                   </button>
                 </div>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="flex items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333]">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+                    No Live Batch Connected
+                  </span>
+                  <span className="text-[11px] text-[#6F6F6F]">
+                    Claim CR access to setup this batch or invite your class.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowBatchSetupPrompt(true)}
+                  className="px-4 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity shrink-0 cursor-pointer flex items-center gap-1.5"
+                >
+                  <Crown className="w-3.5 h-3.5" />
+                  Setup / Request Batch
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right Column */}
