@@ -419,8 +419,8 @@ export const MessView: React.FC = () => {
         }}
       />
 
-      {/* DAY PICKER (Monochrome Notion Style) */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+      {/* DAY PICKER (Matching Timetable Style) */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-3 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
         {days.map((day) => {
           const isSelected = selectedDay === day;
           const isToday = today === day;
@@ -429,18 +429,25 @@ export const MessView: React.FC = () => {
             <button
               key={day}
               onClick={() => setSelectedDay(day)}
-              className={`flex flex-col items-center justify-center min-w-[70px] h-[56px] transition-all cursor-pointer shrink-0 rounded-none border ${
+              className={`flex flex-col items-center justify-center px-4 py-2.5 rounded-2xl text-xs font-semibold shrink-0 transition-all border cursor-pointer ${
                 isSelected
-                  ? 'bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] border-[#111111] dark:border-[#FFFFFF]'
-                  : 'border-[#D9D9D6] dark:border-[#333333] bg-transparent text-[#666666] dark:text-[#999999] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A]'
+                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/20'
+                  : 'glass-card border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50'
               }`}
             >
-              <span className="text-[12px] font-bold uppercase tracking-wider">{day.slice(0, 3)}</span>
-              {isToday && (
-                <span className={`text-[9px] font-bold tracking-tight mt-0.5 ${isSelected ? 'opacity-80' : 'text-[#999999]'}`}>
-                  TODAY
-                </span>
-              )}
+              <div className="flex items-center gap-1.5">
+                <span className={isSelected ? 'font-bold' : 'font-semibold'}>{day.slice(0, 3)}</span>
+                {isToday && (
+                  <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-indigo-500'}`} />
+                )}
+              </div>
+              <span
+                className={`text-[10px] font-medium mt-0.5 ${
+                  isSelected ? 'text-indigo-100' : 'text-slate-400 dark:text-zinc-500'
+                }`}
+              >
+                {isToday ? 'Today' : 'Meals'}
+              </span>
             </button>
           );
         })}
