@@ -104,7 +104,7 @@ const LiveMealCard = ({ todayMenu, timings }: { todayMenu: any; timings: Record<
         status: 'NEXT MEAL TOMORROW',
         meal: 'Breakfast',
         timeLeft: `Starts in ${h}h ${m}m`,
-        items: [],
+        items: todayMenu?.['Breakfast'] || [],
       });
     };
 
@@ -116,26 +116,33 @@ const LiveMealCard = ({ todayMenu, timings }: { todayMenu: any; timings: Record<
   if (!timeState) return null;
 
   return (
-    <div className="flex flex-col p-5 border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] mb-2 rounded-none">
-      <div className="flex items-center justify-between mb-3">
+    <div className="w-full bg-[#111111] dark:bg-[#1A1A1A] border border-[#111111] dark:border-[#333333] rounded-none p-5 sm:p-6 flex flex-col relative text-left text-white shadow-lg mb-2">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3.5">
         <div className="flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
+          <span className="relative flex h-2.5 w-2.5">
             {timeState.status === 'SERVING NOW' && (
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#111111] dark:bg-white opacity-75"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             )}
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#111111] dark:bg-[#FFFFFF]"></span>
+            <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${timeState.status === 'SERVING NOW' ? 'bg-emerald-400' : 'bg-white'}`}></span>
           </span>
-          <span className="text-[10px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF]">
+          <span className="text-[11px] font-bold tracking-[1.6px] uppercase text-[#FFFFFF] leading-none">
             {timeState.status}
           </span>
         </div>
-        <span className="text-[11px] font-medium text-[#6F6F6F] px-2 py-0.5 border border-[#EAEAEA] dark:border-[#222222] bg-[#F7F7F5] dark:bg-[#1A1A1A]">
+        <span className="text-[12px] font-mono font-semibold text-[#FFFFFF] bg-white/10 px-2.5 py-1 border border-white/20">
           {timeState.timeLeft}
         </span>
       </div>
-      <h3 className="text-[20px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-2">{timeState.meal}</h3>
+
+      {/* Meal Name */}
+      <h3 className="text-[26px] sm:text-[28px] font-bold text-[#FFFFFF] leading-tight mb-2 tracking-tight">
+        {timeState.meal}
+      </h3>
+
+      {/* Dishes */}
       {timeState.items.length > 0 && (
-        <p className="text-[14px] font-medium text-[#555555] dark:text-[#BBBBBB] leading-relaxed">
+        <p className="text-[14.5px] font-normal text-[#D1D1D1] leading-relaxed">
           {timeState.items.join(' · ')}
         </p>
       )}
