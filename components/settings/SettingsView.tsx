@@ -10,7 +10,7 @@ import { Programme, Branch } from '@/lib/types';
 import { storage } from '@/lib/storage';
 import { INDIAN_COLLEGES, STANDARD_PROGRAMMES, STANDARD_BRANCHES } from '@/lib/colleges';
 import { scheduleTestNotification } from '@/lib/localNotifications';
-import { getCanonicalBatchKey } from '@/lib/timetableUtils';
+import { getCanonicalBatchKey, isExplicitSection, formatBatchDisplayName } from '@/lib/timetableUtils';
 import {
   User,
   GraduationCap,
