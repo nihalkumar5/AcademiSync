@@ -57,7 +57,7 @@ export default function Page() {
         .dark .cl-card {
           border-color: #262626 !important;
         }
-        .cl-internal-badge, [class*="cl-internal-badge"], [class*="cl-internal-"] {
+        .cl-internal-badge {
           display: none !important;
         }
         .cl-footer, .cl-footerAction {
