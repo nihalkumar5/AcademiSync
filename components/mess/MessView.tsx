@@ -351,24 +351,6 @@ export const MessView: React.FC = () => {
             <Share className="w-3.5 h-3.5" /> Share
           </button>
           <button
-            onClick={() => {
-              setTempTimings(effectiveTimings);
-              setShowEditTimingsModal(true);
-            }}
-            className="flex items-center justify-center h-9 px-3.5 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[12px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors gap-2 cursor-pointer"
-          >
-            <Clock className="w-3.5 h-3.5" /> Edit Timings
-          </button>
-          <button
-            onClick={() => {
-              setTempMenu(messMenu.menu || {});
-              setShowEditMenuModal(true);
-            }}
-            className="flex items-center justify-center h-9 px-3.5 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[12px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors gap-2 cursor-pointer"
-          >
-            <Edit3 className="w-3.5 h-3.5" /> Edit Menu
-          </button>
-          <button
             onClick={() => setShowJoinModal(true)}
             className="flex items-center justify-center h-9 px-3.5 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[12px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer"
           >
