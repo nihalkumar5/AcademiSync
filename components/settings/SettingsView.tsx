@@ -49,6 +49,7 @@ import { BatchMembersModal } from '@/components/batch/BatchMembersModal';
 import { BatchDiscoveryModal } from '@/components/batch/BatchDiscoveryModal';
 import { ApplyForCRCard } from '@/components/cr/ApplyForCRCard';
 import { BatchSetupPromptModal } from '@/components/batch/BatchSetupPromptModal';
+import { searchCollegesAsync, CollegeItem } from '@/lib/collegeDirectory';
 
 export const SettingsView: React.FC = () => {
   const { user, isClerkLoaded } = useApp();
@@ -72,10 +73,12 @@ export const SettingsView: React.FC = () => {
   } = useApp();
 
   const [name, setName] = useState(profile.name);
-  const [college, setCollege] = useState(profile.college);
-  const [showCollegeDropdown, setShowCollegeDropdown] = useState(false);
-  const [suggestedColleges, setSuggestedColleges] = useState<string[]>([]);
+  const [college, setCollege] = useState(profile.college || '');
+  const [isChangingCollege, setIsChangingCollege] = useState(!profile.college);
+  const [collegeSearchInput, setCollegeSearchInput] = useState('');
+  const [suggestedColleges, setSuggestedColleges] = useState<CollegeItem[]>([]);
   const [isLoadingColleges, setIsLoadingColleges] = useState(false);
+  const [showCollegeDropdown, setShowCollegeDropdown] = useState(false);
   const [showProgrammeDropdown, setShowProgrammeDropdown] = useState(false);
   const [showBranchDropdown, setShowBranchDropdown] = useState(false);
   const [rollNumber, setRollNumber] = useState(profile.rollNumber);
@@ -91,33 +94,26 @@ export const SettingsView: React.FC = () => {
   const [matchedBatchData, setMatchedBatchData] = useState<any>(null);
   const [showDiscoveryModal, setShowDiscoveryModal] = useState(false);
 
-  // Debounced SheerID organization search lookup
+  // Debounced SheerID + popular campus search lookup
   useEffect(() => {
-    if (college.trim().length < 3) {
-      setSuggestedColleges([]);
-      return;
-    }
-
+    let isMounted = true;
     const delayDebounce = setTimeout(async () => {
       setIsLoadingColleges(true);
       try {
-        const response = await fetch(
-          `https://orgsearch.sheerid.net/rest/organization/search?country=IN&type=UNIVERSITY&name=${encodeURIComponent(college)}`
-        );
-        if (response.ok) {
-          const data = await response.json();
-          const names = data.map((item: any) => item.name);
-          setSuggestedColleges(names);
-        }
+        const results = await searchCollegesAsync(collegeSearchInput);
+        if (isMounted) setSuggestedColleges(results);
       } catch (err) {
         console.error('Failed to fetch colleges from SheerID:', err);
       } finally {
-        setIsLoadingColleges(false);
+        if (isMounted) setIsLoadingColleges(false);
       }
-    }, 400);
+    }, 250);
 
-    return () => clearTimeout(delayDebounce);
-  }, [college]);
+    return () => {
+      isMounted = false;
+      clearTimeout(delayDebounce);
+    };
+  }, [collegeSearchInput]);
 
   // High-friction Reset Modal states
   const [showResetModal, setShowResetModal] = useState(false);
@@ -190,6 +186,13 @@ export const SettingsView: React.FC = () => {
     const cleanBranch = branch.trim();
     const cleanSem = Number(semester);
     const cleanSec = section.trim();
+
+    if (!cleanCollege) {
+      showToast('College Required', 'Please select your verified university from the SheerID directory.', 'error');
+      setIsChangingCollege(true);
+      setShowCollegeDropdown(true);
+      return;
+    }
 
     const hasAcademicChanges = 
       cleanCollege !== profile.college ||
@@ -449,16 +452,16 @@ export const SettingsView: React.FC = () => {
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">College / University</label>
                     <div className="relative w-full">
-                      {college ? (
-                        <div className="flex items-center justify-between px-3.5 py-2.5 bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60">
+                      {college && !isChangingCollege ? (
+                        <div className="flex items-center justify-between px-3.5 py-2.5 bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 rounded-xl">
                           <div className="flex items-center gap-2.5 overflow-hidden">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
                             <span className="text-[13px] font-bold text-indigo-950 dark:text-indigo-200 truncate">{college}</span>
                           </div>
                           <button
                             type="button"
                             onClick={() => {
-                              setCollege('');
+                              setIsChangingCollege(true);
                               setShowCollegeDropdown(true);
                             }}
                             className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline uppercase tracking-wider shrink-0 ml-3 cursor-pointer"
@@ -467,49 +470,67 @@ export const SettingsView: React.FC = () => {
                           </button>
                         </div>
                       ) : (
-                        <div>
-                          <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
-                            <Building2 className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                        <div className="relative">
+                          <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-indigo-400 dark:border-indigo-600 rounded-xl">
+                            <Building2 className="w-4 h-4 text-indigo-500 shrink-0" />
                             <input
                               type="text"
-                              value={college}
+                              value={collegeSearchInput}
                               onChange={(e) => {
-                                setCollege(e.target.value);
+                                setCollegeSearchInput(e.target.value);
                                 setShowCollegeDropdown(true);
                               }}
                               onFocus={() => setShowCollegeDropdown(true)}
-                              placeholder="Search e.g. IIIT Naya Raipur, VIT, IIT Delhi..."
-                              required
+                              placeholder="Search SheerID verified university e.g. IIIT Naya Raipur, VIT, IIT..."
                               className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
+                              autoFocus
                             />
+                            {college && (
+                              <button
+                                type="button"
+                                onClick={() => setIsChangingCollege(false)}
+                                className="text-[11px] font-bold text-slate-400 hover:text-slate-600 uppercase shrink-0"
+                              >
+                                Cancel
+                              </button>
+                            )}
                           </div>
                           {showCollegeDropdown && (
-                            <div className="absolute top-full left-0 w-full mt-1 max-h-56 overflow-y-auto bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] shadow-lg z-50">
-                              {isLoadingColleges && (
-                                <div className="px-4 py-2.5 text-xs font-mono font-medium text-[#6F6F6F] border-b border-[#D8D8D8] dark:border-[#333333]">
-                                  Searching campus directory...
-                                </div>
-                              )}
+                            <div className="absolute top-full left-0 w-full mt-1.5 max-h-60 overflow-y-auto bg-white dark:bg-[#1A1A1A] border border-slate-200 dark:border-zinc-800 shadow-xl rounded-xl z-50 divide-y divide-slate-100 dark:divide-zinc-800">
+                              <div className="p-2 bg-slate-50 dark:bg-zinc-900/80 text-[10.5px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between sticky top-0 backdrop-blur-sm">
+                                <span>{isLoadingColleges ? 'Searching verified directory...' : 'Select Your University'}</span>
+                                <span className="text-[9px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold">SheerID Verified</span>
+                              </div>
+
                               {suggestedColleges.length > 0 ? (
-                                suggestedColleges.map((c) => (
-                                  <div
-                                    key={c}
-                                    onMouseDown={() => { setCollege(c); setShowCollegeDropdown(false); }}
-                                    className="px-4 py-2.5 hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] border-b border-[#D8D8D8] dark:border-[#333333] last:border-0"
+                                suggestedColleges.map((item) => (
+                                  <button
+                                    key={item.id}
+                                    type="button"
+                                    onMouseDown={() => {
+                                      setCollege(item.name);
+                                      setIsChangingCollege(false);
+                                      setShowCollegeDropdown(false);
+                                      setCollegeSearchInput('');
+                                    }}
+                                    className="w-full px-3.5 py-2.5 hover:bg-indigo-50/70 dark:hover:bg-indigo-950/40 text-left transition-colors cursor-pointer flex flex-col"
                                   >
-                                    {c}
-                                  </div>
+                                    <span className="text-[13px] font-bold text-slate-900 dark:text-white leading-snug">
+                                      {item.name}
+                                    </span>
+                                    {item.state && (
+                                      <span className="text-[11px] text-slate-500 dark:text-zinc-400">
+                                        {item.state}
+                                      </span>
+                                    )}
+                                  </button>
                                 ))
                               ) : (
-                                !isLoadingColleges && INDIAN_COLLEGES.filter(c => c.toLowerCase().includes(college.toLowerCase())).slice(0, 15).map(c => (
-                                  <div
-                                    key={c}
-                                    onMouseDown={() => { setCollege(c); setShowCollegeDropdown(false); }}
-                                    className="px-4 py-2.5 hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] border-b border-[#D8D8D8] dark:border-[#333333] last:border-0"
-                                  >
-                                    {c}
+                                !isLoadingColleges && (
+                                  <div className="p-4 text-center text-[12px] text-slate-500 dark:text-zinc-400">
+                                    No matching institutions found. Try typing college name or acronym (e.g. &ldquo;IIIT&rdquo;, &ldquo;IIT&rdquo;, &ldquo;NIT&rdquo;).
                                   </div>
-                                ))
+                                )
                               )}
                             </div>
                           )}
