@@ -162,29 +162,25 @@ export const WeeklyTimetable: React.FC = () => {
             </button>
           </div>
 
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold tracking-widest text-[#6F6F6F] uppercase mb-1.5">BATCH</span>
-            <button
-              onClick={() => {
-                if (profile.isBatchSynced && profile.batchKey) {
-                  setShowBatchMembersModal(true);
-                } else {
-                  setShowSetupBatchModal(true);
-                }
-              }}
-              className="flex items-center justify-between p-4 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left cursor-pointer"
-            >
-              <div className="flex flex-col gap-1">
-                <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wide">
-                  {profile.isBatchSynced && profile.batchKey ? `${profile.programme} · ${profile.branch?.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')}` : 'NOT CONNECTED'}
-                </span>
-                <span className="text-[12px] font-medium text-[#6F6F6F] uppercase">
-                  YEAR {profile.year || 1} {profile.isBatchSynced ? '· MEMBERS' : '· TAP TO SETUP / REQUEST CR'}
-                </span>
-              </div>
-              <span className="text-[#6F6F6F]">→</span>
-            </button>
-          </div>
+          {profile.isBatchSynced && profile.batchKey && (
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold tracking-widest text-[#6F6F6F] uppercase mb-1.5">BATCH</span>
+              <button
+                onClick={() => setShowBatchMembersModal(true)}
+                className="flex items-center justify-between p-4 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left cursor-pointer"
+              >
+                <div className="flex flex-col gap-1">
+                  <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wide">
+                    {profile.programme} · {profile.branch?.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')}
+                  </span>
+                  <span className="text-[12px] font-medium text-[#6F6F6F] uppercase">
+                    YEAR {profile.year || 1} · MEMBERS
+                  </span>
+                </div>
+                <span className="text-[#6F6F6F]">→</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
