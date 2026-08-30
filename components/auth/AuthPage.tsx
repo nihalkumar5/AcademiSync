@@ -106,13 +106,19 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode }) => {
       {/* Main Container (Notion Style) */}
       <div className="w-full max-w-[360px] flex flex-col items-center gap-7">
         
-        {/* Notion Logo Style (Square Border with inside symbol) */}
-        <div className="border-[2.5px] border-[#111111] dark:border-white w-[58px] h-[58px] flex items-center justify-center bg-white dark:bg-[#111111] rounded-[10px] shadow-sm">
-          <span className="text-[22px] font-extrabold tracking-tighter leading-none select-none">is</span>
+        {/* Notion Logo Style (Larger Square Border with inside symbol) */}
+        <div className="flex flex-col items-center gap-3">
+          <div className="border-[3px] border-[#111111] dark:border-white w-[76px] h-[76px] flex items-center justify-center bg-white dark:bg-[#111111] rounded-[12px] shadow-sm">
+            <span className="text-[32px] font-black tracking-tighter leading-none select-none">is</span>
+          </div>
+          <div className="flex items-center text-[26px] tracking-tight font-sans mt-0.5 select-none">
+            <span className="font-bold text-[#111111] dark:text-white">inter</span>
+            <span className="font-normal text-[#757575] dark:text-[#A0A0A0]">semester</span>
+          </div>
         </div>
         
         {/* Header Strings */}
-        <div className="text-center flex flex-col gap-1">
+        <div className="text-center flex flex-col gap-1 mt-1">
           <h1 className="text-[25px] font-bold tracking-tight text-[#111111] dark:text-white">
             {mode === 'signin' ? 'Your academic workspace.' : 'Join your workspace.'}
           </h1>
