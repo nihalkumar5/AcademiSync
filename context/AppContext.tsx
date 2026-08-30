@@ -114,7 +114,7 @@ export interface AppContextType {
   fetchCollegeBatches: (college: string) => Promise<any[]>;
   joinBatchTimetable: (batchKey: string, providedCode?: string) => Promise<void>;
   shareTimetableWithBatch: () => Promise<string>;
-  disconnectBatchTimetable: () => void;
+  disconnectBatchTimetable: () => Promise<void>;
   shareCalendarWithBatch: () => Promise<string>;
   joinSharedCalendar: (calendarKey: string) => Promise<void>;
   shareExamsWithBatch: () => Promise<string>;
@@ -1693,14 +1693,49 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  const disconnectBatchTimetable = () => {
-    const updatedProfile = {
+  const disconnectBatchTimetable = async () => {
+    const oldBatchKey = profile.batchKey;
+    const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
+
+    // 1. Update React state & localStorage
+    const updatedProfile: StudentProfile = {
       ...profile,
       isBatchSynced: false,
+      batchKey: undefined,
+      role: profile.role === 'super_admin' ? 'super_admin' : 'student',
     };
     setProfileState(updatedProfile);
     storage.setProfile(updatedProfile);
-    showToast('Batch Disconnected', 'You can now customize your schedule locally.', 'info');
+
+    // 2. Update Firestore user document
+    if (user?.id) {
+      try {
+        const userRef = doc(db, 'users', user.id);
+        await updateDoc(userRef, {
+          'profile.isBatchSynced': false,
+          'profile.batchKey': null,
+          'profile.role': profile.role === 'super_admin' ? 'super_admin' : 'student',
+        });
+      } catch (e) {
+        console.error('Error updating user doc on leave batch:', e);
+      }
+    }
+
+    // 3. Decrement student count and remove from batch in Firestore
+    if (oldBatchKey) {
+      try {
+        const batchRef = doc(db, 'shared_timetables', oldBatchKey);
+        await updateDoc(batchRef, {
+          studentCount: increment(-1),
+          crUserIds: arrayRemove(user?.id || ''),
+          crEmails: arrayRemove(userEmail),
+        });
+      } catch (e) {
+        console.error('Error updating batch doc on leave batch:', e);
+      }
+    }
+
+    showToast('Left Batch', 'You have disconnected from the batch. Your timetable is now local.', 'info');
   };
 
   const updateMessMenu = (menu: any) => {
