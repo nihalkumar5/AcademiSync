@@ -1643,13 +1643,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return profile.batchKey;
     }
 
+    const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
+    const userIsAdmin = isUserSuperAdmin(profile, userEmail);
+    const isAuthorizedCR = profile.role === 'cr' || profile.role === 'super_admin' || userIsAdmin;
+
+    if (!isAuthorizedCR) {
+      showToast('CR Access Required', 'Only verified Class Representatives (CR) can create and broadcast official batch timetables.', 'warning');
+      throw new Error('Only verified Class Representatives can publish official batch timetables.');
+    }
+
     try {
-      const canonicalKey = getCanonicalBatchKey(profile.college, profile.programme, profile.branch, profile.semester, profile.section || 'A');
+      const canonicalKey = getCanonicalBatchKey(profile.college, profile.programme, profile.branch, profile.semester, profile.section || '');
       const docRef = doc(db, 'shared_timetables', canonicalKey);
-      
-      const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
       const newInviteCode = generateInviteCode();
-      const userIsAdmin = isUserSuperAdmin(profile, userEmail);
 
       const payload = sanitizeForFirestore({
         id: canonicalKey,

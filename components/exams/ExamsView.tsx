@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
 
 export const ExamsView: React.FC = () => {
-  const { exams, shareTimetableWithBatch, shareExamsWithBatch, joinSharedExams, showToast, user } = useApp();
+  const { exams, isBatchCR, shareTimetableWithBatch, shareExamsWithBatch, joinSharedExams, showToast, user } = useApp();
   const router = useRouter();
   const isSignedIn = !!user;
   const [showImportModal, setShowImportModal] = useState(false);
@@ -111,7 +111,7 @@ export const ExamsView: React.FC = () => {
           >
             <Sparkles className="w-4 h-4" /> Magic Import
           </button>
-          {exams.length > 0 && (
+          {exams.length > 0 && isBatchCR && (
             <button
               onClick={async () => {
                 if (!isSignedIn) { router.push('/sign-in'); return; }
