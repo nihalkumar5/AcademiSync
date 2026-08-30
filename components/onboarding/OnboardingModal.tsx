@@ -19,7 +19,8 @@ import {
   Building2,
   GraduationCap,
   Layers,
-  ArrowUpRight
+  ArrowUpRight,
+  Lock
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { INDIAN_COLLEGES, STANDARD_PROGRAMMES, STANDARD_BRANCHES } from '@/lib/colleges';
@@ -283,25 +284,44 @@ export const OnboardingModal = () => {
 
     setIsConnecting(true);
     try {
-      updateProfile({
-        college: cleanCollege,
-        programme: finalProg,
-        branch: finalBranch,
-        semester: semester,
-        section: section || 'A',
-        onboardingCompleted: true,
-      });
-
       if (foundBatchData?.exists) {
-        await joinBatchTimetable(canonicalKey);
+        if (!enteredInviteCode.trim()) {
+          showToast('Batch Code Required', 'Please enter the 6-character Batch Code provided by your CR.', 'error');
+          setIsConnecting(false);
+          return;
+        }
+
+        await joinBatchTimetable(canonicalKey, enteredInviteCode.trim().toUpperCase());
+        
+        updateProfile({
+          college: cleanCollege,
+          programme: finalProg,
+          branch: finalBranch,
+          semester: semester,
+          section: section || 'A',
+          onboardingCompleted: true,
+        });
+
         showToast('Batch Connected!', `Synced with ${finalProg} ${finalBranch} Sem ${semester} (${section}).`, 'success');
       } else {
+        updateProfile({
+          college: cleanCollege,
+          programme: finalProg,
+          branch: finalBranch,
+          semester: semester,
+          section: section || 'A',
+          onboardingCompleted: true,
+        });
+
         await shareTimetableWithBatch();
         showToast('Batch Space Created', `You're the first in your batch! Invite your classmates to sync.`, 'success');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      updateProfile({ onboardingCompleted: true });
+      // If code was invalid, don't mark onboarding completed so they can re-enter code
+      if (!err?.message?.includes('Invalid batch passcode')) {
+        updateProfile({ onboardingCompleted: true });
+      }
     } finally {
       setIsConnecting(false);
     }
@@ -953,13 +973,38 @@ export const OnboardingModal = () => {
                           )}
                         </div>
                       </div>
+
+                      {/* Batch Code / Passcode Security Guard */}
+                      {foundBatchData?.exists && (
+                        <div className="flex flex-col gap-2 p-4 bg-[#FFFFFF] border border-[#D8D8D8] rounded-none mb-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-[#111111] flex items-center gap-1.5">
+                              <Lock className="w-3.5 h-3.5 text-[#111111]" />
+                              Enter Class Batch Code
+                            </span>
+                            <span className="text-[10px] font-mono text-[#888888] uppercase">From your CR</span>
+                          </div>
+                          <input
+                            type="text"
+                            maxLength={8}
+                            value={enteredInviteCode}
+                            onChange={(e) => setEnteredInviteCode(e.target.value.toUpperCase())}
+                            placeholder="e.g. K9X2B4"
+                            autoFocus
+                            className="w-full h-11 px-3.5 bg-[#FAFAF8] border border-[#D8D8D8] rounded-none text-[15px] font-mono font-bold tracking-[2px] text-[#111111] focus:outline-none focus:border-[#111111] uppercase placeholder:font-normal placeholder:tracking-normal placeholder:text-[13px] placeholder:text-[#A0A0A0]"
+                          />
+                          <p className="text-[11px] text-[#6F6F6F] leading-normal">
+                            🔒 Required to prevent unauthorized users from joining your class space.
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Dynamic Action CTA */}
-                    <div className="flex flex-col gap-2 pt-4">
+                    <div className="flex flex-col gap-2 pt-2">
                       <button
                         type="button"
-                        disabled={isConnecting}
+                        disabled={isConnecting || (foundBatchData?.exists && !enteredInviteCode.trim())}
                         onClick={handleConnectToBatch}
                         className="w-full h-12 bg-[#111111] text-white rounded-none font-bold text-[13.5px] uppercase tracking-[1.5px] flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-50 cursor-pointer shadow-md"
                       >

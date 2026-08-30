@@ -109,9 +109,10 @@ export interface AppContextType {
   isSessionCancelled: (sessionId: string, dateStr?: string) => boolean;
   rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string }>;
   rescheduleSession: (sessionId: string, details: { startTime: string; endTime: string; room?: string } | null, dateStr?: string) => void;
+  currentBatchData: any | null;
   searchBatchTimetable: (college: string, programme: string, branch: string, semester: number, section?: string) => Promise<any | null>;
   fetchCollegeBatches: (college: string) => Promise<any[]>;
-  joinBatchTimetable: (batchKey: string) => Promise<void>;
+  joinBatchTimetable: (batchKey: string, providedCode?: string) => Promise<void>;
   shareTimetableWithBatch: () => Promise<string>;
   disconnectBatchTimetable: () => void;
   shareCalendarWithBatch: () => Promise<string>;
@@ -1490,15 +1491,40 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  const joinBatchTimetable = async (batchKey: string) => {
+  const joinBatchTimetable = async (batchKeyOrCode: string, providedCode?: string) => {
     try {
-      const docRef = doc(db, 'shared_timetables', batchKey);
-      const docSnap = await getDoc(docRef);
+      let docRef = doc(db, 'shared_timetables', batchKeyOrCode);
+      let docSnap = await getDoc(docRef);
+      let batchKey = batchKeyOrCode;
+
+      // If not found directly by document ID, look up by inviteCode
       if (!docSnap.exists()) {
-        showToast('Batch Not Found', 'Could not locate batch timetable in database.', 'error');
-        return;
+        const q = query(collection(db, 'shared_timetables'), where('inviteCode', '==', batchKeyOrCode.trim().toUpperCase()));
+        const querySnap = await getDocs(q);
+        if (!querySnap.empty) {
+          docSnap = querySnap.docs[0];
+          batchKey = docSnap.id;
+          docRef = doc(db, 'shared_timetables', batchKey);
+        }
       }
+
+      if (!docSnap.exists()) {
+        showToast('Batch Not Found', 'Could not locate batch with that code or identifier.', 'error');
+        throw new Error('Batch not found');
+      }
+
       const data = docSnap.data();
+      const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
+      const isCRorCreator = data.creatorId === user?.id || data.crUserIds?.includes(user?.id) || data.crEmails?.includes(userEmail);
+      const isDirectCodeMatch = batchKeyOrCode.trim().toUpperCase() === data.inviteCode?.toUpperCase();
+
+      // Enforce Batch Passcode / Unique Code Verification
+      if (data.inviteCode && !isCRorCreator && !isDirectCodeMatch) {
+        if (!providedCode || providedCode.trim().toUpperCase() !== data.inviteCode.toUpperCase()) {
+          showToast('Invalid Batch Code', 'Please enter the official Batch Code given by your CR to join.', 'error');
+          throw new Error('Invalid batch passcode');
+        }
+      }
 
       // Update local storage and React state
       if (data.subjects) {
@@ -1518,8 +1544,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         storage.setExams(data.exams);
       }
 
-      const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
-      
       // Fix: A user is only the first person if there are NO existing CRs AND student count is 0
       const isFirstPerson = ((data.studentCount || 0) <= 0) && (!data.crUserIds?.length && !data.crEmails?.length);
 
@@ -1534,6 +1558,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         programme: data.programme || profile.programme,
         branch: data.branch || profile.branch,
         semester: data.semester || profile.semester,
+        section: data.section || profile.section || 'A',
         batchKey: batchKey,
         isBatchSynced: true,
         role: assignedRole,
@@ -1560,9 +1585,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       } else {
         showToast('Synced with Batch', `Successfully joined ${data.college} - Sem ${data.semester}.`, 'success');
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error joining batch timetable:', e);
-      showToast('Join Failed', 'Failed to connect to batch timetable.', 'error');
+      if (!e?.message?.includes('Invalid batch passcode')) {
+        showToast('Join Failed', 'Failed to connect to batch timetable.', 'error');
+      }
+      throw e;
     }
   };
 
@@ -2017,6 +2045,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         isSessionCancelled,
         rescheduledSessions,
         rescheduleSession,
+        currentBatchData,
         searchBatchTimetable,
         fetchCollegeBatches,
         joinBatchTimetable,

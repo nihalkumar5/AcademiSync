@@ -61,6 +61,7 @@ export const SettingsView: React.FC = () => {
     setShowOnboarding,
     triggerSimulatedAlert,
     resetAllData,
+    currentBatchData,
     searchBatchTimetable,
     joinBatchTimetable,
     shareTimetableWithBatch,
@@ -659,6 +660,28 @@ export const SettingsView: React.FC = () => {
                     </span>
                   )}
                 </div>
+
+                {/* Class Join Passcode */}
+                {currentBatchData?.inviteCode && (
+                  <div className="mt-4 p-3 bg-[#FBFBFA] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#333333] flex items-center justify-between">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10.5px] font-bold uppercase tracking-wider text-[#888888]">Class Batch Code</span>
+                      <span className="text-[15px] font-mono font-bold tracking-[2px] text-[#111111] dark:text-[#FFFFFF]">
+                        {currentBatchData.inviteCode}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(currentBatchData.inviteCode);
+                        showToast('Code Copied', `Batch code ${currentBatchData.inviteCode} copied to clipboard.`, 'success');
+                      }}
+                      className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] hover:opacity-90 transition-opacity cursor-pointer"
+                    >
+                      Copy Code
+                    </button>
+                  </div>
+                )}
                 
                 <div className="flex items-center justify-between mt-6">
                   <div className="flex items-center gap-2">
