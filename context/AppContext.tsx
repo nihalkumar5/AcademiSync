@@ -1544,12 +1544,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         storage.setExams(data.exams);
       }
 
-      // Fix: A user is only the first person if there are NO existing CRs AND student count is 0
-      const isFirstPerson = ((data.studentCount || 0) <= 0) && (!data.crUserIds?.length && !data.crEmails?.length);
-
-      const assignedRole: AdminRole = isFirstPerson 
-        ? 'cr' 
-        : (data.crUserIds?.includes(user?.id) || data.crEmails?.includes(userEmail) ? 'cr' : (profile.role === 'super_admin' ? 'super_admin' : 'student'));
+      const assignedRole: AdminRole = profile.role === 'super_admin' || isUserSuperAdmin(profile, userEmail)
+        ? 'super_admin' 
+        : (data.crUserIds?.includes(user?.id) || data.crEmails?.includes(userEmail) ? 'cr' : 'student');
 
       // Update profile fields to show it's synced
       const updatedProfile: StudentProfile = {
@@ -1567,24 +1564,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setProfileState(updatedProfile);
       storage.setProfile(updatedProfile);
 
-      // Increment batch student counter in Firestore (and set creator / CR if first person)
+      // Increment batch student counter in Firestore
+      const isFirstPerson = ((data.studentCount || 0) <= 0);
       const updatePayload: any = {
         studentCount: increment(1),
       };
       if (isFirstPerson) {
         updatePayload.creatorId = user?.id || 'anonymous';
-        updatePayload.creatorName = profile.name || user?.fullName || 'Batch Representative';
+        updatePayload.creatorName = profile.name || user?.fullName || 'Student';
         updatePayload.creatorEmail = userEmail;
-        updatePayload.crUserIds = [user?.id].filter(Boolean);
-        updatePayload.crEmails = [userEmail].filter(Boolean);
       }
       await updateDoc(docRef, updatePayload);
 
-      if (isFirstPerson) {
-        showToast('Batch Initialized as CR', `You are the first member and have been assigned as Class Representative (CR)!`, 'success');
-      } else {
-        showToast('Synced with Batch', `Successfully joined ${data.college} - Sem ${data.semester}.`, 'success');
-      }
+      showToast('Synced with Batch', `Successfully joined ${data.college} - Sem ${data.semester}.`, 'success');
     } catch (e: any) {
       console.error('Error joining batch timetable:', e);
       if (!e?.message?.includes('Invalid batch passcode')) {
@@ -1622,6 +1614,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       
       const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
       const newInviteCode = generateInviteCode();
+      const userIsAdmin = isUserSuperAdmin(profile, userEmail);
 
       const payload = sanitizeForFirestore({
         id: canonicalKey,
@@ -1631,10 +1624,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         semester: profile.semester,
         section: profile.section || 'A',
         creatorId: user?.id || 'anonymous',
-        creatorName: profile.name || 'Anonymous Student',
+        creatorName: profile.name || 'Student',
         creatorEmail: userEmail,
-        crUserIds: [user?.id].filter(Boolean),
-        crEmails: [userEmail].filter(Boolean),
+        crUserIds: userIsAdmin ? [user?.id].filter(Boolean) : [],
+        crEmails: userIsAdmin ? [userEmail].filter(Boolean) : [],
         inviteCode: newInviteCode,
         subjects: subjects,
         timetable: timetable,
@@ -1651,7 +1644,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         ...profile,
         batchKey: canonicalKey,
         isBatchSynced: true,
-        role: (profile.role === 'super_admin' ? 'super_admin' : 'cr') as AdminRole,
+        role: userIsAdmin ? 'super_admin' : 'student',
       };
       setProfileState(updatedProfile);
       storage.setProfile(updatedProfile);

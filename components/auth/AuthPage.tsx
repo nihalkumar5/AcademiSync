@@ -84,6 +84,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode }) => {
     setLoading(true);
     setErrorMsg('');
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
     try {
       await signInWithPopup(auth, provider);
       showToast('Google Sign In', 'Authenticated successfully with Google.', 'success');
@@ -95,6 +97,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode }) => {
         msg = 'Login popup was closed before completion.';
       } else if (err.code === 'auth/unauthorized-domain') {
         msg = 'Domain not authorized for Google Sign-In.';
+      } else if (err.code === 'auth/missing-initial-state' || err.message?.includes('missing initial state')) {
+        msg = 'Browser privacy shield blocked session storage. Please disable Shields or sign in with Email & Password.';
       } else {
         msg = `Google Auth Error: ${err.message || err.code || err}`;
       }
