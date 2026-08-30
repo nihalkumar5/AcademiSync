@@ -19,6 +19,7 @@ import { db } from '@/lib/firebase';
 import { Search, Sparkles, Users, CheckCircle2, ArrowRight, ShieldCheck, School, BookOpen, Layers, Crown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { CRApplicationModal } from '@/components/cr/CRApplicationModal';
+import { BatchSetupPromptModal } from '@/components/batch/BatchSetupPromptModal';
 
 interface BatchDiscoveryModalProps {
   isOpen: boolean;
@@ -50,6 +51,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
   // Invite code tab
   const [inviteCodeInput, setInviteCodeInput] = useState('');
   const [showCRModal, setShowCRModal] = useState(false);
+  const [showSetupPromptModal, setShowSetupPromptModal] = useState(false);
 
   const cleanSection = (secStr: string) => {
     if (!secStr || secStr.toLowerCase().includes('no section') || secStr.toLowerCase().includes('single')) return 'A';
@@ -397,22 +399,24 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                 </div>
               ) : (
                 <div className="p-4 rounded-2xl bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 flex flex-col gap-2.5">
-                  <div className="flex items-center gap-2">
-                    <Crown className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                    <span className="text-[13px] font-bold text-amber-950 dark:text-amber-200">
-                      Are you the CR of Section {section}?
-                    </span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <span className="text-[13px] font-bold text-amber-950 dark:text-amber-200">
+                        Section {section} Has No Live Batch Yet
+                      </span>
+                    </div>
                   </div>
                   <p className="text-[12px] text-amber-800/90 dark:text-amber-300 leading-relaxed">
-                    To prevent inaccurate schedules and duplicate batches, only verified Class Representatives (CRs) can publish official timetables.
+                    Be the first to set up your section, apply for CR verification, or ask your classmates to join via WhatsApp!
                   </p>
                   <button
                     type="button"
-                    onClick={() => setShowCRModal(true)}
+                    onClick={() => setShowSetupPromptModal(true)}
                     className="w-full h-10 bg-amber-500 hover:bg-amber-600 text-black text-[13px] font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm shadow-amber-500/20 transition-all cursor-pointer"
                   >
                     <Crown className="w-4 h-4" />
-                    Apply for CR Access
+                    Setup / Request Section Batch
                   </button>
                 </div>
               )}
@@ -449,6 +453,24 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
       <CRApplicationModal
         isOpen={showCRModal}
         onClose={() => setShowCRModal(false)}
+        targetCollege={selectedCollege || collegeSearch}
+        targetProgramme={programme}
+        targetBranch={branch}
+        targetSemester={semester}
+        targetSection={section}
+      />
+
+      <BatchSetupPromptModal
+        isOpen={showSetupPromptModal}
+        onClose={() => setShowSetupPromptModal(false)}
+        college={selectedCollege || collegeSearch}
+        programme={programme}
+        branch={branch}
+        semester={semester}
+        section={section}
+        onContinuePersonal={() => {
+          onClose();
+        }}
       />
     </Modal>
   );

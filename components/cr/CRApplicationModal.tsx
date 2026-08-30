@@ -13,9 +13,22 @@ import { useRouter } from 'next/navigation';
 interface CRApplicationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  targetCollege?: string;
+  targetProgramme?: string;
+  targetBranch?: string;
+  targetSemester?: number;
+  targetSection?: string;
 }
 
-export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({ isOpen, onClose }) => {
+export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({ 
+  isOpen, 
+  onClose,
+  targetCollege,
+  targetProgramme,
+  targetBranch,
+  targetSemester,
+  targetSection
+}) => {
   const { profile, user, showToast } = useApp();
   const router = useRouter();
 
@@ -26,12 +39,13 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({ isOpen, 
   const [loadingStatus, setLoadingStatus] = useState(true);
 
   const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
-  const college = profile.college || '';
-  const branch = profile.branch || '';
-  const semester = profile.semester || 1;
-  const section = profile.section || 'A';
+  const college = targetCollege || profile.college || '';
+  const programme = targetProgramme || profile.programme || 'B.Tech';
+  const branch = targetBranch || profile.branch || '';
+  const semester = targetSemester || profile.semester || 1;
+  const section = targetSection || profile.section || 'A';
 
-  const canonicalBatchKey = getCanonicalBatchKey(college, profile.programme || 'B.Tech', branch, semester, section);
+  const canonicalBatchKey = getCanonicalBatchKey(college, programme, branch, semester, section);
   const requestId = user?.id ? `${user.id}_${canonicalBatchKey}` : null;
 
   // Listen to existing request status in Firestore

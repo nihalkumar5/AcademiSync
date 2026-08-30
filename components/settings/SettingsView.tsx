@@ -48,6 +48,7 @@ import { isUserSuperAdmin } from '@/lib/adminAuth';
 import { BatchMembersModal } from '@/components/batch/BatchMembersModal';
 import { BatchDiscoveryModal } from '@/components/batch/BatchDiscoveryModal';
 import { ApplyForCRCard } from '@/components/cr/ApplyForCRCard';
+import { BatchSetupPromptModal } from '@/components/batch/BatchSetupPromptModal';
 
 export const SettingsView: React.FC = () => {
   const { user, isClerkLoaded } = useApp();
@@ -124,6 +125,7 @@ export const SettingsView: React.FC = () => {
   const [showBatchSettingsModal, setShowBatchSettingsModal] = useState(false);
   const [showCloudSyncModal, setShowCloudSyncModal] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [showBatchSetupPrompt, setShowBatchSetupPrompt] = useState(false);
   const [holdProgress, setHoldProgress] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
   const holdIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -215,6 +217,21 @@ export const SettingsView: React.FC = () => {
           setMatchedBatchData(matched);
           setPendingBatchKey(newKey);
           return; // Pause profile saving and show modal choice
+        } else if (!profile.isBatchSynced && cleanCollege && cleanBranch) {
+          // Save profile and trigger Batch Setup / Request Onboarding Prompt
+          updateProfile({
+            ...savedFields,
+            college: cleanCollege,
+            programme: cleanProg,
+            branch: cleanBranch,
+            semester: cleanSem,
+            section: cleanSec,
+            batchKey: undefined,
+            isBatchSynced: false,
+          });
+          showToast('Profile Saved', 'Academic records updated successfully', 'success');
+          setShowBatchSetupPrompt(true);
+          return;
         }
       }
     }
@@ -764,6 +781,14 @@ export const SettingsView: React.FC = () => {
                     className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer shadow-sm shadow-indigo-600/20"
                   >
                     🏫 Find & Join My Batch
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowBatchSetupPrompt(true)}
+                    className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer shadow-sm shadow-amber-500/20 flex items-center gap-1.5"
+                  >
+                    <Crown className="w-3.5 h-3.5" />
+                    Setup / Request Batch
                   </button>
                   <button
                     type="button"
@@ -1524,6 +1549,17 @@ export const SettingsView: React.FC = () => {
       <BatchDiscoveryModal
         isOpen={showDiscoveryModal}
         onClose={() => setShowDiscoveryModal(false)}
+      />
+
+      {/* BATCH SETUP & ONBOARDING PROMPT MODAL */}
+      <BatchSetupPromptModal
+        isOpen={showBatchSetupPrompt}
+        onClose={() => setShowBatchSetupPrompt(false)}
+        college={college}
+        programme={programme}
+        branch={branch}
+        semester={Number(semester)}
+        section={section}
       />
     </div>
   );
