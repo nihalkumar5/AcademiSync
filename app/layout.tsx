@@ -7,9 +7,10 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: 'cover',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
-    { media: '(prefers-color-scheme: dark)', color: '#111111' },
+    { media: '(prefers-color-scheme: light)', color: '#FAFAF8' },
+    { media: '(prefers-color-scheme: dark)', color: '#111110' },
   ],
 };
 
@@ -31,8 +32,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="min-h-[100dvh] bg-[#F7F7F5] dark:bg-[#111111] text-[#111111] dark:text-[#F7F7F5] antialiased flex flex-col font-sans selection:bg-[#96725B] selection:text-white">
+    <html lang="en" className="bg-[#FAFAF8] dark:bg-[#111110]" suppressHydrationWarning>
+      <body className="min-h-[100dvh] bg-[#FAFAF8] dark:bg-[#111110] text-[#111111] dark:text-[#F7F7F5] antialiased flex flex-col font-sans selection:bg-[#96725B] selection:text-white">
         <AppProvider>
           {children}
           <Analytics />

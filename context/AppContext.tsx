@@ -605,12 +605,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setCarryItemsState(computedCarry);
     storage.setCarryItems(computedCarry);
 
-    // Apply theme class to <html>
-    if (loadedSettings.theme === 'dark' || (loadedSettings.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    // Apply theme class to <html> and sync meta theme-color
+    const isDark = loadedSettings.theme === 'dark' || (loadedSettings.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
+    try {
+      let metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (!metaTheme) {
+        metaTheme = document.createElement('meta');
+        metaTheme.setAttribute('name', 'theme-color');
+        document.head.appendChild(metaTheme);
+      }
+      metaTheme.setAttribute('content', isDark ? '#111110' : '#FAFAF8');
+    } catch (e) {}
 
     // Check for holiday to trigger balloons animation once per session
     const today = new Date();
@@ -1252,11 +1262,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     refreshCarryItems(timetable, subjects, events, updated);
 
     if (partial.theme) {
-      if (partial.theme === 'dark' || (partial.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      const isDark = partial.theme === 'dark' || (partial.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (isDark) {
         document.documentElement.classList.add('dark');
       } else {
         document.documentElement.classList.remove('dark');
       }
+      try {
+        let metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (!metaTheme) {
+          metaTheme = document.createElement('meta');
+          metaTheme.setAttribute('name', 'theme-color');
+          document.head.appendChild(metaTheme);
+        }
+        metaTheme.setAttribute('content', isDark ? '#111110' : '#FAFAF8');
+      } catch (e) {}
     }
     showToast('Preferences Saved', 'Updated application settings', 'success');
   };
