@@ -17,9 +17,16 @@ import {
   HomeworkPriority,
   AdminRole,
 } from '@/lib/types';
-import { storage } from '@/lib/storage';
 import { DEFAULT_PROFILE, DEFAULT_SETTINGS } from '@/lib/initialData';
-import { calculateTomorrowCarryItems, getCanonicalBatchKey } from '@/lib/timetableUtils';
+import { storage } from '@/lib/storage';
+import { 
+  calculateTomorrowCarryItems, 
+  getCanonicalBatchKey,
+  getShortCollegeName,
+  normalizeProgrammeName,
+  normalizeBranchName,
+  normalizeSection
+} from '@/lib/timetableUtils';
 import { checkAndGenerateSmartNotifications } from '@/lib/notificationEngine';
 import confetti from 'canvas-confetti';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -102,7 +109,8 @@ export interface AppContextType {
   isSessionCancelled: (sessionId: string, dateStr?: string) => boolean;
   rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string }>;
   rescheduleSession: (sessionId: string, details: { startTime: string; endTime: string; room?: string } | null, dateStr?: string) => void;
-  searchBatchTimetable: (college: string, programme: string, branch: string, semester: number) => Promise<any | null>;
+  searchBatchTimetable: (college: string, programme: string, branch: string, semester: number, section?: string) => Promise<any | null>;
+  fetchCollegeBatches: (college: string) => Promise<any[]>;
   joinBatchTimetable: (batchKey: string) => Promise<void>;
   shareTimetableWithBatch: () => Promise<string>;
   disconnectBatchTimetable: () => void;
@@ -1379,47 +1387,58 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     college: string,
     programme: string,
     branch: string,
-    semester: number
+    semester: number,
+    section: string = 'A'
   ) => {
     try {
-      // 1. Direct canonical key lookup
-      const canonicalKey = getCanonicalBatchKey(college, programme, branch, semester);
+      // 1. Direct canonical key lookup (with section)
+      const canonicalKey = getCanonicalBatchKey(college, programme, branch, semester, section);
       const docRef = doc(db, 'shared_timetables', canonicalKey);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         return { ...docSnap.data(), id: canonicalKey };
       }
 
-      // 2. Resilient Firestore search by semester & fuzzy fields
+      // 1b. Legacy key lookup (without section)
+      const legacyShortCollege = getShortCollegeName(college);
+      const cleanCol = legacyShortCollege.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const cleanProg = normalizeProgrammeName(programme);
+      const cleanBr = normalizeBranchName(branch);
+      const legacyKey = `${cleanCol}_${cleanProg}_${cleanBr}_sem${semester}`;
+      const legacyRef = doc(db, 'shared_timetables', legacyKey);
+      const legacySnap = await getDoc(legacyRef);
+      if (legacySnap.exists()) {
+        return { ...legacySnap.data(), id: legacyKey };
+      }
+
+      // 2. Resilient Firestore search by semester & normalized matching
       const q = query(collection(db, 'shared_timetables'), where('semester', '==', Number(semester)));
       const querySnap = await getDocs(q);
       
       if (!querySnap.empty) {
-        const cleanInputCollege = (college || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-        const cleanInputProg = (programme || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-        const cleanInputBranch = (branch || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const cleanInputCollege = cleanCol;
+        const cleanInputProg = cleanProg;
+        const cleanInputBranch = cleanBr;
+        const cleanInputSec = normalizeSection(section);
 
         for (const d of querySnap.docs) {
           const data = d.data();
           const docCollege = (data.college || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-          const docProg = (data.programme || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-          const docBranch = (data.branch || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          const shortDocCol = getShortCollegeName(data.college || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          const docProg = normalizeProgrammeName(data.programme || '');
+          const docBranch = normalizeBranchName(data.branch || '');
+          const docSection = normalizeSection(data.section || 'A');
 
-          const progMatch = !cleanInputProg || docProg.includes(cleanInputProg) || cleanInputProg.includes(docProg);
+          const progMatch = !cleanInputProg || docProg === cleanInputProg || docProg.includes(cleanInputProg) || cleanInputProg.includes(docProg);
+          const branchMatch = !cleanInputBranch || docBranch === cleanInputBranch;
+          const sectionMatch = !data.section || docSection === cleanInputSec;
           const collegeMatch = 
+            shortDocCol === cleanInputCollege ||
             docCollege.includes(cleanInputCollege) || 
             cleanInputCollege.includes(docCollege) ||
-            (cleanInputCollege.includes('iiit') && docCollege.includes('iiit')) ||
-            (cleanInputCollege.includes('nayaraipur') && docCollege.includes('nayaraipur')) ||
-            (cleanInputCollege.includes('shyamaprasad') && docCollege.includes('shyamaprasad'));
+            (cleanInputCollege.includes('iiit') && docCollege.includes('iiit') && (cleanInputCollege.includes('raipur') || cleanInputCollege.includes('nr')));
 
-          const branchMatch = 
-            docBranch.includes(cleanInputBranch) || 
-            cleanInputBranch.includes(docBranch) ||
-            ((cleanInputBranch.includes('ds') || cleanInputBranch.includes('data')) && (docBranch.includes('ds') || docBranch.includes('data'))) ||
-            ((cleanInputBranch.includes('cse') || cleanInputBranch.includes('computer')) && (docBranch.includes('cse') || docBranch.includes('computer')));
-
-          if (progMatch && collegeMatch && branchMatch) {
+          if (progMatch && collegeMatch && branchMatch && sectionMatch) {
             return { ...data, id: d.id };
           }
         }
@@ -1429,6 +1448,45 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     } catch (e) {
       console.error('Error searching for batch timetable:', e);
       return null;
+    }
+  };
+
+  const fetchCollegeBatches = async (college: string): Promise<any[]> => {
+    if (!college || !college.trim()) return [];
+    try {
+      const shortCollege = getShortCollegeName(college);
+      const cleanKey = shortCollege.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const querySnap = await getDocs(collection(db, 'shared_timetables'));
+      
+      const batches: any[] = [];
+      querySnap.forEach((docSnap) => {
+        const data = docSnap.data();
+        const docId = docSnap.id;
+        const docCollege = (data.college || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const shortDocCollege = getShortCollegeName(data.college || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        
+        const isMatch = docId.startsWith(cleanKey) || 
+                        docCollege.includes(cleanKey) || 
+                        cleanKey.includes(docCollege) ||
+                        shortDocCollege === cleanKey ||
+                        (cleanKey.includes('iiit') && docCollege.includes('iiit') && (cleanKey.includes('raipur') || cleanKey.includes('nr')));
+
+        if (isMatch) {
+          batches.push({
+            id: docId,
+            ...data,
+            subjectsCount: data.subjects?.length || 0,
+            studentCount: data.studentCount || (data.crEmails?.length || 1),
+          });
+        }
+      });
+
+      // Sort by student count descending (most active batches first)
+      batches.sort((a, b) => (b.studentCount || 0) - (a.studentCount || 0));
+      return batches;
+    } catch (e) {
+      console.error('Error fetching college batches:', e);
+      return [];
     }
   };
 
@@ -1531,7 +1589,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
 
     try {
-      const canonicalKey = getCanonicalBatchKey(profile.college, profile.programme, profile.branch, profile.semester);
+      const canonicalKey = getCanonicalBatchKey(profile.college, profile.programme, profile.branch, profile.semester, profile.section || 'A');
       const docRef = doc(db, 'shared_timetables', canonicalKey);
       
       const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
@@ -1543,6 +1601,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         programme: profile.programme,
         branch: profile.branch,
         semester: profile.semester,
+        section: profile.section || 'A',
         creatorId: user?.id || 'anonymous',
         creatorName: profile.name || 'Anonymous Student',
         creatorEmail: userEmail,
@@ -1959,6 +2018,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         rescheduledSessions,
         rescheduleSession,
         searchBatchTimetable,
+        fetchCollegeBatches,
         joinBatchTimetable,
         shareTimetableWithBatch,
         disconnectBatchTimetable,

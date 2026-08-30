@@ -519,38 +519,96 @@ export const getSubjectThemeStyle = (hexColor?: string, theme: 'light' | 'dark' 
 export const getShortCollegeName = (name: string): string => {
   if (!name) return 'COLLEGE';
 
-  // Strip trailing city/state in brackets like (Naya Raipur, CT) or (Pilani, RJ)
-  let cleanName = name.replace(/\([^)]*\)/g, '').trim();
-  const lowerName = cleanName.toLowerCase();
+  // Normalize: remove punctuation, brackets, multiple spaces
+  const clean = name.toLowerCase().replace(/[.\-_,]/g, ' ').replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim();
   
-  // Specific known landmark institutes
-  if (lowerName.includes('shyama prasad') || lowerName.includes('iiit naya raipur') || lowerName.includes('iiitnr')) {
+  // 1. Specific top landmark institute aliases
+  if (clean.includes('iiit') && (clean.includes('naya raipur') || clean.includes('nr') || clean.includes('raipur') || clean.includes('shyama prasad'))) {
     return 'IIIT NAYA RAIPUR';
   }
+  if (clean.includes('iiit') && (clean.includes('hyderabad') || clean.includes(' hyd') || clean === 'iiith' || clean === 'iiit h')) {
+    return 'IIIT HYDERABAD';
+  }
+  if (clean.includes('iiit') && (clean.includes('bangalore') || clean.includes('blr') || clean === 'iiitb' || clean === 'iiit b')) {
+    return 'IIIT BANGALORE';
+  }
+  if (clean.includes('iiit') && (clean.includes('delhi') || clean === 'iiitd' || clean === 'iiit d')) {
+    return 'IIIT DELHI';
+  }
+  if (clean.includes('iiit') && (clean.includes('allahabad') || clean.includes('prayagraj') || clean === 'iiita' || clean === 'iiit a')) {
+    return 'IIIT ALLAHABAD';
+  }
+  if (clean.includes('iit') && (clean.includes('bombay') || clean.includes('mumbai') || clean === 'iitb' || clean === 'iit b')) {
+    return 'IIT BOMBAY';
+  }
+  if (clean.includes('iit') && (clean.includes('delhi') || clean === 'iitd' || clean === 'iit d')) {
+    return 'IIT DELHI';
+  }
+  if (clean.includes('iit') && (clean.includes('madras') || clean.includes('chennai') || clean === 'iitm' || clean === 'iit m')) {
+    return 'IIT MADRAS';
+  }
+  if (clean.includes('iit') && (clean.includes('kanpur') || clean === 'iitk' || clean === 'iit k')) {
+    return 'IIT KANPUR';
+  }
+  if (clean.includes('iit') && (clean.includes('kharagpur') || clean.includes('kgp') || clean === 'iitkgp' || clean === 'iit kgp')) {
+    return 'IIT KHARAGPUR';
+  }
+  if (clean.includes('iit') && (clean.includes('roorkee') || clean === 'iitr' || clean === 'iit r')) {
+    return 'IIT ROORKEE';
+  }
+  if (clean.includes('iit') && (clean.includes('guwahati') || clean === 'iitg' || clean === 'iit g')) {
+    return 'IIT GUWAHATI';
+  }
+  if (clean.includes('nit') && (clean.includes('trichy') || clean.includes('tiruchirappalli') || clean === 'nitt' || clean === 'nit t')) {
+    return 'NIT TRICHY';
+  }
+  if (clean.includes('nit') && (clean.includes('surathkal') || clean.includes('karnataka') || clean === 'nitk' || clean === 'nit k')) {
+    return 'NIT SURATHKAL';
+  }
+  if (clean.includes('nit') && (clean.includes('warangal') || clean === 'nitw' || clean === 'nit w')) {
+    return 'NIT WARANGAL';
+  }
+  if (clean.includes('nit') && (clean.includes('calicut') || clean === 'nitc' || clean === 'nit c')) {
+    return 'NIT CALICUT';
+  }
+  if (clean.includes('nit') && (clean.includes('rourkela') || clean === 'nitrkl' || clean === 'nit rkl')) {
+    return 'NIT ROURKELA';
+  }
+  if (clean.includes('bits') && (clean.includes('pilani') || clean.includes('rajasthan'))) {
+    return 'BITS PILANI';
+  }
+  if (clean.includes('vellore institute') || clean === 'vit' || clean.includes('vit vellore')) {
+    return 'VIT VELLORE';
+  }
+  if (clean.includes('manipal') || clean.includes('mit manipal')) {
+    return 'MANIPAL';
+  }
+  if (clean.includes('delhi technological') || clean === 'dtu') {
+    return 'DTU';
+  }
+  if (clean.includes('netaji subhas') || clean === 'nsut') {
+    return 'NSUT';
+  }
 
-  if (lowerName.includes('institute of technology') || lowerName.includes('institute of information technology') || lowerName.includes('university of')) {
-    const words = cleanName.split(/[\s,]+/).filter(Boolean);
-    const hasStandardPrefix = lowerName.includes('national institute') || lowerName.includes('indian institute') || lowerName.includes('international institute');
+  // 2. Generic institute prefix handling
+  if (clean.includes('institute of technology') || clean.includes('institute of information technology') || clean.includes('university of')) {
+    const words = clean.split(/\s+/).filter(Boolean);
+    let prefix = '';
+    if (clean.includes('national institute')) prefix = 'NIT';
+    else if (clean.includes('indian institute of technology')) prefix = 'IIT';
+    else if (clean.includes('indian institute of information technology') || clean.includes('international institute of information technology')) prefix = 'IIIT';
+    else if (clean.includes('indian institute')) prefix = 'II';
     
-    if (hasStandardPrefix) {
-      let prefix = '';
-      if (lowerName.includes('national institute')) prefix = 'NIT';
-      else if (lowerName.includes('indian institute of technology')) prefix = 'IIT';
-      else if (lowerName.includes('indian institute of information technology')) prefix = 'IIIT';
-      else if (lowerName.includes('international institute of information technology')) prefix = 'IIIT';
-      else if (lowerName.includes('indian institute')) prefix = 'II';
-      
-      if (prefix) {
-        const meaningfulWords = words.filter(w => !['of', 'and', 'for', 'in', 'the', 'institute', 'technology', 'university', 'science', 'engineering', 'national', 'indian', 'international', 'dr', 'dr.'].includes(w.toLowerCase()));
-        const loc = meaningfulWords.slice(-2).join(' ').replace(/[^a-zA-Z\s]/g, '').trim();
-        return `${prefix} ${loc ? loc.toUpperCase() : 'MAIN'}`;
-      }
+    if (prefix) {
+      const meaningfulWords = words.filter(w => !['of', 'and', '&', 'for', 'in', 'the', 'institute', 'technology', 'university', 'science', 'engineering', 'national', 'indian', 'international', 'dr', 'dr.'].includes(w));
+      const loc = meaningfulWords.slice(-2).join(' ').trim();
+      return `${prefix} ${loc ? loc.toUpperCase() : 'MAIN'}`;
     }
   }
 
-  // Fallback: Acronym generator for long names
-  const stopWords = ['of', 'and', 'for', 'in', 'the', 'dr', 'dr.'];
-  const words = cleanName.split(/[\s,]+/).filter(w => !stopWords.includes(w.toLowerCase()) && w.length > 0);
+  // 3. Fallback: Acronym generator
+  const stopWords = ['of', 'and', '&', 'for', 'in', 'the', 'dr', 'dr.'];
+  const words = clean.split(/\s+/).filter(w => !stopWords.includes(w) && w.length > 0);
   if (words.length >= 3) {
     const initials = words.slice(0, -1).map(w => w[0]).join('').toUpperCase();
     const lastWord = words[words.length - 1].toUpperCase();
@@ -559,28 +617,134 @@ export const getShortCollegeName = (name: string): string => {
     }
   }
 
-  return cleanName.toUpperCase();
+  return clean.toUpperCase();
 };
 
-export const getCanonicalBatchKey = (college: string, programme: string, branch: string, semester: number): string => {
-  const clean = (str: string) => {
-    return str
-      .toLowerCase()
-      .trim()
-      .replace(/computer\s+science\s*(?:and|&)?\s*(?:engineering|engg)?/g, 'cse')
-      .replace(/information\s+technology/g, 'it')
-      .replace(/data\s+science\s*(?:and|&)?\s*(?:artificial\s+intelligence|ai)?/g, 'dsai')
-      .replace(/artificial\s+intelligence\s*(?:and|&)?\s*(?:data\s+science|ds)?/g, 'dsai')
-      .replace(/artificial\s+intelligence\s*(?:and|&)?\s*(?:machine\s+learning|ml)?/g, 'aiml')
-      .replace(/electronics\s*(?:and|&)?\s*(?:communication|comm)?\s*(?:engineering|engg)?/g, 'ece')
-      .replace(/electrical\s*(?:and|&)?\s*(?:electronics|elect)?\s*(?:engineering|engg)?/g, 'eee')
-      .replace(/mechanical\s*(?:engineering|engg)?/g, 'me')
-      .replace(/civil\s*(?:engineering|engg)?/g, 'ce')
-      .replace(/pharmaceutical\s+chemistry/g, 'pharmacy')
-      .replace(/pharmacology/g, 'pharmacy')
-      .replace(/[^a-z0-9]/g, '');
-  };
+export const normalizeProgrammeName = (programme: string): string => {
+  if (!programme) return 'btech';
+  const clean = programme.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (clean.includes('mtech') || clean.includes('masteroftechnology')) return 'mtech';
+  if (clean.includes('btech') || clean.includes('bacheloroftechnology')) return 'btech';
+  if (clean.includes('be') || clean.includes('bachelorofengineering')) return 'be';
+  if (clean.includes('mca') || clean.includes('masterofcomputerapplications')) return 'mca';
+  if (clean.includes('bca') || clean.includes('bachelorofcomputerapplications')) return 'bca';
+  if (clean.includes('mba') || clean.includes('masterofbusinessadministration')) return 'mba';
+  if (clean.includes('bba') || clean.includes('bachelorofbusinessadministration')) return 'bba';
+  if (clean.includes('msc') || clean.includes('masterofscience')) return 'msc';
+  if (clean.includes('bsc') || clean.includes('bachelorofscience')) return 'bsc';
+  if (clean.includes('mpharm')) return 'mpharm';
+  if (clean.includes('bpharm')) return 'bpharm';
+  return clean || 'btech';
+};
 
+export const normalizeBranchName = (branch: string): string => {
+  if (!branch) return 'cse';
+  const str = branch.toLowerCase().trim();
+  
+  // Data Science & AI variants
+  if (
+    (str.includes('data') && (str.includes('science') || str.includes('ai') || str.includes('intelligence'))) ||
+    str === 'dsai' || str.includes('ds & ai') || str.includes('ai & ds') || str.includes('ds/ai') || str.includes('ai/ds')
+  ) {
+    return 'dsai';
+  }
+  
+  // AI & ML variants
+  if (
+    (str.includes('artificial') && str.includes('machine')) ||
+    str === 'aiml' || str.includes('ai & ml') || str.includes('ai/ml')
+  ) {
+    return 'aiml';
+  }
+
+  // Computer Science / CSE variants
+  if (
+    str.includes('computer') || str === 'cse' || str === 'cs' || str.includes('comp sci') || str.includes('software')
+  ) {
+    return 'cse';
+  }
+
+  // Electronics & Communication / ECE variants
+  if (
+    str.includes('electronics') || str === 'ece' || str.includes('comm')
+  ) {
+    return 'ece';
+  }
+
+  // Electrical & Electronics / EEE variants
+  if (
+    str.includes('electrical') && str.includes('electronics') || str === 'eee'
+  ) {
+    return 'eee';
+  }
+
+  // Electrical / EE variants
+  if (
+    str.includes('electrical') || str === 'ee'
+  ) {
+    return 'ee';
+  }
+
+  // Information Technology / IT variants
+  if (
+    str.includes('information') || str === 'it'
+  ) {
+    return 'it';
+  }
+
+  // Mechanical / ME variants
+  if (
+    str.includes('mechanical') || str === 'me'
+  ) {
+    return 'me';
+  }
+
+  // Civil / CE variants
+  if (
+    str.includes('civil') || str === 'ce'
+  ) {
+    return 'ce';
+  }
+
+  // Chemical / CHE variants
+  if (
+    str.includes('chemical') || str === 'che'
+  ) {
+    return 'che';
+  }
+
+  // Biotechnology / BT variants
+  if (
+    str.includes('biotech') || str === 'bt'
+  ) {
+    return 'bt';
+  }
+
+  return str.replace(/[^a-z0-9]/g, '') || 'general';
+};
+
+export const normalizeSection = (section?: string): string => {
+  if (!section) return 'secA';
+  const clean = section.toUpperCase().trim().replace(/[^A-Z0-9]/g, '');
+  if (!clean || clean === 'A' || clean === '1') return 'secA';
+  if (clean === 'B' || clean === '2') return 'secB';
+  if (clean === 'C' || clean === '3') return 'secC';
+  if (clean === 'D' || clean === '4') return 'secD';
+  return `sec${clean}`;
+};
+
+export const getCanonicalBatchKey = (
+  college: string, 
+  programme: string, 
+  branch: string, 
+  semester: number, 
+  section: string = 'A'
+): string => {
   const shortCollege = getShortCollegeName(college);
-  return `${clean(shortCollege)}_${clean(programme)}_${clean(branch)}_sem${semester}`;
+  const cleanCollegeKey = shortCollege.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const cleanProgKey = normalizeProgrammeName(programme);
+  const cleanBranchKey = normalizeBranchName(branch);
+  const cleanSectionKey = normalizeSection(section);
+
+  return `${cleanCollegeKey}_${cleanProgKey}_${cleanBranchKey}_sem${semester}_${cleanSectionKey}`;
 };

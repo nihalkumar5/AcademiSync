@@ -28,7 +28,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 export const OnboardingModal = () => {
-  const { profile, updateProfile, joinBatchTimetable, shareTimetableWithBatch, searchBatchTimetable, showToast, user, isClerkLoaded } = useApp();
+  const { profile, updateProfile, joinBatchTimetable, shareTimetableWithBatch, searchBatchTimetable, fetchCollegeBatches, showToast, user, isClerkLoaded } = useApp();
   const isSignedIn = !!user;
   const isUserLoaded = isClerkLoaded;
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -51,28 +51,40 @@ export const OnboardingModal = () => {
   const [suggestedColleges, setSuggestedColleges] = useState<string[]>([]);
   const [isLoadingColleges, setIsLoadingColleges] = useState(false);
 
-  // Debounced SheerID live organization lookup
+  // Live Batch Discovery
+  const [collegeBatches, setCollegeBatches] = useState<any[]>([]);
+  const [loadingBatches, setLoadingBatches] = useState(false);
+
+  // Debounced SheerID live organization lookup + Live Batch Discovery
   useEffect(() => {
-    if (college.trim().length < 3) {
+    if (college.trim().length < 2) {
       setSuggestedColleges([]);
+      setCollegeBatches([]);
       return;
     }
 
     const delayDebounce = setTimeout(async () => {
       setIsLoadingColleges(true);
+      setLoadingBatches(true);
       try {
-        const response = await fetch(
-          `https://orgsearch.sheerid.net/rest/organization/search?country=IN&type=UNIVERSITY&name=${encodeURIComponent(college)}`
-        );
-        if (response.ok) {
-          const data = await response.json();
+        const [orgRes, batches] = await Promise.allSettled([
+          fetch(`https://orgsearch.sheerid.net/rest/organization/search?country=IN&type=UNIVERSITY&name=${encodeURIComponent(college)}`),
+          fetchCollegeBatches(college)
+        ]);
+
+        if (orgRes.status === 'fulfilled' && orgRes.value.ok) {
+          const data = await orgRes.value.json();
           const names = data.map((item: any) => item.name);
           setSuggestedColleges(names);
         }
+        if (batches.status === 'fulfilled') {
+          setCollegeBatches(batches.value);
+        }
       } catch (err) {
-        console.error('Failed to fetch colleges from SheerID:', err);
+        console.error('Failed to fetch colleges/batches:', err);
       } finally {
         setIsLoadingColleges(false);
+        setLoadingBatches(false);
       }
     }, 350);
 
@@ -93,7 +105,7 @@ export const OnboardingModal = () => {
   const [section, setSection] = useState(profile?.section || 'A');
   const [isConnecting, setIsConnecting] = useState(false);
 
-    // Auto-connect pending batch after signing in
+  // Auto-connect pending batch after signing in
   useEffect(() => {
     if (isSignedIn && isUserLoaded) {
       const pendingKey = localStorage.getItem('pending_batch_key');
@@ -179,6 +191,25 @@ export const OnboardingModal = () => {
     }
   };
 
+  // Quick Join from Live Active Batches List
+  const handleQuickJoinBatch = (b: any) => {
+    if (b.college) setCollege(b.college);
+    if (b.programme) setProgramme(b.programme);
+    if (b.branch) setBranch(b.branch);
+    if (b.semester) setSemester(b.semester);
+    if (b.section) setSection(b.section);
+
+    setFoundBatchData({
+      exists: true,
+      canonicalKey: b.id,
+      studentCount: b.studentCount || (b.crEmails?.length || 1),
+      creatorName: b.creatorName || 'Classmate',
+      subjectsCount: b.subjectsCount || (b.subjects?.length || 0),
+      rawBatch: b,
+    });
+    setSubStep('confirm');
+  };
+
   // 2. Step 1 -> Find My Batch Action (Smart Firestore lookup via searchBatchTimetable)
   const handleFindBatch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -191,10 +222,10 @@ export const OnboardingModal = () => {
     const finalProg = programme === 'Other / Diploma' ? (customProgramme.trim() || 'Diploma') : programme;
     const finalBranch = branch === 'Other / General' ? (customBranch.trim() || 'General') : branch;
     const cleanCollege = college.trim();
-    const canonicalKey = getCanonicalBatchKey(cleanCollege, finalProg, finalBranch, semester);
+    const canonicalKey = getCanonicalBatchKey(cleanCollege, finalProg, finalBranch, semester, section);
 
     try {
-      const matched = await searchBatchTimetable(cleanCollege, finalProg, finalBranch, semester);
+      const matched = await searchBatchTimetable(cleanCollege, finalProg, finalBranch, semester, section);
 
       if (matched) {
         setFoundBatchData({
@@ -227,7 +258,7 @@ export const OnboardingModal = () => {
     const finalProg = programme === 'Other / Diploma' ? (customProgramme.trim() || 'Diploma') : programme;
     const finalBranch = branch === 'Other / General' ? (customBranch.trim() || 'General') : branch;
     const cleanCollege = college.trim() || 'General College';
-    const canonicalKey = foundBatchData?.canonicalKey || getCanonicalBatchKey(cleanCollege, finalProg, finalBranch, semester);
+    const canonicalKey = foundBatchData?.canonicalKey || getCanonicalBatchKey(cleanCollege, finalProg, finalBranch, semester, section);
 
     // Save selected academic details locally first
     updateProfile({
@@ -235,7 +266,7 @@ export const OnboardingModal = () => {
       programme: finalProg,
       branch: finalBranch,
       semester: semester,
-      section: 'A',
+      section: section || 'A',
     });
 
     // Check if user is signed in before syncing with cloud batch
@@ -257,13 +288,13 @@ export const OnboardingModal = () => {
         programme: finalProg,
         branch: finalBranch,
         semester: semester,
-        section: 'A',
+        section: section || 'A',
         onboardingCompleted: true,
       });
 
       if (foundBatchData?.exists) {
         await joinBatchTimetable(canonicalKey);
-        showToast('Batch Connected!', `Synced with ${finalProg} ${finalBranch} Sem ${semester}.`, 'success');
+        showToast('Batch Connected!', `Synced with ${finalProg} ${finalBranch} Sem ${semester} (${section}).`, 'success');
       } else {
         await shareTimetableWithBatch();
         showToast('Batch Space Created', `You're the first in your batch! Invite your classmates to sync.`, 'success');
@@ -590,6 +621,49 @@ export const OnboardingModal = () => {
                         <p className="text-[11px] text-[#A0A0A0] font-medium">
                           Type 2+ letters to search verified universities, or type manually if not found.
                         </p>
+
+                        {/* Live Active Batches at This College (Instant 1-Tap Join) */}
+                        {loadingBatches && (
+                          <div className="flex items-center gap-2 text-xs font-mono text-[#666666] py-1">
+                            <span className="w-3 h-3 border border-[#111111] border-t-transparent rounded-full animate-spin" />
+                            Checking active class batches...
+                          </div>
+                        )}
+
+                        {collegeBatches.length > 0 && !loadingBatches && (
+                          <div className="mt-1 flex flex-col gap-2 p-3 bg-[#FBFBFA] border border-[#E3E3E0] rounded-none">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                Active Batches Found ({collegeBatches.length})
+                              </span>
+                              <span className="text-[10.5px] text-[#888888]">1-Tap Join</span>
+                            </div>
+                            <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto divide-y divide-black/5 pr-1">
+                              {collegeBatches.map((b) => (
+                                <button
+                                  key={b.id}
+                                  type="button"
+                                  onClick={() => handleQuickJoinBatch(b)}
+                                  className="w-full text-left p-2.5 bg-white hover:bg-[#F2F2F0] border border-[#E8E8E5] flex items-center justify-between group transition-all cursor-pointer"
+                                >
+                                  <div className="flex flex-col gap-0.5 min-w-0 pr-2">
+                                    <span className="text-[13px] font-bold text-[#111111] group-hover:text-black truncate">
+                                      {b.programme || 'B.Tech'} {b.branch || 'General'} · Sem {b.semester} {b.section ? `(${b.section})` : ''}
+                                    </span>
+                                    <span className="text-[11px] text-[#666666] flex items-center gap-2">
+                                      <span>👥 {b.studentCount || 1} classmates</span>
+                                      {b.subjectsCount > 0 && <span>📚 {b.subjectsCount} subjects</span>}
+                                    </span>
+                                  </div>
+                                  <span className="text-[11.5px] font-bold text-[#111111] px-2.5 py-1 bg-[#F4F4F2] group-hover:bg-[#111111] group-hover:text-white transition-colors shrink-0">
+                                    Join ➜
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Searchable Programme Dropdown */}
@@ -736,26 +810,52 @@ export const OnboardingModal = () => {
                         )}
                       </div>
 
-                      {/* Semester Square Button Picker (Exact Theme) */}
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
-                          Semester
-                        </label>
-                        <div className="grid grid-cols-4 gap-2">
-                          {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-                            <button
-                              key={s}
-                              type="button"
-                              onClick={() => setSemester(s)}
-                              className={`py-2.5 text-[12.5px] font-bold rounded-none border transition-all cursor-pointer ${
-                                semester === s
-                                  ? 'bg-[#111111] text-white border-[#111111]'
-                                  : 'border-[#D8D8D8] bg-white text-[#111111] hover:bg-[#F7F7F5]'
-                              }`}
-                            >
-                              Sem {s}
-                            </button>
-                          ))}
+                      {/* Semester & Section Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Semester */}
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
+                            Semester
+                          </label>
+                          <div className="grid grid-cols-4 gap-1.5">
+                            {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
+                              <button
+                                key={s}
+                                type="button"
+                                onClick={() => setSemester(s)}
+                                className={`py-2 text-[12px] font-bold rounded-none border transition-all cursor-pointer ${
+                                  semester === s
+                                    ? 'bg-[#111111] text-white border-[#111111]'
+                                    : 'border-[#D8D8D8] bg-white text-[#111111] hover:bg-[#F7F7F5]'
+                                }`}
+                              >
+                                S{s}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Section */}
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
+                            Section
+                          </label>
+                          <div className="grid grid-cols-4 gap-1.5">
+                            {['A', 'B', 'C', 'D'].map((sec) => (
+                              <button
+                                key={sec}
+                                type="button"
+                                onClick={() => setSection(sec)}
+                                className={`py-2 text-[12px] font-bold rounded-none border transition-all cursor-pointer ${
+                                  section === sec
+                                    ? 'bg-[#111111] text-white border-[#111111]'
+                                    : 'border-[#D8D8D8] bg-white text-[#111111] hover:bg-[#F7F7F5]'
+                                }`}
+                              >
+                                Sec {sec}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
 
@@ -824,7 +924,7 @@ export const OnboardingModal = () => {
                         
                         <div className="flex items-center gap-2 mt-2.5">
                           <span className="px-2.5 py-0.5 bg-[#111111] text-white text-[11px] font-bold rounded-none">
-                            Semester {semester}
+                            Semester {semester} {section ? `· Sec ${section}` : ''}
                           </span>
                           {foundBatchData?.exists && foundBatchData?.subjectsCount > 0 && (
                             <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5">
