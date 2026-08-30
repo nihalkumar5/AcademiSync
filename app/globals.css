@@ -23,6 +23,16 @@
   --foreground: #F7F7F5;
 }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
+  -webkit-overflow-scrolling: touch;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   color: var(--foreground);
   background-color: var(--background);

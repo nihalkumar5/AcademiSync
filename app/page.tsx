@@ -173,15 +173,15 @@ export default function AppHome() {
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-transparent text-[#181716] dark:text-[#F4F1EA]">
+    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden bg-transparent text-[#181716] dark:text-[#F4F1EA]">
       {/* Desktop Sidebar Navigation */}
       <Sidebar />
 
       {/* Main Content Area */}
-      <div className="flex flex-col flex-1 min-w-0 pb-20 md:pb-8">
+      <div className="flex flex-col flex-1 min-w-0 max-w-full overflow-x-hidden pb-20 md:pb-8">
         <Header />
 
-        <main className="flex-1 px-4 sm:px-8 py-6 max-w-6xl mx-auto w-full relative">
+        <main className="flex-1 px-4 sm:px-8 py-6 max-w-6xl mx-auto w-full max-w-full overflow-x-hidden relative">
           {!Capacitor.isNativePlatform() && isAndroid && isSignedIn && (
             <div className="mb-6 p-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] flex items-center justify-between rounded-none">
               <div className="flex flex-col pr-4">
@@ -200,7 +200,7 @@ export default function AppHome() {
               </a>
             </div>
           )}
-          <div className="w-full" key={activeView}>
+          <div className="w-full max-w-full min-w-0 overflow-x-hidden" key={activeView}>
             {activeView === 'home' && (
               <div className="flex flex-col gap-6">
                 <OverviewHeader />

@@ -25,8 +25,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           className={twMerge(
             clsx(
-              'w-full px-3 py-2 text-sm bg-white dark:bg-zinc-900 border rounded-lg transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#8C6B5D]/30 focus:border-[#8C6B5D]',
-              error ? 'border-rose-500 dark:border-rose-500' : 'border-zinc-300 dark:border-zinc-700/80',
+              'w-full px-3 py-2 text-sm bg-white dark:bg-zinc-900 border rounded-none transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#111111] dark:focus:ring-[#FFFFFF] focus:border-[#111111] dark:focus:border-[#FFFFFF]',
+              error ? 'border-rose-500 dark:border-rose-500' : 'border-[#D8D8D8] dark:border-zinc-700/80',
               className
             )
           )}
@@ -63,8 +63,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           className={twMerge(
             clsx(
-              'w-full px-3 py-2 text-sm bg-white dark:bg-zinc-900 border rounded-lg transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#8C6B5D]/30 focus:border-[#8C6B5D] min-h-[80px]',
-              error ? 'border-rose-500 dark:border-rose-500' : 'border-zinc-300 dark:border-zinc-700/80',
+              'w-full px-3 py-2 text-sm bg-white dark:bg-zinc-900 border rounded-none transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#111111] dark:focus:ring-[#FFFFFF] focus:border-[#111111] dark:focus:border-[#FFFFFF] min-h-[80px]',
+              error ? 'border-rose-500 dark:border-rose-500' : 'border-[#D8D8D8] dark:border-zinc-700/80',
               className
             )
           )}
@@ -101,8 +101,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           className={twMerge(
             clsx(
-              'w-full px-3 py-2 text-base bg-white dark:bg-zinc-900 border rounded-lg transition-colors text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#8C6B5D]/30 focus:border-[#8C6B5D] cursor-pointer',
-              error ? 'border-rose-500 dark:border-rose-500' : 'border-zinc-300 dark:border-zinc-700/80',
+              'w-full px-3 py-2 text-base bg-white dark:bg-zinc-900 border rounded-none transition-colors text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#111111] dark:focus:ring-[#FFFFFF] focus:border-[#111111] dark:focus:border-[#FFFFFF] cursor-pointer',
+              error ? 'border-rose-500 dark:border-rose-500' : 'border-[#D8D8D8] dark:border-zinc-700/80',
               className
             )
           )}

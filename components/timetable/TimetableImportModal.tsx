@@ -16,7 +16,7 @@ export interface TimetableImportModalProps {
 }
 
 export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOpen, onClose }) => {
-  const { subjects, addSubject, timetable, setFullTimetable, setFullSubjectsAndTimetable, showToast, user, isClerkLoaded } = useApp();
+  const { subjects, addSubject, timetable, setFullTimetable, setFullSubjectsAndTimetable, showToast, user, isClerkLoaded, updateProfile, setShowOnboarding } = useApp();
   const router = useRouter();
   const isSignedIn = !!user;
   const isLoaded = isClerkLoaded;
@@ -168,6 +168,9 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
 
     // Save subjects and timetable together atomically with matching IDs
     setFullSubjectsAndTimetable(newSubjects, newSessions);
+    updateProfile({ onboardingCompleted: true });
+    setShowOnboarding(false);
+    showToast('Timetable Sorted!', `Extracted ${newSubjects.length} subjects & ${newSessions.length} weekly classes!`, 'success');
     handleClose();
   };
 
@@ -177,42 +180,17 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
       isOpen={isOpen}
       onClose={handleClose}
       title="Import Timetable"
-      description="Upload your timetable photo or PDF and we'll build your weekly schedule."
+      description="Just upload your routine photo or PDF & chill — Intersemester handles all your schedule tension automatically."
       maxWidth={step === 'review' ? '4xl' : 'md'}
       mobileFullSheet={step === 'review'}
     >
-      {!isLoaded ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8C6B5D]" />
-        </div>
-      ) : !isSignedIn ? (
-        <div className="flex flex-col items-center justify-center py-10 text-center gap-5">
-          <div className="w-16 h-16 rounded-full bg-[#FAF8F5] dark:bg-[#201E1C] border border-[#E8E0D5] text-[#8C6B5D] flex items-center justify-center shadow-sm">
-            <ShieldAlert className="w-8 h-8" />
-          </div>
-          <div className="flex flex-col gap-2">
-            <h3 className="text-xl font-bold text-[#1A1918] dark:text-[#F4F1EA]">
-              Sign In Required
-            </h3>
-            <p className="text-sm text-[#7A6D61] dark:text-[#9A9188] max-w-[280px] mx-auto leading-relaxed font-medium">
-              Please sign in to your student account to upload and parse timetables like magic.
-            </p>
-          </div>
-          <button 
-            onClick={() => router.push('/sign-in')}
-            className="px-6 py-3 rounded-xl bg-[#8C6B5D] hover:bg-[#7A5B4D] text-[#FDF8F4] font-bold text-sm tracking-wide transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-          >
-            Sign In to Continue
-          </button>
-        </div>
-      ) : (
-        <>
-          {step === 'upload' && (
+      {step === 'upload' && (
         <div className="flex flex-col text-center">
           <div className="relative group w-full h-[220px] sm:h-[240px] flex flex-col items-center justify-center border border-dashed border-[#D9D9D6] dark:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer mb-5">
             <input
               type="file"
-              accept="image/*,.pdf"
+              multiple
+              accept="image/*,application/pdf"
               onChange={handleFileUpload}
               className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
             />
@@ -418,8 +396,6 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
             </button>
           </div>
         </div>
-      )}
-            </>
       )}
     </Modal>
   );

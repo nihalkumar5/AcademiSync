@@ -157,6 +157,8 @@ export const SettingsView: React.FC = () => {
   };
 
   const [isEditingAcademic, setIsEditingAcademic] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState(profile.name || '');
   const [avatarSeed, setAvatarSeed] = useState(profile.avatarUrl || profile.id || 'default');
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [activeSetting, setActiveSetting] = useState<'classReminder' | 'eveningCheck' | 'hwWarning' | null>(null);
@@ -281,7 +283,7 @@ export const SettingsView: React.FC = () => {
   const labelClass = 'text-[11px] font-bold tracking-widest uppercase text-black/60 dark:text-white/60';
 
   return (
-    <div className="flex flex-col gap-6 text-left max-w-4xl mx-auto w-full pb-12">
+    <div className="flex flex-col gap-6 text-left max-w-4xl mx-auto w-full max-w-full overflow-x-hidden pb-12">
       {/* Editorial Stacked Header */}
       <div className="flex flex-col gap-4 pt-2 sm:pt-6">
         <div>
@@ -316,24 +318,72 @@ export const SettingsView: React.FC = () => {
             </button>
           </div>
 
-          <div className="flex flex-col mt-0.5 min-w-0">
-            <div className="flex items-center gap-[12px] flex-wrap w-full">
-              <h2 className="text-[24px] font-medium text-[#111111] dark:text-[#FFFFFF] leading-none break-words">
-                {name || 'Student Name'}
-              </h2>
-              <span 
-                className="flex items-center gap-[5px] bg-[#F3F2EF] dark:bg-[#F3F2EF] text-[#111111] rounded-[16px] shrink-0 h-[30px]"
-                style={{ padding: '0px 10px 0px 5px' }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-                  <circle cx="12" cy="12" r="12" fill="#111111" />
-                  <path d="M7.5 12L10.5 15L17 8" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="text-[10px] font-[600] mt-[1px]" style={{ letterSpacing: '1.6px' }}>
-                  VERIFIED
+          <div className="flex flex-col mt-0.5 min-w-0 flex-1">
+            {!isEditingName ? (
+              <div className="flex items-center gap-[12px] flex-wrap w-full">
+                <h2 className="text-[24px] font-medium text-[#111111] dark:text-[#FFFFFF] leading-none break-words">
+                  {name || 'Student Name'}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTempName(name);
+                    setIsEditingName(true);
+                  }}
+                  className="text-[11px] font-bold tracking-widest uppercase text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer"
+                >
+                  Edit
+                </button>
+                <span 
+                  className="flex items-center gap-[5px] bg-[#F3F2EF] dark:bg-[#F3F2EF] text-[#111111] rounded-[16px] shrink-0 h-[30px]"
+                  style={{ padding: '0px 10px 0px 5px' }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                    <circle cx="12" cy="12" r="12" fill="#111111" />
+                    <path d="M7.5 12L10.5 15L17 8" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span className="text-[10px] font-[600] mt-[1px]" style={{ letterSpacing: '1.6px' }}>
+                    VERIFIED
+                  </span>
                 </span>
-              </span>
-            </div>
+              </div>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (tempName.trim()) {
+                    updateProfile({ ...profile, name: tempName.trim() });
+                    setName(tempName.trim());
+                    setIsEditingName(false);
+                    showToast('Name Updated', 'Your full name has been updated successfully.', 'success');
+                  }
+                }}
+                className="flex items-center gap-2 mb-2 flex-wrap"
+              >
+                <input
+                  type="text"
+                  value={tempName}
+                  onChange={(e) => setTempName(e.target.value)}
+                  placeholder="Enter full name"
+                  autoFocus
+                  required
+                  className="h-8 px-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#111111] dark:border-[#FFFFFF] text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  className="h-8 px-3 bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider cursor-pointer"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingName(false)}
+                  className="h-8 px-2 text-[11px] font-bold text-[#6F6F6F] hover:text-black dark:hover:text-white uppercase cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </form>
+            )}
             
             <p className="text-[13px] text-[#6F6F6F] mt-2.5 leading-snug max-w-md truncate">
               {programme} · {branch}
@@ -380,22 +430,22 @@ export const SettingsView: React.FC = () => {
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">College / University</span>
-                    <span className="text-[15px] font-[600] text-[#111111] dark:text-[#FFFFFF] leading-snug">{college || 'Not specified'}</span>
+                    <span className="text-[15px] font-[600] text-[#111111] dark:text-[#FFFFFF] leading-snug break-words">{college || 'Not specified'}</span>
                   </div>
                   
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Programme</span>
-                    <span className="text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF]">{programme} {branch ? `· ${branch}` : ''}</span>
+                    <span className="text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] break-words">{programme} {branch ? `· ${branch}` : ''}</span>
                   </div>
                   
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Roll Number</span>
-                    <span className="text-[14px] font-mono font-medium text-[#111111] dark:text-[#FFFFFF]">{rollNumber || 'Not specified'}</span>
+                    <span className="text-[14px] font-mono font-medium text-[#111111] dark:text-[#FFFFFF] break-all">{rollNumber || 'Not specified'}</span>
                   </div>
                   
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Institute Email</span>
-                    <a href={`mailto:${email}`} className="text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:underline underline-offset-2 w-fit">{email || 'Not specified'}</a>
+                    <a href={`mailto:${email}`} className="text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:underline underline-offset-2 break-all">{email || 'Not specified'}</a>
                   </div>
                 </div>
               ) : (
@@ -403,6 +453,22 @@ export const SettingsView: React.FC = () => {
                   await handleSaveProfile(e); 
                   setIsEditingAcademic(false); 
                 }} className="flex flex-col gap-5">
+                  {/* Full Name */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Full Name</label>
+                    <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
+                      <User className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Your full name"
+                        required
+                        className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
+                      />
+                    </div>
+                  </div>
+
                   {/* College Name */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">College / University</label>

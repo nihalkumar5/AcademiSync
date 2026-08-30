@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { mergeConsecutiveSessions } from '@/lib/timetableUtils';
+import { TimetableImportModal } from '@/components/timetable/TimetableImportModal';
 
 export const OnboardingModal = () => {
   const { 
@@ -26,7 +27,8 @@ export const OnboardingModal = () => {
     setFullSubjectsAndTimetable, 
     showToast, 
     user, 
-    isClerkLoaded 
+    isClerkLoaded,
+    setShowOnboarding
   } = useApp();
   
   const isSignedIn = !!user;
@@ -38,8 +40,8 @@ export const OnboardingModal = () => {
   const [inviteCode, setInviteCode] = useState('');
   const [isJoiningCode, setIsJoiningCode] = useState(false);
 
-  // AI Scanner State
-  const [isExtracting, setIsExtracting] = useState(false);
+  // Full AI Timetable Import Modal State
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Auto-connect pending batch after signing in
   useEffect(() => {
@@ -75,6 +77,7 @@ export const OnboardingModal = () => {
 
   const handleSkip = () => {
     updateProfile({ onboardingCompleted: true });
+    setShowOnboarding(false);
   };
 
   // 1. Direct Invite Code Join
@@ -112,96 +115,6 @@ export const OnboardingModal = () => {
       console.error(err);
     } finally {
       setIsJoiningCode(false);
-    }
-  };
-
-  // 2. AI Timetable Instant Scanner
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-
-    setIsExtracting(true);
-    showToast('AI Scanner Active', 'Reading your timetable picture...', 'info');
-
-    try {
-      const readers = files.map((file) => {
-        return new Promise<{ name: string, base64: string, mimeType: string }>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            resolve({
-              name: file.name,
-              base64: event.target?.result as string,
-              mimeType: file.type,
-            });
-          };
-          reader.readAsDataURL(file);
-        });
-      });
-
-      const filesInfo = await Promise.all(readers);
-      const isString = typeof filesInfo === 'string';
-
-      const res = await fetch('/api/extract-timetable', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileName: isString ? filesInfo : (filesInfo.length === 1 ? filesInfo[0].name : 'Timetable Upload'),
-          images: isString ? [] : filesInfo,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success && Array.isArray(data.sessions) && data.sessions.length > 0) {
-        const merged = mergeConsecutiveSessions(data.sessions);
-        
-        const newSubjects: any[] = [];
-        const newSessions: any[] = [];
-        const subjectMap = new Map<string, string>();
-
-        merged.forEach((session, idx) => {
-          const subKey = session.subjectName.toLowerCase().trim();
-          let subjectId = subjectMap.get(subKey);
-
-          if (!subjectId) {
-            subjectId = `sub_${Date.now()}_${idx}`;
-            subjectMap.set(subKey, subjectId);
-            newSubjects.push({
-              id: subjectId,
-              name: session.subjectName,
-              code: session.subjectCode || session.subjectName.slice(0, 5).toUpperCase(),
-              facultyName: session.faculty || '',
-              room: session.room || '',
-              credits: 3,
-              color: '#000000',
-              carryRequirements: session.isLab ? ['Lab Manual', 'Laptop'] : ['Notebook'],
-              isLab: session.isLab || false,
-            });
-          }
-
-          newSessions.push({
-            id: `sess_${Date.now()}_${idx}`,
-            subjectId: subjectId,
-            day: session.day,
-            startTime: session.startTime,
-            endTime: session.endTime,
-            room: session.room || '',
-            isLab: session.isLab || false,
-          });
-        });
-
-        setFullSubjectsAndTimetable(newSubjects, newSessions);
-        updateProfile({ onboardingCompleted: true });
-        showToast('Timetable Sorted!', `Extracted ${newSubjects.length} subjects & ${newSessions.length} weekly classes.`, 'success');
-      } else {
-        updateProfile({ onboardingCompleted: true });
-        showToast('Welcome!', 'You can customize your schedule anytime in the timetable tab.', 'info');
-      }
-    } catch (err) {
-      console.error('Onboarding extraction failed:', err);
-      updateProfile({ onboardingCompleted: true });
-      showToast('Welcome!', 'Setup complete. You can import your schedule anytime.', 'info');
-    } finally {
-      setIsExtracting(false);
     }
   };
 
@@ -244,23 +157,22 @@ export const OnboardingModal = () => {
 
   const slideVariants = {
     enter: (dir: number) => ({
-      x: dir > 0 ? 25 : -25,
+      x: dir > 0 ? 20 : -20,
       opacity: 0,
     }),
     center: {
       x: 0,
       opacity: 1,
       transition: {
-        x: { type: 'tween', duration: 0.35, ease: [0.25, 1, 0.5, 1] },
-        opacity: { duration: 0.25, ease: 'linear' },
+        x: { type: 'spring', stiffness: 300, damping: 30 },
+        opacity: { duration: 0.2 },
       },
     },
     exit: (dir: number) => ({
-      x: dir < 0 ? 25 : -25,
+      x: dir < 0 ? 20 : -20,
       opacity: 0,
       transition: {
-        x: { type: 'tween', duration: 0.35, ease: [0.25, 1, 0.5, 1] },
-        opacity: { duration: 0.25, ease: 'linear' },
+        duration: 0.15,
       },
     }),
   };
@@ -295,7 +207,7 @@ export const OnboardingModal = () => {
 
       {/* Main Container */}
       <div className="flex-1 w-full flex flex-col relative overflow-hidden">
-        <AnimatePresence custom={direction} mode="wait">
+        <AnimatePresence custom={direction} initial={false}>
           {currentIndex < 3 ? (
             <motion.div
               key={currentIndex}
@@ -375,23 +287,23 @@ export const OnboardingModal = () => {
               initial="enter"
               animate="center"
               exit="exit"
-              className="absolute inset-0 w-full h-full flex flex-col justify-between overflow-y-auto px-6 py-5 bg-[#FFFFFF]"
+              className="absolute inset-0 w-full h-full flex flex-col overflow-y-auto px-6 py-5 bg-[#FFFFFF]"
             >
-              <div className="flex flex-col flex-1 max-w-[420px] mx-auto w-full">
+              <div className="flex flex-col max-w-[420px] mx-auto w-full">
                 {/* Header */}
-                <div className="flex flex-col mb-5">
+                <div className="flex flex-col mb-4">
                   <h2 className="text-[34px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[38px]">
                     Connect,<br />
                     Batch,<br />
                     Timetable
                   </h2>
-                  <p className="text-[13.5px] font-normal text-[#6B6B6B] leading-[19px] mt-2.5">
+                  <p className="text-[13.5px] font-normal text-[#6B6B6B] leading-[19px] mt-2">
                     Join your classmates and sync your academic schedule.
                   </p>
                 </div>
 
                 {/* 1. Fast Invite Card (At The Top) */}
-                <div className="border border-[#D8D8D8] bg-[#FAFAF8] p-4 mb-5">
+                <div className="border border-[#D8D8D8] bg-[#FAFAF8] p-4 mb-4">
                   <div className="flex items-center gap-1.5 mb-2.5">
                     <ArrowUpRight className="w-3.5 h-3.5 text-[#111111]" />
                     <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111]">
@@ -417,7 +329,7 @@ export const OnboardingModal = () => {
                 </div>
 
                 {/* 2. Light Divider */}
-                <div className="flex items-center gap-3 my-1 mb-5">
+                <div className="flex items-center gap-3 my-0.5 mb-4">
                   <div className="flex-1 h-[1px] bg-[#EEEEEC]" />
                   <span className="text-[10.5px] font-medium tracking-[1.5px] text-[#A0A0A0] uppercase">
                     OR SCAN TIMETABLE
@@ -425,52 +337,45 @@ export const OnboardingModal = () => {
                   <div className="flex-1 h-[1px] bg-[#EEEEEC]" />
                 </div>
 
-                {/* 3. AI Scan Timetable Box */}
-                <div className="border border-[#D8D8D8] hover:border-[#111111] bg-[#FAFAF8] p-5 flex flex-col items-center text-center relative transition-colors cursor-pointer group">
-                  <input
-                    type="file"
-                    accept="image/*,application/pdf"
-                    onChange={handleFileUpload}
-                    disabled={isExtracting}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-20"
-                  />
-
-                  <div className="w-12 h-12 bg-[#111111] text-white flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
-                    {isExtracting ? (
-                      <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <Camera className="w-5 h-5 text-white" />
-                    )}
+                {/* 3. Clean Notion Dashed Upload Box (Matching Image 2) */}
+                <div 
+                  onClick={() => setIsImportModalOpen(true)}
+                  className="relative group w-full py-6 px-4 flex flex-col items-center justify-center border border-dashed border-[#D9D9D6] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-all cursor-pointer text-center"
+                >
+                  <Upload className="w-5 h-5 mb-2.5 text-[#111111] dark:text-[#FFFFFF] group-hover:-translate-y-0.5 transition-transform" />
+                  
+                  <h3 className="text-[15.5px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-1">
+                    Just Upload & Chill
+                  </h3>
+                  
+                  <p className="text-[12.5px] text-[#6F6F6F] max-w-[280px] leading-snug mb-3.5">
+                    Drop your routine photo or PDF. Intersemester handles your weekly schedule tension automatically.
+                  </p>
+                  
+                  <div className="px-6 h-[42px] flex items-center justify-center bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto mb-2.5 shadow-sm group-hover:opacity-90 transition-opacity">
+                    Choose file
                   </div>
 
-                  <span className="text-[14px] font-bold text-[#111111] uppercase tracking-wide mb-1">
-                    {isExtracting ? 'AI Extracting Schedule...' : 'Scan Your Timetable'}
-                  </span>
-
-                  <p className="text-[12.5px] text-[#6F6F6F] leading-snug mb-4 max-w-[280px]">
-                    {isExtracting
-                      ? 'Building your weekly classes & rooms in seconds...'
-                      : 'Upload routine picture or PDF. AI sorts everything automatically.'}
-                  </p>
-
-                  <div className="w-full h-11 bg-[#111111] text-white text-[12.5px] font-bold uppercase tracking-[1.5px] flex items-center justify-center gap-2 group-hover:opacity-90 transition-opacity pointer-events-none">
-                    {isExtracting ? (
-                      <span>Processing...</span>
-                    ) : (
-                      <>
-                        <Upload className="w-4 h-4" />
-                        Upload Routine & Auto-Setup
-                      </>
-                    )}
+                  <div className="text-[11px] text-[#999999] font-medium tracking-[0.5px] uppercase">
+                    JPG · PNG · PDF (Multi-Page)
                   </div>
                 </div>
 
+                {/* Illustration Immediately Below Upload Card - Shifted Up & Sized */}
+                <div className="w-[calc(100%+48px)] -mx-6 flex justify-center -mt-[200px] py-0 overflow-hidden pointer-events-none select-none">
+                  <img
+                    src="/sorted.png"
+                    alt="Schedule Sorted Illustration"
+                    className="w-full max-w-[340px] h-auto object-contain pointer-events-none"
+                  />
+                </div>
+
                 {/* 4. Manual Skip Link */}
-                <div className="mt-5 text-center">
+                <div className="relative z-30 pointer-events-auto mt-2 text-center pb-6">
                   <button
                     type="button"
                     onClick={handleSkip}
-                    className="text-[12.5px] font-medium text-[#777777] hover:text-[#111111] underline underline-offset-4 cursor-pointer"
+                    className="text-[13px] font-semibold text-[#666666] hover:text-[#111111] underline underline-offset-4 cursor-pointer py-2 px-4 inline-block transition-colors active:scale-95"
                   >
                     I'll set up or customize classes manually ➜
                   </button>
@@ -481,6 +386,11 @@ export const OnboardingModal = () => {
         </AnimatePresence>
       </div>
 
+      {/* Full AI Timetable Import Modal (Shared with App + Button) */}
+      <TimetableImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+      />
     </div>
   );
 };

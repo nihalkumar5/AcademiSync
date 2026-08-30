@@ -13,11 +13,11 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', isLoading = false, children, disabled, ...props }, ref) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-medium transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100 select-none whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8C6B5D] focus-visible:ring-offset-2';
+      'inline-flex items-center justify-center font-medium transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100 select-none whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#111111] dark:focus-visible:ring-[#FFFFFF] focus-visible:ring-offset-2';
 
     const variants = {
       primary:
-        'bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white shadow-sm border border-slate-700 dark:border-transparent',
+        'bg-[#111111] text-white hover:bg-black dark:bg-[#FFFFFF] dark:text-[#111111] dark:hover:bg-white/90 shadow-sm border border-[#111111] dark:border-transparent',
       secondary:
         'bg-zinc-100 text-zinc-800 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700/80 border border-zinc-200/50 dark:border-zinc-700/50',
       outline:
@@ -27,7 +27,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       danger:
         'bg-rose-500 text-white hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 shadow-sm',
       accent:
-        'bg-[#8C6B5D] text-white hover:bg-[#7A5B4D] dark:bg-[#8C6B5D] dark:hover:bg-[#9E7D6F] shadow-sm shadow-[#8C6B5D]/20',
+        'bg-[#111111] text-white hover:bg-black dark:bg-[#FFFFFF] dark:text-[#111111] dark:hover:bg-white/90 shadow-sm',
     };
 
     const sizes = {

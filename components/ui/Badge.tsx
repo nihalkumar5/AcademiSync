@@ -32,7 +32,7 @@ export const Badge: React.FC<BadgeProps> = ({
       'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700/60',
     neutral:
       'bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800',
-    blue: 'bg-[#8C6B5D]/10 dark:bg-[#8C6B5D]/20 text-[#8C6B5D] dark:text-[#CBB5A1] border border-[#8C6B5D]/25 dark:border-[#8C6B5D]/35',
+    blue: 'bg-[#111111]/10 dark:bg-[#FFFFFF]/20 text-[#111111] dark:text-[#FFFFFF] border border-[#111111]/25 dark:border-[#FFFFFF]/35',
     emerald:
       'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60',
     amber:
@@ -45,7 +45,7 @@ export const Badge: React.FC<BadgeProps> = ({
   const dotColors = {
     default: 'bg-zinc-400',
     neutral: 'bg-zinc-400',
-    blue: 'bg-[#8C6B5D]',
+    blue: 'bg-[#111111] dark:bg-[#FFFFFF]',
     emerald: 'bg-emerald-500',
     amber: 'bg-amber-500',
     rose: 'bg-rose-500',
