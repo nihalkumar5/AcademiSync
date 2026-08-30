@@ -108,8 +108,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode }) => {
         
         {/* Notion Logo Style (Larger Square Border with inside symbol) */}
         <div className="flex flex-col items-center gap-3">
-          <div className="border-[3px] border-[#111111] dark:border-white w-[76px] h-[76px] flex items-center justify-center bg-white dark:bg-[#111111] rounded-[12px] shadow-sm">
-            <span className="text-[32px] font-black tracking-tighter leading-none select-none">is</span>
+          <div className="border-[3px] border-[#111111] dark:border-white w-[76px] h-[76px] flex items-center justify-center bg-white dark:bg-[#111111] rounded-[12px] shadow-sm overflow-hidden p-1.5">
+            <img 
+              src="/logo51.png" 
+              alt="Logo" 
+              className="w-full h-full object-contain select-none"
+            />
           </div>
           <div className="flex items-center text-[26px] tracking-tight font-sans mt-0.5 select-none">
             <span className="font-bold text-[#111111] dark:text-white">inter</span>
