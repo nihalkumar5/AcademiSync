@@ -75,15 +75,11 @@ function parseTimeToMinutes(timeStr: string, defaultStart: number, defaultEnd: n
 const LiveMealCard = ({ 
   todayMenu, 
   timings,
-  today,
-  onEditTime,
-  onEditMenu 
+  today 
 }: { 
   todayMenu: any; 
   timings: Record<string, string>;
   today: string;
-  onEditTime: () => void;
-  onEditMenu: () => void;
 }) => {
   const [timeState, setTimeState] = React.useState<{ status: string; meal: string; timeLeft: string; items: string[] } | null>(null);
 
@@ -170,28 +166,10 @@ const LiveMealCard = ({
         </div>
       </div>
 
-      {/* Meal Name & Quick Actions */}
-      <div className="flex items-baseline justify-between mb-2">
-        <h3 className="text-[26px] sm:text-[28px] font-bold text-[#FFFFFF] leading-tight tracking-tight">
-          {timeState.meal}
-        </h3>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onEditTime}
-            className="text-[11px] font-bold tracking-wider uppercase text-white/70 hover:text-white px-2 py-0.5 border border-white/20 hover:bg-white/10 transition-colors cursor-pointer"
-          >
-            Edit Time
-          </button>
-          <button
-            type="button"
-            onClick={onEditMenu}
-            className="text-[11px] font-bold tracking-wider uppercase text-white/70 hover:text-white px-2 py-0.5 border border-white/20 hover:bg-white/10 transition-colors cursor-pointer"
-          >
-            Edit Dishes
-          </button>
-        </div>
-      </div>
+      {/* Meal Name */}
+      <h3 className="text-[26px] sm:text-[28px] font-bold text-[#FFFFFF] leading-tight tracking-tight mb-2">
+        {timeState.meal}
+      </h3>
 
       {/* Dishes */}
       {timeState.items.length > 0 && (
@@ -409,14 +387,6 @@ export const MessView: React.FC = () => {
         todayMenu={messMenu.menu?.[today] || {}} 
         timings={effectiveTimings} 
         today={today}
-        onEditTime={() => {
-          setTempTimings(effectiveTimings);
-          setShowEditTimingsModal(true);
-        }}
-        onEditMenu={() => {
-          setTempMenu(messMenu.menu || {});
-          setShowEditMenuModal(true);
-        }}
       />
 
       {/* DAY PICKER (Matching Timetable Style) */}
