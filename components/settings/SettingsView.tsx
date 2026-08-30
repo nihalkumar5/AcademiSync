@@ -319,71 +319,22 @@ export const SettingsView: React.FC = () => {
           </div>
 
           <div className="flex flex-col mt-0.5 min-w-0 flex-1">
-            {!isEditingName ? (
-              <div className="flex items-center gap-[12px] flex-wrap w-full">
-                <h2 className="text-[24px] font-medium text-[#111111] dark:text-[#FFFFFF] leading-none break-words">
-                  {name || 'Student Name'}
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTempName(name);
-                    setIsEditingName(true);
-                  }}
-                  className="text-[11px] font-bold tracking-widest uppercase text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer"
-                >
-                  Edit
-                </button>
-                <span 
-                  className="flex items-center gap-[5px] bg-[#F3F2EF] dark:bg-[#F3F2EF] text-[#111111] rounded-[16px] shrink-0 h-[30px]"
-                  style={{ padding: '0px 10px 0px 5px' }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-                    <circle cx="12" cy="12" r="12" fill="#111111" />
-                    <path d="M7.5 12L10.5 15L17 8" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span className="text-[10px] font-[600] mt-[1px]" style={{ letterSpacing: '1.6px' }}>
-                    VERIFIED
-                  </span>
-                </span>
-              </div>
-            ) : (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (tempName.trim()) {
-                    updateProfile({ ...profile, name: tempName.trim() });
-                    setName(tempName.trim());
-                    setIsEditingName(false);
-                    showToast('Name Updated', 'Your full name has been updated successfully.', 'success');
-                  }
-                }}
-                className="flex items-center gap-2 mb-2 flex-wrap"
+            <div className="flex items-center gap-2.5 flex-wrap w-full">
+              <h2 className="text-[22px] sm:text-[24px] font-medium text-[#111111] dark:text-[#FFFFFF] leading-none break-words">
+                {name || 'Student Name'}
+              </h2>
+              <span 
+                className="inline-flex items-center gap-1.5 bg-[#F3F2EF] dark:bg-[#222222] text-[#111111] dark:text-[#F4F1EA] rounded-full px-2 py-0.5 shrink-0 h-[22px]"
               >
-                <input
-                  type="text"
-                  value={tempName}
-                  onChange={(e) => setTempName(e.target.value)}
-                  placeholder="Enter full name"
-                  autoFocus
-                  required
-                  className="h-8 px-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#111111] dark:border-[#FFFFFF] text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  className="h-8 px-3 bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider cursor-pointer"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsEditingName(false)}
-                  className="h-8 px-2 text-[11px] font-bold text-[#6F6F6F] hover:text-black dark:hover:text-white uppercase cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </form>
-            )}
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                  <circle cx="12" cy="12" r="12" fill="#111111" className="dark:fill-white" />
+                  <path d="M7.5 12L10.5 15L17 8" stroke="#FFFFFF" className="dark:stroke-black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
+                  VERIFIED
+                </span>
+              </span>
+            </div>
             
             <p className="text-[13px] text-[#6F6F6F] mt-2.5 leading-snug max-w-md truncate">
               {programme} · {branch}
@@ -428,6 +379,11 @@ export const SettingsView: React.FC = () => {
             <div className="p-5 sm:p-6">
               {!isEditingAcademic ? (
                 <div className="flex flex-col gap-6">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Full Name</span>
+                    <span className="text-[15px] font-[600] text-[#111111] dark:text-[#FFFFFF] leading-snug break-words">{name || 'Not specified'}</span>
+                  </div>
+
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">College / University</span>
                     <span className="text-[15px] font-[600] text-[#111111] dark:text-[#FFFFFF] leading-snug break-words">{college || 'Not specified'}</span>
@@ -640,11 +596,11 @@ export const SettingsView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Year, Semester & Section */}
-                  <div className="grid grid-cols-3 gap-3">
+                  {/* Year, Semester */}
+                  <div className="grid grid-cols-2 gap-4 items-start">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Year</label>
-                      <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] h-4 flex items-center">Year</label>
+                      <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] h-[44px]">
                         <CalendarDays className="w-4 h-4 text-[#A0A0A0] shrink-0" />
                         <input
                           type="number"
@@ -653,21 +609,22 @@ export const SettingsView: React.FC = () => {
                           value={year}
                           onChange={(e) => setYear(Number(e.target.value))}
                           required
-                          className="w-full bg-transparent text-[13.5px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
                         />
                       </div>
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Semester (1-14)</label>
-                      <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] h-4 flex items-center">Semester</label>
+                      <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] h-[44px]">
                         <input
                           type="number"
                           min="1"
                           max="14"
                           value={semester}
                           onChange={(e) => setSemester(Number(e.target.value))}
+                          placeholder="1-14"
                           required
-                          className="w-full bg-transparent text-[13.5px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
                         />
                       </div>
                     </div>
