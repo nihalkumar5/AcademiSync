@@ -13,7 +13,7 @@ import {
   searchCollegesAsync, 
   CollegeItem 
 } from '@/lib/collegeDirectory';
-import { getCanonicalBatchKey } from '@/lib/timetableUtils';
+import { getCanonicalBatchKey, isExplicitSection, formatBatchDisplayName } from '@/lib/timetableUtils';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Search, Sparkles, Users, CheckCircle2, ArrowRight, ShieldCheck, School, BookOpen, Layers, Crown } from 'lucide-react';
@@ -382,7 +382,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-indigo-600" />
                     <span className="text-[13px] font-bold text-indigo-900 dark:text-indigo-200">
-                      Setup Official Section {section} Timetable
+                      Setup Official {isExplicitSection(section) ? `Section ${section} ` : ''}Timetable
                     </span>
                   </div>
                   <p className="text-[12px] text-indigo-700/80 dark:text-indigo-300 leading-relaxed">
@@ -394,7 +394,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                     }}
                     className="w-full h-10 text-[13px]"
                   >
-                    Scan & Create Section {section} Timetable
+                    Scan & Create {isExplicitSection(section) ? `Section ${section} ` : ''}Timetable
                   </Button>
                 </div>
               ) : (
@@ -403,12 +403,12 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                       <span className="text-[13px] font-bold text-amber-950 dark:text-amber-200">
-                        Section {section} Has No Live Batch Yet
+                        {isExplicitSection(section) ? `Section ${section} Has No Live Batch Yet` : 'No Live Batch Timetable Yet'}
                       </span>
                     </div>
                   </div>
                   <p className="text-[12px] text-amber-800/90 dark:text-amber-300 leading-relaxed">
-                    Be the first to set up your section, apply for CR verification, or ask your classmates to join via WhatsApp!
+                    Be the first to set up your batch, apply for CR verification, or ask your classmates to join via WhatsApp!
                   </p>
                   <button
                     type="button"
@@ -416,7 +416,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                     className="w-full h-10 bg-amber-500 hover:bg-amber-600 text-black text-[13px] font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm shadow-amber-500/20 transition-all cursor-pointer"
                   >
                     <Crown className="w-4 h-4" />
-                    Setup / Request Section Batch
+                    Setup / Request Batch
                   </button>
                 </div>
               )}

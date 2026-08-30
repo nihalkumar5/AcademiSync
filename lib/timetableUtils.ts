@@ -742,6 +742,38 @@ export const normalizeBranchName = (branch: string): string => {
   return str.replace(/[^a-z0-9]/g, '') || 'general';
 };
 
+export const isExplicitSection = (section?: string): boolean => {
+  if (!section) return false;
+  const clean = section.trim().toUpperCase();
+  if (
+    !clean || 
+    clean === 'A' || 
+    clean === 'SEC A' || 
+    clean === 'SECTION A' || 
+    clean === 'NO SECTION' || 
+    clean === 'SINGLE BATCH' || 
+    clean === 'NONE' || 
+    clean.includes('NO SECTION') || 
+    clean.includes('SINGLE')
+  ) {
+    return false;
+  }
+  return true;
+};
+
+export const formatBatchDisplayName = (branch?: string, semester?: number, section?: string): string => {
+  const b = branch || 'Course';
+  const sem = semester ? `Sem ${semester}` : '';
+  const hasSec = isExplicitSection(section);
+  
+  if (hasSec) {
+    const secClean = (section || '').replace(/section\s*/i, '').replace(/sec\s*/i, '').trim() || section;
+    return sem ? `${b} · ${sem} (Sec ${secClean})` : `${b} (Sec ${secClean})`;
+  }
+  
+  return sem ? `${b} · ${sem}` : b;
+};
+
 export const normalizeSection = (section?: string): string => {
   if (!section) return 'secA';
   const clean = section.toUpperCase().trim().replace(/[^A-Z0-9]/g, '');
@@ -764,7 +796,7 @@ export const getCanonicalBatchKey = (
   const cleanProgKey = normalizeProgrammeName(programme);
   const cleanBranchKey = normalizeBranchName(branch);
 
-  if (section && section.trim() && section.toUpperCase() !== 'A') {
+  if (isExplicitSection(section)) {
     const cleanSectionKey = normalizeSection(section);
     return `${cleanCollegeKey}_${cleanProgKey}_${cleanBranchKey}_sem${semester}_${cleanSectionKey}`;
   }

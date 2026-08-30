@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useApp } from '@/context/AppContext';
-import { getShortCollegeName, getCanonicalBatchKey } from '@/lib/timetableUtils';
+import { getShortCollegeName, getCanonicalBatchKey, isExplicitSection, formatBatchDisplayName } from '@/lib/timetableUtils';
 import { CRApplicationModal } from '@/components/cr/CRApplicationModal';
 import { 
   Crown, 
@@ -50,18 +50,21 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
   const activeProg = programme || profile.programme || 'B.Tech';
   const activeBranch = branch || profile.branch || 'Engineering';
   const activeSem = semester || profile.semester || 1;
-  const activeSec = section || profile.section || 'A';
+  const activeSec = section || profile.section || '';
 
   const shortCollege = getShortCollegeName(activeCollege);
-  const canonicalKey = getCanonicalBatchKey(activeCollege, activeProg, activeBranch, activeSem, activeSec);
+  const hasMultipleSections = isExplicitSection(activeSec);
+  const cleanSec = hasMultipleSections ? activeSec.replace(/section\s*/i, '').trim() : '';
+  const batchLabel = formatBatchDisplayName(activeBranch, activeSem, activeSec);
 
   const handleShareToWhatsApp = async () => {
     const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://intersemester.com';
-    const messageText = `Hey batchmates! 👋\n\nNobody has created the official timetable for our section yet on Intersemester:\n🏛️ *${shortCollege}*\n📚 *${activeBranch} (Sem ${activeSem}, Section ${activeSec})*\n\nIf you are our Class Representative (CR) or want to setup the synced batch timetable for all of us, open this link and claim CR access:\n👉 ${appUrl}\n\nLet's get all class updates, room alerts & assignments synced! 🚀`;
+    const courseTitle = `${activeBranch} (Sem ${activeSem}${hasMultipleSections ? `, Section ${cleanSec}` : ''})`;
+    const messageText = `Hey batchmates! 👋\n\nNobody has created the official timetable for our batch yet on Intersemester:\n🏛️ *${shortCollege}*\n📚 *${courseTitle}*\n\nIf you are our Class Representative (CR) or want to setup the synced batch timetable for all of us, open this link and claim CR access:\n👉 ${appUrl}\n\nLet's get all class updates, room alerts & assignments synced! 🚀`;
 
     try {
       const res = await shareLink({
-        title: `Setup Batch: ${shortCollege} - ${activeBranch} Sec ${activeSec}`,
+        title: `Setup Batch: ${shortCollege} - ${courseTitle}`,
         text: messageText,
         url: appUrl,
         dialogTitle: 'Share with Class WhatsApp Group'
@@ -83,7 +86,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
 
   return (
     <>
-      <Modal isOpen={isOpen && !showCRModal} onClose={onClose} title="Setup Section Batch" maxWidth="md">
+      <Modal isOpen={isOpen && !showCRModal} onClose={onClose} title="Setup Batch Timetable" maxWidth="md">
         <div className="flex flex-col gap-5 py-1 text-left">
           {/* Header Banner */}
           <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-indigo-500/10 to-purple-500/10 border border-amber-500/20 flex flex-col gap-2">
@@ -92,9 +95,11 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
                 <Sparkles className="w-3.5 h-3.5" />
                 No Live Batch Yet
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 bg-amber-500/20 text-amber-900 dark:text-amber-200 rounded-full">
-                Section {activeSec}
-              </span>
+              {hasMultipleSections && (
+                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 bg-amber-500/20 text-amber-900 dark:text-amber-200 rounded-full">
+                  Section {cleanSec}
+                </span>
+              )}
             </div>
 
             <div className="flex flex-col gap-0.5">
@@ -102,7 +107,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
                 {shortCollege}
               </h3>
               <p className="text-[12.5px] text-slate-600 dark:text-zinc-300 font-medium">
-                {activeBranch} · Semester {activeSem} · Section {activeSec}
+                {activeBranch} · Semester {activeSem} {hasMultipleSections ? `· Section ${cleanSec}` : ''}
               </p>
             </div>
           </div>

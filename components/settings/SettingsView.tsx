@@ -85,8 +85,8 @@ export const SettingsView: React.FC = () => {
   );
   const [branch, setBranch] = useState<string>(profile.branch || '');
   const [year, setYear] = useState(profile.year);
-  const [semester, setSemester] = useState(profile.semester);
-  const [section, setSection] = useState<string>(profile.section || 'A');
+  const [semester, setSemester] = useState<number | string>(profile.semester);
+  const [section, setSection] = useState<string>(profile.section || '');
   const [pendingBatchKey, setPendingBatchKey] = useState<string | null>(null);
   const [matchedBatchData, setMatchedBatchData] = useState<any>(null);
   const [showDiscoveryModal, setShowDiscoveryModal] = useState(false);
@@ -189,14 +189,14 @@ export const SettingsView: React.FC = () => {
     const cleanProg = programme.trim();
     const cleanBranch = branch.trim();
     const cleanSem = Number(semester);
-    const cleanSec = section.trim() || 'A';
+    const cleanSec = section.trim();
 
     const hasAcademicChanges = 
       cleanCollege !== profile.college ||
       cleanProg !== profile.programme ||
       cleanBranch !== profile.branch ||
       cleanSem !== profile.semester ||
-      cleanSec !== (profile.section || 'A');
+      cleanSec !== (profile.section || '');
 
     const savedFields = {
       name: name.trim(),

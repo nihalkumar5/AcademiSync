@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useApp } from '@/context/AppContext';
-import { getCanonicalBatchKey } from '@/lib/timetableUtils';
+import { getCanonicalBatchKey, isExplicitSection, formatBatchDisplayName } from '@/lib/timetableUtils';
 import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Crown, ShieldCheck, Clock, CheckCircle2, AlertCircle, Phone, FileText, Send, Sparkles } from 'lucide-react';
@@ -139,7 +139,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                 You are a Verified Class Representative! 👑
               </h4>
               <p className="text-[13px] text-amber-800/80 dark:text-amber-400 mt-1">
-                You have full authority to create, update, cancel classes, and broadcast notices to {profile.branch} (Sec {profile.section || 'A'}).
+                You have full authority to create, update, cancel classes, and broadcast notices to {formatBatchDisplayName(profile.branch, profile.semester, profile.section)}.
               </p>
             </div>
             <Button onClick={onClose} className="w-full mt-2">
@@ -155,7 +155,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
               </h4>
             </div>
             <p className="text-[13px] text-amber-800/90 dark:text-amber-300 leading-relaxed">
-              Your CR verification request for <strong>{college}</strong> · <strong>{branch} (Sem {semester}, Sec {section})</strong> is pending approval with the Super Admin.
+              Your CR verification request for <strong>{college}</strong> · <strong>{formatBatchDisplayName(branch, semester, section)}</strong> is pending approval with the Super Admin.
             </p>
             <div className="p-3 bg-white/60 dark:bg-zinc-900/60 rounded-xl text-[12px] space-y-1 font-mono text-slate-700 dark:text-zinc-300">
               <div><strong>Roll No:</strong> {existingRequest.rollNumber}</div>
@@ -198,10 +198,10 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
             <div className="p-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl space-y-1 text-[12px]">
               <div className="text-slate-500 font-medium">Batch You Will Manage:</div>
               <div className="font-bold text-slate-900 dark:text-white">
-                {college || 'No college set'} · {branch || 'No branch'}
+                {college || 'No college set'} · {formatBatchDisplayName(branch, semester, section)}
               </div>
               <div className="text-[11px] text-slate-500">
-                Semester {semester} · Section {section} · Roll No: {profile.rollNumber || 'N/A'}
+                Roll No: {profile.rollNumber || 'N/A'} {isExplicitSection(section) ? `· Section ${section}` : ''}
               </div>
             </div>
 
