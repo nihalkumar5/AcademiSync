@@ -438,16 +438,22 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
               </span>
             </div>
 
-            <Button onClick={handleCopyLink} className="w-full h-12 text-[14px] flex items-center justify-center gap-2">
-              {copying ? <><Check className="w-4 h-4" /> Copied</> : 'Copy invite link'}
-            </Button>
+            <div className="flex flex-col w-full gap-3">
+              <Button onClick={handleCopyLink} className="w-full h-12 text-[14px] flex items-center justify-center gap-2">
+                {copying ? <><Check className="w-4 h-4" /> Copied</> : 'Copy invite link'}
+              </Button>
 
-            <button
-              onClick={() => setActiveView('mess')}
-              className="mt-6 text-[14px] font-medium text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] underline underline-offset-4"
-            >
-              Go to my mess menu
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onCancel) onCancel();
+                  setActiveView('mess');
+                }}
+                className="w-full h-12 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[14px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer flex items-center justify-center gap-2"
+              >
+                Go to my mess menu <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
