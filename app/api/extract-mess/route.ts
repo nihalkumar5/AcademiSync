@@ -34,30 +34,17 @@ export async function POST(req: Request) {
     }
 
     if (apiKey && imageList.length > 0) {
-      const candidateModels = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+      const candidateModels = ['gemini-3.6-flash', 'gemini-2.0-flash-exp', 'gemini-1.5-flash-latest'];
       const genAI = new GoogleGenerativeAI(apiKey);
 
       const prompt = `You are a culinary expert & OCR assistant specializing in Indian hostel and university mess menus.
-Analyze the attached mess menu document(s) / image(s) / PDF(s) and extract the full weekly meal plan.
+Analyze the attached mess menu document(s) / image(s) / PDF(s) and extract the exact weekly meal plan written on the document.
 
 CRITICAL INSTRUCTIONS:
 1. AUTO-CORRECT SPELLINGS & TYPOS:
+   - Carefully read the real text from the image/PDF.
    - Identify Indian dishes, breads, curries, lentils, breakfast items, snacks, sweets, and beverages.
-   - Correct all OCR noise, spelling mistakes, and bad transcriptions into clean, appetizing proper names.
-   - Examples of corrections:
-     * "Dal Bati" / "Daal Batti" -> "Dal Baati Churma"
-     * "Sambhar" / "Sambar" -> "Sambar"
-     * "Puri Sabji" / "Poori Bhaji" -> "Puri Bhaji"
-     * "Chole Bhature" / "Chhole Batore" -> "Chole Bhature"
-     * "Paneer Butter Masala" / "Panir Buttr" -> "Paneer Butter Masala"
-     * "Poha Jalebi" / "Pohe" -> "Poha"
-     * "Aloo Paratha" / "Alu Paratha" -> "Aloo Paratha"
-     * "Kadhai Paneer" / "Kadhai Panir" -> "Kadhai Paneer"
-     * "Rajma Chawal" / "Rajma Rice" -> "Rajma", "Rice"
-     * "Gulab Jamun" / "Glab Jmun" -> "Gulab Jamun"
-     * "Idli Sambar" -> "Idli", "Sambar", "Coconut Chutney"
-     * "Matar Paneer" / "Mutter Paneer" -> "Matar Paneer"
-     * "Dal Makhani", "Dal Tadka", "Mix Veg", "Kadhi Pakora", "Egg Curry", "Veg Biryani", "Raita", "Masala Dosa", "Upma"
+   - Correct OCR noise, spelling mistakes, and bad transcriptions into clean, appetizing proper names (e.g. "Dal Bati" -> "Dal Baati Churma", "Sambhar" -> "Sambar", "Puri Sabji" -> "Puri Bhaji", "Chole Bhature" -> "Chole Bhature", "Paneer Butter Masala" -> "Paneer Butter Masala", "Poha" -> "Poha", "Aloo Paratha" -> "Aloo Paratha").
    - Clean up each item: trim extra commas, remove prices, quantities (e.g. "2 pcs"), or day labels inside items.
 
 2. DAYS AND MEALS:
@@ -78,10 +65,10 @@ Return ONLY valid JSON matching this exact structure:
 {
   "menu": {
     "Monday": {
-      "Breakfast": ["Aloo Paratha", "Curd", "Tea", "Banana"],
-      "Lunch": ["Rajma", "Jeera Rice", "Roti", "Salad", "Boondi Raita"],
-      "Snacks": ["Samosa", "Mint Chutney", "Masala Tea"],
-      "Dinner": ["Paneer Butter Masala", "Dal Makhani", "Butter Roti", "Gulab Jamun"]
+      "Breakfast": ["Aloo Paratha", "Curd", "Tea"],
+      "Lunch": ["Rajma", "Rice", "Roti", "Salad"],
+      "Snacks": ["Samosa", "Tea"],
+      "Dinner": ["Paneer Butter Masala", "Dal Makhani", "Roti", "Gulab Jamun"]
     },
     "Tuesday": { ... },
     "Wednesday": { ... },
@@ -106,6 +93,7 @@ Do not include any markdown backticks or explanations, return ONLY raw JSON.`;
         },
       }));
 
+      let lastError = null;
       for (const modelName of candidateModels) {
         try {
           const model = genAI.getGenerativeModel({ model: modelName });
@@ -128,9 +116,17 @@ Do not include any markdown backticks or explanations, return ONLY raw JSON.`;
             timings: timingsObj,
             source: `Gemini Vision AI (${modelName})`,
           });
-        } catch (modelErr) {
+        } catch (modelErr: any) {
           console.warn(`Gemini model ${modelName} error:`, modelErr);
+          lastError = modelErr;
         }
+      }
+
+      if (lastError) {
+        return NextResponse.json({ 
+          success: false, 
+          error: lastError.message || 'AI vision extraction failed. Please try a clearer photo or PDF.' 
+        }, { status: 500 });
       }
     }
 
