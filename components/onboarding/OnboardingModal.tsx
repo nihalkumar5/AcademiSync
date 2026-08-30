@@ -52,40 +52,26 @@ export const OnboardingModal = () => {
   const [suggestedColleges, setSuggestedColleges] = useState<string[]>([]);
   const [isLoadingColleges, setIsLoadingColleges] = useState(false);
 
-  // Live Batch Discovery
-  const [collegeBatches, setCollegeBatches] = useState<any[]>([]);
-  const [loadingBatches, setLoadingBatches] = useState(false);
-
-  // Debounced SheerID live organization lookup + Live Batch Discovery
+  // Debounced SheerID live organization lookup
   useEffect(() => {
     if (college.trim().length < 2) {
       setSuggestedColleges([]);
-      setCollegeBatches([]);
       return;
     }
 
     const delayDebounce = setTimeout(async () => {
       setIsLoadingColleges(true);
-      setLoadingBatches(true);
       try {
-        const [orgRes, batches] = await Promise.allSettled([
-          fetch(`https://orgsearch.sheerid.net/rest/organization/search?country=IN&type=UNIVERSITY&name=${encodeURIComponent(college)}`),
-          fetchCollegeBatches(college)
-        ]);
-
-        if (orgRes.status === 'fulfilled' && orgRes.value.ok) {
-          const data = await orgRes.value.json();
+        const res = await fetch(`https://orgsearch.sheerid.net/rest/organization/search?country=IN&type=UNIVERSITY&name=${encodeURIComponent(college)}`);
+        if (res.ok) {
+          const data = await res.json();
           const names = data.map((item: any) => item.name);
           setSuggestedColleges(names);
         }
-        if (batches.status === 'fulfilled') {
-          setCollegeBatches(batches.value);
-        }
       } catch (err) {
-        console.error('Failed to fetch colleges/batches:', err);
+        console.error('Failed to fetch colleges:', err);
       } finally {
         setIsLoadingColleges(false);
-        setLoadingBatches(false);
       }
     }, 350);
 
@@ -190,25 +176,6 @@ export const OnboardingModal = () => {
     } finally {
       setIsJoiningCode(false);
     }
-  };
-
-  // Quick Join from Live Active Batches List
-  const handleQuickJoinBatch = (b: any) => {
-    if (b.college) setCollege(b.college);
-    if (b.programme) setProgramme(b.programme);
-    if (b.branch) setBranch(b.branch);
-    if (b.semester) setSemester(b.semester);
-    if (b.section) setSection(b.section);
-
-    setFoundBatchData({
-      exists: true,
-      canonicalKey: b.id,
-      studentCount: b.studentCount || (b.crEmails?.length || 1),
-      creatorName: b.creatorName || 'Classmate',
-      subjectsCount: b.subjectsCount || (b.subjects?.length || 0),
-      rawBatch: b,
-    });
-    setSubStep('confirm');
   };
 
   // 2. Step 1 -> Find My Batch Action (Smart Firestore lookup via searchBatchTimetable)
@@ -641,49 +608,6 @@ export const OnboardingModal = () => {
                         <p className="text-[11px] text-[#A0A0A0] font-medium">
                           Type 2+ letters to search verified universities, or type manually if not found.
                         </p>
-
-                        {/* Live Active Batches at This College (Instant 1-Tap Join) */}
-                        {loadingBatches && (
-                          <div className="flex items-center gap-2 text-xs font-mono text-[#666666] py-1">
-                            <span className="w-3 h-3 border border-[#111111] border-t-transparent rounded-full animate-spin" />
-                            Checking active class batches...
-                          </div>
-                        )}
-
-                        {collegeBatches.length > 0 && !loadingBatches && (
-                          <div className="mt-1 flex flex-col gap-2 p-3 bg-[#FBFBFA] border border-[#E3E3E0] rounded-none">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                Active Batches Found ({collegeBatches.length})
-                              </span>
-                              <span className="text-[10.5px] text-[#888888]">1-Tap Join</span>
-                            </div>
-                            <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto divide-y divide-black/5 pr-1">
-                              {collegeBatches.map((b) => (
-                                <button
-                                  key={b.id}
-                                  type="button"
-                                  onClick={() => handleQuickJoinBatch(b)}
-                                  className="w-full text-left p-2.5 bg-white hover:bg-[#F2F2F0] border border-[#E8E8E5] flex items-center justify-between group transition-all cursor-pointer"
-                                >
-                                  <div className="flex flex-col gap-0.5 min-w-0 pr-2">
-                                    <span className="text-[13px] font-bold text-[#111111] group-hover:text-black truncate">
-                                      {b.programme || 'B.Tech'} {b.branch || 'General'} · Sem {b.semester} {b.section ? `(${b.section})` : ''}
-                                    </span>
-                                    <span className="text-[11px] text-[#666666] flex items-center gap-2">
-                                      <span>👥 {b.studentCount || 1} classmates</span>
-                                      {b.subjectsCount > 0 && <span>📚 {b.subjectsCount} subjects</span>}
-                                    </span>
-                                  </div>
-                                  <span className="text-[11.5px] font-bold text-[#111111] px-2.5 py-1 bg-[#F4F4F2] group-hover:bg-[#111111] group-hover:text-white transition-colors shrink-0">
-                                    Join ➜
-                                  </span>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
                       </div>
 
                       {/* Searchable Programme Dropdown */}
