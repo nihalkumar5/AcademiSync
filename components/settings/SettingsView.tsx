@@ -805,14 +805,15 @@ export const SettingsView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowDiscoveryModal(true)}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer shadow-sm shadow-indigo-600/20"
+                    className="px-4 py-2.5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-2"
                   >
-                    🏫 Find & Join My Batch
+                    <Building2 className="w-3.5 h-3.5" />
+                    Find & Join Batch
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowBatchSetupPrompt(true)}
-                    className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer shadow-sm shadow-amber-500/20 flex items-center gap-1.5"
+                    className="px-4 py-2.5 border border-[#D8D8D8] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] text-[#111111] dark:text-[#FFFFFF] text-[11px] font-bold uppercase tracking-wider hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-all cursor-pointer flex items-center gap-1.5"
                   >
                     <Crown className="w-3.5 h-3.5" />
                     Setup / Request Batch
@@ -823,7 +824,7 @@ export const SettingsView: React.FC = () => {
                       try {
                         const code = await shareTimetableWithBatch();
                         const link = `${window.location.origin}/?invite=${code}`;
-                        const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
+                        const batchTitle = `${profile.branch || 'Class'}${isExplicitSection(profile.section) ? ` - Sec ${profile.section}` : ''} (Sem ${profile.semester || ''})`;
                         const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 
 ⚡ Realtime Class Cancellation & Reschedule Alerts
@@ -841,8 +842,9 @@ export const SettingsView: React.FC = () => {
                         if (res === 'copied') showToast('Link Copied', 'Invite link copied to clipboard!', 'success');
                       } catch (err) {}
                     }}
-                    className="px-4 py-2 border border-[#D8D8D8] dark:border-[#333333] hover:border-[#111111] dark:hover:border-white text-[#111111] dark:text-[#FFFFFF] text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                    className="px-4 py-2.5 border border-[#D8D8D8] dark:border-[#333333] hover:border-[#111111] dark:hover:border-white text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1.5"
                   >
+                    <Share2 className="w-3.5 h-3.5" />
                     Create & Invite
                   </button>
                 </div>

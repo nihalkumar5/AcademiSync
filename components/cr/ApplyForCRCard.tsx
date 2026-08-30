@@ -16,22 +16,19 @@ export const ApplyForCRCard: React.FC = () => {
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        {/* Glow accent */}
-        <div className="absolute -right-8 -top-8 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="flex items-start gap-3.5 z-10">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
-            <Crown className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+      <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-3 z-10">
+          <div className="w-8 h-8 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] flex items-center justify-center shrink-0">
+            <Crown className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h4 className="text-[14px] font-bold text-slate-900 dark:text-white">
+              <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF]">
                 Are you the Class Representative (CR)?
               </h4>
             </div>
-            <p className="text-[12px] text-slate-600 dark:text-zinc-400 mt-0.5 max-w-md leading-relaxed">
-              Apply for CR access to create, publish & broadcast verified schedules and class cancellation alerts for your section.
+            <p className="text-[12px] text-[#6F6F6F] mt-0.5 max-w-md leading-relaxed">
+              Apply for CR access to create, publish & broadcast verified schedules and class cancellation alerts.
             </p>
           </div>
         </div>
@@ -39,9 +36,9 @@ export const ApplyForCRCard: React.FC = () => {
         <button
           type="button"
           onClick={() => setShowApplyModal(true)}
-          className="z-10 shrink-0 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-black text-[12px] font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm shadow-amber-500/20 transition-all cursor-pointer"
+          className="shrink-0 px-4 py-2.5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer"
         >
-          <Crown className="w-4 h-4" />
+          <Crown className="w-3.5 h-3.5" />
           Apply for CR Access
         </button>
       </div>
