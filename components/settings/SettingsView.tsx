@@ -3,7 +3,7 @@
 import { shareLink } from '@/lib/shareUtils';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useUser, UserButton, SignedIn, SignedOut, SignInButton, SignOutButton } from '@clerk/nextjs';
+import { useUser, useClerk, UserButton, SignedIn, SignedOut, SignInButton, SignOutButton } from '@clerk/nextjs';
 import { useApp } from '@/context/AppContext';
 import { Programme, Branch } from '@/lib/types';
 import { storage } from '@/lib/storage';
@@ -1247,12 +1247,16 @@ export const SettingsView: React.FC = () => {
               <Download className="w-4 h-4" />
               Export data
             </button>
-            <SignOutButton>
-              <button className="w-full py-3 border border-[#D8D8D8] dark:border-[#333333] text-[13px] font-bold text-red-600 flex items-center justify-center gap-2 hover:bg-[#F4F4F4] dark:hover:bg-[#1A1A1A] transition-colors">
-                <LogOut className="w-4 h-4" />
-                Sign out
-              </button>
-            </SignOutButton>
+            <button 
+              onClick={async () => {
+                await clerk.signOut();
+                window.location.href = '/sign-in';
+              }}
+              className="w-full py-3 border border-[#D8D8D8] dark:border-[#333333] text-[13px] font-bold text-red-600 flex items-center justify-center gap-2 hover:bg-[#F4F4F4] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign out
+            </button>
           </div>
         </div>
       </Modal>

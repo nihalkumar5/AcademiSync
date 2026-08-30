@@ -4,19 +4,24 @@ const config: CapacitorConfig = {
   appId: 'com.intersemester.app',
   appName: 'Intersemester',
   webDir: 'out',
+  overrideUserAgent: 'Mozilla/5.0 (Linux; Android 13; Pixel 7 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36',
   server: {
     url: 'https://academi-sync-chi.vercel.app/',
     cleartext: true,
     allowNavigation: [
       'academi-sync-chi.vercel.app',
       '*.clerk.accounts.dev',
-      'clerk.com'
+      'clerk.com',
+      'accounts.google.com',
+      '*.google.com',
+      '*.googleapis.com',
+      '*.googleusercontent.com'
     ]
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 5000, // Fallback duration in case programmatic hide fails
-      launchAutoHide: false,    // Wait for JS code to trigger hide
+      launchShowDuration: 5000,
+      launchAutoHide: false,
       backgroundColor: '#FFFFFF',
       androidScaleType: 'CENTER_CROP',
       showSpinner: false,

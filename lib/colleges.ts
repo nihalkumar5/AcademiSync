@@ -96,7 +96,8 @@ export const STANDARD_BRANCHES = [
   // Engineering Branches
   'Computer Science & Engineering (CSE)',
   'Information Technology (IT)',
-  'Artificial Intelligence & Data Science (AI & DS)',
+  'Data Science & Artificial Intelligence (DS & AI)',
+  'Artificial Intelligence & Machine Learning (AI & ML)',
   'Electronics & Communication (ECE)',
   'Electrical & Electronics (EEE)',
   'Electrical Engineering (EE)',

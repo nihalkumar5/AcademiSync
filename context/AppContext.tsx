@@ -23,7 +23,7 @@ import { calculateTomorrowCarryItems, getCanonicalBatchKey } from '@/lib/timetab
 import { checkAndGenerateSmartNotifications } from '@/lib/notificationEngine';
 import confetti from 'canvas-confetti';
 import { useUser } from '@clerk/nextjs';
-import { doc, collection, onSnapshot, setDoc, deleteDoc, getDoc, updateDoc, increment, arrayUnion } from 'firebase/firestore';
+import { doc, collection, onSnapshot, setDoc, deleteDoc, getDoc, getDocs, query, where, updateDoc, increment, arrayUnion } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { registerPushNotifications } from '@/lib/pushNotifications';
 import { triggerLocalNotification, scheduleTimetableLocalNotifications } from '@/lib/localNotifications';
@@ -1352,12 +1352,49 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     semester: number
   ) => {
     try {
+      // 1. Direct canonical key lookup
       const canonicalKey = getCanonicalBatchKey(college, programme, branch, semester);
       const docRef = doc(db, 'shared_timetables', canonicalKey);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        return docSnap.data();
+        return { ...docSnap.data(), id: canonicalKey };
       }
+
+      // 2. Resilient Firestore search by semester & fuzzy fields
+      const q = query(collection(db, 'shared_timetables'), where('semester', '==', Number(semester)));
+      const querySnap = await getDocs(q);
+      
+      if (!querySnap.empty) {
+        const cleanInputCollege = (college || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const cleanInputProg = (programme || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const cleanInputBranch = (branch || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        for (const d of querySnap.docs) {
+          const data = d.data();
+          const docCollege = (data.college || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          const docProg = (data.programme || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          const docBranch = (data.branch || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+          const progMatch = !cleanInputProg || docProg.includes(cleanInputProg) || cleanInputProg.includes(docProg);
+          const collegeMatch = 
+            docCollege.includes(cleanInputCollege) || 
+            cleanInputCollege.includes(docCollege) ||
+            (cleanInputCollege.includes('iiit') && docCollege.includes('iiit')) ||
+            (cleanInputCollege.includes('nayaraipur') && docCollege.includes('nayaraipur')) ||
+            (cleanInputCollege.includes('shyamaprasad') && docCollege.includes('shyamaprasad'));
+
+          const branchMatch = 
+            docBranch.includes(cleanInputBranch) || 
+            cleanInputBranch.includes(docBranch) ||
+            ((cleanInputBranch.includes('ds') || cleanInputBranch.includes('data')) && (docBranch.includes('ds') || docBranch.includes('data'))) ||
+            ((cleanInputBranch.includes('cse') || cleanInputBranch.includes('computer')) && (docBranch.includes('cse') || docBranch.includes('computer')));
+
+          if (progMatch && collegeMatch && branchMatch) {
+            return { ...data, id: d.id };
+          }
+        }
+      }
+
       return null;
     } catch (e) {
       console.error('Error searching for batch timetable:', e);
@@ -1468,6 +1505,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const docRef = doc(db, 'shared_timetables', canonicalKey);
       
       const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
+      const newInviteCode = generateInviteCode();
 
       const payload = sanitizeForFirestore({
         id: canonicalKey,
@@ -1480,6 +1518,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         creatorEmail: userEmail,
         crUserIds: [user?.id].filter(Boolean),
         crEmails: [userEmail].filter(Boolean),
+        inviteCode: newInviteCode,
         subjects: subjects,
         timetable: timetable,
         events: events,

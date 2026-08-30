@@ -516,43 +516,41 @@ export const getSubjectThemeStyle = (hexColor?: string, theme: 'light' | 'dark' 
   }
 };
 
-export const getShortCollegeName = (fullName: string): string => {
-  if (!fullName) return '';
-  const name = fullName.replace(/\([^)]+\)/g, '').trim();
+export const getShortCollegeName = (name: string): string => {
+  if (!name) return 'COLLEGE';
+
+  // Strip trailing city/state in brackets like (Naya Raipur, CT) or (Pilani, RJ)
+  let cleanName = name.replace(/\([^)]*\)/g, '').trim();
+  const lowerName = cleanName.toLowerCase();
   
-  if (name.toLowerCase().includes('shyama prasad mukherjee')) {
+  // Specific known landmark institutes
+  if (lowerName.includes('shyama prasad') || lowerName.includes('iiit naya raipur') || lowerName.includes('iiitnr')) {
     return 'IIIT NAYA RAIPUR';
   }
-  
-  if (name.length <= 15 && !name.toLowerCase().includes('institute') && !name.toLowerCase().includes('university')) {
-    return name.toUpperCase();
-  }
 
-  const lowerName = name.toLowerCase();
-  
   if (lowerName.includes('institute of technology') || lowerName.includes('institute of information technology') || lowerName.includes('university of')) {
-    const stopWords = ['of', 'and', 'for', 'in', 'the', 'institute', 'technology', 'university', 'science', 'engineering', 'national', 'indian', 'international'];
-    const words = name.split(/[\s,]+/);
+    const words = cleanName.split(/[\s,]+/).filter(Boolean);
     const hasStandardPrefix = lowerName.includes('national institute') || lowerName.includes('indian institute') || lowerName.includes('international institute');
     
     if (hasStandardPrefix) {
       let prefix = '';
       if (lowerName.includes('national institute')) prefix = 'NIT';
-      if (lowerName.includes('indian institute of technology')) prefix = 'IIT';
+      else if (lowerName.includes('indian institute of technology')) prefix = 'IIT';
       else if (lowerName.includes('indian institute of information technology')) prefix = 'IIIT';
       else if (lowerName.includes('international institute of information technology')) prefix = 'IIIT';
       else if (lowerName.includes('indian institute')) prefix = 'II';
       
       if (prefix) {
-        const lastWord = words[words.length - 1].replace(/[^a-zA-Z]/g, '');
-        return `${prefix} ${lastWord.toUpperCase()}`;
+        const meaningfulWords = words.filter(w => !['of', 'and', 'for', 'in', 'the', 'institute', 'technology', 'university', 'science', 'engineering', 'national', 'indian', 'international', 'dr', 'dr.'].includes(w.toLowerCase()));
+        const loc = meaningfulWords.slice(-2).join(' ').replace(/[^a-zA-Z\s]/g, '').trim();
+        return `${prefix} ${loc ? loc.toUpperCase() : 'MAIN'}`;
       }
     }
   }
 
   // Fallback: Acronym generator for long names
-  const stopWords = ['of', 'and', 'for', 'in', 'the'];
-  const words = name.split(/[\s,]+/).filter(w => !stopWords.includes(w.toLowerCase()) && w.length > 0);
+  const stopWords = ['of', 'and', 'for', 'in', 'the', 'dr', 'dr.'];
+  const words = cleanName.split(/[\s,]+/).filter(w => !stopWords.includes(w.toLowerCase()) && w.length > 0);
   if (words.length >= 3) {
     const initials = words.slice(0, -1).map(w => w[0]).join('').toUpperCase();
     const lastWord = words[words.length - 1].toUpperCase();
@@ -561,7 +559,7 @@ export const getShortCollegeName = (fullName: string): string => {
     }
   }
 
-  return name.toUpperCase();
+  return cleanName.toUpperCase();
 };
 
 export const getCanonicalBatchKey = (college: string, programme: string, branch: string, semester: number): string => {
@@ -571,6 +569,9 @@ export const getCanonicalBatchKey = (college: string, programme: string, branch:
       .trim()
       .replace(/computer\s+science\s*(?:and|&)?\s*(?:engineering|engg)?/g, 'cse')
       .replace(/information\s+technology/g, 'it')
+      .replace(/data\s+science\s*(?:and|&)?\s*(?:artificial\s+intelligence|ai)?/g, 'dsai')
+      .replace(/artificial\s+intelligence\s*(?:and|&)?\s*(?:data\s+science|ds)?/g, 'dsai')
+      .replace(/artificial\s+intelligence\s*(?:and|&)?\s*(?:machine\s+learning|ml)?/g, 'aiml')
       .replace(/electronics\s*(?:and|&)?\s*(?:communication|comm)?\s*(?:engineering|engg)?/g, 'ece')
       .replace(/electrical\s*(?:and|&)?\s*(?:electronics|elect)?\s*(?:engineering|engg)?/g, 'eee')
       .replace(/mechanical\s*(?:engineering|engg)?/g, 'me')

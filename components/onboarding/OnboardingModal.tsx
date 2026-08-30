@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowRight, 
@@ -22,13 +22,16 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useUser, useClerk } from '@clerk/nextjs';
 import { INDIAN_COLLEGES, STANDARD_PROGRAMMES, STANDARD_BRANCHES } from '@/lib/colleges';
 import { getCanonicalBatchKey } from '@/lib/timetableUtils';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 export const OnboardingModal = () => {
-  const { profile, updateProfile, joinBatchTimetable, shareTimetableWithBatch, showToast } = useApp();
+  const { profile, updateProfile, joinBatchTimetable, shareTimetableWithBatch, searchBatchTimetable, showToast } = useApp();
+  const { isSignedIn, isLoaded: isUserLoaded } = useUser();
+  const clerk = useClerk();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(1);
 
@@ -40,23 +43,76 @@ export const OnboardingModal = () => {
   const [subStep, setSubStep] = useState<'find' | 'confirm'>('find');
   const [isSearching, setIsSearching] = useState(false);
   const [foundBatchData, setFoundBatchData] = useState<any>(null);
+  const [enteredInviteCode, setEnteredInviteCode] = useState('');
 
   // Form Fields (Profile / SettingsView Style)
   const initialCollege = (profile?.college && profile.college !== 'Demo University') ? profile.college : '';
   const [college, setCollege] = useState(initialCollege);
   const [showCollegeDropdown, setShowCollegeDropdown] = useState(false);
+  const [suggestedColleges, setSuggestedColleges] = useState<string[]>([]);
+  const [isLoadingColleges, setIsLoadingColleges] = useState(false);
+
+  // Debounced SheerID live organization lookup
+  useEffect(() => {
+    if (college.trim().length < 3) {
+      setSuggestedColleges([]);
+      return;
+    }
+
+    const delayDebounce = setTimeout(async () => {
+      setIsLoadingColleges(true);
+      try {
+        const response = await fetch(
+          `https://orgsearch.sheerid.net/rest/organization/search?country=IN&type=UNIVERSITY&name=${encodeURIComponent(college)}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          const names = data.map((item: any) => item.name);
+          setSuggestedColleges(names);
+        }
+      } catch (err) {
+        console.error('Failed to fetch colleges from SheerID:', err);
+      } finally {
+        setIsLoadingColleges(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(delayDebounce);
+  }, [college]);
 
   const [programme, setProgramme] = useState(profile?.programme || 'B.Tech');
+  const [programmeQuery, setProgrammeQuery] = useState('');
   const [showProgrammeDropdown, setShowProgrammeDropdown] = useState(false);
   const [customProgramme, setCustomProgramme] = useState('');
 
   const [branch, setBranch] = useState(profile?.branch || 'Computer Science & Engineering (CSE)');
+  const [branchQuery, setBranchQuery] = useState('');
   const [showBranchDropdown, setShowBranchDropdown] = useState(false);
   const [customBranch, setCustomBranch] = useState('');
 
   const [semester, setSemester] = useState<number>(profile?.semester || 1);
   const [section, setSection] = useState(profile?.section || 'A');
   const [isConnecting, setIsConnecting] = useState(false);
+
+    // Auto-connect pending batch after signing in
+  useEffect(() => {
+    if (isSignedIn && isUserLoaded) {
+      const pendingKey = localStorage.getItem('pending_batch_key');
+      const pendingInvite = localStorage.getItem('pending_join_invite');
+
+      if (pendingInvite) {
+        localStorage.removeItem('pending_join_invite');
+        joinBatchTimetable(pendingInvite)
+          .then(() => updateProfile({ onboardingCompleted: true }))
+          .catch((e) => console.warn('Auto invite join failed:', e));
+      } else if (pendingKey) {
+        localStorage.removeItem('pending_batch_key');
+        joinBatchTimetable(pendingKey)
+          .then(() => updateProfile({ onboardingCompleted: true }))
+          .catch(() => shareTimetableWithBatch().then(() => updateProfile({ onboardingCompleted: true })));
+      }
+    }
+  }, [isSignedIn, isUserLoaded]);
 
   const isComplete = profile?.onboardingCompleted;
 
@@ -84,7 +140,7 @@ export const OnboardingModal = () => {
     updateProfile({ onboardingCompleted: true });
   };
 
-  // 1. Direct Invite Code Join
+  // 1. Direct Invite Code Join with Auth Guard
   const handleCodeJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     let code = inviteCode.trim();
@@ -97,6 +153,18 @@ export const OnboardingModal = () => {
       code = new URLSearchParams(code.split('?')[1] || '').get('invite') || code;
     } else if (code.includes('/')) {
       code = code.split('/').pop() || code;
+    }
+
+    // Require Auth to Join Cloud Batch
+    if (!isSignedIn) {
+      showToast('Account Required', 'Please sign in or create an account to join this batch.', 'info');
+      try {
+        localStorage.setItem('pending_join_invite', code);
+      } catch (_) {}
+      if (typeof window !== 'undefined') {
+        window.location.href = `/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`;
+      }
+      return;
     }
 
     setIsJoiningCode(true);
@@ -112,7 +180,7 @@ export const OnboardingModal = () => {
     }
   };
 
-  // 2. Step 1 -> Find My Batch Action
+  // 2. Step 1 -> Find My Batch Action (Smart Firestore lookup via searchBatchTimetable)
   const handleFindBatch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!college.trim()) {
@@ -127,17 +195,16 @@ export const OnboardingModal = () => {
     const canonicalKey = getCanonicalBatchKey(cleanCollege, finalProg, finalBranch, semester);
 
     try {
-      const batchDocRef = doc(db, 'shared_timetables', canonicalKey);
-      const snap = await getDoc(batchDocRef);
+      const matched = await searchBatchTimetable(cleanCollege, finalProg, finalBranch, semester);
 
-      if (snap.exists()) {
-        const data = snap.data();
+      if (matched) {
         setFoundBatchData({
           exists: true,
-          canonicalKey,
-          studentCount: data.studentCount || (data.crEmails?.length || 1),
-          creatorName: data.creatorName || 'Classmate',
-          subjectsCount: data.subjects?.length || 0,
+          canonicalKey: matched.id || canonicalKey,
+          studentCount: matched.studentCount || (matched.crEmails?.length || 1),
+          creatorName: matched.creatorName || 'Classmate',
+          subjectsCount: matched.subjects?.length || 0,
+          rawBatch: matched,
         });
       } else {
         setFoundBatchData({
@@ -156,21 +223,42 @@ export const OnboardingModal = () => {
     }
   };
 
-  // 3. Step 2 -> Connect To Batch Action
+  // 3. Step 2 -> Connect To Batch Action with Auth Guard
   const handleConnectToBatch = async () => {
-    setIsConnecting(true);
     const finalProg = programme === 'Other / Diploma' ? (customProgramme.trim() || 'Diploma') : programme;
     const finalBranch = branch === 'Other / General' ? (customBranch.trim() || 'General') : branch;
     const cleanCollege = college.trim() || 'General College';
     const canonicalKey = foundBatchData?.canonicalKey || getCanonicalBatchKey(cleanCollege, finalProg, finalBranch, semester);
 
+    // Save selected academic details locally first
+    updateProfile({
+      college: cleanCollege,
+      programme: finalProg,
+      branch: finalBranch,
+      semester: semester,
+      section: 'A',
+    });
+
+    // Check if user is signed in before syncing with cloud batch
+    if (!isSignedIn) {
+      showToast('Sign In Required', 'Please sign in or create an account to link with your batch.', 'info');
+      try {
+        localStorage.setItem('pending_batch_key', canonicalKey);
+      } catch (_) {}
+      if (typeof window !== 'undefined') {
+        window.location.href = `/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`;
+      }
+      return;
+    }
+
+    setIsConnecting(true);
     try {
       updateProfile({
         college: cleanCollege,
         programme: finalProg,
         branch: finalBranch,
         semester: semester,
-        section: section.trim() || 'A',
+        section: 'A',
         onboardingCompleted: true,
       });
 
@@ -193,12 +281,20 @@ export const OnboardingModal = () => {
     c.toLowerCase().includes(college.toLowerCase())
   ).slice(0, 15);
 
+  const filteredProgrammes = STANDARD_PROGRAMMES.filter((p) =>
+    p.toLowerCase().includes(programmeQuery.toLowerCase())
+  );
+
+  const filteredBranches = STANDARD_BRANCHES.filter((b) =>
+    b.toLowerCase().includes(branchQuery.toLowerCase())
+  );
+
   const slides = [
     {
       id: 0,
       image: '/onboard-1.png',
       topNav: 'center',
-      topText: 'PLAN TODAY.\\nOWN TOMORROW.',
+      topText: 'PLAN TODAY.\nOWN TOMORROW.',
       title: "We'll remind you.",
       subtitle: "Stay ahead with smart reminders\nso you never miss what matters.",
       buttonText: 'Next',
@@ -388,7 +484,7 @@ export const OnboardingModal = () => {
                     </div>
 
                     {/* 1. Fast Invite Card */}
-                    <div className="border border-[#EBEBEA] bg-[#FAFAF8] rounded-2xl p-4.5 mb-5">
+                    <div className="border border-[#EBEBEA] bg-[#FAFAF8] rounded-none border border-[#D8D8D8] p-4 mb-5">
                       <div className="flex items-center gap-1.5 mb-2.5">
                         <ArrowUpRight className="w-3.5 h-3.5 text-[#111111]" />
                         <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111]">
@@ -401,12 +497,12 @@ export const OnboardingModal = () => {
                           placeholder="Paste code or link..."
                           value={inviteCode}
                           onChange={(e) => setInviteCode(e.target.value)}
-                          className="flex-1 h-11 px-3.5 bg-white border border-[#D9D9D6] rounded-xl text-[13.5px] text-[#111111] focus:outline-none focus:border-[#111111] transition-all"
+                          className="flex-1 h-11 px-3.5 bg-white border border-[#D8D8D8] rounded-none text-[13.5px] text-[#111111] focus:outline-none focus:border-[#111111] transition-all"
                         />
                         <button
                           type="submit"
                           disabled={isJoiningCode || !inviteCode.trim()}
-                          className="h-11 px-5 bg-[#111111] text-white text-[13.5px] font-bold rounded-xl hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0"
+                          className="h-11 px-5 bg-[#111111] text-white text-[13.5px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0"
                         >
                           {isJoiningCode ? 'Joining...' : 'Join'}
                         </button>
@@ -429,7 +525,7 @@ export const OnboardingModal = () => {
                         <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
                           College / University
                         </label>
-                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] border border-[#D9D9D6] rounded-xl focus-within:border-[#111111] transition-colors">
+                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] border border-[#D8D8D8] rounded-none focus-within:border-[#111111] transition-colors">
                           <Building2 className="w-4 h-4 text-[#A0A0A0] shrink-0" />
                           <input
                             type="text"
@@ -446,11 +542,17 @@ export const OnboardingModal = () => {
                           />
                         </div>
 
-                        {/* Live Dropdown Matching Profile Style */}
+                        {/* Live SheerID Dropdown Matching Profile / Settings */}
                         {showCollegeDropdown && college.length >= 2 && (
-                          <div className="absolute top-full left-0 w-full mt-1.5 max-h-52 overflow-y-auto bg-white border border-[#D9D9D6] rounded-xl shadow-xl z-50 divide-y divide-black/5">
-                            {filteredColleges.length > 0 ? (
-                              filteredColleges.map((c) => (
+                          <div className="absolute top-full left-0 w-full mt-1.5 max-h-56 overflow-y-auto bg-white border border-[#D9D9D6] rounded-none shadow-xl z-50 divide-y divide-black/5">
+                            {isLoadingColleges && (
+                              <div className="px-4 py-2.5 text-xs font-mono font-medium text-[#6F6F6F] flex items-center gap-2">
+                                <span className="w-3 h-3 border-2 border-[#111111] border-t-transparent rounded-full animate-spin" />
+                                Searching verified universities via SheerID...
+                              </div>
+                            )}
+                            {suggestedColleges.length > 0 ? (
+                              suggestedColleges.map((c) => (
                                 <div
                                   key={c}
                                   onMouseDown={() => {
@@ -463,9 +565,26 @@ export const OnboardingModal = () => {
                                 </div>
                               ))
                             ) : (
-                              <div className="px-4 py-2.5 text-xs text-[#6F6F6F]">
-                                Press Enter to use <strong>"{college}"</strong>
-                              </div>
+                              !isLoadingColleges && (
+                                filteredColleges.length > 0 ? (
+                                  filteredColleges.map((c) => (
+                                    <div
+                                      key={c}
+                                      onMouseDown={() => {
+                                        setCollege(c);
+                                        setShowCollegeDropdown(false);
+                                      }}
+                                      className="px-4 py-2.5 hover:bg-[#F7F7F5] cursor-pointer text-[13px] font-medium text-[#111111] transition-colors"
+                                    >
+                                      {c}
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="px-4 py-2.5 text-xs text-[#6F6F6F]">
+                                    Press Enter to use custom university: <strong>"{college}"</strong>
+                                  </div>
+                                )
+                              )
                             )}
                           </div>
                         )}
@@ -474,7 +593,7 @@ export const OnboardingModal = () => {
                         </p>
                       </div>
 
-                      {/* Programme Dropdown (Full Standard Programmes: Engineering, Medical, Law, Commerce, Arts) */}
+                      {/* Searchable Programme Dropdown */}
                       <div className="flex flex-col gap-1.5 relative">
                         <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
                           Programme / Degree
@@ -483,49 +602,70 @@ export const OnboardingModal = () => {
                           type="button"
                           onClick={() => {
                             setShowProgrammeDropdown(!showProgrammeDropdown);
+                            setProgrammeQuery('');
                             setShowBranchDropdown(false);
                             setShowCollegeDropdown(false);
                           }}
-                          className="w-full h-11 px-3.5 bg-white border border-[#D9D9D6] rounded-xl text-[13px] font-medium text-[#111111] flex items-center justify-between hover:border-[#111111] transition-all cursor-pointer"
+                          className="w-full h-11 px-3.5 bg-white border border-[#D8D8D8] rounded-none text-[13px] font-medium text-[#111111] flex items-center justify-between hover:border-[#111111] transition-all cursor-pointer text-left"
                         >
-                          <span>{programme}</span>
-                          <ChevronDown className={`w-4 h-4 text-[#888888] transition-transform ${showProgrammeDropdown ? 'rotate-180 text-[#111111]' : ''}`} />
+                          <span className="truncate pr-2">{programme}</span>
+                          <ChevronDown className={`w-4 h-4 text-[#888888] shrink-0 transition-transform ${showProgrammeDropdown ? 'rotate-180 text-[#111111]' : ''}`} />
                         </button>
 
                         {showProgrammeDropdown && (
-                          <div className="absolute top-[100%] left-0 right-0 z-50 mt-1.5 max-h-56 overflow-y-auto bg-white border border-[#D9D9D6] rounded-xl shadow-xl">
-                            {STANDARD_PROGRAMMES.map((p) => (
-                              <button
-                                key={p}
-                                type="button"
-                                onClick={() => {
-                                  setProgramme(p);
-                                  setShowProgrammeDropdown(false);
-                                }}
-                                className={`w-full text-left px-3.5 py-2.5 text-[13px] flex items-center justify-between border-b border-black/5 last:border-0 hover:bg-[#F4F4F4] cursor-pointer ${
-                                  programme === p ? 'font-bold text-[#111111] bg-[#F7F7F5]' : 'text-[#444444]'
-                                }`}
-                              >
-                                <span>{p}</span>
-                                {programme === p && <Check className="w-3.5 h-3.5 text-[#111111]" />}
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                          <div className="absolute top-[100%] left-0 right-0 z-50 mt-1.5 max-h-64 flex flex-col bg-white border border-[#D9D9D6] rounded-none shadow-xl overflow-hidden">
+                            {/* Search Box */}
+                            <div className="p-2 border-b border-[#F0F0EE] bg-[#FAFAF8] shrink-0">
+                              <div className="relative">
+                                <Search className="w-3.5 h-3.5 text-[#888888] absolute left-2.5 top-2.5 pointer-events-none" />
+                                <input
+                                  type="text"
+                                  placeholder="Search degree (e.g. B.Tech, MBBS, Law)..."
+                                  value={programmeQuery}
+                                  onChange={(e) => setProgrammeQuery(e.target.value)}
+                                  autoFocus
+                                  className="w-full h-8 pl-8 pr-3 bg-white border border-[#D8D8D8] rounded-none text-[12px] text-[#111111] focus:outline-none focus:border-[#111111]"
+                                />
+                              </div>
+                            </div>
 
-                        {programme === 'Other / Diploma' && (
-                          <input
-                            type="text"
-                            placeholder="Type your degree name..."
-                            value={customProgramme}
-                            onChange={(e) => setCustomProgramme(e.target.value)}
-                            className="mt-1.5 w-full h-11 px-3.5 bg-white border border-[#D9D9D6] rounded-xl text-[13px] text-[#111111] focus:outline-none focus:border-[#111111]"
-                            required
-                          />
+                            {/* List Options */}
+                            <div className="overflow-y-auto max-h-48 divide-y divide-black/5">
+                              {programmeQuery.trim() && !filteredProgrammes.some(p => p.toLowerCase() === programmeQuery.toLowerCase()) && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setProgramme(programmeQuery.trim());
+                                    setShowProgrammeDropdown(false);
+                                  }}
+                                  className="w-full text-left px-3.5 py-2.5 text-[12.5px] text-[#111111] hover:bg-[#F4F4F4] cursor-pointer"
+                                >
+                                  Use custom degree: <strong className="text-indigo-600 font-bold">"{programmeQuery.trim()}"</strong>
+                                </button>
+                              )}
+
+                              {filteredProgrammes.map((p) => (
+                                <button
+                                  key={p}
+                                  type="button"
+                                  onClick={() => {
+                                    setProgramme(p);
+                                    setShowProgrammeDropdown(false);
+                                  }}
+                                  className={`w-full text-left px-3.5 py-2.5 text-[13px] flex items-center justify-between hover:bg-[#F4F4F4] cursor-pointer transition-colors ${
+                                    programme === p ? 'font-bold text-[#111111] bg-[#F7F7F5]' : 'text-[#444444]'
+                                  }`}
+                                >
+                                  <span>{p}</span>
+                                  {programme === p && <Check className="w-3.5 h-3.5 text-[#111111]" />}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                         )}
                       </div>
 
-                      {/* Branch Dropdown (Full Standard Branches: Engineering, Medical, Law, Management) */}
+                      {/* Searchable Branch Dropdown */}
                       <div className="flex flex-col gap-1.5 relative">
                         <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
                           Branch / Specialisation
@@ -534,49 +674,70 @@ export const OnboardingModal = () => {
                           type="button"
                           onClick={() => {
                             setShowBranchDropdown(!showBranchDropdown);
+                            setBranchQuery('');
                             setShowProgrammeDropdown(false);
                             setShowCollegeDropdown(false);
                           }}
-                          className="w-full h-11 px-3.5 bg-white border border-[#D9D9D6] rounded-xl text-[13px] font-medium text-[#111111] flex items-center justify-between hover:border-[#111111] transition-all cursor-pointer text-left"
+                          className="w-full h-11 px-3.5 bg-white border border-[#D8D8D8] rounded-none text-[13px] font-medium text-[#111111] flex items-center justify-between hover:border-[#111111] transition-all cursor-pointer text-left"
                         >
                           <span className="truncate pr-2">{branch}</span>
                           <ChevronDown className={`w-4 h-4 text-[#888888] shrink-0 transition-transform ${showBranchDropdown ? 'rotate-180 text-[#111111]' : ''}`} />
                         </button>
 
                         {showBranchDropdown && (
-                          <div className="absolute top-[100%] left-0 right-0 z-50 mt-1.5 max-h-60 overflow-y-auto bg-white border border-[#D9D9D6] rounded-xl shadow-xl">
-                            {STANDARD_BRANCHES.map((b) => (
-                              <button
-                                key={b}
-                                type="button"
-                                onClick={() => {
-                                  setBranch(b);
-                                  setShowBranchDropdown(false);
-                                }}
-                                className={`w-full text-left px-3.5 py-2.5 text-[13px] flex items-center justify-between border-b border-black/5 last:border-0 hover:bg-[#F4F4F4] cursor-pointer ${
-                                  branch === b ? 'font-bold text-[#111111] bg-[#F7F7F5]' : 'text-[#444444]'
-                                }`}
-                              >
-                                <span className="truncate pr-2">{b}</span>
-                                {branch === b && <Check className="w-3.5 h-3.5 text-[#111111] shrink-0" />}
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                          <div className="absolute top-[100%] left-0 right-0 z-50 mt-1.5 max-h-64 flex flex-col bg-white border border-[#D9D9D6] rounded-none shadow-xl overflow-hidden">
+                            {/* Search Box */}
+                            <div className="p-2 border-b border-[#F0F0EE] bg-[#FAFAF8] shrink-0">
+                              <div className="relative">
+                                <Search className="w-3.5 h-3.5 text-[#888888] absolute left-2.5 top-2.5 pointer-events-none" />
+                                <input
+                                  type="text"
+                                  placeholder="Search branch (e.g. CSE, AI, Law, MBBS)..."
+                                  value={branchQuery}
+                                  onChange={(e) => setBranchQuery(e.target.value)}
+                                  autoFocus
+                                  className="w-full h-8 pl-8 pr-3 bg-white border border-[#D8D8D8] rounded-none text-[12px] text-[#111111] focus:outline-none focus:border-[#111111]"
+                                />
+                              </div>
+                            </div>
 
-                        {branch === 'Other / General' && (
-                          <input
-                            type="text"
-                            placeholder="Type your branch / specialisation..."
-                            value={customBranch}
-                            onChange={(e) => setCustomBranch(e.target.value)}
-                            className="mt-1.5 w-full h-11 px-3.5 bg-white border border-[#D9D9D6] rounded-xl text-[13px] text-[#111111] focus:outline-none focus:border-[#111111]"
-                            required
-                          />
+                            {/* List Options */}
+                            <div className="overflow-y-auto max-h-48 divide-y divide-black/5">
+                              {branchQuery.trim() && !filteredBranches.some(b => b.toLowerCase() === branchQuery.toLowerCase()) && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setBranch(branchQuery.trim());
+                                    setShowBranchDropdown(false);
+                                  }}
+                                  className="w-full text-left px-3.5 py-2.5 text-[12.5px] text-[#111111] hover:bg-[#F4F4F4] cursor-pointer"
+                                >
+                                  Use custom branch: <strong className="text-indigo-600 font-bold">"{branchQuery.trim()}"</strong>
+                                </button>
+                              )}
+
+                              {filteredBranches.map((b) => (
+                                <button
+                                  key={b}
+                                  type="button"
+                                  onClick={() => {
+                                    setBranch(b);
+                                    setShowBranchDropdown(false);
+                                  }}
+                                  className={`w-full text-left px-3.5 py-2.5 text-[13px] flex items-center justify-between hover:bg-[#F4F4F4] cursor-pointer transition-colors ${
+                                    branch === b ? 'font-bold text-[#111111] bg-[#F7F7F5]' : 'text-[#444444]'
+                                  }`}
+                                >
+                                  <span className="truncate pr-2">{b}</span>
+                                  {branch === b && <Check className="w-3.5 h-3.5 text-[#111111] shrink-0" />}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                         )}
                       </div>
 
-                      {/* Semester Pill Picker */}
+                      {/* Semester Square Button Picker (Exact Theme) */}
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
                           Semester
@@ -587,10 +748,10 @@ export const OnboardingModal = () => {
                               key={s}
                               type="button"
                               onClick={() => setSemester(s)}
-                              className={`py-2 text-[12px] font-bold rounded-xl border transition-all cursor-pointer ${
+                              className={`py-2.5 text-[12.5px] font-bold rounded-none border transition-all cursor-pointer ${
                                 semester === s
-                                  ? 'bg-[#111111] text-white border-[#111111] shadow-sm'
-                                  : 'border-[#D9D9D6] bg-white text-[#444444] hover:bg-[#FAFAF8]'
+                                  ? 'bg-[#111111] text-white border-[#111111]'
+                                  : 'border-[#D8D8D8] bg-white text-[#111111] hover:bg-[#F7F7F5]'
                               }`}
                             >
                               Sem {s}
@@ -603,7 +764,7 @@ export const OnboardingModal = () => {
                       <button
                         type="submit"
                         disabled={isSearching}
-                        className="mt-3 w-full h-12 bg-[#111111] text-white rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.99] transition-all shadow-md disabled:opacity-50 cursor-pointer"
+                        className="mt-4 w-full h-12 bg-[#111111] text-white rounded-none font-bold text-[13.5px] uppercase tracking-[1.5px] flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-50 cursor-pointer"
                       >
                         {isSearching ? (
                           <span className="inline-flex items-center gap-2">
@@ -620,7 +781,7 @@ export const OnboardingModal = () => {
                     </form>
                   </motion.div>
                 ) : (
-                  /* SUBSTEP 2: CONFIRM & SECTION SELECTION */
+                  /* SUBSTEP 2: CONFIRM & CONNECT (REAL FIRESTORE DATA MATCH) */
                   <motion.div
                     key="substep-confirm"
                     initial={{ opacity: 0, x: 20 }}
@@ -629,92 +790,88 @@ export const OnboardingModal = () => {
                     className="flex flex-col flex-1 justify-between"
                   >
                     <div className="flex flex-col">
+                      {/* Dynamic Header Badge */}
                       <div className="flex items-center justify-between mb-4">
-                        <span className="text-[11px] font-bold uppercase tracking-[2px] text-indigo-600 flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5" /> Batch Found
-                        </span>
+                        {foundBatchData?.exists ? (
+                          <span className="text-[11px] font-bold uppercase tracking-[2px] text-emerald-700 bg-emerald-50 px-2.5 py-1 border border-emerald-200 flex items-center gap-1.5">
+                            <Check className="w-3.5 h-3.5 text-emerald-600" /> Existing Batch Matched
+                          </span>
+                        ) : (
+                          <span className="text-[11px] font-bold uppercase tracking-[2px] text-[#6F6F6F] bg-[#F4F4F4] px-2.5 py-1 border border-[#D8D8D8] flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-[#111111]" /> New Batch Space
+                          </span>
+                        )}
+
                         <button
                           type="button"
                           onClick={() => setSubStep('find')}
-                          className="text-[12px] font-semibold text-[#888888] hover:text-[#111111] underline cursor-pointer"
+                          className="text-[12px] font-bold text-[#6F6F6F] hover:text-[#111111] underline cursor-pointer"
                         >
                           Change details
                         </button>
                       </div>
 
-                      {/* Batch Identity Card */}
-                      <div className="border border-[#E5E5E5] bg-[#FAFAF8] rounded-2xl p-5 mb-6 shadow-sm">
+                      {/* Real Batch Identity Card */}
+                      <div className="border border-[#D8D8D8] bg-[#FAFAF8] rounded-none p-5 mb-6">
                         <span className="text-[10px] font-bold tracking-[1.5px] text-[#888888] uppercase block mb-1">
-                          YOUR BATCH
+                          {foundBatchData?.exists ? 'MATCHED BATCH TIMETABLE' : 'CREATE BATCH SCHEDULE'}
                         </span>
-                        <h3 className="text-[18px] font-bold text-[#111111] leading-tight mb-1">
+                        <h3 className="text-[17px] font-bold text-[#111111] leading-snug mb-1">
                           {college}
                         </h3>
-                        <p className="text-[14px] font-medium text-[#444444]">
+                        <p className="text-[13.5px] font-medium text-[#444444]">
                           {programme === 'Other / Diploma' ? customProgramme : programme} · {branch === 'Other / General' ? customBranch : branch}
                         </p>
-                        <span className="inline-block mt-2 px-2.5 py-0.5 bg-[#111111] text-white text-[11px] font-bold rounded-md">
-                          Semester {semester}
-                        </span>
-
-                        {/* Status Note */}
-                        <div className="mt-4 pt-3.5 border-t border-[#EBEBEA] flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-[12.5px] text-[#6F6F6F]">
-                            <Users className="w-4 h-4 text-[#111111]" />
-                            <span>
-                              {foundBatchData?.exists
-                                ? `${foundBatchData?.studentCount || 1} classmates already synced`
-                                : 'Be the first in your batch!'}
-                            </span>
-                          </div>
+                        
+                        <div className="flex items-center gap-2 mt-2.5">
+                          <span className="px-2.5 py-0.5 bg-[#111111] text-white text-[11px] font-bold rounded-none">
+                            Semester {semester}
+                          </span>
                           {foundBatchData?.exists && foundBatchData?.subjectsCount > 0 && (
-                            <span className="text-[11.5px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
-                              {foundBatchData.subjectsCount} subjects ready
+                            <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5">
+                              {foundBatchData.subjectsCount} Subjects Preloaded
                             </span>
                           )}
                         </div>
-                      </div>
 
-                      {/* Section Selector */}
-                      <div className="flex flex-col gap-2 mb-6">
-                        <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
-                          Choose Section / Group
-                        </label>
-                        <div className="grid grid-cols-4 gap-2.5">
-                          {['A', 'B', 'C', 'General'].map((sec) => (
-                            <button
-                              key={sec}
-                              type="button"
-                              onClick={() => setSection(sec)}
-                              className={`py-2.5 text-[13px] font-bold rounded-xl border transition-all cursor-pointer ${
-                                section === sec
-                                  ? 'bg-[#111111] text-white border-[#111111] shadow-sm'
-                                  : 'border-[#D9D9D6] bg-white text-[#444444] hover:bg-[#FAFAF8]'
-                              }`}
-                            >
-                              Sec {sec}
-                            </button>
-                          ))}
+                        {/* Real Status Note */}
+                        <div className="mt-4 pt-3.5 border-t border-[#EBEBEA] flex flex-col gap-1.5">
+                          {foundBatchData?.exists ? (
+                            <div className="flex items-center justify-between text-[12.5px]">
+                              <div className="flex items-center gap-2 text-[#111111] font-semibold">
+                                <Users className="w-4 h-4 text-[#111111]" />
+                                <span>{foundBatchData?.studentCount || 1} classmates already connected</span>
+                              </div>
+                              <span className="text-[11.5px] text-[#6F6F6F]">
+                                By {foundBatchData.creatorName}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 text-[12.5px] text-[#6F6F6F]">
+                              <Users className="w-4 h-4 text-[#888888]" />
+                              <span>No existing timetable found. You will be the first student to start this batch!</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Final CTA */}
+                    {/* Dynamic Action CTA */}
                     <div className="flex flex-col gap-2 pt-4">
                       <button
                         type="button"
                         disabled={isConnecting}
                         onClick={handleConnectToBatch}
-                        className="w-full h-12 bg-[#111111] text-white rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.99] transition-all shadow-md disabled:opacity-50 cursor-pointer"
+                        className="w-full h-12 bg-[#111111] text-white rounded-none font-bold text-[13.5px] uppercase tracking-[1.5px] flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-50 cursor-pointer shadow-md"
                       >
                         {isConnecting ? (
                           <span className="inline-flex items-center gap-2">
                             <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            Connecting to batch...
+                            {foundBatchData?.exists ? 'Syncing with batch...' : 'Creating batch space...'}
                           </span>
                         ) : (
                           <>
-                            Connect to batch
+                            {foundBatchData?.exists ? 'Connect & Sync Timetable' : 'Create Batch Space'}
                             <ArrowRight className="w-4 h-4" />
                           </>
                         )}
