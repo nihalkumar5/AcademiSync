@@ -96,7 +96,7 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full flex items-center justify-center px-4 sm:px-8 py-3.5 sm:py-4 bg-[#FAFAF8]/95 dark:bg-[#111110]/95 backdrop-blur-md border-b border-[#D8D8D8] dark:border-[#333333] shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-colors">
+      <header className="sticky top-0 z-40 w-full flex items-center justify-center px-4 sm:px-8 py-3.5 sm:py-4 bg-[#FAFAF8] dark:bg-[#111110] border-b border-[#D8D8D8] dark:border-[#333333] shadow-[0_2px_10px_rgba(0,0,0,0.03)] transition-colors">
         <div className="flex items-center justify-between w-full max-w-6xl mx-auto relative">
           <div className="flex items-center gap-3 select-none">
           {/* Logo only shown on mobile where sidebar is hidden */}
@@ -114,7 +114,7 @@ export const Header: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-4 text-sm font-medium tracking-tight text-black dark:text-white">
+        <div className="flex items-center gap-1 sm:gap-4 text-sm font-medium tracking-tight text-black dark:text-white">
           {/* Live Clock Pill */}
           {currentTime && (
             <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 border border-black dark:border-white text-xs font-mono">
@@ -125,11 +125,12 @@ export const Header: React.FC = () => {
 
           {/* Quick Search Button */}
           <button
+            type="button"
             onClick={() => setCommandPaletteOpen(true)}
-            className="flex items-center justify-center p-1.5 sm:px-2 sm:py-1.5 border border-transparent hover:border-black dark:hover:border-white transition-colors cursor-pointer"
+            className="w-10 h-10 flex items-center justify-center p-2 border border-transparent hover:border-black dark:hover:border-white transition-all cursor-pointer active:scale-95"
             title="Search (⌘K)"
           >
-            <Search className="w-4 h-4 sm:mr-1.5" />
+            <Search className="w-4 h-4 sm:mr-1.5 text-[#111111] dark:text-[#FFFFFF]" />
             <span className="hidden sm:inline text-sm font-medium">Search</span>
             <kbd className="hidden sm:inline text-[10px] font-mono border border-current px-1 py-0.5 opacity-60 ml-2">
               ⌘K
@@ -138,6 +139,7 @@ export const Header: React.FC = () => {
 
           {/* Quick Theme Switcher - Hidden on mobile as requested */}
           <button
+            type="button"
             onClick={toggleTheme}
             aria-label="Toggle theme"
             className="hidden md:flex p-1.5 border border-transparent hover:border-black dark:hover:border-white transition-all"
@@ -152,13 +154,14 @@ export const Header: React.FC = () => {
 
           {/* Notifications Bell with Numeric Badge */}
           <button
+            type="button"
             onClick={() => setActiveView('notifications')}
-            className="relative p-1.5 border border-transparent hover:border-black dark:hover:border-white transition-all cursor-pointer"
+            className="relative w-10 h-10 flex items-center justify-center p-2 border border-transparent hover:border-black dark:hover:border-white transition-all cursor-pointer active:scale-95"
             title={`Notifications (${unreadNotifs} unread)`}
           >
-            <Bell className="w-4 h-4" />
+            <Bell className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />
             {unreadNotifs > 0 && (
-              <span className="absolute top-0 right-0 min-w-[14px] h-[14px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[9px] font-bold flex items-center justify-center border-2 border-[#FAFAF8] dark:border-[#111110] leading-none rounded-full translate-x-1/4 -translate-y-1/4">
+              <span className="absolute top-1.5 right-1.5 min-w-[14px] h-[14px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[9px] font-bold flex items-center justify-center border border-[#FAFAF8] dark:border-[#111110] leading-none rounded-full">
                 {unreadNotifs > 99 ? '99+' : unreadNotifs}
               </span>
             )}
@@ -167,16 +170,17 @@ export const Header: React.FC = () => {
           {/* Quick Create Dropdown */}
           <div className="relative" ref={menuRef}>
             <button
+              type="button"
               onClick={() => setAddMenuOpen(!addMenuOpen)}
-              className="flex items-center justify-center w-10 h-10 text-[#111111] dark:text-[#FFFFFF] hover:opacity-70 transition-opacity cursor-pointer"
+              className="w-10 h-10 flex items-center justify-center text-[#111111] dark:text-[#FFFFFF] hover:opacity-70 transition-opacity cursor-pointer active:scale-95"
             >
-              <Plus className={`w-6 h-6 transition-transform ${addMenuOpen ? 'rotate-45' : ''}`} />
+              <Plus className={`w-5 h-5 transition-transform duration-200 ${addMenuOpen ? 'rotate-45' : ''}`} />
             </button>
 
             {addMenuOpen && (
               <>
-                
-                <div className="absolute right-0 mt-2 w-[300px] sm:w-[320px] bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] shadow-[0_8px_24px_rgba(0,0,0,0.10)] py-2 z-50 text-left rounded-none">
+                <div className="fixed inset-0 z-40 sm:hidden" onClick={() => setAddMenuOpen(false)} />
+                <div className="absolute right-0 mt-2 w-[280px] sm:w-[320px] bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] shadow-[0_8px_24px_rgba(0,0,0,0.12)] py-2 z-50 text-left rounded-none">
                   <button
                     onClick={() => {
                       setAddMenuOpen(false);
