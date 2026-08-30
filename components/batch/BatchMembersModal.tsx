@@ -3,7 +3,6 @@
 import { shareLink } from '@/lib/shareUtils';
 
 import React, { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
 import { useApp } from '@/context/AppContext';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
 import { collection, onSnapshot, doc, updateDoc, increment, query, where, arrayUnion, arrayRemove } from 'firebase/firestore';
@@ -22,8 +21,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
   onClose,
   onJoinBatch
 }) => {
-  const { user } = useUser();
-  const { profile, showToast } = useApp();
+  const { profile, showToast, user } = useApp();
 
   const [members, setMembers] = useState<any[]>([]);
   const [batchData, setBatchData] = useState<any>(null);

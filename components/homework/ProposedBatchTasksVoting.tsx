@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { useUser } from '@clerk/nextjs';
 import { useApp } from '@/context/AppContext';
 import { BatchProposedTask } from '@/lib/types';
 import {
@@ -19,8 +18,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const ProposedBatchTasksVoting: React.FC = () => {
-  const { user } = useUser();
-  const { profile, proposedBatchTasks, voteBatchTask, subjects } = useApp();
+  const { profile, proposedBatchTasks, voteBatchTask, subjects, user } = useApp();
 
   if (!profile.isBatchSynced || !profile.batchKey) return null;
 

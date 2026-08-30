@@ -10,8 +10,6 @@ const config: CapacitorConfig = {
     cleartext: true,
     allowNavigation: [
       'academi-sync-chi.vercel.app',
-      '*.clerk.accounts.dev',
-      'clerk.com',
       'accounts.google.com',
       '*.google.com',
       '*.googleapis.com',

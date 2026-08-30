@@ -8,13 +8,13 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Sparkles, CalendarDays, BookOpen, Clock, AlertCircle, Plus, Share2, UserPlus } from 'lucide-react';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { ExamImportModal } from './ExamImportModal';
-import { useClerk, useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
 
 export const ExamsView: React.FC = () => {
-  const { exams, shareTimetableWithBatch, shareExamsWithBatch, joinSharedExams, showToast } = useApp();
-  const { isSignedIn } = useUser();
-  const clerk = useClerk();
+  const { exams, shareTimetableWithBatch, shareExamsWithBatch, joinSharedExams, showToast, user } = useApp();
+  const router = useRouter();
+  const isSignedIn = !!user;
   const [showImportModal, setShowImportModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [inviteInput, setInviteInput] = useState('');
@@ -28,7 +28,7 @@ export const ExamsView: React.FC = () => {
 
   const handleMagicImport = () => {
     if (!isSignedIn) {
-      clerk.openSignIn();
+      router.push('/sign-in');
       return;
     }
     setShowImportModal(true);
@@ -37,7 +37,7 @@ export const ExamsView: React.FC = () => {
   const handleJoinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isSignedIn) {
-      clerk.openSignIn();
+      router.push('/sign-in');
       return;
     }
 
@@ -98,7 +98,7 @@ export const ExamsView: React.FC = () => {
         <div className="flex flex-wrap items-center gap-3 mt-8">
           <button
             onClick={() => {
-              if (!isSignedIn) { clerk.openSignIn(); return; }
+              if (!isSignedIn) { router.push('/sign-in'); return; }
               setShowJoinModal(true);
             }}
             className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
@@ -114,7 +114,7 @@ export const ExamsView: React.FC = () => {
           {exams.length > 0 && (
             <button
               onClick={async () => {
-                if (!isSignedIn) { clerk.openSignIn(); return; }
+                if (!isSignedIn) { router.push('/sign-in'); return; }
                 try {
                   const key = await shareTimetableWithBatch();
                   const link = `${window.location.origin}/?invite=${key}`;

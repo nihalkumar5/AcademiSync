@@ -5,13 +5,13 @@ import { useApp } from '@/context/AppContext';
 import { CalendarImportModal } from './CalendarImportModal';
 import { ChevronLeft, ChevronRight, Plus, ArrowRight, Sparkles } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useClerk, useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import { getTodayDateString } from '@/lib/timetableUtils';
 
 export const AcademicCalendar: React.FC = () => {
-  const { homework, events, addEvent, subjects } = useApp();
-  const { isSignedIn } = useUser();
-  const clerk = useClerk();
+  const { homework, events, addEvent, subjects, user } = useApp();
+  const router = useRouter();
+  const isSignedIn = !!user;
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string>(getTodayDateString());
@@ -162,7 +162,7 @@ export const AcademicCalendar: React.FC = () => {
         <div className="flex items-center gap-3 mt-8">
         <button
           onClick={() => {
-             if (!isSignedIn) { clerk.openSignIn(); return; }
+             if (!isSignedIn) { router.push('/sign-in'); return; }
              setShowImportCalendarModal(true)
           }}
           className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors gap-2"
@@ -171,7 +171,7 @@ export const AcademicCalendar: React.FC = () => {
         </button>
         <button
           onClick={() => {
-             if (!isSignedIn) { clerk.openSignIn(); return; }
+             if (!isSignedIn) { router.push('/sign-in'); return; }
              setShowAddEventModal(true)
           }}
           className="flex items-center justify-center h-10 px-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold transition-colors gap-2"

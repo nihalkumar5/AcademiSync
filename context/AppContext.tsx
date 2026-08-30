@@ -22,9 +22,9 @@ import { DEFAULT_PROFILE, DEFAULT_SETTINGS } from '@/lib/initialData';
 import { calculateTomorrowCarryItems, getCanonicalBatchKey } from '@/lib/timetableUtils';
 import { checkAndGenerateSmartNotifications } from '@/lib/notificationEngine';
 import confetti from 'canvas-confetti';
-import { useUser } from '@clerk/nextjs';
+import { onAuthStateChanged } from 'firebase/auth';
 import { doc, collection, onSnapshot, setDoc, deleteDoc, getDoc, getDocs, query, where, updateDoc, increment, arrayUnion } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { registerPushNotifications } from '@/lib/pushNotifications';
 import { triggerLocalNotification, scheduleTimetableLocalNotifications } from '@/lib/localNotifications';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
@@ -125,6 +125,8 @@ export interface AppContextType {
   voteBatchTask: (proposalId: string, vote: 'approve' | 'reject') => Promise<void>;
   showHolidayAnimation: boolean;
   resetAllData: () => Promise<void>;
+  user: any;
+  isClerkLoaded: boolean;
 }
 
 
@@ -164,7 +166,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [proposedBatchTasks, setProposedBatchTasks] = useState<BatchProposedTask[]>([]);
   const [currentBatchData, setCurrentBatchData] = useState<any>(null);
 
-  const { user, isLoaded: isClerkLoaded } = useUser();
+  const [user, setUser] = useState<any>(null);
+  const [isAuthLoaded, setIsAuthLoaded] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          id: firebaseUser.uid,
+          fullName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Anonymous',
+          primaryEmailAddress: firebaseUser.email ? { emailAddress: firebaseUser.email } : null,
+        });
+      } else {
+        setUser(null);
+      }
+      setIsAuthLoaded(true);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const isClerkLoaded = isAuthLoaded;
   const [isCloudSynced, setIsCloudSynced] = useState(false);
   const remoteStateString = useRef("");
   const isApplyingRemote = useRef(false);
@@ -221,7 +242,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       let defaultName = user.fullName || user.firstName || '';
       if (!defaultName && userEmail) {
         defaultName = userEmail.split('@')[0];
-        defaultName = defaultName.split('.').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        defaultName = defaultName.split('.').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
       }
 
       if (!profile.name || !profile.email) {
@@ -1577,7 +1598,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     let defaultName = user?.fullName || user?.firstName || '';
     if (!defaultName && userEmail) {
       defaultName = userEmail.split('@')[0];
-      defaultName = defaultName.split('.').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+      defaultName = defaultName.split('.').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     }
 
     const cleanProfile: StudentProfile = {
@@ -1949,6 +1970,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         updateMessMenu,
         showMessOnboarding,
         setShowMessOnboarding,
+        user,
+        isClerkLoaded
       }}
     >
       {children}

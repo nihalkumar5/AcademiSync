@@ -22,16 +22,15 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { useUser, useClerk } from '@clerk/nextjs';
 import { INDIAN_COLLEGES, STANDARD_PROGRAMMES, STANDARD_BRANCHES } from '@/lib/colleges';
 import { getCanonicalBatchKey } from '@/lib/timetableUtils';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 export const OnboardingModal = () => {
-  const { profile, updateProfile, joinBatchTimetable, shareTimetableWithBatch, searchBatchTimetable, showToast } = useApp();
-  const { isSignedIn, isLoaded: isUserLoaded } = useUser();
-  const clerk = useClerk();
+  const { profile, updateProfile, joinBatchTimetable, shareTimetableWithBatch, searchBatchTimetable, showToast, user, isClerkLoaded } = useApp();
+  const isSignedIn = !!user;
+  const isUserLoaded = isClerkLoaded;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(1);
 

@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { useUser } from '@clerk/nextjs';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { Header } from '@/components/layout/Header';
@@ -38,8 +37,8 @@ import { ProposedBatchTasksVoting } from '@/components/homework/ProposedBatchTas
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AppHome() {
-  const { activeView, setActiveView, isHydrated, showHolidayAnimation, joinBatchTimetable, joinSharedCalendar, joinSharedExams, profile, showToast } = useApp();
-  const { isSignedIn } = useUser();
+  const { activeView, setActiveView, isHydrated, showHolidayAnimation, joinBatchTimetable, joinSharedCalendar, joinSharedExams, profile, showToast, user } = useApp();
+  const isSignedIn = !!user;
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [inviteKey, setInviteKey] = useState<string | null>(null);
   const [inviteData, setInviteData] = useState<any>(null);

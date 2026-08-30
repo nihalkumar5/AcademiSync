@@ -3,7 +3,8 @@
 import { shareLink } from '@/lib/shareUtils';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useUser, useClerk, UserButton, SignedIn, SignedOut, SignInButton, SignOutButton } from '@clerk/nextjs';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import { useApp } from '@/context/AppContext';
 import { Programme, Branch } from '@/lib/types';
 import { storage } from '@/lib/storage';
@@ -47,8 +48,9 @@ import { isUserSuperAdmin } from '@/lib/adminAuth';
 import { BatchMembersModal } from '@/components/batch/BatchMembersModal';
 
 export const SettingsView: React.FC = () => {
-  const { user, isLoaded, isSignedIn } = useUser();
-  const clerk = useClerk();
+  const { user, isClerkLoaded } = useApp();
+  const isLoaded = isClerkLoaded;
+  const isSignedIn = !!user;
   const {
     profile,
     isBatchCR,
@@ -1250,7 +1252,7 @@ export const SettingsView: React.FC = () => {
             </button>
             <button 
               onClick={async () => {
-                await clerk.signOut();
+                await signOut(auth);
                 window.location.href = '/sign-in';
               }}
               className="w-full py-3 border border-[#D8D8D8] dark:border-[#333333] text-[13px] font-bold text-red-600 flex items-center justify-center gap-2 hover:bg-[#F4F4F4] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer"

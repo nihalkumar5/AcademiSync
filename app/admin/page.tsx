@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useUser, SignInButton } from '@clerk/nextjs';
 import { useApp } from '@/context/AppContext';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
 import { collection, onSnapshot, doc, updateDoc, setDoc, deleteDoc, query, orderBy, arrayRemove, arrayUnion } from 'firebase/firestore';
@@ -46,8 +45,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 type AdminTab = 'overview' | 'users' | 'batches' | 'campaigns';
 
 export default function SuperAdminPage() {
-  const { user, isLoaded: isClerkLoaded } = useUser();
-  const { profile, showToast } = useApp();
+  const { profile, showToast, user, isClerkLoaded } = useApp();
 
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [usersList, setUsersList] = useState<any[]>([]);
@@ -203,11 +201,11 @@ export default function SuperAdminPage() {
         <p className="text-xs text-black/60 dark:text-white/60 mb-6 max-w-sm">
           Sign in with your master administrator account to manage users, college batches, and direct campaigns.
         </p>
-        <SignInButton mode="modal">
+        <Link href="/sign-in">
           <button className="px-6 py-3 bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-widest border border-black dark:border-white cursor-pointer hover:opacity-90">
             Sign In with Admin Account
           </button>
-        </SignInButton>
+        </Link>
       </div>
     );
   }

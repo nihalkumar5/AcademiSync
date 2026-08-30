@@ -8,7 +8,7 @@ import { DAYS_OF_WEEK, mergeConsecutiveSessions } from '@/lib/timetableUtils';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Upload, Sparkles, Check, Trash2, Plus, ShieldAlert , Bot, X, ChevronDown} from 'lucide-react';
-import { useUser, SignInButton } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 
 export interface TimetableImportModalProps {
   isOpen: boolean;
@@ -16,8 +16,10 @@ export interface TimetableImportModalProps {
 }
 
 export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOpen, onClose }) => {
-  const { subjects, addSubject, timetable, setFullTimetable, setFullSubjectsAndTimetable, showToast } = useApp();
-  const { isSignedIn, isLoaded } = useUser();
+  const { subjects, addSubject, timetable, setFullTimetable, setFullSubjectsAndTimetable, showToast, user, isClerkLoaded } = useApp();
+  const router = useRouter();
+  const isSignedIn = !!user;
+  const isLoaded = isClerkLoaded;
 
   const [step, setStep] = useState<'upload' | 'extracting' | 'review'>('upload');
   const [fileName, setFileName] = useState('');
@@ -196,11 +198,12 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
               Please sign in to your student account to upload and parse timetables like magic.
             </p>
           </div>
-          <SignInButton mode="modal">
-            <button className="px-6 py-3 rounded-xl bg-[#8C6B5D] hover:bg-[#7A5B4D] text-[#FDF8F4] font-bold text-sm tracking-wide transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
-              Sign In to Continue
-            </button>
-          </SignInButton>
+          <button 
+            onClick={() => router.push('/sign-in')}
+            className="px-6 py-3 rounded-xl bg-[#8C6B5D] hover:bg-[#7A5B4D] text-[#FDF8F4] font-bold text-sm tracking-wide transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+          >
+            Sign In to Continue
+          </button>
         </div>
       ) : (
         <>

@@ -18,7 +18,8 @@ import {
 } from 'lucide-react';
 import { useApp, ActiveView } from '@/context/AppContext';
 import { clsx } from 'clsx';
-import { UserButton, SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import { User, LogOut } from 'lucide-react';
 import { IntersemesterLogo } from '../ui/IntersemesterLogo';
 
 export const Sidebar: React.FC = () => {
@@ -31,7 +32,10 @@ export const Sidebar: React.FC = () => {
     settings,
     updateSettings,
     setCommandPaletteOpen,
+    user,
+    isClerkLoaded,
   } = useApp();
+  const router = useRouter();
 
   const pendingHomeworkCount = homework.filter((h) => h.status !== 'Completed').length;
   const unreadNotifCount = notifications.filter((n) => !n.read).length;
@@ -176,25 +180,29 @@ export const Sidebar: React.FC = () => {
       {/* Footer Profile & Theme Toggle */}
       <div className="flex flex-col gap-2 pt-3 border-t border-black/10 dark:border-white/10">
         <div className="flex items-center justify-between p-2 rounded-none bg-black/[0.02] dark:bg-white/[0.02] border border-black/15 dark:border-white/15">
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <SignedIn>
-              <UserButton afterSignOutUrl="/" />
-              <div className="flex flex-col min-w-0">
-                <span className="text-xs font-bold text-black dark:text-white truncate">
-                  {profile.name}
-                </span>
-                <span className="text-[10px] text-black/50 dark:text-white/50 font-mono truncate">
-                  Clerk Secure Auth
-                </span>
-              </div>
-            </SignedIn>
-            <SignedOut>
-              <SignInButton mode="modal">
-                <button className="text-xs font-bold bg-black text-white dark:bg-white dark:text-black px-3 py-1.5 rounded-none border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors">
-                  Sign In
-                </button>
-              </SignInButton>
-            </SignedOut>
+          <div className="flex items-center gap-2.5 overflow-hidden flex-1 mr-2">
+            {isClerkLoaded && user ? (
+              <>
+                <div className="w-7 h-7 flex items-center justify-center bg-black dark:bg-white text-white dark:text-black font-bold text-xs border border-black/15 dark:border-white/15 rounded-none shrink-0 uppercase">
+                  {profile.name ? profile.name.charAt(0) : 'U'}
+                </div>
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-xs font-bold text-black dark:text-white truncate">
+                    {profile.name || 'User'}
+                  </span>
+                  <span className="text-[10px] text-black/50 dark:text-white/50 font-mono truncate">
+                    Firebase Auth
+                  </span>
+                </div>
+              </>
+            ) : (
+              <button 
+                onClick={() => router.push('/sign-in')}
+                className="text-xs font-bold bg-black text-white dark:bg-white dark:text-black px-3 py-1.5 rounded-none border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer w-full text-center"
+              >
+                Sign In
+              </button>
+            )}
           </div>
 
           <button

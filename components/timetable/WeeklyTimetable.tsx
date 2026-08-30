@@ -12,14 +12,14 @@ import { EmptyState } from '../ui/EmptyState';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { Plus, Sparkles, CalendarDays, Share2, UserPlus, Users } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useClerk, useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
 import { BatchMembersModal } from '@/components/batch/BatchMembersModal';
 
 export const WeeklyTimetable: React.FC = () => {
-  const { timetable, subjects, deleteClassSession, profile, isBatchCR, shareTimetableWithBatch, showToast, joinBatchTimetable, searchBatchTimetable } = useApp();
-  const { isSignedIn } = useUser();
-  const clerk = useClerk();
+  const { timetable, subjects, deleteClassSession, profile, isBatchCR, shareTimetableWithBatch, showToast, joinBatchTimetable, searchBatchTimetable, user } = useApp();
+  const router = useRouter();
+  const isSignedIn = !!user;
 
   const currentDay = getCurrentDayOfWeek();
   const [selectedMobileDay, setSelectedMobileDay] = useState<DayOfWeek>(currentDay);
@@ -56,7 +56,7 @@ export const WeeklyTimetable: React.FC = () => {
 
   const handleAddForDay = (day: DayOfWeek) => {
     if (!isSignedIn) {
-      clerk.openSignIn();
+      router.push('/sign-in');
       return;
     }
     setTargetAddDay(day);
@@ -66,7 +66,7 @@ export const WeeklyTimetable: React.FC = () => {
 
   const handleImportTimetable = () => {
     if (!isSignedIn) {
-      clerk.openSignIn();
+      router.push('/sign-in');
       return;
     }
     setShowImportModal(true);
@@ -75,7 +75,7 @@ export const WeeklyTimetable: React.FC = () => {
   const handleJoinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isSignedIn) {
-      clerk.openSignIn();
+      router.push('/sign-in');
       return;
     }
 
@@ -110,7 +110,7 @@ export const WeeklyTimetable: React.FC = () => {
 
   const handleEditSession = (session: ClassSession) => {
     if (!isSignedIn) {
-      clerk.openSignIn();
+      router.push('/sign-in');
       return;
     }
     setEditSession(session);
