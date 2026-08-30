@@ -367,7 +367,7 @@ export const OnboardingModal = () => {
               </div>
             </motion.div>
           ) : (
-            /* STEP 4: AI SCAN & SETUP CARD */
+            /* STEP 4: CLEAN NOTION-STYLE BATCH & SCAN EXPERIENCE */
             <motion.div
               key="step-4-ai-scanner"
               custom={direction}
@@ -375,91 +375,98 @@ export const OnboardingModal = () => {
               initial="enter"
               animate="center"
               exit="exit"
-              className="absolute inset-0 w-full h-full flex flex-col justify-between overflow-y-auto px-6 py-6 bg-[#FFFFFF]"
+              className="absolute inset-0 w-full h-full flex flex-col justify-between overflow-y-auto px-6 py-5 bg-[#FFFFFF]"
             >
               <div className="flex flex-col flex-1 max-w-[420px] mx-auto w-full">
                 {/* Header */}
-                <div className="flex flex-col mb-6 text-left">
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#111111] text-white text-[10.5px] font-bold uppercase tracking-[1.5px] w-fit rounded-none mb-3">
-                    <Sparkles className="w-3 h-3 text-amber-400" />
-                    AI Instant Setup
-                  </div>
-                  <h2 className="text-[30px] font-bold text-[#111111] tracking-tight leading-[34px]">
-                    Just scan timetable.<br />
-                    Everything sorted.
+                <div className="flex flex-col mb-5">
+                  <h2 className="text-[34px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[38px]">
+                    Connect,<br />
+                    Batch,<br />
+                    Timetable
                   </h2>
-                  <p className="text-[13.5px] text-[#6B6B6B] leading-[20px] mt-2">
-                    Snap or upload your timetable picture or PDF routine. Our AI automatically extracts your classes, subjects, rooms and builds your entire weekly schedule.
+                  <p className="text-[13.5px] font-normal text-[#6B6B6B] leading-[19px] mt-2.5">
+                    Join your classmates and sync your academic schedule.
                   </p>
                 </div>
 
-                {/* 1. Hero AI Scan & Upload Box */}
-                <div className="border-2 border-dashed border-[#111111] bg-[#FAFAF8] p-6 flex flex-col items-center text-center gap-4 relative hover:bg-[#F4F4F0] transition-colors cursor-pointer group rounded-none shadow-sm">
-                  <input
-                    type="file"
-                    accept="image/*,application/pdf"
-                    onChange={handleFileUpload}
-                    disabled={isExtracting}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-                  />
-                  
-                  <div className="w-14 h-14 bg-[#111111] text-white flex items-center justify-center rounded-none shadow-md group-hover:scale-105 transition-transform">
-                    {isExtracting ? (
-                      <span className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <Camera className="w-7 h-7" />
-                    )}
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[16px] font-bold text-[#111111] uppercase tracking-wider">
-                      {isExtracting ? 'AI is scanning timetable...' : '📸 Snap or Upload Timetable'}
-                    </span>
-                    <span className="text-[12px] text-[#666666]">
-                      {isExtracting ? 'Extracting classes, rooms & faculty...' : 'Supports Camera Photo, JPG, PNG or PDF'}
-                    </span>
-                  </div>
-
-                  <div className="w-full py-3 bg-[#111111] text-white text-[13px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm pointer-events-none">
-                    {isExtracting ? (
-                      <span>Processing Schedule...</span>
-                    ) : (
-                      <>
-                        <Upload className="w-4 h-4" />
-                        Upload & Auto-Setup
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* 2. Fast Invite Code Option */}
-                <div className="border border-[#D8D8D8] bg-[#FFFFFF] p-4 mt-5 rounded-none">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] flex items-center gap-1.5">
-                      <ArrowUpRight className="w-3.5 h-3.5 text-[#111111]" />
-                      Have an invite code from CR?
+                {/* 1. Fast Invite Card (At The Top) */}
+                <div className="border border-[#D8D8D8] bg-[#FAFAF8] p-4 mb-5">
+                  <div className="flex items-center gap-1.5 mb-2.5">
+                    <ArrowUpRight className="w-3.5 h-3.5 text-[#111111]" />
+                    <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111]">
+                      HAVE AN INVITE?
                     </span>
                   </div>
                   <form onSubmit={handleCodeJoin} className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="e.g. K9X2B4 or invite link..."
+                      placeholder="Paste code or link..."
                       value={inviteCode}
                       onChange={(e) => setInviteCode(e.target.value)}
-                      className="flex-1 h-11 px-3.5 bg-[#FAFAF8] border border-[#D8D8D8] rounded-none text-[13px] text-[#111111] focus:outline-none focus:border-[#111111]"
+                      className="flex-1 h-11 px-3.5 bg-white border border-[#D8D8D8] rounded-none text-[13.5px] text-[#111111] focus:outline-none focus:border-[#111111] transition-all"
                     />
                     <button
                       type="submit"
                       disabled={isJoiningCode || !inviteCode.trim()}
-                      className="h-11 px-5 bg-[#111111] text-white text-[13px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0"
+                      className="h-11 px-5 bg-[#111111] text-white text-[13.5px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0"
                     >
                       {isJoiningCode ? 'Joining...' : 'Join'}
                     </button>
                   </form>
                 </div>
 
-                {/* 3. Manual Skip Link */}
-                <div className="mt-6 text-center">
+                {/* 2. Light Divider */}
+                <div className="flex items-center gap-3 my-1 mb-5">
+                  <div className="flex-1 h-[1px] bg-[#EEEEEC]" />
+                  <span className="text-[10.5px] font-medium tracking-[1.5px] text-[#A0A0A0] uppercase">
+                    OR SCAN TIMETABLE
+                  </span>
+                  <div className="flex-1 h-[1px] bg-[#EEEEEC]" />
+                </div>
+
+                {/* 3. AI Scan Timetable Box */}
+                <div className="border border-[#D8D8D8] hover:border-[#111111] bg-[#FAFAF8] p-5 flex flex-col items-center text-center relative transition-colors cursor-pointer group">
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf"
+                    onChange={handleFileUpload}
+                    disabled={isExtracting}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-20"
+                  />
+
+                  <div className="w-12 h-12 bg-[#111111] text-white flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                    {isExtracting ? (
+                      <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Camera className="w-5 h-5 text-white" />
+                    )}
+                  </div>
+
+                  <span className="text-[14px] font-bold text-[#111111] uppercase tracking-wide mb-1">
+                    {isExtracting ? 'AI Extracting Schedule...' : 'Scan Your Timetable'}
+                  </span>
+
+                  <p className="text-[12.5px] text-[#6F6F6F] leading-snug mb-4 max-w-[280px]">
+                    {isExtracting
+                      ? 'Building your weekly classes & rooms in seconds...'
+                      : 'Upload routine picture or PDF. AI sorts everything automatically.'}
+                  </p>
+
+                  <div className="w-full h-11 bg-[#111111] text-white text-[12.5px] font-bold uppercase tracking-[1.5px] flex items-center justify-center gap-2 group-hover:opacity-90 transition-opacity pointer-events-none">
+                    {isExtracting ? (
+                      <span>Processing...</span>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4" />
+                        Upload Routine & Auto-Setup
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* 4. Manual Skip Link */}
+                <div className="mt-5 text-center">
                   <button
                     type="button"
                     onClick={handleSkip}
