@@ -3,26 +3,15 @@ import { getFirestore } from 'firebase/firestore';
 import { getMessaging, isSupported } from 'firebase/messaging';
 import { getAuth } from 'firebase/auth';
 
-const sanitizeConfigValue = (val: string | undefined) => {
-  if (!val) return val;
-  return val.replace(/^["']|["']$/g, '');
-};
-
 const firebaseConfig = {
-  apiKey: sanitizeConfigValue(process.env.NEXT_PUBLIC_FIREBASE_API_KEY),
-  authDomain: sanitizeConfigValue(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN),
-  projectId: sanitizeConfigValue(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID),
-  storageBucket: sanitizeConfigValue(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET),
-  messagingSenderId: sanitizeConfigValue(process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID),
-  appId: sanitizeConfigValue(process.env.NEXT_PUBLIC_FIREBASE_APP_ID)
+  apiKey: "AIzaSyD4zcondRUy9_EDnBo7cU72jjqcUHbwysc",
+  authDomain: "academisync-c1a37.firebaseapp.com",
+  projectId: "academisync-c1a37",
+  storageBucket: "academisync-c1a37.firebasestorage.app",
+  messagingSenderId: "941128003754",
+  appId: "1:941128003754:web:5c5b6c40eb6985afafe0d3",
+  measurementId: "G-B13ZRNQ4XT"
 };
-
-if (typeof window !== 'undefined') {
-  console.log('Firebase Config loaded:', {
-    ...firebaseConfig,
-    apiKey: firebaseConfig.apiKey ? `${firebaseConfig.apiKey.substring(0, 6)}... (length: ${firebaseConfig.apiKey.length})` : 'undefined'
-  });
-}
 
 // Initialize Firebase only once
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
