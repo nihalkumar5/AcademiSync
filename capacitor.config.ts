@@ -32,6 +32,11 @@ const config: CapacitorConfig = {
       backgroundColor: '#FFFFFF',
       androidScaleType: 'CENTER_CROP',
       showSpinner: false,
+    },
+    StatusBar: {
+      style: 'DARK',
+      backgroundColor: '#FAFAF8',
+      overlaysWebView: false,
     }
   }
 };

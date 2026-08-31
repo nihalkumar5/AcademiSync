@@ -35,6 +35,17 @@ import { db, auth } from '@/lib/firebase';
 import { registerPushNotifications } from '@/lib/pushNotifications';
 import { triggerLocalNotification, scheduleTimetableLocalNotifications } from '@/lib/localNotifications';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
+import { Capacitor } from '@capacitor/core';
+
+export const syncNativeStatusBar = async (isDark: boolean) => {
+  if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
+    try {
+      const { StatusBar, Style } = await import('@capacitor/status-bar');
+      await StatusBar.setStyle({ style: isDark ? Style.Light : Style.Dark }).catch(() => {});
+      await StatusBar.setBackgroundColor({ color: isDark ? '#111110' : '#FAFAF8' }).catch(() => {});
+    } catch (_) {}
+  }
+};
 
 // Helper to remove any undefined fields before writing to Firestore
 export function sanitizeForFirestore<T>(data: T): T {
@@ -611,13 +622,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setCarryItemsState(computedCarry);
     storage.setCarryItems(computedCarry);
 
-    // Apply theme class to <html> and sync meta theme-color
+    // Apply theme class to <html> and sync meta theme-color + native status bar
     const isDark = loadedSettings.theme === 'dark' || (loadedSettings.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
+    syncNativeStatusBar(isDark);
     try {
       let metaTheme = document.querySelector('meta[name="theme-color"]');
       if (!metaTheme) {
@@ -1274,6 +1286,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       } else {
         document.documentElement.classList.remove('dark');
       }
+      syncNativeStatusBar(isDark);
       try {
         let metaTheme = document.querySelector('meta[name="theme-color"]');
         if (!metaTheme) {
