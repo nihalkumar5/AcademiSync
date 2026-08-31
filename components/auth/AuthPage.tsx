@@ -6,6 +6,10 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   updateProfile,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  GoogleAuthProvider,
   sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -36,10 +40,59 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
   }, [user, router]);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      getRedirectResult(auth)
+        .then((result) => {
+          if (result?.user) {
+            showToast('Welcome Back', 'Signed in successfully with Google!', 'success');
+            router.push('/');
+          }
+        })
+        .catch((err) => {
+          console.warn('Redirect result check:', err);
+        });
+    }
+  }, [router, showToast]);
+
+  useEffect(() => {
     if (initialMode) {
       setCurrentMode(initialMode);
     }
   }, [initialMode]);
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setErrorMsg('');
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    try {
+      await signInWithPopup(auth, provider);
+      showToast('Google Sign In', 'Authenticated successfully with Google.', 'success');
+      router.push('/');
+    } catch (err: any) {
+      console.warn('Google popup error, falling back to in-app redirect:', err);
+      if (
+        err.code === 'auth/popup-blocked' ||
+        err.code === 'auth/popup-closed-by-user' ||
+        err.code === 'auth/cancelled-popup-request' ||
+        err.code === 'auth/missing-initial-state'
+      ) {
+        try {
+          await signInWithRedirect(auth, provider);
+          return;
+        } catch (redirectErr: any) {
+          console.error('Redirect sign-in error:', redirectErr);
+          setErrorMsg(redirectErr.message || 'Google Sign-In failed. Please try Email.');
+          showToast('Sign In Error', 'Could not complete Google Sign In.', 'error');
+        }
+      } else {
+        setErrorMsg(err.message || 'Google authentication failed.');
+        showToast('Sign In Error', err.message || 'Authentication error', 'error');
+      }
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,7 +267,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
           </div>
         )}
 
-        {/* Forms */}
+        {/* Forms & Auth Options */}
         <div className="w-full flex flex-col gap-4">
           {currentMode === 'forgot' ? (
             /* Forgot Password Flow */
@@ -274,77 +327,101 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
               </form>
             )
           ) : (
-            /* Direct Sign Up / Sign In Form */
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-              {currentMode === 'signup' && (
+            <div className="flex flex-col gap-4">
+              {/* In-App Google Sign-In Button */}
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={loading}
+                className="w-full h-11 border border-[#E3E3E3] dark:border-[#2C2C2C] bg-white dark:bg-[#161616] hover:bg-[#F9F9F9] dark:hover:bg-[#202020] text-[#111111] dark:text-white font-medium text-[13.5px] rounded-[8px] transition-all flex items-center justify-center gap-2.5 disabled:opacity-50 cursor-pointer shadow-sm"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.57 14.97 1 12 1 7.35 1 3.37 3.68 1.34 7.6l3.96 3.07C6.27 7.37 8.91 5.04 12 5.04z"/>
+                  <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.35H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.73 2.89c2.18-2.01 3.7-4.99 3.7-8.63z"/>
+                  <path fill="#FBBC05" d="M5.3 14.33l-3.96 3.07C3.37 21.32 7.35 24 12 24c3.24 0 5.95-1.08 7.93-2.91l-3.73-2.89c-1.03.69-2.35 1.1-4.2 1.1-3.09 0-5.73-2.33-6.7-5.54L5.3 14.33z"/>
+                  <path fill="#34A853" d="M12 4.49c-1.85 0-3.17.41-4.2 1.1L4.07 2.7C6.05.88 8.76-.2 12-.2c4.65 0 8.63 2.68 10.66 6.6l-3.96 3.07c-.97-3.21-3.61-5.54-6.7-5.54z" transform="translate(0 .2)"/>
+                </svg>
+                <span>Continue with Google</span>
+              </button>
+
+              <div className="flex items-center gap-3 my-0.5">
+                <div className="flex-1 h-[1px] bg-[#EBEBEB] dark:bg-[#252525]" />
+                <span className="text-[10px] tracking-[1.5px] font-bold text-[#A0A0A0] uppercase">OR WITH EMAIL</span>
+                <div className="flex-1 h-[1px] bg-[#EBEBEB] dark:bg-[#252525]" />
+              </div>
+
+              {/* Direct Sign Up / Sign In Form */}
+              <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                {currentMode === 'signup' && (
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Full Name (e.g. Rahul Sharma)"
+                    required
+                    disabled={loading}
+                    className="w-full h-11 border border-[#E3E3E3] dark:border-[#2C2C2C] bg-white dark:bg-[#161616] text-[#111111] dark:text-white px-3.5 text-[14px] rounded-[8px] placeholder-[#8C8C8C] focus:outline-none focus:border-[#111111] dark:focus:border-white transition-all"
+                  />
+                )}
+
                 <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Full Name (e.g. Rahul Sharma)"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email Address (e.g. name@gmail.com)"
                   required
                   disabled={loading}
                   className="w-full h-11 border border-[#E3E3E3] dark:border-[#2C2C2C] bg-white dark:bg-[#161616] text-[#111111] dark:text-white px-3.5 text-[14px] rounded-[8px] placeholder-[#8C8C8C] focus:outline-none focus:border-[#111111] dark:focus:border-white transition-all"
                 />
-              )}
 
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email Address (e.g. name@gmail.com)"
-                required
-                disabled={loading}
-                className="w-full h-11 border border-[#E3E3E3] dark:border-[#2C2C2C] bg-white dark:bg-[#161616] text-[#111111] dark:text-white px-3.5 text-[14px] rounded-[8px] placeholder-[#8C8C8C] focus:outline-none focus:border-[#111111] dark:focus:border-white transition-all"
-              />
-
-              <div className="relative flex items-center">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={currentMode === 'signup' ? 'Create Password (min 6 chars)' : 'Enter Password'}
-                  required
-                  disabled={loading}
-                  className="w-full h-11 border border-[#E3E3E3] dark:border-[#2C2C2C] bg-white dark:bg-[#161616] text-[#111111] dark:text-white pl-3.5 pr-10 text-[14px] rounded-[8px] placeholder-[#8C8C8C] focus:outline-none focus:border-[#111111] dark:focus:border-white transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  tabIndex={-1}
-                  className="absolute right-3 text-[#888888] hover:text-[#111111] dark:hover:text-white transition-colors cursor-pointer"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-
-              {currentMode === 'signin' && (
-                <div className="flex justify-end -mt-1">
+                <div className="relative flex items-center">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={currentMode === 'signup' ? 'Create Password (min 6 chars)' : 'Enter Password'}
+                    required
+                    disabled={loading}
+                    className="w-full h-11 border border-[#E3E3E3] dark:border-[#2C2C2C] bg-white dark:bg-[#161616] text-[#111111] dark:text-white pl-3.5 pr-10 text-[14px] rounded-[8px] placeholder-[#8C8C8C] focus:outline-none focus:border-[#111111] dark:focus:border-white transition-all"
+                  />
                   <button
                     type="button"
-                    onClick={() => setIsForgotMode(true)}
-                    className="text-[12px] font-medium text-[#6F6F6F] hover:text-[#111111] dark:hover:text-white hover:underline cursor-pointer"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                    className="absolute right-3 text-[#888888] hover:text-[#111111] dark:hover:text-white transition-colors cursor-pointer"
                   >
-                    Forgot password?
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-              )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full h-11 bg-[#111111] dark:bg-white hover:bg-[#222222] dark:hover:bg-[#EEEEEE] text-white dark:text-[#111111] font-bold text-[13.5px] rounded-[8px] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-1 shadow-sm uppercase tracking-wider"
-              >
-                {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    <span>{currentMode === 'signup' ? 'Create Account' : 'Sign In'}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
+                {currentMode === 'signin' && (
+                  <div className="flex justify-end -mt-1">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentMode('forgot')}
+                      className="text-[12px] font-medium text-[#6F6F6F] hover:text-[#111111] dark:hover:text-white hover:underline cursor-pointer"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
                 )}
-              </button>
-            </form>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-11 bg-[#111111] dark:bg-white hover:bg-[#222222] dark:hover:bg-[#EEEEEE] text-white dark:text-[#111111] font-bold text-[13.5px] rounded-[8px] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-1 shadow-sm uppercase tracking-wider"
+                >
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <span>{currentMode === 'signup' ? 'Create Account' : 'Sign In'}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
           )}
         </div>
 
@@ -354,7 +431,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
       <div className="w-full max-w-[360px] text-center flex flex-col gap-4 mt-12">
         <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#8C8C8C] dark:text-[#6A6A6A]">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Proxy & Privacy Shield Immune · Direct First-Party Auth</span>
+          <span>Proxy & Privacy Shield Immune · Direct In-App Auth</span>
         </div>
 
         <div className="border-t border-[#EBEBEB] dark:border-[#252525] pt-3 flex justify-center items-center gap-4 text-[12px] font-medium text-[#8C8C8C] dark:text-[#6A6A6A]">

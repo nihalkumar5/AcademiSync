@@ -10,10 +10,14 @@ const config: CapacitorConfig = {
     cleartext: true,
     allowNavigation: [
       'academi-sync-chi.vercel.app',
+      'academisync-c1a37.firebaseapp.com',
+      '*.firebaseapp.com',
+      '*.firebaseio.com',
       'accounts.google.com',
       '*.google.com',
       '*.googleapis.com',
-      '*.googleusercontent.com'
+      '*.googleusercontent.com',
+      '*.gstatic.com'
     ]
   },
   plugins: {
