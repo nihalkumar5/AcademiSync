@@ -77,12 +77,17 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
         });
 
         const googleUser = await GoogleAuth.signIn();
-        if (googleUser && googleUser.authentication?.idToken) {
-          const credential = GoogleAuthProvider.credential(googleUser.authentication.idToken);
+        const idToken = googleUser?.authentication?.idToken || (googleUser as any)?.idToken;
+        
+        if (idToken) {
+          const credential = GoogleAuthProvider.credential(idToken);
           await signInWithCredential(auth, credential);
           showToast('Welcome Back', 'Signed in successfully with Google!', 'success');
           router.push('/');
           return;
+        } else {
+          console.warn('GoogleAuth returned user without idToken:', googleUser);
+          throw new Error('Could not retrieve Google authentication token.');
         }
       }
 
@@ -94,9 +99,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
       router.push('/');
     } catch (err: any) {
       console.error('Google Sign In error:', err);
-      let msg = 'Google Sign-In failed.';
+      let msg = 'Google Sign-In failed. Please try Email & Password.';
       if (err.message) {
-        msg = err.message;
+        if (err.message.includes('10:') || err.message.includes('DEVELOPER_ERROR') || err.message.includes('Something went wrong')) {
+          msg = 'Google Auth Error (10): Please ensure your Android app SHA-1 fingerprint is added in Firebase Console.';
+        } else {
+          msg = err.message;
+        }
       }
       setErrorMsg(msg);
       showToast('Sign In Error', msg, 'error');
