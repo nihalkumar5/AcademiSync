@@ -1621,12 +1621,46 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         ? 'super_admin' 
         : (data.crUserIds?.includes(user?.id) || data.crEmails?.includes(userEmail) ? 'cr' : 'student');
 
+      // Key fallback helper in case direct document fields are partial
+      const extractFromKey = (k?: string) => {
+        if (!k) return {};
+        const p = k.toLowerCase().split('_');
+        const r: any = {};
+        if (p.length >= 3) {
+          if (p[0].includes('iiitnr')) r.college = 'IIIT Naya Raipur';
+          else if (p[0].includes('iit')) r.college = p[0].toUpperCase();
+          else if (p[0].includes('nit')) r.college = p[0].toUpperCase();
+          
+          if (p[1].includes('btech')) r.programme = 'B.Tech';
+          else if (p[1].includes('mtech')) r.programme = 'M.Tech';
+          else if (p[1].includes('cmit')) r.programme = 'Mtech- CMIT';
+
+          if (p[2].includes('cse')) r.branch = 'Computer Science & Engineering (CSE)';
+          else if (p[2].includes('ece')) r.branch = 'Electronics & Communication Engg (ECE)';
+          else if (p[2].includes('dsai') || p[2].includes('ai')) r.branch = 'Data Science & AI';
+
+          const semPart = p.find(s => s.startsWith('sem'));
+          if (semPart) {
+            const num = parseInt(semPart.replace('sem', ''), 10);
+            if (!isNaN(num)) r.semester = num;
+          }
+
+          const secPart = p.find(s => s.startsWith('sec'));
+          if (secPart) {
+            r.section = secPart.replace('sec', '').toUpperCase();
+          }
+        }
+        return r;
+      };
+
+      const keyFallbacks = extractFromKey(batchKey) || extractFromKey(data.id) || {};
+
       // Resolve academic profile details from batch data
-      const targetCollege = data.college || data.collegeName || data.university || profile.college || '';
-      const targetProgramme = data.programme || data.degree || data.course || profile.programme || '';
-      const targetBranch = data.branch || data.department || data.specialization || profile.branch || '';
-      const targetSemester = data.semester !== undefined && data.semester !== null ? Number(data.semester) : (profile.semester || 1);
-      const targetSection = data.section || profile.section || 'A';
+      const targetCollege = data.college || data.collegeName || data.university || keyFallbacks.college || profile.college || '';
+      const targetProgramme = data.programme || data.degree || data.course || keyFallbacks.programme || profile.programme || '';
+      const targetBranch = data.branch || data.department || data.specialization || keyFallbacks.branch || profile.branch || '';
+      const targetSemester = data.semester !== undefined && data.semester !== null ? Number(data.semester) : (keyFallbacks.semester || profile.semester || 1);
+      const targetSection = data.section || keyFallbacks.section || profile.section || 'A';
 
       // Update profile fields to show it's synced with full academic details
       const updatedProfile: StudentProfile = {

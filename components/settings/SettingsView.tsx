@@ -95,6 +95,20 @@ export const SettingsView: React.FC = () => {
   const [matchedBatchData, setMatchedBatchData] = useState<any>(null);
   const [showDiscoveryModal, setShowDiscoveryModal] = useState(false);
 
+  // Automatically keep local input fields in sync when profile updates (e.g. from joining a batch)
+  useEffect(() => {
+    setName(profile.name || '');
+    setCollege(profile.college || '');
+    setIsChangingCollege(!profile.college);
+    setRollNumber(profile.rollNumber || '');
+    setEmail(profile.email || '');
+    setProgramme(profile.programme === 'CMIT' ? 'Mtech- CMIT' : (profile.programme || ''));
+    setBranch(profile.branch || '');
+    setYear(profile.year || 1);
+    setSemester(profile.semester || 1);
+    setSection(profile.section || '');
+  }, [profile.college, profile.programme, profile.branch, profile.semester, profile.section, profile.name, profile.rollNumber, profile.email, profile.year]);
+
   // Debounced SheerID + popular campus search lookup
   useEffect(() => {
     let isMounted = true;
