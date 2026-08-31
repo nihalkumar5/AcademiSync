@@ -199,19 +199,16 @@ export const HomeMessCard: React.FC = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
               </span>
-              <span className="font-mono text-[10.5px] sm:text-[11px] font-black uppercase tracking-[1.6px] text-emerald-400 dark:text-emerald-600">
+              <span className="font-mono text-[11px] sm:text-[11.5px] font-black uppercase tracking-[1.6px] text-emerald-400 dark:text-emerald-600">
                 SERVING NOW · {mealInfo.mealName.toUpperCase()}
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 font-mono text-[10.5px] sm:text-[11px] font-bold uppercase tracking-[1.4px] text-[#A0A0A0] dark:text-[#666666]">
+            <div className="flex items-center gap-1.5 font-mono text-[11px] sm:text-[11.5px] font-bold uppercase tracking-[1.4px] text-[#A0A0A0] dark:text-[#666666]">
               <span className="text-[9px]">●</span>
               <span>{mealInfo.status === 'TOMORROW' ? 'TOMORROW' : 'UPCOMING'}</span>
               <span>·</span>
               <span className="text-white dark:text-black font-extrabold">{mealInfo.mealName.toUpperCase()}</span>
-              {mealInfo.timingStr && (
-                <span className="opacity-80 font-medium">({mealInfo.timingStr})</span>
-              )}
             </div>
           )}
         </div>
