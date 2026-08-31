@@ -264,11 +264,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
         
         {/* Brand Logo (logo51.png) */}
         <div className="mb-5 flex items-center justify-center">
-          <div className="w-[56px] h-[56px] rounded-[16px] overflow-hidden flex items-center justify-center shadow-sm border border-[#E5E5E5] dark:border-[#2C2C2C] bg-white dark:bg-[#161616] p-2">
+          <div className="w-[64px] h-[64px] rounded-[18px] overflow-hidden flex items-center justify-center shadow-sm border border-[#E5E5E5] dark:border-[#2C2C2C] bg-white dark:bg-[#161616]">
             <img 
               src="/logo51.png" 
               alt="Intersemester Logo" 
-              className="w-full h-full object-contain select-none"
+              className="w-full h-full object-cover scale-[1.75] select-none"
             />
           </div>
         </div>
@@ -327,8 +327,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
               className="w-full h-[48px] px-4 rounded-xl border border-[#E5E5E5] dark:border-[#2C2C2C] bg-white dark:bg-[#1A1A1A] hover:bg-[#F9F9F9] dark:hover:bg-[#222222] active:scale-[0.99] transition-all flex items-center justify-between font-semibold text-[14.5px] text-[#111111] dark:text-[#FFFFFF] shadow-sm cursor-pointer disabled:opacity-60"
             >
               <div className="w-6 flex items-center justify-center">
-                <svg className="w-[18px] h-[18px] fill-current" viewBox="0 0 170 170">
-                  <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.74 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.69-3.04-7.67-7.81-11.96-14.3-5.54-8.37-9.98-17.76-13.33-28.18-3.34-10.42-5.02-20.57-5.02-30.46 0-14.55 3.8-26.68 11.41-36.38 7.6-9.7 16.99-14.65 28.16-14.86 4.7 0 9.87 1.25 15.52 3.76 5.66 2.5 9.4 3.81 11.23 3.92 1.45 0 5.43-1.42 11.95-4.25 6.52-2.83 12.06-4.14 16.63-3.92 12.82.76 22.84 5.34 30.06 13.73-11.21 6.86-16.71 16.22-16.5 28.08.21 9.47 3.85 17.43 10.92 23.88 7.07 6.45 15.5 10.15 25.3 11.11-2.29 6.86-5.02 13.73-8.2 20.61zM119.22 33.15c0-6.86 2.53-13.34 7.6-19.45 5.07-6.11 11.39-10.02 18.96-11.7-1.04 6.75-3.69 13.13-7.94 19.14-4.25 6.01-10.47 9.86-18.62 12.01z"/>
+                <svg className="w-[18px] h-[18px] fill-current" viewBox="0 0 24 24">
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.62-.75 1.04-1.8 0.92-2.83-.9.04-1.98.6-2.61 1.34-.56.64-.99 1.71-.86 2.72.99.08 2.01-.5 2.55-1.23z"/>
                 </svg>
               </div>
               <span className="flex-1 text-center font-medium">Apple</span>
