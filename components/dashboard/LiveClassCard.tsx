@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
-import { getLiveClassStatus, formatTime12Hour, getTodayDateString } from '@/lib/timetableUtils';
+import { getLiveClassStatus, formatTime12Hour, getTodayDateString, getCurrentDayOfWeek } from '@/lib/timetableUtils';
 import { Clock, MapPin, User, CheckCircle2, ChevronRight, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
@@ -201,7 +201,11 @@ export const LiveClassCard: React.FC = () => {
     );
   }
 
-  const completedClasses = getActiveTimetable().length;
+  const currentDay = getCurrentDayOfWeek();
+  const rawTodaySessions = timetable.filter((s) => s.day === currentDay);
+  const totalToday = rawTodaySessions.length;
+  const cancelledToday = rawTodaySessions.filter((s) => isSessionCancelled(s.id, dateTodayStr)).length;
+  const completedToday = totalToday - cancelledToday;
   
   return (
     <div className="w-full bg-[#FAFAFA] dark:bg-[#111111] border border-[#E0E0E0] dark:border-[#333333] rounded-none p-5 flex flex-col">
@@ -212,7 +216,11 @@ export const LiveClassCard: React.FC = () => {
         You&apos;re done for today.
       </h3>
       <span className="text-[13px] text-[#6B6B6B] dark:text-[#999999] leading-none">
-        {completedClasses} classes · {completedClasses} completed
+        {totalToday === 0
+          ? 'No classes scheduled for today.'
+          : `${totalToday} ${totalToday === 1 ? 'class' : 'classes'} · ${completedToday} completed${
+              cancelledToday > 0 ? ` (${cancelledToday} cancelled)` : ''
+            }`}
       </span>
     </div>
   );

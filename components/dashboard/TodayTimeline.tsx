@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { motion } from 'framer-motion';
 import { getCurrentDayOfWeek, timeToMinutes, getTodayDateString, getTomorrowDayOfWeek, getTomorrowDateString, getSubjectThemeStyle } from '@/lib/timetableUtils';
-import { MapPin, User, Clock, FlaskConical, Ban, RotateCcw, MoreVertical } from 'lucide-react';
+import { MapPin, User, Clock, FlaskConical, Ban, RotateCcw, MoreVertical, ChevronDown, Check } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
 import { Subject, ClassSession } from '@/lib/types';
@@ -31,6 +31,7 @@ export const TodayTimeline: React.FC = () => {
   const [openMenuSessionId, setOpenMenuSessionId] = useState<string | null>(null);
   const [rescheduleTarget, setRescheduleTarget] = useState<ClassSession | null>(null);
   const [rescheduleSubjectId, setRescheduleSubjectId] = useState('');
+  const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
   const [rescheduleTimeStart, setRescheduleTimeStart] = useState('09:00');
   const [rescheduleTimeEnd, setRescheduleTimeEnd] = useState('10:00');
   const [rescheduleRoom, setRescheduleRoom] = useState('');
@@ -431,21 +432,74 @@ export const TodayTimeline: React.FC = () => {
         description={`Modify time, room, or swap subject for ${isAfter8PM ? 'tomorrow' : 'today'}. Changes will reflect on live alerts and timeline.`}
       >
         <form onSubmit={handleRescheduleSubmit} className="flex flex-col gap-4 mt-3">
-          <div className="flex flex-col gap-1.5 text-left">
+          {/* Custom Theme-Aware Subject Dropdown */}
+          <div className="flex flex-col gap-1.5 text-left relative">
             <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
               Subject / Course
             </label>
-            <select
-              value={rescheduleSubjectId}
-              onChange={(e) => setRescheduleSubjectId(e.target.value)}
-              className="px-3 py-2.5 bg-white dark:bg-[#111111] border border-black dark:border-white text-sm focus:outline-none rounded-none text-[#111111] dark:text-[#FFFFFF]"
+            
+            <button
+              type="button"
+              onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
+              className="w-full flex items-center justify-between px-3 py-2.5 bg-white dark:bg-[#18181B] border border-black dark:border-white text-sm focus:outline-none rounded-none text-[#111111] dark:text-[#FFFFFF] transition-colors cursor-pointer text-left shadow-xs"
             >
-              {subjects.map((sub) => (
-                <option key={sub.id} value={sub.id} className="bg-white dark:bg-[#111111] text-black dark:text-white">
-                  {sub.code && sub.code !== 'UNK' ? `[${sub.code}] ` : ''}{sub.name}
-                </option>
-              ))}
-            </select>
+              <span className="truncate font-medium">
+                {(() => {
+                  const sel = subjects.find((s) => s.id === rescheduleSubjectId);
+                  if (!sel) return 'Select a subject';
+                  return `${sel.code && sel.code !== 'UNK' ? `[${sel.code}] ` : ''}${sel.name}`;
+                })()}
+              </span>
+              <ChevronDown className={`w-4 h-4 shrink-0 text-black/60 dark:text-white/60 transition-transform duration-200 ${isSubjectDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isSubjectDropdownOpen && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40" 
+                  onClick={() => setIsSubjectDropdownOpen(false)} 
+                />
+                <div className="absolute top-[100%] left-0 right-0 mt-1 z-50 max-h-52 overflow-y-auto bg-white dark:bg-[#18181B] border border-black dark:border-white shadow-2xl flex flex-col divide-y divide-black/5 dark:divide-white/5">
+                  {subjects.map((sub) => {
+                    const isSelected = sub.id === rescheduleSubjectId;
+                    return (
+                      <button
+                        key={sub.id}
+                        type="button"
+                        onClick={() => {
+                          setRescheduleSubjectId(sub.id);
+                          setIsSubjectDropdownOpen(false);
+                        }}
+                        className={`w-full px-3.5 py-2.5 text-left flex items-center justify-between text-xs sm:text-sm transition-colors cursor-pointer ${
+                          isSelected 
+                            ? 'bg-black/10 dark:bg-white/15 font-bold text-black dark:text-white' 
+                            : 'text-[#222222] dark:text-[#E0E0E0] hover:bg-black/5 dark:hover:bg-white/5'
+                        }`}
+                      >
+                        <div className="flex flex-col min-w-0 pr-2">
+                          <span className="truncate leading-tight">
+                            {sub.code && sub.code !== 'UNK' && (
+                              <span className="font-mono font-bold text-black/60 dark:text-white/60 mr-1.5">
+                                [{sub.code}]
+                              </span>
+                            )}
+                            {sub.name}
+                          </span>
+                          {sub.facultyName && (
+                            <span className="text-[10.5px] text-black/40 dark:text-white/40 truncate mt-0.5">
+                              {sub.facultyName}
+                            </span>
+                          )}
+                        </div>
+                        {isSelected && (
+                          <Check className="w-4 h-4 shrink-0 text-black dark:text-white" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex flex-col gap-1.5 text-left">
