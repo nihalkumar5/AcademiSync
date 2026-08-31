@@ -1357,10 +1357,10 @@ export const SettingsView: React.FC = () => {
                 </div>
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[16px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none">
-                    {user.fullName || profile.name || 'Student'}
+                    {user?.fullName || profile?.name || 'Student'}
                   </span>
                   <span className="text-[13px] text-[#6F6F6F]">
-                    {user.primaryEmailAddress?.emailAddress || profile.email}
+                    {user?.primaryEmailAddress?.emailAddress || profile?.email || 'Connected'}
                   </span>
                 </div>
               </div>
@@ -1385,17 +1385,26 @@ export const SettingsView: React.FC = () => {
                 </button>
                 <button 
                   onClick={async () => {
+                    setShowCloudSyncModal(false);
                     try {
                       if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
-                        const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
-                        await GoogleAuth.signOut();
+                        try {
+                          const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
+                          GoogleAuth.initialize({
+                            clientId: '941128003754-5oalodujnbtlr19jsf9t4unqq4762hsm.apps.googleusercontent.com',
+                            scopes: ['profile', 'email'],
+                            grantOfflineAccess: true,
+                          });
+                          await GoogleAuth.signOut().catch(() => {});
+                        } catch (e) {
+                          console.warn('Native GoogleAuth signOut ignored:', e);
+                        }
                       }
+                      await signOut(auth).catch((e) => console.warn('Firebase signOut ignored:', e));
+                      showToast('Signed Out', 'You have been signed out.', 'info');
                     } catch (e) {
-                      console.warn('Native GoogleAuth signOut error:', e);
+                      console.warn('Sign out error:', e);
                     }
-                    await signOut(auth);
-                    setShowCloudSyncModal(false);
-                    showToast('Signed Out', 'You have been signed out.', 'info');
                   }}
                   className="w-full py-3 border border-[#D8D8D8] dark:border-[#333333] text-[13px] font-bold text-red-600 flex items-center justify-center gap-2 hover:bg-[#F4F4F4] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer"
                 >

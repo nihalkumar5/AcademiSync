@@ -522,6 +522,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
 
     const timeout = setTimeout(() => {
+      if (!user || !user.id) return;
       const userRef = doc(db, 'users', user.id);
       const cleanState = sanitizeForFirestore(currentState);
       setDoc(userRef, cleanState, { merge: true })
