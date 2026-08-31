@@ -283,6 +283,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [user, isClerkLoaded, profile]);
 
+  // Auto-join pending batch invite immediately upon login / session start
+  useEffect(() => {
+    if (user && isHydrated && typeof window !== 'undefined') {
+      const pendingInvite = localStorage.getItem('pending_join_invite');
+      if (pendingInvite && pendingInvite !== profile.batchKey) {
+        localStorage.removeItem('pending_join_invite');
+        joinBatchTimetable(pendingInvite)
+          .then(() => {
+            updateProfile({ onboardingCompleted: true });
+          })
+          .catch((err) => {
+            console.warn('Auto-join on login failed:', err);
+          });
+      }
+    }
+  }, [user, isHydrated]);
+
   // Firebase Realtime Down-Sync (Runs on Login / Cloud Data Change)
   useEffect(() => {
     if (!isClerkLoaded || !user) return;

@@ -40,7 +40,7 @@ type AuthViewType = 'providers' | 'email_form' | 'forgot_password';
 
 export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup' }) => {
   const router = useRouter();
-  const { showToast, user } = useApp();
+  const { showToast, user, joinBatchTimetable, updateProfile: updateAppProfile } = useApp();
   
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>(initialMode === 'signin' ? 'signin' : 'signup');
   const [viewType, setViewType] = useState<AuthViewType>('providers');
@@ -52,17 +52,43 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [resetSent, setResetSent] = useState(false);
+  const [hasPendingInvite, setHasPendingInvite] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pending = localStorage.getItem('pending_join_invite');
+      if (pending) {
+        setHasPendingInvite(true);
+      }
+    }
+  }, []);
+
+  const proceedAfterAuth = async () => {
+    if (typeof window !== 'undefined') {
+      const pending = localStorage.getItem('pending_join_invite');
+      if (pending) {
+        try {
+          localStorage.removeItem('pending_join_invite');
+          await joinBatchTimetable(pending);
+          updateAppProfile({ onboardingCompleted: true });
+        } catch (err) {
+          console.warn('Auto-join on login failed:', err);
+        }
+      }
+    }
+    router.push('/');
+  };
 
   useEffect(() => {
     if (user) {
-      router.push('/');
+      proceedAfterAuth();
     }
-  }, [user, router]);
+  }, [user]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       getRedirectResult(auth)
-        .then((result) => {
+        .then(async (result) => {
           if (result?.user) {
             // Detect which provider was used for a friendly message
             const providerId = result.providerId || result.user.providerData?.[0]?.providerId || '';
@@ -73,7 +99,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
             else if (providerId.includes('microsoft')) providerLabel = 'Microsoft';
             const name = result.user.displayName?.split(' ')[0] || '';
             showToast('Welcome' + (name ? ` ${name}` : ''), `Signed in with ${providerLabel}!`, 'success');
-            router.push('/');
+            await proceedAfterAuth();
           }
         })
         .catch((err) => {
@@ -83,7 +109,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
           }
         });
     }
-  }, [router, showToast]);
+  }, [showToast]);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -112,7 +138,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
           const credential = GoogleAuthProvider.credential(idToken);
           await signInWithCredential(auth, credential);
           showToast('Welcome Back', 'Signed in successfully with Google!', 'success');
-          router.push('/');
+          await proceedAfterAuth();
           return;
         } else {
           console.warn('GoogleAuth returned user without idToken:', googleUser);
@@ -125,7 +151,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
       provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithPopup(auth, provider);
       showToast('Google Sign In', 'Authenticated successfully with Google.', 'success');
-      router.push('/');
+      await proceedAfterAuth();
     } catch (err: any) {
       console.error('Google Sign In error:', err);
       let msg = 'Google Sign-In failed. Please try Email.';
@@ -172,7 +198,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
       // Web / Desktop Browser — popup works fine
       await signInWithPopup(auth, provider);
       showToast('Welcome Back', `Signed in with ${providerName}!`, 'success');
-      router.push('/');
+      await proceedAfterAuth();
     } catch (err: any) {
       console.error(`${providerName} login error:`, err);
       if (err.code === 'auth/operation-not-allowed' || err.code === 'auth/configuration-not-found') {
@@ -219,11 +245,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
           displayName: cleanName
         });
         showToast('Account Created', `Welcome to Intersemester, ${cleanName}!`, 'success');
-        router.push('/');
+        await proceedAfterAuth();
       } else {
         await signInWithEmailAndPassword(auth, cleanEmail, cleanPass);
         showToast('Welcome Back', 'Signed in successfully!', 'success');
-        router.push('/');
+        await proceedAfterAuth();
       }
     } catch (err: any) {
       console.error('Auth error:', err);
@@ -318,6 +344,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
         {errorMsg && (
           <div className="w-full mb-5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 p-3 rounded-xl text-red-600 dark:text-red-400 text-[12.5px] font-medium text-center leading-relaxed">
             {errorMsg}
+          </div>
+        )}
+
+        {/* Pending Batch Connection Alert */}
+        {hasPendingInvite && (
+          <div className="w-full mb-5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 p-3 rounded-xl text-emerald-800 dark:text-emerald-300 text-[12.5px] font-semibold text-center leading-relaxed flex items-center justify-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span>Sign in to automatically sync your class timetable & calendar!</span>
           </div>
         )}
 

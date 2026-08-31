@@ -100,6 +100,14 @@ export default function AppHome() {
         const examsParam = extractParam(url, 'exams_invite');
 
         if (inviteParam && inviteParam !== profile.batchKey) {
+          if (!isSignedIn) {
+            try {
+              localStorage.setItem('pending_join_invite', inviteParam);
+            } catch (_) {}
+            router.push('/sign-in');
+            return;
+          }
+
           let snap = await getDoc(doc(db, 'shared_timetables', inviteParam));
           let resolvedKey = inviteParam;
           if (!snap.exists()) {
@@ -160,7 +168,7 @@ export default function AppHome() {
       listenerHandle?.remove();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHydrated, profile.batchKey]);
+  }, [isHydrated, profile.batchKey, isSignedIn]);
 
 
   useEffect(() => {
@@ -175,6 +183,14 @@ export default function AppHome() {
         if (isAndroidBrowser) {
           const intentUrl = `intent://invite?key=${inviteParam}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.intersemester.app;end`;
           window.location.href = intentUrl;
+          return;
+        }
+
+        if (!isSignedIn) {
+          try {
+            localStorage.setItem('pending_join_invite', inviteParam);
+          } catch (_) {}
+          router.push('/sign-in');
           return;
         }
 
@@ -202,7 +218,7 @@ export default function AppHome() {
         checkInvite();
       }
     }
-  }, [isHydrated, profile.batchKey]);
+  }, [isHydrated, profile.batchKey, isSignedIn]);
 
   useEffect(() => {
     if (isHydrated && typeof window !== 'undefined') {
