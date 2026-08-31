@@ -4,7 +4,7 @@ import { Capacitor } from '@capacitor/core';
 export interface ShareOptions {
   title: string;
   text?: string;
-  url: string;
+  url?: string;
   dialogTitle?: string;
 }
 
@@ -50,7 +50,7 @@ export async function shareLink({ title, text, url, dialogTitle = 'Share via' }:
   // 3. Fallback: Copy to Clipboard
   if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
     try {
-      const copyContent = text ? `${text.trim()}\n\n${url}` : url;
+      const copyContent = [text?.trim(), url].filter(Boolean).join('\n\n') || '';
       await navigator.clipboard.writeText(copyContent);
       return 'copied';
     } catch (err) {

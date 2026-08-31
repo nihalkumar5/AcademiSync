@@ -25,23 +25,24 @@ export const InviteBatchmatesCard = () => {
   const handleInvite = async () => {
     if (!profile?.batchKey) return;
     const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
-    const inviteUrl = `${window.location.origin}/?invite=${profile.batchKey}`;
-    const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
+    const batchCode = profile.batchKey;
+    const shareText = `🔥 Join our official ${batchTitle} Timetable on *Intersemester*!
 
 ⚡ Realtime Class Cancellation & Reschedule Alerts
 📊 75% Attendance Tracker & Bunk Calculator
 📅 Live Exam Schedule, Room Numbers & Lab Sessions
 
-👉 Tap link to sync your schedule in 1-tap:`;
+🔑 *Batch Invite Code:* ${batchCode}
+
+👉 Open Intersemester → Home → *Connect Batch* → paste the code above to sync in 1-tap!`;
 
     const res = await shareLink({
-      title: `Join ${batchTitle} Schedule`,
+      title: `Join ${batchTitle} on Intersemester`,
       text: shareText,
-      url: inviteUrl,
       dialogTitle: 'Invite Classmates via',
     });
     if (res === 'copied') {
-      showToast('Link Copied', 'Batch invite link copied to clipboard.', 'success');
+      showToast('Code Copied', `Batch invite code copied: ${batchCode}`, 'success');
     }
   };
 

@@ -428,11 +428,11 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
         {activeTab === 'code' && (
           <form onSubmit={handleJoinByCode} className="flex flex-col gap-4">
             <p className="text-[13px] text-slate-600 dark:text-zinc-400">
-              Paste the 6-character Batch Code or WhatsApp Invite Link shared by your CR or Classmate.
+              Paste the Batch Invite Code shared by your CR or classmate via WhatsApp.
             </p>
             <input
               type="text"
-              placeholder="e.g. 65SQ9K or https://.../?invite=65SQ9K"
+              placeholder="e.g. 65SQ9K"
               value={inviteCodeInput}
               onChange={(e) => setInviteCodeInput(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[14px] text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"

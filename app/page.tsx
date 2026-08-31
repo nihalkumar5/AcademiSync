@@ -66,6 +66,60 @@ export default function AppHome() {
       SplashScreen.hide().catch((err) => console.error('Splash hide error:', err));
     }
   }, [isHydrated]);
+  // Deep link handler: when app is already running and user taps a shared invite link
+  useEffect(() => {
+    if (!isHydrated || !Capacitor.isNativePlatform()) return;
+
+    const processUrl = async (url: string) => {
+      try {
+        const parsed = new URL(url);
+        const inviteParam = parsed.searchParams.get('invite');
+        const calendarParam = parsed.searchParams.get('calendar_invite');
+        const examsParam = parsed.searchParams.get('exams_invite');
+
+        if (inviteParam && inviteParam !== profile.batchKey) {
+          const snap = await getDoc(doc(db, 'shared_timetables', inviteParam));
+          if (snap.exists()) {
+            setInviteData(snap.data());
+            setInviteKey(inviteParam);
+            setInviteModalOpen(true);
+          }
+        } else if (calendarParam) {
+          const snap = await getDoc(doc(db, 'shared_calendars', calendarParam));
+          if (snap.exists()) {
+            setCalendarInviteData(snap.data());
+            setCalendarInviteKey(calendarParam);
+            setCalendarInviteModalOpen(true);
+          }
+        } else if (examsParam) {
+          const snap = await getDoc(doc(db, 'shared_exams', examsParam));
+          if (snap.exists()) {
+            setExamsInviteData(snap.data());
+            setExamsInviteKey(examsParam);
+            setExamsInviteModalOpen(true);
+          }
+        }
+      } catch (err) {
+        console.warn('Deep link processing error:', err);
+      }
+    };
+
+    let listenerHandle: any;
+    // Dynamic import ensures @capacitor/app is only loaded on native platform (not during SSR/prerender)
+    import('@capacitor/app').then(({ App: CapApp }) => {
+      CapApp.addListener('appUrlOpen', ({ url }) => {
+        processUrl(url);
+      }).then((handle) => {
+        listenerHandle = handle;
+      });
+    });
+
+    return () => {
+      listenerHandle?.remove();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated, profile.batchKey]);
+
 
   useEffect(() => {
     if (isHydrated && typeof window !== 'undefined') {
