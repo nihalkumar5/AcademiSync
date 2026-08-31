@@ -138,6 +138,9 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
     if (!foundBatch) return;
     if (!user) {
       showToast('Sign In Required', 'Please sign in to sync with your batch.', 'info');
+      try {
+        localStorage.setItem('pending_join_invite', foundBatch.id);
+      } catch (_) {}
       router.push('/sign-in');
       return;
     }
@@ -166,6 +169,9 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
 
     if (!user) {
       showToast('Sign In Required', 'Please sign in to join a batch.', 'info');
+      try {
+        localStorage.setItem('pending_join_invite', code);
+      } catch (_) {}
       router.push('/sign-in');
       return;
     }

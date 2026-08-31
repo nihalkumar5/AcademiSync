@@ -12,8 +12,9 @@ import { IntersemesterLogo } from '@/components/ui/IntersemesterLogo';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Capacitor } from '@capacitor/core';
 import { Modal } from '@/components/ui/Modal';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 
 // Views
 import { OverviewHeader } from '@/components/dashboard/OverviewHeader';
@@ -38,6 +39,7 @@ import { ProposedBatchTasksVoting } from '@/components/homework/ProposedBatchTas
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AppHome() {
+  const router = useRouter();
   const { activeView, setActiveView, isHydrated, showHolidayAnimation, joinBatchTimetable, joinSharedCalendar, joinSharedExams, profile, showToast, user } = useApp();
   const isSignedIn = !!user;
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
@@ -98,10 +100,19 @@ export default function AppHome() {
         const examsParam = extractParam(url, 'exams_invite');
 
         if (inviteParam && inviteParam !== profile.batchKey) {
-          const snap = await getDoc(doc(db, 'shared_timetables', inviteParam));
+          let snap = await getDoc(doc(db, 'shared_timetables', inviteParam));
+          let resolvedKey = inviteParam;
+          if (!snap.exists()) {
+            const q = query(collection(db, 'shared_timetables'), where('inviteCode', '==', inviteParam.trim().toUpperCase()));
+            const querySnap = await getDocs(q);
+            if (!querySnap.empty) {
+              snap = querySnap.docs[0];
+              resolvedKey = snap.id;
+            }
+          }
           if (snap.exists()) {
             setInviteData(snap.data());
-            setInviteKey(inviteParam);
+            setInviteKey(resolvedKey);
             setInviteModalOpen(true);
           }
         } else if (calendarParam) {
@@ -169,11 +180,19 @@ export default function AppHome() {
 
         const checkInvite = async () => {
           try {
-            const docRef = doc(db, 'shared_timetables', inviteParam);
-            const snap = await getDoc(docRef);
+            let snap = await getDoc(doc(db, 'shared_timetables', inviteParam));
+            let resolvedKey = inviteParam;
+            if (!snap.exists()) {
+              const q = query(collection(db, 'shared_timetables'), where('inviteCode', '==', inviteParam.trim().toUpperCase()));
+              const querySnap = await getDocs(q);
+              if (!querySnap.empty) {
+                snap = querySnap.docs[0];
+                resolvedKey = snap.id;
+              }
+            }
             if (snap.exists()) {
               setInviteData(snap.data());
-              setInviteKey(inviteParam);
+              setInviteKey(resolvedKey);
               setInviteModalOpen(true);
             }
           } catch (e) {
@@ -404,10 +423,12 @@ export default function AppHome() {
                 type="button"
                 onClick={async () => {
                   if (!isSignedIn) {
-                    showToast('Login Required', 'Please log in or sign up to sync with a batch.', 'info');
-                    if (typeof window !== 'undefined') {
-                      window.location.href = `/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`;
-                    }
+                    showToast('Login Required', 'Please log in or sign up to sync with your batch.', 'info');
+                    try {
+                      localStorage.setItem('pending_join_invite', inviteKey);
+                    } catch (_) {}
+                    setInviteModalOpen(false);
+                    router.push('/sign-in');
                     return;
                   }
                   setInviteModalOpen(false);

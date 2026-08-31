@@ -1604,21 +1604,48 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         ? 'super_admin' 
         : (data.crUserIds?.includes(user?.id) || data.crEmails?.includes(userEmail) ? 'cr' : 'student');
 
-      // Update profile fields to show it's synced
+      // Resolve academic profile details from batch data
+      const targetCollege = data.college || data.collegeName || data.university || profile.college || '';
+      const targetProgramme = data.programme || data.degree || data.course || profile.programme || '';
+      const targetBranch = data.branch || data.department || data.specialization || profile.branch || '';
+      const targetSemester = data.semester !== undefined && data.semester !== null ? Number(data.semester) : (profile.semester || 1);
+      const targetSection = data.section || profile.section || 'A';
+
+      // Update profile fields to show it's synced with full academic details
       const updatedProfile: StudentProfile = {
         ...profile,
-        college: data.college || profile.college,
-        programme: data.programme || profile.programme,
-        branch: data.branch || profile.branch,
-        semester: data.semester || profile.semester,
-        section: data.section || profile.section || 'A',
+        college: targetCollege,
+        programme: targetProgramme,
+        branch: targetBranch,
+        semester: targetSemester,
+        section: targetSection,
         batchKey: batchKey,
         isBatchSynced: true,
         role: assignedRole,
+        onboardingCompleted: true,
       };
 
       setProfileState(updatedProfile);
       storage.setProfile(updatedProfile);
+
+      // Persist immediately to Firestore user record so snapshot listener never reverts
+      if (user?.id) {
+        try {
+          const userRef = doc(db, 'users', user.id);
+          const payloadToSave = sanitizeForFirestore({
+            profile: updatedProfile,
+            subjects: data.subjects || subjects,
+            timetable: data.timetable || timetable,
+            events: data.events || events,
+            exams: data.exams || exams,
+            lastUpdated: Date.now(),
+          });
+          await setDoc(userRef, payloadToSave, { merge: true });
+          remoteStateString.current = JSON.stringify(payloadToSave);
+        } catch (saveErr) {
+          console.warn('Error saving joined batch profile to user doc:', saveErr);
+        }
+      }
 
       // Increment batch student counter in Firestore
       const isFirstPerson = ((data.studentCount || 0) <= 0);
@@ -1632,7 +1659,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
       await updateDoc(docRef, updatePayload);
 
-      showToast('Synced with Batch', `Successfully joined ${data.college} - Sem ${data.semester}.`, 'success');
+      const batchDisplay = targetCollege ? `${targetCollege} · ${targetBranch || 'Batch'} · Sem ${targetSemester}` : `Batch · Sem ${targetSemester}`;
+      showToast('Synced with Batch', `Successfully joined ${batchDisplay}.`, 'success');
     } catch (e: any) {
       console.error('Error joining batch timetable:', e);
       if (!e?.message?.includes('Invalid batch passcode')) {
