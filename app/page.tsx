@@ -66,16 +66,36 @@ export default function AppHome() {
       SplashScreen.hide().catch((err) => console.error('Splash hide error:', err));
     }
   }, [isHydrated]);
-  // Deep link handler: when app is already running and user taps a shared invite link
+  // Deep link handler: when app is opened via link (cold launch or while running)
   useEffect(() => {
     if (!isHydrated || !Capacitor.isNativePlatform()) return;
 
+    const extractParam = (urlStr: string, paramName: string): string | null => {
+      try {
+        const parsed = new URL(urlStr);
+        const val = parsed.searchParams.get(paramName);
+        if (val) return val;
+        if (paramName === 'invite') {
+          const keyVal = parsed.searchParams.get('key');
+          if (keyVal) return keyVal;
+          if (parsed.pathname.includes('/join/')) {
+            const parts = parsed.pathname.split('/join/');
+            if (parts[1]) return parts[1].split('/')[0].split('?')[0];
+          }
+        }
+      } catch {
+        // Fallback for custom schemes like com.intersemester.app://invite?key=XYZ
+        const match = urlStr.match(new RegExp(`[?&](${paramName}|key)=([^&#]+)`));
+        if (match && match[2]) return decodeURIComponent(match[2]);
+      }
+      return null;
+    };
+
     const processUrl = async (url: string) => {
       try {
-        const parsed = new URL(url);
-        const inviteParam = parsed.searchParams.get('invite');
-        const calendarParam = parsed.searchParams.get('calendar_invite');
-        const examsParam = parsed.searchParams.get('exams_invite');
+        const inviteParam = extractParam(url, 'invite');
+        const calendarParam = extractParam(url, 'calendar_invite');
+        const examsParam = extractParam(url, 'exams_invite');
 
         if (inviteParam && inviteParam !== profile.batchKey) {
           const snap = await getDoc(doc(db, 'shared_timetables', inviteParam));
@@ -106,7 +126,18 @@ export default function AppHome() {
 
     let listenerHandle: any;
     // Dynamic import ensures @capacitor/app is only loaded on native platform (not during SSR/prerender)
-    import('@capacitor/app').then(({ App: CapApp }) => {
+    import('@capacitor/app').then(async ({ App: CapApp }) => {
+      // 1. Check initial launch URL if app was launched directly from a link
+      try {
+        const launchUrl = await CapApp.getLaunchUrl();
+        if (launchUrl?.url) {
+          processUrl(launchUrl.url);
+        }
+      } catch (e) {
+        console.warn('Error reading launch URL:', e);
+      }
+
+      // 2. Listen for deep links when app is resumed / opened while running
       CapApp.addListener('appUrlOpen', ({ url }) => {
         processUrl(url);
       }).then((handle) => {

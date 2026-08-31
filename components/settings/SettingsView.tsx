@@ -772,14 +772,28 @@ export const SettingsView: React.FC = () => {
                       onClick={async () => {
                         try {
                           const code = await shareTimetableWithBatch();
-                          const link = `${window.location.origin}/?invite=${code}`;
+                          const link = `https://academi-sync-chi.vercel.app/?invite=${code}`;
+                          const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
+                          const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
+
+⚡ Realtime Class Cancellation & Reschedule Alerts
+📊 75% Attendance Tracker & Bunk Calculator
+📅 Live Exam Schedule, Room Numbers & Lab Sessions
+
+📲 *Direct App Link (Tap to open app):*
+${link}
+
+🔑 *Batch Invite Code:* ${code}
+
+👉 Tap the link above to open directly in the Intersemester App, or copy the Batch Code and paste it in App → *Connect Batch* → *Have an Invite Code*!`;
+
                           const res = await shareLink({
                             title: 'Join our Class Timetable',
-                            text: 'Hey! 👋 Join our class on Intersemester to get our synced timetable, next class alerts & shared updates:',
+                            text: shareText,
                             url: link,
                             dialogTitle: 'Invite Classmates via',
                           });
-                          if (res === 'copied') showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
+                          if (res === 'copied') showToast('Invite Copied', `Batch invite link & code copied: ${code}`, 'success');
                         } catch (err) {}
                       }} 
                       className="px-4 py-2 border border-[#D8D8D8] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] text-[#111111] dark:text-[#FFFFFF] text-[11px] font-bold uppercase tracking-wider rounded-none transition-colors"
@@ -1469,14 +1483,28 @@ export const SettingsView: React.FC = () => {
                   setShowBatchSettingsModal(false);
                   try {
                     const code = await shareTimetableWithBatch();
-                    const link = `${window.location.origin}/?invite=${code}`;
+                    const link = `https://academi-sync-chi.vercel.app/?invite=${code}`;
+                    const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
+                    const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
+
+⚡ Realtime Class Cancellation & Reschedule Alerts
+📊 75% Attendance Tracker & Bunk Calculator
+📅 Live Exam Schedule, Room Numbers & Lab Sessions
+
+📲 *Direct App Link (Tap to open app):*
+${link}
+
+🔑 *Batch Invite Code:* ${code}
+
+👉 Tap the link above to open directly in the Intersemester App, or copy the Batch Code and paste it in App → *Connect Batch* → *Have an Invite Code*!`;
+
                     const res = await shareLink({
-      title: 'Join our Class Timetable',
-      text: 'Hey! 👋 Join our class on Intersemester to get our synced timetable, next class alerts & shared updates:',
-      url: link,
-      dialogTitle: 'Invite Classmates via',
-    });
-                    if (res === 'copied') showToast('Invite Link Copied', 'Share this link with your classmates!', 'success');
+                      title: 'Join our Class Timetable',
+                      text: shareText,
+                      url: link,
+                      dialogTitle: 'Invite Classmates via',
+                    });
+                    if (res === 'copied') showToast('Invite Copied', `Batch invite link & code copied: ${code}`, 'success');
                   } catch (err) {}
                 }}
                 className="flex items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333] hover:opacity-70 transition-opacity text-left"

@@ -26,23 +26,28 @@ export const InviteBatchmatesCard = () => {
     if (!profile?.batchKey) return;
     const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
     const batchCode = profile.batchKey;
-    const shareText = `🔥 Join our official ${batchTitle} Timetable on *Intersemester*!
+    const inviteUrl = `https://academi-sync-chi.vercel.app/?invite=${batchCode}`;
+    const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 
 ⚡ Realtime Class Cancellation & Reschedule Alerts
 📊 75% Attendance Tracker & Bunk Calculator
 📅 Live Exam Schedule, Room Numbers & Lab Sessions
 
+📲 *Direct App Link (Tap to open app):*
+${inviteUrl}
+
 🔑 *Batch Invite Code:* ${batchCode}
 
-👉 Open Intersemester → Home → *Connect Batch* → paste the code above to sync in 1-tap!`;
+👉 Tap the link above to open directly in the Intersemester App, or copy the Batch Code and paste it in App → *Connect Batch* → *Have an Invite Code*!`;
 
     const res = await shareLink({
       title: `Join ${batchTitle} on Intersemester`,
       text: shareText,
+      url: inviteUrl,
       dialogTitle: 'Invite Classmates via',
     });
     if (res === 'copied') {
-      showToast('Code Copied', `Batch invite code copied: ${batchCode}`, 'success');
+      showToast('Invite Copied', `Batch invite link & code copied: ${batchCode}`, 'success');
     }
   };
 

@@ -199,14 +199,19 @@ return () => unsubscribe();
   const handleCopyInvite = async () => {
     const batchTitle = `${batchData?.branch || profile.branch || 'Class'} - Sec ${batchData?.section || profile.section || 'A'} (Sem ${batchData?.semester || profile.semester || ''})`;
     const code = batchData?.inviteCode || batchKey;
-    const inviteUrl = `${window.location.origin}/?invite=${code}`;
+    const inviteUrl = `https://academi-sync-chi.vercel.app/?invite=${code}`;
     const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 
 ⚡ Realtime Class Cancellation & Reschedule Alerts
 📊 75% Attendance Tracker & Bunk Calculator
 📅 Live Exam Schedule, Room Numbers & Lab Sessions
 
-👉 Tap link to sync your schedule in 1-tap:`;
+📲 *Direct App Link (Tap to open app):*
+${inviteUrl}
+
+🔑 *Batch Invite Code:* ${code}
+
+👉 Tap the link above to open directly in the Intersemester App, or copy the Batch Code and paste it in App → *Connect Batch* → *Have an Invite Code*!`;
 
     const res = await shareLink({
       title: `Join ${batchTitle} Schedule`,
@@ -216,7 +221,7 @@ return () => unsubscribe();
     });
     if (res === 'copied') {
       setCopiedLink(true);
-      showToast('Link Copied', 'Batch invite link copied to clipboard.', 'success');
+      showToast('Invite Copied', `Batch invite link & code copied: ${code}`, 'success');
       setTimeout(() => setCopiedLink(false), 2000);
     }
   };
