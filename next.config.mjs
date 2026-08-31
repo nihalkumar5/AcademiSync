@@ -11,6 +11,14 @@ const nextConfig = {
     "@capacitor/local-notifications",
     "@capacitor/push-notifications"
   ],
+  async rewrites() {
+    return [
+      {
+        source: '/__/auth/:path*',
+        destination: 'https://academisync-c1a37.firebaseapp.com/__/auth/:path*',
+      },
+    ];
+  },
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.resolve.alias = {

@@ -134,10 +134,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode }) => {
       let msg = 'Google authentication failed.';
       if (err.code === 'auth/popup-closed-by-user') {
         msg = 'Login popup was closed before completion.';
+      } else if (err.code === 'auth/popup-blocked') {
+        msg = 'Popup was blocked by your browser. Please sign in with Email & Password below.';
+      } else if (err.code === 'auth/network-request-failed') {
+        msg = 'Network connection blocked by campus firewall/proxy. Please sign in with Email & Password.';
       } else if (err.code === 'auth/unauthorized-domain') {
         msg = 'Domain not authorized for Google Sign-In.';
       } else if (err.code === 'auth/missing-initial-state' || err.message?.includes('missing initial state')) {
-        msg = 'Browser privacy shield blocked session storage. Please disable Shields or sign in with Email & Password.';
+        msg = 'Browser privacy shield blocked session storage. Please sign in with Email & Password below.';
       } else {
         msg = `Google Auth Error: ${err.message || err.code || err}`;
       }
