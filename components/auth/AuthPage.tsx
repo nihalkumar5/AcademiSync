@@ -64,12 +64,23 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
       getRedirectResult(auth)
         .then((result) => {
           if (result?.user) {
-            showToast('Welcome Back', 'Signed in successfully!', 'success');
+            // Detect which provider was used for a friendly message
+            const providerId = result.providerId || result.user.providerData?.[0]?.providerId || '';
+            let providerLabel = 'your account';
+            if (providerId.includes('apple')) providerLabel = 'Apple';
+            else if (providerId.includes('google')) providerLabel = 'Google';
+            else if (providerId.includes('github')) providerLabel = 'GitHub';
+            else if (providerId.includes('microsoft')) providerLabel = 'Microsoft';
+            const name = result.user.displayName?.split(' ')[0] || '';
+            showToast('Welcome' + (name ? ` ${name}` : ''), `Signed in with ${providerLabel}!`, 'success');
             router.push('/');
           }
         })
         .catch((err) => {
           console.warn('Redirect result check:', err);
+          if (err?.code && err.code !== 'auth/no-current-user') {
+            setErrorMsg(err.message || 'Sign-in redirect failed. Please try again.');
+          }
         });
     }
   }, [router, showToast]);
@@ -136,24 +147,38 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
     setLoading(true);
     setErrorMsg('');
     try {
-      let provider;
+      let provider: OAuthProvider | GithubAuthProvider;
       if (providerName === 'apple') {
-        provider = new OAuthProvider('apple.com');
+        const appleProvider = new OAuthProvider('apple.com');
+        appleProvider.addScope('email');
+        appleProvider.addScope('name');
+        provider = appleProvider;
       } else if (providerName === 'microsoft') {
         provider = new OAuthProvider('microsoft.com');
-      } else if (providerName === 'github') {
+      } else {
         provider = new GithubAuthProvider();
       }
 
-      if (provider) {
-        await signInWithPopup(auth, provider);
-        showToast('Welcome Back', `Signed in with ${providerName}!`, 'success');
-        router.push('/');
+      // On native Android/iOS, signInWithPopup doesn't work in a WebView.
+      // Use signInWithRedirect — Firebase opens Apple's OAuth page inside the browser,
+      // then redirects back; getRedirectResult (in the useEffect above) picks up the result.
+      if (Capacitor.isNativePlatform()) {
+        const { signInWithRedirect } = await import('firebase/auth');
+        await signInWithRedirect(auth, provider);
+        // Page will reload/redirect; getRedirectResult useEffect handles the result
+        return;
       }
+
+      // Web / Desktop Browser — popup works fine
+      await signInWithPopup(auth, provider);
+      showToast('Welcome Back', `Signed in with ${providerName}!`, 'success');
+      router.push('/');
     } catch (err: any) {
       console.error(`${providerName} login error:`, err);
       if (err.code === 'auth/operation-not-allowed' || err.code === 'auth/configuration-not-found') {
-        setErrorMsg(`${providerName.toUpperCase()} is not enabled yet in Firebase Console. Go to Authentication > Sign-in method to enable it.`);
+        setErrorMsg(`${providerName.toUpperCase()} sign-in is not enabled in Firebase Console. Go to Authentication > Sign-in method.`);
+      } else if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
+        setErrorMsg('Sign-in popup was blocked or closed. Please try again.');
       } else {
         setErrorMsg(err.message || `Failed to sign in with ${providerName}.`);
       }
