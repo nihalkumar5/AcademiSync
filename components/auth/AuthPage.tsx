@@ -254,10 +254,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
   };
 
   return (
-    <div className="min-h-[100dvh] w-full flex flex-col justify-between items-center px-6 py-10 bg-[#FFFFFF] dark:bg-[#121212] text-[#111111] dark:text-[#FFFFFF] transition-colors selection:bg-[#111111] selection:text-white dark:selection:bg-white dark:selection:text-[#111111]">
+    <div className="min-h-[100dvh] w-full flex flex-col justify-between items-center px-6 py-8 sm:py-12 bg-[#FFFFFF] dark:bg-[#121212] text-[#111111] dark:text-[#FFFFFF] transition-colors selection:bg-[#111111] selection:text-white dark:selection:bg-white dark:selection:text-[#111111]">
       
-      {/* Top Section */}
-      <div className="w-full max-w-[340px] flex flex-col items-center pt-4 sm:pt-8">
+      {/* Top Spacer for perfect optical centering */}
+      <div className="h-2 sm:h-8" />
+
+      {/* Main Container centered vertically */}
+      <div className="w-full max-w-[340px] flex flex-col items-center my-auto py-4">
         
         {/* Brand Logo (logo51.png) */}
         <div className="mb-5 flex items-center justify-center">
