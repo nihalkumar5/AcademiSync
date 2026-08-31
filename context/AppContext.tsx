@@ -119,8 +119,8 @@ export interface AppContextType {
   cancelledSessions: string[];
   toggleSessionCancelled: (sessionId: string, dateStr?: string) => void;
   isSessionCancelled: (sessionId: string, dateStr?: string) => boolean;
-  rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string }>;
-  rescheduleSession: (sessionId: string, details: { startTime: string; endTime: string; room?: string } | null, dateStr?: string) => void;
+  rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string; subjectId?: string }>;
+  rescheduleSession: (sessionId: string, details: { startTime: string; endTime: string; room?: string; subjectId?: string } | null, dateStr?: string) => void;
   currentBatchData: any | null;
   searchBatchTimetable: (college: string, programme: string, branch: string, semester: number, section?: string) => Promise<any | null>;
   fetchCollegeBatches: (college: string) => Promise<any[]>;
@@ -1376,7 +1376,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const rescheduleSession = async (
     sessionId: string,
-    details: { startTime: string; endTime: string; room?: string } | null,
+    details: { startTime: string; endTime: string; room?: string; subjectId?: string } | null,
     dateStr?: string
   ) => {
     // Non-CR batch users cannot reschedule — personal users always free
@@ -1392,7 +1392,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     if (details === null) {
       delete updated[key];
-      showToast('Reschedule Reverted', 'Class reverted to original time.', 'success');
+      showToast('Reschedule Reverted', 'Class reverted to original schedule.', 'success');
     } else {
       updated[key] = details;
       showToast('Class Rescheduled', `Class moved to ${details.startTime}–${details.endTime}.`, 'success');
@@ -1407,7 +1407,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
 
         const session = timetable.find((s) => s.id === sessionId);
-        const subject = session ? subjects.find((sub) => sub.id === session.subjectId) : null;
+        const targetSubjectId = details?.subjectId || session?.subjectId;
+        const subject = targetSubjectId ? subjects.find((sub) => sub.id === targetSubjectId) : null;
         const subjectLabel = subject?.name || subject?.shortName || 'Class';
 
         let alertPayload: object | null = null;

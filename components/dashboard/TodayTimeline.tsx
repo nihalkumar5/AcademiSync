@@ -30,6 +30,7 @@ export const TodayTimeline: React.FC = () => {
 
   const [openMenuSessionId, setOpenMenuSessionId] = useState<string | null>(null);
   const [rescheduleTarget, setRescheduleTarget] = useState<ClassSession | null>(null);
+  const [rescheduleSubjectId, setRescheduleSubjectId] = useState('');
   const [rescheduleTimeStart, setRescheduleTimeStart] = useState('09:00');
   const [rescheduleTimeEnd, setRescheduleTimeEnd] = useState('10:00');
   const [rescheduleRoom, setRescheduleRoom] = useState('');
@@ -55,6 +56,7 @@ export const TodayTimeline: React.FC = () => {
         startTime: rescheduleTimeStart,
         endTime: rescheduleTimeEnd,
         room: rescheduleRoom || rescheduleTarget.room,
+        subjectId: rescheduleSubjectId || rescheduleTarget.subjectId,
       },
       targetDateStr
     );
@@ -177,8 +179,9 @@ export const TodayTimeline: React.FC = () => {
       <div className="relative flex flex-col gap-0 border-l-[3px] border-slate-100 dark:border-zinc-800 ml-3">
           {(() => {
             return displaySessions.map((session) => {
-              const sub = subjectMap.get(session.subjectId);
               const reschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
+              const activeSubjectId = reschedule?.subjectId || session.subjectId;
+              const sub = subjectMap.get(activeSubjectId);
               const start = timeToMinutes(reschedule ? reschedule.startTime : session.startTime);
               const end = timeToMinutes(reschedule ? reschedule.endTime : session.endTime);
               const isCancelled = isSessionCancelled(session.id, targetDateStr);
@@ -392,9 +395,11 @@ export const TodayTimeline: React.FC = () => {
                                           type="button"
                                           onClick={() => {
                                             setOpenMenuSessionId(null);
-                                            setRescheduleTimeStart(session.startTime.split(' ')[0]);
-                                            setRescheduleTimeEnd(session.endTime.split(' ')[0]);
-                                            setRescheduleRoom(session.room);
+                                            const currentReschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
+                                            setRescheduleTimeStart(currentReschedule?.startTime || session.startTime.split(' ')[0]);
+                                            setRescheduleTimeEnd(currentReschedule?.endTime || session.endTime.split(' ')[0]);
+                                            setRescheduleRoom(currentReschedule?.room || session.room || '');
+                                            setRescheduleSubjectId(currentReschedule?.subjectId || session.subjectId);
                                             setRescheduleTarget(session);
                                           }}
                                           className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-bold text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 text-left transition-colors cursor-pointer"
@@ -422,10 +427,27 @@ export const TodayTimeline: React.FC = () => {
       <Modal
         isOpen={rescheduleTarget !== null}
         onClose={() => setRescheduleTarget(null)}
-        title="Reschedule Class"
-        description={`Reschedule this session for ${isAfter8PM ? 'tomorrow' : 'today'}. Changes will only reflect on the dashboard alerts and schedule.`}
+        title="Reschedule / Swap Class"
+        description={`Modify time, room, or swap subject for ${isAfter8PM ? 'tomorrow' : 'today'}. Changes will reflect on live alerts and timeline.`}
       >
         <form onSubmit={handleRescheduleSubmit} className="flex flex-col gap-4 mt-3">
+          <div className="flex flex-col gap-1.5 text-left">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+              Subject / Course
+            </label>
+            <select
+              value={rescheduleSubjectId}
+              onChange={(e) => setRescheduleSubjectId(e.target.value)}
+              className="px-3 py-2.5 bg-white dark:bg-[#111111] border border-black dark:border-white text-sm focus:outline-none rounded-none text-[#111111] dark:text-[#FFFFFF]"
+            >
+              {subjects.map((sub) => (
+                <option key={sub.id} value={sub.id} className="bg-white dark:bg-[#111111] text-black dark:text-white">
+                  {sub.code && sub.code !== 'UNK' ? `[${sub.code}] ` : ''}{sub.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="flex flex-col gap-1.5 text-left">
             <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
               New Start Time

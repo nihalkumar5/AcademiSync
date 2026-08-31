@@ -121,7 +121,7 @@ export const getLiveClassStatus = (
   subjects: Subject[],
   day: DayOfWeek = getCurrentDayOfWeek(),
   dateStr: string = getTodayDateString(),
-  rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string }> = {}
+  rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string; subjectId?: string }> = {}
 ): LiveClassStatus => {
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
@@ -137,6 +137,7 @@ export const getLiveClassStatus = (
           startTime: reschedule.startTime,
           endTime: reschedule.endTime,
           room: reschedule.room || s.room,
+          subjectId: reschedule.subjectId || s.subjectId,
         };
       }
       return s;
