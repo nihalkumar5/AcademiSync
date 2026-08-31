@@ -1396,7 +1396,6 @@ export const SettingsView: React.FC = () => {
                     await signOut(auth);
                     setShowCloudSyncModal(false);
                     showToast('Signed Out', 'You have been signed out.', 'info');
-                    window.location.href = '/sign-in';
                   }}
                   className="w-full py-3 border border-[#D8D8D8] dark:border-[#333333] text-[13px] font-bold text-red-600 flex items-center justify-center gap-2 hover:bg-[#F4F4F4] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer"
                 >

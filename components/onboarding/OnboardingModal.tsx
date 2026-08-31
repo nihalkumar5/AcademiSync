@@ -9,14 +9,9 @@ import {
   Users, 
   ArrowLeft, 
   Upload,
-  Camera,
-  Sparkles,
-  ArrowUpRight,
-  CheckCircle2,
-  FileText
+  ArrowUpRight
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { mergeConsecutiveSessions } from '@/lib/timetableUtils';
 import { TimetableImportModal } from '@/components/timetable/TimetableImportModal';
 
 export const OnboardingModal = () => {
@@ -24,7 +19,6 @@ export const OnboardingModal = () => {
     profile, 
     updateProfile, 
     joinBatchTimetable, 
-    setFullSubjectsAndTimetable, 
     showToast, 
     user, 
     isClerkLoaded,
@@ -96,13 +90,12 @@ export const OnboardingModal = () => {
     }
 
     if (!isSignedIn) {
-      showToast('Account Required', 'Please sign in or create an account to join this batch.', 'info');
       try {
         localStorage.setItem('pending_join_invite', code);
       } catch (_) {}
-      if (typeof window !== 'undefined') {
-        window.location.href = `/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`;
-      }
+      showToast('Invite Saved', 'Please sign in to link your batch automatically.', 'info');
+      updateProfile({ onboardingCompleted: true });
+      setShowOnboarding(false);
       return;
     }
 
@@ -111,8 +104,10 @@ export const OnboardingModal = () => {
       await joinBatchTimetable(code);
       updateProfile({ onboardingCompleted: true });
       showToast('Joined Batch!', 'You have been connected to the batch timetable.', 'success');
+      setShowOnboarding(false);
     } catch (err: any) {
       console.error(err);
+      showToast('Invalid Code', 'Could not find a batch for this invite code.', 'error');
     } finally {
       setIsJoiningCode(false);
     }
@@ -123,9 +118,9 @@ export const OnboardingModal = () => {
       id: 0,
       image: '/onboard-1.png',
       topNav: 'center',
-      topText: 'PLAN TODAY.\nOWN TOMORROW.',
-      title: "We'll remind you.",
-      subtitle: "Stay ahead with smart reminders\nso you never miss what matters.",
+      topText: "EVERY ACADEMIC DAY\nCLEAR & PREDICTABLE.",
+      title: "Intersemester\nis your semester\ncopilot.",
+      subtitle: "Smart schedule intelligence for classes,\nroutine updates, and assignments.",
       buttonText: 'Next',
       features: null
     },
@@ -178,27 +173,45 @@ export const OnboardingModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-white flex flex-col font-sans overflow-hidden w-full h-[100dvh]">
+    <div className="fixed inset-0 z-[100] bg-white dark:bg-[#111110] text-[#111111] dark:text-[#FFFFFF] flex flex-col font-sans overflow-hidden w-full h-[100dvh]">
       
-      {/* Top Nav Header */}
-      <div className="w-full flex items-center justify-between px-6 pt-5 pb-3 shrink-0 z-20 border-b border-[#F0F0EE]">
+      {/* Top Nav Header with Safe Area Clearance */}
+      <div 
+        className="w-full flex items-center justify-between px-6 pb-3 shrink-0 z-30 border-b border-[#F0F0EE] dark:border-[#262626] bg-white dark:bg-[#111110]"
+        style={{
+          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 12px), 28px)',
+        }}
+      >
         {currentIndex === 0 ? (
-          <div className="w-full flex flex-col items-center justify-center pt-2">
-            <h1 className="text-[26px] font-bold tracking-tighter text-[#111]">inter<span className="font-normal opacity-80">semester</span></h1>
-            <div className="w-[24px] h-[1.5px] bg-[#111] mt-3 mb-2" />
-            <p className="text-[10px] tracking-[3px] font-medium text-[#111111]/60 uppercase whitespace-pre-line text-center">
+          <div className="w-full flex flex-col items-center justify-center pt-1">
+            <h1 className="text-[24px] font-bold tracking-tighter text-[#111111] dark:text-[#FFFFFF]">
+              inter<span className="font-normal opacity-80">semester</span>
+            </h1>
+            <div className="w-[24px] h-[1.5px] bg-[#111111] dark:bg-[#FFFFFF] mt-2.5 mb-1.5" />
+            <p className="text-[9.5px] tracking-[2.5px] font-mono font-bold text-[#111111]/60 dark:text-[#FFFFFF]/60 uppercase whitespace-pre-line text-center">
               {slides[0].topText}
             </p>
           </div>
         ) : (
           <>
             <div className="flex items-center gap-2">
-              <button onClick={handlePrev} className="p-1.5 -ml-2 hover:bg-[#111111]/5 rounded-full transition-colors cursor-pointer">
-                <ArrowLeft className="w-5 h-5 text-[#111111]" />
+              <button 
+                type="button"
+                onClick={handlePrev} 
+                className="p-2 -ml-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+                aria-label="Back"
+              >
+                <ArrowLeft className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF]" />
               </button>
-              <h1 className="text-[20px] font-bold tracking-tighter text-[#111]">inter<span className="font-normal opacity-80">semester</span></h1>
+              <h1 className="text-[20px] font-bold tracking-tighter text-[#111111] dark:text-[#FFFFFF]">
+                inter<span className="font-normal opacity-80">semester</span>
+              </h1>
             </div>
-            <button onClick={handleSkip} className="px-3 py-1 -mr-2 text-[13px] font-semibold text-[#888888] hover:text-[#111111] transition-colors cursor-pointer">
+            <button 
+              type="button"
+              onClick={handleSkip} 
+              className="px-3.5 py-1.5 -mr-2 text-[13px] font-semibold text-[#888888] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer"
+            >
               Skip
             </button>
           </>
@@ -216,40 +229,40 @@ export const OnboardingModal = () => {
               initial="enter"
               animate="center"
               exit="exit"
-              className="absolute inset-0 w-full h-full flex flex-col"
+              className="absolute inset-0 w-full h-full flex flex-col justify-between"
             >
               {/* Slide Image */}
-              <div className="flex-1 min-h-0 w-full flex items-end justify-center overflow-visible">
+              <div className="flex-1 min-h-0 w-full flex items-end justify-center overflow-hidden px-4">
                 <img 
                   src={slides[currentIndex].image} 
                   alt="Onboarding" 
-                  className={`w-full h-full object-contain object-bottom pointer-events-none translate-y-[6%] ${
-                    currentIndex === 0 ? 'scale-[1.2]' :
-                    currentIndex === 1 ? 'scale-[1.45]' :
-                    'scale-[1.15]'
+                  className={`w-full max-h-[38vh] object-contain object-bottom pointer-events-none ${
+                    currentIndex === 0 ? 'scale-[1.05]' :
+                    currentIndex === 1 ? 'scale-[1.15]' :
+                    'scale-[1.0]'
                   }`}
                 />
               </div>
 
               {/* Text Card */}
-              <div className="w-full px-8 flex flex-col gap-2.5 pb-6 bg-[#F4F4F4] shrink-0 z-10 relative rounded-t-[40px] pt-7 -mt-6">
-                <h2 className="text-[28px] leading-[1.1] font-bold text-[#111111] whitespace-pre-line">
+              <div className="w-full px-6 sm:px-8 flex flex-col gap-2 pb-5 bg-[#F7F7F5] dark:bg-[#1A1A1A] shrink-0 z-10 relative rounded-t-[32px] pt-6 shadow-sm border-t border-[#EAEAE8] dark:border-[#2C2C2C]">
+                <h2 className="text-[24px] sm:text-[26px] leading-[1.15] font-bold text-[#111111] dark:text-[#FFFFFF] whitespace-pre-line tracking-tight">
                   {slides[currentIndex].title}
                 </h2>
-                <p className="text-[14px] text-[#111111]/60 font-medium leading-snug whitespace-pre-line mb-3">
+                <p className="text-[13.5px] text-[#6F6F6F] dark:text-[#A0A0A0] font-medium leading-snug whitespace-pre-line mb-2">
                   {slides[currentIndex].subtitle}
                 </p>
 
                 {slides[currentIndex].features && (
-                  <div className="flex flex-col">
+                  <div className="flex flex-col gap-1">
                     {slides[currentIndex].features.map((feat, idx) => (
-                      <div key={idx} className="flex items-center gap-3.5 py-3 border-b border-black/5 last:border-0">
-                        <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm">
-                          <feat.icon className="w-4 h-4 text-[#111111]" />
+                      <div key={idx} className="flex items-center gap-3 py-2 border-b border-black/5 dark:border-white/5 last:border-0">
+                        <div className="w-8 h-8 bg-white dark:bg-[#111111] border border-black/5 dark:border-white/10 rounded-lg flex items-center justify-center shrink-0 shadow-xs">
+                          <feat.icon className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[13px] font-bold text-[#111111]">{feat.title}</span>
-                          <span className="text-[12px] text-[#111111]/60">{feat.desc}</span>
+                          <span className="text-[12.5px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-tight">{feat.title}</span>
+                          <span className="text-[11.5px] text-[#6F6F6F] dark:text-[#888888] leading-tight">{feat.desc}</span>
                         </div>
                       </div>
                     ))}
@@ -257,21 +270,29 @@ export const OnboardingModal = () => {
                 )}
               </div>
 
-              {/* Controls */}
-              <div className="w-full px-8 pb-8 pt-1 flex items-center justify-between shrink-0 bg-[#F4F4F4] z-10 relative">
+              {/* Controls Footer */}
+              <div 
+                className="w-full px-6 sm:px-8 pt-2 pb-6 flex items-center justify-between shrink-0 bg-[#F7F7F5] dark:bg-[#1A1A1A] z-10 relative"
+                style={{
+                  paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 16px), 24px)',
+                }}
+              >
                 <div className="flex items-center gap-2">
                   {[0, 1, 2].map((i) => (
                     <button
                       key={i}
+                      type="button"
                       onClick={() => { setDirection(i > currentIndex ? 1 : -1); setCurrentIndex(i); }}
-                      className={`h-[5px] rounded-full transition-all duration-300 ${i === currentIndex ? 'w-[18px] bg-[#111111]' : 'w-[5px] bg-[#111111]/20'}`}
+                      className={`h-[5px] rounded-full transition-all duration-300 ${i === currentIndex ? 'w-[18px] bg-[#111111] dark:bg-[#FFFFFF]' : 'w-[5px] bg-[#111111]/20 dark:bg-[#FFFFFF]/20'}`}
+                      aria-label={`Go to slide ${i + 1}`}
                     />
                   ))}
                 </div>
 
                 <button
+                  type="button"
                   onClick={handleNext}
-                  className="h-[46px] px-6 bg-[#111111] text-white rounded-2xl flex items-center gap-2 font-semibold text-[14px] hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-md"
+                  className="h-[46px] px-6 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] rounded-none flex items-center gap-2 font-bold text-[13.5px] hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm uppercase tracking-wider"
                 >
                   {slides[currentIndex].buttonText}
                   <ArrowRight className="w-4 h-4" />
@@ -287,26 +308,26 @@ export const OnboardingModal = () => {
               initial="enter"
               animate="center"
               exit="exit"
-              className="absolute inset-0 w-full h-full flex flex-col overflow-y-auto px-6 py-5 bg-[#FFFFFF]"
+              className="absolute inset-0 w-full h-full flex flex-col overflow-y-auto px-6 py-5 bg-[#FFFFFF] dark:bg-[#111110]"
             >
-              <div className="flex flex-col max-w-[420px] mx-auto w-full">
+              <div className="flex flex-col max-w-[420px] mx-auto w-full pb-10">
                 {/* Header */}
                 <div className="flex flex-col mb-4">
-                  <h2 className="text-[34px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[38px]">
+                  <h2 className="text-[30px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[34px]">
                     Connect,<br />
                     Batch,<br />
                     Timetable
                   </h2>
-                  <p className="text-[13.5px] font-normal text-[#6B6B6B] leading-[19px] mt-2">
+                  <p className="text-[13.5px] font-medium text-[#6B6B6B] dark:text-[#A0A0A0] leading-[19px] mt-2">
                     Join your classmates and sync your academic schedule.
                   </p>
                 </div>
 
-                {/* 1. Fast Invite Card (At The Top) */}
-                <div className="border border-[#D8D8D8] bg-[#FAFAF8] p-4 mb-4">
+                {/* 1. Fast Invite Card */}
+                <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#FAFAF8] dark:bg-[#1A1A1A] p-4 mb-4">
                   <div className="flex items-center gap-1.5 mb-2.5">
-                    <ArrowUpRight className="w-3.5 h-3.5 text-[#111111]" />
-                    <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111]">
+                    <ArrowUpRight className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF]" />
+                    <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF]">
                       HAVE AN INVITE?
                     </span>
                   </div>
@@ -316,12 +337,12 @@ export const OnboardingModal = () => {
                       placeholder="Paste code or link..."
                       value={inviteCode}
                       onChange={(e) => setInviteCode(e.target.value)}
-                      className="flex-1 h-11 px-3.5 bg-white border border-[#D8D8D8] rounded-none text-[13.5px] text-[#111111] focus:outline-none focus:border-[#111111] transition-all"
+                      className="flex-1 h-11 px-3.5 bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] rounded-none text-[13.5px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-all"
                     />
                     <button
                       type="submit"
                       disabled={isJoiningCode || !inviteCode.trim()}
-                      className="h-11 px-5 bg-[#111111] text-white text-[13.5px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0"
+                      className="h-11 px-5 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] text-[13px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0"
                     >
                       {isJoiningCode ? 'Joining...' : 'Join'}
                     </button>
@@ -329,53 +350,44 @@ export const OnboardingModal = () => {
                 </div>
 
                 {/* 2. Light Divider */}
-                <div className="flex items-center gap-3 my-0.5 mb-4">
-                  <div className="flex-1 h-[1px] bg-[#EEEEEC]" />
-                  <span className="text-[10.5px] font-medium tracking-[1.5px] text-[#A0A0A0] uppercase">
+                <div className="flex items-center gap-3 my-1 mb-4">
+                  <div className="flex-1 h-[1px] bg-[#EEEEEC] dark:bg-[#2C2C2C]" />
+                  <span className="text-[10.5px] font-bold tracking-[1.5px] text-[#A0A0A0] uppercase font-mono">
                     OR SCAN TIMETABLE
                   </span>
-                  <div className="flex-1 h-[1px] bg-[#EEEEEC]" />
+                  <div className="flex-1 h-[1px] bg-[#EEEEEC] dark:bg-[#2C2C2C]" />
                 </div>
 
-                {/* 3. Clean Notion Dashed Upload Box (Matching Image 2) */}
+                {/* 3. Clean Dashed Upload Box */}
                 <div 
                   onClick={() => setIsImportModalOpen(true)}
                   className="relative group w-full py-6 px-4 flex flex-col items-center justify-center border border-dashed border-[#D9D9D6] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-all cursor-pointer text-center"
                 >
-                  <Upload className="w-5 h-5 mb-2.5 text-[#111111] dark:text-[#FFFFFF] group-hover:-translate-y-0.5 transition-transform" />
+                  <Upload className="w-5 h-5 mb-2 text-[#111111] dark:text-[#FFFFFF] group-hover:-translate-y-0.5 transition-transform" />
                   
                   <h3 className="text-[15.5px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-1">
                     Just Upload & Chill
                   </h3>
                   
-                  <p className="text-[12.5px] text-[#6F6F6F] max-w-[280px] leading-snug mb-3.5">
-                    Drop your routine photo or PDF. Intersemester handles your weekly schedule tension automatically.
+                  <p className="text-[12.5px] text-[#6F6F6F] dark:text-[#A0A0A0] max-w-[280px] leading-snug mb-3">
+                    Drop your routine photo or PDF. Intersemester builds your weekly schedule automatically.
                   </p>
                   
-                  <div className="px-6 h-[42px] flex items-center justify-center bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto mb-2.5 shadow-sm group-hover:opacity-90 transition-opacity">
+                  <div className="px-6 h-[40px] flex items-center justify-center bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] font-bold text-[12.5px] pointer-events-none rounded-none w-fit mx-auto mb-2 shadow-sm group-hover:opacity-90 transition-opacity uppercase tracking-wider">
                     Choose file
                   </div>
 
-                  <div className="text-[11px] text-[#999999] font-medium tracking-[0.5px] uppercase">
+                  <div className="text-[10.5px] text-[#999999] font-bold tracking-[0.5px] uppercase font-mono">
                     JPG · PNG · PDF (Multi-Page)
                   </div>
                 </div>
 
-                {/* Illustration Immediately Below Upload Card - Shifted Up & Sized */}
-                <div className="w-[calc(100%+48px)] -mx-6 flex justify-center -mt-[200px] py-0 overflow-hidden pointer-events-none select-none">
-                  <img
-                    src="/sorted.png"
-                    alt="Schedule Sorted Illustration"
-                    className="w-full max-w-[340px] h-auto object-contain pointer-events-none"
-                  />
-                </div>
-
                 {/* 4. Manual Skip Link */}
-                <div className="relative z-30 pointer-events-auto mt-2 text-center pb-6">
+                <div className="relative z-30 pointer-events-auto mt-6 text-center pb-6">
                   <button
                     type="button"
                     onClick={handleSkip}
-                    className="text-[13px] font-semibold text-[#666666] hover:text-[#111111] underline underline-offset-4 cursor-pointer py-2 px-4 inline-block transition-colors active:scale-95"
+                    className="text-[13px] font-semibold text-[#666666] dark:text-[#999999] hover:text-[#111111] dark:hover:text-[#FFFFFF] underline underline-offset-4 cursor-pointer py-2 px-4 inline-block transition-colors active:scale-95"
                   >
                     I'll set up or customize classes manually ➜
                   </button>
@@ -386,7 +398,7 @@ export const OnboardingModal = () => {
         </AnimatePresence>
       </div>
 
-      {/* Full AI Timetable Import Modal (Shared with App + Button) */}
+      {/* Full AI Timetable Import Modal */}
       <TimetableImportModal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
