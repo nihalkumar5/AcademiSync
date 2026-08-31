@@ -76,6 +76,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
           grantOfflineAccess: true,
         });
 
+        try {
+          await GoogleAuth.signOut();
+        } catch (e) {
+          // ignore if no active session
+        }
+
         const googleUser = await GoogleAuth.signIn();
         const idToken = googleUser?.authentication?.idToken || (googleUser as any)?.idToken;
         

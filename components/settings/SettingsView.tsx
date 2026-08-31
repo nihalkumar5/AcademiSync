@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useApp } from '@/context/AppContext';
+import { Capacitor } from '@capacitor/core';
 import { Programme, Branch } from '@/lib/types';
 import { storage } from '@/lib/storage';
 import { INDIAN_COLLEGES, STANDARD_PROGRAMMES, STANDARD_BRANCHES } from '@/lib/colleges';
@@ -1384,6 +1385,14 @@ export const SettingsView: React.FC = () => {
                 </button>
                 <button 
                   onClick={async () => {
+                    try {
+                      if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
+                        const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
+                        await GoogleAuth.signOut();
+                      }
+                    } catch (e) {
+                      console.warn('Native GoogleAuth signOut error:', e);
+                    }
                     await signOut(auth);
                     setShowCloudSyncModal(false);
                     showToast('Signed Out', 'You have been signed out.', 'info');
