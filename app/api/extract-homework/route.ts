@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 
     if (apiKey && imageBase64) {
-      const candidateModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-exp'];
+      const candidateModels = ['gemini-3.6-flash', 'gemini-2.0-flash-exp', 'gemini-1.5-flash'];
       const genAI = new GoogleGenerativeAI(apiKey);
 
       for (const modelName of candidateModels) {
