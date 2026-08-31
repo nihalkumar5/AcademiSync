@@ -52,16 +52,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [resetSent, setResetSent] = useState(false);
-  const [hasPendingInvite, setHasPendingInvite] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const pending = localStorage.getItem('pending_join_invite');
-      if (pending) {
-        setHasPendingInvite(true);
-      }
-    }
-  }, []);
 
   const proceedAfterAuth = async () => {
     if (typeof window !== 'undefined') {
@@ -344,14 +334,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
         {errorMsg && (
           <div className="w-full mb-5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 p-3 rounded-xl text-red-600 dark:text-red-400 text-[12.5px] font-medium text-center leading-relaxed">
             {errorMsg}
-          </div>
-        )}
-
-        {/* Pending Batch Connection Alert */}
-        {hasPendingInvite && (
-          <div className="w-full mb-5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 p-3 rounded-xl text-emerald-800 dark:text-emerald-300 text-[12.5px] font-semibold text-center leading-relaxed flex items-center justify-center gap-2">
-            <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span>Sign in to automatically sync your class timetable & calendar!</span>
           </div>
         )}
 
