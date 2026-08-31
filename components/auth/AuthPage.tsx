@@ -259,10 +259,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
       {/* Top Section */}
       <div className="w-full max-w-[340px] flex flex-col items-center pt-4 sm:pt-8">
         
-        {/* Notion-style Monogram Icon */}
+        {/* Brand Logo (logo51.png) */}
         <div className="mb-5 flex items-center justify-center">
-          <div className="w-[52px] h-[52px] rounded-[14px] bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] flex items-center justify-center font-bold font-serif text-[28px] shadow-sm border border-black/10 dark:border-white/10 select-none">
-            is
+          <div className="w-[56px] h-[56px] rounded-[16px] overflow-hidden flex items-center justify-center shadow-sm border border-[#E5E5E5] dark:border-[#2C2C2C] bg-white dark:bg-[#161616] p-2">
+            <img 
+              src="/logo51.png" 
+              alt="Intersemester Logo" 
+              className="w-full h-full object-contain select-none"
+            />
           </div>
         </div>
 
