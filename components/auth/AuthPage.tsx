@@ -335,26 +335,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
               <div className="w-6" />
             </button>
 
-            {/* 3. Microsoft Button */}
-            <button
-              type="button"
-              onClick={() => handleOAuthLogin('microsoft')}
-              disabled={loading}
-              className="w-full h-[48px] px-4 rounded-xl border border-[#E5E5E5] dark:border-[#2C2C2C] bg-white dark:bg-[#1A1A1A] hover:bg-[#F9F9F9] dark:hover:bg-[#222222] active:scale-[0.99] transition-all flex items-center justify-between font-semibold text-[14.5px] text-[#111111] dark:text-[#FFFFFF] shadow-sm cursor-pointer disabled:opacity-60"
-            >
-              <div className="w-6 flex items-center justify-center">
-                <div className="w-4 h-4 grid grid-cols-2 gap-0.5">
-                  <div className="bg-[#F25022] w-full h-full" />
-                  <div className="bg-[#7FBA00] w-full h-full" />
-                  <div className="bg-[#00A4EF] w-full h-full" />
-                  <div className="bg-[#FFB900] w-full h-full" />
-                </div>
-              </div>
-              <span className="flex-1 text-center font-medium">Microsoft</span>
-              <div className="w-6" />
-            </button>
-
-            {/* 4. GitHub Button */}
+            {/* 3. GitHub Button */}
             <button
               type="button"
               onClick={() => handleOAuthLogin('github')}
