@@ -5,7 +5,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, Sparkles, X, ArrowRight, CheckCircle2, Image as ImageIcon, Check } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
@@ -31,6 +31,38 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
   });
   const [isEditing, setIsEditing] = useState(false);
   const [messId, setMessId] = useState<string>('');
+
+  const executeJoinMess = async (rawInput: string) => {
+    let code = rawInput.trim();
+    if (!code) return;
+
+    if (code.includes('/join/')) {
+      code = code.split('/join/').pop()?.split('?')[0]?.split('#')[0] || code;
+    }
+
+    setIsJoining(true);
+    try {
+      const docRef = doc(db, 'messes', code);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const newMessData = docSnap.data();
+        updateMessMenu(newMessData);
+        setShowJoinInput(false);
+        setInviteInput('');
+        showToast('Joined Mess', 'Mess menu successfully loaded into your app!', 'success');
+        onCancel?.();
+        setActiveView('mess');
+      } else {
+        showToast('Invalid Code', 'Could not find a mess menu with this code.', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Join Error', 'Failed to connect to mess service.', 'error');
+    } finally {
+      setIsJoining(false);
+    }
+  };
 
   const handleModalFileSelect = async (selected: { name: string; base64: string; mimeType: string }[] | 'sample') => {
     if (selected === 'sample') {
@@ -59,8 +91,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
   const handleJoinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inviteInput.trim()) {
-      setIsJoining(true);
-      window.location.href = '/join/' + inviteInput.trim();
+      executeJoinMess(inviteInput);
     }
   };
 
@@ -233,7 +264,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
                     className="w-full bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] px-3 py-2.5 text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && e.currentTarget.value) {
-                        window.location.href = '/join/' + e.currentTarget.value;
+                        executeJoinMess(e.currentTarget.value);
                       }
                     }}
                   />

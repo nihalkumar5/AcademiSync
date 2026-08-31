@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Button } from '@/components/ui/Button';
-import { Smartphone } from 'lucide-react';
+import { Utensils, ArrowRight } from 'lucide-react';
 
 export default function JoinMessPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -14,18 +13,8 @@ export default function JoinMessPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [messData, setMessData] = useState<any>(null);
-  const [isMobileBrowser, setIsMobileBrowser] = useState(false);
 
   useEffect(() => {
-    // Check if on mobile browser
-    if (typeof window !== 'undefined') {
-      const isAndroid = /Android/i.test(navigator.userAgent);
-      const isNative = (window as any)?.Capacitor?.isNativePlatform?.();
-      if (isAndroid && !isNative) {
-        setIsMobileBrowser(true);
-      }
-    }
-
     const fetchMess = async () => {
       try {
         const docRef = doc(db, 'messes', params.id);
@@ -34,7 +23,7 @@ export default function JoinMessPage({ params }: { params: { id: string } }) {
         if (docSnap.exists()) {
           setMessData(docSnap.data());
         } else {
-          setError('Invalid or expired invite link.');
+          setError('Invalid or expired mess invite link.');
         }
       } catch (err) {
         console.error(err);
@@ -50,16 +39,8 @@ export default function JoinMessPage({ params }: { params: { id: string } }) {
     if (messData) {
       updateMessMenu(messData);
       setActiveView('mess');
-      showToast('Joined Mess', 'Mess menu successfully loaded into your app!', 'success');
+      showToast('Joined Mess', 'Hostel mess menu successfully loaded into your app!', 'success');
       router.push('/');
-    }
-  };
-
-  const handleOpenApp = () => {
-    if (typeof window !== 'undefined') {
-      const host = window.location.host || 'academi-sync-chi.vercel.app';
-      const intentUrl = `intent://${host}/join/${params.id}#Intent;scheme=https;package=com.intersemester.app;end`;
-      window.location.href = intentUrl;
     }
   };
 
@@ -74,9 +55,15 @@ export default function JoinMessPage({ params }: { params: { id: string } }) {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#FAFAF8] dark:bg-[#111110] p-6 text-center">
-        <h2 className="text-[24px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-4">Error</h2>
-        <p className="text-[#6F6F6F] mb-8">{error}</p>
-        <Button onClick={() => router.push('/')}>Go Home</Button>
+        <h2 className="text-[24px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-2">Error</h2>
+        <p className="text-[#6F6F6F] mb-6 text-[14px]">{error}</p>
+        <button
+          type="button"
+          onClick={() => router.push('/')}
+          className="px-6 py-2.5 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] text-[12px] font-bold uppercase tracking-wider cursor-pointer"
+        >
+          Go Home
+        </button>
       </div>
     );
   }
@@ -97,7 +84,8 @@ export default function JoinMessPage({ params }: { params: { id: string } }) {
 
       <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-6 w-full max-w-sm mb-6 text-left shadow-sm">
         <p className="text-[11px] font-bold tracking-widest text-[#A0A0A0] uppercase mb-2">INVITE CODE: {params.id}</p>
-        <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-1.5">
+        <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-1.5 flex items-center gap-2">
+          <Utensils className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />
           Hostel Mess Menu
         </h3>
         <p className="text-[13px] text-[#6F6F6F]">
@@ -106,23 +94,19 @@ export default function JoinMessPage({ params }: { params: { id: string } }) {
       </div>
 
       <div className="flex flex-col gap-3 w-full max-w-sm">
-        {isMobileBrowser && (
-          <button
-            type="button"
-            onClick={handleOpenApp}
-            className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white text-[14px] font-semibold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 cursor-pointer transition-all"
-          >
-            <Smartphone className="w-4 h-4" /> Open in Android App
-          </button>
-        )}
-
-        <Button onClick={handleJoin} className="w-full h-12 text-[14px]">
-          Join on Web
-        </Button>
+        <button
+          type="button"
+          onClick={handleJoin}
+          className="w-full h-12 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] text-[13px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 transition-opacity cursor-pointer"
+        >
+          <span>Join Mess Menu</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
 
         <button 
+          type="button"
           onClick={() => router.push('/')}
-          className="mt-2 text-[14px] font-medium text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors text-center"
+          className="mt-2 text-[13px] font-medium text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors text-center cursor-pointer"
         >
           Cancel
         </button>
