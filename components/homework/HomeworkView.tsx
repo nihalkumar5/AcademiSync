@@ -158,7 +158,7 @@ export const HomeworkView: React.FC = () => {
         {/* Action Buttons */}
         <div className="flex flex-wrap items-center gap-3 mb-1">
           <button
-            onClick={() => {}}
+            onClick={() => setShowScanModal(true)}
             className="flex items-center justify-center h-[36px] px-[14px] rounded-none border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-[12px] font-semibold cursor-pointer w-auto gap-2"
           >
             <Sparkles className="w-4 h-4" /> Magic Import
