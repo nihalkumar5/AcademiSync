@@ -9,16 +9,9 @@ import {
   inMemoryPersistence 
 } from 'firebase/auth';
 
-const isBrowser = typeof window !== 'undefined';
-
-// Use same-origin host when in production browser so college firewalls & privacy shields treat auth as 1st-party
-const resolvedAuthDomain = isBrowser && window.location.host && !window.location.host.includes('localhost') && !window.location.host.includes('127.0.0.1')
-  ? window.location.host
-  : "academisync-c1a37.firebaseapp.com";
-
 const firebaseConfig = {
   apiKey: "AIzaSyD5H_kryH_ujdm0e3lZgaDLPjQ8kvr_VDs",
-  authDomain: resolvedAuthDomain,
+  authDomain: "academisync-c1a37.firebaseapp.com",
   projectId: "academisync-c1a37",
   storageBucket: "academisync-c1a37.firebasestorage.app",
   messagingSenderId: "941128003754",
@@ -30,6 +23,8 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 const auth = getAuth(app);
+
+const isBrowser = typeof window !== 'undefined';
 
 // Robust multi-tier persistence for restricted environments (Private browsing / Campus PCs / Brave Shields)
 if (isBrowser) {
