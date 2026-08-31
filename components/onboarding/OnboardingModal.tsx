@@ -232,37 +232,37 @@ export const OnboardingModal = () => {
               className="absolute inset-0 w-full h-full flex flex-col justify-between"
             >
               {/* Slide Image */}
-              <div className="flex-1 min-h-0 w-full flex items-end justify-center overflow-hidden px-4">
+              <div className="flex-1 min-h-0 w-full flex items-end justify-center overflow-visible">
                 <img 
                   src={slides[currentIndex].image} 
                   alt="Onboarding" 
-                  className={`w-full max-h-[38vh] object-contain object-bottom pointer-events-none ${
-                    currentIndex === 0 ? 'scale-[1.05]' :
-                    currentIndex === 1 ? 'scale-[1.15]' :
-                    'scale-[1.0]'
+                  className={`w-full h-full object-contain object-bottom pointer-events-none translate-y-[6%] ${
+                    currentIndex === 0 ? 'scale-[1.2]' :
+                    currentIndex === 1 ? 'scale-[1.45]' :
+                    'scale-[1.15]'
                   }`}
                 />
               </div>
 
               {/* Text Card */}
-              <div className="w-full px-6 sm:px-8 flex flex-col gap-2 pb-5 bg-[#F7F7F5] dark:bg-[#1A1A1A] shrink-0 z-10 relative rounded-t-[32px] pt-6 shadow-sm border-t border-[#EAEAE8] dark:border-[#2C2C2C]">
-                <h2 className="text-[24px] sm:text-[26px] leading-[1.15] font-bold text-[#111111] dark:text-[#FFFFFF] whitespace-pre-line tracking-tight">
+              <div className="w-full px-8 flex flex-col gap-2.5 pb-6 bg-[#F4F4F4] dark:bg-[#1A1A1A] shrink-0 z-10 relative rounded-t-[40px] pt-7 -mt-6">
+                <h2 className="text-[28px] leading-[1.1] font-bold text-[#111111] dark:text-[#FFFFFF] whitespace-pre-line">
                   {slides[currentIndex].title}
                 </h2>
-                <p className="text-[13.5px] text-[#6F6F6F] dark:text-[#A0A0A0] font-medium leading-snug whitespace-pre-line mb-2">
+                <p className="text-[14px] text-[#111111]/60 dark:text-[#FFFFFF]/60 font-medium leading-snug whitespace-pre-line mb-3">
                   {slides[currentIndex].subtitle}
                 </p>
 
                 {slides[currentIndex].features && (
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col">
                     {slides[currentIndex].features.map((feat, idx) => (
-                      <div key={idx} className="flex items-center gap-3 py-2 border-b border-black/5 dark:border-white/5 last:border-0">
-                        <div className="w-8 h-8 bg-white dark:bg-[#111111] border border-black/5 dark:border-white/10 rounded-lg flex items-center justify-center shrink-0 shadow-xs">
+                      <div key={idx} className="flex items-center gap-3.5 py-3 border-b border-black/5 dark:border-white/5 last:border-0">
+                        <div className="w-9 h-9 bg-white dark:bg-[#111111] rounded-xl flex items-center justify-center shrink-0 shadow-sm">
                           <feat.icon className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[12.5px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-tight">{feat.title}</span>
-                          <span className="text-[11.5px] text-[#6F6F6F] dark:text-[#888888] leading-tight">{feat.desc}</span>
+                          <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF]">{feat.title}</span>
+                          <span className="text-[12px] text-[#111111]/60 dark:text-[#FFFFFF]/60">{feat.desc}</span>
                         </div>
                       </div>
                     ))}
