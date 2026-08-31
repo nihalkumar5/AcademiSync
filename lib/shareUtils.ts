@@ -13,9 +13,11 @@ export async function shareLink({ title, text, url, dialogTitle = 'Share via' }:
   try {
     const isCap = typeof window !== 'undefined' && (Capacitor.isNativePlatform() || (window as any).Capacitor?.isNativePlatform?.());
     if (isCap) {
+      // Capacitor Share on Android/iOS natively appends the `url` parameter to the shared text.
+      // Passing `${text} ${url}` alongside `url` caused double link printing.
       await Share.share({
         title,
-        text: text ? `${text} ${url}` : url,
+        text: text ? text.trim() : undefined,
         url,
         dialogTitle,
       });
@@ -33,7 +35,7 @@ export async function shareLink({ title, text, url, dialogTitle = 'Share via' }:
     try {
       await navigator.share({
         title,
-        text: text ? `${text} ${url}` : url,
+        text: text ? text.trim() : undefined,
         url,
       });
       return 'shared';
@@ -48,7 +50,8 @@ export async function shareLink({ title, text, url, dialogTitle = 'Share via' }:
   // 3. Fallback: Copy to Clipboard
   if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
     try {
-      await navigator.clipboard.writeText(url);
+      const copyContent = text ? `${text.trim()}\n\n${url}` : url;
+      await navigator.clipboard.writeText(copyContent);
       return 'copied';
     } catch (err) {
       console.error('Clipboard write failed:', err);
