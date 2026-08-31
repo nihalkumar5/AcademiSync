@@ -4,4 +4,5 @@
     <string name="title_activity_main">Intersemester</string>
     <string name="package_name">com.intersemester.app</string>
     <string name="custom_url_scheme">com.intersemester.app</string>
+    <string name="server_client_id">941128003754-5oalodujnbtlr19jsf9t4unqq4762hsm.apps.googleusercontent.com</string>
 </resources>

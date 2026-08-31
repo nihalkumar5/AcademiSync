@@ -8,12 +8,14 @@ import {
   updateProfile,
   signInWithPopup,
   signInWithRedirect,
+  signInWithCredential,
   getRedirectResult,
   GoogleAuthProvider,
   sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useApp } from '@/context/AppContext';
+import { Capacitor } from '@capacitor/core';
 import { Loader2, Eye, EyeOff, ArrowRight, ArrowLeft, CheckCircle2, Mail, ShieldCheck, UserPlus, LogIn } from 'lucide-react';
 
 interface AuthPageProps {
@@ -63,33 +65,42 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
   const handleGoogleLogin = async () => {
     setLoading(true);
     setErrorMsg('');
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
 
     try {
+      // 1. Native Android Google Play Services Flow (Exact Notion Native Bottom Sheet)
+      if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
+        const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
+        GoogleAuth.initialize({
+          clientId: '941128003754-5oalodujnbtlr19jsf9t4unqq4762hsm.apps.googleusercontent.com',
+          scopes: ['profile', 'email'],
+          grantOfflineAccess: true,
+        });
+
+        const googleUser = await GoogleAuth.signIn();
+        if (googleUser && googleUser.authentication?.idToken) {
+          const credential = GoogleAuthProvider.credential(googleUser.authentication.idToken);
+          await signInWithCredential(auth, credential);
+          showToast('Welcome Back', 'Signed in successfully with Google!', 'success');
+          router.push('/');
+          return;
+        }
+      }
+
+      // 2. Web / Desktop Browser Flow
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithPopup(auth, provider);
       showToast('Google Sign In', 'Authenticated successfully with Google.', 'success');
       router.push('/');
     } catch (err: any) {
-      console.warn('Google popup error, falling back to in-app redirect:', err);
-      if (
-        err.code === 'auth/popup-blocked' ||
-        err.code === 'auth/popup-closed-by-user' ||
-        err.code === 'auth/cancelled-popup-request' ||
-        err.code === 'auth/missing-initial-state'
-      ) {
-        try {
-          await signInWithRedirect(auth, provider);
-          return;
-        } catch (redirectErr: any) {
-          console.error('Redirect sign-in error:', redirectErr);
-          setErrorMsg(redirectErr.message || 'Google Sign-In failed. Please try Email.');
-          showToast('Sign In Error', 'Could not complete Google Sign In.', 'error');
-        }
-      } else {
-        setErrorMsg(err.message || 'Google authentication failed.');
-        showToast('Sign In Error', err.message || 'Authentication error', 'error');
+      console.error('Google Sign In error:', err);
+      let msg = 'Google Sign-In failed.';
+      if (err.message) {
+        msg = err.message;
       }
+      setErrorMsg(msg);
+      showToast('Sign In Error', msg, 'error');
+    } finally {
       setLoading(false);
     }
   };
