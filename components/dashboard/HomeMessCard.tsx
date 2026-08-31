@@ -12,6 +12,13 @@ const DEFAULT_TIMINGS: Record<string, string> = {
   Dinner: '7:30 - 9:30',
 };
 
+function normalizeItems(val: any): string[] {
+  if (!val) return [];
+  if (Array.isArray(val)) return val.map(s => String(s).trim()).filter(Boolean);
+  if (typeof val === 'string') return val.split(/[,·|•\n]/).map(s => s.trim()).filter(Boolean);
+  return [];
+}
+
 function resolveMealTimingForDay(timingStr: string, day: string): string {
   if (!timingStr) return '';
   const isWeekend = day === 'Saturday' || day === 'Sunday';
@@ -69,128 +76,119 @@ export const HomeMessCard: React.FC = () => {
     status: 'LIVE' | 'UPCOMING' | 'TOMORROW';
     mealName: string;
     timeLeft: string;
-    timingStr: string;
     items: string[];
-    dayLabel: string;
   } | null>(null);
 
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   useEffect(() => {
-    if (!messMenu?.menu) {
-      setMealInfo(null);
-      return;
+    try {
+      if (!messMenu || !messMenu.menu) {
+        setMealInfo(null);
+        return;
+      }
+
+      const updateMeal = () => {
+        try {
+          const now = new Date();
+          const today = format(now, 'EEEE');
+          const tomorrowIndex = (now.getDay() + 1) % 7;
+          const tomorrow = daysOfWeek[tomorrowIndex];
+
+          const timings = { ...DEFAULT_TIMINGS, ...(messMenu.timings || {}) };
+          const currentMins = now.getHours() * 60 + now.getMinutes();
+
+          const activeTimings = [
+            { name: 'Breakfast', rawTiming: timings.Breakfast, ...parseTimeToMinutes(resolveMealTimingForDay(timings.Breakfast, today), 8 * 60, 10 * 60) },
+            { name: 'Lunch', rawTiming: timings.Lunch, ...parseTimeToMinutes(resolveMealTimingForDay(timings.Lunch, today), 12 * 60 + 30, 14 * 60 + 30) },
+            { name: 'Snacks', rawTiming: timings.Snacks, ...parseTimeToMinutes(resolveMealTimingForDay(timings.Snacks, today), 16 * 60 + 30, 17 * 60 + 30) },
+            { name: 'Dinner', rawTiming: timings.Dinner, ...parseTimeToMinutes(resolveMealTimingForDay(timings.Dinner, today), 19 * 60 + 30, 21 * 60 + 30) },
+          ];
+
+          // 1. Check if any meal is currently SERVING NOW
+          const live = activeTimings.find(m => currentMins >= m.start && currentMins < m.end);
+          if (live) {
+            const diff = Math.max(0, live.end - currentMins);
+            const h = Math.floor(diff / 60);
+            const m = diff % 60;
+            const todayMenu = messMenu.menu?.[today] || {};
+            const rawItems = todayMenu[live.name];
+            const items = normalizeItems(rawItems);
+
+            setMealInfo({
+              status: 'LIVE',
+              mealName: live.name,
+              timeLeft: h > 0 ? `Ends in ${h}h ${m}m` : `Ends in ${m}m`,
+              items: items.length > 0 ? items : ['Meal prepared as per schedule'],
+            });
+            return;
+          }
+
+          // 2. Check for upcoming meal TODAY
+          const upcoming = activeTimings.find(m => m.start > currentMins);
+          if (upcoming) {
+            const diff = Math.max(0, upcoming.start - currentMins);
+            const h = Math.floor(diff / 60);
+            const m = diff % 60;
+            const todayMenu = messMenu.menu?.[today] || {};
+            const rawItems = todayMenu[upcoming.name];
+            const items = normalizeItems(rawItems);
+
+            setMealInfo({
+              status: 'UPCOMING',
+              mealName: upcoming.name,
+              timeLeft: h > 0 ? `Starts in ${h}h ${m}m` : `Starts in ${m}m`,
+              items: items.length > 0 ? items : ['Menu updating soon'],
+            });
+            return;
+          }
+
+          // 3. Fallback to Tomorrow's Breakfast
+          const nextBreakfast = activeTimings[0];
+          const diff = Math.max(0, (24 * 60 - currentMins) + nextBreakfast.start);
+          const h = Math.floor(diff / 60);
+          const m = diff % 60;
+          const tomorrowMenu = messMenu.menu?.[tomorrow] || {};
+          const rawItems = tomorrowMenu['Breakfast'];
+          const items = normalizeItems(rawItems);
+
+          setMealInfo({
+            status: 'TOMORROW',
+            mealName: 'Breakfast',
+            timeLeft: `Starts in ${h}h ${m}m`,
+            items: items.length > 0 ? items : ['Menu updating soon'],
+          });
+        } catch (e) {
+          console.error('Error updating meal:', e);
+        }
+      };
+
+      updateMeal();
+      const interval = setInterval(updateMeal, 30000);
+      return () => clearInterval(interval);
+    } catch (err) {
+      console.error('Mess card init error:', err);
     }
-
-    const updateMeal = () => {
-      const now = new Date();
-      const today = format(now, 'EEEE');
-      const tomorrowIndex = (now.getDay() + 1) % 7;
-      const tomorrow = daysOfWeek[tomorrowIndex];
-
-      const timings = { ...DEFAULT_TIMINGS, ...(messMenu.timings || {}) };
-      const currentMins = now.getHours() * 60 + now.getMinutes();
-
-      const activeTimings = [
-        { name: 'Breakfast', rawTiming: timings.Breakfast, ...parseTimeToMinutes(resolveMealTimingForDay(timings.Breakfast, today), 8 * 60, 10 * 60) },
-        { name: 'Lunch', rawTiming: timings.Lunch, ...parseTimeToMinutes(resolveMealTimingForDay(timings.Lunch, today), 12 * 60 + 30, 14 * 60 + 30) },
-        { name: 'Snacks', rawTiming: timings.Snacks, ...parseTimeToMinutes(resolveMealTimingForDay(timings.Snacks, today), 16 * 60 + 30, 17 * 60 + 30) },
-        { name: 'Dinner', rawTiming: timings.Dinner, ...parseTimeToMinutes(resolveMealTimingForDay(timings.Dinner, today), 19 * 60 + 30, 21 * 60 + 30) },
-      ];
-
-      // 1. Check if any meal is currently SERVING NOW
-      const live = activeTimings.find(m => currentMins >= m.start && currentMins < m.end);
-      if (live) {
-        const diff = live.end - currentMins;
-        const h = Math.floor(diff / 60);
-        const m = diff % 60;
-        const todayMenu = messMenu.menu?.[today] || {};
-        const items = todayMenu[live.name] || [];
-
-        setMealInfo({
-          status: 'LIVE',
-          mealName: live.name,
-          timeLeft: h > 0 ? `Ends in ${h}h ${m}m` : `Ends in ${m}m`,
-          timingStr: resolveMealTimingForDay(live.rawTiming, today) || 'Serving Now',
-          items: items.length > 0 ? items : ['Meal prepared as per hostel schedule'],
-          dayLabel: 'Today',
-        });
-        return;
-      }
-
-      // 2. Check for upcoming meal TODAY
-      const upcoming = activeTimings.find(m => m.start > currentMins);
-      if (upcoming) {
-        const diff = upcoming.start - currentMins;
-        const h = Math.floor(diff / 60);
-        const m = diff % 60;
-        const todayMenu = messMenu.menu?.[today] || {};
-        const items = todayMenu[upcoming.name] || [];
-
-        setMealInfo({
-          status: 'UPCOMING',
-          mealName: upcoming.name,
-          timeLeft: h > 0 ? `Starts in ${h}h ${m}m` : `Starts in ${m}m`,
-          timingStr: resolveMealTimingForDay(upcoming.rawTiming, today) || '',
-          items: items.length > 0 ? items : ['Menu items updating soon'],
-          dayLabel: 'Today',
-        });
-        return;
-      }
-
-      // 3. Fallback to Tomorrow's Breakfast
-      const nextBreakfast = activeTimings[0];
-      const diff = (24 * 60 - currentMins) + nextBreakfast.start;
-      const h = Math.floor(diff / 60);
-      const m = diff % 60;
-      const tomorrowMenu = messMenu.menu?.[tomorrow] || {};
-      const items = tomorrowMenu['Breakfast'] || [];
-
-      setMealInfo({
-        status: 'TOMORROW',
-        mealName: 'Breakfast',
-        timeLeft: `Starts in ${h}h ${m}m`,
-        timingStr: resolveMealTimingForDay(nextBreakfast.rawTiming, tomorrow) || '08:00 - 09:30',
-        items: items.length > 0 ? items : ['Menu items updating soon'],
-        dayLabel: 'Tomorrow',
-      });
-    };
-
-    updateMeal();
-    const interval = setInterval(updateMeal, 30000);
-    return () => clearInterval(interval);
   }, [messMenu]);
 
-  // If no mess menu is uploaded yet
-  if (!messMenu || !mealInfo) {
-    return (
-      <div 
-        onClick={() => setActiveView('mess')}
-        className="w-full p-5 sm:p-6 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] flex items-center justify-between rounded-none cursor-pointer transition-all hover:bg-[#1A1A1A] dark:hover:bg-[#F2F2F0] text-left shadow-sm mt-2"
-      >
-        <div className="flex flex-col pr-4 min-w-0">
-          <span className="text-[10.5px] font-mono font-bold uppercase tracking-widest opacity-60 mb-1.5">
-            HOSTEL MESS MENU
-          </span>
-          <span className="text-[15px] sm:text-[16px] font-bold leading-snug tracking-tight">
-            Track live meals & weekly food schedule.
-          </span>
-        </div>
-        <div className="px-4 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider font-mono font-bold text-[11px] shrink-0 flex items-center justify-center text-center shadow-sm">
-          VIEW MENU →
-        </div>
-      </div>
-    );
+  // If no mess menu is uploaded yet, don't show or show simple button
+  if (!messMenu || !messMenu.menu) {
+    return null;
+  }
+
+  if (!mealInfo) {
+    return null;
   }
 
   const isLive = mealInfo.status === 'LIVE';
+  const displayItems = Array.isArray(mealInfo.items) ? mealInfo.items : [];
 
   return (
     <div 
       onClick={() => setActiveView('mess')}
       className="w-full p-5 sm:p-6 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] border border-[#111111] dark:border-[#FFFFFF] rounded-none cursor-pointer transition-all hover:bg-[#1A1A1A] dark:hover:bg-[#F5F5F3] text-left flex flex-col gap-3.5 group shadow-sm mt-2"
     >
-      {/* Row 1: Header Meta + Countdown Box */}
+      {/* Row 1: Header Status + Countdown Box */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           {isLive ? (
@@ -222,14 +220,14 @@ export const HomeMessCard: React.FC = () => {
       {/* Row 2: Food Items + Full Menu Action */}
       <div className="flex items-center justify-between gap-4 pt-0.5">
         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 min-w-0 flex-1">
-          {mealInfo.items.length > 0 ? (
-            mealInfo.items.map((item, idx) => (
+          {displayItems.length > 0 ? (
+            displayItems.map((item, idx) => (
               <span 
                 key={idx} 
                 className="text-[15px] sm:text-[16px] font-bold tracking-tight leading-snug"
               >
                 {item}
-                {idx < mealInfo.items.length - 1 && (
+                {idx < displayItems.length - 1 && (
                   <span className="opacity-30 ml-2.5 font-normal">·</span>
                 )}
               </span>
