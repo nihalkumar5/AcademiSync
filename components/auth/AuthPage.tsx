@@ -10,7 +10,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useApp } from '@/context/AppContext';
-import { Loader2, Eye, EyeOff, ArrowRight, ArrowLeft, CheckCircle2, Mail, Zap, ShieldCheck } from 'lucide-react';
+import { Loader2, Eye, EyeOff, ArrowRight, ArrowLeft, CheckCircle2, Mail, ShieldCheck } from 'lucide-react';
 
 interface AuthPageProps {
   mode?: 'signin' | 'signup';
@@ -286,22 +286,6 @@ export const AuthPage: React.FC<AuthPageProps> = () => {
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
-              </button>
-
-              {/* Guest / Offline Access */}
-              <div className="flex items-center gap-3 my-2">
-                <div className="flex-1 h-[1px] bg-[#EBEBEB] dark:bg-[#252525]" />
-                <span className="text-[10px] tracking-[1.5px] font-bold text-[#A0A0A0] uppercase">OR</span>
-                <div className="flex-1 h-[1px] bg-[#EBEBEB] dark:bg-[#252525]" />
-              </div>
-
-              <button
-                type="button"
-                onClick={() => router.push('/')}
-                className="w-full h-11 border border-[#E3E3E3] dark:border-[#2C2C2C] bg-white dark:bg-[#161616] hover:bg-[#F9F9F9] dark:hover:bg-[#202020] text-[#111111] dark:text-white font-medium text-[13px] rounded-[8px] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-              >
-                <Zap className="w-3.5 h-3.5 text-amber-500" />
-                <span>Continue without Login (Offline Mode)</span>
               </button>
             </form>
           )}
