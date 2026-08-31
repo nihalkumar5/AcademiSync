@@ -41,7 +41,8 @@ export const syncNativeStatusBar = async (isDark: boolean) => {
   if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
     try {
       const { StatusBar, Style } = await import('@capacitor/status-bar');
-      await StatusBar.setStyle({ style: isDark ? Style.Light : Style.Dark }).catch(() => {});
+      // In Capacitor: Style.Dark = White icons (for dark bg), Style.Light = Dark icons (for light bg)
+      await StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light }).catch(() => {});
       await StatusBar.setBackgroundColor({ color: isDark ? '#111110' : '#FAFAF8' }).catch(() => {});
     } catch (_) {}
   }
