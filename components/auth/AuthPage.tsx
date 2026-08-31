@@ -7,6 +7,8 @@ import {
   createUserWithEmailAndPassword, 
   updateProfile,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   sendPasswordResetEmail
 } from 'firebase/auth';
@@ -36,6 +38,22 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode }) => {
       router.push('/');
     }
   }, [user, router]);
+
+  React.useEffect(() => {
+    // Process redirect result if coming back from mobile Google Sign-In
+    if (typeof window !== 'undefined') {
+      getRedirectResult(auth)
+        .then((result) => {
+          if (result?.user) {
+            showToast('Welcome Back', 'Signed in successfully with Google!', 'success');
+            router.push('/');
+          }
+        })
+        .catch((err) => {
+          console.error('Redirect sign-in error:', err);
+        });
+    }
+  }, [router, showToast]);
 
   React.useEffect(() => {
     setCurrentMode(initialMode);
@@ -125,12 +143,33 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode }) => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
 
+    const isMobile = typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      try {
+        await signInWithRedirect(auth, provider);
+      } catch (err: any) {
+        console.error('Google redirect error:', err);
+        setErrorMsg('Failed to initiate Google sign-in. Please try Email & Password.');
+        setLoading(false);
+      }
+      return;
+    }
+
     try {
       await signInWithPopup(auth, provider);
       showToast('Google Sign In', 'Authenticated successfully with Google.', 'success');
       router.push('/');
     } catch (err: any) {
       console.error('Google auth error:', err);
+      if (err.code === 'auth/popup-blocked' || err.code === 'auth/missing-initial-state') {
+        try {
+          await signInWithRedirect(auth, provider);
+          return;
+        } catch (redirectErr) {
+          console.error('Fallback redirect failed:', redirectErr);
+        }
+      }
       let msg = 'Google authentication failed.';
       if (err.code === 'auth/popup-closed-by-user') {
         msg = 'Login popup was closed before completion.';
@@ -147,7 +186,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode }) => {
       }
       setErrorMsg(msg);
       showToast('Auth Error', msg, 'error');
-    } finally {
       setLoading(false);
     }
   };

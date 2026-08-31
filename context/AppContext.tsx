@@ -29,7 +29,7 @@ import {
 } from '@/lib/timetableUtils';
 import { checkAndGenerateSmartNotifications } from '@/lib/notificationEngine';
 import confetti from 'canvas-confetti';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, getRedirectResult } from 'firebase/auth';
 import { doc, collection, onSnapshot, setDoc, deleteDoc, getDoc, getDocs, query, where, updateDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { registerPushNotifications } from '@/lib/pushNotifications';
@@ -179,6 +179,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isAuthLoaded, setIsAuthLoaded] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      getRedirectResult(auth).catch((err) => {
+        console.warn('Redirect result check:', err);
+      });
+    }
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         setUser({
