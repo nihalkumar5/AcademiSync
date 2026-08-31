@@ -165,18 +165,18 @@ export const HomeMessCard: React.FC = () => {
     return (
       <div 
         onClick={() => setActiveView('mess')}
-        className="w-full p-4 sm:p-5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] flex items-center justify-between rounded-none cursor-pointer transition-opacity hover:opacity-95"
+        className="w-full p-5 sm:p-6 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] flex items-center justify-between rounded-none cursor-pointer transition-all hover:bg-[#1A1A1A] dark:hover:bg-[#F2F2F0] text-left shadow-sm"
       >
         <div className="flex flex-col pr-4 min-w-0">
-          <span className="text-[10px] font-mono font-bold uppercase tracking-widest opacity-70 mb-1">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-widest opacity-70 mb-1.5">
             HOSTEL MESS MENU
           </span>
-          <span className="text-[14px] font-medium leading-snug">
-            Track live meals & weekly food chart.
+          <span className="text-[16px] font-bold leading-snug tracking-tight">
+            Track live meals & weekly hostel food chart.
           </span>
         </div>
-        <div className="px-4 py-2 bg-[#FFFFFF] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider font-bold text-[11px] shrink-0 flex items-center justify-center text-center">
-          VIEW MENU
+        <div className="px-4 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider font-mono font-bold text-[11.5px] shrink-0 flex items-center justify-center text-center shadow-sm">
+          VIEW MENU →
         </div>
       </div>
     );
@@ -187,31 +187,63 @@ export const HomeMessCard: React.FC = () => {
   return (
     <div 
       onClick={() => setActiveView('mess')}
-      className="w-full p-4 sm:p-5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] flex items-center justify-between rounded-none cursor-pointer transition-opacity hover:opacity-95 text-left"
+      className="w-full p-5 sm:p-6 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] border border-[#111111] dark:border-[#FFFFFF] rounded-none cursor-pointer transition-all hover:bg-[#1A1A1A] dark:hover:bg-[#F2F2F0] text-left relative overflow-hidden group shadow-sm"
     >
-      {/* Left Column: Kicker + Food Items */}
-      <div className="flex flex-col pr-4 min-w-0">
-        <div className="flex items-center gap-2 mb-1 flex-wrap">
-          {isLive ? (
-            <span className="flex items-center gap-1.5 text-emerald-400 dark:text-emerald-600 text-[10px] font-mono font-bold uppercase tracking-widest">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 dark:bg-emerald-600 animate-pulse" />
-              LIVE · {mealInfo.mealName.toUpperCase()} {mealInfo.timingStr ? `(${mealInfo.timingStr})` : ''}
-            </span>
-          ) : (
-            <span className="text-[10px] font-mono font-bold uppercase tracking-widest opacity-70">
-              {mealInfo.status === 'TOMORROW' ? 'TOMORROW MORNING' : 'UPCOMING'} · {mealInfo.mealName.toUpperCase()} {mealInfo.timingStr ? `(${mealInfo.timingStr})` : ''}
-            </span>
-          )}
+      <div className="flex items-start justify-between gap-4">
+        {/* Left Column: Kicker + Wrapped Food Items */}
+        <div className="flex flex-col gap-2 min-w-0 flex-1">
+          {/* Top Status Header */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {isLive ? (
+              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/20 text-emerald-400 dark:text-emerald-700 font-mono text-[10.5px] font-black uppercase tracking-[1.4px] border border-emerald-500/30">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 dark:bg-emerald-600 animate-pulse" />
+                SERVING NOW · {mealInfo.mealName.toUpperCase()}
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-[1.4px] opacity-70">
+                <span className="text-[#808080]">●</span>
+                <span>{mealInfo.status === 'TOMORROW' ? 'TOMORROW MORNING' : 'UPCOMING'}</span>
+                <span>·</span>
+                <span>{mealInfo.mealName.toUpperCase()}</span>
+                {mealInfo.timingStr && (
+                  <span className="opacity-70 font-normal">({mealInfo.timingStr})</span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Food Items with Elegant Dot Separators */}
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-0.5">
+            {mealInfo.items.length > 0 ? (
+              mealInfo.items.map((item, idx) => (
+                <span 
+                  key={idx} 
+                  className="text-[14.5px] sm:text-[16px] font-semibold tracking-tight leading-snug"
+                >
+                  {item}
+                  {idx < mealInfo.items.length - 1 && (
+                    <span className="opacity-40 ml-2 font-normal">·</span>
+                  )}
+                </span>
+              ))
+            ) : (
+              <span className="text-[14px] font-medium opacity-60">
+                Menu items updating soon
+              </span>
+            )}
+          </div>
         </div>
 
-        <span className="text-[14px] sm:text-[15px] font-medium leading-snug truncate">
-          {mealInfo.items.length > 0 ? mealInfo.items.join(' · ') : 'Menu items updating soon'}
-        </span>
-      </div>
-
-      {/* Right Column: Exact Brutalist Button Box */}
-      <div className="px-4 py-2 bg-[#FFFFFF] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider font-bold text-[11px] shrink-0 flex items-center justify-center text-center">
-        {mealInfo.timeLeft}
+        {/* Right Column: Time Badge + Menu Prompt */}
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
+          <div className="px-3.5 py-2 bg-[#FFFFFF] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider font-mono font-bold text-[11.5px] flex items-center justify-center text-center shadow-sm">
+            {mealInfo.timeLeft}
+          </div>
+          <span className="text-[10px] font-mono font-bold uppercase tracking-widest opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all flex items-center gap-1">
+            <span>FULL MENU</span>
+            <span>→</span>
+          </span>
+        </div>
       </div>
     </div>
   );
