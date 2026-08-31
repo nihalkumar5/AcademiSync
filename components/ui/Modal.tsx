@@ -59,7 +59,7 @@ export const Modal: React.FC<ModalProps> = ({
       {isOpen && (
         <div className={clsx(
           "fixed inset-0 z-50 flex justify-center overflow-y-auto",
-          mobileFullSheet ? "items-start sm:items-center p-0 sm:p-6" : "items-center p-0 sm:p-6"
+          mobileFullSheet ? "items-start sm:items-center p-0 sm:p-6" : "items-center p-4 sm:p-6"
         )}>
           {/* Backdrop */}
           <motion.div
@@ -77,45 +77,53 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={mobileFullSheet ? { opacity: 0, y: 40, scale: 0.98 } : { opacity: 0, scale: 0.96, y: 0 }}
             transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
+            onClick={(e) => e.stopPropagation()}
             className={twMerge(
               clsx(
-                
                 'relative bg-white dark:bg-[#111111] border-[#D9D9D6] dark:border-[#333333] z-10 text-left rounded-none',
                 mobileFullSheet ? 'w-full' : 'w-full sm:w-full',
-                mobileFullSheet ? "min-h-[100dvh] sm:min-h-0 sm:h-auto border-0 sm:border flex flex-col" : "border my-auto",
+                mobileFullSheet ? "min-h-[100dvh] sm:min-h-0 sm:h-auto border-0 sm:border flex flex-col" : "border my-auto max-h-[90dvh] flex flex-col",
                 maxWClasses[maxWidth]
               )
             )}
           >
             {(title || showCloseButton) && (
               <div className={clsx(
-                "flex items-start justify-between p-5 border-b border-[#D9D9D6] dark:border-[#333333] bg-white dark:bg-[#111111]",
-                mobileFullSheet ? "sticky top-0 z-20" : ""
+                "flex items-start justify-between border-b border-[#D9D9D6] dark:border-[#333333] bg-white dark:bg-[#111111]",
+                mobileFullSheet 
+                  ? "sticky top-0 z-30 px-5 pb-4 pt-[max(env(safe-area-inset-top,0px),2.5rem)] sm:p-5" 
+                  : "p-5"
               )}>
-                <div>
+                <div className="pr-4">
                   {title && (
-                    <h2 className="text-[24px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-none">
+                    <h2 className="text-[22px] sm:text-[24px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-snug">
                       {title}
                     </h2>
                   )}
                   {description && (
-                    <p className="mt-2 text-[14px] text-[#6F6F6F] leading-snug">
+                    <p className="mt-1.5 text-[13.5px] sm:text-[14px] text-[#6F6F6F] dark:text-[#A0A0A0] leading-snug">
                       {description}
                     </p>
                   )}
                 </div>
                 {showCloseButton && (
                   <button
-                    onClick={onClose}
-                    className="p-1.5 shrink-0 transition-opacity text-[#111111] dark:text-[#FFFFFF] hover:opacity-70 cursor-pointer"
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onClose();
+                    }}
+                    aria-label="Close dialog"
+                    className="min-w-[44px] min-h-[44px] -mr-2.5 -mt-2 flex items-center justify-center rounded-full transition-all text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/10 active:scale-90 active:bg-black/10 z-40 cursor-pointer shrink-0"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-5 h-5 pointer-events-none" />
                   </button>
                 )}
               </div>
             )}
 
-            <div className={clsx(mobileFullSheet ? "flex-1 overflow-y-auto flex flex-col" : "")}>
+            <div className={clsx(mobileFullSheet ? "flex-1 overflow-y-auto flex flex-col" : "overflow-y-auto flex-1")}>
               <div className={clsx("p-5", mobileFullSheet ? "flex-1 flex flex-col" : "")}>
                 {children}
               </div>
