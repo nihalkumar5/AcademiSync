@@ -19,6 +19,7 @@ import { db } from '@/lib/firebase';
 import { OverviewHeader } from '@/components/dashboard/OverviewHeader';
 import { InviteBatchmatesCard } from '@/components/dashboard/InviteBatchmatesCard';
 import { LiveClassCard } from '@/components/dashboard/LiveClassCard';
+import { HomeMessCard } from '@/components/dashboard/HomeMessCard';
 import { TodayTimeline } from '@/components/dashboard/TodayTimeline';
 import { SmartFocusList } from '@/components/dashboard/SmartFocusList';
 import { WeeklyTimetable } from '@/components/timetable/WeeklyTimetable';
@@ -211,7 +212,9 @@ export default function AppHome() {
                   <TodayTimeline />
                   <SmartFocusList />
                 </div>
-                <div className="mt-6"><InviteBatchmatesCard /></div>
+                {/* Thin Live & Upcoming Mess Card */}
+                <HomeMessCard />
+                <div className="mt-1"><InviteBatchmatesCard /></div>
               </div>
             )}
 
