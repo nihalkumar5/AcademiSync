@@ -317,33 +317,34 @@ export const TodayTimeline: React.FC = () => {
   if (targetHoliday) {
     return (
       <div className="flex flex-col text-left">
-        <div className="flex items-center justify-between px-1 mb-8">
-          <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
-            {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
-          </h3>
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wider">
+        <div className="flex items-center justify-between gap-3 px-1 mb-6">
+          <div className="flex flex-col min-w-0">
+            <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
+              {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
+            </h3>
+            <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#808080] uppercase tracking-wider mt-0.5">
               {targetDay}
             </span>
-            {isBatchCR && (
-              <button
-                type="button"
-                onClick={() => {
-                  setExtraDate(targetDateStr);
-                  if (subjects.length > 0 && !extraSubjectId) {
-                    setExtraSubjectId(subjects[0].id);
-                    setExtraRoom(subjects[0].room || '');
-                    setExtraFaculty(subjects[0].facultyName || '');
-                    setExtraIsLab(subjects[0].isLab || false);
-                  }
-                  setIsAddExtraOpen(true);
-                }}
-                className="flex items-center gap-1 px-2.5 py-1 bg-black text-white dark:bg-white dark:text-black text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer shadow-sm ml-2"
-              >
-                + Extra Class
-              </button>
-            )}
           </div>
+
+          {isBatchCR && (
+            <button
+              type="button"
+              onClick={() => {
+                setExtraDate(targetDateStr);
+                if (subjects.length > 0 && !extraSubjectId) {
+                  setExtraSubjectId(subjects[0].id);
+                  setExtraRoom(subjects[0].room || '');
+                  setExtraFaculty(subjects[0].facultyName || '');
+                  setExtraIsLab(subjects[0].isLab || false);
+                }
+                setIsAddExtraOpen(true);
+              }}
+              className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
+            >
+              <span>+ Extra Class</span>
+            </button>
+          )}
         </div>
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
@@ -369,33 +370,34 @@ export const TodayTimeline: React.FC = () => {
   if (targetSessions.length === 0) {
     return (
       <div className="flex flex-col text-left">
-        <div className="flex items-center justify-between px-1 mb-8">
-          <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
-            {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
-          </h3>
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wider">
+        <div className="flex items-center justify-between gap-3 px-1 mb-6">
+          <div className="flex flex-col min-w-0">
+            <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
+              {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
+            </h3>
+            <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#808080] uppercase tracking-wider mt-0.5">
               {targetDay}
             </span>
-            {isBatchCR && (
-              <button
-                type="button"
-                onClick={() => {
-                  setExtraDate(targetDateStr);
-                  if (subjects.length > 0 && !extraSubjectId) {
-                    setExtraSubjectId(subjects[0].id);
-                    setExtraRoom(subjects[0].room || '');
-                    setExtraFaculty(subjects[0].facultyName || '');
-                    setExtraIsLab(subjects[0].isLab || false);
-                  }
-                  setIsAddExtraOpen(true);
-                }}
-                className="flex items-center gap-1 px-2.5 py-1 bg-black text-white dark:bg-white dark:text-black text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer shadow-sm ml-2"
-              >
-                + Extra Class
-              </button>
-            )}
           </div>
+
+          {isBatchCR && (
+            <button
+              type="button"
+              onClick={() => {
+                setExtraDate(targetDateStr);
+                if (subjects.length > 0 && !extraSubjectId) {
+                  setExtraSubjectId(subjects[0].id);
+                  setExtraRoom(subjects[0].room || '');
+                  setExtraFaculty(subjects[0].facultyName || '');
+                  setExtraIsLab(subjects[0].isLab || false);
+                }
+                setIsAddExtraOpen(true);
+              }}
+              className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
+            >
+              <span>+ Extra Class</span>
+            </button>
+          )}
         </div>
         <EmptyState
           icon={<MonochromeIllustration type="no-classes" size={48} />}
@@ -468,13 +470,13 @@ export const TodayTimeline: React.FC = () => {
 
   return (
     <div className="flex flex-col text-left">
-      <div className="flex items-center justify-between px-1 mb-8">
-        <div className="flex items-center gap-2">
-          <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
+      <div className="flex items-center justify-between gap-3 px-1 mb-6">
+        <div className="flex flex-col min-w-0">
+          <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
             {isAfter8PM ? "TOMORROW'S SCHEDULE" : "LATER TODAY"}
           </h3>
-          <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wider">
-            · {targetDay}
+          <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#808080] uppercase tracking-wider mt-0.5">
+            {targetDay}
           </span>
         </div>
 
@@ -491,7 +493,7 @@ export const TodayTimeline: React.FC = () => {
               }
               setIsAddExtraOpen(true);
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-black text-white dark:bg-white dark:text-black text-[11.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer shadow-sm"
+            className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
           >
             <span>+ Extra Class</span>
           </button>
