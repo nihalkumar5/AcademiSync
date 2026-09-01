@@ -159,8 +159,6 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
     }
   }, [batchKey, isOpen]);
 
-  if (!batchKey) return null;
-
   const isLegacyBatch = !batchData?.crUserIds && !batchData?.crEmails;
   const isPrimaryCreator = isLegacyBatch && (batchData?.creatorId === user?.id || (batchData?.creatorEmail && batchData?.creatorEmail === userEmail));
   const isCoCR = batchData?.crUserIds?.includes(user?.id) || batchData?.crEmails?.includes(userEmail) || profile.role === 'cr';
@@ -196,6 +194,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
   };
 
   const handleToggleCR = async (member: any, currentIsCR: boolean) => {
+    if (!batchKey) return;
     if (!isAuthorizedCR) {
       showToast('Unauthorized', 'Only the Class Representative can manage roles.', 'error');
       return;
@@ -247,6 +246,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
   };
 
   const handleWithdrawSelfAsCR = async () => {
+    if (!batchKey) return;
     const otherCRs = (batchData?.crUserIds || []).filter((id: string) => id !== user?.id);
     const otherCREmails = (batchData?.crEmails || []).filter((e: string) => e !== userEmail);
     const primaryRemains = isLegacyBatch && batchData?.creatorId && batchData?.creatorId !== user?.id;
@@ -277,6 +277,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
   };
 
   const handleRemoveMember = async (member: any) => {
+    if (!batchKey) return;
     if (!isAuthorizedCR) {
       showToast('Unauthorized', 'Only the Class Representative can remove members.', 'error');
       return;
@@ -310,6 +311,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
   };
 
   const handleCopyInvite = async () => {
+    if (!batchKey) return;
     const batchTitle = `${batchData?.branch || profile.branch || 'Class'} - Sec ${batchData?.section || profile.section || 'A'} (Sem ${batchData?.semester || profile.semester || ''})`;
     const code = batchData?.inviteCode || batchKey;
     const inviteUrl = `https://academi-sync-chi.vercel.app/?invite=${code}`;
@@ -372,6 +374,8 @@ ${inviteUrl}
     }
   }
   displayYear = displayYear || '?';
+
+  if (!isOpen || !batchKey) return null;
 
   return (
     <>

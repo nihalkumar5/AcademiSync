@@ -23,11 +23,6 @@ export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({
   const [isDismissed, setIsDismissed] = useState(false);
   const trackedImpressions = useRef<Set<string>>(new Set());
 
-  // If user has Pro status, completely hide all promotional cards
-  if (profile?.isPro) {
-    return null;
-  }
-
   useEffect(() => {
     try {
       const q = query(
@@ -105,7 +100,7 @@ export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({
     }
   }, [currentCampaign]);
 
-  if (isDismissed || !currentCampaign || campaigns.length === 0) {
+  if (profile?.isPro || isDismissed || !currentCampaign || campaigns.length === 0) {
     return null;
   }
 

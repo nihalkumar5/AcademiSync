@@ -314,11 +314,12 @@ export const SettingsView: React.FC = () => {
     reader.readAsText(file);
   };
 
-  const initials = (name || 'Student')
-    .split(' ')
-    .map((n) => n[0])
+  const initials = ((name || profile?.name || 'Student')
+    .trim()
+    .split(/\s+/)
+    .map((n) => (n && n[0] ? n[0] : ''))
     .join('')
-    .substring(0, 2)
+    .substring(0, 2) || 'ST')
     .toUpperCase();
 
   // Shared input class for the brutalist theme
