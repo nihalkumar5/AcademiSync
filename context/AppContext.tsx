@@ -439,19 +439,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setCurrentBatchData(data);
 
       // ── Sync timetable & related data ────────────────────────────────────────
-      if (data.subjects) {
+      let updatedSubs = subjects;
+      let updatedTt = timetable;
+
+      if (Array.isArray(data.subjects)) {
+        updatedSubs = data.subjects;
         setSubjectsState(data.subjects);
         storage.setSubjects(data.subjects);
       }
-      if (data.timetable) {
+      if (Array.isArray(data.timetable)) {
+        updatedTt = data.timetable;
         setTimetableState(data.timetable);
         storage.setTimetable(data.timetable);
       }
-      if (Array.isArray(data.events) && data.events.length > 0) {
+      if (Array.isArray(data.events)) {
         setEventsState(data.events);
         storage.setEvents(data.events);
       }
-      if (Array.isArray(data.exams) && data.exams.length > 0) {
+      if (Array.isArray(data.exams)) {
         setExamsState(data.exams);
         storage.setExams(data.exams);
       }
@@ -467,6 +472,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setRescheduledSessionsState(data.rescheduledSessions);
         storage.setRescheduledSessions(data.rescheduledSessions);
       }
+
+      // Recompute carry items immediately when timetable/subjects update from batch CR
+      refreshCarryItems(updatedTt, updatedSubs, data.events || events);
 
       // ── Handle batch alerts (CR class cancel / reschedule notifications) ─────
       if (Array.isArray(data.batchAlerts) && data.batchAlerts.length > 0) {
@@ -897,6 +905,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  // Helper to instantly broadcast CR modifications to shared batch doc in Firestore
+  const syncCRChangesToBatch = async (
+    newTimetable?: ClassSession[],
+    newSubjects?: Subject[],
+    newEvents?: AcademicEvent[],
+    newExams?: Exam[]
+  ) => {
+    if (profile.isBatchSynced && profile.batchKey && isBatchCR) {
+      try {
+        const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
+        const payload = sanitizeForFirestore({
+          ...(newSubjects !== undefined ? { subjects: newSubjects } : { subjects }),
+          ...(newTimetable !== undefined ? { timetable: newTimetable } : { timetable }),
+          ...(newEvents !== undefined ? { events: newEvents } : { events }),
+          ...(newExams !== undefined ? { exams: newExams } : { exams }),
+          updatedAt: new Date().toISOString(),
+        });
+        await setDoc(batchDocRef, payload, { merge: true });
+        console.log('✅ Instantly broadcasted CR changes to all batch members in Firestore');
+      } catch (err) {
+        console.error('Failed to broadcast CR changes to batch:', err);
+      }
+    }
+  };
+
   // State mutation actions
   const updateProfile = (partial: Partial<StudentProfile>) => {
     setProfileState((prev) => {
@@ -915,6 +948,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setSubjectsState(updated);
     storage.setSubjects(updated);
     refreshCarryItems(timetable, updated);
+    syncCRChangesToBatch(timetable, updated);
     return newSub;
   };
 
@@ -923,6 +957,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setSubjectsState(updated);
     storage.setSubjects(updated);
     refreshCarryItems(timetable, updated);
+    syncCRChangesToBatch(timetable, updated);
   };
 
   const deleteSubject = (id: string) => {
@@ -933,6 +968,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     storage.setSubjects(updatedSubs);
     storage.setTimetable(updatedTimetable);
     refreshCarryItems(updatedTimetable, updatedSubs);
+    syncCRChangesToBatch(updatedTimetable, updatedSubs);
   };
 
   const refreshCarryItems = (
@@ -975,6 +1011,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimetableState(updated);
     storage.setTimetable(updated);
     refreshCarryItems(updated, subjects);
+    syncCRChangesToBatch(updated, subjects);
     showToast('Class Added', `${sessionData.startTime} - ${sessionData.endTime} scheduled`, 'success');
   };
 
@@ -983,6 +1020,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimetableState(updated);
     storage.setTimetable(updated);
     refreshCarryItems(updated, subjects);
+    syncCRChangesToBatch(updated, subjects);
     showToast('Class Updated', 'Session details saved', 'success');
   };
 
@@ -991,6 +1029,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimetableState(updated);
     storage.setTimetable(updated);
     refreshCarryItems(updated, subjects);
+    syncCRChangesToBatch(updated, subjects);
     showToast('Class Removed', 'Session deleted from schedule', 'info');
   };
 
@@ -998,6 +1037,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimetableState(sessions);
     storage.setTimetable(sessions);
     refreshCarryItems(sessions, subjects);
+    syncCRChangesToBatch(sessions, subjects);
     showToast('Timetable Updated', `${sessions.length} class slots loaded`, 'success');
   };
 
@@ -1007,6 +1047,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimetableState(sessions);
     storage.setTimetable(sessions);
     refreshCarryItems(sessions, newSubjects);
+    syncCRChangesToBatch(sessions, newSubjects);
     showToast('Timetable Imported', `${sessions.length} class slots loaded`, 'success');
   };
 
@@ -1267,6 +1308,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setDoc(userRef, { exams: sanitizeForFirestore(updated), lastUpdated: Date.now() }, { merge: true })
         .catch(err => console.error('Error saving exams:', err));
     }
+    syncCRChangesToBatch(undefined, undefined, undefined, updated);
     showToast('Exam Added', examData.subjectName, 'success');
     return newExam;
   };
@@ -1281,6 +1323,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setDoc(userRef, { exams: sanitizeForFirestore(updated), lastUpdated: Date.now() }, { merge: true })
         .catch(err => console.error('Error saving exams on delete:', err));
     }
+    syncCRChangesToBatch(undefined, undefined, undefined, updated);
     showToast('Exam Deleted', 'Exam removed', 'info');
   };
 
@@ -1309,6 +1352,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           .catch(err => console.error('Error saving exams to batch:', err));
       }
     }
+    syncCRChangesToBatch(undefined, undefined, undefined, updated);
     showToast('Exams Updated', `${updated.length} exams loaded`, 'success');
   };
 
@@ -1324,6 +1368,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setDoc(userRef, { events: sanitizeForFirestore(updated), lastUpdated: Date.now() }, { merge: true })
         .catch(err => console.error('Error saving events on delete:', err));
     }
+    syncCRChangesToBatch(undefined, undefined, updated, undefined);
     showToast('Event Removed', target?.title || 'Calendar event deleted', 'info');
   };
 
