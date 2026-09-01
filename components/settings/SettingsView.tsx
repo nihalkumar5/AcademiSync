@@ -765,14 +765,20 @@ export const SettingsView: React.FC = () => {
             </div>
 
             {profile.isBatchSynced ? (
-              <div className="flex flex-col py-5 border-b border-[#D8D8D8] dark:border-[#333333]">
+              <div className="flex flex-col p-4 sm:p-5 bg-[#F9F9F8] dark:bg-[#161616] border border-[#D8D8D8] dark:border-[#333333] mt-3 gap-4">
                 <div className="flex items-start justify-between">
                   <div className="flex flex-col gap-1">
                     <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wide">
                       {profile.programme} {profile.branch ? `· ${profile.branch}` : ''}
                     </span>
-                    <div className="flex items-center gap-2 text-[13px] text-[#6F6F6F]">
+                    <div className="flex items-center gap-2 text-[12px] text-[#6F6F6F]">
                       <span>Semester {profile.semester} · Year {Math.ceil((profile.semester || 1) / 2)}</span>
+                      {profile.section && (
+                        <>
+                          <span>·</span>
+                          <span>Section {profile.section}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                   {isBatchCR && (
@@ -782,12 +788,12 @@ export const SettingsView: React.FC = () => {
                   )}
                 </div>
 
-                {/* Class Join Passcode */}
-                {currentBatchData?.inviteCode && (
-                  <div className="mt-4 p-3 bg-[#FBFBFA] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#333333] flex items-center justify-between">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[10.5px] font-bold uppercase tracking-wider text-[#888888]">Class Batch Code</span>
-                      <span className="text-[15px] font-mono font-bold tracking-[2px] text-[#111111] dark:text-[#FFFFFF]">
+                {/* Class Join Passcode - INSIDE the card, visible only to CR / Admins */}
+                {isBatchCR && currentBatchData?.inviteCode && (
+                  <div className="flex items-center justify-between p-3 bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#2C2C2C]">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#888888]">BATCH CODE:</span>
+                      <span className="text-[14px] font-mono font-bold tracking-[2px] text-[#111111] dark:text-[#FFFFFF] select-all">
                         {currentBatchData.inviteCode}
                       </span>
                     </div>
@@ -797,18 +803,18 @@ export const SettingsView: React.FC = () => {
                         navigator.clipboard.writeText(currentBatchData.inviteCode);
                         showToast('Code Copied', `Batch code ${currentBatchData.inviteCode} copied to clipboard.`, 'success');
                       }}
-                      className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] hover:opacity-90 transition-opacity cursor-pointer"
+                      className="px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] hover:opacity-90 transition-opacity cursor-pointer"
                     >
                       Copy Code
                     </button>
                   </div>
                 )}
                 
-                <div className="flex items-center justify-between mt-6">
+                <div className="flex items-center justify-between pt-2 border-t border-[#E5E5E5] dark:border-[#2C2C2C]">
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => setShowBatchMembersModal(true)} 
-                      className="px-4 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity"
+                      className="px-4 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity cursor-pointer"
                     >
                       {isBatchCR ? 'Manage members' : 'View members'}
                     </button>
@@ -840,14 +846,14 @@ ${link}
                           if (res === 'copied') showToast('Invite Copied', `Batch invite link & code copied: ${code}`, 'success');
                         } catch (err) {}
                       }} 
-                      className="px-4 py-2 border border-[#D8D8D8] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] text-[#111111] dark:text-[#FFFFFF] text-[11px] font-bold uppercase tracking-wider rounded-none transition-colors"
+                      className="px-4 py-2 border border-[#D8D8D8] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] text-[#111111] dark:text-[#FFFFFF] text-[11px] font-bold uppercase tracking-wider rounded-none transition-colors cursor-pointer"
                     >
                       Invite
                     </button>
                   </div>
                   <button 
                     onClick={() => setShowBatchSettingsModal(true)} 
-                    className="p-2 -mr-2 text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors"
+                    className="p-2 -mr-2 text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer"
                   >
                     <MoreHorizontal className="w-5 h-5" />
                   </button>
