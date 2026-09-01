@@ -235,7 +235,7 @@ export const OnboardingModal = () => {
               <div className="relative flex-1 min-h-0 w-full flex items-end justify-center overflow-visible">
                 {/* White backdrop behind illustration on Dark Mode */}
                 {currentIndex === 2 && (
-                  <div className="hidden dark:block absolute bottom-2 w-[220px] sm:w-[260px] h-[260px] sm:h-[300px] rounded-3xl bg-white/95 shadow-xl -z-0" />
+                  <div className="hidden dark:block absolute top-3 bottom-0 w-[84%] max-w-[320px] rounded-3xl bg-white/95 shadow-2xl -z-0" />
                 )}
 
                 <img 
