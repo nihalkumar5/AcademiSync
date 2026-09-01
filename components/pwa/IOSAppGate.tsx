@@ -21,6 +21,14 @@ export const IOSAppGate: React.FC = () => {
       window.matchMedia('(display-mode: standalone)').matches ||
       Capacitor.isNativePlatform();
 
+    // Detect preview mode (?preview=ios in URL)
+    const isPreview = new URLSearchParams(window.location.search).get('preview') === 'ios';
+
+    if (isPreview) {
+      setIsIOSBrowser(true);
+      return;
+    }
+
     // Session bypass check
     const isTempBypassed = sessionStorage.getItem('ios_gate_bypassed') === 'true';
 
