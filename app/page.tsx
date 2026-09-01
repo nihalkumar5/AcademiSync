@@ -98,6 +98,21 @@ export default function AppHome() {
         const inviteParam = extractParam(url, 'invite');
         const calendarParam = extractParam(url, 'calendar_invite');
         const examsParam = extractParam(url, 'exams_invite');
+        const taskParam = extractParam(url, 'task');
+
+        if (taskParam) {
+          // If we receive a task intent, switch to homework view and append to URL so HomeworkView picks it up
+          setActiveView('homework');
+          const currentUrl = new URL(window.location.href);
+          currentUrl.searchParams.set('task', taskParam);
+          window.history.replaceState({}, '', currentUrl);
+          
+          // Dispatch custom event in case HomeworkView is already mounted
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('app_task_intent', { detail: taskParam }));
+          }
+          return;
+        }
 
         if (inviteParam && inviteParam !== profile.batchKey) {
           if (!isSignedIn) {

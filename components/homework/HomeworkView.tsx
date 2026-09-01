@@ -34,31 +34,60 @@ export const HomeworkView: React.FC = () => {
   const [prefilledData, setPrefilledData] = useState<Partial<Homework> | null>(null);
 
   React.useEffect(() => {
+    const handleTaskParam = (taskParam: string) => {
+      // If on Android mobile browser, try to launch app natively, fallback to web view
+      const ua = navigator.userAgent;
+      const isAndroidBrowser = /Android/i.test(ua) && !Capacitor.isNativePlatform();
+      
+      if (isAndroidBrowser) {
+        const intentUrl = `intent://task?task=${taskParam}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end`;
+        // Clear param so if fallback hits we just show the task in web without endless loop
+        const fallbackUrl = new URL(window.location.href);
+        fallbackUrl.searchParams.delete('task');
+        window.history.replaceState({}, '', fallbackUrl);
+        
+        window.location.href = intentUrl;
+        return;
+      }
+
+      try {
+        const decoded = JSON.parse(decodeURIComponent(atob(taskParam)));
+        setPrefilledData({
+          subjectName: decoded.s || '',
+          title: decoded.t || '',
+          description: decoded.d || '',
+          deadline: decoded.dl || new Date().toISOString(),
+          priority: decoded.p || 'Medium',
+          status: 'Not Started',
+        });
+        setEditHomework(null);
+        setShowAddModal(true);
+        
+        // Remove the task from URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('task');
+        window.history.replaceState({}, '', url);
+      } catch (e) {
+        console.error('Failed to parse shared task:', e);
+      }
+    };
+
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const taskParam = params.get('task');
       if (taskParam) {
-        try {
-          const decoded = JSON.parse(decodeURIComponent(atob(taskParam)));
-          setPrefilledData({
-            subjectName: decoded.s || '',
-            title: decoded.t || '',
-            description: decoded.d || '',
-            deadline: decoded.dl || new Date().toISOString(),
-            priority: decoded.p || 'Medium',
-            status: 'Not Started',
-          });
-          setEditHomework(null);
-          setShowAddModal(true);
-          
-          // Remove the task from URL
-          const url = new URL(window.location.href);
-          url.searchParams.delete('task');
-          window.history.replaceState({}, '', url);
-        } catch (e) {
-          console.error('Failed to parse shared task:', e);
-        }
+        handleTaskParam(taskParam);
       }
+
+      // Listen for task intents while already mounted
+      const intentListener = (e: Event) => {
+        const customEvent = e as CustomEvent;
+        if (customEvent.detail) {
+          handleTaskParam(customEvent.detail);
+        }
+      };
+      window.addEventListener('app_task_intent', intentListener);
+      return () => window.removeEventListener('app_task_intent', intentListener);
     }
   }, []);
 
