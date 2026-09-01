@@ -232,11 +232,16 @@ export const OnboardingModal = () => {
               className="absolute inset-0 w-full h-full flex flex-col justify-between"
             >
               {/* Slide Image */}
-              <div className="flex-1 min-h-0 w-full flex items-end justify-center overflow-visible">
+              <div className="relative flex-1 min-h-0 w-full flex items-end justify-center overflow-visible">
+                {/* White backdrop behind illustration on Dark Mode */}
+                {currentIndex === 2 && (
+                  <div className="hidden dark:block absolute bottom-2 w-[220px] sm:w-[260px] h-[260px] sm:h-[300px] rounded-3xl bg-white/95 shadow-xl -z-0" />
+                )}
+
                 <img 
                   src={slides[currentIndex].image} 
                   alt="Onboarding" 
-                  className={`w-full h-full object-contain object-bottom pointer-events-none translate-y-[6%] ${
+                  className={`relative z-10 w-full h-full object-contain object-bottom pointer-events-none translate-y-[6%] ${
                     currentIndex === 0 ? 'scale-[1.2]' :
                     currentIndex === 1 ? 'scale-[1.45]' :
                     'scale-[1.15]'
