@@ -36,6 +36,7 @@ const STORAGE_KEYS = {
   CANCELLED_SESSIONS: 'iiitnr_cancelled_sessions_v1',
   CANCELLED_SESSIONS_META: 'iiitnr_cancelled_sessions_meta_v1',
   RESCHEDULED_SESSIONS: 'iiitnr_rescheduled_sessions_v1',
+  EXTRA_SESSIONS: 'iiitnr_extra_sessions_v1',
 };
 
 // Safe LocalStorage helpers
@@ -131,6 +132,9 @@ export const storage = {
 
   getRescheduledSessions: (): Record<string, { startTime: string; endTime: string; room?: string; subjectId?: string; by?: string; role?: string; timestamp?: string }> => getStoredItem(STORAGE_KEYS.RESCHEDULED_SESSIONS, {}),
   setRescheduledSessions: (rescheduled: Record<string, { startTime: string; endTime: string; room?: string; subjectId?: string; by?: string; role?: string; timestamp?: string }>) => setStoredItem(STORAGE_KEYS.RESCHEDULED_SESSIONS, rescheduled),
+
+  getExtraSessions: (): Record<string, any> => getStoredItem(STORAGE_KEYS.EXTRA_SESSIONS, {}),
+  setExtraSessions: (extra: Record<string, any>) => setStoredItem(STORAGE_KEYS.EXTRA_SESSIONS, extra),
 
   resetAll: () => {
     if (typeof window === 'undefined') return;

@@ -16,6 +16,7 @@ import {
   BatchProposedTask,
   HomeworkPriority,
   AdminRole,
+  ExtraClassSession,
 } from '@/lib/types';
 import { DEFAULT_PROFILE, DEFAULT_SETTINGS } from '@/lib/initialData';
 import { storage } from '@/lib/storage';
@@ -124,6 +125,9 @@ export interface AppContextType {
   getCancelledSessionMeta: (sessionId: string, dateStr?: string) => { by: string; role?: string; timestamp?: string } | null;
   rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string; subjectId?: string; by?: string; role?: string; timestamp?: string }>;
   rescheduleSession: (sessionId: string, details: { startTime: string; endTime: string; room?: string; subjectId?: string } | null, dateStr?: string) => void;
+  extraSessions: Record<string, ExtraClassSession>;
+  addExtraSession: (sessionData: Omit<ExtraClassSession, 'id' | 'createdAt'>) => Promise<void>;
+  deleteExtraSession: (keyOrId: string) => Promise<void>;
   currentBatchData: any | null;
   searchBatchTimetable: (college: string, programme: string, branch: string, semester: number, section?: string) => Promise<any | null>;
   fetchCollegeBatches: (college: string) => Promise<any[]>;
@@ -187,6 +191,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [cancelledSessions, setCancelledSessionsState] = useState<string[]>(storage.getCancelledSessions());
   const [cancelledSessionsMeta, setCancelledSessionsMeta] = useState<Record<string, { by: string; role?: string; timestamp?: string }>>(storage.getCancelledSessionsMeta());
   const [rescheduledSessions, setRescheduledSessionsState] = useState<Record<string, { startTime: string; endTime: string; room?: string; subjectId?: string; by?: string; role?: string; timestamp?: string }>>(storage.getRescheduledSessions());
+  const [extraSessions, setExtraSessionsState] = useState<Record<string, ExtraClassSession>>(storage.getExtraSessions());
   const [showHolidayAnimation, setShowHolidayAnimation] = useState(false);
   const [proposedBatchTasks, setProposedBatchTasks] = useState<BatchProposedTask[]>([]);
   const [currentBatchData, setCurrentBatchData] = useState<any>(null);
@@ -255,6 +260,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setCancelledSessionsState([]);
       setCancelledSessionsMeta({});
       setRescheduledSessionsState({});
+      setExtraSessionsState({});
       setCurrentBatchData(null);
       setProposedBatchTasks([]);
       remoteStateString.current = "";
@@ -472,9 +478,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setRescheduledSessionsState(data.rescheduledSessions);
         storage.setRescheduledSessions(data.rescheduledSessions);
       }
+      if (data.extraSessions && typeof data.extraSessions === 'object') {
+        setExtraSessionsState(data.extraSessions);
+        storage.setExtraSessions(data.extraSessions);
+      }
 
       // Recompute carry items immediately when timetable/subjects update from batch CR
-      refreshCarryItems(updatedTt, updatedSubs, data.events || events);
+      refreshCarryItems(updatedTt, updatedSubs, data.events || events, settings, data.extraSessions || extraSessions);
 
       // ── Handle batch alerts (CR class cancel / reschedule notifications) ─────
       if (Array.isArray(data.batchAlerts) && data.batchAlerts.length > 0) {
@@ -975,7 +985,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     currentTimetable: ClassSession[],
     currentSubjects: Subject[],
     currentEvents: AcademicEvent[] = events,
-    currentSettings: UserSettings = settings
+    currentSettings: UserSettings = settings,
+    currentExtra: Record<string, ExtraClassSession> = extraSessions
   ) => {
     const recomputed = calculateTomorrowCarryItems(
       currentTimetable,
@@ -984,7 +995,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       undefined,
       undefined,
       currentEvents,
-      currentSettings
+      currentSettings,
+      currentExtra
     );
     
     // Only update state if items actually changed to prevent unnecessary re-renders
@@ -1563,6 +1575,116 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         });
       } catch (e) {
         console.error('Error syncing rescheduled session to batch:', e);
+      }
+    }
+  };
+
+  const addExtraSession = async (
+    sessionData: Omit<ExtraClassSession, 'id' | 'createdAt'>
+  ) => {
+    if (profile.isBatchSynced && profile.batchKey && !isBatchCR) {
+      showToast('CR Access Required', 'Only the CR can schedule extra classes for the batch.', 'error');
+      return;
+    }
+
+    const crName = profile.name || 'CR';
+    const newId = `extra_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const newSession: ExtraClassSession = {
+      ...sessionData,
+      id: newId,
+      by: crName,
+      role: isBatchCR ? 'CR' : 'User',
+      createdAt: new Date().toISOString(),
+    };
+
+    const key = `${sessionData.date}_${newId}`;
+    const updated = {
+      ...extraSessions,
+      [key]: newSession,
+    };
+
+    setExtraSessionsState(updated);
+    storage.setExtraSessions(updated);
+    refreshCarryItems(timetable, subjects, events, settings, updated);
+
+    const subject = subjects.find((s) => s.id === sessionData.subjectId);
+    const subjectName = subject?.name || subject?.shortName || 'Subject';
+
+    showToast('Extra Class Added', `${subjectName} scheduled for ${sessionData.startTime}–${sessionData.endTime}`, 'success');
+
+    // Sync to Firestore if in a batch
+    if (profile.isBatchSynced && profile.batchKey) {
+      try {
+        const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
+        const alertPayload = {
+          id: `extra_alert_${newId}_${Date.now()}`,
+          title: '➕ Extra Class Scheduled',
+          body: `${subjectName} extra class scheduled on ${sessionData.date} at ${sessionData.startTime}–${sessionData.endTime}${sessionData.room ? ` in ${sessionData.room}` : ''} by ${crName} (CR)`,
+          type: 'extra_class',
+          sessionId: newId,
+          date: sessionData.date,
+          by: crName,
+          createdAt: new Date().toISOString(),
+        };
+
+        const existingAlerts: any[] = currentBatchData?.batchAlerts || [];
+        const trimmedAlerts = [...existingAlerts.slice(-19), alertPayload];
+
+        await updateDoc(batchDocRef, {
+          extraSessions: sanitizeForFirestore(updated),
+          batchAlerts: trimmedAlerts,
+          updatedAt: new Date().toISOString(),
+        });
+      } catch (e) {
+        console.error('Error syncing extra class to batch:', e);
+      }
+    } else if (user) {
+      try {
+        const userRef = doc(db, 'users', user.id);
+        await setDoc(userRef, { extraSessions: sanitizeForFirestore(updated), lastUpdated: Date.now() }, { merge: true });
+      } catch (err) {
+        console.error('Error saving extra session for user:', err);
+      }
+    }
+  };
+
+  const deleteExtraSession = async (keyOrId: string) => {
+    if (profile.isBatchSynced && profile.batchKey && !isBatchCR) {
+      showToast('CR Access Required', 'Only the CR can remove extra classes for the batch.', 'error');
+      return;
+    }
+
+    const updated = { ...extraSessions };
+    let foundKey = keyOrId;
+    if (!updated[foundKey]) {
+      const match = Object.keys(updated).find(k => k.endsWith(`_${keyOrId}`) || updated[k].id === keyOrId);
+      if (match) foundKey = match;
+    }
+
+    if (updated[foundKey]) {
+      delete updated[foundKey];
+      setExtraSessionsState(updated);
+      storage.setExtraSessions(updated);
+      refreshCarryItems(timetable, subjects, events, settings, updated);
+      showToast('Extra Class Removed', 'One-off class removed from schedule', 'info');
+
+      if (profile.isBatchSynced && profile.batchKey) {
+        try {
+          const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
+          await updateDoc(batchDocRef, {
+            extraSessions: sanitizeForFirestore(updated),
+            updatedAt: new Date().toISOString(),
+          });
+        } catch (e) {
+          console.error('Error updating extra classes in batch:', e);
+        }
+      } else if (user) {
+        try {
+          const userRef = doc(db, 'users', user.id);
+          await setDoc(userRef, { extraSessions: sanitizeForFirestore(updated), lastUpdated: Date.now() }, { merge: true });
+        } catch (err) {
+          console.error('Error updating extra classes for user:', err);
+        }
       }
     }
   };
@@ -2381,6 +2503,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         getCancelledSessionMeta,
         rescheduledSessions,
         rescheduleSession,
+        extraSessions,
+        addExtraSession,
+        deleteExtraSession,
         currentBatchData,
         searchBatchTimetable,
         fetchCollegeBatches,

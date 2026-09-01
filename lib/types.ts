@@ -53,6 +53,25 @@ export interface ClassSession {
   faculty?: string;
   isLab?: boolean;
   notes?: string;
+  isExtra?: boolean;
+  date?: string;
+  by?: string;
+}
+
+export interface ExtraClassSession {
+  id: string;
+  date: string; // YYYY-MM-DD
+  day: DayOfWeek;
+  subjectId: string;
+  startTime: string; // "09:00"
+  endTime: string;   // "10:00"
+  room: string;
+  faculty?: string;
+  isLab?: boolean;
+  notes?: string;
+  by?: string;
+  role?: string;
+  createdAt?: string;
 }
 
 export type HomeworkPriority = 'Low' | 'Medium' | 'High';

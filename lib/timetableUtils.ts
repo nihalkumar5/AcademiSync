@@ -121,16 +121,18 @@ export const getLiveClassStatus = (
   subjects: Subject[] = [],
   day: DayOfWeek = getCurrentDayOfWeek(),
   dateStr: string = getTodayDateString(),
-  rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string; subjectId?: string }> = {}
+  rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string; subjectId?: string }> = {},
+  extraSessions: Record<string, any> = {}
 ): LiveClassStatus => {
   const safeTimetable = Array.isArray(timetable) ? timetable : [];
   const safeSubjects = Array.isArray(subjects) ? subjects : [];
   const safeRescheduled = (rescheduledSessions && typeof rescheduledSessions === 'object') ? rescheduledSessions : {};
+  const safeExtra = (extraSessions && typeof extraSessions === 'object') ? extraSessions : {};
 
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-  const daySessions = safeTimetable
+  const regularSessions = safeTimetable
     .filter((s) => s && s.day === day)
     .map((s) => {
       const rescheduleKey = `${dateStr}_${s.id}`;
@@ -145,7 +147,24 @@ export const getLiveClassStatus = (
         };
       }
       return s;
-    })
+    });
+
+  const extraList = Object.values(safeExtra)
+    .filter((ex: any) => ex && ex.date === dateStr)
+    .map((ex: any) => ({
+      id: ex.id,
+      subjectId: ex.subjectId,
+      day: ex.day || day,
+      startTime: ex.startTime,
+      endTime: ex.endTime,
+      room: ex.room || '',
+      faculty: ex.faculty,
+      isLab: ex.isLab,
+      isExtra: true,
+      notes: ex.notes,
+    }));
+
+  const daySessions = [...regularSessions, ...extraList]
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
   if (daySessions.length === 0) {
@@ -180,10 +199,11 @@ export const getLiveClassStatus = (
     }
   }
 
-  const lastSession = daySessions[daySessions.length - 1];
-  const allDoneToday = !currentClass && currentMinutes >= timeToMinutes(lastSession.endTime);
-
-  return { currentClass, nextClass, allDoneToday };
+  return {
+    currentClass,
+    nextClass,
+    allDoneToday: !currentClass && !nextClass && daySessions.length > 0,
+  };
 };
 
 /**
@@ -196,12 +216,14 @@ export const calculateTomorrowCarryItems = (
   targetDateStr?: string,
   targetDay?: DayOfWeek,
   events: AcademicEvent[] = [],
-  settings?: UserSettings
+  settings?: UserSettings,
+  extraSessions: Record<string, any> = {}
 ): CarryItem[] => {
   const safeTimetable = Array.isArray(timetable) ? timetable : [];
   const safeSubjects = Array.isArray(subjects) ? subjects : [];
   const safeExistingCarry = Array.isArray(existingCarryItems) ? existingCarryItems : [];
   const safeEvents = Array.isArray(events) ? events : [];
+  const safeExtra = (extraSessions && typeof extraSessions === 'object') ? extraSessions : {};
 
   const now = new Date();
   const currentHour = now.getHours();
@@ -253,7 +275,11 @@ export const calculateTomorrowCarryItems = (
   }
 
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
-  const tomorrowClasses = timetable.filter((s) => s.day === resolvedDay);
+  const tomorrowRegularClasses = timetable.filter((s) => s.day === resolvedDay);
+  const extraForTarget = Object.values(safeExtra).filter(
+    (ex: any) => ex && ex.date === resolvedDateStr
+  );
+  const tomorrowClasses = [...tomorrowRegularClasses, ...extraForTarget];
 
   // Collect items required from tomorrow's subjects
   const requiredMap = new Map<string, { subjectId: string; subjectName: string }>();

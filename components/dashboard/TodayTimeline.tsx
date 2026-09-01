@@ -25,6 +25,9 @@ export const TodayTimeline: React.FC = () => {
     settings,
     rescheduledSessions,
     rescheduleSession,
+    extraSessions,
+    addExtraSession,
+    deleteExtraSession,
     profile,
     isBatchCR,
   } = useApp();
@@ -37,6 +40,17 @@ export const TodayTimeline: React.FC = () => {
   const [rescheduleTimeEnd, setRescheduleTimeEnd] = useState('10:00');
   const [rescheduleRoom, setRescheduleRoom] = useState('');
 
+  // Extra Class Modal State
+  const [isAddExtraOpen, setIsAddExtraOpen] = useState(false);
+  const [extraSubjectId, setExtraSubjectId] = useState('');
+  const [extraIsSubjectDropdownOpen, setExtraIsSubjectDropdownOpen] = useState(false);
+  const [extraTimeStart, setExtraTimeStart] = useState('14:00');
+  const [extraTimeEnd, setExtraTimeEnd] = useState('15:00');
+  const [extraRoom, setExtraRoom] = useState('');
+  const [extraFaculty, setExtraFaculty] = useState('');
+  const [extraIsLab, setExtraIsLab] = useState(false);
+  const [extraNotes, setExtraNotes] = useState('');
+
   const now = new Date();
   const currentHour = now.getHours();
   
@@ -45,6 +59,7 @@ export const TodayTimeline: React.FC = () => {
 
   const targetDay = isAfter8PM ? getTomorrowDayOfWeek() : getCurrentDayOfWeek();
   const targetDateStr = isAfter8PM ? getTomorrowDateString() : getTodayDateString();
+  const [extraDate, setExtraDate] = useState(targetDateStr);
   const targetHoliday = events.find((e) => e.date === targetDateStr && e.type === 'holiday');
 
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
@@ -65,11 +80,239 @@ export const TodayTimeline: React.FC = () => {
     setRescheduleTarget(null);
   };
 
-  const targetSessions = timetable
-    .filter((s) => s.day === targetDay)
-    .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+  const handleAddExtraSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!extraSubjectId) return;
+    const selectedSub = subjects.find(s => s.id === extraSubjectId);
+    
+    await addExtraSession({
+      date: extraDate || targetDateStr,
+      day: targetDay,
+      subjectId: extraSubjectId,
+      startTime: extraTimeStart,
+      endTime: extraTimeEnd,
+      room: extraRoom || selectedSub?.room || '',
+      faculty: extraFaculty || selectedSub?.facultyName || '',
+      isLab: extraIsLab || selectedSub?.isLab || false,
+      notes: extraNotes || undefined,
+    });
+
+    setIsAddExtraOpen(false);
+    setExtraNotes('');
+  };
+
+  // Merge regular timetable slots for targetDay with any extra classes for targetDateStr
+  const extraListForTarget: ClassSession[] = Object.values(extraSessions || {})
+    .filter((ex) => ex && ex.date === targetDateStr)
+    .map((ex) => ({
+      id: ex.id,
+      subjectId: ex.subjectId,
+      day: ex.day || targetDay,
+      startTime: ex.startTime,
+      endTime: ex.endTime,
+      room: ex.room || '',
+      faculty: ex.faculty,
+      isLab: ex.isLab,
+      notes: ex.notes,
+      isExtra: true,
+      by: ex.by,
+      date: ex.date,
+    }));
+
+  const targetSessions = [
+    ...timetable.filter((s) => s.day === targetDay),
+    ...extraListForTarget,
+  ].sort((a, b) => {
+    const aResched = rescheduledSessions[`${targetDateStr}_${a.id}`];
+    const bResched = rescheduledSessions[`${targetDateStr}_${b.id}`];
+    const aStart = timeToMinutes(aResched ? aResched.startTime : a.startTime);
+    const bStart = timeToMinutes(bResched ? bResched.startTime : b.startTime);
+    return aStart - bStart;
+  });
 
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  const renderAddExtraModal = () => (
+    <Modal
+      isOpen={isAddExtraOpen}
+      onClose={() => setIsAddExtraOpen(false)}
+      title="Schedule Extra Class"
+      description={`Add a one-off extra / compensatory lecture for ${isAfter8PM ? "tomorrow's" : "today's"} schedule (${targetDateStr}).`}
+    >
+      <form onSubmit={handleAddExtraSubmit} className="flex flex-col gap-4 mt-3">
+        {/* Custom Theme-Aware Subject Dropdown */}
+        <div className="flex flex-col gap-1.5 text-left relative">
+          <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+            Subject / Course
+          </label>
+          
+          <button
+            type="button"
+            onClick={() => setExtraIsSubjectDropdownOpen(!extraIsSubjectDropdownOpen)}
+            className="w-full flex items-center justify-between px-3 py-2.5 bg-white dark:bg-[#18181B] border border-black dark:border-white text-sm focus:outline-none rounded-none text-[#111111] dark:text-[#FFFFFF] transition-colors cursor-pointer text-left shadow-xs"
+          >
+            <span className="truncate font-medium">
+              {(() => {
+                const sel = subjects.find((s) => s.id === extraSubjectId);
+                if (!sel) return 'Select a subject';
+                return `${sel.code && sel.code !== 'UNK' ? `[${sel.code}] ` : ''}${sel.name}`;
+              })()}
+            </span>
+            <ChevronDown className={`w-4 h-4 shrink-0 text-black/60 dark:text-white/60 transition-transform duration-200 ${extraIsSubjectDropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {extraIsSubjectDropdownOpen && (
+            <>
+              <div 
+                className="fixed inset-0 z-40" 
+                onClick={() => setExtraIsSubjectDropdownOpen(false)} 
+              />
+              <div className="absolute top-[100%] left-0 right-0 mt-1 z-50 max-h-52 overflow-y-auto bg-white dark:bg-[#18181B] border border-black dark:border-white shadow-2xl flex flex-col divide-y divide-black/5 dark:divide-white/5">
+                {subjects.map((sub) => {
+                  const isSelected = sub.id === extraSubjectId;
+                  return (
+                    <button
+                      key={sub.id}
+                      type="button"
+                      onClick={() => {
+                        setExtraSubjectId(sub.id);
+                        setExtraRoom(sub.room || '');
+                        setExtraFaculty(sub.facultyName || '');
+                        setExtraIsLab(sub.isLab || false);
+                        setExtraIsSubjectDropdownOpen(false);
+                      }}
+                      className={`w-full px-3.5 py-2.5 text-left flex items-center justify-between text-xs sm:text-sm transition-colors cursor-pointer ${
+                        isSelected 
+                          ? 'bg-black/10 dark:bg-white/15 font-bold text-black dark:text-white' 
+                          : 'text-[#222222] dark:text-[#E0E0E0] hover:bg-black/5 dark:hover:bg-white/5'
+                      }`}
+                    >
+                      <div className="flex flex-col min-w-0 pr-2">
+                        <span className="truncate leading-tight">
+                          {sub.code && sub.code !== 'UNK' && (
+                            <span className="font-mono font-bold text-black/60 dark:text-white/60 mr-1.5">
+                              [{sub.code}]
+                            </span>
+                          )}
+                          {sub.name}
+                        </span>
+                        {sub.facultyName && (
+                          <span className="text-[10.5px] text-black/40 dark:text-white/40 truncate mt-0.5">
+                            {sub.facultyName}
+                          </span>
+                        )}
+                      </div>
+                      {isSelected && (
+                        <Check className="w-4 h-4 shrink-0 text-black dark:text-white" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1.5 text-left">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+              Start Time
+            </label>
+            <input 
+              type="time" 
+              value={extraTimeStart}
+              onChange={(e) => setExtraTimeStart(e.target.value)}
+              required
+              className="px-3 py-2 bg-transparent border border-black dark:border-white text-sm focus:outline-none rounded-none"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5 text-left">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+              End Time
+            </label>
+            <input 
+              type="time" 
+              value={extraTimeEnd}
+              onChange={(e) => setExtraTimeEnd(e.target.value)}
+              required
+              className="px-3 py-2 bg-transparent border border-black dark:border-white text-sm focus:outline-none rounded-none"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1.5 text-left">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+              Room / Venue
+            </label>
+            <input 
+              type="text" 
+              value={extraRoom}
+              onChange={(e) => setExtraRoom(e.target.value)}
+              placeholder="e.g. LT-2, Lab-3"
+              className="px-3 py-2 bg-transparent border border-black dark:border-white text-sm focus:outline-none rounded-none"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5 text-left">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+              Faculty (Optional)
+            </label>
+            <input 
+              type="text" 
+              value={extraFaculty}
+              onChange={(e) => setExtraFaculty(e.target.value)}
+              placeholder="Prof. Name"
+              className="px-3 py-2 bg-transparent border border-black dark:border-white text-sm focus:outline-none rounded-none"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1.5 text-left">
+          <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+            Notes / Reason (Optional)
+          </label>
+          <input 
+            type="text" 
+            value={extraNotes}
+            onChange={(e) => setExtraNotes(e.target.value)}
+            placeholder="e.g. Compensatory lecture for Monday"
+            className="px-3 py-2 bg-transparent border border-black dark:border-white text-sm focus:outline-none rounded-none"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 mt-1">
+          <input
+            type="checkbox"
+            id="extraIsLab"
+            checked={extraIsLab}
+            onChange={(e) => setExtraIsLab(e.target.checked)}
+            className="w-4 h-4 accent-black dark:accent-white cursor-pointer"
+          />
+          <label htmlFor="extraIsLab" className="text-xs font-semibold cursor-pointer text-black dark:text-white">
+            Practical / Lab Session
+          </label>
+        </div>
+
+        <div className="flex gap-2 justify-end mt-4">
+          <button
+            type="button"
+            onClick={() => setIsAddExtraOpen(false)}
+            className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+          >
+            Add Extra Class
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
 
   if (targetHoliday) {
     return (
@@ -78,9 +321,29 @@ export const TodayTimeline: React.FC = () => {
           <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
             {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
           </h3>
-          <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wider">
-            {targetDay}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wider">
+              {targetDay}
+            </span>
+            {isBatchCR && (
+              <button
+                type="button"
+                onClick={() => {
+                  setExtraDate(targetDateStr);
+                  if (subjects.length > 0 && !extraSubjectId) {
+                    setExtraSubjectId(subjects[0].id);
+                    setExtraRoom(subjects[0].room || '');
+                    setExtraFaculty(subjects[0].facultyName || '');
+                    setExtraIsLab(subjects[0].isLab || false);
+                  }
+                  setIsAddExtraOpen(true);
+                }}
+                className="flex items-center gap-1 px-2.5 py-1 bg-black text-white dark:bg-white dark:text-black text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer shadow-sm ml-2"
+              >
+                + Extra Class
+              </button>
+            )}
+          </div>
         </div>
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
@@ -91,13 +354,14 @@ export const TodayTimeline: React.FC = () => {
           <div className="relative z-10">
             <div className="flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-wider text-black dark:text-white mb-1">
               <span className="w-2 h-2 bg-black dark:bg-white inline-block" />
-              <span>No Lectures Scheduled</span>
+              <span>No Regular Lectures Scheduled</span>
             </div>
             <p className="text-sm text-black/75 dark:text-white/75 leading-relaxed font-medium mt-1">
               Campus is observing <span className="font-black text-black dark:text-white uppercase">{targetHoliday.title}</span>. Enjoy your break!
             </p>
           </div>
         </motion.div>
+        {renderAddExtraModal()}
       </div>
     );
   }
@@ -109,17 +373,51 @@ export const TodayTimeline: React.FC = () => {
           <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
             {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
           </h3>
-          <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wider">
-            {targetDay}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wider">
+              {targetDay}
+            </span>
+            {isBatchCR && (
+              <button
+                type="button"
+                onClick={() => {
+                  setExtraDate(targetDateStr);
+                  if (subjects.length > 0 && !extraSubjectId) {
+                    setExtraSubjectId(subjects[0].id);
+                    setExtraRoom(subjects[0].room || '');
+                    setExtraFaculty(subjects[0].facultyName || '');
+                    setExtraIsLab(subjects[0].isLab || false);
+                  }
+                  setIsAddExtraOpen(true);
+                }}
+                className="flex items-center gap-1 px-2.5 py-1 bg-black text-white dark:bg-white dark:text-black text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer shadow-sm ml-2"
+              >
+                + Extra Class
+              </button>
+            )}
+          </div>
         </div>
         <EmptyState
           icon={<MonochromeIllustration type="no-classes" size={48} />}
           title={isAfter8PM ? "No classes tomorrow" : "No classes scheduled today"}
           description={isAfter8PM ? "You don't have any classes tomorrow. Enjoy your break!" : "You don't have any classes on your timetable. Enjoy your break!"}
-          actionLabel="View Full Timetable"
-          onAction={() => setActiveView('timetable')}
+          actionLabel={isBatchCR ? "Schedule Extra Class" : "View Full Timetable"}
+          onAction={() => {
+            if (isBatchCR) {
+              setExtraDate(targetDateStr);
+              if (subjects.length > 0 && !extraSubjectId) {
+                setExtraSubjectId(subjects[0].id);
+                setExtraRoom(subjects[0].room || '');
+                setExtraFaculty(subjects[0].facultyName || '');
+                setExtraIsLab(subjects[0].isLab || false);
+              }
+              setIsAddExtraOpen(true);
+            } else {
+              setActiveView('timetable');
+            }
+          }}
         />
+        {renderAddExtraModal()}
       </div>
     );
   }
@@ -171,12 +469,33 @@ export const TodayTimeline: React.FC = () => {
   return (
     <div className="flex flex-col text-left">
       <div className="flex items-center justify-between px-1 mb-8">
-        <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
-          {isAfter8PM ? "TOMORROW'S SCHEDULE" : "LATER TODAY"}
-        </h3>
-        <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wider">
-          {targetDay}
-        </span>
+        <div className="flex items-center gap-2">
+          <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
+            {isAfter8PM ? "TOMORROW'S SCHEDULE" : "LATER TODAY"}
+          </h3>
+          <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wider">
+            · {targetDay}
+          </span>
+        </div>
+
+        {isBatchCR && (
+          <button
+            type="button"
+            onClick={() => {
+              setExtraDate(targetDateStr);
+              if (subjects.length > 0 && !extraSubjectId) {
+                setExtraSubjectId(subjects[0].id);
+                setExtraRoom(subjects[0].room || '');
+                setExtraFaculty(subjects[0].facultyName || '');
+                setExtraIsLab(subjects[0].isLab || false);
+              }
+              setIsAddExtraOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-black text-white dark:bg-white dark:text-black text-[11.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer shadow-sm"
+          >
+            <span>+ Extra Class</span>
+          </button>
+        )}
       </div>
       <div className="relative flex flex-col gap-0 border-l-[3px] border-slate-100 dark:border-zinc-800 ml-3">
           {(() => {
@@ -269,6 +588,12 @@ export const TodayTimeline: React.FC = () => {
                                 <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#FEF2F2] dark:bg-[#450a0a] text-[#991B1B] dark:text-[#fca5a5] border border-[#FCA5A5] dark:border-[#7f1d1d] shrink-0">
                                   Cancelled
                                 </span>
+                              ) : session.isExtra ? (
+                                <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider border shrink-0 ${
+                                  isNow ? 'bg-black text-white border-white' : 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30'
+                                }`}>
+                                  Extra Class
+                                </span>
                               ) : isNow ? (
                                 <span className="px-2 py-0.5 rounded-none bg-white text-black dark:bg-black dark:text-white text-[10px] font-bold uppercase tracking-wider animate-pulse border border-current shrink-0">
                                   Now
@@ -306,6 +631,12 @@ export const TodayTimeline: React.FC = () => {
                               )}
                             </div>
 
+                            {session.notes && (
+                              <span className={`text-[11.5px] font-mono mt-1 block italic opacity-80 ${textColorClass}`}>
+                                Note: {session.notes}
+                              </span>
+                            )}
+
                             {isCancelled && (
                               <span className="text-[11px] font-mono text-[#991B1B] dark:text-[#fca5a5] mt-1 font-semibold block">
                                 Cancelled for today {cancelledMeta?.by ? `· by ${cancelledMeta.by} (CR)` : ''}
@@ -337,7 +668,26 @@ export const TodayTimeline: React.FC = () => {
                                   onClick={() => setOpenMenuSessionId(null)}
                                 />
                                 <div className="absolute right-0 mt-6 w-52 rounded-none bg-white dark:bg-zinc-950 border border-black dark:border-white shadow-lg py-1 z-30 text-left overflow-hidden">
-                                  {profile.isBatchSynced && !isBatchCR ? (
+                                  {session.isExtra ? (
+                                    <>
+                                      {profile.isBatchSynced && (
+                                        <div className="px-3 py-1 bg-black/5 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-[9px] font-mono font-bold uppercase text-black/60 dark:text-white/60">
+                                          👑 CR Extra Slot
+                                        </div>
+                                      )}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setOpenMenuSessionId(null);
+                                          deleteExtraSession(session.id);
+                                        }}
+                                        className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
+                                      >
+                                        <Ban className="w-3.5 h-3.5" />
+                                        <span>Delete Extra Class</span>
+                                      </button>
+                                    </>
+                                  ) : profile.isBatchSynced && !isBatchCR ? (
                                     <div className="p-3 text-[11px] text-black/70 dark:text-white/70 flex flex-col gap-1">
                                       <div className="font-bold text-black dark:text-white flex items-center gap-1.5 uppercase text-[10px]">
                                         <Ban className="w-3.5 h-3.5 text-amber-500" />
@@ -566,6 +916,8 @@ export const TodayTimeline: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {renderAddExtraModal()}
     </div>
   );
 };
