@@ -79,7 +79,7 @@ export const IOSAppGate: React.FC = () => {
             <img 
               src="/onboard-1.png" 
               alt="Intersemester iOS" 
-              className="w-full h-full object-contain object-bottom pointer-events-none translate-y-[6%] scale-[1.2]"
+              className="w-full h-full object-contain object-bottom pointer-events-none translate-y-[8%] scale-[1.5] sm:scale-[1.6]"
             />
           </div>
 
@@ -128,23 +128,15 @@ export const IOSAppGate: React.FC = () => {
 
           {/* Controls Footer */}
           <div 
-            className="w-full px-6 sm:px-8 pt-2 pb-6 flex items-center justify-between shrink-0 bg-[#F7F7F5] z-10 relative"
+            className="w-full px-6 sm:px-8 pt-2 pb-6 flex items-center justify-center shrink-0 bg-[#F7F7F5] z-10 relative"
             style={{
               paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 16px), 24px)',
             }}
           >
-            <div className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#111111]/70 animate-bounce">
-              <ArrowDown className="w-3.5 h-3.5 text-blue-600" />
-              <span>Tap Share below</span>
+            <div className="flex items-center gap-2 text-[12px] font-medium text-[#111111]/80 animate-bounce">
+              <ArrowDown className="w-4 h-4 text-blue-600" />
+              <span>Tap the <strong className="text-blue-600">Share</strong> button at the bottom of Safari</span>
             </div>
-
-            <button
-              type="button"
-              onClick={handleBypass}
-              className="text-[11.5px] font-mono font-bold uppercase tracking-wider text-[#888888] hover:text-[#111111] underline underline-offset-4 cursor-pointer transition-colors py-1"
-            >
-              Continue in browser ➜
-            </button>
           </div>
         </div>
       </motion.div>
