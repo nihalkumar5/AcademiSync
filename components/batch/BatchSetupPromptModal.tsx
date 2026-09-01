@@ -84,27 +84,19 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
       <Modal 
         isOpen={isOpen && !showCRModal} 
         onClose={onClose} 
+        title="Become your batch CR."
+        description="Keep everyone on the same timetable and never miss what matters."
         mobileFullSheet={true} 
         maxWidth="md"
         showCloseButton={true}
       >
-        <div className="flex flex-col text-left font-sans pt-1 pb-4">
-          {/* Header */}
-          <div className="flex flex-col gap-1.5">
-            <h1 className="text-[28px] sm:text-[32px] font-extrabold text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[1.15]">
-              Become your<br className="hidden sm:inline" /> batch CR.
-            </h1>
-            <p className="text-[13.5px] text-[#6F6F6F] dark:text-[#A0A0A0] leading-relaxed max-w-sm">
-              Keep everyone on the same timetable and never miss what matters.
-            </p>
-          </div>
-
-          {/* Hero Illustration */}
-          <div className="w-full flex items-center justify-center py-2.5 my-1">
+        <div className="flex flex-col text-left font-sans pt-2 pb-4">
+          {/* Hero Illustration - 2x Bigger */}
+          <div className="w-full flex items-center justify-center py-4 my-1">
             <img 
               src="/cr.png" 
               alt="Class Representative" 
-              className="max-h-[175px] sm:max-h-[200px] w-auto object-contain"
+              className="w-full max-w-[320px] sm:max-w-[380px] max-h-[300px] h-auto object-contain"
             />
           </div>
 
