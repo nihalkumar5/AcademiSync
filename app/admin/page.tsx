@@ -44,11 +44,14 @@ import {
   Clock
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Capacitor } from '@capacitor/core';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type AdminTab = 'overview' | 'users' | 'batches' | 'campaigns' | 'cr_requests';
 
 export default function SuperAdminPage() {
+  const router = useRouter();
   const { profile, showToast, user, isClerkLoaded } = useApp();
 
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
@@ -118,6 +121,31 @@ export default function SuperAdminPage() {
       clearTimeout(timer);
     };
   }, [campaignCollegeQuery]);
+
+  // Handle Android Hardware Back Button in Admin Page
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    let backHandle: any;
+    import('@capacitor/app').then(({ App: CapApp }) => {
+      CapApp.addListener('backButton', () => {
+        if (showCampaignModal || activeRoleDropdown) {
+          setShowCampaignModal(false);
+          setActiveRoleDropdown(null);
+          return;
+        }
+        if (activeTab !== 'overview') {
+          setActiveTab('overview');
+          return;
+        }
+        router.push('/');
+      }).then((handle) => {
+        backHandle = handle;
+      });
+    });
+    return () => {
+      backHandle?.remove();
+    };
+  }, [showCampaignModal, activeRoleDropdown, activeTab, router]);
 
   const userEmail = user?.primaryEmailAddress?.emailAddress || '';
   const isAdmin = isUserSuperAdmin(profile, userEmail);

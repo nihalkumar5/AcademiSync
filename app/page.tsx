@@ -185,6 +185,58 @@ export default function AppHome() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHydrated, profile.batchKey, isSignedIn]);
 
+  // Handle Android Hardware Back Button
+  const lastBackPressRef = React.useRef<number>(0);
+
+  useEffect(() => {
+    if (!isHydrated || !Capacitor.isNativePlatform()) return;
+
+    let backListenerHandle: any;
+
+    import('@capacitor/app').then(({ App: CapApp }) => {
+      CapApp.addListener('backButton', () => {
+        // 1. Check if any Modal / Dialog / Sheet is currently open
+        const isModalOpen = typeof document !== 'undefined' && (
+          document.body.classList.contains('modal-open') ||
+          !!document.querySelector('.modal-open') ||
+          inviteModalOpen ||
+          calendarInviteModalOpen ||
+          examsInviteModalOpen
+        );
+
+        if (isModalOpen) {
+          // Dispatch escape key event to close open modal components
+          window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, which: 27, bubbles: true }));
+          setInviteModalOpen(false);
+          setCalendarInviteModalOpen(false);
+          setExamsInviteModalOpen(false);
+          return;
+        }
+
+        // 2. If user is in a sub-view (timetable, homework, calendar, etc.), navigate back to 'home'
+        if (activeView !== 'home') {
+          setActiveView('home');
+          return;
+        }
+
+        // 3. If already on 'home' dashboard and no modal open: Double-tap to exit
+        const now = Date.now();
+        if (now - lastBackPressRef.current < 2000) {
+          CapApp.exitApp();
+        } else {
+          lastBackPressRef.current = now;
+          showToast('Press Back Again', 'Press back again to exit Intersemester', 'info');
+        }
+      }).then((handle) => {
+        backListenerHandle = handle;
+      });
+    });
+
+    return () => {
+      backListenerHandle?.remove();
+    };
+  }, [isHydrated, activeView, inviteModalOpen, calendarInviteModalOpen, examsInviteModalOpen, showToast, setActiveView]);
+
 
   useEffect(() => {
     if (isHydrated && typeof window !== 'undefined') {
