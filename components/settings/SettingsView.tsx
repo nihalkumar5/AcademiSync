@@ -472,10 +472,10 @@ export const SettingsView: React.FC = () => {
                     <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">College / University</label>
                     <div className="relative w-full">
                       {college && !isChangingCollege ? (
-                        <div className="flex items-center justify-between px-3.5 py-2.5 bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 rounded-xl">
+                        <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
                           <div className="flex items-center gap-2.5 overflow-hidden">
-                            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
-                            <span className="text-[13px] font-bold text-indigo-950 dark:text-indigo-200 truncate">{college}</span>
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                            <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] truncate">{college}</span>
                           </div>
                           <button
                             type="button"
@@ -483,15 +483,15 @@ export const SettingsView: React.FC = () => {
                               setIsChangingCollege(true);
                               setShowCollegeDropdown(true);
                             }}
-                            className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline uppercase tracking-wider shrink-0 ml-3 cursor-pointer"
+                            className="text-[11px] font-bold text-[#111111] dark:text-[#FFFFFF] hover:underline uppercase tracking-wider shrink-0 ml-3 cursor-pointer"
                           >
                             Change
                           </button>
                         </div>
                       ) : (
                         <div className="relative">
-                          <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-indigo-400 dark:border-indigo-600 rounded-xl">
-                            <Building2 className="w-4 h-4 text-indigo-500 shrink-0" />
+                          <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#111111] dark:border-[#FFFFFF]">
+                            <Building2 className="w-4 h-4 text-[#888888] shrink-0" />
                             <input
                               type="text"
                               value={collegeSearchInput}
@@ -500,8 +500,8 @@ export const SettingsView: React.FC = () => {
                                 setShowCollegeDropdown(true);
                               }}
                               onFocus={() => setShowCollegeDropdown(true)}
-                              placeholder="Search SheerID verified university e.g. IIIT Naya Raipur, VIT, IIT..."
-                              className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
+                              placeholder="Search verified college e.g. IIIT Naya Raipur, VIT, IIT..."
+                              className="w-full bg-transparent text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
                               autoFocus
                             />
                             {college && (
