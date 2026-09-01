@@ -3,22 +3,18 @@
 import React, { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useApp } from '@/context/AppContext';
-import { getShortCollegeName, getCanonicalBatchKey, isExplicitSection, formatBatchDisplayName } from '@/lib/timetableUtils';
+import { getShortCollegeName, formatBatchDisplayName, isExplicitSection } from '@/lib/timetableUtils';
 import { CRApplicationModal } from '@/components/cr/CRApplicationModal';
 import { 
-  Crown, 
-  Sparkles, 
-  Share2, 
   Calendar, 
   Bell, 
+  Clock, 
+  Users, 
   CheckCircle2, 
   ArrowRight, 
-  Users, 
-  Clock, 
-  Layers, 
-  MessageCircle,
-  School,
-  BookOpen
+  ShieldCheck, 
+  MessageCircle, 
+  Share2 
 } from 'lucide-react';
 import { shareLink } from '@/lib/shareUtils';
 
@@ -55,10 +51,9 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
   const shortCollege = getShortCollegeName(activeCollege);
   const hasMultipleSections = isExplicitSection(activeSec);
   const cleanSec = hasMultipleSections ? activeSec.replace(/section\s*/i, '').trim() : '';
-  const batchLabel = formatBatchDisplayName(activeBranch, activeSem, activeSec);
 
   const handleShareToWhatsApp = async () => {
-    const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://intersemester.com';
+    const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://academi-sync-chi.vercel.app';
     const courseTitle = `${activeBranch} (Sem ${activeSem}${hasMultipleSections ? `, Section ${cleanSec}` : ''})`;
     const messageText = `Hey batchmates! 👋\n\nNobody has created the official timetable for our batch yet on Intersemester:\n🏛️ *${shortCollege}*\n📚 *${courseTitle}*\n\nIf you are our Class Representative (CR) or want to setup the synced batch timetable for all of us, open this link and claim CR access:\n👉 ${appUrl}\n\nLet's get all class updates, room alerts & assignments synced! 🚀`;
 
@@ -86,140 +81,163 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
 
   return (
     <>
-      <Modal isOpen={isOpen && !showCRModal} onClose={onClose} title="Setup Batch Timetable" maxWidth="md">
-        <div className="flex flex-col gap-5 py-1 text-left">
-          {/* Header Banner - Editorial Brutalist Card */}
-          <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] p-4 flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[1.5px] text-[#A0A0A0]">
-                <div className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
-                <span>No Live Batch Sync</span>
-              </div>
-              {hasMultipleSections && (
-                <span className="font-mono text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 border border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] bg-white dark:bg-[#111111]">
-                  Sec {cleanSec}
-                </span>
-              )}
-            </div>
+      <Modal 
+        isOpen={isOpen && !showCRModal} 
+        onClose={onClose} 
+        mobileFullSheet={true} 
+        maxWidth="md"
+        showCloseButton={true}
+      >
+        <div className="flex flex-col text-left font-sans pt-1 pb-4">
+          {/* Header */}
+          <div className="flex flex-col gap-1.5">
+            <h1 className="text-[28px] sm:text-[32px] font-extrabold text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[1.15]">
+              Become your<br className="hidden sm:inline" /> batch CR.
+            </h1>
+            <p className="text-[13.5px] text-[#6F6F6F] dark:text-[#A0A0A0] leading-relaxed max-w-sm">
+              Keep everyone on the same timetable and never miss what matters.
+            </p>
+          </div>
 
-            <div className="flex flex-col gap-0.5">
-              <h3 className="text-[17px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-tight truncate">
-                {shortCollege}
-              </h3>
-              <p className="text-[13px] text-[#6F6F6F] font-medium">
-                {activeBranch} · Semester {activeSem} {hasMultipleSections ? `· Section ${cleanSec}` : ''}
-              </p>
+          {/* Hero Illustration */}
+          <div className="w-full flex items-center justify-center py-2.5 my-1">
+            <img 
+              src="/cr.png" 
+              alt="Class Representative" 
+              className="max-h-[175px] sm:max-h-[200px] w-auto object-contain"
+            />
+          </div>
+
+          {/* Section 1: WHAT YOU'LL UNLOCK */}
+          <div className="flex flex-col gap-2.5 mt-1">
+            <span className="text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#777777]">
+              WHAT YOU&apos;LL UNLOCK
+            </span>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {/* 01 */}
+              <div className="p-3.5 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FAFAFA] dark:bg-[#161616] flex flex-col gap-1.5">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
+                  <span className="text-[11px] font-bold font-mono text-amber-600 dark:text-amber-400">01</span>
+                </div>
+                <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
+                  One timetable for everyone
+                </h4>
+                <p className="text-[11.5px] text-[#6F6F6F] dark:text-[#999999] leading-relaxed">
+                  Update the batch timetable once. Everyone gets the latest version.
+                </p>
+              </div>
+
+              {/* 02 */}
+              <div className="p-3.5 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FAFAFA] dark:bg-[#161616] flex flex-col gap-1.5">
+                <div className="flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
+                  <span className="text-[11px] font-bold font-mono text-amber-600 dark:text-amber-400">02</span>
+                </div>
+                <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
+                  Instant class alerts
+                </h4>
+                <p className="text-[11.5px] text-[#6F6F6F] dark:text-[#999999] leading-relaxed">
+                  Room changes, cancelled classes and important updates reach everyone.
+                </p>
+              </div>
+
+              {/* 03 */}
+              <div className="p-3.5 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FAFAFA] dark:bg-[#161616] flex flex-col gap-1.5">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
+                  <span className="text-[11px] font-bold font-mono text-amber-600 dark:text-amber-400">03</span>
+                </div>
+                <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
+                  Shared academic tasks
+                </h4>
+                <p className="text-[11.5px] text-[#6F6F6F] dark:text-[#999999] leading-relaxed">
+                  Keep assignments, labs and deadlines visible to your entire batch.
+                </p>
+              </div>
+
+              {/* 04 */}
+              <div className="p-3.5 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FAFAFA] dark:bg-[#161616] flex flex-col gap-1.5">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
+                  <span className="text-[11px] font-bold font-mono text-amber-600 dark:text-amber-400">04</span>
+                </div>
+                <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
+                  Your batch, organised
+                </h4>
+                <p className="text-[11.5px] text-[#6F6F6F] dark:text-[#999999] leading-relaxed">
+                  Stop repeating updates across WhatsApp groups. Keep everything in one place.
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Feature Showcase Grid - 2x2 Clean Monochromatic Grid */}
-          <div className="flex flex-col gap-2">
-            <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#A0A0A0]">
-              Why Sync With Your Batch?
+          {/* Section 2: WHAT DOES A CR DO? */}
+          <div className="flex flex-col gap-2.5 mt-2 pt-4 border-t border-[#E5E5E5] dark:border-[#2C2C2C]">
+            <span className="text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#777777]">
+              WHAT DOES A CR DO?
             </span>
-            
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-3 border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] flex flex-col gap-1">
-                <div className="flex items-center gap-1.5 text-[#111111] dark:text-[#FFFFFF] font-bold text-[12px]">
-                  <Calendar className="w-3.5 h-3.5 shrink-0 stroke-[1.75]" />
-                  <span>1-Click Sync</span>
-                </div>
-                <p className="text-[11px] text-[#6F6F6F] leading-tight">
-                  Timetable & room updates push to all classmates instantly.
-                </p>
-              </div>
+            <p className="text-[12.5px] text-[#6F6F6F] dark:text-[#999999] leading-relaxed">
+              You become the trusted person who maintains and publishes your batch timetable and important academic updates.
+            </p>
 
-              <div className="p-3 border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] flex flex-col gap-1">
-                <div className="flex items-center gap-1.5 text-[#111111] dark:text-[#FFFFFF] font-bold text-[12px]">
-                  <Bell className="w-3.5 h-3.5 shrink-0 stroke-[1.75]" />
-                  <span>Class Alerts</span>
-                </div>
-                <p className="text-[11px] text-[#6F6F6F] leading-tight">
-                  Reminders 10m before class with room & prof details.
-                </p>
+            <div className="flex flex-col gap-2 mt-0.5">
+              <div className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] shrink-0" />
+                <span className="text-[12.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">Add &amp; update classes</span>
               </div>
-
-              <div className="p-3 border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] flex flex-col gap-1">
-                <div className="flex items-center gap-1.5 text-[#111111] dark:text-[#FFFFFF] font-bold text-[12px]">
-                  <Clock className="w-3.5 h-3.5 shrink-0 stroke-[1.75]" />
-                  <span>Shared Tasks</span>
-                </div>
-                <p className="text-[11px] text-[#6F6F6F] leading-tight">
-                  Assignments & lab deadlines stay in sync across batch.
-                </p>
+              <div className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] shrink-0" />
+                <span className="text-[12.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">Broadcast important changes</span>
               </div>
-
-              <div className="p-3 border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] flex flex-col gap-1">
-                <div className="flex items-center gap-1.5 text-[#111111] dark:text-[#FFFFFF] font-bold text-[12px]">
-                  <Users className="w-3.5 h-3.5 shrink-0 stroke-[1.75]" />
-                  <span>Classmate Hub</span>
-                </div>
-                <p className="text-[11px] text-[#6F6F6F] leading-tight">
-                  No more asking &ldquo;which class next?&rdquo; in WhatsApp groups.
-                </p>
+              <div className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] shrink-0" />
+                <span className="text-[12.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">Keep your batch in sync</span>
               </div>
             </div>
           </div>
 
-          {/* Action Pathways */}
-          <div className="flex flex-col gap-2.5 pt-1">
-            <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#A0A0A0]">
-              Choose an Option to Continue
-            </span>
-
-            {/* Option 1: Apply for CR */}
+          {/* Actions */}
+          <div className="flex flex-col items-center gap-2 mt-5">
+            {/* Primary Button */}
             <button
               type="button"
               onClick={() => setShowCRModal(true)}
-              className="p-3.5 border border-[#111111] dark:border-[#FFFFFF] bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] hover:opacity-95 transition-all text-left flex items-center justify-between group cursor-pointer"
+              className="w-full h-12 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] font-bold text-[13px] uppercase tracking-wider hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 border border-white dark:border-black flex items-center justify-center font-bold shrink-0">
-                  <Crown className="w-4 h-4 text-amber-400 dark:text-amber-600" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[13px] font-bold flex items-center gap-1.5">
-                    I am the CR (Setup this batch)
-                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-amber-400 text-black uppercase">ADMIN</span>
-                  </span>
-                  <span className="text-[11px] opacity-80">
-                    Apply for CR verification to publish & broadcast the timetable.
-                  </span>
-                </div>
-              </div>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
+              <span>Apply to become CR</span>
+              <ArrowRight className="w-4 h-4" />
             </button>
+            <div className="flex items-center gap-1.5 text-[11.5px] text-[#6F6F6F] dark:text-[#888888]">
+              <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+              <span>You&apos;ll need to verify your college &amp; batch.</span>
+            </div>
 
-            {/* Option 2: Share to WhatsApp */}
-            <button
-              type="button"
-              onClick={handleShareToWhatsApp}
-              className="p-3.5 border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-all text-left flex items-center justify-between group cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 border border-[#D8D8D8] dark:border-[#333333] flex items-center justify-center font-bold shrink-0 bg-[#F7F7F5] dark:bg-[#1A1A1A]">
+            {/* Secondary actions: Tell CR on WhatsApp & Personal Mode */}
+            <div className="w-full flex flex-col gap-2 mt-2 pt-3 border-t border-[#E5E5E5] dark:border-[#2C2C2C]">
+              <button
+                type="button"
+                onClick={handleShareToWhatsApp}
+                className="w-full py-2.5 px-3 border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-all text-left flex items-center justify-between group cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
                   <MessageCircle className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+                  <span className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">
                     Tell Class CR to Setup Batch
                   </span>
-                  <span className="text-[11px] text-[#6F6F6F]">
-                    Send alert to your class WhatsApp group in 1-tap.
-                  </span>
                 </div>
-              </div>
-              <Share2 className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] group-hover:scale-110 transition-transform shrink-0 ml-2" />
-            </button>
+                <Share2 className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF] group-hover:scale-110 transition-transform" />
+              </button>
 
-            {/* Option 3: Personal Timetable */}
-            <button
-              type="button"
-              onClick={handlePersonalTimetable}
-              className="w-full py-2.5 px-3 border border-dashed border-[#D8D8D8] dark:border-[#333333] text-[12px] font-medium text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] hover:border-[#111111] dark:hover:border-[#FFFFFF] transition-all text-center cursor-pointer"
-            >
-              Continue with Personal Timetable for now
-            </button>
+              <button
+                type="button"
+                onClick={handlePersonalTimetable}
+                className="w-full py-2 text-[11.5px] font-medium text-[#888888] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors text-center cursor-pointer"
+              >
+                Continue with Personal Timetable for now →
+              </button>
+            </div>
           </div>
         </div>
       </Modal>
