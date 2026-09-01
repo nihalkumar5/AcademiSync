@@ -95,6 +95,13 @@ export const SettingsView: React.FC = () => {
   const [matchedBatchData, setMatchedBatchData] = useState<any>(null);
   const [showDiscoveryModal, setShowDiscoveryModal] = useState(false);
 
+  // Verification status logic
+  const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || email || '';
+  const isSuperAdmin = isUserSuperAdmin(profile, userEmail);
+  const isCR = profile.role === 'cr' || isBatchCR;
+  const isEduEmail = !!userEmail.toLowerCase().match(/\.(edu|ac\.in|edu\.in)$/);
+  const isStudentVerified = !!(user && profile.college && (profile.isBatchSynced || isEduEmail));
+
   // Automatically keep local input fields in sync when profile updates (e.g. from joining a batch)
   useEffect(() => {
     setName(profile.name || '');
@@ -361,17 +368,40 @@ export const SettingsView: React.FC = () => {
               <h2 className="text-[22px] sm:text-[24px] font-medium text-[#111111] dark:text-[#FFFFFF] leading-none break-words">
                 {name || 'Student Name'}
               </h2>
-              <span 
-                className="inline-flex items-center gap-1.5 bg-[#F3F2EF] dark:bg-[#222222] text-[#111111] dark:text-[#F4F1EA] rounded-full px-2 py-0.5 shrink-0 h-[22px]"
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-                  <circle cx="12" cy="12" r="12" fill="#111111" className="dark:fill-white" />
-                  <path d="M7.5 12L10.5 15L17 8" stroke="#FFFFFF" className="dark:stroke-black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
-                  VERIFIED
+              {isSuperAdmin ? (
+                <span 
+                  title="Official System Administrator"
+                  className="inline-flex items-center gap-1 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] px-2 py-0.5 shrink-0 h-[22px]"
+                >
+                  <Crown className="w-3 h-3" />
+                  <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
+                    ADMIN
+                  </span>
                 </span>
-              </span>
+              ) : isCR ? (
+                <span 
+                  title="Verified Class Representative"
+                  className="inline-flex items-center gap-1.5 bg-[#F3F2EF] dark:bg-[#222222] text-[#111111] dark:text-[#F4F1EA] px-2 py-0.5 shrink-0 h-[22px] border border-[#D8D8D8] dark:border-[#333333]"
+                >
+                  <Crown className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                  <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
+                    CLASS REP
+                  </span>
+                </span>
+              ) : isStudentVerified ? (
+                <span 
+                  title={`Verified Student · ${profile.college}`}
+                  className="inline-flex items-center gap-1.5 bg-[#F3F2EF] dark:bg-[#222222] text-[#111111] dark:text-[#F4F1EA] px-2 py-0.5 shrink-0 h-[22px] border border-[#D8D8D8] dark:border-[#333333]"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                    <circle cx="12" cy="12" r="12" fill="#111111" className="dark:fill-white" />
+                    <path d="M7.5 12L10.5 15L17 8" stroke="#FFFFFF" className="dark:stroke-black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
+                    VERIFIED
+                  </span>
+                </span>
+              ) : null}
             </div>
             
             <p className="text-[13px] text-[#6F6F6F] mt-2.5 leading-snug max-w-md truncate">
