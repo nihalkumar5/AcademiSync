@@ -273,7 +273,9 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
             </div>
 
             {/* Sticky Footer */}
-            <div className="sticky bottom-0 left-0 right-0 p-5 bg-[#F7F7F5] dark:bg-[#1A1A1A] border-t border-[#D9D9D6] dark:border-[#333333] flex items-center justify-between z-20">
+            <div 
+              className="sticky bottom-0 left-0 right-0 px-5 pt-4 pb-[max(calc(env(safe-area-inset-bottom,0px)+20px),20px)] bg-[#F7F7F5] dark:bg-[#1A1A1A] border-t border-[#D9D9D6] dark:border-[#333333] flex items-center justify-between z-20"
+            >
               <button 
                 type="button" 
                 onClick={onClose}

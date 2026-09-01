@@ -87,3 +87,9 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+
+/* Hide mobile nav when modal is open to prevent PWA overlaps */
+body.modal-open #mobile-nav {
+  display: none !important;
+}

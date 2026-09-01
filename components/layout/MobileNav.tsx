@@ -38,6 +38,7 @@ export const MobileNav: React.FC = () => {
 
   return (
     <nav 
+      id="mobile-nav"
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FFFFFF] dark:bg-[#111111] border-t border-[#D9D9D6] dark:border-[#333333] px-2 pt-2 select-none"
       style={{
         paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 8px), 20px)',
