@@ -45,11 +45,13 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
   const [loadingStatus, setLoadingStatus] = useState(true);
 
   const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
-  const college = targetCollege || profile.college || '';
-  const programme = targetProgramme || profile.programme || 'B.Tech';
-  const branch = targetBranch || profile.branch || '';
-  const semester = targetSemester || profile.semester || 1;
-  const section = targetSection || profile.section || 'A';
+  
+  const [college, setCollege] = useState(targetCollege || profile.college || '');
+  const [programme, setProgramme] = useState(targetProgramme || profile.programme || 'B.Tech');
+  const [branch, setBranch] = useState(targetBranch || profile.branch || '');
+  const [semester, setSemester] = useState(targetSemester || profile.semester || 1);
+  const [section, setSection] = useState(targetSection || profile.section || '');
+  const [rollNumber, setRollNumber] = useState(profile.rollNumber || '');
 
   const canonicalBatchKey = getCanonicalBatchKey(college, programme, branch, semester, section);
   const requestId = user?.id ? `${user.id}_${canonicalBatchKey}` : null;
@@ -103,9 +105,9 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
         userId: user.id,
         name: profile.name || user.fullName || 'Student',
         email: userEmail,
-        rollNumber: profile.rollNumber || 'N/A',
+        rollNumber: rollNumber || 'N/A',
         college: college,
-        programme: profile.programme || 'B.Tech',
+        programme: programme,
         branch: branch,
         semester: semester,
         section: section,
@@ -198,16 +200,64 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
         ) : (
           /* VERIFICATION FORM */
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* Batch You Will Manage */}
-            <div className="p-3 bg-[#F9F9F8] dark:bg-[#161616] border border-[#D8D8D8] dark:border-[#333333] space-y-1 text-[12px]">
-              <div className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#888888]">
+            {/* Batch Details (Editable) */}
+            <div className="flex flex-col gap-2.5 p-3 bg-[#F9F9F8] dark:bg-[#161616] border border-[#D8D8D8] dark:border-[#333333]">
+              <div className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-0.5">
                 Batch You Will Manage
               </div>
-              <div className="font-bold text-[13px] text-[#111111] dark:text-[#FFFFFF]">
-                {college || 'No college set'} · {formatBatchDisplayName(branch, semester, section)}
-              </div>
-              <div className="text-[11.5px] text-[#6F6F6F]">
-                Roll No: {profile.rollNumber || 'N/A'} {isExplicitSection(section) ? `· Section ${section}` : ''}
+              
+              <div className="flex flex-col gap-2">
+                <input
+                  type="text"
+                  placeholder="College Name"
+                  value={college}
+                  onChange={(e) => setCollege(e.target.value)}
+                  required
+                  className="w-full bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] px-3 py-2 text-[12.5px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    placeholder="Branch (e.g. CSE)"
+                    value={branch}
+                    onChange={(e) => setBranch(e.target.value)}
+                    required
+                    className="w-full bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] px-3 py-2 text-[12.5px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Roll Number"
+                    value={rollNumber}
+                    onChange={(e) => setRollNumber(e.target.value)}
+                    required
+                    className="w-full bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] px-3 py-2 text-[12.5px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] px-3 py-2">
+                    <span className="text-[12.5px] text-[#A0A0A0] mr-2">Sem</span>
+                    <input
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={semester}
+                      onChange={(e) => setSemester(Number(e.target.value) || 1)}
+                      required
+                      className="w-full bg-transparent text-[12.5px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                    />
+                  </div>
+                  <div className="flex items-center bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] px-3 py-2">
+                    <span className="text-[12.5px] text-[#A0A0A0] mr-2">Sec</span>
+                    <input
+                      type="text"
+                      placeholder="e.g. A"
+                      value={section}
+                      onChange={(e) => setSection(e.target.value)}
+                      required
+                      className="w-full bg-transparent text-[12.5px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none uppercase"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
