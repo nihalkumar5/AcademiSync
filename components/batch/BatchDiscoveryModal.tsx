@@ -13,7 +13,7 @@ import {
   searchCollegesAsync, 
   CollegeItem 
 } from '@/lib/collegeDirectory';
-import { getCanonicalBatchKey, isExplicitSection, formatBatchDisplayName } from '@/lib/timetableUtils';
+import { getCanonicalBatchKey, isExplicitSection, formatBatchDisplayName, extractCleanInviteCode } from '@/lib/timetableUtils';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Search, Sparkles, Users, CheckCircle2, ArrowRight, ShieldCheck, School, BookOpen, Layers, Crown } from 'lucide-react';
@@ -24,13 +24,20 @@ import { BatchSetupPromptModal } from '@/components/batch/BatchSetupPromptModal'
 interface BatchDiscoveryModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialTab?: 'directory' | 'code';
 }
 
-export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen, onClose }) => {
+export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen, onClose, initialTab = 'directory' }) => {
   const { profile, joinBatchTimetable, showToast, user } = useApp();
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState<'directory' | 'code'>('directory');
+  const [activeTab, setActiveTab] = useState<'directory' | 'code'>(initialTab);
+
+  useEffect(() => {
+    if (isOpen && initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
   
   // Directory selections
   const [collegeSearch, setCollegeSearch] = useState(profile.college || '');
@@ -158,13 +165,13 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
 
   const handleJoinByCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    let code = inviteCodeInput.trim();
-    if (!code) return;
+    const rawInput = inviteCodeInput.trim();
+    if (!rawInput) return;
 
-    if (code.includes('invite=')) {
-      code = new URLSearchParams(code.split('?')[1] || '').get('invite') || code;
-    } else if (code.includes('/join/')) {
-      code = code.split('/join/').pop()?.split('?')[0] || code;
+    const code = extractCleanInviteCode(rawInput);
+    if (!code) {
+      showToast('Invalid Code', 'Please enter a valid batch code or invite link.', 'error');
+      return;
     }
 
     if (!user) {

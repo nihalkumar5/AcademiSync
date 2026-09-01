@@ -60,7 +60,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
         try {
           localStorage.removeItem('pending_join_invite');
           await joinBatchTimetable(pending);
-          updateAppProfile({ onboardingCompleted: true });
         } catch (err) {
           console.warn('Auto-join on login failed:', err);
         }

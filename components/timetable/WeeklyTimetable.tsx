@@ -357,6 +357,7 @@ export const WeeklyTimetable: React.FC = () => {
       <BatchDiscoveryModal
         isOpen={showJoinModal}
         onClose={() => setShowJoinModal(false)}
+        initialTab="code"
       />
 
       {/* BATCH MEMBERS MODAL */}

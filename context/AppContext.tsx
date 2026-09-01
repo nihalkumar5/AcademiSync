@@ -25,7 +25,8 @@ import {
   getShortCollegeName,
   normalizeProgrammeName,
   normalizeBranchName,
-  normalizeSection
+  normalizeSection,
+  extractCleanInviteCode
 } from '@/lib/timetableUtils';
 import { checkAndGenerateSmartNotifications } from '@/lib/notificationEngine';
 import confetti from 'canvas-confetti';
@@ -262,16 +263,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         remoteStateString.current = "";
       }
       prevUserIdRef.current = user.id;
+    }
+  }, [user, isClerkLoaded]);
 
-      // Auto-populate name and email from Clerk if not already set in profile
+  // Update profile from Firebase auth user once authenticated
+  useEffect(() => {
+    if (user && isClerkLoaded) {
+      const defaultName = user.fullName || 'Student';
       const userEmail = user.primaryEmailAddress?.emailAddress || '';
-      let defaultName = user.fullName || user.firstName || '';
-      if (!defaultName && userEmail) {
-        defaultName = userEmail.split('@')[0];
-        defaultName = defaultName.split('.').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-      }
-
-      if (!profile.name || !profile.email) {
+      
+      if (!profile.name || profile.name === 'Student' || !profile.email) {
         const updated = {
           ...profile,
           name: profile.name || defaultName,
@@ -281,7 +282,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         storage.setProfile(updated);
       }
     }
-  }, [user, isClerkLoaded, profile]);
+  }, [user, isClerkLoaded]);
 
   // Auto-join pending batch invite immediately upon login / session start
   useEffect(() => {
@@ -290,9 +291,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (pendingInvite && pendingInvite !== profile.batchKey) {
         localStorage.removeItem('pending_join_invite');
         joinBatchTimetable(pendingInvite)
-          .then(() => {
-            updateProfile({ onboardingCompleted: true });
-          })
           .catch((err) => {
             console.warn('Auto-join on login failed:', err);
           });
@@ -319,11 +317,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           return;
         }
 
-
         remoteStateString.current = dataStr;
         isApplyingRemote.current = true;
         
-        if (data.profile) { setProfileState(data.profile); storage.setProfile(data.profile); }
+        if (data.profile) {
+          setProfileState((prev) => {
+            const mergedProfile: StudentProfile = {
+              ...data.profile,
+              // If local state is already synced to a batch, preserve the batch sync info so a stale remote snapshot never unlinks it
+              isBatchSynced: prev.isBatchSynced || !!data.profile.isBatchSynced,
+              batchKey: prev.batchKey || data.profile.batchKey,
+              college: prev.college || data.profile.college,
+              programme: prev.programme || data.profile.programme,
+              branch: prev.branch || data.profile.branch,
+              semester: prev.semester || data.profile.semester,
+              section: prev.section || data.profile.section,
+              onboardingCompleted: prev.onboardingCompleted || data.profile.onboardingCompleted,
+            };
+            storage.setProfile(mergedProfile);
+            return mergedProfile;
+          });
+        }
         if (data.subjects) { setSubjectsState(data.subjects); storage.setSubjects(data.subjects); }
         if (data.timetable) { setTimetableState(data.timetable); storage.setTimetable(data.timetable); }
         if (data.homework) { setHomeworkState(data.homework); storage.setHomework(data.homework); }
@@ -865,9 +879,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // State mutation actions
   const updateProfile = (partial: Partial<StudentProfile>) => {
-    const updated = { ...profile, ...partial };
-    setProfileState(updated);
-    storage.setProfile(updated);
+    setProfileState((prev) => {
+      const updated = { ...prev, ...partial };
+      storage.setProfile(updated);
+      return updated;
+    });
   };
 
   const addSubject = (subjectData: Omit<Subject, 'id'>): Subject => {
@@ -1566,13 +1582,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const joinBatchTimetable = async (batchKeyOrCode: string, providedCode?: string) => {
     try {
-      let docRef = doc(db, 'shared_timetables', batchKeyOrCode);
+      const cleanInput = extractCleanInviteCode(batchKeyOrCode);
+      let docRef = doc(db, 'shared_timetables', cleanInput);
       let docSnap = await getDoc(docRef);
-      let batchKey = batchKeyOrCode;
+      let batchKey = cleanInput;
 
       // If not found directly by document ID, look up by inviteCode
       if (!docSnap.exists()) {
-        const q = query(collection(db, 'shared_timetables'), where('inviteCode', '==', batchKeyOrCode.trim().toUpperCase()));
+        const q = query(collection(db, 'shared_timetables'), where('inviteCode', '==', cleanInput.toUpperCase()));
         const querySnap = await getDocs(q);
         if (!querySnap.empty) {
           docSnap = querySnap.docs[0];
@@ -1589,7 +1606,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const data = docSnap.data();
       const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
       const isCRorCreator = data.creatorId === user?.id || data.crUserIds?.includes(user?.id) || data.crEmails?.includes(userEmail);
-      const isDirectCodeMatch = batchKeyOrCode.trim().toUpperCase() === data.inviteCode?.toUpperCase();
+      const isDirectCodeMatch = cleanInput.toUpperCase() === data.inviteCode?.toUpperCase() || cleanInput === docSnap.id;
 
       // Enforce Batch Passcode / Unique Code Verification
       if (data.inviteCode && !isCRorCreator && !isDirectCodeMatch) {

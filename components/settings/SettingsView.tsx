@@ -824,23 +824,33 @@ ${link}
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333] gap-3">
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF]">
                     No Live Batch Connected
                   </span>
                   <span className="text-[11px] text-[#6F6F6F]">
-                    Claim CR access to setup this batch or invite your class.
+                    Join your class batch with an invite link/code or claim CR access.
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowBatchSetupPrompt(true)}
-                  className="px-4 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity shrink-0 cursor-pointer flex items-center gap-1.5"
-                >
-                  <Crown className="w-3.5 h-3.5" />
-                  Setup / Request Batch
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowDiscoveryModal(true)}
+                    className="px-3.5 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    Connect Batch
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowBatchSetupPrompt(true)}
+                    className="px-3 py-2 border border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[11px] font-bold uppercase tracking-wider hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Crown className="w-3.5 h-3.5" />
+                    Setup Batch
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -1576,6 +1586,7 @@ ${link}
       <BatchDiscoveryModal
         isOpen={showDiscoveryModal}
         onClose={() => setShowDiscoveryModal(false)}
+        initialTab="code"
       />
 
       {/* BATCH SETUP & ONBOARDING PROMPT MODAL */}

@@ -804,3 +804,58 @@ export const getCanonicalBatchKey = (
 
   return `${cleanCollegeKey}_${cleanProgKey}_${cleanBranchKey}_sem${semester}`;
 };
+
+/**
+ * Robustly extracts the clean batch invite code or canonical key from any input string:
+ * - Direct 6-character code: "65SQ9K" or "65sq9k"
+ * - Full URL: "https://academi-sync-chi.vercel.app/?invite=65SQ9K"
+ * - URL with multiple params: "https://...?invite=65SQ9K&from=whatsapp"
+ * - Whole WhatsApp share message with text and code
+ * - Canonical batch key: "iiitnr_btech_cse_sem4_secA"
+ */
+export const extractCleanInviteCode = (input: string): string => {
+  if (!input) return '';
+  let str = input.trim();
+
+  // 1. If it contains an HTTP/HTTPS URL
+  const urlMatch = str.match(/https?:\/\/[^\s]+/i);
+  if (urlMatch) {
+    try {
+      const parsedUrl = new URL(urlMatch[0]);
+      const invite = parsedUrl.searchParams.get('invite') || parsedUrl.searchParams.get('key');
+      if (invite) return invite.trim().toUpperCase();
+      const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
+      if (pathParts.includes('join') && pathParts.length > 1) {
+        return pathParts[pathParts.length - 1].trim().toUpperCase();
+      }
+    } catch (_) {}
+  }
+
+  // 2. If it contains "invite=XYZ"
+  const paramMatch = str.match(/invite=([a-zA-Z0-9_-]+)/i);
+  if (paramMatch && paramMatch[1]) {
+    return paramMatch[1].trim().toUpperCase();
+  }
+
+  // 3. If it contains "code: XYZ" or "key: XYZ" or "Batch Invite Code: XYZ"
+  const codeMatch = str.match(/(?:code|key)\s*[:：\-]\s*([a-zA-Z0-9_-]+)/i);
+  if (codeMatch && codeMatch[1]) {
+    return codeMatch[1].trim().toUpperCase();
+  }
+
+  // 4. If tokens contain a 5 to 8 char alphanumeric code or a canonical key
+  const cleanTokens = str.split(/\s+/);
+  for (const token of cleanTokens) {
+    const cleanToken = token.replace(/[^a-zA-Z0-9_-]/g, '');
+    if (/^[A-Za-z0-9]{5,8}$/.test(cleanToken)) {
+      return cleanToken.toUpperCase();
+    }
+    if (cleanToken.includes('_sem')) {
+      return cleanToken;
+    }
+  }
+
+  // 5. Fallback: stripped alphanumeric
+  const fallback = str.replace(/[^a-zA-Z0-9_-]/g, '');
+  return fallback ? fallback.toUpperCase() : str;
+};
