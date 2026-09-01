@@ -118,9 +118,11 @@ export interface AppContextType {
   setCommandPaletteOpen: (open: boolean) => void;
   triggerConfetti: () => void;
   cancelledSessions: string[];
+  cancelledSessionsMeta: Record<string, { by: string; role?: string; timestamp?: string }>;
   toggleSessionCancelled: (sessionId: string, dateStr?: string) => void;
   isSessionCancelled: (sessionId: string, dateStr?: string) => boolean;
-  rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string; subjectId?: string }>;
+  getCancelledSessionMeta: (sessionId: string, dateStr?: string) => { by: string; role?: string; timestamp?: string } | null;
+  rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string; subjectId?: string; by?: string; role?: string; timestamp?: string }>;
   rescheduleSession: (sessionId: string, details: { startTime: string; endTime: string; room?: string; subjectId?: string } | null, dateStr?: string) => void;
   currentBatchData: any | null;
   searchBatchTimetable: (college: string, programme: string, branch: string, semester: number, section?: string) => Promise<any | null>;
@@ -183,7 +185,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [exams, setExamsState] = useState<Exam[]>(storage.getExams());
   const [settings, setSettingsState] = useState<UserSettings>(storage.getSettings());
   const [cancelledSessions, setCancelledSessionsState] = useState<string[]>(storage.getCancelledSessions());
-  const [rescheduledSessions, setRescheduledSessionsState] = useState<Record<string, { startTime: string; endTime: string; room?: string }>>(storage.getRescheduledSessions());
+  const [cancelledSessionsMeta, setCancelledSessionsMeta] = useState<Record<string, { by: string; role?: string; timestamp?: string }>>(storage.getCancelledSessionsMeta());
+  const [rescheduledSessions, setRescheduledSessionsState] = useState<Record<string, { startTime: string; endTime: string; room?: string; subjectId?: string; by?: string; role?: string; timestamp?: string }>>(storage.getRescheduledSessions());
   const [showHolidayAnimation, setShowHolidayAnimation] = useState(false);
   const [proposedBatchTasks, setProposedBatchTasks] = useState<BatchProposedTask[]>([]);
   const [currentBatchData, setCurrentBatchData] = useState<any>(null);
@@ -452,6 +455,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (Array.isArray(data.cancelledSessions)) {
         setCancelledSessionsState(data.cancelledSessions);
         storage.setCancelledSessions(data.cancelledSessions);
+      }
+      if (data.cancelledSessionsMeta && typeof data.cancelledSessionsMeta === 'object') {
+        setCancelledSessionsMeta(data.cancelledSessionsMeta);
+        storage.setCancelledSessionsMeta(data.cancelledSessionsMeta);
       }
       if (data.rescheduledSessions && typeof data.rescheduledSessions === 'object') {
         setRescheduledSessionsState(data.rescheduledSessions);
@@ -1358,12 +1365,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       ? cancelledSessions.filter((k) => k !== key)
       : [...cancelledSessions, key];
 
-    setCancelledSessionsState(updated);
-    storage.setCancelledSessions(updated);
-
+    const updatedMeta = { ...cancelledSessionsMeta };
     const crName = profile.name || 'CR';
+
+    if (isAlreadyCancelled) {
+      delete updatedMeta[key];
+    } else {
+      updatedMeta[key] = {
+        by: crName,
+        role: 'CR',
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    setCancelledSessionsState(updated);
+    setCancelledSessionsMeta(updatedMeta);
+    storage.setCancelledSessions(updated);
+    storage.setCancelledSessionsMeta(updatedMeta);
+
     if (!isAlreadyCancelled) {
-      showToast('Class Cancelled', 'Session marked as cancelled for today.', 'info');
+      showToast('Class Cancelled', `Session marked as cancelled by ${crName} (CR).`, 'info');
     } else {
       showToast('Class Restored', 'Session restored to regular schedule.', 'success');
     }
@@ -1385,6 +1406,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           type: 'cancel',
           sessionId,
           date: targetDate,
+          by: crName,
           createdAt: new Date().toISOString(),
         } : {
           id: `restore_${sessionId}_${targetDate}_${Date.now()}`,
@@ -1393,6 +1415,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           type: 'restore',
           sessionId,
           date: targetDate,
+          by: crName,
           createdAt: new Date().toISOString(),
         };
 
@@ -1402,6 +1425,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
         await updateDoc(batchDocRef, {
           cancelledSessions: updated,
+          cancelledSessionsMeta: updatedMeta,
           batchAlerts: trimmedAlerts,
           updatedAt: new Date().toISOString(),
         });
@@ -1415,6 +1439,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const targetDate = dateStr || new Date().toISOString().split('T')[0];
     const key = `${targetDate}_${sessionId}`;
     return cancelledSessions.includes(key);
+  };
+
+  const getCancelledSessionMeta = (sessionId: string, dateStr?: string) => {
+    const targetDate = dateStr || new Date().toISOString().split('T')[0];
+    const key = `${targetDate}_${sessionId}`;
+    return cancelledSessionsMeta[key] || null;
   };
 
   const rescheduleSession = async (
@@ -1437,8 +1467,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       delete updated[key];
       showToast('Reschedule Reverted', 'Class reverted to original schedule.', 'success');
     } else {
-      updated[key] = details;
-      showToast('Class Rescheduled', `Class moved to ${details.startTime}–${details.endTime}.`, 'success');
+      updated[key] = {
+        ...details,
+        by: crName,
+        role: 'CR',
+        timestamp: new Date().toISOString(),
+      };
+      showToast('Class Rescheduled', `Class moved to ${details.startTime}–${details.endTime} by ${crName} (CR).`, 'success');
     }
 
     setRescheduledSessionsState(updated);
@@ -1463,6 +1498,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             type: 'reschedule',
             sessionId,
             date: targetDate,
+            by: crName,
             createdAt: new Date().toISOString(),
           };
         }
@@ -2291,8 +2327,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setCommandPaletteOpen,
         triggerConfetti,
         cancelledSessions,
+        cancelledSessionsMeta,
         toggleSessionCancelled,
         isSessionCancelled,
+        getCancelledSessionMeta,
         rescheduledSessions,
         rescheduleSession,
         currentBatchData,

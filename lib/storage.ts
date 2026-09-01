@@ -34,6 +34,7 @@ const STORAGE_KEYS = {
 
 
   CANCELLED_SESSIONS: 'iiitnr_cancelled_sessions_v1',
+  CANCELLED_SESSIONS_META: 'iiitnr_cancelled_sessions_meta_v1',
   RESCHEDULED_SESSIONS: 'iiitnr_rescheduled_sessions_v1',
 };
 
@@ -125,8 +126,11 @@ export const storage = {
   getCancelledSessions: (): string[] => getStoredItem(STORAGE_KEYS.CANCELLED_SESSIONS, []),
   setCancelledSessions: (cancelled: string[]) => setStoredItem(STORAGE_KEYS.CANCELLED_SESSIONS, cancelled),
 
-  getRescheduledSessions: (): Record<string, { startTime: string; endTime: string; room?: string }> => getStoredItem(STORAGE_KEYS.RESCHEDULED_SESSIONS, {}),
-  setRescheduledSessions: (rescheduled: Record<string, { startTime: string; endTime: string; room?: string }>) => setStoredItem(STORAGE_KEYS.RESCHEDULED_SESSIONS, rescheduled),
+  getCancelledSessionsMeta: (): Record<string, { by: string; role?: string; timestamp?: string }> => getStoredItem(STORAGE_KEYS.CANCELLED_SESSIONS_META, {}),
+  setCancelledSessionsMeta: (meta: Record<string, { by: string; role?: string; timestamp?: string }>) => setStoredItem(STORAGE_KEYS.CANCELLED_SESSIONS_META, meta),
+
+  getRescheduledSessions: (): Record<string, { startTime: string; endTime: string; room?: string; subjectId?: string; by?: string; role?: string; timestamp?: string }> => getStoredItem(STORAGE_KEYS.RESCHEDULED_SESSIONS, {}),
+  setRescheduledSessions: (rescheduled: Record<string, { startTime: string; endTime: string; room?: string; subjectId?: string; by?: string; role?: string; timestamp?: string }>) => setStoredItem(STORAGE_KEYS.RESCHEDULED_SESSIONS, rescheduled),
 
   resetAll: () => {
     if (typeof window === 'undefined') return;

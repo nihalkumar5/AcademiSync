@@ -20,6 +20,7 @@ export const TodayTimeline: React.FC = () => {
     events, 
     setActiveView, 
     isSessionCancelled, 
+    getCancelledSessionMeta,
     toggleSessionCancelled, 
     settings,
     rescheduledSessions,
@@ -186,6 +187,7 @@ export const TodayTimeline: React.FC = () => {
               const start = timeToMinutes(reschedule ? reschedule.startTime : session.startTime);
               const end = timeToMinutes(reschedule ? reschedule.endTime : session.endTime);
               const isCancelled = isSessionCancelled(session.id, targetDateStr);
+              const cancelledMeta = isCancelled ? getCancelledSessionMeta(session.id, targetDateStr) : null;
               const isNow = !isAfter8PM && !isCancelled && currentMinutes >= start && currentMinutes < end;
               const isPassed = isCancelled || (isAfter8PM ? false : currentMinutes >= end);
               const isNextClass = session.id === firstValidVisibleId;
@@ -304,9 +306,15 @@ export const TodayTimeline: React.FC = () => {
                               )}
                             </div>
 
-                            {reschedule && (
-                              <span className="text-[10px] font-mono opacity-60 mt-1 font-semibold block">
-                                Rescheduled from {session.startTime} - {session.endTime}
+                            {isCancelled && (
+                              <span className="text-[11px] font-mono text-[#991B1B] dark:text-[#fca5a5] mt-1 font-semibold block">
+                                Cancelled for today {cancelledMeta?.by ? `· by ${cancelledMeta.by} (CR)` : ''}
+                              </span>
+                            )}
+
+                            {reschedule && !isCancelled && (
+                              <span className="text-[11px] font-mono text-[#B45309] dark:text-[#FCD34D] mt-1 font-semibold block">
+                                Rescheduled from {session.startTime}–{session.endTime} {reschedule.by ? `· by ${reschedule.by} (CR)` : ''}
                               </span>
                             )}
                           </div>

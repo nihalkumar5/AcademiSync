@@ -223,6 +223,14 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
         }
         showToast('Role Updated', `${memberName} demoted from CR role.`, 'info');
       } else {
+        if (crMembers.length >= 3) {
+          showToast(
+            'CR Limit Reached',
+            'A batch can have a maximum of 3 Class Representatives (CRs). Demote one first to add another.',
+            'error'
+          );
+          return;
+        }
         await updateDoc(batchDocRef, {
           crUserIds: arrayUnion(...ids),
           crEmails: arrayUnion(...emails),
@@ -396,28 +404,32 @@ ${inviteUrl}
             {/* CR Section */}
             {crMembers.length > 0 && (
               <div className="flex flex-col">
-                <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-4">CLASS REPRESENTATIVE</span>
-                <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase">
+                    CLASS REPRESENTATIVE{crMembers.length > 1 ? `S (${crMembers.length}/3)` : ' (1/3)'}
+                  </span>
+                </div>
+                <div className={`grid ${crMembers.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
                   {crMembers.map((cr) => {
                     const p = cr.profile || {};
                     const isCurrentUser = checkIsCurrentUser(cr);
                     return (
-                      <div key={cr.id} className="relative flex flex-col items-center justify-center p-6 border border-[#D9D9D6] dark:border-[#333333] text-center">
-                        <div className="w-20 h-20 flex items-center justify-center mb-3">
+                      <div key={cr.id} className="relative flex flex-col items-center justify-center p-5 border border-[#D9D9D6] dark:border-[#333333] text-center bg-[#FDFDFD] dark:bg-[#151515]">
+                        <div className="w-16 h-16 flex items-center justify-center mb-2.5">
                           <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${p.avatarUrl || cr.id}&backgroundColor=transparent`} alt="avatar" className="w-full h-full object-contain drop-shadow-sm" />
                         </div>
-                        <span className="text-[15px] font-semibold text-[#111111] dark:text-[#FFFFFF] line-clamp-1 break-all w-full px-4">
+                        <span className="text-[14px] font-semibold text-[#111111] dark:text-[#FFFFFF] line-clamp-1 break-all w-full px-2">
                           {p.name || 'CR'}
                         </span>
-                        <span className="text-[11px] text-[#6F6F6F] mt-1 break-all line-clamp-2 w-full px-4">
+                        <span className="text-[11px] text-[#6F6F6F] mt-0.5 break-all line-clamp-2 w-full px-2">
                           CR · {p.rollNumber || p.email}
                         </span>
                         {isCurrentUser && (
-                          <span className="absolute top-3 left-3 text-[9px] font-bold tracking-widest text-[#6F6F6F] border border-[#D9D9D6] dark:border-[#333333] px-1.5 py-0.5 uppercase">YOU</span>
+                          <span className="absolute top-2.5 left-2.5 text-[9px] font-bold tracking-widest text-[#6F6F6F] border border-[#D9D9D6] dark:border-[#333333] px-1.5 py-0.5 uppercase">YOU</span>
                         )}
                         <button 
                           onClick={() => setSelectedMember(cr)}
-                          className="absolute top-3 right-3 p-1.5 text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                          className="absolute top-2.5 right-2.5 p-1.5 text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
                         >
                           <MoreVertical className="w-4 h-4" />
                         </button>
