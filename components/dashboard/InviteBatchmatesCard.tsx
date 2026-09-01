@@ -89,10 +89,14 @@ export const InviteBatchmatesCard = () => {
         </div>
 
         <div className="absolute right-0 bottom-0 z-0 flex items-end justify-end h-[100%] pr-0 pointer-events-none">
+          {/* Frosted glass backdrop in dark mode */}
+          <div className="hidden dark:block absolute right-1 bottom-1 w-[160px] sm:w-[185px] h-[130px] sm:h-[145px] rounded-2xl bg-white/[0.08] backdrop-blur-xl border border-white/15 shadow-[0_8px_32px_0_rgba(0,0,0,0.45)] -rotate-3 -z-10" />
+          <div className="hidden dark:block absolute right-5 bottom-3 w-[120px] sm:w-[135px] h-[120px] sm:h-[135px] rounded-full bg-white/[0.06] backdrop-blur-2xl -z-10" />
+
           <img 
             src="/invite2.png" 
             alt="Invite illustration" 
-            className="w-[180px] sm:w-[210px] h-[150px] sm:h-[160px] object-contain object-bottom translate-y-[15%] translate-x-[8%]" 
+            className="relative z-10 w-[180px] sm:w-[210px] h-[150px] sm:h-[160px] object-contain object-bottom translate-y-[15%] translate-x-[8%]" 
           />
         </div>
       </div>
