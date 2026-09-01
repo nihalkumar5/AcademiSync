@@ -228,11 +228,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Authority & CR verification for current batch
   const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
-  const isSuperAdmin = isUserSuperAdmin(profile, userEmail);
+  const isSuperAdmin = !!user && isUserSuperAdmin(profile, userEmail);
   const isLegacyBatch = !currentBatchData?.crUserIds && !currentBatchData?.crEmails;
-  const isPrimaryCreator = isLegacyBatch && (currentBatchData?.creatorId === user?.id || (currentBatchData?.creatorEmail && currentBatchData?.creatorEmail === userEmail));
-  const isCoCR = currentBatchData?.crUserIds?.includes(user?.id) || currentBatchData?.crEmails?.includes(userEmail) || profile.role === 'cr';
-  const isBatchCR = !profile.isBatchSynced || isSuperAdmin || isPrimaryCreator || isCoCR;
+  const isPrimaryCreator = !!user && isLegacyBatch && (currentBatchData?.creatorId === user?.id || (currentBatchData?.creatorEmail && currentBatchData?.creatorEmail === userEmail));
+  const isCoCR = !!user && (currentBatchData?.crUserIds?.includes(user?.id) || currentBatchData?.crEmails?.includes(userEmail) || profile.role === 'cr');
+  const isBatchCR = !!user && (profile.isBatchSynced ? (isSuperAdmin || isPrimaryCreator || isCoCR) : profile.role === 'cr');
 
   // Handle User Logout / Switch Account Cleanup
   useEffect(() => {

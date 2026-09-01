@@ -97,9 +97,9 @@ export const SettingsView: React.FC = () => {
 
   // Verification status logic
   const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || email || '';
-  const isSuperAdmin = isUserSuperAdmin(profile, userEmail);
-  const isCR = profile.role === 'cr' || isBatchCR;
-  const isEduEmail = !!userEmail.toLowerCase().match(/\.(edu|ac\.in|edu\.in)$/);
+  const isSuperAdmin = !!user && isUserSuperAdmin(profile, userEmail);
+  const isCR = !!user && (profile.role === 'cr' || isBatchCR);
+  const isEduEmail = !!user && !!userEmail.toLowerCase().match(/\.(edu|ac\.in|edu\.in)$/);
   const isStudentVerified = !!(user && profile.college && (profile.isBatchSynced || isEduEmail));
 
   // Automatically keep local input fields in sync when profile updates (e.g. from joining a batch)
@@ -345,87 +345,118 @@ export const SettingsView: React.FC = () => {
 
       {/* Student Identity Card */}
       <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-[20px] rounded-none">
-        <div className="flex items-start gap-5">
-          {/* Avatar & Change Photo Column */}
-          <div className="flex flex-col gap-3 items-center shrink-0">
-            <div className="w-[64px] h-[64px] border border-[#D8D8D8] dark:border-[#333333] flex items-center justify-center overflow-hidden bg-[#F7F7F5] dark:bg-[#1A1A1A]">
-              <img
-                src={`https://api.dicebear.com/7.x/notionists/svg?seed=${avatarSeed}&backgroundColor=transparent`}
-                alt="avatar"
-                className="w-full h-full object-contain"
-              />
+        {user ? (
+          <div className="flex items-start gap-5">
+            {/* Avatar & Change Photo Column */}
+            <div className="flex flex-col gap-3 items-center shrink-0">
+              <div className="w-[64px] h-[64px] border border-[#D8D8D8] dark:border-[#333333] flex items-center justify-center overflow-hidden bg-[#F7F7F5] dark:bg-[#1A1A1A]">
+                <img
+                  src={`https://api.dicebear.com/7.x/notionists/svg?seed=${avatarSeed}&backgroundColor=transparent`}
+                  alt="avatar"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAvatarModal(true)}
+                className="text-[11px] font-medium text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors underline underline-offset-2 cursor-pointer"
+              >
+                Change photo
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowAvatarModal(true)}
-              className="text-[11px] font-medium text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors underline underline-offset-2 cursor-pointer"
-            >
-              Change photo
-            </button>
-          </div>
 
-          <div className="flex flex-col mt-0.5 min-w-0 flex-1">
-            <div className="flex items-center gap-2.5 flex-wrap w-full">
-              <h2 className="text-[22px] sm:text-[24px] font-medium text-[#111111] dark:text-[#FFFFFF] leading-none break-words">
-                {name || 'Student Name'}
-              </h2>
-              {isSuperAdmin ? (
-                <span 
-                  title="Official System Administrator"
-                  className="inline-flex items-center gap-1 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] px-2 py-0.5 shrink-0 h-[22px]"
-                >
-                  <Crown className="w-3 h-3" />
-                  <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
-                    ADMIN
+            <div className="flex flex-col mt-0.5 min-w-0 flex-1">
+              <div className="flex items-center gap-2.5 flex-wrap w-full">
+                <h2 className="text-[22px] sm:text-[24px] font-medium text-[#111111] dark:text-[#FFFFFF] leading-none break-words">
+                  {name || user?.fullName || 'Student Name'}
+                </h2>
+                {isSuperAdmin ? (
+                  <span 
+                    title="Official System Administrator"
+                    className="inline-flex items-center gap-1 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] px-2 py-0.5 shrink-0 h-[22px]"
+                  >
+                    <Crown className="w-3 h-3" />
+                    <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
+                      ADMIN
+                    </span>
                   </span>
-                </span>
-              ) : isCR ? (
-                <span 
-                  title="Verified Class Representative"
-                  className="inline-flex items-center gap-1.5 bg-[#F3F2EF] dark:bg-[#222222] text-[#111111] dark:text-[#F4F1EA] px-2 py-0.5 shrink-0 h-[22px] border border-[#D8D8D8] dark:border-[#333333]"
-                >
-                  <Crown className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                  <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
-                    CLASS REP
+                ) : isCR ? (
+                  <span 
+                    title="Verified Class Representative"
+                    className="inline-flex items-center gap-1.5 bg-[#F3F2EF] dark:bg-[#222222] text-[#111111] dark:text-[#F4F1EA] px-2 py-0.5 shrink-0 h-[22px] border border-[#D8D8D8] dark:border-[#333333]"
+                  >
+                    <Crown className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                    <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
+                      CLASS REP
+                    </span>
                   </span>
-                </span>
-              ) : isStudentVerified ? (
-                <span 
-                  title={`Verified Student · ${profile.college}`}
-                  className="inline-flex items-center gap-1.5 bg-[#F3F2EF] dark:bg-[#222222] text-[#111111] dark:text-[#F4F1EA] px-2 py-0.5 shrink-0 h-[22px] border border-[#D8D8D8] dark:border-[#333333]"
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-                    <circle cx="12" cy="12" r="12" fill="#111111" className="dark:fill-white" />
-                    <path d="M7.5 12L10.5 15L17 8" stroke="#FFFFFF" className="dark:stroke-black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
-                    VERIFIED
+                ) : isStudentVerified ? (
+                  <span 
+                    title={`Verified Student · ${profile.college}`}
+                    className="inline-flex items-center gap-1.5 bg-[#F3F2EF] dark:bg-[#222222] text-[#111111] dark:text-[#F4F1EA] px-2 py-0.5 shrink-0 h-[22px] border border-[#D8D8D8] dark:border-[#333333]"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                      <circle cx="12" cy="12" r="12" fill="#111111" className="dark:fill-white" />
+                      <path d="M7.5 12L10.5 15L17 8" stroke="#FFFFFF" className="dark:stroke-black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
+                      VERIFIED
+                    </span>
                   </span>
-                </span>
-              ) : null}
-            </div>
-            
-            <p className="text-[13px] text-[#6F6F6F] mt-2.5 leading-snug max-w-md truncate">
-              {programme || branch ? (
-                `${programme}${branch ? ` · ${branch}` : ''}`
-              ) : (
-                <span className="italic text-amber-600 dark:text-amber-400 font-medium">Academic details not setup yet</span>
-              )}
-            </p>
-            
-            <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[1px] text-[#A0A0A0] mt-3 flex-wrap">
-              <span>Sem {semester || 1}</span>
-              <span>·</span>
-              <span>Year {year || 1}</span>
-              {rollNumber && (
-                <>
-                  <span>·</span>
-                  <span>Roll #{rollNumber}</span>
-                </>
-              )}
+                ) : null}
+              </div>
+              
+              <p className="text-[13px] text-[#6F6F6F] mt-2.5 leading-snug max-w-md truncate">
+                {programme || branch ? (
+                  `${programme}${branch ? ` · ${branch}` : ''}`
+                ) : (
+                  <span className="italic text-[#888888] font-medium">Academic details not setup yet</span>
+                )}
+              </p>
+              
+              <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[1px] text-[#A0A0A0] mt-3 flex-wrap">
+                <span>Sem {semester || 1}</span>
+                <span>·</span>
+                <span>Year {year || 1}</span>
+                {rollNumber && (
+                  <>
+                    <span>·</span>
+                    <span>Roll #{rollNumber}</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-[56px] h-[56px] border border-[#D8D8D8] dark:border-[#333333] flex items-center justify-center overflow-hidden bg-[#F7F7F5] dark:bg-[#1A1A1A] text-[18px] font-bold text-[#888888] shrink-0 font-mono">
+                G
+              </div>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none">
+                    Guest Student
+                  </h2>
+                  <span className="text-[10px] font-bold tracking-widest text-[#888888] border border-[#D8D8D8] dark:border-[#333333] px-1.5 py-0.5 uppercase">
+                    Local Mode
+                  </span>
+                </div>
+                <p className="text-[12.5px] text-[#6F6F6F] max-w-md leading-tight mt-0.5">
+                  Sign in to link with your batch, unlock live class alerts, and enable cloud sync.
+                </p>
+              </div>
+            </div>
+
+            <Link
+              href="/sign-in"
+              className="px-4 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity shrink-0 inline-flex items-center justify-center gap-1.5 self-start sm:self-auto"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              Sign In
+            </Link>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
