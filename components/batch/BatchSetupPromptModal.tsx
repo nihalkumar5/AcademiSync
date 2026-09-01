@@ -92,7 +92,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
       >
         <div className="flex flex-col text-left font-sans pt-0 pb-4">
           {/* Hero Illustration - Tight zero-excess spacing */}
-          <div className="w-full flex items-center justify-center -my-20 sm:-my-16 py-0">
+          <div className="w-full flex items-center justify-center -mt-20 -mb-28 sm:-mt-16 sm:-mb-24 py-0 relative z-0">
             <img 
               src="/cr.png" 
               alt="Class Representative" 
@@ -101,7 +101,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
           </div>
 
           {/* Section 1: WHAT YOU'LL UNLOCK */}
-          <div className="flex flex-col gap-2.5 mt-0">
+          <div className="flex flex-col gap-2.5 mt-0 relative z-10">
             <span className="text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#777777]">
               WHAT YOU&apos;LL UNLOCK
             </span>
