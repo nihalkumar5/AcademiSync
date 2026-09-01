@@ -6,7 +6,7 @@ import { Homework, Subject, HomeworkPriority, HomeworkStatus } from '@/lib/types
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { clsx } from 'clsx';
-import { Users, Vote, Search, ChevronDown, Check } from 'lucide-react';
+import { Users, Vote, Search, ChevronDown, Check, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface AddHomeworkModalProps {
@@ -22,7 +22,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
   homeworkToEdit,
   prefilledData,
 }) => {
-  const { subjects, addHomework, updateHomework, profile, proposeBatchTask, isBatchCR } = useApp();
+  const { subjects, addHomework, updateHomework, deleteHomework, profile, proposeBatchTask, isBatchCR } = useApp();
 
   const [subjectId, setSubjectId] = useState('');
   const [title, setTitle] = useState('');
@@ -276,19 +276,45 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
             <div 
               className="sticky bottom-0 left-0 right-0 px-5 pt-4 pb-[max(calc(env(safe-area-inset-bottom,0px)+20px),20px)] bg-[#F7F7F5] dark:bg-[#1A1A1A] border-t border-[#D9D9D6] dark:border-[#333333] flex items-center justify-between z-20"
             >
-              <button 
-                type="button" 
-                onClick={onClose}
-                className="px-4 py-2.5 text-[13px] font-bold uppercase text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit"
-                className="px-6 py-2.5 bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] text-[13px] font-bold uppercase hover:opacity-90 transition-opacity"
-              >
-                {homeworkToEdit ? 'Save Changes' : shareWithBatch ? (isBatchCR ? 'Post Task' : 'Propose Task') : 'Create Task'}
-              </button>
+              {homeworkToEdit ? (
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    deleteHomework(homeworkToEdit.id);
+                    onClose();
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-2 text-[12.5px] font-bold uppercase text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer rounded-none"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Delete Task</span>
+                </button>
+              ) : (
+                <button 
+                  type="button" 
+                  onClick={onClose}
+                  className="px-4 py-2.5 text-[13px] font-bold uppercase text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+              )}
+
+              <div className="flex items-center gap-2">
+                {homeworkToEdit && (
+                  <button 
+                    type="button" 
+                    onClick={onClose}
+                    className="px-3 py-2.5 text-[12.5px] font-bold uppercase text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                )}
+                <button 
+                  type="submit"
+                  className="px-6 py-2.5 bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] text-[13px] font-bold uppercase hover:opacity-90 transition-opacity cursor-pointer"
+                >
+                  {homeworkToEdit ? 'Save Changes' : shareWithBatch ? (isBatchCR ? 'Post Task' : 'Propose Task') : 'Create Task'}
+                </button>
+              </div>
             </div>
           </form>
         </div>

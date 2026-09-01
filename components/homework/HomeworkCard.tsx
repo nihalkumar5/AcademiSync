@@ -104,10 +104,15 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                 {homework.priority}
               </span>
             )}
-            <div className="relative shrink-0 ml-2" ref={dropdownRef}>
+            <div className="relative shrink-0" ref={dropdownRef}>
             <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="p-1 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer text-[#6F6F6F]"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMenu(!showMenu);
+              }}
+              className="w-8 h-8 flex items-center justify-center -mr-1.5 -mt-1.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer text-[#6F6F6F]"
+              aria-label="More options"
             >
               <MoreVertical className="w-4 h-4" />
             </button>
@@ -216,9 +221,12 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
               <Check className="w-3.5 h-3.5" strokeWidth={3} />
             ) : null}
           </button>
-          <div className="flex flex-col">
+          <div 
+            onClick={() => onEdit(homework)}
+            className="flex flex-col flex-1 cursor-pointer group"
+          >
             <h4 className={clsx(
-              "text-[17px] font-semibold leading-[21px]",
+              "text-[17px] font-semibold leading-[21px] group-hover:opacity-80 transition-opacity",
               isDone ? "text-[#6F6F6F] line-through" : "text-[#111111] dark:text-[#FFFFFF]"
             )}>
               {homework.title}
