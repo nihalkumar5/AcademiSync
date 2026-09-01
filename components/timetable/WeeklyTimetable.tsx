@@ -265,44 +265,33 @@ export const WeeklyTimetable: React.FC = () => {
             <div
               key={day}
               className={clsx(
-                "flex flex-col gap-4 p-4 rounded-3xl transition-all",
+                "flex flex-col gap-4 p-4 border transition-all rounded-none",
                 isToday
-                  ? "hero-mesh-card ring-1 ring-indigo-500/20"
-                  : "glass-card"
+                  ? "bg-[#F7F7F5] dark:bg-[#1E1E1E] border-[#111111] dark:border-[#FFFFFF]"
+                  : "bg-[#FFFFFF] dark:bg-[#181818] border-[#D9D9D6] dark:border-[#2C2C2C]"
               )}
             >
               {/* Day Header */}
-              <div className="flex items-center justify-between px-1">
-                <div className="flex flex-col gap-1">
+              <div className="flex items-center justify-between px-1 pb-3 border-b border-[#EEEEEC] dark:border-[#2C2C2C]">
+                <div className="flex flex-col gap-0.5">
                   <div className="flex items-center gap-2">
-                    <span className={clsx(
-                      "text-sm font-bold",
-                      isToday ? "text-indigo-900 dark:text-indigo-100" : "text-slate-900 dark:text-zinc-100"
-                    )}>
+                    <span className="text-[14px] font-bold tracking-tight text-[#111111] dark:text-[#FFFFFF]">
                       {day}
                     </span>
                     {isToday && (
-                      <span className="text-[10px] font-bold text-white bg-indigo-500 px-2 py-0.5 rounded-full shadow-sm">
+                      <span className="text-[10px] font-bold text-white bg-[#111111] dark:bg-[#FFFFFF] dark:text-[#111111] px-2 py-0.5 uppercase tracking-wider font-mono">
                         Today
                       </span>
                     )}
                   </div>
-                  <span className={clsx(
-                    "text-[11px] font-medium",
-                    isToday ? "text-indigo-700/80 dark:text-indigo-300/80" : "text-slate-500 dark:text-zinc-400"
-                  )}>
-                    {daySessions.length} classes
+                  <span className="text-[11px] font-medium text-[#6F6F6F] dark:text-[#999999]">
+                    {daySessions.length} {daySessions.length === 1 ? 'class' : 'classes'}
                   </span>
                 </div>
 
                 <button
                   onClick={() => handleAddForDay(day)}
-                  className={clsx(
-                    "p-1.5 rounded-xl transition-colors shrink-0",
-                    isToday
-                      ? "bg-indigo-600/10 text-indigo-600 hover:bg-indigo-600/20 dark:bg-indigo-500/20 dark:text-indigo-300 dark:hover:bg-indigo-500/30"
-                      : "bg-slate-100 text-slate-500 hover:text-slate-800 hover:bg-slate-200 dark:bg-zinc-800/50 dark:hover:bg-zinc-700"
-                  )}
+                  className="p-1.5 border border-[#D9D9D6] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] text-[#111111] dark:text-[#FFFFFF] bg-white dark:bg-[#1A1A1A] transition-colors cursor-pointer"
                   title={`Add class to ${day}`}
                 >
                   <Plus className="w-4 h-4" />
@@ -312,14 +301,14 @@ export const WeeklyTimetable: React.FC = () => {
               {/* Class Cards List */}
               <div className="flex flex-col gap-3 min-h-[400px]">
                 {daySessions.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-48 text-center bg-white/40 dark:bg-zinc-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800/80">
-                    <CalendarDays className="w-6 h-6 text-slate-300 dark:text-zinc-600 mb-2" />
-                    <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Free Day</span>
+                  <div className="flex flex-col items-center justify-center h-48 text-center bg-black/[0.02] dark:bg-white/[0.02] border border-dashed border-[#D9D9D6] dark:border-[#2C2C2C]">
+                    <CalendarDays className="w-6 h-6 text-[#888888] mb-2 opacity-50" />
+                    <span className="text-xs font-semibold text-[#888888]">No Classes</span>
                     <button
                       onClick={() => handleAddForDay(day)}
-                      className="mt-1 text-[11px] font-bold text-indigo-500 hover:text-indigo-600"
+                      className="mt-1.5 text-[11px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider underline cursor-pointer"
                     >
-                      Add class
+                      + Add class
                     </button>
                   </div>
                 ) : (
