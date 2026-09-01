@@ -6,6 +6,7 @@ import { isUserSuperAdmin } from '@/lib/adminAuth';
 import { collection, onSnapshot, doc, getDoc, updateDoc, setDoc, deleteDoc, query, orderBy, arrayRemove, arrayUnion } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PromotionalCampaign, CampaignCategory, AdminRole } from '@/lib/types';
+import { searchCollegesAsync, CollegeItem, POPULAR_INDIAN_COLLEGES } from '@/lib/collegeDirectory';
 import {
   Shield,
   Users,
@@ -85,6 +86,38 @@ export default function SuperAdminPage() {
   });
   
   const [collegeSearchQuery, setCollegeSearchQuery] = useState('');
+  
+  // SheerID College Search for Campaign Audience Targeting
+  const [campaignCollegeQuery, setCampaignCollegeQuery] = useState('');
+  const [suggestedCampaignColleges, setSuggestedCampaignColleges] = useState<CollegeItem[]>([]);
+  const [isSearchingColleges, setIsSearchingColleges] = useState(false);
+  const [showCampaignCollegeDropdown, setShowCampaignCollegeDropdown] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    if (!campaignCollegeQuery.trim()) {
+      setSuggestedCampaignColleges([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setIsSearchingColleges(true);
+      try {
+        const results = await searchCollegesAsync(campaignCollegeQuery);
+        if (active) {
+          setSuggestedCampaignColleges(results);
+        }
+      } catch (err) {
+        console.error('Error searching colleges for campaign:', err);
+      } finally {
+        if (active) setIsSearchingColleges(false);
+      }
+    }, 200);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [campaignCollegeQuery]);
 
   const userEmail = user?.primaryEmailAddress?.emailAddress || '';
   const isAdmin = isUserSuperAdmin(profile, userEmail);
@@ -1575,7 +1608,7 @@ export default function SuperAdminPage() {
                       </div>
                     ) : (
                       <div className="flex flex-col gap-2">
-                        <label className="w-full py-12 border-2 border-dashed border-[#D8D8D8] dark:border-[#333333] flex flex-col items-center justify-center gap-3 text-[#6F6F6F] hover:border-[#111111] dark:hover:border-[#FFFFFF] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer bg-white dark:bg-[#1A1A1A]">
+                        <label className="relative w-full py-12 border-2 border-dashed border-[#D8D8D8] dark:border-[#333333] flex flex-col items-center justify-center gap-3 text-[#6F6F6F] hover:border-[#111111] dark:hover:border-[#FFFFFF] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer bg-white dark:bg-[#1A1A1A]">
                           <Upload className="w-6 h-6" />
                           <span className="text-[13px] font-medium">Click to upload image</span>
                           <input
@@ -1591,7 +1624,7 @@ export default function SuperAdminPage() {
                                 reader.readAsDataURL(file);
                               }
                             }}
-                            className="hidden"
+                            className="opacity-0 absolute inset-0 cursor-pointer w-full h-full"
                           />
                         </label>
                       </div>
@@ -1638,22 +1671,91 @@ export default function SuperAdminPage() {
                       
                       {/* Colleges */}
                       <div className="flex flex-col gap-3">
-                        <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Target Colleges</label>
-                        <div className="flex flex-wrap gap-2">
-                          {Array.from(new Set(usersList.map(u => u.college).filter(Boolean))).map(college => {
+                        <div className="flex items-center justify-between">
+                          <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Target Colleges</label>
+                          <span className="text-[11px] text-[#6F6F6F]">
+                            {campaignForm.targetColleges.length} selected
+                          </span>
+                        </div>
+
+                        {/* Search and Add College */}
+                        <div className="relative">
+                          <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-[#1A1A1A] border border-[#D9D9D6] dark:border-[#333333]">
+                            <Search className="w-4 h-4 text-[#888888] shrink-0" />
+                            <input
+                              type="text"
+                              value={campaignCollegeQuery}
+                              onChange={(e) => {
+                                setCampaignCollegeQuery(e.target.value);
+                                setShowCampaignCollegeDropdown(true);
+                              }}
+                              onFocus={() => setShowCampaignCollegeDropdown(true)}
+                              placeholder="Search verified college (e.g. SRM, IIT, IIIT, VIT) to target..."
+                              className="w-full bg-transparent text-[13px] focus:outline-none placeholder:text-[#888888]"
+                            />
+                            {campaignCollegeQuery && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  toggleCollegeSelection(campaignCollegeQuery.trim());
+                                  setCampaignCollegeQuery('');
+                                  setShowCampaignCollegeDropdown(false);
+                                }}
+                                className="px-2 py-1 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase shrink-0"
+                              >
+                                Add
+                              </button>
+                            )}
+                          </div>
+
+                          {showCampaignCollegeDropdown && (suggestedCampaignColleges.length > 0 || isSearchingColleges) && (
+                            <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] shadow-xl z-50 divide-y divide-[#E5E5E5] dark:divide-[#2C2C2C]">
+                              <div className="p-2 bg-[#F9F9F8] dark:bg-[#161616] text-[10px] font-bold uppercase tracking-wider text-[#888888] flex items-center justify-between sticky top-0">
+                                <span>{isSearchingColleges ? 'Searching SheerID...' : 'Search Results'}</span>
+                                <span className="text-[8.5px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 font-mono font-bold">SheerID Verified</span>
+                              </div>
+                              {suggestedCampaignColleges.map((item) => (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  onMouseDown={() => {
+                                    toggleCollegeSelection(item.name);
+                                    setCampaignCollegeQuery('');
+                                    setShowCampaignCollegeDropdown(false);
+                                  }}
+                                  className="w-full px-3 py-2 hover:bg-black/5 dark:hover:bg-white/5 text-left transition-colors cursor-pointer flex flex-col"
+                                >
+                                  <span className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
+                                    {item.name}
+                                  </span>
+                                  {item.state && (
+                                    <span className="text-[10.5px] text-[#888888]">
+                                      {item.state}
+                                    </span>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Selected & Quick College Badges */}
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {allAvailableColleges.map((college) => {
                             const isSelected = campaignForm.targetColleges.includes(college);
                             return (
                               <button
                                 key={college}
                                 type="button"
                                 onClick={() => toggleCollegeSelection(college)}
-                                className={`px-4 py-2 text-[13px] font-medium border transition-colors ${
+                                className={`px-3 py-1.5 text-[12px] font-medium border transition-colors flex items-center gap-1.5 cursor-pointer ${
                                   isSelected
                                     ? 'border-[#111111] bg-[#111111] text-[#FFFFFF] dark:border-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111]'
                                     : 'border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-white dark:bg-[#1A1A1A]'
                                 }`}
                               >
-                                {college}
+                                <span>{college}</span>
+                                {isSelected && <Check className="w-3.5 h-3.5" />}
                               </button>
                             );
                           })}
@@ -1688,25 +1790,31 @@ export default function SuperAdminPage() {
                           {campaignForm.branchTargeting === 'custom' && (
                             <div className="flex flex-col gap-3">
                               <div className="flex flex-wrap gap-2">
-                                {Array.from(new Set(
-                                  usersList
-                                    .filter(u => campaignForm.targetColleges.includes(u.college))
-                                    .map(u => u.branch)
+                                {Array.from(new Set([
+                                  ...availableBranches,
+                                  ...usersList
+                                    .filter(u => campaignForm.targetColleges.includes(u.profile?.college || u.college))
+                                    .map(u => u.profile?.branch || u.branch)
+                                    .filter(Boolean),
+                                  ...batchesList
+                                    .filter(b => campaignForm.targetColleges.includes(b.college))
+                                    .map(b => b.branch)
                                     .filter(Boolean)
-                                )).map(branch => {
+                                ])).map(branch => {
                                   const isSelected = campaignForm.targetBranches.includes(branch);
                                   return (
                                     <button
                                       key={branch}
                                       type="button"
                                       onClick={() => toggleBranchSelection(branch)}
-                                      className={`px-4 py-2 text-[13px] font-medium border transition-colors ${
+                                      className={`px-3 py-1.5 text-[12px] font-medium border transition-colors flex items-center gap-1.5 cursor-pointer ${
                                         isSelected
                                           ? 'border-[#111111] bg-[#111111] text-[#FFFFFF] dark:border-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111]'
                                           : 'border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-white dark:bg-[#1A1A1A]'
                                       }`}
                                     >
-                                      {branch}
+                                      <span>{branch}</span>
+                                      {isSelected && <Check className="w-3.5 h-3.5" />}
                                     </button>
                                   );
                                 })}
