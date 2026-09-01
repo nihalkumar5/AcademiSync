@@ -15,8 +15,6 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(GoogleAuth.class);
         super.onCreate(savedInstanceState);
-        
-        applyDarkStatusBarIcons();
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
@@ -30,31 +28,6 @@ public class MainActivity extends BridgeActivity {
             webSettings.setDatabaseEnabled(true);
             webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
             webSettings.setSupportMultipleWindows(true);
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        applyDarkStatusBarIcons();
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) {
-            applyDarkStatusBarIcons();
-        }
-    }
-
-    private void applyDarkStatusBarIcons() {
-        Window window = getWindow();
-        if (window != null) {
-            window.setStatusBarColor(android.graphics.Color.parseColor("#FAFAF8"));
-            WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(window, window.getDecorView());
-            if (controller != null) {
-                controller.setAppearanceLightStatusBars(true);
-            }
         }
     }
 }
