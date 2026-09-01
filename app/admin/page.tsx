@@ -1883,13 +1883,45 @@ export default function SuperAdminPage() {
                         {(() => {
                           if (campaignForm.targetAudienceType === 'all') return `${usersList.length} students (Everyone)`;
                           if (campaignForm.targetColleges.length === 0) return '0 students';
+                          
                           let matchCount = 0;
+                          const matchedUserIds = new Set<string>();
+
                           usersList.forEach(u => {
-                            const cMatch = campaignForm.targetColleges.includes(u.college);
-                            const bMatch = campaignForm.branchTargeting === 'all' || campaignForm.targetBranches.some(b => b.toLowerCase() === (u.branch || '').toLowerCase());
-                            const sMatch = campaignForm.semesterTargeting === 'all' || campaignForm.targetSemesters.some(s => String(s) === String(u.semester).replace(/[^0-9]/g, ''));
-                            if (cMatch && bMatch && sMatch) matchCount++;
+                            const p = u.profile || u || {};
+                            const userCollege = (p.college || u.college || '').toLowerCase().trim();
+                            const userBranch = (p.branch || u.branch || '').toLowerCase().trim();
+                            const userSem = String(p.semester || u.semester || '').replace(/[^0-9]/g, '');
+
+                            if (!userCollege) return;
+
+                            const cMatch = campaignForm.targetColleges.some(tc => {
+                              const target = tc.toLowerCase().trim();
+                              return (
+                                userCollege === target ||
+                                userCollege.includes(target) ||
+                                target.includes(userCollege) ||
+                                (userCollege.includes('naya raipur') && target.includes('naya raipur')) ||
+                                (userCollege.includes('iiit-nr') && target.includes('naya raipur')) ||
+                                (userCollege.includes('iiit') && target.includes('iiit') && userCollege.includes('raipur') && target.includes('raipur'))
+                              );
+                            });
+
+                            const bMatch = campaignForm.branchTargeting === 'all' || campaignForm.targetBranches.some(tb => {
+                              const targetB = tb.toLowerCase().trim();
+                              return !userBranch || userBranch.includes(targetB) || targetB.includes(userBranch);
+                            });
+
+                            const sMatch = campaignForm.semesterTargeting === 'all' || campaignForm.targetSemesters.some(ts => {
+                              return !userSem || String(ts) === userSem;
+                            });
+
+                            if (cMatch && bMatch && sMatch) {
+                              matchedUserIds.add(u.id);
+                              matchCount++;
+                            }
                           });
+
                           return `~${matchCount} students`;
                         })()}
                       </span>
