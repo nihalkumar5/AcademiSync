@@ -912,10 +912,10 @@ ${link}
                   </div>
                   <div className="flex flex-col gap-0.5">
                     <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none group-hover:underline underline-offset-2">
-                      {user.fullName || profile.name || 'Student'}
+                      {user?.fullName || profile?.name || 'Student'}
                     </span>
                     <span className="text-[12px] text-[#6F6F6F]">
-                      {user.primaryEmailAddress?.emailAddress || profile.email || 'Connected'}
+                      {user?.primaryEmailAddress?.emailAddress || profile?.email || 'Connected'}
                     </span>
                   </div>
                 </div>

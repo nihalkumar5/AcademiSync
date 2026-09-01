@@ -78,7 +78,7 @@ export const OverviewHeader: React.FC = () => {
         <h2 className="text-[40px] text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
           <span className="font-normal">{greeting},</span><br />
           <span className="font-medium inline-flex items-baseline gap-2">
-            {profile.name.split(' ')[0]}
+            {(profile?.name || 'Student').split(' ')[0]}
             <span>👋</span>
           </span>
         </h2>
@@ -88,13 +88,13 @@ export const OverviewHeader: React.FC = () => {
             {dateFormatted} · {timeFormatted}
           </p>
 
-          {(profile.programme || profile.branch) && (
+          {(profile?.programme || profile?.branch) && (
             <div className="flex flex-col">
               <span className="text-[13px] leading-[18px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider truncate">
-                SEM {profile.semester} · {profile.programme}{profile.branch ? ` · ${profile.branch.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')}` : ''}
+                SEM {profile?.semester || 1} · {profile?.programme || ''}{profile?.branch ? ` · ${profile.branch.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')}` : ''}
               </span>
               <span className="text-[13px] leading-[18px] font-normal text-[#6F6F6F] uppercase truncate tracking-wide mt-1">
-                {profile.rollNumber ? `${profile.rollNumber} · ` : ''}{getShortCollegeName(profile.college)}
+                {profile?.rollNumber ? `${profile.rollNumber} · ` : ''}{getShortCollegeName(profile?.college || '')}
               </span>
             </div>
           )}

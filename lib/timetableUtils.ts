@@ -117,20 +117,24 @@ export interface LiveClassStatus {
 }
 
 export const getLiveClassStatus = (
-  timetable: ClassSession[],
-  subjects: Subject[],
+  timetable: ClassSession[] = [],
+  subjects: Subject[] = [],
   day: DayOfWeek = getCurrentDayOfWeek(),
   dateStr: string = getTodayDateString(),
   rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string; subjectId?: string }> = {}
 ): LiveClassStatus => {
+  const safeTimetable = Array.isArray(timetable) ? timetable : [];
+  const safeSubjects = Array.isArray(subjects) ? subjects : [];
+  const safeRescheduled = (rescheduledSessions && typeof rescheduledSessions === 'object') ? rescheduledSessions : {};
+
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-  const daySessions = timetable
-    .filter((s) => s.day === day)
+  const daySessions = safeTimetable
+    .filter((s) => s && s.day === day)
     .map((s) => {
       const rescheduleKey = `${dateStr}_${s.id}`;
-      const reschedule = rescheduledSessions[rescheduleKey];
+      const reschedule = safeRescheduled[rescheduleKey];
       if (reschedule) {
         return {
           ...s,
@@ -148,7 +152,7 @@ export const getLiveClassStatus = (
     return { currentClass: null, nextClass: null, allDoneToday: true };
   }
 
-  const subjectMap = new Map(subjects.map((s) => [s.id, s]));
+  const subjectMap = new Map(safeSubjects.map((s) => [s.id, s]));
 
   let currentClass: LiveClassStatus['currentClass'] = null;
   let nextClass: LiveClassStatus['nextClass'] = null;
@@ -186,14 +190,19 @@ export const getLiveClassStatus = (
  * Deterministic generation of the "What to Carry" bag list for tomorrow
  */
 export const calculateTomorrowCarryItems = (
-  timetable: ClassSession[],
-  subjects: Subject[],
-  existingCarryItems: CarryItem[],
+  timetable: ClassSession[] = [],
+  subjects: Subject[] = [],
+  existingCarryItems: CarryItem[] = [],
   targetDateStr?: string,
   targetDay?: DayOfWeek,
   events: AcademicEvent[] = [],
   settings?: UserSettings
 ): CarryItem[] => {
+  const safeTimetable = Array.isArray(timetable) ? timetable : [];
+  const safeSubjects = Array.isArray(subjects) ? subjects : [];
+  const safeExistingCarry = Array.isArray(existingCarryItems) ? existingCarryItems : [];
+  const safeEvents = Array.isArray(events) ? events : [];
+
   const now = new Date();
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
@@ -313,9 +322,9 @@ export const calculateTomorrowCarryItems = (
  * Deterministic calculation of Today's Focus priority list
  */
 export const calculateTodayFocus = (
-  homework: Homework[],
-  timetable: ClassSession[],
-  subjects: Subject[],
+  homework: Homework[] = [],
+  timetable: ClassSession[] = [],
+  subjects: Subject[] = [],
   warningDays: number = 3
 ): {
   id: string;
@@ -340,13 +349,17 @@ export const calculateTodayFocus = (
     originalPriority?: 'Low' | 'Medium' | 'High';
   }[] = [];
 
-  const subjectMap = new Map(subjects.map((s) => [s.id, s]));
+  const safeSubjects = Array.isArray(subjects) ? subjects : [];
+  const safeHomework = Array.isArray(homework) ? homework : [];
+  const safeTimetable = Array.isArray(timetable) ? timetable : [];
+
+  const subjectMap = new Map(safeSubjects.map((s) => [s.id, s]));
   const today = new Date();
   const tomorrow = new Date();
   tomorrow.setDate(today.getDate() + 1);
 
   // 1. Incomplete homework sorted by deadline & priority
-  const incompleteHw = homework.filter((h) => h.status !== 'Completed');
+  const incompleteHw = safeHomework.filter((h) => h && h.status !== 'Completed');
 
   incompleteHw.forEach((hw) => {
     const subject = subjectMap.get(hw.subjectId);

@@ -52,20 +52,30 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [resetSent, setResetSent] = useState(false);
+  const isNavigatingRef = React.useRef(false);
 
   const proceedAfterAuth = async () => {
-    if (typeof window !== 'undefined') {
-      const pending = localStorage.getItem('pending_join_invite');
-      if (pending) {
-        try {
-          localStorage.removeItem('pending_join_invite');
-          await joinBatchTimetable(pending);
-        } catch (err) {
-          console.warn('Auto-join on login failed:', err);
+    if (isNavigatingRef.current) return;
+    isNavigatingRef.current = true;
+    try {
+      if (typeof window !== 'undefined') {
+        const pending = localStorage.getItem('pending_join_invite');
+        if (pending) {
+          try {
+            localStorage.removeItem('pending_join_invite');
+            await joinBatchTimetable(pending);
+          } catch (err) {
+            console.warn('Auto-join on login failed:', err);
+          }
         }
       }
+      router.replace('/');
+    } catch (err) {
+      console.warn('Navigation error after auth:', err);
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
     }
-    router.push('/');
   };
 
   useEffect(() => {

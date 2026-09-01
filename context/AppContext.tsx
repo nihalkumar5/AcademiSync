@@ -253,7 +253,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setExamsState([]);
       setSettingsState(DEFAULT_SETTINGS);
       setCancelledSessionsState([]);
+      setCancelledSessionsMeta({});
       setRescheduledSessionsState({});
+      setCurrentBatchData(null);
+      setProposedBatchTasks([]);
       remoteStateString.current = "";
       setIsCloudSynced(false);
       prevUserIdRef.current = null;
