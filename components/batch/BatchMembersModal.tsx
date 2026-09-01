@@ -320,7 +320,6 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
 🔑 *Batch Code:* ${code}
 
 ⚡ Realtime Class Cancellation & Reschedule Alerts
-📊 75% Attendance Tracker & Bunk Calculator
 📅 Live Exam Schedule, Room Numbers & Lab Sessions
 
 👉 Open Intersemester App → Tap *Connect Batch* → Enter Code: *${code}*`;
