@@ -196,7 +196,7 @@ export default function AppHome() {
         const isAndroidBrowser = /Android/i.test(ua) && !Capacitor.isNativePlatform();
         
         if (isAndroidBrowser) {
-          const intentUrl = `intent://invite?key=${inviteParam}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.intersemester.app;end`;
+          const intentUrl = `intent://invite?key=${inviteParam}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end`;
           window.location.href = intentUrl;
           return;
         }
@@ -244,7 +244,7 @@ export default function AppHome() {
         const isAndroidBrowser = /Android/i.test(ua) && !Capacitor.isNativePlatform();
         
         if (isAndroidBrowser) {
-          const intentUrl = `intent://calendar_invite?key=${calendarInviteParam}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.intersemester.app;end`;
+          const intentUrl = `intent://calendar_invite?key=${calendarInviteParam}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end`;
           window.location.href = intentUrl;
           return;
         }
@@ -281,7 +281,7 @@ export default function AppHome() {
         const isAndroidBrowser = /Android/i.test(ua) && !Capacitor.isNativePlatform();
         
         if (isAndroidBrowser) {
-          const intentUrl = `intent://exams_invite?key=${examsInviteParam}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.intersemester.app;end`;
+          const intentUrl = `intent://exams_invite?key=${examsInviteParam}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end`;
           window.location.href = intentUrl;
           return;
         }
@@ -329,7 +329,7 @@ export default function AppHome() {
                 </span>
               </div>
               <a
-                href="intent://open#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.intersemester.app;end"
+                href={`intent://open#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end`}
                 className="px-4 py-2 bg-[#FFFFFF] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider font-bold text-[11px] shrink-0 flex items-center justify-center text-center"
               >
                 OPEN APP
@@ -401,22 +401,14 @@ export default function AppHome() {
             {!Capacitor.isNativePlatform() && isAndroid && (
               <div className="flex flex-col gap-2 p-3 bg-[#01875f]/10 border border-[#01875f] text-[#01875f] dark:text-[#00e699]">
                 <p className="text-[11px] font-bold leading-normal">
-                  Syncing is recommended on the native app for widgets & alarms!
+                  Have the Android App installed?
                 </p>
                 <div className="flex gap-2">
                   <a
-                    href="https://play.google.com/store/apps/details?id=com.intersemester.app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 py-2 bg-[#01875f] text-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-[#016f4e] transition-colors cursor-pointer rounded-none"
+                    href={`intent://invite?key=${inviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end`}
+                    className="w-full py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
                   >
-                    Download App
-                  </a>
-                  <a
-                    href={`intent://invite?key=${inviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.intersemester.app;end`}
-                    className="flex-1 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
-                  >
-                    Open in App
+                    Open in Intersemester App
                   </a>
                 </div>
               </div>
@@ -507,22 +499,14 @@ export default function AppHome() {
             {!Capacitor.isNativePlatform() && isAndroid && (
               <div className="flex flex-col gap-2 p-3 bg-[#01875f]/10 border border-[#01875f] text-[#01875f] dark:text-[#00e699]">
                 <p className="text-[11px] font-bold leading-normal">
-                  Syncing is recommended on the native app for widgets & alarms!
+                  Have the Android App installed?
                 </p>
                 <div className="flex gap-2">
                   <a
-                    href="https://play.google.com/store/apps/details?id=com.intersemester.app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 py-2 bg-[#01875f] text-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-[#016f4e] transition-colors cursor-pointer rounded-none"
+                    href={`intent://calendar_invite?key=${calendarInviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end`}
+                    className="w-full py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
                   >
-                    Download App
-                  </a>
-                  <a
-                    href={`intent://calendar_invite?key=${calendarInviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.intersemester.app;end`}
-                    className="flex-1 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
-                  >
-                    Open in App
+                    Open in Intersemester App
                   </a>
                 </div>
               </div>
@@ -611,22 +595,14 @@ export default function AppHome() {
             {!Capacitor.isNativePlatform() && isAndroid && (
               <div className="flex flex-col gap-2 p-3 bg-[#01875f]/10 border border-[#01875f] text-[#01875f] dark:text-[#00e699]">
                 <p className="text-[11px] font-bold leading-normal">
-                  Syncing is recommended on the native app for widgets & alarms!
+                  Have the Android App installed?
                 </p>
                 <div className="flex gap-2">
                   <a
-                    href="https://play.google.com/store/apps/details?id=com.intersemester.app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 py-2 bg-[#01875f] text-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-[#016f4e] transition-colors cursor-pointer rounded-none"
+                    href={`intent://exams_invite?key=${examsInviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end`}
+                    className="w-full py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
                   >
-                    Download App
-                  </a>
-                  <a
-                    href={`intent://exams_invite?key=${examsInviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.intersemester.app;end`}
-                    className="flex-1 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
-                  >
-                    Open in App
+                    Open in Intersemester App
                   </a>
                 </div>
               </div>
