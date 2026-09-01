@@ -19,9 +19,17 @@ export const metadata: Metadata = {
   description:
     'Smart academic assistant that helps students manage their classes, tasks, deadlines, and everyday campus life with clarity and calm.',
   icons: {
-    icon: '/icon.png',
-    shortcut: '/icon.png',
-    apple: '/icon.png',
+    icon: '/logo51.png',
+    shortcut: '/logo51.png',
+    apple: [
+      { url: '/logo51.png', sizes: '180x180', type: 'image/png' },
+      { url: '/logo51.png' },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Intersemester',
   },
 };
 import { Analytics } from '@vercel/analytics/react';
@@ -34,6 +42,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-[#FAFAF8] dark:bg-[#111110]" suppressHydrationWarning>
       <head>
+        <link rel="apple-touch-icon" href="/logo51.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/logo51.png" />
+        <meta name="apple-mobile-web-app-title" content="Intersemester" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
