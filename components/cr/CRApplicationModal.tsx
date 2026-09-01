@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useApp } from '@/context/AppContext';
 import { getCanonicalBatchKey, isExplicitSection, formatBatchDisplayName } from '@/lib/timetableUtils';
+import { searchCollegesAsync, CollegeItem } from '@/lib/collegeDirectory';
 import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { 
@@ -52,6 +53,37 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
   const [semester, setSemester] = useState(targetSemester || profile.semester || 1);
   const [section, setSection] = useState(targetSection || profile.section || '');
   const [rollNumber, setRollNumber] = useState(profile.rollNumber || '');
+
+  // SheerID College search autocomplete
+  const [showCollegeDropdown, setShowCollegeDropdown] = useState(false);
+  const [suggestedColleges, setSuggestedColleges] = useState<CollegeItem[]>([]);
+  const [isLoadingColleges, setIsLoadingColleges] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    if (!college.trim()) {
+      setSuggestedColleges([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setIsLoadingColleges(true);
+      try {
+        const results = await searchCollegesAsync(college);
+        if (active) {
+          setSuggestedColleges(results);
+        }
+      } catch (err) {
+        console.error('Error searching colleges:', err);
+      } finally {
+        if (active) setIsLoadingColleges(false);
+      }
+    }, 200);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [college]);
 
   const canonicalBatchKey = getCanonicalBatchKey(college, programme, branch, semester, section);
   const requestId = user?.id ? `${user.id}_${canonicalBatchKey}` : null;
@@ -207,14 +239,51 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
               </div>
               
               <div className="flex flex-col gap-2">
-                <input
-                  type="text"
-                  placeholder="College Name"
-                  value={college}
-                  onChange={(e) => setCollege(e.target.value)}
-                  required
-                  className="w-full bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] px-3 py-2 text-[12.5px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search verified college (e.g. SRM, IIT, VIT)..."
+                    value={college}
+                    onChange={(e) => {
+                      setCollege(e.target.value);
+                      setShowCollegeDropdown(true);
+                    }}
+                    onFocus={() => {
+                      if (suggestedColleges.length > 0) setShowCollegeDropdown(true);
+                    }}
+                    required
+                    className="w-full bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] px-3 py-2 text-[12.5px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
+                  />
+                  {showCollegeDropdown && (suggestedColleges.length > 0 || isLoadingColleges) && (
+                    <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] shadow-xl z-50 divide-y divide-[#E5E5E5] dark:divide-[#2C2C2C]">
+                      <div className="p-2 bg-[#F9F9F8] dark:bg-[#161616] text-[10px] font-bold uppercase tracking-wider text-[#888888] flex items-center justify-between sticky top-0">
+                        <span>{isLoadingColleges ? 'Searching SheerID...' : 'Select College'}</span>
+                        <span className="text-[8.5px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 font-mono font-bold">SheerID Verified</span>
+                      </div>
+                      {suggestedColleges.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onMouseDown={() => {
+                            setCollege(item.name);
+                            setShowCollegeDropdown(false);
+                          }}
+                          className="w-full px-3 py-2 hover:bg-black/5 dark:hover:bg-white/5 text-left transition-colors cursor-pointer flex flex-col"
+                        >
+                          <span className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
+                            {item.name}
+                          </span>
+                          {item.state && (
+                            <span className="text-[10.5px] text-[#888888]">
+                              {item.state}
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="text"
@@ -250,11 +319,10 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                     <span className="text-[12.5px] text-[#A0A0A0] mr-2">Sec</span>
                     <input
                       type="text"
-                      placeholder="e.g. A"
+                      placeholder="e.g. A (Optional)"
                       value={section}
                       onChange={(e) => setSection(e.target.value)}
-                      required
-                      className="w-full bg-transparent text-[12.5px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none uppercase"
+                      className="w-full bg-transparent text-[12.5px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none uppercase placeholder:normal-case placeholder:text-[#A0A0A0]"
                     />
                   </div>
                 </div>
