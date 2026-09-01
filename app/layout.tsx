@@ -44,6 +44,7 @@ export default function RootLayout({
                     var invite = params.get('invite') || params.get('key');
                     var calendarInvite = params.get('calendar_invite');
                     var examsInvite = params.get('exams_invite');
+                    var task = params.get('task');
                     
                     if (invite) {
                       var intent = "intent://invite?key=" + encodeURIComponent(invite) + "#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=" + encodeURIComponent(window.location.href) + ";end";
@@ -53,6 +54,9 @@ export default function RootLayout({
                       window.location.replace(intent);
                     } else if (examsInvite) {
                       var intent = "intent://exams_invite?key=" + encodeURIComponent(examsInvite) + "#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=" + encodeURIComponent(window.location.href) + ";end";
+                      window.location.replace(intent);
+                    } else if (task) {
+                      var intent = "intent://task?task=" + encodeURIComponent(task) + "#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=" + encodeURIComponent(window.location.href) + ";end";
                       window.location.replace(intent);
                     }
                   }

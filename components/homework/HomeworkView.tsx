@@ -139,7 +139,7 @@ export const HomeworkView: React.FC = () => {
       const b64 = btoa(encodeURIComponent(JSON.stringify(shareData)));
       const shareUrl = `${window.location.origin}/?task=${b64}`;
       const shareTitle = `Task: ${hw.title}`;
-      const shareText = `Here is a task I shared with you from AcademiSync.`;
+      const shareText = `Here is a task I shared with you from Intersemester.`;
       
       if (Capacitor.isNativePlatform()) {
         await Share.share({

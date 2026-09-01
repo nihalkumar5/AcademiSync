@@ -428,7 +428,7 @@ export default function AppHome() {
                   PWA Quick Tip for iPhone Users:
                 </p>
                 <p className="text-[10px] leading-relaxed opacity-90 font-medium">
-                  Tap Safari's <span className="font-bold text-indigo-800 dark:text-indigo-400">Share</span> button (at the bottom) and select <span className="font-bold text-indigo-800 dark:text-indigo-400">"Add to Home Screen"</span> to run AcademiSync as a full-screen app!
+                  Tap Safari's <span className="font-bold text-indigo-800 dark:text-indigo-400">Share</span> button (at the bottom) and select <span className="font-bold text-indigo-800 dark:text-indigo-400">&quot;Add to Home Screen&quot;</span> to run Intersemester as a full-screen app!
                 </p>
               </div>
             )}
@@ -534,7 +534,7 @@ export default function AppHome() {
                   PWA Quick Tip for iPhone Users:
                 </p>
                 <p className="text-[10px] leading-relaxed opacity-90 font-medium">
-                  Tap Safari's <span className="font-bold text-indigo-800 dark:text-indigo-400">Share</span> button (at the bottom) and select <span className="font-bold text-indigo-800 dark:text-indigo-400">"Add to Home Screen"</span> to run AcademiSync as a full-screen app!
+                  Tap Safari's <span className="font-bold text-indigo-800 dark:text-indigo-400">Share</span> button (at the bottom) and select <span className="font-bold text-indigo-800 dark:text-indigo-400">&quot;Add to Home Screen&quot;</span> to run Intersemester as a full-screen app!
                 </p>
               </div>
             )}
@@ -638,7 +638,7 @@ export default function AppHome() {
                   PWA Quick Tip for iPhone Users:
                 </p>
                 <p className="text-[10px] leading-relaxed opacity-90 font-medium">
-                  Tap Safari's <span className="font-bold text-indigo-800 dark:text-indigo-400">Share</span> button (at the bottom) and select <span className="font-bold text-indigo-800 dark:text-indigo-400">"Add to Home Screen"</span> to run AcademiSync as a full-screen app!
+                  Tap Safari's <span className="font-bold text-indigo-800 dark:text-indigo-400">Share</span> button (at the bottom) and select <span className="font-bold text-indigo-800 dark:text-indigo-400">&quot;Add to Home Screen&quot;</span> to run Intersemester as a full-screen app!
                 </p>
               </div>
             )}
