@@ -79,7 +79,7 @@ export const IOSAppGate: React.FC = () => {
             <img 
               src="/heroios.png" 
               alt="Intersemester iOS" 
-              className="w-full h-full object-contain object-bottom pointer-events-none translate-y-[4%] scale-[1.1] sm:scale-[1.15]"
+              className="w-full h-full object-contain object-bottom pointer-events-none translate-y-[5%] scale-[1.22] sm:scale-[1.28]"
             />
           </div>
 
