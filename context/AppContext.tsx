@@ -1720,6 +1720,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           });
           await setDoc(userRef, payloadToSave, { merge: true });
           remoteStateString.current = JSON.stringify(payloadToSave);
+
+          // Clean up any older ghost records in Firestore for the same roll number or email
+          const currentRoll = (updatedProfile.rollNumber || '').trim().toLowerCase();
+          const currentEmail = (updatedProfile.email || userEmail).trim().toLowerCase();
+          if (currentRoll || currentEmail) {
+            const dupQuery = query(
+              collection(db, 'users'),
+              where('profile.batchKey', '==', batchKey),
+              where('profile.isBatchSynced', '==', true)
+            );
+            const dupSnap = await getDocs(dupQuery);
+            dupSnap.forEach((d) => {
+              if (d.id !== user.id) {
+                const dp = d.data().profile || {};
+                const rollMatch = currentRoll && dp.rollNumber && dp.rollNumber.trim().toLowerCase() === currentRoll;
+                const emailMatch = currentEmail && dp.email && dp.email.trim().toLowerCase() === currentEmail;
+                if (rollMatch || emailMatch) {
+                  updateDoc(doc(db, 'users', d.id), {
+                    'profile.isBatchSynced': false,
+                    'profile.batchKey': null,
+                  }).catch(() => {});
+                }
+              }
+            });
+          }
         } catch (saveErr) {
           console.warn('Error saving joined batch profile to user doc:', saveErr);
         }

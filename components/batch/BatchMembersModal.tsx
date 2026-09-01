@@ -2,7 +2,7 @@
 
 import { shareLink } from '@/lib/shareUtils';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
 import { collection, onSnapshot, doc, updateDoc, increment, query, where, arrayUnion, arrayRemove } from 'firebase/firestore';
@@ -14,6 +14,87 @@ interface BatchMembersModalProps {
   isOpen: boolean;
   onClose: () => void;
   onJoinBatch?: () => void;
+}
+
+// ── Robust Deduplication Engine ──────────────────────────────────────────────
+// Groups multiple Firestore documents belonging to the same real student
+// based on: User ID, Roll Number, Email, or Full Name.
+function deduplicateBatchMembers(rawList: any[], currentUserId?: string, currentUserEmail?: string): any[] {
+  const mergedList: any[] = [];
+
+  for (const raw of rawList) {
+    const rawP = raw.profile || {};
+    const rawRoll = (rawP.rollNumber || '').trim().toLowerCase();
+    const rawEmail = (rawP.email || '').trim().toLowerCase();
+    const rawName = (rawP.name || '').trim().toLowerCase();
+    const isRawGeneric = !rawName || rawName === 'student' || rawName === 'student name';
+
+    // Find if there's already an entry for this person in mergedList
+    const existingIndex = mergedList.findIndex((item) => {
+      const itemP = item.profile || {};
+      const itemRoll = (itemP.rollNumber || '').trim().toLowerCase();
+      const itemEmail = (itemP.email || '').trim().toLowerCase();
+      const itemName = (itemP.name || '').trim().toLowerCase();
+      const isItemGeneric = !itemName || itemName === 'student' || itemName === 'student name';
+
+      // 1. Direct UID match
+      if (item.id === raw.id || item.allIds?.includes(raw.id)) return true;
+
+      // 2. Exact Roll Number match (if non-empty & valid length >= 3)
+      if (rawRoll && itemRoll && rawRoll.length >= 3 && rawRoll === itemRoll) return true;
+
+      // 3. Exact Email match (if non-empty)
+      if (rawEmail && itemEmail && rawEmail === itemEmail) return true;
+
+      // 4. Exact Full Name match (if both are non-generic e.g. "Tejasva Ukey", "Dayman Kumar", "Nihal Kumar")
+      if (!isRawGeneric && !isItemGeneric && rawName === itemName) return true;
+
+      // 5. Current logged-in user match
+      const rawIsCurrent = raw.id === currentUserId || (rawEmail && rawEmail === currentUserEmail?.toLowerCase());
+      const itemIsCurrent = item.id === currentUserId || (itemEmail && itemEmail === currentUserEmail?.toLowerCase());
+      if (rawIsCurrent && itemIsCurrent) return true;
+
+      return false;
+    });
+
+    if (existingIndex >= 0) {
+      const target = mergedList[existingIndex];
+      const targetP = target.profile || {};
+      const isTargetGeneric = !targetP.name || targetP.name.toLowerCase() === 'student' || targetP.name.toLowerCase() === 'student name';
+
+      // Prefer real name over generic "Student"
+      const chosenName = !isTargetGeneric ? targetP.name : (!isRawGeneric ? rawP.name : 'Student');
+      const chosenRoll = targetP.rollNumber || rawP.rollNumber || '';
+      const chosenEmail = targetP.email || rawP.email || '';
+      const chosenAvatar = targetP.avatarUrl || rawP.avatarUrl;
+      const isCR = targetP.role === 'cr' || rawP.role === 'cr';
+
+      // Keep primary ID as the current user's ID if one matches
+      const primaryId = (raw.id === currentUserId) ? raw.id : target.id;
+
+      target.id = primaryId;
+      target.allIds = Array.from(new Set([...(target.allIds || [target.id]), raw.id]));
+      target.allEmails = Array.from(new Set([...(target.allEmails || []), targetP.email, rawP.email].filter(Boolean)));
+      target.profile = {
+        ...targetP,
+        ...rawP,
+        name: chosenName,
+        rollNumber: chosenRoll,
+        email: chosenEmail,
+        avatarUrl: chosenAvatar,
+        role: isCR ? 'cr' : (targetP.role || rawP.role || 'student'),
+      };
+      target.lastUpdated = Math.max(target.lastUpdated || 0, raw.lastUpdated || 0);
+    } else {
+      mergedList.push({
+        ...raw,
+        allIds: [raw.id],
+        allEmails: rawP.email ? [rawP.email] : [],
+      });
+    }
+  }
+
+  return mergedList;
 }
 
 export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
@@ -45,8 +126,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
       }
     }, (err) => console.error('Batch doc error:', err));
 
-    
-return () => unsubscribe();
+    return () => unsubscribe();
   }, [batchKey, isOpen]);
 
   useEffect(() => {
@@ -87,50 +167,70 @@ return () => unsubscribe();
   const isAuthorizedCR = isSuperAdmin || isPrimaryCreator || isCoCR;
 
   const checkMemberIsCR = (m: any) => {
-    const memberEmail = m.profile?.email || '';
-    const isCreator = isLegacyBatch && (batchData?.creatorId === m.id || (batchData?.creatorEmail && batchData?.creatorEmail === memberEmail));
-    return isCreator || batchData?.crUserIds?.includes(m.id) || batchData?.crEmails?.includes(memberEmail) || m.profile?.role === 'cr';
+    const ids: string[] = m.allIds || [m.id];
+    const emails: string[] = (m.allEmails || [m.profile?.email || '']).map((e: string) => e.toLowerCase());
+
+    const isCreator = isLegacyBatch && (
+      ids.includes(batchData?.creatorId) || 
+      (batchData?.creatorEmail && emails.includes(batchData.creatorEmail.toLowerCase()))
+    );
+    const inCRUserIds = batchData?.crUserIds?.some((id: string) => ids.includes(id));
+    const inCREmails = batchData?.crEmails?.some((e: string) => emails.includes(e.toLowerCase()));
+
+    return isCreator || inCRUserIds || inCREmails || m.profile?.role === 'cr';
   };
 
   const checkMemberIsCreator = (m: any) => {
-    const memberEmail = m.profile?.email || '';
-    return isLegacyBatch && (batchData?.creatorId === m.id || (batchData?.creatorEmail && batchData?.creatorEmail === memberEmail));
+    const ids: string[] = m.allIds || [m.id];
+    const emails: string[] = (m.allEmails || [m.profile?.email || '']).map((e: string) => e.toLowerCase());
+    return isLegacyBatch && (
+      ids.includes(batchData?.creatorId) || 
+      (batchData?.creatorEmail && emails.includes(batchData.creatorEmail.toLowerCase()))
+    );
   };
 
   const checkIsCurrentUser = (m: any) => {
-    const memberEmail = m.profile?.email || '';
-    return m.id === user?.id || (memberEmail && memberEmail === userEmail);
+    const ids: string[] = m.allIds || [m.id];
+    const emails: string[] = (m.allEmails || [m.profile?.email || '']).map((e: string) => e.toLowerCase());
+    return ids.includes(user?.id) || (userEmail && emails.includes(userEmail.toLowerCase()));
   };
 
-  const handleToggleCR = async (memberId: string, memberEmail: string, currentIsCR: boolean) => {
+  const handleToggleCR = async (member: any, currentIsCR: boolean) => {
     if (!isAuthorizedCR) {
       showToast('Unauthorized', 'Only the Class Representative can manage roles.', 'error');
       return;
     }
+    const ids: string[] = member.allIds || [member.id];
+    const emails: string[] = member.allEmails || [member.profile?.email || ''];
+    const memberName = member.profile?.name || 'Student';
+
     try {
       const batchDocRef = doc(db, 'shared_timetables', batchKey);
-      const userDocRef = doc(db, 'users', memberId);
       if (currentIsCR) {
-        const otherCRs = (batchData?.crUserIds || []).filter((id: string) => id !== memberId);
-        const otherCREmails = (batchData?.crEmails || []).filter((e: string) => e !== memberEmail);
-        const primaryRemains = isLegacyBatch && batchData?.creatorId && batchData?.creatorId !== memberId;
+        const otherCRs = (batchData?.crUserIds || []).filter((id: string) => !ids.includes(id));
+        const otherCREmails = (batchData?.crEmails || []).filter((e: string) => !emails.includes(e));
+        const primaryRemains = isLegacyBatch && batchData?.creatorId && !ids.includes(batchData?.creatorId);
         if (!primaryRemains && otherCRs.length === 0 && otherCREmails.length === 0) {
           showToast('Cannot Demote', 'Batch must have at least one CR. Promote another student first.', 'error');
           return;
         }
         await updateDoc(batchDocRef, {
-          crUserIds: arrayRemove(memberId),
-          crEmails: arrayRemove(memberEmail),
+          crUserIds: arrayRemove(...ids),
+          crEmails: arrayRemove(...emails),
         });
-        await updateDoc(userDocRef, { 'profile.role': 'student' });
-        showToast('Role Updated', 'Student demoted from CR role.', 'info');
+        for (const id of ids) {
+          await updateDoc(doc(db, 'users', id), { 'profile.role': 'student' }).catch(() => {});
+        }
+        showToast('Role Updated', `${memberName} demoted from CR role.`, 'info');
       } else {
         await updateDoc(batchDocRef, {
-          crUserIds: arrayUnion(memberId),
-          crEmails: arrayUnion(memberEmail),
+          crUserIds: arrayUnion(...ids),
+          crEmails: arrayUnion(...emails),
         });
-        await updateDoc(userDocRef, { 'profile.role': 'cr' });
-        showToast('CR Promoted', 'Student has been made a Class Representative (CR)!', 'success');
+        for (const id of ids) {
+          await updateDoc(doc(db, 'users', id), { 'profile.role': 'cr' }).catch(() => {});
+        }
+        showToast('CR Promoted', `${memberName} is now a Class Representative!`, 'success');
       }
     } catch (e) {
       console.error('Error updating CR role:', e);
@@ -154,13 +254,13 @@ return () => unsubscribe();
 
     try {
       const batchDocRef = doc(db, 'shared_timetables', batchKey);
-      const userDocRef = doc(db, 'users', user?.id || '');
-
       await updateDoc(batchDocRef, {
         crUserIds: arrayRemove(user?.id || ''),
         crEmails: arrayRemove(userEmail),
       });
-      await updateDoc(userDocRef, { 'profile.role': 'student' });
+      if (user?.id) {
+        await updateDoc(doc(db, 'users', user.id), { 'profile.role': 'student' });
+      }
       showToast('CR Role Given Up', 'You have successfully stepped down from the CR role.', 'info');
     } catch (e) {
       console.error('Error withdrawing CR role:', e);
@@ -168,27 +268,32 @@ return () => unsubscribe();
     }
   };
 
-  const handleRemoveMember = async (memberId: string, memberName: string, memberEmail: string) => {
+  const handleRemoveMember = async (member: any) => {
     if (!isAuthorizedCR) {
       showToast('Unauthorized', 'Only the Class Representative can remove members.', 'error');
       return;
     }
+    const memberName = member.profile?.name || 'Student';
+    const ids: string[] = member.allIds || [member.id];
+    const emails: string[] = member.allEmails || [member.profile?.email || ''];
+
     if (!window.confirm(`Are you sure you want to remove ${memberName} from this batch?`)) {
       return;
     }
     try {
-      const userDocRef = doc(db, 'users', memberId);
-      await updateDoc(userDocRef, {
-        'profile.isBatchSynced': false,
-        'profile.batchKey': null,
-        'profile.role': 'student'
-      });
+      for (const id of ids) {
+        await updateDoc(doc(db, 'users', id), {
+          'profile.isBatchSynced': false,
+          'profile.batchKey': null,
+          'profile.role': 'student'
+        }).catch(() => {});
+      }
       const batchDocRef = doc(db, 'shared_timetables', batchKey);
       await updateDoc(batchDocRef, {
         memberCount: increment(-1),
-        crUserIds: arrayRemove(memberId),
-        crEmails: arrayRemove(memberEmail)
-      });
+        crUserIds: arrayRemove(...ids),
+        crEmails: arrayRemove(...emails)
+      }).catch(() => {});
       showToast('Member Removed', `${memberName} has been removed from the batch.`, 'success');
     } catch (e) {
       console.error('Error removing member:', e);
@@ -226,18 +331,30 @@ ${inviteUrl}
     }
   };
 
-  const filteredMembers = members.filter((m) => {
-    const q = searchQuery.toLowerCase();
-    const p = m.profile || {};
-    return (
-      (p.name || '').toLowerCase().includes(q) ||
-      (p.email || '').toLowerCase().includes(q) ||
-      (p.rollNumber || '').toLowerCase().includes(q)
-    );
-  });
+  const deduplicatedMembers = useMemo(() => {
+    return deduplicateBatchMembers(members, user?.id, userEmail);
+  }, [members, user?.id, userEmail]);
 
-  const crMembers = members.filter((m) => checkMemberIsCR(m));
-  const normalMembers = filteredMembers.filter((m) => !checkMemberIsCR(m));
+  const filteredMembers = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return deduplicatedMembers;
+    return deduplicatedMembers.filter((m) => {
+      const p = m.profile || {};
+      return (
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.email || '').toLowerCase().includes(q) ||
+        (p.rollNumber || '').toLowerCase().includes(q)
+      );
+    });
+  }, [deduplicatedMembers, searchQuery]);
+
+  const crMembers = useMemo(() => {
+    return deduplicatedMembers.filter((m) => checkMemberIsCR(m));
+  }, [deduplicatedMembers, batchData]);
+
+  const normalMembers = useMemo(() => {
+    return filteredMembers.filter((m) => !checkMemberIsCR(m));
+  }, [filteredMembers, batchData]);
 
   let displayYear = batchData?.year;
   if (!displayYear && batchData?.semester) {
@@ -261,7 +378,7 @@ ${inviteUrl}
                 {batchData?.programme || 'PROGRAMME'} · {batchData?.branch || 'BRANCH'}
               </span>
               <span className="text-[11px] font-semibold text-[#6F6F6F] uppercase mt-[4px]">
-                YEAR {displayYear} · {members.length} MEMBERS
+                YEAR {displayYear} · {deduplicatedMembers.length} MEMBERS
               </span>
             </div>
 
@@ -397,10 +514,10 @@ ${inviteUrl}
                      <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-1">CR ROLE</span>
                      <button 
                        onClick={() => { 
-                         handleToggleCR(selectedMember.id, selectedMember.profile?.email || '', checkMemberIsCR(selectedMember)); 
+                         handleToggleCR(selectedMember, checkMemberIsCR(selectedMember)); 
                          setSelectedMember(null); 
                        }} 
-                       className="text-left py-3 text-[14px] font-semibold text-[#111111] dark:text-[#FFFFFF] hover:opacity-70 transition-opacity"
+                       className="text-left py-3 text-[14px] font-semibold text-[#111111] dark:text-[#FFFFFF] hover:opacity-70 transition-opacity cursor-pointer"
                      >
                        {checkMemberIsCR(selectedMember) ? 'Demote from CR' : 'Make CR'}
                      </button>
@@ -410,10 +527,10 @@ ${inviteUrl}
                      <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-1">DANGER ZONE</span>
                      <button 
                        onClick={() => { 
-                         handleRemoveMember(selectedMember.id, selectedMember.profile?.name || 'Student', selectedMember.profile?.email || ''); 
+                         handleRemoveMember(selectedMember); 
                          setSelectedMember(null); 
                        }} 
-                       className="text-left py-3 text-[14px] font-semibold text-red-600 hover:opacity-70 transition-opacity"
+                       className="text-left py-3 text-[14px] font-semibold text-red-600 hover:opacity-70 transition-opacity cursor-pointer"
                      >
                        Remove from batch
                      </button>
