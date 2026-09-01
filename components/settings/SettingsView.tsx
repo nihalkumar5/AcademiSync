@@ -827,29 +827,26 @@ export const SettingsView: React.FC = () => {
                           const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
                           const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 
+🔑 *Batch Code:* ${code}
+
 ⚡ Realtime Class Cancellation & Reschedule Alerts
 📊 75% Attendance Tracker & Bunk Calculator
 📅 Live Exam Schedule, Room Numbers & Lab Sessions
 
-📲 *Direct App Link (Tap to open app):*
-${link}
-
-🔑 *Batch Invite Code:* ${code}
-
-👉 Tap the link above to open directly in the Intersemester App, or copy the Batch Code and paste it in App → *Connect Batch* → *Have an Invite Code*!`;
+👉 Open Intersemester App → Tap *Connect Batch* → Enter Code: *${code}*`;
 
                           const res = await shareLink({
                             title: 'Join our Class Timetable',
                             text: shareText,
                             url: link,
-                            dialogTitle: 'Invite Classmates via',
+                            dialogTitle: 'Share Batch Code via',
                           });
-                          if (res === 'copied') showToast('Invite Copied', `Batch invite link & code copied: ${code}`, 'success');
+                          if (res === 'copied') showToast('Code Copied', `Batch code copied: ${code}`, 'success');
                         } catch (err) {}
                       }} 
                       className="px-4 py-2 border border-[#D8D8D8] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] text-[#111111] dark:text-[#FFFFFF] text-[11px] font-bold uppercase tracking-wider rounded-none transition-colors cursor-pointer"
                     >
-                      Invite
+                      Share Code
                     </button>
                   </div>
                   <button 
@@ -867,7 +864,7 @@ ${link}
                     No Live Batch Connected
                   </span>
                   <span className="text-[11px] text-[#6F6F6F]">
-                    Join your class batch with an invite link/code or claim CR access.
+                    Join your class batch with a 6-digit code or claim CR access.
                   </span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -1548,29 +1545,26 @@ ${link}
                     const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
                     const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 
+🔑 *Batch Code:* ${code}
+
 ⚡ Realtime Class Cancellation & Reschedule Alerts
 📊 75% Attendance Tracker & Bunk Calculator
 📅 Live Exam Schedule, Room Numbers & Lab Sessions
 
-📲 *Direct App Link (Tap to open app):*
-${link}
-
-🔑 *Batch Invite Code:* ${code}
-
-👉 Tap the link above to open directly in the Intersemester App, or copy the Batch Code and paste it in App → *Connect Batch* → *Have an Invite Code*!`;
+👉 Open Intersemester App → Tap *Connect Batch* → Enter Code: *${code}*`;
 
                     const res = await shareLink({
                       title: 'Join our Class Timetable',
                       text: shareText,
                       url: link,
-                      dialogTitle: 'Invite Classmates via',
+                      dialogTitle: 'Share Batch Code via',
                     });
-                    if (res === 'copied') showToast('Invite Copied', `Batch invite link & code copied: ${code}`, 'success');
+                    if (res === 'copied') showToast('Code Copied', `Batch code copied: ${code}`, 'success');
                   } catch (err) {}
                 }}
                 className="flex items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333] hover:opacity-70 transition-opacity text-left"
               >
-                <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">Copy invite link</span>
+                <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">Copy batch code</span>
                 <Share2 className="w-4 h-4 text-[#6F6F6F]" />
               </button>
 

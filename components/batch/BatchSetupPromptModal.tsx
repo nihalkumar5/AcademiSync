@@ -205,7 +205,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
                     Tell Class CR to Setup Batch
                   </span>
                   <span className="text-[11px] text-[#6F6F6F]">
-                    Share invite link to your class WhatsApp group in 1-tap.
+                    Send alert to your class WhatsApp group in 1-tap.
                   </span>
                 </div>
               </div>

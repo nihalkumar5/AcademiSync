@@ -317,26 +317,23 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
     const inviteUrl = `https://academi-sync-chi.vercel.app/?invite=${code}`;
     const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 
+🔑 *Batch Code:* ${code}
+
 ⚡ Realtime Class Cancellation & Reschedule Alerts
 📊 75% Attendance Tracker & Bunk Calculator
 📅 Live Exam Schedule, Room Numbers & Lab Sessions
 
-📲 *Direct App Link (Tap to open app):*
-${inviteUrl}
-
-🔑 *Batch Invite Code:* ${code}
-
-👉 Tap the link above to open directly in the Intersemester App, or copy the Batch Code and paste it in App → *Connect Batch* → *Have an Invite Code*!`;
+👉 Open Intersemester App → Tap *Connect Batch* → Enter Code: *${code}*`;
 
     const res = await shareLink({
       title: `Join ${batchTitle} Schedule`,
       text: shareText,
       url: inviteUrl,
-      dialogTitle: 'Invite Batchmates via',
+      dialogTitle: 'Share Batch Code via',
     });
     if (res === 'copied') {
       setCopiedLink(true);
-      showToast('Invite Copied', `Batch invite link & code copied: ${code}`, 'success');
+      showToast('Code Copied', `Batch code copied: ${code}`, 'success');
       setTimeout(() => setCopiedLink(false), 2000);
     }
   };
@@ -389,9 +386,17 @@ ${inviteUrl}
               <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase">
                 {batchData?.programme || 'PROGRAMME'} · {batchData?.branch || 'BRANCH'}
               </span>
-              <span className="text-[11px] font-semibold text-[#6F6F6F] uppercase mt-[4px]">
-                YEAR {displayYear} · {deduplicatedMembers.length} MEMBERS
-              </span>
+              <div className="flex items-center gap-2 text-[12px] text-[#6F6F6F] mt-1">
+                <span>SEMESTER {batchData?.semester || '?'}</span>
+                <span>·</span>
+                <span>YEAR {displayYear}</span>
+                {batchData?.section && (
+                  <>
+                    <span>·</span>
+                    <span>SECTION {batchData.section}</span>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Invite Button */}
@@ -400,7 +405,7 @@ ${inviteUrl}
               className="flex items-center justify-between py-4 border-y border-[#D9D9D6] dark:border-[#333333] hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left group"
             >
               <span className="text-[12px] font-bold tracking-[1px] text-[#111111] dark:text-[#FFFFFF] uppercase">
-                {copiedLink ? 'INVITE LINK COPIED' : 'INVITE MEMBERS'}
+                {copiedLink ? 'BATCH CODE COPIED' : 'SHARE BATCH CODE'}
               </span>
               {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <ArrowRight className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />}
             </button>

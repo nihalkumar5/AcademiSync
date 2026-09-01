@@ -211,15 +211,15 @@ export const ExamsView: React.FC = () => {
       <Modal isOpen={showJoinModal} onClose={() => setShowJoinModal(false)} title="Join Shared Exams">
         <form onSubmit={handleJoinSubmit} className="flex flex-col gap-4">
           <p className="text-[13px] text-[#6B6B6B]">
-            Enter an invite code or paste an invite link to sync exams with your batch.
+            Enter the 6-character Batch Code to sync exams with your class.
           </p>
           <div className="flex flex-col gap-2">
             <input
               type="text"
-              placeholder="e.g., ext_..."
+              placeholder="e.g. 65SQ9K"
               value={inviteInput}
-              onChange={(e) => setInviteInput(e.target.value)}
-              className="w-full px-4 py-2 border border-[#E5E5E5] dark:border-[#333333] bg-transparent text-[13px] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
+              onChange={(e) => setInviteInput(e.target.value.toUpperCase())}
+              className="w-full px-4 py-2.5 border border-[#E5E5E5] dark:border-[#333333] bg-transparent text-[14px] font-mono font-bold tracking-[2px] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors uppercase"
               required
             />
           </div>

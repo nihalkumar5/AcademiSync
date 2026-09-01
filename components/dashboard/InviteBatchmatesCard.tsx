@@ -20,25 +20,22 @@ export const InviteBatchmatesCard = () => {
     const inviteUrl = `https://academi-sync-chi.vercel.app/?invite=${batchCode}`;
     const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 
+🔑 *Batch Code:* ${batchCode}
+
 ⚡ Realtime Class Cancellation & Reschedule Alerts
 📊 75% Attendance Tracker & Bunk Calculator
 📅 Live Exam Schedule, Room Numbers & Lab Sessions
 
-📲 *Direct App Link (Tap to open app):*
-${inviteUrl}
-
-🔑 *Batch Invite Code:* ${batchCode}
-
-👉 Tap the link above to open directly in the Intersemester App, or copy the Batch Code and paste it in App → *Connect Batch* → *Have an Invite Code*!`;
+👉 Open Intersemester App → Tap *Connect Batch* → Enter Code: *${batchCode}*`;
 
     const res = await shareLink({
       title: `Join ${batchTitle} on Intersemester`,
       text: shareText,
       url: inviteUrl,
-      dialogTitle: 'Invite Classmates via',
+      dialogTitle: 'Share Batch Code via',
     });
     if (res === 'copied') {
-      showToast('Invite Copied', `Batch invite link & code copied: ${batchCode}`, 'success');
+      showToast('Code Copied', `Batch code copied: ${batchCode}`, 'success');
     }
   };
 
@@ -49,7 +46,7 @@ ${inviteUrl}
           <div className="flex flex-col gap-1">
             <h3 className="text-[16px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight flex items-center gap-2">
               {isSynced ? (
-                'Invite your classmates'
+                'Share Batch Code'
               ) : (
                 <>
                   <Users className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />
@@ -59,8 +56,8 @@ ${inviteUrl}
             </h3>
             <p className="text-[12px] text-[#6F6F6F] dark:text-[#999999] leading-tight pr-2">
               {isSynced
-                ? 'Keep everyone on the same timetable, events and live tasks.'
-                : 'Sync your timetable, exams and academic calendar with your class in 1 tap.'}
+                ? 'Share your 6-digit code with classmates to sync timetable & live alerts.'
+                : 'Enter your 6-digit class code to sync timetable and exams.'}
             </p>
             {isSynced && sixDigitCode && (
               <div className="flex items-center gap-1.5 mt-0.5">
@@ -79,7 +76,7 @@ ${inviteUrl}
               onClick={handleInvite}
               className="self-start mt-1 px-4 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold tracking-[1px] uppercase transition-opacity hover:opacity-90 rounded-none cursor-pointer"
             >
-              Invite classmates
+              Share Code
             </button>
           ) : (
             <button

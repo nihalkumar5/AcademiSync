@@ -29,7 +29,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
 
     const code = extractCleanInviteCode(rawInput);
     if (!code) {
-      showToast('Invalid Code', 'Please enter a valid batch code or invite link.', 'error');
+      showToast('Invalid Code', 'Please enter a valid 6-character batch code.', 'error');
       return;
     }
 
@@ -62,20 +62,20 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
           <form onSubmit={handleJoinByCode} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <label className="text-[11px] font-bold uppercase tracking-widest text-[#6F6F6F] dark:text-[#A0A0A0]">
-                Batch Invite Code or Link
+                Batch Code
               </label>
               <p className="text-[13px] text-[#6F6F6F] dark:text-[#888888] leading-relaxed">
-                Paste the 6-character Batch Code or direct invite link shared by your classmates or CR.
+                Enter the 6-character Batch Code shared by your Class Representative (CR) or classmates.
               </p>
             </div>
 
             <div className="flex items-center gap-2.5 px-3.5 py-3 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] focus-within:border-[#111111] dark:focus-within:border-[#FFFFFF] transition-colors">
               <input
                 type="text"
-                placeholder="e.g. 65SQ9K or paste invite link"
+                placeholder="e.g. 65SQ9K"
                 value={inviteCodeInput}
-                onChange={(e) => setInviteCodeInput(e.target.value)}
-                className="w-full bg-transparent text-[14px] text-[#111111] dark:text-[#FFFFFF] font-mono tracking-wider focus:outline-none placeholder:text-[#A0A0A0]"
+                onChange={(e) => setInviteCodeInput(e.target.value.toUpperCase())}
+                className="w-full bg-transparent text-[15px] text-[#111111] dark:text-[#FFFFFF] font-mono font-bold tracking-[2px] focus:outline-none placeholder:text-[#A0A0A0] placeholder:font-normal placeholder:tracking-normal uppercase"
                 required
                 autoFocus
               />
