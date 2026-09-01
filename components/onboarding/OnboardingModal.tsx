@@ -173,22 +173,22 @@ export const OnboardingModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-white dark:bg-[#111110] text-[#111111] dark:text-[#FFFFFF] flex flex-col font-sans overflow-hidden w-full h-[100dvh]">
+    <div className="fixed inset-0 z-[100] bg-white text-[#111111] flex flex-col font-sans overflow-hidden w-full h-[100dvh]">
       
       {/* Top Nav Header with Safe Area Clearance */}
       <div 
-        className="w-full flex items-center justify-between px-6 pb-3 shrink-0 z-30 border-b border-[#F0F0EE] dark:border-[#262626] bg-white dark:bg-[#111110]"
+        className="w-full flex items-center justify-between px-6 pb-3 shrink-0 z-30 border-b border-[#F0F0EE] bg-white text-[#111111]"
         style={{
           paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 12px), 28px)',
         }}
       >
         {currentIndex === 0 ? (
           <div className="w-full flex flex-col items-center justify-center pt-1">
-            <h1 className="text-[24px] font-bold tracking-tighter text-[#111111] dark:text-[#FFFFFF]">
+            <h1 className="text-[24px] font-bold tracking-tighter text-[#111111]">
               inter<span className="font-normal opacity-80">semester</span>
             </h1>
-            <div className="w-[24px] h-[1.5px] bg-[#111111] dark:bg-[#FFFFFF] mt-2.5 mb-1.5" />
-            <p className="text-[9.5px] tracking-[2.5px] font-mono font-bold text-[#111111]/60 dark:text-[#FFFFFF]/60 uppercase whitespace-pre-line text-center">
+            <div className="w-[24px] h-[1.5px] bg-[#111111] mt-2.5 mb-1.5" />
+            <p className="text-[9.5px] tracking-[2.5px] font-mono font-bold text-[#111111]/60 uppercase whitespace-pre-line text-center">
               {slides[0].topText}
             </p>
           </div>
@@ -198,19 +198,19 @@ export const OnboardingModal = () => {
               <button 
                 type="button"
                 onClick={handlePrev} 
-                className="p-2 -ml-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+                className="p-2 -ml-2 hover:bg-black/5 rounded-full transition-colors cursor-pointer"
                 aria-label="Back"
               >
-                <ArrowLeft className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF]" />
+                <ArrowLeft className="w-5 h-5 text-[#111111]" />
               </button>
-              <h1 className="text-[20px] font-bold tracking-tighter text-[#111111] dark:text-[#FFFFFF]">
+              <h1 className="text-[20px] font-bold tracking-tighter text-[#111111]">
                 inter<span className="font-normal opacity-80">semester</span>
               </h1>
             </div>
             <button 
               type="button"
               onClick={handleSkip} 
-              className="px-3.5 py-1.5 -mr-2 text-[13px] font-semibold text-[#888888] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer"
+              className="px-3.5 py-1.5 -mr-2 text-[13px] font-semibold text-[#888888] hover:text-[#111111] transition-colors cursor-pointer"
             >
               Skip
             </button>
@@ -219,7 +219,7 @@ export const OnboardingModal = () => {
       </div>
 
       {/* Main Container */}
-      <div className="flex-1 w-full flex flex-col relative overflow-hidden">
+      <div className="flex-1 w-full flex flex-col relative overflow-hidden bg-white">
         <AnimatePresence custom={direction} initial={false}>
           {currentIndex < 3 ? (
             <motion.div
@@ -229,15 +229,10 @@ export const OnboardingModal = () => {
               initial="enter"
               animate="center"
               exit="exit"
-              className="absolute inset-0 w-full h-full flex flex-col justify-between"
+              className="absolute inset-0 w-full h-full flex flex-col justify-between bg-white"
             >
               {/* Slide Image */}
-              <div className="relative flex-1 min-h-0 w-full flex items-end justify-center overflow-visible">
-                {/* White backdrop behind illustration on Dark Mode */}
-                {currentIndex === 2 && (
-                  <div className="hidden dark:block absolute top-3 bottom-0 w-[84%] max-w-[320px] rounded-3xl bg-white/95 shadow-2xl -z-0" />
-                )}
-
+              <div className="relative flex-1 min-h-0 w-full flex items-end justify-center overflow-visible bg-white">
                 <img 
                   src={slides[currentIndex].image} 
                   alt="Onboarding" 
