@@ -420,6 +420,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (!snapshot.exists()) return;
 
       const data = snapshot.data();
+
+      // Automatically generate & backfill 6-digit inviteCode if batch doesn't have one
+      if (!data.inviteCode && profile.batchKey) {
+        const generatedCode = generateInviteCode();
+        data.inviteCode = generatedCode;
+        updateDoc(batchDocRef, { inviteCode: generatedCode }).catch((e) => {
+          console.warn('Could not backfill invite code to batch doc:', e);
+        });
+      }
+
       setCurrentBatchData(data);
 
       // ── Sync timetable & related data ────────────────────────────────────────
@@ -1739,25 +1749,41 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const shareTimetableWithBatch = async (): Promise<string> => {
-    // If student is already synced to a batch, return the batch key so they can share it freely!
+    // If student is already synced to a batch, return the 6-character inviteCode (or key)
     if (profile.isBatchSynced && profile.batchKey) {
+      let codeToReturn = currentBatchData?.inviteCode;
+      const docRef = doc(db, 'shared_timetables', profile.batchKey);
+
+      // If missing, generate and backfill immediately
+      if (!codeToReturn) {
+        try {
+          const snap = await getDoc(docRef);
+          if (snap.exists() && snap.data().inviteCode) {
+            codeToReturn = snap.data().inviteCode;
+          } else {
+            codeToReturn = generateInviteCode();
+            await updateDoc(docRef, { inviteCode: codeToReturn });
+          }
+        } catch (_) {}
+      }
+
       // If student is CR or Super Admin, also push latest changes to Firestore
       if (isBatchCR) {
         try {
-          const docRef = doc(db, 'shared_timetables', profile.batchKey);
           const payload = sanitizeForFirestore({
             subjects,
             timetable,
             events,
             exams,
             updatedAt: new Date().toISOString(),
+            ...(codeToReturn ? { inviteCode: codeToReturn } : {}),
           });
           await updateDoc(docRef, payload);
         } catch (e) {
           console.error('Error updating batch timetable:', e);
         }
       }
-      return profile.batchKey;
+      return codeToReturn || profile.batchKey;
     }
 
     const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';

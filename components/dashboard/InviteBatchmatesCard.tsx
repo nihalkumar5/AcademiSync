@@ -7,15 +7,16 @@ import { BatchDiscoveryModal } from '@/components/batch/BatchDiscoveryModal';
 import { Users, Sparkles } from 'lucide-react';
 
 export const InviteBatchmatesCard = () => {
-  const { profile, showToast } = useApp();
+  const { profile, showToast, currentBatchData } = useApp();
   const [showDiscoveryModal, setShowDiscoveryModal] = useState(false);
 
   const isSynced = profile?.isBatchSynced && profile?.batchKey;
+  const sixDigitCode = currentBatchData?.inviteCode || (profile?.batchKey && profile.batchKey.length <= 8 ? profile.batchKey : '');
 
   const handleInvite = async () => {
     if (!profile?.batchKey) return;
     const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
-    const batchCode = profile.batchKey;
+    const batchCode = sixDigitCode || profile.batchKey;
     const inviteUrl = `https://academi-sync-chi.vercel.app/?invite=${batchCode}`;
     const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 
@@ -61,6 +62,16 @@ ${inviteUrl}
                 ? 'Keep everyone on the same timetable, events and live tasks.'
                 : 'Sync your timetable, exams and academic calendar with your class in 1 tap.'}
             </p>
+            {isSynced && sixDigitCode && (
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-[10px] font-bold text-[#6F6F6F] dark:text-[#A0A0A0] uppercase tracking-wider">
+                  Batch Code:
+                </span>
+                <span className="text-[12px] font-mono font-bold tracking-[1.5px] text-[#111111] dark:text-[#FFFFFF] bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded border border-black/10 dark:border-white/10 select-all">
+                  {sixDigitCode}
+                </span>
+              </div>
+            )}
           </div>
           
           {isSynced ? (
