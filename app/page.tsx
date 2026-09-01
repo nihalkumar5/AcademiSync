@@ -35,6 +35,7 @@ import { SettingsView } from '@/components/settings/SettingsView';
 import { HolidayBalloons } from '@/components/ui/HolidayBalloons';
 import { CampusSpotlightCard } from '@/components/ads/CampusSpotlightCard';
 import { ProposedBatchTasksVoting } from '@/components/homework/ProposedBatchTasksVoting';
+import { IOSAppGate } from '@/components/pwa/IOSAppGate';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -362,6 +363,9 @@ export default function AppHome() {
 
   return (
     <div className="flex min-h-screen w-full bg-transparent text-[#181716] dark:text-[#F4F1EA]">
+      {/* iOS Standalone PWA Installation Gate */}
+      <IOSAppGate />
+
       {/* Desktop Sidebar Navigation */}
       <Sidebar />
 
