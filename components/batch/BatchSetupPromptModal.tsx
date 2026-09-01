@@ -106,86 +106,103 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
               WHAT YOU&apos;LL UNLOCK
             </span>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="flex flex-col gap-2.5">
               {/* 01 */}
-              <div className="p-3.5 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FAFAFA] dark:bg-[#161616] flex flex-col gap-1.5">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
-                  <span className="text-[11px] font-bold font-mono text-amber-600 dark:text-amber-400">01</span>
+              <div className="p-3 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FFFFFF] dark:bg-[#111111] rounded-xl flex gap-3.5 items-start">
+                <div className="w-10 h-10 rounded-lg bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#2C2C2C] flex items-center justify-center shrink-0 mt-0.5">
+                  <Calendar className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
                 </div>
-                <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
-                  One timetable for everyone
-                </h4>
-                <p className="text-[11.5px] text-[#6F6F6F] dark:text-[#999999] leading-relaxed">
-                  Update the batch timetable once. Everyone gets the latest version.
-                </p>
+                <div className="flex flex-col gap-0.5 pt-0.5">
+                  <span className="text-[11px] font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">01</span>
+                  <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
+                    One timetable for everyone
+                  </h4>
+                  <p className="text-[11.5px] text-[#888888] dark:text-[#888888] leading-relaxed mt-0.5">
+                    Update the batch timetable once. Everyone gets the latest version.
+                  </p>
+                </div>
               </div>
 
               {/* 02 */}
-              <div className="p-3.5 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FAFAFA] dark:bg-[#161616] flex flex-col gap-1.5">
-                <div className="flex items-center gap-2">
-                  <Bell className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
-                  <span className="text-[11px] font-bold font-mono text-amber-600 dark:text-amber-400">02</span>
+              <div className="p-3 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FFFFFF] dark:bg-[#111111] rounded-xl flex gap-3.5 items-start">
+                <div className="w-10 h-10 rounded-lg bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#2C2C2C] flex items-center justify-center shrink-0 mt-0.5">
+                  <Bell className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
                 </div>
-                <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
-                  Instant class alerts
-                </h4>
-                <p className="text-[11.5px] text-[#6F6F6F] dark:text-[#999999] leading-relaxed">
-                  Room changes, cancelled classes and important updates reach everyone.
-                </p>
+                <div className="flex flex-col gap-0.5 pt-0.5">
+                  <span className="text-[11px] font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">02</span>
+                  <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
+                    Instant class alerts
+                  </h4>
+                  <p className="text-[11.5px] text-[#888888] dark:text-[#888888] leading-relaxed mt-0.5">
+                    Room changes, cancelled classes and important updates reach everyone.
+                  </p>
+                </div>
               </div>
 
               {/* 03 */}
-              <div className="p-3.5 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FAFAFA] dark:bg-[#161616] flex flex-col gap-1.5">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
-                  <span className="text-[11px] font-bold font-mono text-amber-600 dark:text-amber-400">03</span>
+              <div className="p-3 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FFFFFF] dark:bg-[#111111] rounded-xl flex gap-3.5 items-start">
+                <div className="w-10 h-10 rounded-lg bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#2C2C2C] flex items-center justify-center shrink-0 mt-0.5">
+                  <Clock className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
                 </div>
-                <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
-                  Shared academic tasks
-                </h4>
-                <p className="text-[11.5px] text-[#6F6F6F] dark:text-[#999999] leading-relaxed">
-                  Keep assignments, labs and deadlines visible to your entire batch.
-                </p>
+                <div className="flex flex-col gap-0.5 pt-0.5">
+                  <span className="text-[11px] font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">03</span>
+                  <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
+                    Shared academic tasks
+                  </h4>
+                  <p className="text-[11.5px] text-[#888888] dark:text-[#888888] leading-relaxed mt-0.5">
+                    Keep assignments, labs and deadlines visible to your entire batch.
+                  </p>
+                </div>
               </div>
 
               {/* 04 */}
-              <div className="p-3.5 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FAFAFA] dark:bg-[#161616] flex flex-col gap-1.5">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
-                  <span className="text-[11px] font-bold font-mono text-amber-600 dark:text-amber-400">04</span>
+              <div className="p-3 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FFFFFF] dark:bg-[#111111] rounded-xl flex gap-3.5 items-start">
+                <div className="w-10 h-10 rounded-lg bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#2C2C2C] flex items-center justify-center shrink-0 mt-0.5">
+                  <Users className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
                 </div>
-                <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
-                  Your batch, organised
-                </h4>
-                <p className="text-[11.5px] text-[#6F6F6F] dark:text-[#999999] leading-relaxed">
-                  Stop repeating updates across WhatsApp groups. Keep everything in one place.
-                </p>
+                <div className="flex flex-col gap-0.5 pt-0.5">
+                  <span className="text-[11px] font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">04</span>
+                  <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
+                    No more chaos
+                  </h4>
+                  <p className="text-[11.5px] text-[#888888] dark:text-[#888888] leading-relaxed mt-0.5">
+                    Manage everything in one place instead of WhatsApp groups.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Section 2: WHAT DOES A CR DO? */}
-          <div className="flex flex-col gap-2.5 mt-2 pt-4 border-t border-[#E5E5E5] dark:border-[#2C2C2C]">
+          {/* Section 2: YOUR RESPONSIBILITY */}
+          <div className="flex flex-col gap-2 mt-5 pt-4 border-t border-[#E5E5E5] dark:border-[#2C2C2C]">
             <span className="text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#777777]">
-              WHAT DOES A CR DO?
+              YOUR RESPONSIBILITY
             </span>
-            <p className="text-[12.5px] text-[#6F6F6F] dark:text-[#999999] leading-relaxed">
-              You become the trusted person who maintains and publishes your batch timetable and important academic updates.
-            </p>
 
-            <div className="flex flex-col gap-2 mt-0.5">
-              <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] shrink-0" />
-                <span className="text-[12.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">Add &amp; update classes</span>
+            <div className="flex items-center justify-between mt-1">
+              <div className="flex flex-col gap-2.5">
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF] shrink-0" />
+                  <span className="text-[11.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">Add &amp; update timetable</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF] shrink-0" />
+                  <span className="text-[11.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">Broadcast important changes</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF] shrink-0" />
+                  <span className="text-[11.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">Keep batch information accurate</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] shrink-0" />
-                <span className="text-[12.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">Broadcast important changes</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] shrink-0" />
-                <span className="text-[12.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">Keep your batch in sync</span>
+              <div className="shrink-0 pr-4">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#111111] dark:text-[#FFFFFF] rotate-[10deg] opacity-80">
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                  <path d="m9 14 2 2 4-4"></path>
+                  <path d="M12 2v2"></path>
+                  <path d="M9 10h.01"></path>
+                  <path d="M9 18h.01"></path>
+                </svg>
               </div>
             </div>
           </div>
@@ -196,7 +213,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
             <button
               type="button"
               onClick={() => setShowCRModal(true)}
-              className="w-full h-12 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] font-bold text-[13px] uppercase tracking-wider hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full h-12 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] font-bold text-[13px] rounded-xl tracking-wide hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>Apply to become CR</span>
               <ArrowRight className="w-4 h-4" />
