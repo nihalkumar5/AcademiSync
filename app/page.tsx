@@ -299,7 +299,7 @@ export default function AppHome() {
       <Sidebar />
 
       {/* Main Content Area */}
-      <div className="flex flex-col flex-1 min-w-0 pb-20 md:pb-8">
+      <div className="flex flex-col flex-1 min-w-0 pb-32 md:pb-8">
         <Header />
 
         <main className="flex-1 px-4 sm:px-8 py-6 max-w-6xl mx-auto w-full relative">

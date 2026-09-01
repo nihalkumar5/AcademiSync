@@ -8,6 +8,12 @@
   .font-cursive {
     font-family: 'Caveat', cursive;
   }
+  .pb-safe {
+    padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 8px), 18px);
+  }
+  .pt-safe {
+    padding-top: max(calc(env(safe-area-inset-top, 0px) + 8px), 16px);
+  }
 }
 
 :root {

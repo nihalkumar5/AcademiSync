@@ -37,8 +37,13 @@ export const MobileNav: React.FC = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FFFFFF] dark:bg-[#111111] border-t border-[#D9D9D6] dark:border-[#333333] px-2 pt-2 pb-safe">
-      <div className="flex items-center justify-around max-w-md mx-auto relative h-[56px]">
+    <nav 
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FFFFFF] dark:bg-[#111111] border-t border-[#D9D9D6] dark:border-[#333333] px-2 pt-2 select-none"
+      style={{
+        paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 8px), 20px)',
+      }}
+    >
+      <div className="flex items-center justify-around max-w-md mx-auto relative h-[52px]">
         {tabs.map((tab) => {
           const isActive = activeView === tab.id;
           return (
@@ -46,13 +51,13 @@ export const MobileNav: React.FC = () => {
               key={tab.id}
               onClick={() => setActiveView(tab.id)}
               className={clsx(
-                'flex flex-col items-center justify-center relative cursor-pointer flex-1 h-full select-none',
+                'flex flex-col items-center justify-center relative cursor-pointer flex-1 h-full select-none gap-0.5',
                 isActive
                   ? 'text-[#111111] dark:text-[#FFFFFF]'
                   : 'text-[#8A8A8A] dark:text-[#8A8A8A] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
               )}
             >
-              <div className="relative mb-1">
+              <div className="relative mb-0.5">
                 {tab.icon}
 
                 {tab.badge !== undefined && (
@@ -63,7 +68,7 @@ export const MobileNav: React.FC = () => {
               </div>
 
               <span className={clsx(
-                'text-[10px] tracking-wide',
+                'text-[10px] tracking-wide leading-none',
                 isActive ? 'font-bold' : 'font-medium'
               )}>
                 {tab.label}
