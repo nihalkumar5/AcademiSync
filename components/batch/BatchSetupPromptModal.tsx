@@ -91,12 +91,12 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
         showCloseButton={true}
       >
         <div className="flex flex-col text-left font-sans pt-0 pb-4">
-          {/* Hero Illustration - Tight zero-excess spacing */}
-          <div className="w-full flex items-center justify-center -mt-20 -mb-28 sm:-mt-16 sm:-mb-24 py-0 relative z-0">
+          {/* Hero Illustration - Scaled up & shifted down slightly */}
+          <div className="w-full flex items-center justify-center -mt-12 -mb-28 sm:-mt-10 sm:-mb-24 py-0 relative z-0">
             <img 
               src="/cr.png" 
               alt="Class Representative" 
-              className="w-full max-w-[420px] sm:max-w-[480px] h-auto object-contain"
+              className="w-full max-w-[480px] sm:max-w-[540px] h-auto object-contain scale-[1.15]"
             />
           </div>
 
