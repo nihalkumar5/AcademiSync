@@ -75,11 +75,11 @@ export const IOSAppGate: React.FC = () => {
         {/* Main Content Area */}
         <div className="flex-1 w-full flex flex-col relative overflow-hidden justify-between bg-white">
           {/* Slide Image */}
-          <div className="flex-1 min-h-0 w-full flex items-end justify-center overflow-visible bg-white">
+          <div className="flex-1 min-h-0 w-full flex items-end justify-center overflow-visible bg-white px-4">
             <img 
-              src="/onboard-1.png" 
+              src="/heroios.png" 
               alt="Intersemester iOS" 
-              className="w-full h-full object-contain object-bottom pointer-events-none translate-y-[8%] scale-[1.5] sm:scale-[1.6]"
+              className="w-full h-full object-contain object-bottom pointer-events-none translate-y-[4%] scale-[1.1] sm:scale-[1.15]"
             />
           </div>
 
