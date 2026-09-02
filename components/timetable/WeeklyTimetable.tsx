@@ -209,25 +209,25 @@ export const WeeklyTimetable: React.FC = () => {
               key={day}
               onClick={() => setSelectedMobileDay(day)}
               className={clsx(
-                'flex flex-col items-center justify-center px-4 py-2.5 rounded-none text-xs font-semibold shrink-0 transition-all border cursor-pointer min-w-[80px]',
+                'flex flex-col items-center justify-center px-4 py-2.5 rounded-2xl text-xs font-semibold shrink-0 transition-all border cursor-pointer',
                 isSelected
-                  ? 'bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] border-[#111111] dark:border-[#FFFFFF] shadow-sm'
-                  : 'bg-[#FFFFFF] dark:bg-[#111111] border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5'
+                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/20'
+                  : 'glass-card text-slate-600 dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50'
               )}
             >
               <div className="flex items-center gap-1.5">
-                <span className="font-bold tracking-tight uppercase">{day.slice(0, 3)}</span>
+                <span className={isSelected ? "font-bold" : "font-semibold"}>{day.slice(0, 3)}</span>
                 {isToday && (
-                  <span className={clsx('w-1.5 h-1.5 rounded-full', isSelected ? 'bg-white dark:bg-black' : 'bg-emerald-500')} />
+                  <span className={clsx('w-1.5 h-1.5 rounded-full', isSelected ? 'bg-white' : 'bg-indigo-500')} />
                 )}
               </div>
               <span
                 className={clsx(
-                  'text-[10px] font-mono mt-0.5',
-                  isSelected ? 'text-white/80 dark:text-black/80' : 'text-[#888888]'
+                  'text-[10px] font-medium mt-0.5',
+                  isSelected ? 'text-indigo-100' : 'text-slate-400'
                 )}
               >
-                {classCount} {classCount === 1 ? 'class' : 'classes'}
+                {classCount} classes
               </span>
             </button>
           );
