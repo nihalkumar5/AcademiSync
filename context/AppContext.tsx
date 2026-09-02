@@ -2022,8 +2022,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const isAuthorizedCR = profile.role === 'cr' || profile.role === 'super_admin' || userIsAdmin;
 
     if (!isAuthorizedCR) {
-      showToast('CR Access Required', 'Only verified Class Representatives (CR) can create and broadcast official batch timetables.', 'warning');
-      throw new Error('Only verified Class Representatives can publish official batch timetables.');
+      showToast('Pilot Access Required', 'Only verified Batch Pilots can create and broadcast official batch timetables.', 'warning');
+      throw new Error('Only verified Batch Pilots can publish official batch timetables.');
     }
 
     try {

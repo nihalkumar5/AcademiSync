@@ -381,12 +381,12 @@ export const SettingsView: React.FC = () => {
                 </span>
               ) : isCR ? (
                 <span 
-                  title="Verified Class Representative"
+                  title="Verified Batch Pilot"
                   className="inline-flex items-center gap-1.5 bg-[#F3F2EF] dark:bg-[#222222] text-[#111111] dark:text-[#F4F1EA] px-2 py-0.5 shrink-0 h-[22px] border border-[#D8D8D8] dark:border-[#333333]"
                 >
                   <Crown className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                   <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
-                    CLASS REP
+                    BATCH PILOT
                   </span>
                 </span>
               ) : isStudentVerified ? (

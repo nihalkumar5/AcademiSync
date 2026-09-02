@@ -196,7 +196,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
   const handleToggleCR = async (member: any, currentIsCR: boolean) => {
     if (!batchKey) return;
     if (!isAuthorizedCR) {
-      showToast('Unauthorized', 'Only the Class Representative can manage roles.', 'error');
+      showToast('Unauthorized', 'Only a Batch Pilot can manage roles.', 'error');
       return;
     }
     const ids: string[] = member.allIds || [member.id];
@@ -210,7 +210,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
         const otherCREmails = (batchData?.crEmails || []).filter((e: string) => !emails.includes(e));
         const primaryRemains = isLegacyBatch && batchData?.creatorId && !ids.includes(batchData?.creatorId);
         if (!primaryRemains && otherCRs.length === 0 && otherCREmails.length === 0) {
-          showToast('Cannot Demote', 'Batch must have at least one CR. Promote another student first.', 'error');
+          showToast('Cannot Demote', 'Batch must have at least one Batch Pilot. Promote another student first.', 'error');
           return;
         }
         await updateDoc(batchDocRef, {
@@ -220,12 +220,12 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
         for (const id of ids) {
           await updateDoc(doc(db, 'users', id), { 'profile.role': 'student' }).catch(() => {});
         }
-        showToast('Role Updated', `${memberName} demoted from CR role.`, 'info');
+        showToast('Role Updated', `${memberName} is no longer a Batch Pilot.`, 'info');
       } else {
         if (crMembers.length >= 3) {
           showToast(
-            'CR Limit Reached',
-            'A batch can have a maximum of 3 Class Representatives (CRs). Demote one first to add another.',
+            'Limit Reached',
+            'A batch can have a maximum of 3 Batch Pilots. Demote one first to add another.',
             'error'
           );
           return;
@@ -237,10 +237,10 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
         for (const id of ids) {
           await updateDoc(doc(db, 'users', id), { 'profile.role': 'cr' }).catch(() => {});
         }
-        showToast('CR Promoted', `${memberName} is now a Class Representative!`, 'success');
+        showToast('Batch Pilot Promoted! 🚀', `${memberName} is now a Batch Pilot!`, 'success');
       }
     } catch (e) {
-      console.error('Error updating CR role:', e);
+      console.error('Error updating role:', e);
       showToast('Error', 'Failed to update member role.', 'error');
     }
   };
@@ -409,12 +409,12 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
               {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <ArrowRight className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />}
             </button>
 
-            {/* CR Section */}
+            {/* Batch Pilot Section */}
             {crMembers.length > 0 && (
               <div className="flex flex-col">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase">
-                    CLASS REPRESENTATIVE{crMembers.length > 1 ? `S (${crMembers.length}/3)` : ' (1/3)'}
+                    BATCH PILOT{crMembers.length > 1 ? `S (${crMembers.length}/3)` : ' (1/3)'}
                   </span>
                 </div>
                 <div className={`grid ${crMembers.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
@@ -427,10 +427,10 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
                           <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${p.avatarUrl || cr.id}&backgroundColor=transparent`} alt="avatar" className="w-full h-full object-contain drop-shadow-sm" />
                         </div>
                         <span className="text-[14px] font-semibold text-[#111111] dark:text-[#FFFFFF] line-clamp-1 break-all w-full px-2">
-                          {p.name || 'CR'}
+                          {p.name || 'Pilot'}
                         </span>
                         <span className="text-[11px] text-[#6F6F6F] mt-0.5 break-all line-clamp-2 w-full px-2">
-                          CR · {p.rollNumber || p.email}
+                          Batch Pilot · {p.rollNumber || p.email}
                         </span>
                         {isCurrentUser && (
                           <span className="absolute top-2.5 left-2.5 text-[9px] font-bold tracking-widest text-[#6F6F6F] border border-[#D9D9D6] dark:border-[#333333] px-1.5 py-0.5 uppercase">YOU</span>
@@ -531,7 +531,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
               {isAuthorizedCR && !checkIsCurrentUser(selectedMember) && !checkMemberIsCreator(selectedMember) ? (
                  <>
                    <div className="flex flex-col gap-1 mb-2">
-                     <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-1">CR ROLE</span>
+                     <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-1">BATCH PILOT ROLE</span>
                      <button 
                        onClick={() => { 
                          handleToggleCR(selectedMember, checkMemberIsCR(selectedMember)); 
@@ -539,7 +539,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
                        }} 
                        className="text-left py-3 text-[14px] font-semibold text-[#111111] dark:text-[#FFFFFF] hover:opacity-70 transition-opacity cursor-pointer"
                      >
-                       {checkMemberIsCR(selectedMember) ? 'Demote from CR' : 'Make CR'}
+                       {checkMemberIsCR(selectedMember) ? 'Demote from Batch Pilot' : 'Make Batch Pilot'}
                      </button>
                    </div>
                    
@@ -558,7 +558,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
                  </>
               ) : checkIsCurrentUser(selectedMember) && checkMemberIsCR(selectedMember) && !checkMemberIsCreator(selectedMember) ? (
                  <div className="flex flex-col gap-1 mb-2">
-                   <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-1">CR ROLE</span>
+                   <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-1">BATCH PILOT ROLE</span>
                    <button 
                      onClick={() => { 
                        handleWithdrawSelfAsCR(); 
@@ -566,7 +566,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
                      }} 
                      className="text-left py-3 text-[14px] font-semibold text-[#111111] dark:text-[#FFFFFF] hover:opacity-70 transition-opacity"
                    >
-                     Step down from CR
+                     Step down as Batch Pilot
                    </button>
                  </div>
               ) : (

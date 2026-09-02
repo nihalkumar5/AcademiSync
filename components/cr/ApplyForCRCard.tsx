@@ -24,11 +24,11 @@ export const ApplyForCRCard: React.FC = () => {
           <div>
             <div className="flex items-center gap-1.5">
               <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF]">
-                Are you the Class Representative (CR)?
+                Are you a Batch Pilot? 🚀
               </h4>
             </div>
             <p className="text-[12px] text-[#6F6F6F] mt-0.5 max-w-md leading-relaxed">
-              Apply for CR access to create, publish & broadcast verified schedules and class cancellation alerts.
+              Apply to become a Batch Pilot (up to 3 per batch) to manage, publish & broadcast verified schedules and class alerts.
             </p>
           </div>
         </div>
@@ -39,7 +39,7 @@ export const ApplyForCRCard: React.FC = () => {
           className="shrink-0 px-4 py-2.5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer"
         >
           <Crown className="w-3.5 h-3.5" />
-          Apply for CR Access
+          Apply for Batch Pilot
         </button>
       </div>
 

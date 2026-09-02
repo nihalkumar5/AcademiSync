@@ -145,18 +145,18 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
         section: section,
         batchKey: canonicalBatchKey,
         phone: phone.trim(),
-        note: note.trim() || 'Official Class Representative',
+        note: note.trim() || 'Batch Pilot',
         status: 'pending',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
 
       await setDoc(doc(db, 'cr_requests', requestId!), payload, { merge: true });
-      showToast('Application Submitted! 🎉', 'Your CR request has been sent for admin review.', 'success');
+      showToast('Application Submitted! 🚀', 'Your Batch Pilot request has been sent for admin review.', 'success');
       onClose();
     } catch (err: any) {
-      console.error('Failed to submit CR request:', err);
-      showToast('Submission Failed', 'Could not submit CR request. Please try again.', 'error');
+      console.error('Failed to submit Batch Pilot request:', err);
+      showToast('Submission Failed', 'Could not submit Batch Pilot request. Please try again.', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -168,7 +168,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
     <Modal 
       isOpen={isOpen} 
       onClose={onClose} 
-      title="Apply for CR Verification"
+      title="Apply for Batch Pilot 🚀"
       maxWidth="md"
       showCloseButton={true}
     >
@@ -187,7 +187,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
             </div>
             <div>
               <h3 className="text-[16px] font-bold text-[#111111] dark:text-[#FFFFFF]">
-                You are a Verified Class Representative! 👑
+                You are a Verified Batch Pilot! 🚀
               </h3>
               <p className="text-[12.5px] text-[#6F6F6F] mt-1">
                 You have full authority to create, update, cancel classes, and broadcast updates to {formatBatchDisplayName(profile.branch, profile.semester, profile.section)}.
@@ -210,7 +210,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
               </h4>
             </div>
             <p className="text-[12.5px] text-[#6F6F6F] dark:text-[#A0A0A0] leading-relaxed">
-              Your CR verification request for <strong>{college}</strong> · <strong>{formatBatchDisplayName(branch, semester, section)}</strong> is pending approval with the admin team.
+              Your Batch Pilot verification request for <strong>{college}</strong> · <strong>{formatBatchDisplayName(branch, semester, section)}</strong> is pending approval with the admin team.
             </p>
             <div className="p-3 bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] text-[11.5px] space-y-1 font-mono text-[#111111] dark:text-[#FFFFFF]">
               <div><strong>Roll No:</strong> {existingRequest.rollNumber}</div>
@@ -219,7 +219,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
               <div><strong>Applied:</strong> {new Date(existingRequest.createdAt).toLocaleDateString()}</div>
             </div>
             <p className="text-[11.5px] text-[#888888]">
-              Once approved, your CR tools will unlock automatically.
+              Once approved, your Batch Pilot tools will unlock automatically.
             </p>
             <button
               type="button"
@@ -355,7 +355,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
               <div className="p-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
                 <textarea
                   rows={2}
-                  placeholder="e.g. Official Class Representative for CSE 2024 batch"
+                  placeholder="e.g. Official Batch Pilot / Class Leader for CSE 2024 batch"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   className="w-full bg-transparent text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0] resize-none"

@@ -153,7 +153,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                   <button
                     onClick={() => {
                       if (profile?.role !== 'cr') {
-                        showToast("Not Allowed", "Only Class Representatives can propose tasks to the batch.", "error");
+                        showToast("Not Allowed", "Only verified Batch Pilots can broadcast tasks to the batch.", "error");
                         return;
                       }
                       if (homework.isBatchShared) {

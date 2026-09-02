@@ -693,17 +693,17 @@ export const TodayTimeline: React.FC = () => {
                                     <div className="p-3 text-[11px] text-black/70 dark:text-white/70 flex flex-col gap-1">
                                       <div className="font-bold text-black dark:text-white flex items-center gap-1.5 uppercase text-[10px]">
                                         <Ban className="w-3.5 h-3.5 text-amber-500" />
-                                        <span>CR Managed Schedule</span>
+                                        <span>Pilot Managed Schedule</span>
                                       </div>
                                       <p className="text-[10px] text-black/60 dark:text-white/60 leading-tight mt-0.5">
-                                        Only your Class Representative (CR) can cancel or reschedule classes for this batch.
+                                        Only a verified Batch Pilot can cancel or reschedule classes for this batch.
                                       </p>
                                     </div>
                                   ) : isCancelled ? (
                                     <>
                                       {profile.isBatchSynced && (
                                         <div className="px-3 py-1 bg-black/5 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-[9px] font-mono font-bold uppercase text-black/60 dark:text-white/60">
-                                          👑 CR Live Action
+                                          🚀 Pilot Live Action
                                         </div>
                                       )}
                                       <button

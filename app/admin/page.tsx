@@ -1317,10 +1317,10 @@ export default function SuperAdminPage() {
               <div>
                 <h2 className="text-xl font-bold tracking-tight text-[#111111] dark:text-[#FFFFFF] flex items-center gap-2">
                   <Crown className="w-5 h-5 text-amber-500" />
-                  Class Representative (CR) Requests
+                  Batch Pilot Requests 🚀
                 </h2>
                 <p className="text-xs text-[#6F6F6F] mt-1">
-                  Approve verified student leaders to create, publish & broadcast official schedules for their college section.
+                  Approve verified student leaders to create, publish & broadcast official schedules for their college section (up to 3 Pilots per batch).
                 </p>
               </div>
 
@@ -1477,20 +1477,20 @@ export default function SuperAdminPage() {
                                 className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase rounded-lg flex items-center gap-1.5 shadow-sm shadow-emerald-600/20 transition-colors cursor-pointer"
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5" />
-                                Approve as CR
+                                Approve as Batch Pilot
                               </button>
                             </>
                           ) : isApproved ? (
                             <div className="flex items-center justify-between w-full">
                               <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
                                 <CheckCircle2 className="w-3.5 h-3.5" />
-                                Verified Class Representative
+                                Verified Batch Pilot
                               </span>
                               <button
                                 onClick={() => handleRejectCRRequest(req)}
                                 className="text-[11px] text-rose-500 hover:underline uppercase font-bold cursor-pointer"
                               >
-                                Revoke CR
+                                Revoke Pilot
                               </button>
                             </div>
                           ) : (
@@ -1498,7 +1498,7 @@ export default function SuperAdminPage() {
                               onClick={() => handleApproveCRRequest(req)}
                               className="text-[11px] text-emerald-600 hover:underline uppercase font-bold cursor-pointer"
                             >
-                              Re-approve as CR
+                              Re-approve as Batch Pilot
                             </button>
                           )}
                         </div>

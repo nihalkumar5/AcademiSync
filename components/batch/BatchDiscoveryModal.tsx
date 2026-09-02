@@ -65,7 +65,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                 Batch Code
               </label>
               <p className="text-[13px] text-[#6F6F6F] dark:text-[#888888] leading-relaxed">
-                Enter the 6-character Batch Code shared by your Class Representative (CR) or classmates.
+                Enter the 6-character Batch Code shared by your Batch Pilot or classmates.
               </p>
             </div>
 

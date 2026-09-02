@@ -55,7 +55,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
   const handleShareToWhatsApp = async () => {
     const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://academi-sync-chi.vercel.app';
     const courseTitle = `${activeBranch} (Sem ${activeSem}${hasMultipleSections ? `, Section ${cleanSec}` : ''})`;
-    const messageText = `Hey batchmates! 👋\n\nNobody has created the official timetable for our batch yet on Intersemester:\n🏛️ *${shortCollege}*\n📚 *${courseTitle}*\n\nIf you are our Class Representative (CR) or want to setup the synced batch timetable for all of us, open this link and claim CR access:\n👉 ${appUrl}\n\nLet's get all class updates, room alerts & assignments synced! 🚀`;
+    const messageText = `Hey batchmates! 👋\n\nNobody has created the official timetable for our batch yet on Intersemester:\n🏛️ *${shortCollege}*\n📚 *${courseTitle}*\n\nIf you are our Batch Pilot or want to setup the synced batch timetable for all of us, open this link and claim Pilot access:\n👉 ${appUrl}\n\nLet's get all class updates, room alerts & assignments synced! 🚀`;
 
     try {
       const res = await shareLink({
@@ -65,7 +65,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
         dialogTitle: 'Share with Class WhatsApp Group'
       });
       if (res === 'copied') {
-        showToast('Message Copied!', 'Paste this message in your class WhatsApp group to notify your CR.', 'success');
+        showToast('Message Copied!', 'Paste this message in your class WhatsApp group to notify your Batch Pilot.', 'success');
       }
     } catch (e) {
       console.error(e);
@@ -84,7 +84,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
       <Modal 
         isOpen={isOpen && !showCRModal} 
         onClose={onClose} 
-        title="Become your batch CR."
+        title="Become a Batch Pilot 🚀"
         description="Keep everyone on the same timetable and never miss what matters."
         mobileFullSheet={true} 
         maxWidth="md"
@@ -95,7 +95,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
           <div className="w-full flex items-center justify-center -mt-12 -mb-28 sm:-mt-10 sm:-mb-24 py-0 relative z-0">
             <img 
               src="/cr.png" 
-              alt="Class Representative" 
+              alt="Batch Pilot" 
               className="w-full max-w-[480px] sm:max-w-[540px] h-auto object-contain scale-[1.15]"
             />
           </div>
@@ -215,7 +215,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
               onClick={() => setShowCRModal(true)}
               className="w-full h-12 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] font-bold text-[13px] rounded-xl tracking-wide hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>Apply to become CR</span>
+              <span>Apply to become a Batch Pilot 🚀</span>
               <ArrowRight className="w-4 h-4" />
             </button>
             <div className="flex items-center gap-1.5 text-[11.5px] text-[#6F6F6F] dark:text-[#888888]">
@@ -223,7 +223,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
               <span>You&apos;ll need to verify your college &amp; batch.</span>
             </div>
 
-            {/* Secondary actions: Tell CR on WhatsApp & Personal Mode */}
+            {/* Secondary actions: Tell Pilot on WhatsApp & Personal Mode */}
             <div className="w-full flex flex-col gap-2 mt-2 pt-3 border-t border-[#E5E5E5] dark:border-[#2C2C2C]">
               <button
                 type="button"
@@ -233,7 +233,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
                 <div className="flex items-center gap-2.5">
                   <MessageCircle className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />
                   <span className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">
-                    Tell Class CR to Setup Batch
+                    Ask Batch Pilot to Setup Timetable
                   </span>
                 </div>
                 <Share2 className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF] group-hover:scale-110 transition-transform" />
