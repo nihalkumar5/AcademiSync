@@ -413,8 +413,8 @@ export const OnboardingModal = () => {
       {/* ========================================================================= */}
       <div className="hidden md:flex flex-row w-full h-full overflow-hidden">
         
-        {/* Left Column: Artistic Showcase */}
-        <div className="w-1/2 h-full bg-[#F7F7F5] dark:bg-[#141414] border-r border-[#EEEEEC] dark:border-[#262626] flex flex-col justify-between p-12 lg:p-16 relative overflow-hidden select-none">
+        {/* Left Column: Artistic Showcase (Pure White Background) */}
+        <div className="w-1/2 h-full bg-white dark:bg-[#111110] border-r border-[#EEEEEC] dark:border-[#262626] flex flex-col justify-between p-12 lg:p-16 relative overflow-hidden select-none">
           {/* Subtle Top Badge */}
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-mono font-bold tracking-[2px] uppercase text-[#111111]/50 dark:text-[#FFFFFF]/50">
@@ -456,11 +456,11 @@ export const OnboardingModal = () => {
           </div>
         </div>
 
-        {/* Right Column: Interaction & Content */}
-        <div className="w-1/2 h-full bg-white dark:bg-[#111110] flex flex-col justify-between p-10 lg:p-16 relative overflow-y-auto">
+        {/* Right Column: Interaction & Content (Warm Beige Background) */}
+        <div className="w-1/2 h-full bg-[#F7F7F5] dark:bg-[#161616] flex flex-col justify-between p-10 lg:p-16 relative overflow-y-auto">
           
           {/* Top Header */}
-          <div className="w-full flex items-center justify-between pb-6 shrink-0">
+          <div className="w-full flex items-center justify-between pb-6 shrink-0 border-b border-[#E5E5E3] dark:border-[#262626]">
             <div className="flex items-center gap-3">
               {currentIndex > 0 && (
                 <button 
@@ -512,9 +512,9 @@ export const OnboardingModal = () => {
                       {slides[currentIndex].features.map((feat, idx) => (
                         <div 
                           key={idx} 
-                          className="flex items-start gap-4 p-4 rounded-none bg-[#FAFAF8] dark:bg-[#181818] border border-[#EEEEEC] dark:border-[#2C2C2C] hover:border-[#111111] dark:hover:border-[#FFFFFF] transition-colors"
+                          className="flex items-start gap-4 p-4 rounded-none bg-white dark:bg-[#1E1E1E] border border-[#E5E5E3] dark:border-[#2C2C2C] hover:border-[#111111] dark:hover:border-[#FFFFFF] shadow-2xs transition-colors"
                         >
-                          <div className="w-9 h-9 bg-white dark:bg-[#111111] border border-black/5 dark:border-white/10 flex items-center justify-center shrink-0 shadow-xs">
+                          <div className="w-9 h-9 bg-[#F7F7F5] dark:bg-[#111111] border border-black/5 dark:border-white/10 flex items-center justify-center shrink-0 shadow-xs">
                             <feat.icon className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />
                           </div>
                           <div className="flex flex-col text-left">
@@ -546,7 +546,7 @@ export const OnboardingModal = () => {
                     </p>
                   </div>
 
-                  <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#FAFAF8] dark:bg-[#1A1A1A] p-5 mb-5">
+                  <div className="border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#1E1E1E] p-5 mb-5 shadow-2xs">
                     <div className="flex items-center gap-1.5 mb-3">
                       <ArrowUpRight className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF]" />
                       <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF]">
@@ -562,7 +562,7 @@ export const OnboardingModal = () => {
                           setInviteCode(e.target.value);
                           if (inviteError) setInviteError(false);
                         }}
-                        className={`flex-1 h-11 px-3.5 bg-white dark:bg-[#111111] border rounded-none text-[13.5px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none transition-all ${
+                        className={`flex-1 h-11 px-3.5 bg-[#FAFAF8] dark:bg-[#111111] border rounded-none text-[13.5px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none transition-all ${
                           inviteError
                             ? 'border-red-500 ring-1 ring-red-500'
                             : 'border-[#D8D8D8] dark:border-[#333333] focus:border-[#111111] dark:focus:border-[#FFFFFF]'
@@ -584,16 +584,16 @@ export const OnboardingModal = () => {
                   </div>
 
                   <div className="flex items-center gap-3 my-1 mb-5">
-                    <div className="flex-1 h-[1px] bg-[#EEEEEC] dark:bg-[#2C2C2C]" />
+                    <div className="flex-1 h-[1px] bg-[#E5E5E3] dark:bg-[#2C2C2C]" />
                     <span className="text-[10.5px] font-bold tracking-[1.5px] text-[#A0A0A0] uppercase font-mono">
                       OR SCAN TIMETABLE
                     </span>
-                    <div className="flex-1 h-[1px] bg-[#EEEEEC] dark:bg-[#2C2C2C]" />
+                    <div className="flex-1 h-[1px] bg-[#E5E5E3] dark:bg-[#2C2C2C]" />
                   </div>
 
                   <div 
                     onClick={() => setIsImportModalOpen(true)}
-                    className="relative group w-full py-7 px-5 flex flex-col items-center justify-center border border-dashed border-[#D9D9D6] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-all cursor-pointer text-center"
+                    className="relative group w-full py-7 px-5 flex flex-col items-center justify-center border border-dashed border-[#D9D9D6] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-white dark:bg-[#1E1E1E] hover:bg-white/80 dark:hover:bg-[#222222] transition-all cursor-pointer text-center shadow-2xs"
                   >
                     <Upload className="w-5 h-5 mb-2.5 text-[#111111] dark:text-[#FFFFFF] group-hover:-translate-y-0.5 transition-transform" />
                     <h3 className="text-[16px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-1">Just Upload & Chill</h3>
@@ -624,7 +624,7 @@ export const OnboardingModal = () => {
 
           {/* Right Bottom Footer (Only rendered on slides 0, 1, 2) */}
           {currentIndex < 3 && (
-            <div className="w-full flex items-center justify-between pt-6 border-t border-[#EEEEEC] dark:border-[#262626] shrink-0">
+            <div className="w-full flex items-center justify-between pt-6 border-t border-[#E5E5E3] dark:border-[#262626] shrink-0">
               <div className="flex items-center gap-2">
                 {[0, 1, 2].map((i) => (
                   <button
