@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logServerError } from '@/lib/errorUtils';
+import { validateServerUploadPayload } from '@/lib/fileSafety';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -31,6 +32,17 @@ export async function POST(req: Request) {
           base64: buffer.toString('base64'),
           mimeType: file.type || (file.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
         });
+      }
+    }
+
+    // File Upload Safety Validation
+    if (imageList.length > 0) {
+      const validation = validateServerUploadPayload(imageList);
+      if (!validation.valid) {
+        return NextResponse.json(
+          { success: false, error: validation.error || 'Invalid mess menu file uploaded.' },
+          { status: 400 }
+        );
       }
     }
 

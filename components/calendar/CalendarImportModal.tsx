@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { AcademicEvent, CalendarEventType } from '@/lib/types';
 import { getLocalDateString, getTodayDateString } from '@/lib/timetableUtils';
+import { validateUploadedFile } from '@/lib/fileSafety';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import {  Upload, Sparkles, Check, Trash2, CalendarDays , Bot, Plus , X, ChevronDown} from 'lucide-react';
@@ -112,19 +113,13 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
-      // Enforce 3MB limit to prevent 413 Payload Too Large on base64 upload
-      const MAX_SIZE_MB = 3;
-      const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
-      const oversizedFile = files.find((file) => file.size > MAX_SIZE_BYTES);
-
-      if (oversizedFile) {
-        showToast(
-          'File Too Large',
-          `"${oversizedFile.name}" exceeds the ${MAX_SIZE_MB}MB size limit. Please upload a smaller image or compressed PDF.`,
-          'error'
-        );
-        e.target.value = ''; // Reset file input
-        return;
+      for (const file of files) {
+        const check = validateUploadedFile({ name: file.name, size: file.size, type: file.type });
+        if (!check.valid) {
+          showToast('Invalid File', check.error || 'Please upload an image or PDF under 5MB.', 'error');
+          e.target.value = '';
+          return;
+        }
       }
 
       const readers = files.map((file) => {
@@ -134,7 +129,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
             resolve({
               name: file.name,
               base64: event.target?.result as string,
-              mimeType: file.type,
+              mimeType: file.type || 'application/pdf',
             });
           };
           reader.readAsDataURL(file);

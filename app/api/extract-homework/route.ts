@@ -1,12 +1,23 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logServerError } from '@/lib/errorUtils';
+import { validateServerUploadPayload } from '@/lib/fileSafety';
 
 export async function POST(req: Request) {
   try {
     const { imageBase64, mimeType, fileName } = await req.json().catch(() => ({}));
 
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+
+    if (imageBase64) {
+      const validation = validateServerUploadPayload([{ name: fileName, base64: imageBase64, mimeType }]);
+      if (!validation.valid) {
+        return NextResponse.json(
+          { success: false, error: validation.error || 'Invalid assignment file uploaded.' },
+          { status: 400 }
+        );
+      }
+    }
 
     if (apiKey && imageBase64) {
       const candidateModels = ['gemini-3.6-flash', 'gemini-2.0-flash-exp', 'gemini-1.5-flash'];

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logServerError } from '@/lib/errorUtils';
+import { validateServerUploadPayload } from '@/lib/fileSafety';
 
 export async function POST(req: Request) {
   try {
@@ -11,6 +12,17 @@ export async function POST(req: Request) {
 
     // Handle both legacy single image or new multi-image format
     const imageList = images || (imageBase64 ? [{ base64: imageBase64, mimeType }] : []);
+
+    // File Upload Safety Validation
+    if (imageList.length > 0) {
+      const validation = validateServerUploadPayload(imageList);
+      if (!validation.valid) {
+        return NextResponse.json(
+          { success: false, error: validation.error || 'Invalid file uploaded.' },
+          { status: 400 }
+        );
+      }
+    }
 
     if (apiKey && imageList.length > 0) {
       try {

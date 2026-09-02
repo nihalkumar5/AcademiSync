@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Upload, Bot, X, Sparkles, Check, Trash2, Plus } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { ExtractedExam } from '@/lib/types';
+import { validateUploadedFile } from '@/lib/fileSafety';
 
 interface ExamImportModalProps {
   isOpen: boolean;
@@ -14,7 +15,7 @@ interface ExamImportModalProps {
 }
 
 export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClose }) => {
-  const { exams, setFullExams } = useApp();
+  const { exams, setFullExams, showToast } = useApp();
 
   const [step, setStep] = useState<'upload' | 'extracting' | 'review'>('upload');
   const [extractedExams, setExtractedExams] = useState<ExtractedExam[]>([]);
@@ -84,6 +85,15 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
+      for (const file of files) {
+        const check = validateUploadedFile({ name: file.name, size: file.size, type: file.type });
+        if (!check.valid) {
+          showToast('Invalid File', check.error || 'Please upload an image or PDF under 5MB.', 'error');
+          e.target.value = '';
+          return;
+        }
+      }
+
       const readers = files.map((file) => {
         return new Promise<{ name: string, base64: string, mimeType: string }>((resolve) => {
           const reader = new FileReader();
@@ -91,7 +101,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
             resolve({
               name: file.name,
               base64: event.target?.result as string,
-              mimeType: file.type,
+              mimeType: file.type || 'image/jpeg',
             });
           };
           reader.readAsDataURL(file);

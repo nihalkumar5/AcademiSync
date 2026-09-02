@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import { logServerError } from '@/lib/errorUtils';
+import { validateServerUploadPayload } from '@/lib/fileSafety';
 
 export async function POST(req: Request) {
   try {
@@ -13,6 +14,17 @@ export async function POST(req: Request) {
     const imageList = images || (imageBase64 ? [{ base64: imageBase64, mimeType }] : []);
 
     const isSampleRun = !!(isSample || imageList.length === 0);
+
+    // File Upload Safety Validation (if not a sample run)
+    if (!isSampleRun && imageList.length > 0) {
+      const validation = validateServerUploadPayload(imageList);
+      if (!validation.valid) {
+        return NextResponse.json(
+          { success: false, error: validation.error || 'Invalid document uploaded.' },
+          { status: 400 }
+        );
+      }
+    }
 
     if (apiKey) {
       try {

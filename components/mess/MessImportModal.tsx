@@ -6,6 +6,7 @@ import { Upload, Sparkles } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
 import { processMultipleFilesForAi } from '@/lib/fileCompressor';
+import { validateUploadedFile } from '@/lib/fileSafety';
 
 export interface MessImportModalProps {
   isOpen: boolean;
@@ -19,6 +20,15 @@ export const MessImportModal: React.FC<MessImportModalProps> = ({ isOpen, onClos
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
+      for (const file of files) {
+        const check = validateUploadedFile({ name: file.name, size: file.size, type: file.type });
+        if (!check.valid) {
+          showToast('Invalid File', check.error || 'Please upload an image or PDF under 5MB.', 'error');
+          e.target.value = '';
+          return;
+        }
+      }
+
       try {
         const results = await processMultipleFilesForAi(files);
         onFileSelect(results);

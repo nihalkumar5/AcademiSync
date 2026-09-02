@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { HomeworkPriority } from '@/lib/types';
+import { validateUploadedFile } from '@/lib/fileSafety';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input, Textarea, Select } from '../ui/Input';
@@ -101,10 +102,17 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const check = validateUploadedFile({ name: file.name, size: file.size, type: file.type });
+      if (!check.valid) {
+        showToast('Invalid File', check.error || 'Please upload an image or document under 5MB.', 'error');
+        e.target.value = '';
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (event) => {
         const base64 = event.target?.result as string;
-        runScan(file.name, base64, file.type);
+        runScan(file.name, base64, file.type || 'image/jpeg');
       };
       reader.readAsDataURL(file);
     }
