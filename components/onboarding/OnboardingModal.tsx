@@ -413,17 +413,17 @@ export const OnboardingModal = () => {
       {/* ========================================================================= */}
       <div className="hidden md:flex flex-row w-full h-full overflow-hidden">
         
-        {/* Left Column: Artistic Showcase (Pure White Background) */}
-        <div className="w-1/2 h-full bg-white dark:bg-[#111110] border-r border-[#EEEEEC] dark:border-[#262626] flex flex-col justify-between p-12 lg:p-16 relative overflow-hidden select-none">
+        {/* Left Column: Artistic Showcase (Always Pure White Background) */}
+        <div className="w-1/2 h-full bg-white text-[#111111] border-r border-[#EEEEEC] dark:border-[#262626] flex flex-col justify-between p-12 lg:p-16 relative overflow-hidden select-none">
           {/* Subtle Top Badge */}
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono font-bold tracking-[2px] uppercase text-[#111111]/50 dark:text-[#FFFFFF]/50">
+            <span className="text-[11px] font-mono font-bold tracking-[2px] uppercase text-[#111111]/50">
               INTERSEMESTER · COPILOT
             </span>
           </div>
 
           {/* Central Artwork */}
-          <div className="relative flex-1 w-full flex items-center justify-center py-6">
+          <div className="relative flex-1 w-full flex items-center justify-center py-6 bg-white">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
                 key={`desktop-art-${currentIndex}`}
@@ -449,8 +449,8 @@ export const OnboardingModal = () => {
           </div>
 
           {/* Bottom Left Quote */}
-          <div className="flex flex-col gap-1 border-t border-black/5 dark:border-white/5 pt-4">
-            <p className="text-[11px] font-mono tracking-[1.5px] uppercase text-[#111111]/60 dark:text-[#FFFFFF]/60 font-semibold">
+          <div className="flex flex-col gap-1 border-t border-black/10 pt-4">
+            <p className="text-[11px] font-mono tracking-[1.5px] uppercase text-[#111111]/60 font-semibold">
               EVERY ACADEMIC DAY CLEAR & PREDICTABLE.
             </p>
           </div>
