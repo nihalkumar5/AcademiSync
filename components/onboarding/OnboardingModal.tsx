@@ -235,14 +235,14 @@ export const OnboardingModal = () => {
               className="absolute inset-0 w-full h-full flex flex-col justify-between bg-white dark:bg-[#111110]"
             >
               {/* Slide Image */}
-              <div className="relative flex-1 min-h-0 w-full flex items-end justify-center overflow-visible bg-white dark:bg-[#111110] px-4">
+              <div className="relative flex-1 min-h-0 w-full flex items-end justify-center overflow-visible bg-white dark:bg-[#111110] px-4 pt-2">
                 <img 
                   src={slides[currentIndex].image} 
                   alt="Onboarding" 
-                  className={`relative z-10 max-h-[44vh] md:max-h-[50vh] w-auto max-w-[85vw] md:max-w-[560px] object-contain object-bottom pointer-events-none translate-y-[2%] ${
-                    currentIndex === 0 ? 'scale-[1.12]' :
-                    currentIndex === 1 ? 'scale-[1.32]' :
-                    'scale-[1.1]'
+                  className={`relative z-10 max-h-[54vh] md:max-h-[60vh] lg:max-h-[64vh] w-auto max-w-[95vw] md:max-w-[760px] lg:max-w-[840px] object-contain object-bottom pointer-events-none translate-y-[2%] transition-transform duration-300 ${
+                    currentIndex === 0 ? 'scale-[1.35] md:scale-[1.45]' :
+                    currentIndex === 1 ? 'scale-[1.5] md:scale-[1.6]' :
+                    'scale-[1.3] md:scale-[1.4]'
                   }`}
                 />
               </div>
