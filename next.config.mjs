@@ -1,9 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  env: {
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Z3JlYXQtbWFybGluLTc5OTcuY2xlcmsuYWNjb3VudHMuZGV2JA",
-    CLERK_SECRET_KEY: "sk_test_Jy7AD5HGNNYIkkIt7mv6tFKbRwjEjN5HMxMY2oQKq1",
-  },
   transpilePackages: [
     "@capacitor/core",
     "@capacitor/splash-screen",
@@ -11,6 +7,39 @@ const nextConfig = {
     "@capacitor/local-notifications",
     "@capacitor/push-notifications"
   ],
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=*, microphone=(), geolocation=(), browsing-topics=()',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

@@ -5,9 +5,14 @@ import { logServerError } from '@/lib/errorUtils';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-  // Add simple authentication to prevent public triggering (Vercel sets this header for cron jobs)
+  // Enforce strict cron authentication (Vercel Cron header or Bearer CRON_SECRET)
   const authHeader = request.headers.get('authorization');
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const vercelCronHeader = request.headers.get('x-vercel-cron');
+
+  const isVercelCron = vercelCronHeader === '1';
+  const hasValidSecret = process.env.CRON_SECRET ? authHeader === `Bearer ${process.env.CRON_SECRET}` : false;
+
+  if (process.env.NODE_ENV === 'production' && !isVercelCron && !hasValidSecret) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 

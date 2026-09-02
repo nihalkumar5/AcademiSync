@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email in [
+          'nihalkumar@iiitnr.edu.in',
+          'nihalkumar538@gmail.com'
+        ]
+      );
+    }
+
+    // 1. Users Collection: Each user can only read and write their own data
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) || isSuperAdmin();
+    }
+
+    // 2. Shared Batch Timetables Collection:
+    // Read: Any student can view shared timetable
+    // Write: Super Admins, Batch Creator, or Verified CRs
+    match /shared_timetables/{batchKey} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() ||
+        resource.data.creatorId == request.auth.uid ||
+        (resource.data.crUserIds is list && request.auth.uid in resource.data.crUserIds) ||
+        (resource.data.crEmails is list && request.auth.token.email in resource.data.crEmails) ||
+        // Allow joining (incrementing studentCount or updating lastActive)
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['studentCount', 'members', 'lastActive', 'inviteCode'])
+      );
+      allow delete: if isSuperAdmin() || (isAuthenticated() && resource.data.creatorId == request.auth.uid);
+    }
+
+    // 3. CR Applications:
+    // Any authenticated student can submit an application for their branch
+    // Only Super Admins or the applicant can read/manage their application
+    match /cr_applications/{appId} {
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if isSuperAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+    }
+
+    // 4. Campus Spotlight (Announcements/Notices):
+    // Read: Public
+    // Write: Super Admin only
+    match /campus_spotlight/{adId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    // Default catch-all: Deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
