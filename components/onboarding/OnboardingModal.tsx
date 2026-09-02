@@ -173,133 +173,135 @@ export const OnboardingModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-white dark:bg-[#111110] text-[#111111] dark:text-[#FFFFFF] flex flex-col font-sans overflow-hidden w-full h-[100dvh]">
+    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center overflow-hidden w-full h-[100dvh]">
       
-      {/* Top Nav Header with Safe Area Clearance */}
-      <div 
-        className="w-full flex items-center justify-between px-6 pb-3 shrink-0 z-30 border-b border-[#F0F0EE] dark:border-[#262626] bg-white dark:bg-[#111110] text-[#111111] dark:text-[#FFFFFF]"
-        style={{
-          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 12px), 28px)',
-        }}
-      >
-        {currentIndex === 0 ? (
-          <div className="w-full flex flex-col items-center justify-center pt-1">
-            <h1 className="text-[24px] font-bold tracking-tighter text-[#111111] dark:text-[#FFFFFF]">
-              inter<span className="font-normal opacity-80">semester</span>
-            </h1>
-            <div className="w-[24px] h-[1.5px] bg-[#111111] dark:bg-[#FFFFFF] mt-2.5 mb-1.5" />
-            <p className="text-[9.5px] tracking-[2.5px] font-mono font-bold text-[#111111]/60 dark:text-[#FFFFFF]/60 uppercase whitespace-pre-line text-center">
-              {slides[0].topText}
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="flex items-center gap-2">
-              <button 
-                type="button"
-                onClick={handlePrev} 
-                className="p-2 -ml-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors cursor-pointer"
-                aria-label="Back"
-              >
-                <ArrowLeft className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF]" />
-              </button>
-              <h1 className="text-[20px] font-bold tracking-tighter text-[#111111] dark:text-[#FFFFFF]">
+      <div className="w-full h-full md:w-[460px] lg:w-[480px] md:h-[840px] md:max-h-[92vh] bg-white dark:bg-[#111110] text-[#111111] dark:text-[#FFFFFF] flex flex-col font-sans overflow-hidden md:rounded-[28px] md:shadow-[0_25px_80px_rgba(0,0,0,0.45)] md:border md:border-black/15 dark:md:border-white/15 relative">
+        
+        {/* Top Nav Header with Safe Area Clearance */}
+        <div 
+          className="w-full flex items-center justify-between px-6 pb-3 shrink-0 z-30 border-b border-[#F0F0EE] dark:border-[#262626] bg-white dark:bg-[#111110] text-[#111111] dark:text-[#FFFFFF]"
+          style={{
+            paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 12px), 24px)',
+          }}
+        >
+          {currentIndex === 0 ? (
+            <div className="w-full flex flex-col items-center justify-center pt-1">
+              <h1 className="text-[24px] font-bold tracking-tighter text-[#111111] dark:text-[#FFFFFF]">
                 inter<span className="font-normal opacity-80">semester</span>
               </h1>
+              <div className="w-[24px] h-[1.5px] bg-[#111111] dark:bg-[#FFFFFF] mt-2.5 mb-1.5" />
+              <p className="text-[9.5px] tracking-[2.5px] font-mono font-bold text-[#111111]/60 dark:text-[#FFFFFF]/60 uppercase whitespace-pre-line text-center">
+                {slides[0].topText}
+              </p>
             </div>
-            <button 
-              type="button"
-              onClick={handleSkip} 
-              className="px-3.5 py-1.5 -mr-2 text-[13px] font-semibold text-[#888888] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer"
-            >
-              Skip
-            </button>
-          </>
-        )}
-      </div>
-
-      {/* Main Container */}
-      <div className="flex-1 w-full flex flex-col relative overflow-hidden bg-white">
-        <AnimatePresence custom={direction} initial={false}>
-          {currentIndex < 3 ? (
-            <motion.div
-              key={currentIndex}
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              className="absolute inset-0 w-full h-full flex flex-col justify-between bg-white"
-            >
-              {/* Slide Image */}
-              <div className="relative flex-1 min-h-0 w-full flex items-end justify-center overflow-visible bg-white">
-                <img 
-                  src={slides[currentIndex].image} 
-                  alt="Onboarding" 
-                  className={`relative z-10 w-full h-full object-contain object-bottom pointer-events-none translate-y-[6%] ${
-                    currentIndex === 0 ? 'scale-[1.2]' :
-                    currentIndex === 1 ? 'scale-[1.45]' :
-                    'scale-[1.15]'
-                  }`}
-                />
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <button 
+                  type="button"
+                  onClick={handlePrev} 
+                  className="p-2 -ml-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+                  aria-label="Back"
+                >
+                  <ArrowLeft className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF]" />
+                </button>
+                <h1 className="text-[20px] font-bold tracking-tighter text-[#111111] dark:text-[#FFFFFF]">
+                  inter<span className="font-normal opacity-80">semester</span>
+                </h1>
               </div>
-
-              {/* Text Card */}
-              <div className="w-full px-8 flex flex-col gap-2.5 pb-6 bg-[#F4F4F4] dark:bg-[#1A1A1A] shrink-0 z-10 relative rounded-t-[40px] pt-7 -mt-6">
-                <h2 className="text-[28px] leading-[1.1] font-bold text-[#111111] dark:text-[#FFFFFF] whitespace-pre-line">
-                  {slides[currentIndex].title}
-                </h2>
-                <p className="text-[14px] text-[#111111]/60 dark:text-[#FFFFFF]/60 font-medium leading-snug whitespace-pre-line mb-3">
-                  {slides[currentIndex].subtitle}
-                </p>
-
-                {slides[currentIndex].features && (
-                  <div className="flex flex-col">
-                    {slides[currentIndex].features.map((feat, idx) => (
-                      <div key={idx} className="flex items-center gap-3.5 py-3 border-b border-black/5 dark:border-white/5 last:border-0">
-                        <div className="w-9 h-9 bg-white dark:bg-[#111111] rounded-xl flex items-center justify-center shrink-0 shadow-sm">
-                          <feat.icon className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF]">{feat.title}</span>
-                          <span className="text-[12px] text-[#111111]/60 dark:text-[#FFFFFF]/60">{feat.desc}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Controls Footer */}
-              <div 
-                className="w-full px-6 sm:px-8 pt-2 pb-6 flex items-center justify-between shrink-0 bg-[#F7F7F5] dark:bg-[#1A1A1A] z-10 relative"
-                style={{
-                  paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 16px), 24px)',
-                }}
+              <button 
+                type="button"
+                onClick={handleSkip} 
+                className="px-3.5 py-1.5 -mr-2 text-[13px] font-semibold text-[#888888] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer"
               >
-                <div className="flex items-center gap-2">
-                  {[0, 1, 2].map((i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => { setDirection(i > currentIndex ? 1 : -1); setCurrentIndex(i); }}
-                      className={`h-[5px] rounded-full transition-all duration-300 ${i === currentIndex ? 'w-[18px] bg-[#111111] dark:bg-[#FFFFFF]' : 'w-[5px] bg-[#111111]/20 dark:bg-[#FFFFFF]/20'}`}
-                      aria-label={`Go to slide ${i + 1}`}
-                    />
-                  ))}
+                Skip
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Main Container */}
+        <div className="flex-1 w-full flex flex-col relative overflow-hidden bg-white">
+          <AnimatePresence custom={direction} initial={false}>
+            {currentIndex < 3 ? (
+              <motion.div
+                key={currentIndex}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="absolute inset-0 w-full h-full flex flex-col justify-between bg-white"
+              >
+                {/* Slide Image */}
+                <div className="relative flex-1 min-h-0 w-full flex items-end justify-center overflow-visible bg-white">
+                  <img 
+                    src={slides[currentIndex].image} 
+                    alt="Onboarding" 
+                    className={`relative z-10 w-full h-full object-contain object-bottom pointer-events-none translate-y-[4%] ${
+                      currentIndex === 0 ? 'scale-[1.18]' :
+                      currentIndex === 1 ? 'scale-[1.4]' :
+                      'scale-[1.12]'
+                    }`}
+                  />
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  className="h-[46px] px-6 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] rounded-none flex items-center gap-2 font-bold text-[13.5px] hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm uppercase tracking-wider"
+                {/* Text Card */}
+                <div className="w-full px-6 sm:px-8 flex flex-col gap-2 pb-5 bg-[#F4F4F4] dark:bg-[#1A1A1A] shrink-0 z-10 relative rounded-t-[32px] pt-6 -mt-5">
+                  <h2 className="text-[26px] sm:text-[28px] leading-[1.12] font-bold text-[#111111] dark:text-[#FFFFFF] whitespace-pre-line text-left">
+                    {slides[currentIndex].title}
+                  </h2>
+                  <p className="text-[13.5px] text-[#111111]/60 dark:text-[#FFFFFF]/60 font-medium leading-snug whitespace-pre-line mb-2 text-left">
+                    {slides[currentIndex].subtitle}
+                  </p>
+
+                  {slides[currentIndex].features && (
+                    <div className="flex flex-col text-left">
+                      {slides[currentIndex].features.map((feat, idx) => (
+                        <div key={idx} className="flex items-center gap-3 py-2.5 border-b border-black/5 dark:border-white/5 last:border-0">
+                          <div className="w-8 h-8 bg-white dark:bg-[#111111] rounded-lg flex items-center justify-center shrink-0 shadow-xs">
+                            <feat.icon className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF]" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[12.5px] font-bold text-[#111111] dark:text-[#FFFFFF]">{feat.title}</span>
+                            <span className="text-[11.5px] text-[#111111]/60 dark:text-[#FFFFFF]/60">{feat.desc}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Controls Footer */}
+                <div 
+                  className="w-full px-6 sm:px-8 pt-2 pb-6 flex items-center justify-between shrink-0 bg-[#F4F4F4] dark:bg-[#1A1A1A] z-10 relative"
+                  style={{
+                    paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 16px), 24px)',
+                  }}
                 >
-                  {slides[currentIndex].buttonText}
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </motion.div>
-          ) : (
+                  <div className="flex items-center gap-2">
+                    {[0, 1, 2].map((i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => { setDirection(i > currentIndex ? 1 : -1); setCurrentIndex(i); }}
+                        className={`h-[5px] rounded-full transition-all duration-300 ${i === currentIndex ? 'w-[18px] bg-[#111111] dark:bg-[#FFFFFF]' : 'w-[5px] bg-[#111111]/20 dark:bg-[#FFFFFF]/20'}`}
+                        aria-label={`Go to slide ${i + 1}`}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="h-[44px] px-6 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] rounded-none flex items-center gap-2 font-bold text-[13px] hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm uppercase tracking-wider"
+                  >
+                    {slides[currentIndex].buttonText}
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
             /* STEP 4: CLEAN NOTION-STYLE BATCH & SCAN EXPERIENCE */
             <motion.div
               key="step-4-ai-scanner"
@@ -403,6 +405,7 @@ export const OnboardingModal = () => {
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
       />
+      </div>
     </div>
   );
 };
