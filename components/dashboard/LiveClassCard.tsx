@@ -202,9 +202,11 @@ export const LiveClassCard: React.FC = () => {
   }
 
   const currentDay = getCurrentDayOfWeek();
-  const rawTodaySessions = timetable.filter((s) => s.day === currentDay);
+  const rawTodayRegular = timetable.filter((s) => s.day === currentDay);
+  const extraToday = Object.values(extraSessions || {}).filter((ex) => ex && ex.date === dateTodayStr);
+  const rawTodaySessions = [...rawTodayRegular, ...extraToday];
   const totalToday = rawTodaySessions.length;
-  const cancelledToday = rawTodaySessions.filter((s) => isSessionCancelled(s.id, dateTodayStr)).length;
+  const cancelledToday = rawTodayRegular.filter((s) => isSessionCancelled(s.id, dateTodayStr)).length;
   const completedToday = totalToday - cancelledToday;
   
   return (

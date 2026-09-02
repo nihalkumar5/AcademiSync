@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 export const OverviewHeader: React.FC = () => {
-  const { profile, timetable, homework, carryItems, events, setActiveView } = useApp();
+  const { profile, timetable, homework, carryItems, events, setActiveView, extraSessions, isSessionCancelled } = useApp();
 
   const [time, setTime] = useState<Date | null>(null);
 
@@ -36,9 +36,10 @@ export const OverviewHeader: React.FC = () => {
   const dateTodayStr = getTodayDateString();
   const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
 
-
   const todayDay = getCurrentDayOfWeek();
-  const todayClasses = todayHoliday ? [] : timetable.filter((s) => s.day === todayDay);
+  const regularToday = timetable.filter((s) => s.day === todayDay && !isSessionCancelled(s.id, dateTodayStr));
+  const extraToday = Object.values(extraSessions || {}).filter((ex) => ex && ex.date === dateTodayStr);
+  const todayClasses = todayHoliday ? [] : [...regularToday, ...extraToday];
   const pendingHw = homework.filter((h) => h.status !== 'Completed');
   const upcomingDeadlines = homework.filter((h) => {
     const diff = Math.ceil(
