@@ -1,0 +1,24 @@
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+  const assetlinks = [
+    {
+      relation: ['delegate_permission/common.handle_all_urls'],
+      target: {
+        namespace: 'android_app',
+        package_name: 'com.intersemester.app',
+        sha256_cert_fingerprints: [
+          '14:6D:E9:01:0F:B0:85:66:B4:24:6E:EB:BD:39:EC:04:F0:A4:77:4A:2C:7A:B4:42:04:14:4E:94:43:5D:84:7B',
+          'D8:32:7C:51:01:7D:11:33:E4:15:DA:10:E1:8D:77:90:09:30:EF:78:C8:AF:3B:AD:EC:81:83:4A:77:D4:17:28',
+        ],
+      },
+    },
+  ];
+
+  return NextResponse.json(assetlinks, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'public, max-age=86400, s-maxage=86400',
+    },
+  });
+}
