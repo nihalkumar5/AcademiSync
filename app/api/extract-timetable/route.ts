@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { mergeConsecutiveSessions } from '@/lib/timetableUtils';
+import { logServerError } from '@/lib/errorUtils';
 
 export async function POST(req: Request) {
   try {
@@ -71,7 +72,7 @@ Return ONLY raw valid JSON array:
           });
         }
       } catch (aiErr) {
-        console.error('Gemini OCR parsing error, falling back to simulated extraction:', aiErr);
+        logServerError('ExtractTimetableAPI:Gemini', aiErr);
       }
     }
 
@@ -145,8 +146,9 @@ Return ONLY raw valid JSON array:
       source: fileName || 'Simulated OCR (Add GEMINI_API_KEY for live extraction)',
     });
   } catch (error) {
+    logServerError('ExtractTimetableAPI:Unhandled', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to process document' },
+      { success: false, error: 'Failed to process timetable document. Please try again.' },
       { status: 500 }
     );
   }

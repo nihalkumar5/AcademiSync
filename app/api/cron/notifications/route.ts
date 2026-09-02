@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { adminDb, adminMessaging } from '@/lib/firebase-admin';
+import { logServerError } from '@/lib/errorUtils';
 
 export const dynamic = 'force-dynamic';
 
@@ -115,7 +116,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ success: true, sent: sentCount });
 
   } catch (error) {
-    console.error('Error executing cron:', error);
+    logServerError('CronNotificationsAPI', error);
     return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
   }
 }

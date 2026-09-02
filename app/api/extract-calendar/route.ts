@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
+import { logServerError } from '@/lib/errorUtils';
 
 export async function POST(req: Request) {
   try {
@@ -130,11 +131,11 @@ CRITICAL INSTRUCTIONS FOR DATE PROCESSING:
           throw new Error('Parsed output is not a valid non-empty array of events');
         }
       } catch (aiErr: any) {
-        console.error('Gemini Calendar OCR parsing error:', aiErr);
-        // If it's NOT a sample run, bubble up the error instead of silently returning mock data
+        logServerError('ExtractCalendarAPI:Gemini', aiErr);
+        // If it's NOT a sample run, return a safe user-facing error message
         if (!isSampleRun) {
           return NextResponse.json(
-            { success: false, error: aiErr.message || 'AI extraction failed' },
+            { success: false, error: 'Could not extract academic calendar events. Please ensure the document is clear and readable.' },
             { status: 500 }
           );
         }
@@ -174,8 +175,9 @@ CRITICAL INSTRUCTIONS FOR DATE PROCESSING:
       source: fileName || 'Sample Calendar Extraction',
     });
   } catch (error: any) {
+    logServerError('ExtractCalendarAPI:Unhandled', error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to process academic calendar document' },
+      { success: false, error: 'Failed to process academic calendar document. Please try again later.' },
       { status: 500 }
     );
   }

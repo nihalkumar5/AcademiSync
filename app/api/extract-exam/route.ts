@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { logServerError } from '@/lib/errorUtils';
 
 export async function POST(req: Request) {
   try {
@@ -58,17 +59,18 @@ Return ONLY raw JSON array.
           });
         }
       } catch (aiErr) {
-        console.error('Gemini Exam extraction error:', aiErr);
+        logServerError('ExtractExamAPI:Gemini', aiErr);
       }
     }
 
     return NextResponse.json(
-      { success: false, error: 'Failed to process document' },
+      { success: false, error: 'Could not extract exam timetable. Please ensure document is clear and readable.' },
       { status: 500 }
     );
   } catch (error) {
+    logServerError('ExtractExamAPI:Unhandled', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to process document' },
+      { success: false, error: 'Failed to process exam timetable document. Please try again.' },
       { status: 500 }
     );
   }

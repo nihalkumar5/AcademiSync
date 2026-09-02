@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { logServerError } from '@/lib/errorUtils';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -117,15 +118,16 @@ Do not include any markdown backticks or explanations, return ONLY raw JSON.`;
             source: `Gemini Vision AI (${modelName})`,
           });
         } catch (modelErr: any) {
-          console.warn(`Gemini model ${modelName} error:`, modelErr);
+          logServerError(`ExtractMessAPI:${modelName}`, modelErr);
           lastError = modelErr;
         }
       }
 
       if (lastError) {
+        logServerError('ExtractMessAPI:AllModelsFailed', lastError);
         return NextResponse.json({ 
           success: false, 
-          error: lastError.message || 'AI vision extraction failed. Please try a clearer photo or PDF.' 
+          error: 'Could not extract mess menu. Please upload a clear photo or PDF.' 
         }, { status: 500 });
       }
     }
@@ -190,7 +192,7 @@ Do not include any markdown backticks or explanations, return ONLY raw JSON.`;
       source: 'Default Mess Routine',
     });
   } catch (error: any) {
-    console.error('Extraction error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    logServerError('ExtractMessAPI:Unhandled', error);
+    return NextResponse.json({ success: false, error: 'Failed to process mess menu document. Please try again.' }, { status: 500 });
   }
 }

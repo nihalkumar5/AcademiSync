@@ -32,6 +32,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+import { getSanitizedErrorMessage, logServerError } from '@/lib/errorUtils';
+
 interface AuthPageProps {
   mode?: 'signin' | 'signup';
 }
@@ -65,13 +67,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
             localStorage.removeItem('pending_join_invite');
             await joinBatchTimetable(pending);
           } catch (err) {
-            console.warn('Auto-join on login failed:', err);
+            logServerError('AuthPage:JoinPendingInvite', err);
           }
         }
       }
       router.replace('/');
     } catch (err) {
-      console.warn('Navigation error after auth:', err);
+      logServerError('AuthPage:ProceedAfterAuth', err);
       if (typeof window !== 'undefined') {
         window.location.href = '/';
       }
@@ -89,7 +91,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
       getRedirectResult(auth)
         .then(async (result) => {
           if (result?.user) {
-            // Detect which provider was used for a friendly message
             const providerId = result.providerId || result.user.providerData?.[0]?.providerId || '';
             let providerLabel = 'your account';
             if (providerId.includes('apple')) providerLabel = 'Apple';
@@ -102,9 +103,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
           }
         })
         .catch((err) => {
-          console.warn('Redirect result check:', err);
+          logServerError('AuthPage:RedirectResult', err);
           if (err?.code && err.code !== 'auth/no-current-user') {
-            setErrorMsg(err.message || 'Sign-in redirect failed. Please try again.');
+            setErrorMsg(getSanitizedErrorMessage(err, 'Sign-in redirect failed. Please try again.'));
           }
         });
     }
@@ -115,7 +116,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
     setErrorMsg('');
 
     try {
-      // 1. Native Android Google Play Services Flow (Exact Notion Native Bottom Sheet)
       if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
         const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
         GoogleAuth.initialize({
@@ -140,25 +140,22 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
           await proceedAfterAuth();
           return;
         } else {
-          console.warn('GoogleAuth returned user without idToken:', googleUser);
+          logServerError('AuthPage:GoogleAuth', 'Could not retrieve Google authentication token');
           throw new Error('Could not retrieve Google authentication token.');
         }
       }
 
-      // 2. Web / Desktop Browser Flow
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithPopup(auth, provider);
       showToast('Google Sign In', 'Authenticated successfully with Google.', 'success');
       await proceedAfterAuth();
     } catch (err: any) {
-      console.error('Google Sign In error:', err);
-      let msg = 'Google Sign-In failed. Please try Email.';
+      logServerError('AuthPage:GoogleSignIn', err);
+      let msg = getSanitizedErrorMessage(err, 'Google Sign-In failed. Please try Email.');
       if (err.message) {
         if (err.message.includes('10:') || err.message.includes('DEVELOPER_ERROR') || err.message.includes('Something went wrong')) {
           msg = 'Google Auth Error (10): Please ensure your Android app SHA-1 is registered in Firebase Console.';
-        } else {
-          msg = err.message;
         }
       }
       setErrorMsg(msg);
@@ -184,29 +181,19 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
         provider = new GithubAuthProvider();
       }
 
-      // On native Android/iOS, signInWithPopup doesn't work in a WebView.
-      // Use signInWithRedirect — Firebase opens Apple's OAuth page inside the browser,
-      // then redirects back; getRedirectResult (in the useEffect above) picks up the result.
       if (Capacitor.isNativePlatform()) {
         const { signInWithRedirect } = await import('firebase/auth');
         await signInWithRedirect(auth, provider);
-        // Page will reload/redirect; getRedirectResult useEffect handles the result
         return;
       }
 
-      // Web / Desktop Browser — popup works fine
       await signInWithPopup(auth, provider);
       showToast('Welcome Back', `Signed in with ${providerName}!`, 'success');
       await proceedAfterAuth();
     } catch (err: any) {
-      console.error(`${providerName} login error:`, err);
-      if (err.code === 'auth/operation-not-allowed' || err.code === 'auth/configuration-not-found') {
-        setErrorMsg(`${providerName.toUpperCase()} sign-in is not enabled in Firebase Console. Go to Authentication > Sign-in method.`);
-      } else if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
-        setErrorMsg('Sign-in popup was blocked or closed. Please try again.');
-      } else {
-        setErrorMsg(err.message || `Failed to sign in with ${providerName}.`);
-      }
+      logServerError(`AuthPage:${providerName}Login`, err);
+      const sanitized = getSanitizedErrorMessage(err, `Failed to sign in with ${providerName}.`);
+      setErrorMsg(sanitized);
     } finally {
       setLoading(false);
     }
@@ -251,22 +238,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
         await proceedAfterAuth();
       }
     } catch (err: any) {
-      console.error('Auth error:', err);
-      let msg = 'Authentication failed. Please check your credentials.';
+      logServerError('AuthPage:EmailAuth', err);
+      const msg = getSanitizedErrorMessage(err, 'Authentication failed. Please check your credentials.');
       if (err.code === 'auth/email-already-in-use') {
-        msg = 'This email is already registered. Please sign in instead.';
         setAuthMode('signin');
-      } else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        msg = 'Incorrect email or password. Please check and try again.';
       } else if (err.code === 'auth/user-not-found') {
-        msg = 'No account found with this email. Please create an account below.';
         setAuthMode('signup');
-      } else if (err.code === 'auth/weak-password') {
-        msg = 'Password should be at least 6 characters.';
-      } else if (err.code === 'auth/invalid-email') {
-        msg = 'Please enter a valid email address.';
-      } else {
-        msg = err.message || 'Authentication error. Please try again.';
       }
       setErrorMsg(msg);
       showToast('Auth Error', msg, 'error');
