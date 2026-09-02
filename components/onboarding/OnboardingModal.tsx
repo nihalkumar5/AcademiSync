@@ -32,6 +32,7 @@ export const OnboardingModal = () => {
 
   // Fast Invite Code State
   const [inviteCode, setInviteCode] = useState('');
+  const [inviteError, setInviteError] = useState(false);
   const [isJoiningCode, setIsJoiningCode] = useState(false);
 
   // Full AI Timetable Import Modal State
@@ -79,9 +80,11 @@ export const OnboardingModal = () => {
     e.preventDefault();
     let code = inviteCode.trim();
     if (!code) {
-      showToast('Invite Code Required', 'Please paste an invite code or link.', 'error');
+      setInviteError(true);
+      showToast('Invite Code Required', 'Please enter or paste a valid batch invite code or link.', 'error');
       return;
     }
+    setInviteError(false);
 
     if (code.includes('invite=')) {
       code = new URLSearchParams(code.split('?')[1] || '').get('invite') || code;
@@ -107,6 +110,7 @@ export const OnboardingModal = () => {
       setShowOnboarding(false);
     } catch (err: any) {
       console.error(err);
+      setInviteError(true);
       showToast('Invalid Code', 'Could not find a batch for this invite code.', 'error');
     } finally {
       setIsJoiningCode(false);
@@ -143,7 +147,7 @@ export const OnboardingModal = () => {
       topNav: 'left-skip',
       title: "Your batch,\ntogether.",
       subtitle: "Share schedules, stay in sync\nand work better with your classmates.",
-      buttonText: 'Get Started',
+      buttonText: 'Join Now',
       features: [
         { icon: Users, title: "Work as a team", desc: "Invite your batch and stay connected." }
       ]
@@ -338,17 +342,29 @@ export const OnboardingModal = () => {
                         type="text"
                         placeholder="Paste code or link..."
                         value={inviteCode}
-                        onChange={(e) => setInviteCode(e.target.value)}
-                        className="flex-1 h-11 px-3.5 bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] rounded-none text-[13.5px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-all"
+                        onChange={(e) => {
+                          setInviteCode(e.target.value);
+                          if (inviteError) setInviteError(false);
+                        }}
+                        className={`flex-1 h-11 px-3.5 bg-white dark:bg-[#111111] border rounded-none text-[13.5px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none transition-all ${
+                          inviteError
+                            ? 'border-red-500 ring-1 ring-red-500'
+                            : 'border-[#D8D8D8] dark:border-[#333333] focus:border-[#111111] dark:focus:border-[#FFFFFF]'
+                        }`}
                       />
                       <button
                         type="submit"
-                        disabled={isJoiningCode || !inviteCode.trim()}
+                        disabled={isJoiningCode}
                         className="h-11 px-5 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] text-[13px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0"
                       >
                         {isJoiningCode ? 'Joining...' : 'Join'}
                       </button>
                     </form>
+                    {inviteError && (
+                      <p className="text-[11.5px] text-red-500 font-medium mt-1.5">
+                        ⚠️ Please paste an invite code or link.
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-3 my-1 mb-4">
@@ -542,17 +558,29 @@ export const OnboardingModal = () => {
                         type="text"
                         placeholder="Paste code or link..."
                         value={inviteCode}
-                        onChange={(e) => setInviteCode(e.target.value)}
-                        className="flex-1 h-11 px-3.5 bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] rounded-none text-[13.5px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-all"
+                        onChange={(e) => {
+                          setInviteCode(e.target.value);
+                          if (inviteError) setInviteError(false);
+                        }}
+                        className={`flex-1 h-11 px-3.5 bg-white dark:bg-[#111111] border rounded-none text-[13.5px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none transition-all ${
+                          inviteError
+                            ? 'border-red-500 ring-1 ring-red-500'
+                            : 'border-[#D8D8D8] dark:border-[#333333] focus:border-[#111111] dark:focus:border-[#FFFFFF]'
+                        }`}
                       />
                       <button
                         type="submit"
-                        disabled={isJoiningCode || !inviteCode.trim()}
+                        disabled={isJoiningCode}
                         className="h-11 px-6 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] text-[13px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0"
                       >
                         {isJoiningCode ? 'Joining...' : 'Join'}
                       </button>
                     </form>
+                    {inviteError && (
+                      <p className="text-[12px] text-red-500 font-medium mt-2 flex items-center gap-1">
+                        ⚠️ Please paste a valid batch invite code or link to join.
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-3 my-1 mb-5">
@@ -594,29 +622,31 @@ export const OnboardingModal = () => {
             </AnimatePresence>
           </div>
 
-          {/* Right Bottom Footer */}
-          <div className="w-full flex items-center justify-between pt-6 border-t border-[#EEEEEC] dark:border-[#262626] shrink-0">
-            <div className="flex items-center gap-2">
-              {[0, 1, 2].map((i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => { setDirection(i > currentIndex ? 1 : -1); setCurrentIndex(i); }}
-                  className={`h-[6px] rounded-full transition-all duration-300 ${i === currentIndex ? 'w-[24px] bg-[#111111] dark:bg-[#FFFFFF]' : 'w-[6px] bg-[#111111]/20 dark:bg-[#FFFFFF]/20'}`}
-                  aria-label={`Go to slide ${i + 1}`}
-                />
-              ))}
-            </div>
+          {/* Right Bottom Footer (Only rendered on slides 0, 1, 2) */}
+          {currentIndex < 3 && (
+            <div className="w-full flex items-center justify-between pt-6 border-t border-[#EEEEEC] dark:border-[#262626] shrink-0">
+              <div className="flex items-center gap-2">
+                {[0, 1, 2].map((i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => { setDirection(i > currentIndex ? 1 : -1); setCurrentIndex(i); }}
+                    className={`h-[6px] rounded-full transition-all duration-300 ${i === currentIndex ? 'w-[24px] bg-[#111111] dark:bg-[#FFFFFF]' : 'w-[6px] bg-[#111111]/20 dark:bg-[#FFFFFF]/20'}`}
+                    aria-label={`Go to slide ${i + 1}`}
+                  />
+                ))}
+              </div>
 
-            <button
-              type="button"
-              onClick={handleNext}
-              className="h-[50px] px-9 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] rounded-none flex items-center gap-2 font-bold text-[14px] hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm uppercase tracking-wider"
-            >
-              {currentIndex < 3 ? slides[currentIndex].buttonText : 'Get Started'}
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={handleNext}
+                className="h-[50px] px-9 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] rounded-none flex items-center gap-2 font-bold text-[14px] hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm uppercase tracking-wider"
+              >
+                {slides[currentIndex].buttonText}
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
