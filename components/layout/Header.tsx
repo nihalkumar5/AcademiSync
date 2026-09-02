@@ -120,41 +120,41 @@ export const Header: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-1 sm:gap-4 text-sm font-medium tracking-tight text-black dark:text-white">
+        <div className="flex items-center gap-2 sm:gap-2.5 text-sm font-medium tracking-tight text-black dark:text-white">
           {/* Live Clock Pill */}
           {currentTime && (
-            <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 border border-black dark:border-white text-xs font-mono">
-              <span className="w-2 h-2 bg-black dark:bg-white animate-pulse" />
-              <span>{currentTime}</span>
+            <div className="hidden lg:flex items-center gap-2 h-8 px-3 border border-[#D9D9D6] dark:border-[#333333] bg-black/[0.02] dark:bg-white/[0.03] text-[11.5px] font-mono text-[#555555] dark:text-[#AAAAAA] rounded-none">
+              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+              <span className="tracking-wide">{currentTime}</span>
             </div>
           )}
 
-          {/* Quick Search Button */}
+          {/* Quick Search Trigger */}
           <button
             type="button"
             onClick={() => setCommandPaletteOpen(true)}
-            className="w-10 h-10 flex items-center justify-center p-2 border border-transparent hover:border-black dark:hover:border-white transition-all cursor-pointer active:scale-95"
+            className="flex items-center gap-2 h-8 px-2.5 sm:px-3 border border-[#D9D9D6] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-black/[0.02] dark:bg-white/[0.03] text-[#555555] dark:text-[#AAAAAA] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-all cursor-pointer rounded-none active:scale-95"
             title="Search (⌘K)"
           >
-            <Search className="w-4 h-4 sm:mr-1.5 text-[#111111] dark:text-[#FFFFFF]" />
-            <span className="hidden sm:inline text-sm font-medium">Search</span>
-            <kbd className="hidden sm:inline text-[10px] font-mono border border-current px-1 py-0.5 opacity-60 ml-2">
+            <Search className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline text-[12px] font-medium">Search</span>
+            <kbd className="hidden sm:inline text-[10px] font-mono px-1.5 py-0.5 border border-[#D9D9D6] dark:border-[#444444] bg-black/5 dark:bg-white/5 opacity-75">
               ⌘K
             </kbd>
           </button>
 
-          {/* Quick Theme Switcher - Hidden on mobile as requested */}
+          {/* Quick Theme Switcher */}
           <button
             type="button"
             onClick={toggleTheme}
             aria-label="Toggle theme"
-            className="hidden md:flex p-1.5 border border-transparent hover:border-black dark:hover:border-white transition-all"
+            className="hidden md:flex items-center justify-center w-8 h-8 border border-[#D9D9D6] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-black/[0.02] dark:bg-white/[0.03] text-[#111111] dark:text-[#FFFFFF] transition-all cursor-pointer rounded-none active:scale-95"
             title={`Switch to ${settings.theme === 'dark' ? 'Light' : 'Dark'} Mode`}
           >
             {settings.theme === 'dark' ? (
-              <Sun className="w-4 h-4" />
+              <Sun className="w-3.5 h-3.5" />
             ) : (
-              <Moon className="w-4 h-4" />
+              <Moon className="w-3.5 h-3.5" />
             )}
           </button>
 
@@ -162,12 +162,12 @@ export const Header: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveView('notifications')}
-            className="relative w-10 h-10 flex items-center justify-center p-2 border border-transparent hover:border-black dark:hover:border-white transition-all cursor-pointer active:scale-95"
+            className="relative flex items-center justify-center w-8 h-8 border border-[#D9D9D6] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-black/[0.02] dark:bg-white/[0.03] text-[#111111] dark:text-[#FFFFFF] transition-all cursor-pointer rounded-none active:scale-95"
             title={`Notifications (${unreadNotifs} unread)`}
           >
-            <Bell className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />
+            <Bell className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF]" />
             {unreadNotifs > 0 && (
-              <span className="absolute top-1.5 right-1.5 min-w-[14px] h-[14px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[9px] font-bold flex items-center justify-center border border-[#FAFAF8] dark:border-[#111110] leading-none rounded-full">
+              <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[9px] font-bold flex items-center justify-center border border-[#FAFAF8] dark:border-[#111110] leading-none rounded-full">
                 {unreadNotifs > 99 ? '99+' : unreadNotifs}
               </span>
             )}
@@ -178,9 +178,10 @@ export const Header: React.FC = () => {
             <button
               type="button"
               onClick={() => setAddMenuOpen(!addMenuOpen)}
-              className="w-10 h-10 flex items-center justify-center text-[#111111] dark:text-[#FFFFFF] hover:opacity-70 transition-opacity cursor-pointer active:scale-95"
+              className="flex items-center justify-center w-8 h-8 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] hover:opacity-85 transition-all cursor-pointer rounded-none active:scale-95 shadow-xs"
+              title="Add New Action"
             >
-              <Plus className={`w-5 h-5 transition-transform duration-200 ${addMenuOpen ? 'rotate-45' : ''}`} />
+              <Plus className={`w-4 h-4 stroke-[2.5] transition-transform duration-200 ${addMenuOpen ? 'rotate-45' : ''}`} />
             </button>
 
             {addMenuOpen && (
