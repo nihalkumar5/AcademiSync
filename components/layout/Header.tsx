@@ -120,7 +120,7 @@ export const Header: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-2.5 text-sm font-medium tracking-tight text-black dark:text-white">
+        <div className="flex items-center gap-1 sm:gap-2.5 text-sm font-medium tracking-tight text-black dark:text-white">
           {/* Live Clock Pill */}
           {currentTime && (
             <div className="hidden lg:flex items-center gap-2 h-8 px-3 border border-[#D9D9D6] dark:border-[#333333] bg-black/[0.02] dark:bg-white/[0.03] text-[11.5px] font-mono text-[#555555] dark:text-[#AAAAAA] rounded-none">
@@ -129,21 +129,21 @@ export const Header: React.FC = () => {
             </div>
           )}
 
-          {/* Quick Search Trigger */}
+          {/* Quick Search Button: Original clean borderless icon on mobile, refined pill on desktop */}
           <button
             type="button"
             onClick={() => setCommandPaletteOpen(true)}
-            className="flex items-center gap-2 h-8 px-2.5 sm:px-3 border border-[#D9D9D6] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-black/[0.02] dark:bg-white/[0.03] text-[#555555] dark:text-[#AAAAAA] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-all cursor-pointer rounded-none active:scale-95"
+            className="w-10 h-10 md:w-auto md:h-8 flex items-center justify-center p-2 md:px-3 md:border md:border-[#D9D9D6] md:dark:border-[#333333] md:hover:border-[#111111] md:dark:hover:border-[#FFFFFF] md:bg-black/[0.02] md:dark:bg-white/[0.03] text-[#111111] dark:text-[#FFFFFF] md:text-[#555555] md:dark:text-[#AAAAAA] md:hover:text-[#111111] md:dark:hover:text-[#FFFFFF] transition-all cursor-pointer rounded-none active:scale-95"
             title="Search (⌘K)"
           >
-            <Search className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline text-[12px] font-medium">Search</span>
-            <kbd className="hidden sm:inline text-[10px] font-mono px-1.5 py-0.5 border border-[#D9D9D6] dark:border-[#444444] bg-black/5 dark:bg-white/5 opacity-75">
+            <Search className="w-4 h-4 md:w-3.5 md:h-3.5 md:mr-1.5 text-[#111111] dark:text-[#FFFFFF]" />
+            <span className="hidden md:inline text-[12px] font-medium">Search</span>
+            <kbd className="hidden md:inline text-[10px] font-mono px-1.5 py-0.5 border border-[#D9D9D6] dark:border-[#444444] bg-black/5 dark:bg-white/5 opacity-75 ml-1.5">
               ⌘K
             </kbd>
           </button>
 
-          {/* Quick Theme Switcher */}
+          {/* Quick Theme Switcher - Hidden on mobile as before */}
           <button
             type="button"
             onClick={toggleTheme}
@@ -158,30 +158,30 @@ export const Header: React.FC = () => {
             )}
           </button>
 
-          {/* Notifications Bell with Numeric Badge */}
+          {/* Notifications Bell: Original clean icon on mobile, styled button on desktop */}
           <button
             type="button"
             onClick={() => setActiveView('notifications')}
-            className="relative flex items-center justify-center w-8 h-8 border border-[#D9D9D6] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-black/[0.02] dark:bg-white/[0.03] text-[#111111] dark:text-[#FFFFFF] transition-all cursor-pointer rounded-none active:scale-95"
+            className="relative w-10 h-10 md:w-8 md:h-8 flex items-center justify-center p-2 md:p-0 md:border md:border-[#D9D9D6] md:dark:border-[#333333] md:hover:border-[#111111] md:dark:hover:border-[#FFFFFF] md:bg-black/[0.02] md:dark:bg-white/[0.03] text-[#111111] dark:text-[#FFFFFF] transition-all cursor-pointer rounded-none active:scale-95"
             title={`Notifications (${unreadNotifs} unread)`}
           >
-            <Bell className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF]" />
+            <Bell className="w-4 h-4 md:w-3.5 md:h-3.5 text-[#111111] dark:text-[#FFFFFF]" />
             {unreadNotifs > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[9px] font-bold flex items-center justify-center border border-[#FAFAF8] dark:border-[#111110] leading-none rounded-full">
+              <span className="absolute top-1.5 right-1.5 md:-top-1 md:-right-1 min-w-[14px] h-[14px] md:min-w-[15px] md:h-[15px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[9px] font-bold flex items-center justify-center border border-[#FAFAF8] dark:border-[#111110] leading-none rounded-full">
                 {unreadNotifs > 99 ? '99+' : unreadNotifs}
               </span>
             )}
           </button>
           
-          {/* Quick Create Dropdown */}
+          {/* Quick Create Dropdown: Original clean icon on mobile */}
           <div className="relative" ref={menuRef}>
             <button
               type="button"
               onClick={() => setAddMenuOpen(!addMenuOpen)}
-              className="flex items-center justify-center w-8 h-8 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] hover:opacity-85 transition-all cursor-pointer rounded-none active:scale-95 shadow-xs"
+              className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-[#111111] dark:text-[#FFFFFF] md:bg-[#111111] md:dark:bg-[#FFFFFF] md:text-[#FFFFFF] md:dark:text-[#111111] hover:opacity-70 transition-all cursor-pointer rounded-none active:scale-95"
               title="Add New Action"
             >
-              <Plus className={`w-4 h-4 stroke-[2.5] transition-transform duration-200 ${addMenuOpen ? 'rotate-45' : ''}`} />
+              <Plus className={`w-5 h-5 md:w-4 md:h-4 stroke-[2.5] transition-transform duration-200 ${addMenuOpen ? 'rotate-45' : ''}`} />
             </button>
 
             {addMenuOpen && (
