@@ -24,7 +24,22 @@ export const WeeklyTimetable: React.FC = () => {
   const isSignedIn = !!user;
 
   const currentDay = getCurrentDayOfWeek();
-  const [selectedMobileDay, setSelectedMobileDay] = useState<DayOfWeek>(currentDay);
+  
+  // Only show days that have classes scheduled; fallback to Monday-Friday if timetable is empty
+  const activeDaysWithClasses = DAYS_OF_WEEK.filter(day => 
+    timetable.some(session => session.day === day)
+  );
+  const weekDays = activeDaysWithClasses.length > 0 ? activeDaysWithClasses : DAYS_OF_WEEK.slice(0, 5);
+
+  const initialDay = weekDays.includes(currentDay) ? currentDay : weekDays[0] || 'Monday';
+  const [selectedMobileDay, setSelectedMobileDay] = useState<DayOfWeek>(initialDay);
+
+  // Sync selectedMobileDay if timetable changes and current selection is not in weekDays
+  React.useEffect(() => {
+    if (!weekDays.includes(selectedMobileDay)) {
+      setSelectedMobileDay(weekDays.includes(currentDay) ? currentDay : weekDays[0] || 'Monday');
+    }
+  }, [timetable, weekDays, currentDay, selectedMobileDay]);
   const [editSession, setEditSession] = useState<ClassSession | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -54,8 +69,6 @@ export const WeeklyTimetable: React.FC = () => {
   };
 
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
-  const hasSundayClasses = timetable.some(session => session.day === 'Sunday');
-  const weekDays = hasSundayClasses ? DAYS_OF_WEEK : DAYS_OF_WEEK.slice(0, 6); // Monday to Saturday (and Sunday if active)
 
   const handleAddForDay = (day: DayOfWeek) => {
     if (!isSignedIn) {
@@ -196,25 +209,25 @@ export const WeeklyTimetable: React.FC = () => {
               key={day}
               onClick={() => setSelectedMobileDay(day)}
               className={clsx(
-                'flex flex-col items-center justify-center px-4 py-2.5 rounded-2xl text-xs font-semibold shrink-0 transition-all border',
+                'flex flex-col items-center justify-center px-4 py-2.5 rounded-none text-xs font-semibold shrink-0 transition-all border cursor-pointer min-w-[80px]',
                 isSelected
-                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/20'
-                  : 'glass-card text-slate-600 dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50'
+                  ? 'bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] border-[#111111] dark:border-[#FFFFFF] shadow-sm'
+                  : 'bg-[#FFFFFF] dark:bg-[#111111] border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5'
               )}
             >
               <div className="flex items-center gap-1.5">
-                <span className={isSelected ? "font-bold" : "font-semibold"}>{day.slice(0, 3)}</span>
+                <span className="font-bold tracking-tight uppercase">{day.slice(0, 3)}</span>
                 {isToday && (
-                  <span className={clsx('w-1.5 h-1.5 rounded-full', isSelected ? 'bg-white' : 'bg-indigo-500')} />
+                  <span className={clsx('w-1.5 h-1.5 rounded-full', isSelected ? 'bg-white dark:bg-black' : 'bg-emerald-500')} />
                 )}
               </div>
               <span
                 className={clsx(
-                  'text-[10px] font-medium mt-0.5',
-                  isSelected ? 'text-indigo-100' : 'text-slate-400'
+                  'text-[10px] font-mono mt-0.5',
+                  isSelected ? 'text-white/80 dark:text-black/80' : 'text-[#888888]'
                 )}
               >
-                {classCount} classes
+                {classCount} {classCount === 1 ? 'class' : 'classes'}
               </span>
             </button>
           );
@@ -254,7 +267,10 @@ export const WeeklyTimetable: React.FC = () => {
       </div>
 
       {/* Desktop Weekly Grid (>= 768px) */}
-      <div className="hidden md:grid grid-cols-5 gap-4 items-start">
+      <div 
+        className="hidden md:grid gap-4 items-start"
+        style={{ gridTemplateColumns: `repeat(${weekDays.length}, minmax(0, 1fr))` }}
+      >
         {weekDays.map((day) => {
           const isToday = currentDay === day;
           const daySessions = timetable
