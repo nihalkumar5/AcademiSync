@@ -131,27 +131,39 @@ export const ExamsView: React.FC = () => {
       </div>
 
       {nextExam && (
-        <div className="mb-12 flex flex-col p-5 bg-indigo-50 border border-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-800 rounded-2xl">
+        <div className="mb-12 flex flex-col p-5 bg-[#FFFBEB] dark:bg-[#1A1407] border border-[#FDE68A] dark:border-[#78350F] rounded-none shadow-xs text-left">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
               </span>
-              <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-indigo-600 dark:text-indigo-400">
+              <span className="text-[11px] font-mono font-bold tracking-[1.5px] uppercase text-[#B45309] dark:text-[#FBBF24]">
                 NEXT EXAM
               </span>
             </div>
-            <span className="text-[12px] font-bold text-indigo-900 dark:text-indigo-100 bg-indigo-100 dark:bg-indigo-800/50 px-2 py-1 rounded-md">
+            <span className="text-[11.5px] font-mono font-bold text-[#78350F] dark:text-[#FDE68A] bg-amber-200/70 dark:bg-amber-900/40 border border-amber-300/80 dark:border-amber-700/60 px-2.5 py-1 rounded-none uppercase tracking-wider">
               {getCountdown(nextExam.date)}
             </span>
           </div>
-          <h3 className="text-[18px] font-bold text-indigo-950 dark:text-white mb-2">{nextExam.subjectName}</h3>
-          <p className="text-[14px] font-medium text-indigo-800/80 dark:text-indigo-200/80 leading-relaxed">
-                        {new Date(nextExam.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+          <h3 className="text-[19px] sm:text-[21px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight mb-2">
+            {nextExam.subjectName}
+          </h3>
+          <p className="text-[13px] font-mono text-[#92400E] dark:text-[#FDE68A]/80 leading-relaxed font-medium">
+            {new Date(nextExam.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
             {' • '}
             {new Date(nextExam.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
           </p>
+          {nextExam.syllabus && (
+            <div className="mt-3 pt-3 border-t border-amber-200/80 dark:border-amber-900/50">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-800/70 dark:text-amber-400/70 block mb-0.5">
+                Syllabus
+              </span>
+              <p className="text-[12.5px] text-[#78350F] dark:text-[#FDE68A]/90 leading-relaxed">
+                {nextExam.syllabus}
+              </p>
+            </div>
+          )}
         </div>
       )}
 
