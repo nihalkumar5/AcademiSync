@@ -15,7 +15,7 @@ import { AddCustomItemModal } from './AddCustomItemModal';
 import { SubjectDetailModal } from './SubjectDetailModal';
 import { ClassSession } from '@/lib/types';
 import { EmptyState } from '../ui/EmptyState';
-import { Backpack, Plus, CalendarDays, Clock, ChevronRight } from 'lucide-react';
+import { Backpack, Plus, CalendarDays, Clock, ChevronRight, MapPin } from 'lucide-react';
 import { Subject } from '@/lib/types';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 
@@ -252,8 +252,8 @@ export const TomorrowCarryView: React.FC = () => {
                       </div>
                       
                       {sess.room && (
-                        <span className="text-[12px] text-[#6F6F6F] flex items-center gap-1.5 mt-1">
-                          <span className="text-[14px] leading-none mb-[2px]">⌖</span>
+                        <span className="text-[12px] text-[#6F6F6F] dark:text-[#A0A0A0] flex items-center gap-1.5 mt-1 font-medium">
+                          <MapPin className="w-3.5 h-3.5 shrink-0 text-black/60 dark:text-white/60" />
                           <span>{sess.room}</span>
                         </span>
                       )}
