@@ -27,27 +27,31 @@ service cloud.firestore {
 
     // 2. Shared Batch Timetables Collection:
     // Read: Any student can view shared timetable
-    // Write: Super Admins, Batch Creator, or Verified CRs
+    // Write: Super Admins, Batch Creator, or Verified Batch Pilots
     match /shared_timetables/{batchKey} {
       allow read: if true;
       allow create: if isAuthenticated();
       allow update: if isAuthenticated() && (
         isSuperAdmin() ||
-        resource.data.creatorId == request.auth.uid ||
-        (resource.data.crUserIds is list && request.auth.uid in resource.data.crUserIds) ||
-        (resource.data.crEmails is list && request.auth.token.email in resource.data.crEmails) ||
-        // Allow joining (incrementing studentCount or updating lastActive)
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['studentCount', 'members', 'lastActive', 'inviteCode'])
+        (resource.data.creatorId == request.auth.uid) ||
+        ('creatorEmail' in resource.data && request.auth.token.email == resource.data.creatorEmail) ||
+        ('crUserIds' in resource.data && resource.data.crUserIds is list && request.auth.uid in resource.data.crUserIds) ||
+        ('crEmails' in resource.data && resource.data.crEmails is list && request.auth.token.email in resource.data.crEmails) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.profile.role in ['cr', 'super_admin']) ||
+        // Allow joining (incrementing studentCount or updating lastActive / member list / homework proposals)
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['studentCount', 'members', 'lastActive', 'inviteCode', 'homeworkProposals'])
       );
       allow delete: if isSuperAdmin() || (isAuthenticated() && resource.data.creatorId == request.auth.uid);
     }
 
-    // 3. CR Applications:
-    // Any authenticated student can submit an application for their branch
-    // Only Super Admins or the applicant can read/manage their application
+    // 3. Batch Pilot & CR Requests:
+    match /cr_requests/{requestId} {
+      allow create, update: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow read, delete: if isSuperAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+    }
     match /cr_applications/{appId} {
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow read, update, delete: if isSuperAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create, update: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow read, delete: if isSuperAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
     }
 
     // 4. Campus Spotlight (Announcements/Notices):

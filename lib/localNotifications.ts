@@ -105,7 +105,8 @@ export const scheduleTimetableLocalNotifications = async (
   settingsParam?: UserSettings | number,
   events?: AcademicEvent[],
   cancelledSessionKeys: string[] = [],
-  rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string }> = {}
+  rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string }> = {},
+  extraSessions: Record<string, any> = {}
 ) => {
   if (!Capacitor.isNativePlatform()) {
     console.log('Local notifications scheduling is skipped (not a native platform).');
@@ -249,6 +250,49 @@ export const scheduleTimetableLocalNotifications = async (
 
         occurrenceCount++;
       }
+    }
+
+    // 1b. Schedule Extra Class Sessions
+    if (extraSessions && typeof extraSessions === 'object') {
+      const extraList = Object.values(extraSessions);
+      extraList.forEach((extra: any, extraIdx) => {
+        if (!extra || !extra.date || !extra.startTime) return;
+        const sub = subjectMap.get(extra.subjectId);
+        const subName = sub?.name || sub?.shortName || 'Extra Class';
+        const dateStr = extra.date;
+
+        const parts = extra.startTime.trim().split(' ');
+        const timeParts = parts[0].split(':');
+        let startH = parseInt(timeParts[0], 10);
+        let startM = parseInt(timeParts[1] || '0', 10);
+        if (parts[1]) {
+          const modifier = parts[1].toUpperCase();
+          if (modifier === 'PM' && startH < 12) startH += 12;
+          if (modifier === 'AM' && startH === 12) startH = 0;
+        }
+        if (isNaN(startH) || isNaN(startM)) return;
+
+        const candidateDate = new Date(`${dateStr}T00:00:00`);
+        candidateDate.setHours(startH, startM, 0, 0);
+        const now = new Date();
+        if (candidateDate.getTime() <= now.getTime()) return;
+
+        const reminderTime = new Date(candidateDate.getTime() - reminderMinutes * 60 * 1000);
+        if (reminderTime.getTime() <= now.getTime()) return;
+
+        notificationsToSchedule.push({
+          title: `➕ Extra Class in ${reminderMinutes} mins: ${subName}`,
+          body: `Scheduled at ${extra.room || 'Classroom'} from ${formatTime12Hour(extra.startTime)}`,
+          id: 8000 + extraIdx,
+          schedule: {
+            at: reminderTime,
+            allowWhileIdle: true,
+          },
+          sound: 'class_bell',
+          channelId: 'class_alerts_v3',
+          extra: null,
+        });
+      });
     }
 
     // 2. Schedule Daily Evening Bag Packing Reminder

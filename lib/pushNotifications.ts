@@ -3,19 +3,10 @@ import { Capacitor } from '@capacitor/core';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
-export const registerPushNotifications = async (userId: string) => {
+export const registerPushNotifications = async (userId: string, batchKey?: string) => {
   // Only register if running on a native device (Android/iOS)
   if (!Capacitor.isNativePlatform()) {
     console.log('Push notifications are only available on native devices.');
-    return;
-  }
-
-  // CRITICAL SAFETY CHECK:
-  // On Android, if google-services.json is missing from the android/app directory,
-  // calling PushNotifications.register() will throw a native FirebaseException and instantly crash the app.
-  // We disable registration by default to prevent development crashes.
-  if (process.env.NEXT_PUBLIC_ENABLE_PUSH !== 'true') {
-    console.log('Push notifications registration skipped (NEXT_PUBLIC_ENABLE_PUSH is not true).');
     return;
   }
 
@@ -23,7 +14,7 @@ export const registerPushNotifications = async (userId: string) => {
     // Request permission to use push notifications
     let permStatus = await PushNotifications.checkPermissions();
 
-    if (permStatus.receive === 'prompt') {
+    if (permStatus.receive === 'prompt' || permStatus.receive === 'prompt-with-rationale') {
       permStatus = await PushNotifications.requestPermissions();
     }
 
@@ -36,28 +27,59 @@ export const registerPushNotifications = async (userId: string) => {
     await PushNotifications.register();
 
     // On success, save the token to Firebase Firestore under the user's document
+    PushNotifications.removeAllListeners();
+
     PushNotifications.addListener('registration', async (token) => {
       console.log('Push registration success, token: ' + token.value);
       
-      const userRef = doc(db, 'users', userId);
-      // Save FCM Token to Firestore so our backend cron job can send messages to this device
-      await setDoc(userRef, { fcmToken: token.value }, { merge: true });
+      if (userId && token.value) {
+        try {
+          const userRef = doc(db, 'users', userId);
+          await setDoc(userRef, { 
+            fcmToken: token.value,
+            fcmUpdatedAt: new Date().toISOString(),
+            ...(batchKey ? { 'profile.batchKey': batchKey } : {})
+          }, { merge: true });
+        } catch (err) {
+          console.warn('Could not save FCM token to Firestore:', err);
+        }
+      }
     });
 
     // Listeners for handling notifications
     PushNotifications.addListener('registrationError', (error: any) => {
-      console.error('Error on registration: ' + JSON.stringify(error));
+      console.warn('Error on push registration: ', error);
     });
 
     PushNotifications.addListener('pushNotificationReceived', (notification) => {
-      console.log('Push received: ' + JSON.stringify(notification));
+      console.log('Push received: ', notification);
     });
 
     PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-      console.log('Push action performed: ' + JSON.stringify(notification));
+      console.log('Push action performed: ', notification);
     });
 
   } catch (error) {
-    console.error('Push Notification Registration failed', error);
+    console.warn('Push Notification Registration failed', error);
+  }
+};
+
+export const broadcastBatchPushNotification = async (payload: {
+  batchKey: string;
+  title: string;
+  body: string;
+  type?: string;
+  senderId?: string;
+  senderName?: string;
+}) => {
+  if (!payload.batchKey || !payload.title) return;
+  try {
+    await fetch('/api/batch/broadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.warn('Failed to call broadcast API:', err);
   }
 };

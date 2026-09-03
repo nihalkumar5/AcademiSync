@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "941128003754",
+    "project_id": "academisync-c1a37",
+    "storage_bucket": "academisync-c1a37.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:941128003754:android:4e4e676abd1b93bfafe0d3",
+        "android_client_info": {
+          "package_name": "com.intersemester.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "941128003754-4v5ukukjj0ot3rtnfj0udjphlmlq0dte.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.intersemester.app",
+            "certificate_hash": "7769fc0d84fd0044cc47f67ba86e61e1c59c8c15"
+          }
+        },
+        {
+          "client_id": "941128003754-h892j60966cfoc098bihestdfuqj4isa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.intersemester.app",
+            "certificate_hash": "92b19262bb6d1acf1039e1e3a5315bc98d30624e"
+          }
+        },
+        {
+          "client_id": "941128003754-kld7b88mvctjmu840679t4qk4p8nb3g5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.intersemester.app",
+            "certificate_hash": "c59ae173fe5404742b27a15b4c9cee6f84afd09a"
+          }
+        },
+        {
+          "client_id": "941128003754-5oalodujnbtlr19jsf9t4unqq4762hsm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAXhCuxgl8UFIkFmxpJhWoAQtW9FqKVsf8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "941128003754-5oalodujnbtlr19jsf9t4unqq4762hsm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
