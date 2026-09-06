@@ -37,6 +37,7 @@ import { HolidayBalloons } from '@/components/ui/HolidayBalloons';
 import { CampusSpotlightCard } from '@/components/ads/CampusSpotlightCard';
 import { ProposedBatchTasksVoting } from '@/components/homework/ProposedBatchTasksVoting';
 import { IOSAppGate } from '@/components/pwa/IOSAppGate';
+import { AndroidAppGate } from '@/components/pwa/AndroidAppGate';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -338,6 +339,9 @@ export default function AppHome() {
     <div className="flex min-h-screen w-full bg-transparent text-[#181716] dark:text-[#F4F1EA]">
       {/* iOS Standalone PWA Installation Gate */}
       <IOSAppGate />
+
+      {/* Android Official App / Play Store Installation Gate */}
+      <AndroidAppGate />
 
       {/* Desktop Sidebar Navigation */}
       <Sidebar />
