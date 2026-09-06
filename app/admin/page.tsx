@@ -1,21 +1,26 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
 import { collection, onSnapshot, doc, getDoc, updateDoc, setDoc, deleteDoc, query, orderBy, arrayRemove, arrayUnion } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PromotionalCampaign, CampaignCategory, AdminRole } from '@/lib/types';
 import { searchCollegesAsync, CollegeItem, POPULAR_INDIAN_COLLEGES } from '@/lib/collegeDirectory';
+import { getShortCollegeName } from '@/lib/timetableUtils';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import {
   Shield,
   Users,
+  Building2,
+  GraduationCap,
   Layers,
   Megaphone,
   Plus,
   Trash2,
   ChevronDown,
+  ChevronUp,
+  Filter,
   Edit2,
   ExternalLink,
   Eye,
@@ -66,6 +71,11 @@ export default function SuperAdminPage() {
   const [searchUserQuery, setSearchUserQuery] = useState('');
   const [searchBatchQuery, setSearchBatchQuery] = useState('');
   const [copiedBatchCode, setCopiedBatchCode] = useState<string | null>(null);
+
+  // College-wise arrangement and filter states
+  const [selectedCollegeFilter, setSelectedCollegeFilter] = useState<string>('ALL');
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState<'ALL' | 'cr' | 'pro' | 'student'>('ALL');
+  const [collapsedColleges, setCollapsedColleges] = useState<Record<string, boolean>>({});
 
   // Custom in-theme delete confirmation states
   const [batchToDelete, setBatchToDelete] = useState<string | null>(null);
@@ -699,9 +709,127 @@ export default function SuperAdminPage() {
       (p.email || '').toLowerCase().includes(q) ||
       (p.college || '').toLowerCase().includes(q) ||
       (p.rollNumber || '').toLowerCase().includes(q) ||
-      (p.branch || '').toLowerCase().includes(q)
+      (p.branch || '').toLowerCase().includes(q) ||
+      (p.programme || '').toLowerCase().includes(q)
     );
   });
+
+  const normalizeCollegeGroup = (collegeRaw?: string): { key: string; displayName: string; shortName: string } => {
+    if (!collegeRaw || !collegeRaw.trim() || collegeRaw.trim().toLowerCase() === 'not set') {
+      return {
+        key: 'not_set',
+        displayName: 'Unassigned / College Not Set',
+        shortName: 'NOT SET',
+      };
+    }
+
+    const shortName = getShortCollegeName(collegeRaw);
+    const clean = collegeRaw.trim();
+
+    if (shortName !== 'COLLEGE') {
+      return {
+        key: shortName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+        displayName: clean.length > shortName.length ? clean : shortName,
+        shortName: shortName,
+      };
+    }
+
+    return {
+      key: clean.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+      displayName: clean,
+      shortName: clean.length > 25 ? clean.slice(0, 22) + '...' : clean,
+    };
+  };
+
+  const allCollegeOptions = useMemo(() => {
+    const map = new Map<string, { key: string; shortName: string; displayName: string; count: number }>();
+    for (const u of usersList) {
+      const p = u.profile || {};
+      const { key, shortName, displayName } = normalizeCollegeGroup(p.college);
+      const existing = map.get(key) || { key, shortName, displayName, count: 0 };
+      existing.count += 1;
+      map.set(key, existing);
+    }
+    return Array.from(map.values()).sort((a, b) => {
+      if (a.key === 'not_set') return 1;
+      if (b.key === 'not_set') return -1;
+      return b.count - a.count;
+    });
+  }, [usersList]);
+
+  const totalCRsCount = useMemo(() => {
+    return usersList.filter(u => u.profile?.role === 'cr' || u.profile?.role === 'super_admin').length;
+  }, [usersList]);
+
+  const totalProCount = useMemo(() => {
+    return usersList.filter(u => !!u.profile?.isPro).length;
+  }, [usersList]);
+
+  const collegeUserGroups = useMemo(() => {
+    const map = new Map<string, {
+      key: string;
+      displayName: string;
+      shortName: string;
+      students: any[];
+      totalCount: number;
+      crCount: number;
+      proCount: number;
+    }>();
+
+    for (const u of filteredUsers) {
+      const p = u.profile || {};
+      const role = p.role || 'student';
+      const isPro = !!p.isPro;
+
+      if (selectedRoleFilter === 'cr' && role !== 'cr' && role !== 'super_admin') continue;
+      if (selectedRoleFilter === 'pro' && !isPro) continue;
+      if (selectedRoleFilter === 'student' && (role === 'cr' || role === 'super_admin')) continue;
+
+      const { key, displayName, shortName } = normalizeCollegeGroup(p.college);
+
+      // If user selected a specific college filter, skip others
+      if (selectedCollegeFilter !== 'ALL' && key !== selectedCollegeFilter) {
+        continue;
+      }
+
+      if (!map.has(key)) {
+        map.set(key, {
+          key,
+          displayName,
+          shortName,
+          students: [],
+          totalCount: 0,
+          crCount: 0,
+          proCount: 0,
+        });
+      }
+
+      const group = map.get(key)!;
+      group.students.push(u);
+      group.totalCount += 1;
+      if (role === 'cr' || role === 'super_admin') group.crCount += 1;
+      if (isPro) group.proCount += 1;
+    }
+
+    // Sort students inside each college group: CRs first, then alphabetical by name
+    Array.from(map.values()).forEach((group) => {
+      group.students.sort((a, b) => {
+        const roleA = a.profile?.role || 'student';
+        const roleB = b.profile?.role || 'student';
+        if (roleA === 'cr' && roleB !== 'cr') return -1;
+        if (roleB === 'cr' && roleA !== 'cr') return 1;
+        const nameA = (a.profile?.name || '').toLowerCase();
+        const nameB = (b.profile?.name || '').toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+    });
+
+    return Array.from(map.values()).sort((a, b) => {
+      if (a.key === 'not_set') return 1;
+      if (b.key === 'not_set') return -1;
+      return b.totalCount - a.totalCount;
+    });
+  }, [filteredUsers, selectedCollegeFilter, selectedRoleFilter]);
 
   const filteredBatches = batchesList.filter((b) => {
     const q = searchBatchQuery.toLowerCase();
@@ -857,206 +985,387 @@ export default function SuperAdminPage() {
           </div>
         )}
 
-        {/* TAB 2: USER MANAGEMENT */}
+        {/* TAB 2: USER MANAGEMENT (COLLEGE-WISE GROUPED) */}
         {activeTab === 'users' && (
           <div className="flex flex-col gap-6 text-left">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            {/* Header + Search Bar */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold uppercase tracking-tight">Registered Students ({filteredUsers.length})</h2>
+                <div className="flex items-center gap-3">
+                  <h2 className="text-xl font-bold uppercase tracking-tight">Registered Students ({filteredUsers.length})</h2>
+                  <span className="hidden sm:inline-block font-mono text-[11px] px-2 py-0.5 border border-black/10 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.03] rounded-none uppercase">
+                    {allCollegeOptions.length} Colleges
+                  </span>
+                </div>
                 <p className="text-xs text-black/60 dark:text-white/60 mt-1">
-                  Manage student profiles, grant CR permissions, and toggle Pro tier subscriptions.
+                  Arranged college-wise. Manage student profiles, grant CR permissions, and toggle Pro tier subscriptions.
                 </p>
               </div>
 
               {/* Search Box */}
-              <div className="relative w-full sm:w-72">
+              <div className="relative w-full md:w-80">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40" />
                 <input
                   type="text"
-                  placeholder="Search name, email, roll no..."
+                  placeholder="Search name, email, roll no, college..."
                   value={searchUserQuery}
                   onChange={(e) => setSearchUserQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 border border-black dark:border-white bg-transparent text-xs font-mono focus:outline-none"
+                  className="w-full pl-9 pr-8 py-2 border border-black dark:border-white bg-transparent text-xs font-mono focus:outline-none rounded-none"
                 />
+                {searchUserQuery && (
+                  <button
+                    onClick={() => setSearchUserQuery('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] font-mono opacity-50 hover:opacity-100"
+                    title="Clear search"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* Mobile Users List (Cards) */}
-            <div className="flex flex-col gap-4 sm:hidden">
-              {filteredUsers.length === 0 ? (
-                <div className="p-8 text-center text-[#6F6F6F] border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A]">
-                  No registered users match your search.
-                </div>
-              ) : (
-                filteredUsers.map((u) => {
-                  const p = u.profile || {};
-                  const currentRole = p.role || 'student';
-                  const isPro = !!p.isPro;
+            {/* Quick Stats & Role Filter Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111]">
+              {/* Role Filters */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#6F6F6F] mr-1 flex items-center gap-1">
+                  <Filter className="w-3 h-3" />
+                  Role Filter:
+                </span>
+                {[
+                  { id: 'ALL', label: `All (${filteredUsers.length})` },
+                  { id: 'cr', label: `CRs (${totalCRsCount})` },
+                  { id: 'pro', label: `Pro (${totalProCount})` },
+                  { id: 'student', label: 'Students' },
+                ].map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setSelectedRoleFilter(f.id as any)}
+                    className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors rounded-none cursor-pointer border ${
+                      selectedRoleFilter === f.id
+                        ? 'bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] border-[#111111] dark:border-[#FFFFFF]'
+                        : 'border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* View/Collapse All Controls */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    const allCollapsed = collegeUserGroups.length > 0 && collegeUserGroups.every(g => !!collapsedColleges[g.key]);
+                    const next: Record<string, boolean> = {};
+                    if (!allCollapsed) {
+                      collegeUserGroups.forEach(g => { next[g.key] = true; });
+                    }
+                    setCollapsedColleges(next);
+                  }}
+                  className="text-[10px] font-mono uppercase tracking-wider text-[#6F6F6F] hover:text-[#111111] dark:hover:text-white transition-colors underline cursor-pointer"
+                >
+                  {collegeUserGroups.length > 0 && collegeUserGroups.every(g => !!collapsedColleges[g.key]) ? 'Expand All Colleges' : 'Collapse All'}
+                </button>
+              </div>
+            </div>
+
+            {/* Horizontal Scrollable College Filter Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              <button
+                onClick={() => setSelectedCollegeFilter('ALL')}
+                className={`px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-colors rounded-none cursor-pointer border flex items-center gap-1.5 ${
+                  selectedCollegeFilter === 'ALL'
+                    ? 'bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] border-[#111111] dark:border-[#FFFFFF]'
+                    : 'border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                <span>All Colleges</span>
+                <span className="font-mono text-[9px] opacity-75">({usersList.length})</span>
+              </button>
+
+              {allCollegeOptions.map((c) => (
+                <button
+                  key={c.key}
+                  onClick={() => setSelectedCollegeFilter(selectedCollegeFilter === c.key ? 'ALL' : c.key)}
+                  className={`px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-colors rounded-none cursor-pointer border flex items-center gap-1.5 ${
+                    selectedCollegeFilter === c.key
+                      ? 'bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] border-[#111111] dark:border-[#FFFFFF]'
+                      : 'border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
+                  }`}
+                  title={c.displayName}
+                >
+                  <span>{c.shortName}</span>
+                  <span className="font-mono text-[9px] px-1.5 py-0.2 border border-current/20 bg-current/5">
+                    {c.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* College Groups List */}
+            {collegeUserGroups.length === 0 ? (
+              <div className="p-12 text-center text-[#6F6F6F] border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] flex flex-col items-center justify-center gap-2">
+                <Search className="w-8 h-8 opacity-40 mb-1" />
+                <span className="font-bold text-[14px] text-[#111111] dark:text-[#FFFFFF]">No students match your filter</span>
+                <span className="text-[12px]">Try clearing search query or selecting &quot;All Colleges&quot;</span>
+                <button
+                  onClick={() => { setSearchUserQuery(''); setSelectedCollegeFilter('ALL'); setSelectedRoleFilter('ALL'); }}
+                  className="mt-3 px-4 py-1.5 text-xs font-mono uppercase tracking-wider border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer"
+                >
+                  Reset Filters
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-6">
+                {collegeUserGroups.map((group) => {
+                  const isCollapsed = !!collapsedColleges[group.key];
 
                   return (
-                    <div key={u.id} className="border border-[#D8D8D8] dark:border-[#333333] p-4 flex flex-col gap-4 bg-white dark:bg-[#111111]">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex flex-col">
-                          <span className="font-bold text-[14px] text-[#111111] dark:text-[#FFFFFF]">{p.name || 'Anonymous'}</span>
-                          <span className="text-[11px] font-mono text-[#6F6F6F]">{p.email || u.id}</span>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-[10px] text-[#A0A0A0] font-mono block">Joined {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#A0A0A0]">Academic</span>
-                        <span className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] leading-tight line-clamp-2">{p.college || 'Not Set'}</span>
-                        <span className="text-[11px] text-[#6F6F6F]">
-                          {p.programme || ''} {p.branch ? `- ${p.branch}` : ''} {p.semester ? `(Sem ${p.semester})` : ''} • {p.rollNumber || '—'}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-3 pt-3 border-t border-[#F0F0F0] dark:border-[#222222]">
-                        <div className="relative flex-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveRoleDropdown(activeRoleDropdown === u.id ? null : u.id);
-                            }}
-                            className="w-full h-full flex items-center justify-between px-3 py-2 border border-[#D8D8D8] dark:border-[#333333] bg-transparent text-[11px] font-bold uppercase cursor-pointer rounded-none focus:outline-none"
-                          >
-                            <span>{currentRole === 'super_admin' ? 'Super Admin' : currentRole === 'cr' ? 'CR (Class Rep)' : 'Student'}</span>
-                            <ChevronDown className="w-3.5 h-3.5 opacity-50" />
-                          </button>
-                          
-                          {activeRoleDropdown === u.id && (
-                            <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] z-50 shadow-[0_20px_40px_rgba(0,0,0,0.1)] flex flex-col rounded-none">
-                              {['student', 'cr', 'super_admin'].map(role => (
-                                <button
-                                  key={role}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleUpdateUserRole(u.id, role as any);
-                                    setActiveRoleDropdown(null);
-                                  }}
-                                  className="px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-[1px] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
-                                >
-                                  {role === 'super_admin' ? 'Super Admin' : role === 'cr' ? 'CR (Class Rep)' : 'Student'}
-                                </button>
-                              ))}
+                    <div
+                      key={group.key}
+                      className="border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] flex flex-col"
+                    >
+                      {/* College Group Header Banner */}
+                      <div
+                        onClick={() => setCollapsedColleges(prev => ({ ...prev, [group.key]: !prev[group.key] }))}
+                        className="px-4 py-3.5 sm:px-5 sm:py-4 bg-[#F7F7F5] dark:bg-[#181818] border-b border-[#D8D8D8] dark:border-[#333333] flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer select-none hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-8 h-8 shrink-0 rounded-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 flex items-center justify-center text-[#111111] dark:text-[#FFFFFF]">
+                            <Building2 className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-bold text-[14px] sm:text-[15px] text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-snug">
+                                {group.displayName}
+                              </h3>
+                              {group.shortName !== 'NOT SET' && (
+                                <span className="font-mono text-[9px] uppercase px-1.5 py-0.5 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-[#6F6F6F] dark:text-[#A0A0A0]">
+                                  {group.shortName}
+                                </span>
+                              )}
                             </div>
-                          )}
+                            <span className="text-[11px] text-[#6F6F6F] block mt-0.5">
+                              {group.students.length} {group.students.length === 1 ? 'registered student' : 'registered students'} in this institute
+                            </span>
+                          </div>
                         </div>
 
-                        <button
-                          onClick={() => handleToggleUserPro(u.id, isPro)}
-                          className={`flex-1 px-3 py-2 text-[10px] font-bold uppercase tracking-wider border cursor-pointer rounded-none transition-colors ${
-                            isPro
-                              ? 'bg-[#111111] text-[#FFFFFF] border-[#111111] dark:bg-[#FFFFFF] dark:text-[#111111] dark:border-[#FFFFFF]'
-                              : 'border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
-                          }`}
-                        >
-                          {isPro ? '★ PRO ACTIVE' : 'FREE USER'}
-                        </button>
+                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                          {group.crCount > 0 && (
+                            <span className="px-2 py-0.5 text-[10px] font-bold font-mono uppercase bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40">
+                              {group.crCount} CR{group.crCount > 1 ? 's' : ''}
+                            </span>
+                          )}
+                          {group.proCount > 0 && (
+                            <span className="px-2 py-0.5 text-[10px] font-bold font-mono uppercase bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-900/40">
+                              {group.proCount} PRO
+                            </span>
+                          )}
+                          <span className="px-2.5 py-1 text-[11px] font-bold font-mono uppercase border border-black/10 dark:border-white/10 bg-white dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF]">
+                            {group.students.length} Students
+                          </span>
+                          <button
+                            type="button"
+                            className="p-1 hover:opacity-75 transition-opacity"
+                            aria-label={isCollapsed ? 'Expand' : 'Collapse'}
+                          >
+                            {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                          </button>
+                        </div>
                       </div>
+
+                      {/* Group Content (when not collapsed) */}
+                      {!isCollapsed && (
+                        <div>
+                          {/* Desktop Table View */}
+                          <div className="hidden sm:block overflow-x-auto">
+                            <table className="w-full text-[12px] text-left border-collapse min-w-[800px]">
+                              <thead>
+                                <tr className="border-b border-[#F0F0F0] dark:border-[#222222] bg-[#FAFAF8] dark:bg-[#141414] font-bold uppercase tracking-[1px] text-[10px] text-[#A0A0A0]">
+                                  <th className="p-3.5 font-bold">Student</th>
+                                  <th className="p-3.5 font-bold">Branch & Semester</th>
+                                  <th className="p-3.5 font-bold">Roll No</th>
+                                  <th className="p-3.5 font-bold">Role</th>
+                                  <th className="p-3.5 font-bold">Pro Tier</th>
+                                  <th className="p-3.5 font-bold text-right">Joined</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-[#F0F0F0] dark:divide-[#222222] font-sans">
+                                {group.students.map((u) => {
+                                  const p = u.profile || {};
+                                  const currentRole = p.role || 'student';
+                                  const isPro = !!p.isPro;
+
+                                  return (
+                                    <tr key={u.id} className="hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors">
+                                      <td className="p-3.5">
+                                        <div className="flex items-center gap-2">
+                                          <div className="font-bold text-[13px] text-[#111111] dark:text-[#FFFFFF]">{p.name || 'Anonymous'}</div>
+                                          {currentRole === 'cr' && (
+                                            <span className="px-1.5 py-0.2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[9px] font-bold uppercase tracking-wider font-mono">
+                                              CR
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="text-[11px] font-mono text-[#6F6F6F]">{p.email || u.id}</div>
+                                      </td>
+                                      <td className="p-3.5 max-w-[240px]">
+                                        <div className="font-medium text-[#111111] dark:text-[#FFFFFF] truncate">
+                                          {p.programme || ''} {p.branch ? `- ${p.branch}` : 'Branch not set'}
+                                        </div>
+                                        <div className="text-[11px] text-[#6F6F6F]">
+                                          {p.semester ? `Semester ${p.semester}` : ''} {p.section ? `• Section ${p.section}` : ''}
+                                        </div>
+                                      </td>
+                                      <td className="p-3.5 font-mono text-[#111111] dark:text-[#FFFFFF]">
+                                        {p.rollNumber || '—'}
+                                      </td>
+                                      <td className="p-3.5">
+                                        <div className="relative min-w-[140px]">
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setActiveRoleDropdown(activeRoleDropdown === u.id ? null : u.id);
+                                            }}
+                                            className="w-full h-full flex items-center justify-between px-3 py-1.5 border border-[#D8D8D8] dark:border-[#333333] bg-transparent text-[11px] font-bold uppercase cursor-pointer rounded-none focus:outline-none"
+                                          >
+                                            <span>{currentRole === 'super_admin' ? 'Super Admin' : currentRole === 'cr' ? 'CR (Class Rep)' : 'Student'}</span>
+                                            <ChevronDown className="w-3.5 h-3.5 opacity-50" />
+                                          </button>
+                                          
+                                          {activeRoleDropdown === u.id && (
+                                            <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] z-50 shadow-[0_20px_40px_rgba(0,0,0,0.1)] flex flex-col rounded-none">
+                                              {['student', 'cr', 'super_admin'].map(role => (
+                                                <button
+                                                  key={role}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleUpdateUserRole(u.id, role as any);
+                                                    setActiveRoleDropdown(null);
+                                                  }}
+                                                  className="px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-[1px] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
+                                                >
+                                                  {role === 'super_admin' ? 'Super Admin' : role === 'cr' ? 'CR (Class Rep)' : 'Student'}
+                                                </button>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </td>
+                                      <td className="p-3.5">
+                                        <button
+                                          onClick={() => handleToggleUserPro(u.id, isPro)}
+                                          className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border cursor-pointer rounded-none transition-colors ${
+                                            isPro
+                                              ? 'bg-[#111111] text-[#FFFFFF] border-[#111111] dark:bg-[#FFFFFF] dark:text-[#111111] dark:border-[#FFFFFF]'
+                                              : 'border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
+                                          }`}
+                                        >
+                                          {isPro ? '★ PRO ACTIVE' : 'FREE USER'}
+                                        </button>
+                                      </td>
+                                      <td className="p-3.5 text-right font-mono text-[11px] text-[#6F6F6F]">
+                                        {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {/* Mobile Cards View */}
+                          <div className="flex flex-col divide-y divide-[#F0F0F0] dark:divide-[#222222] sm:hidden">
+                            {group.students.map((u) => {
+                              const p = u.profile || {};
+                              const currentRole = p.role || 'student';
+                              const isPro = !!p.isPro;
+
+                              return (
+                                <div key={u.id} className="p-4 flex flex-col gap-3">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="flex flex-col">
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-bold text-[14px] text-[#111111] dark:text-[#FFFFFF]">{p.name || 'Anonymous'}</span>
+                                        {currentRole === 'cr' && (
+                                          <span className="px-1.5 py-0.2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[9px] font-bold font-mono uppercase">
+                                            CR
+                                          </span>
+                                        )}
+                                      </div>
+                                      <span className="text-[11px] font-mono text-[#6F6F6F]">{p.email || u.id}</span>
+                                    </div>
+                                    <div className="text-right">
+                                      <span className="text-[10px] text-[#A0A0A0] font-mono block">Joined {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}</span>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex flex-col gap-0.5 text-[11px]">
+                                    <span className="text-[#111111] dark:text-[#FFFFFF] font-medium">
+                                      {p.programme || ''} {p.branch ? `- ${p.branch}` : ''} {p.semester ? `(Sem ${p.semester})` : ''}
+                                    </span>
+                                    <span className="text-[#6F6F6F] font-mono">
+                                      Roll: {p.rollNumber || '—'} {p.section ? `• Sec ${p.section}` : ''}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center gap-2.5 pt-2 border-t border-[#F0F0F0] dark:border-[#222222]">
+                                    <div className="relative flex-1">
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setActiveRoleDropdown(activeRoleDropdown === u.id ? null : u.id);
+                                        }}
+                                        className="w-full h-full flex items-center justify-between px-2.5 py-1.5 border border-[#D8D8D8] dark:border-[#333333] bg-transparent text-[10px] font-bold uppercase cursor-pointer rounded-none focus:outline-none"
+                                      >
+                                        <span>{currentRole === 'super_admin' ? 'Super Admin' : currentRole === 'cr' ? 'CR' : 'Student'}</span>
+                                        <ChevronDown className="w-3 h-3 opacity-50" />
+                                      </button>
+                                      
+                                      {activeRoleDropdown === u.id && (
+                                        <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] z-50 shadow-lg flex flex-col rounded-none">
+                                          {['student', 'cr', 'super_admin'].map(role => (
+                                            <button
+                                              key={role}
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleUpdateUserRole(u.id, role as any);
+                                                setActiveRoleDropdown(null);
+                                              }}
+                                              className="px-3 py-2 text-left text-[10px] font-bold uppercase hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
+                                            >
+                                              {role === 'super_admin' ? 'Super Admin' : role === 'cr' ? 'CR (Class Rep)' : 'Student'}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    <button
+                                      onClick={() => handleToggleUserPro(u.id, isPro)}
+                                      className={`flex-1 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider border cursor-pointer rounded-none transition-colors ${
+                                        isPro
+                                          ? 'bg-[#111111] text-[#FFFFFF] border-[#111111] dark:bg-[#FFFFFF] dark:text-[#111111] dark:border-[#FFFFFF]'
+                                          : 'border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
+                                      }`}
+                                    >
+                                      {isPro ? '★ PRO' : 'FREE'}
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
-                })
-              )}
-            </div>
-
-            {/* Desktop Users Table */}
-            <div className="hidden sm:block border border-[#D8D8D8] dark:border-[#333333] overflow-x-auto bg-white dark:bg-[#111111]">
-              <table className="w-full text-[12px] text-left border-collapse min-w-[800px]">
-                <thead>
-                  <tr className="border-b border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] font-bold uppercase tracking-[1px] text-[10px] text-[#A0A0A0]">
-                    <th className="p-4 font-bold">Student</th>
-                    <th className="p-4 font-bold">College & Branch</th>
-                    <th className="p-4 font-bold">Roll No</th>
-                    <th className="p-4 font-bold">Role</th>
-                    <th className="p-4 font-bold">Pro Tier</th>
-                    <th className="p-4 font-bold text-right">Joined</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#F0F0F0] dark:divide-[#222222] font-sans">
-                  {filteredUsers.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="p-8 text-center text-[#6F6F6F]">
-                        No registered users match your search.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredUsers.map((u) => {
-                      const p = u.profile || {};
-                      const currentRole = p.role || 'student';
-                      const isPro = !!p.isPro;
-
-                      return (
-                        <tr key={u.id} className="hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors">
-                          <td className="p-4">
-                            <div className="font-bold text-[13px] text-[#111111] dark:text-[#FFFFFF]">{p.name || 'Anonymous'}</div>
-                            <div className="text-[11px] font-mono text-[#6F6F6F]">{p.email || u.id}</div>
-                          </td>
-                          <td className="p-4 max-w-[250px]">
-                            <div className="font-medium text-[#111111] dark:text-[#FFFFFF] truncate" title={p.college || 'Not Set'}>{p.college || 'Not Set'}</div>
-                            <div className="text-[11px] text-[#6F6F6F]">
-                              {p.programme || ''} {p.branch ? `- ${p.branch}` : ''} {p.semester ? `(Sem ${p.semester})` : ''}
-                            </div>
-                          </td>
-                          <td className="p-4 font-mono text-[#111111] dark:text-[#FFFFFF]">
-                            {p.rollNumber || '—'}
-                          </td>
-                          <td className="p-4">
-                            <div className="relative min-w-[140px]">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveRoleDropdown(activeRoleDropdown === u.id ? null : u.id);
-                            }}
-                            className="w-full h-full flex items-center justify-between px-3 py-2 border border-[#D8D8D8] dark:border-[#333333] bg-transparent text-[11px] font-bold uppercase cursor-pointer rounded-none focus:outline-none"
-                          >
-                            <span>{currentRole === 'super_admin' ? 'Super Admin' : currentRole === 'cr' ? 'CR (Class Rep)' : 'Student'}</span>
-                            <ChevronDown className="w-3.5 h-3.5 opacity-50" />
-                          </button>
-                          
-                          {activeRoleDropdown === u.id && (
-                            <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] z-50 shadow-[0_20px_40px_rgba(0,0,0,0.1)] flex flex-col rounded-none">
-                              {['student', 'cr', 'super_admin'].map(role => (
-                                <button
-                                  key={role}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleUpdateUserRole(u.id, role as any);
-                                    setActiveRoleDropdown(null);
-                                  }}
-                                  className="px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-[1px] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
-                                >
-                                  {role === 'super_admin' ? 'Super Admin' : role === 'cr' ? 'CR (Class Rep)' : 'Student'}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                          </td>
-                          <td className="p-4">
-                            <button
-                              onClick={() => handleToggleUserPro(u.id, isPro)}
-                              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border cursor-pointer rounded-none transition-colors ${
-                                isPro
-                                  ? 'bg-[#111111] text-[#FFFFFF] border-[#111111] dark:bg-[#FFFFFF] dark:text-[#111111] dark:border-[#FFFFFF]'
-                                  : 'border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
-                              }`}
-                            >
-                              {isPro ? '★ PRO ACTIVE' : 'FREE USER'}
-                            </button>
-                          </td>
-                          <td className="p-4 text-right font-mono text-[11px] text-[#6F6F6F]">
-                            {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
+                })}
+              </div>
+            )}
           </div>
         )}
 
