@@ -73,9 +73,9 @@ export const AndroidAppGate: React.FC = () => {
           {/* Hero Illustration */}
           <div className="flex-1 min-h-0 w-full flex items-end justify-center overflow-visible bg-white px-4">
             <img 
-              src="/onboard-1.png" 
+              src="/heroios.png" 
               alt="Intersemester Android App" 
-              className="w-full h-full object-contain object-bottom pointer-events-none translate-y-[5%] scale-[1.15] sm:scale-[1.25]"
+              className="w-full h-full object-contain object-bottom pointer-events-none translate-y-[5%] scale-[1.22] sm:scale-[1.28]"
             />
           </div>
 
