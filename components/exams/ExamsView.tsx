@@ -118,7 +118,6 @@ export const ExamsView: React.FC = () => {
                 try {
                   const key = await shareTimetableWithBatch();
                   const code = currentBatchData?.inviteCode || (profile?.batchKey && profile.batchKey.length <= 8 ? profile.batchKey : key);
-                  const link = `https://academi-sync-chi.vercel.app/?invite=${code}`;
                   const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
                   const shareText = `🔥 *Join our official ${batchTitle} Exam Schedule & Timetable on Intersemester!*
 
@@ -132,7 +131,6 @@ export const ExamsView: React.FC = () => {
                   const res = await shareLink({
                     title: 'Join our Class Timetable & Exam Schedule',
                     text: shareText,
-                    url: link,
                     dialogTitle: 'Share Batch Code via',
                   });
                   if (res === 'copied') showToast('Code Copied', `Batch code copied: ${code}`, 'success');

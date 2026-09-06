@@ -13,12 +13,10 @@ export async function shareLink({ title, text, url, dialogTitle = 'Share via' }:
   try {
     const isCap = typeof window !== 'undefined' && (Capacitor.isNativePlatform() || (window as any).Capacitor?.isNativePlatform?.());
     if (isCap) {
-      // Capacitor Share on Android/iOS natively appends the `url` parameter to the shared text.
-      // Passing `${text} ${url}` alongside `url` caused double link printing.
       await Share.share({
         title,
         text: text ? text.trim() : undefined,
-        url,
+        url: url?.trim() || undefined,
         dialogTitle,
       });
       return 'shared';
@@ -33,11 +31,14 @@ export async function shareLink({ title, text, url, dialogTitle = 'Share via' }:
   // 2. Web Share API (Chrome / Mobile browsers / Web)
   if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
     try {
-      await navigator.share({
+      const sharePayload: ShareData = {
         title,
         text: text ? text.trim() : undefined,
-        url,
-      });
+      };
+      if (url?.trim()) {
+        sharePayload.url = url.trim();
+      }
+      await navigator.share(sharePayload);
       return 'shared';
     } catch (e: any) {
       if (e?.name === 'AbortError' || e?.message?.includes('canceled')) {
@@ -50,7 +51,7 @@ export async function shareLink({ title, text, url, dialogTitle = 'Share via' }:
   // 3. Fallback: Copy to Clipboard
   if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
     try {
-      const copyContent = [text?.trim(), url].filter(Boolean).join('\n\n') || '';
+      const copyContent = [text?.trim(), url?.trim()].filter(Boolean).join('\n\n') || '';
       await navigator.clipboard.writeText(copyContent);
       return 'copied';
     } catch (err) {

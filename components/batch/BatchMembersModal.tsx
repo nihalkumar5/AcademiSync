@@ -323,7 +323,6 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
     if (!batchKey) return;
     const batchTitle = `${batchData?.branch || profile.branch || 'Class'} - Sec ${batchData?.section || profile.section || 'A'} (Sem ${batchData?.semester || profile.semester || ''})`;
     const code = batchData?.inviteCode || batchKey;
-    const inviteUrl = `https://academi-sync-chi.vercel.app/?invite=${code}`;
     const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 
 🔑 *Batch Code:* ${code}
@@ -336,7 +335,6 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
     const res = await shareLink({
       title: `Join ${batchTitle} Schedule`,
       text: shareText,
-      url: inviteUrl,
       dialogTitle: 'Share Batch Code via',
     });
     if (res === 'copied') {

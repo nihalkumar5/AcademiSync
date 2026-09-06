@@ -825,7 +825,6 @@ export const SettingsView: React.FC = () => {
                       onClick={async () => {
                         try {
                           const code = await shareTimetableWithBatch();
-                          const link = `https://academi-sync-chi.vercel.app/?invite=${code}`;
                           const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
                           const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 
@@ -839,7 +838,6 @@ export const SettingsView: React.FC = () => {
                           const res = await shareLink({
                             title: 'Join our Class Timetable',
                             text: shareText,
-                            url: link,
                             dialogTitle: 'Share Batch Code via',
                           });
                           if (res === 'copied') showToast('Code Copied', `Batch code copied: ${code}`, 'success');
@@ -1542,7 +1540,6 @@ export const SettingsView: React.FC = () => {
                   setShowBatchSettingsModal(false);
                   try {
                     const code = await shareTimetableWithBatch();
-                    const link = `https://academi-sync-chi.vercel.app/?invite=${code}`;
                     const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
                     const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 
@@ -1556,7 +1553,6 @@ export const SettingsView: React.FC = () => {
                     const res = await shareLink({
                       title: 'Join our Class Timetable',
                       text: shareText,
-                      url: link,
                       dialogTitle: 'Share Batch Code via',
                     });
                     if (res === 'copied') showToast('Code Copied', `Batch code copied: ${code}`, 'success');

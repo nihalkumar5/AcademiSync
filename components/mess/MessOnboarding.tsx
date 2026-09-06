@@ -189,15 +189,23 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
 
   const [copying, setCopying] = useState(false);
   const handleCopyLink = async () => {
-    const url = `${window.location.origin}/join/${messId}`;
+    const code = messId;
+    const shareText = `🍛 *Join our Hostel Mess Menu on Intersemester!*
+
+🔑 *Mess Code:* ${code}
+
+🍽️ Live Meal Countdowns, Daily Dishes & Serving Hours
+
+👉 Open Intersemester App → Go to Mess tab → Enter Code: *${code}*`;
+
     const res = await shareLink({
       title: 'Hostel Mess Menu',
-      text: '🍛 Check out our weekly hostel mess menu & live meal timings on Intersemester:',
-      url,
-      dialogTitle: 'Share Mess Menu via',
+      text: shareText,
+      dialogTitle: 'Share Mess Code via',
     });
     if (res === 'copied') {
       setCopying(true);
+      showToast('Copied', `Mess code copied: ${code}`, 'success');
       setTimeout(() => setCopying(false), 2000);
     }
   };

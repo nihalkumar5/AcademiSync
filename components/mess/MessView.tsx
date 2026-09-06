@@ -218,15 +218,22 @@ export const MessView: React.FC = () => {
   const selectedMenu = messMenu.menu?.[selectedDay] || {};
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/join/${messMenu.id}`;
+    const code = messMenu.id;
+    const shareText = `🍛 *Join our Hostel Mess Menu on Intersemester!*
+
+🔑 *Mess Code:* ${code}
+
+🍽️ Live Meal Countdowns, Daily Dishes & Serving Hours
+
+👉 Open Intersemester App → Go to Mess tab → Enter Code: *${code}*`;
+
     const res = await shareLink({
       title: 'Hostel Mess Menu',
-      text: '🍛 Check out our weekly hostel mess menu & live meal timings on Intersemester:',
-      url,
-      dialogTitle: 'Share Mess Menu via',
+      text: shareText,
+      dialogTitle: 'Share Mess Code via',
     });
     if (res === 'copied') {
-      showToast('Copied', 'Invite link copied to clipboard!', 'success');
+      showToast('Copied', `Mess code copied: ${code}`, 'success');
     }
   };
 

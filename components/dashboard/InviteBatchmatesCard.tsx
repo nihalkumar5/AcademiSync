@@ -17,7 +17,6 @@ export const InviteBatchmatesCard = () => {
     if (!profile?.batchKey) return;
     const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
     const batchCode = sixDigitCode || profile.batchKey;
-    const inviteUrl = `https://academi-sync-chi.vercel.app/?invite=${batchCode}`;
     const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 
 🔑 *Batch Code:* ${batchCode}
@@ -30,7 +29,6 @@ export const InviteBatchmatesCard = () => {
     const res = await shareLink({
       title: `Join ${batchTitle} on Intersemester`,
       text: shareText,
-      url: inviteUrl,
       dialogTitle: 'Share Batch Code via',
     });
     if (res === 'copied') {

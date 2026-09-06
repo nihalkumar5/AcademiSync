@@ -53,15 +53,19 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
   const cleanSec = hasMultipleSections ? activeSec.replace(/section\s*/i, '').trim() : '';
 
   const handleShareToWhatsApp = async () => {
-    const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://academi-sync-chi.vercel.app';
     const courseTitle = `${activeBranch} (Sem ${activeSem}${hasMultipleSections ? `, Section ${cleanSec}` : ''})`;
-    const messageText = `Hey batchmates! 👋\n\nNobody has created the official timetable for our batch yet on Intersemester:\n🏛️ *${shortCollege}*\n📚 *${courseTitle}*\n\nIf you are our Batch Pilot or want to setup the synced batch timetable for all of us, open this link and claim Pilot access:\n👉 ${appUrl}\n\nLet's get all class updates, room alerts & assignments synced! 🚀`;
+    const messageText = `Hey batchmates! 👋
+
+Nobody has created the official timetable for our batch yet on Intersemester:
+🏛️ *${shortCollege}*
+📚 *${courseTitle}*
+
+If you are our Batch Pilot or want to setup the synced batch timetable for all of us, open the *Intersemester* app and setup our batch schedule! 🚀`;
 
     try {
       const res = await shareLink({
         title: `Setup Batch: ${shortCollege} - ${courseTitle}`,
         text: messageText,
-        url: appUrl,
         dialogTitle: 'Share with Class WhatsApp Group'
       });
       if (res === 'copied') {
