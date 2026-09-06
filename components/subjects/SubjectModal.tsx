@@ -210,14 +210,14 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
         </div>
 
         {/* Lab Toggle */}
-        <div className="flex flex-col gap-2 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/80">
+        <div className="flex flex-col gap-2 p-3 rounded-none bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/80">
           <div className="flex items-center gap-2.5">
             <input
               type="checkbox"
               id="subIsLab"
               checked={isLab}
               onChange={(e) => setIsLab(e.target.checked)}
-              className="w-4 h-4 rounded text-[#8C6B5D] focus:ring-[#8C6B5D]"
+              className="w-4 h-4 rounded-none text-[#8C6B5D] focus:ring-[#8C6B5D]"
             />
             <label htmlFor="subIsLab" className="text-xs font-medium text-zinc-800 dark:text-zinc-200 cursor-pointer">
               Includes Practical Lab Sessions
@@ -234,7 +234,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
         </div>
 
         {/* Things to Carry Requirements (Critical Requirement) */}
-        <div className="flex flex-col gap-2 p-3.5 rounded-xl bg-[#8C6B5D]/5 dark:bg-[#8C6B5D]/10 border border-[#8C6B5D]/20 dark:border-[#8C6B5D]/30">
+        <div className="flex flex-col gap-2 p-3.5 rounded-none bg-[#8C6B5D]/5 dark:bg-[#8C6B5D]/10 border border-[#8C6B5D]/20 dark:border-[#8C6B5D]/30">
           <div className="flex items-center gap-1.5">
             <Backpack className="w-4 h-4 text-[#8C6B5D]" />
             <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
@@ -257,7 +257,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
                   handleAddCarryItem();
                 }
               }}
-              className="flex-1 px-3 py-1.5 text-xs bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#8C6B5D]/20 focus:border-[#8C6B5D]"
+              className="flex-1 px-3 py-1.5 text-xs bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-none text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#8C6B5D]/20 focus:border-[#8C6B5D]"
             />
             <Button type="button" size="sm" variant="secondary" onClick={handleAddCarryItem}>
               <Plus className="w-3.5 h-3.5 mr-1" />
@@ -269,7 +269,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
             {carryReqs.map((req, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200"
+                className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-none bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200"
               >
                 <span>{req}</span>
                 <button

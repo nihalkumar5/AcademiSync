@@ -75,7 +75,7 @@ export const SubjectListView: React.FC = () => {
           {subjects.map((sub) => (
             <div
               key={sub.id}
-              className="group p-4 rounded-xl border border-zinc-200/80 dark:border-white/[0.08] bg-white dark:bg-[#121317] hover:border-zinc-300 dark:hover:border-white/[0.15] shadow-sm flex flex-col justify-between transition-all"
+              className="group p-4 rounded-none border border-zinc-200/80 dark:border-white/[0.08] bg-white dark:bg-[#121317] hover:border-zinc-300 dark:hover:border-white/[0.15] shadow-sm flex flex-col justify-between transition-all"
             >
               <div>
                 {/* Header: Code & Action Buttons */}

@@ -16,9 +16,9 @@ export const ApplyForCRCard: React.FC = () => {
 
   return (
     <>
-      <div className="border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-black/20 dark:hover:border-white/[0.14] shadow-sm">
+      <div className="border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] rounded-none p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-black/20 dark:hover:border-white/[0.14] shadow-sm">
         <div className="flex items-start gap-3.5 z-10">
-          <div className="w-9 h-9 rounded-xl border border-black/10 dark:border-white/[0.1] bg-white dark:bg-white/[0.06] flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-none border border-black/10 dark:border-white/[0.1] bg-white dark:bg-white/[0.06] flex items-center justify-center shrink-0">
             <Crown className="w-4 h-4 text-amber-500" />
           </div>
           <div>
@@ -36,7 +36,7 @@ export const ApplyForCRCard: React.FC = () => {
         <button
           type="button"
           onClick={() => setShowApplyModal(true)}
-          className="shrink-0 px-4 py-2.5 rounded-xl bg-black dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+          className="shrink-0 px-4 py-2.5 rounded-none bg-black dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer shadow-sm"
         >
           <Crown className="w-3.5 h-3.5" />
           Apply for Batch Pilot

@@ -253,7 +253,7 @@ export const OnboardingModal = () => {
                 </div>
 
                 {/* Text Sheet */}
-                <div className="w-full bg-[#F4F4F4] dark:bg-[#121317] shrink-0 z-10 relative rounded-t-[32px] pt-7 pb-4 -mt-5 border-t border-black/5 dark:border-white/[0.08]">
+                <div className="w-full bg-[#F4F4F4] dark:bg-[#121317] shrink-0 z-10 relative rounded-none pt-7 pb-4 -mt-5 border-t border-black/5 dark:border-white/[0.08]">
                   <div className="w-full px-6 flex flex-col gap-2.5">
                     <h2 className="text-[26px] leading-[1.12] font-bold text-black dark:text-[#F4F4F6] whitespace-pre-line text-left">
                       {slides[currentIndex].title}
@@ -266,7 +266,7 @@ export const OnboardingModal = () => {
                       <div className="flex flex-col gap-2 mt-1">
                         {slides[currentIndex].features.map((feat, idx) => (
                           <div key={idx} className="flex items-center gap-3 py-2 border-b border-black/5 dark:border-white/[0.06] last:border-0">
-                            <div className="w-8 h-8 bg-white dark:bg-white/[0.06] rounded-xl border border-black/5 dark:border-white/[0.08] flex items-center justify-center shrink-0 shadow-xs">
+                            <div className="w-8 h-8 bg-white dark:bg-white/[0.06] rounded-none border border-black/5 dark:border-white/[0.08] flex items-center justify-center shrink-0 shadow-xs">
                               <feat.icon className="w-3.5 h-3.5 text-black dark:text-[#F4F4F6]" />
                             </div>
                             <div className="flex flex-col text-left">
@@ -302,7 +302,7 @@ export const OnboardingModal = () => {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="h-[46px] px-7 bg-black text-white dark:bg-white dark:text-black rounded-xl flex items-center gap-2 font-bold text-[13.5px] hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm uppercase tracking-wider"
+                    className="h-[46px] px-7 bg-black text-white dark:bg-white dark:text-black rounded-none flex items-center gap-2 font-bold text-[13.5px] hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm uppercase tracking-wider"
                   >
                     {slides[currentIndex].buttonText}
                     <ArrowRight className="w-4 h-4" />
@@ -330,7 +330,7 @@ export const OnboardingModal = () => {
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-black/10 dark:border-white/[0.08] bg-[#FAFAF8] dark:bg-[#121317] p-4 mb-4 shadow-sm">
+                  <div className="rounded-none border border-black/10 dark:border-white/[0.08] bg-[#FAFAF8] dark:bg-[#121317] p-4 mb-4 shadow-sm">
                     <div className="flex items-center gap-1.5 mb-2.5">
                       <ArrowUpRight className="w-3.5 h-3.5 text-black dark:text-[#F4F4F6]" />
                       <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-black dark:text-[#F4F4F6]">
@@ -346,7 +346,7 @@ export const OnboardingModal = () => {
                           setInviteCode(e.target.value);
                           if (inviteError) setInviteError(false);
                         }}
-                        className={`flex-1 h-11 px-3.5 bg-white dark:bg-[#090A0C] border rounded-xl text-[13.5px] text-black dark:text-[#F4F4F6] focus:outline-none transition-all shadow-sm ${
+                        className={`flex-1 h-11 px-3.5 bg-white dark:bg-[#090A0C] border rounded-none text-[13.5px] text-black dark:text-[#F4F4F6] focus:outline-none transition-all shadow-sm ${
                           inviteError
                             ? 'border-rose-500 ring-1 ring-rose-500'
                             : 'border-black/10 dark:border-white/[0.1] focus:border-black dark:focus:border-white/30'
@@ -355,7 +355,7 @@ export const OnboardingModal = () => {
                       <button
                         type="submit"
                         disabled={isJoiningCode}
-                        className="h-11 px-5 bg-black text-white dark:bg-white dark:text-black text-[13px] font-bold uppercase tracking-wider rounded-xl hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0 shadow-sm"
+                        className="h-11 px-5 bg-black text-white dark:bg-white dark:text-black text-[13px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0 shadow-sm"
                       >
                         {isJoiningCode ? 'Joining...' : 'Join'}
                       </button>
@@ -377,14 +377,14 @@ export const OnboardingModal = () => {
 
                   <div 
                     onClick={() => setIsImportModalOpen(true)}
-                    className="relative group w-full py-6 px-4 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-black/15 dark:border-white/[0.1] hover:border-black/30 dark:hover:border-white/20 bg-[#F7F7F5]/50 dark:bg-[#121317] hover:bg-[#F7F7F5] dark:hover:bg-[#181A20] transition-all cursor-pointer text-center shadow-sm"
+                    className="relative group w-full py-6 px-4 flex flex-col items-center justify-center rounded-none border-2 border-dashed border-black/15 dark:border-white/[0.1] hover:border-black/30 dark:hover:border-white/20 bg-[#F7F7F5]/50 dark:bg-[#121317] hover:bg-[#F7F7F5] dark:hover:bg-[#181A20] transition-all cursor-pointer text-center shadow-sm"
                   >
                     <Upload className="w-5 h-5 mb-2 text-black dark:text-[#F4F4F6] group-hover:-translate-y-0.5 transition-transform" />
                     <h3 className="text-[15.5px] font-bold text-black dark:text-[#F4F4F6] mb-1">Just Upload & Chill</h3>
                     <p className="text-[12.5px] text-black/60 dark:text-[#94A3B8] max-w-[280px] leading-snug mb-3">
                       Drop your routine photo or PDF. Intersemester builds your weekly schedule automatically.
                     </p>
-                    <div className="px-6 h-[40px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[12.5px] pointer-events-none rounded-xl w-fit mx-auto mb-2 shadow-sm uppercase tracking-wider">
+                    <div className="px-6 h-[40px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[12.5px] pointer-events-none rounded-none w-fit mx-auto mb-2 shadow-sm uppercase tracking-wider">
                       Choose file
                     </div>
                     <div className="text-[10.5px] text-black/40 dark:text-[#64748B] font-bold tracking-[0.5px] uppercase font-mono">
@@ -512,9 +512,9 @@ export const OnboardingModal = () => {
                       {slides[currentIndex].features.map((feat, idx) => (
                         <div 
                           key={idx} 
-                          className="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-[#121317] border border-black/10 dark:border-white/[0.08] hover:border-black/20 dark:hover:border-white/[0.14] shadow-xs transition-colors"
+                          className="flex items-start gap-4 p-4 rounded-none bg-white dark:bg-[#121317] border border-black/10 dark:border-white/[0.08] hover:border-black/20 dark:hover:border-white/[0.14] shadow-xs transition-colors"
                         >
-                          <div className="w-9 h-9 bg-black/5 dark:bg-white/[0.06] rounded-lg border border-black/5 dark:border-white/[0.08] flex items-center justify-center shrink-0 shadow-xs">
+                          <div className="w-9 h-9 bg-black/5 dark:bg-white/[0.06] rounded-none border border-black/5 dark:border-white/[0.08] flex items-center justify-center shrink-0 shadow-xs">
                             <feat.icon className="w-4 h-4 text-black dark:text-[#F4F4F6]" />
                           </div>
                           <div className="flex flex-col text-left">
@@ -546,7 +546,7 @@ export const OnboardingModal = () => {
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-black/10 dark:border-white/[0.08] bg-white dark:bg-[#121317] p-5 mb-5 shadow-sm">
+                  <div className="rounded-none border border-black/10 dark:border-white/[0.08] bg-white dark:bg-[#121317] p-5 mb-5 shadow-sm">
                     <div className="flex items-center gap-1.5 mb-3">
                       <ArrowUpRight className="w-3.5 h-3.5 text-black dark:text-[#F4F4F6]" />
                       <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-black dark:text-[#F4F4F6]">
@@ -562,7 +562,7 @@ export const OnboardingModal = () => {
                           setInviteCode(e.target.value);
                           if (inviteError) setInviteError(false);
                         }}
-                        className={`flex-1 h-11 px-3.5 bg-[#FAFAF8] dark:bg-[#090A0C] border rounded-xl text-[13.5px] text-black dark:text-[#F4F4F6] focus:outline-none transition-all shadow-sm ${
+                        className={`flex-1 h-11 px-3.5 bg-[#FAFAF8] dark:bg-[#090A0C] border rounded-none text-[13.5px] text-black dark:text-[#F4F4F6] focus:outline-none transition-all shadow-sm ${
                           inviteError
                             ? 'border-rose-500 ring-1 ring-rose-500'
                             : 'border-black/10 dark:border-white/[0.1] focus:border-black dark:focus:border-white/30'
@@ -571,7 +571,7 @@ export const OnboardingModal = () => {
                       <button
                         type="submit"
                         disabled={isJoiningCode}
-                        className="h-11 px-6 bg-black text-white dark:bg-white dark:text-black text-[13px] font-bold uppercase tracking-wider rounded-xl hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0 shadow-sm"
+                        className="h-11 px-6 bg-black text-white dark:bg-white dark:text-black text-[13px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0 shadow-sm"
                       >
                         {isJoiningCode ? 'Joining...' : 'Join'}
                       </button>
@@ -593,14 +593,14 @@ export const OnboardingModal = () => {
 
                   <div 
                     onClick={() => setIsImportModalOpen(true)}
-                    className="relative group w-full py-7 px-5 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-black/15 dark:border-white/[0.1] hover:border-black/30 dark:hover:border-white/20 bg-white dark:bg-[#121317] hover:bg-black/[0.02] dark:hover:bg-[#181A20] transition-all cursor-pointer text-center shadow-sm"
+                    className="relative group w-full py-7 px-5 flex flex-col items-center justify-center rounded-none border-2 border-dashed border-black/15 dark:border-white/[0.1] hover:border-black/30 dark:hover:border-white/20 bg-white dark:bg-[#121317] hover:bg-black/[0.02] dark:hover:bg-[#181A20] transition-all cursor-pointer text-center shadow-sm"
                   >
                     <Upload className="w-5 h-5 mb-2.5 text-black dark:text-[#F4F4F6] group-hover:-translate-y-0.5 transition-transform" />
                     <h3 className="text-[16px] font-bold text-black dark:text-[#F4F4F6] mb-1">Just Upload & Chill</h3>
                     <p className="text-[13px] text-black/60 dark:text-[#94A3B8] max-w-[300px] leading-snug mb-3.5">
                       Drop your routine photo or PDF. Intersemester builds your weekly schedule automatically.
                     </p>
-                    <div className="px-7 h-[42px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[13px] pointer-events-none rounded-xl w-fit mx-auto mb-2.5 shadow-sm uppercase tracking-wider">
+                    <div className="px-7 h-[42px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto mb-2.5 shadow-sm uppercase tracking-wider">
                       Choose file
                     </div>
                     <div className="text-[10.5px] text-black/40 dark:text-[#64748B] font-bold tracking-[0.5px] uppercase font-mono">
@@ -640,7 +640,7 @@ export const OnboardingModal = () => {
               <button
                 type="button"
                 onClick={handleNext}
-                className="h-[50px] px-9 bg-black text-white dark:bg-white dark:text-black rounded-xl flex items-center gap-2 font-bold text-[14px] hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm uppercase tracking-wider"
+                className="h-[50px] px-9 bg-black text-white dark:bg-white dark:text-black rounded-none flex items-center gap-2 font-bold text-[14px] hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm uppercase tracking-wider"
               >
                 {slides[currentIndex].buttonText}
                 <ArrowRight className="w-4 h-4" />

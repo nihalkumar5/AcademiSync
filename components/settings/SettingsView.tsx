@@ -548,7 +548,7 @@ export const SettingsView: React.FC = () => {
                             )}
                           </div>
                           {showCollegeDropdown && (
-                            <div className="absolute top-full left-0 w-full mt-1.5 max-h-60 overflow-y-auto bg-white dark:bg-[#121317] border border-slate-200 dark:border-white/[0.1] shadow-2xl rounded-xl z-50 divide-y divide-slate-100 dark:divide-white/[0.06]">
+                            <div className="absolute top-full left-0 w-full mt-1.5 max-h-60 overflow-y-auto bg-white dark:bg-[#121317] border border-slate-200 dark:border-white/[0.1] shadow-2xl rounded-none z-50 divide-y divide-slate-100 dark:divide-white/[0.06]">
                               <div className="p-2 bg-slate-50 dark:bg-zinc-900/80 text-[10.5px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between sticky top-0 backdrop-blur-sm">
                                 <span>{isLoadingColleges ? 'Searching verified directory...' : 'Select Your University'}</span>
                                 <span className="text-[9px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold">SheerID Verified</span>

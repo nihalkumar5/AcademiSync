@@ -148,7 +148,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
     >
       {step === 'upload' && (
         <div className="flex flex-col text-center">
-          <div className="relative group w-full h-[220px] sm:h-[240px] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-black/15 dark:border-white/[0.1] bg-[#F7F7F5]/50 dark:bg-white/[0.02] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-all cursor-pointer mb-5">
+          <div className="relative group w-full h-[220px] sm:h-[240px] flex flex-col items-center justify-center rounded-none border-2 border-dashed border-black/15 dark:border-white/[0.1] bg-[#F7F7F5]/50 dark:bg-white/[0.02] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-all cursor-pointer mb-5">
             <input
               type="file"
               accept="image/*,.pdf"
@@ -163,7 +163,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
               Photo or PDF
             </p>
             
-            <div className="px-6 h-[40px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[13px] pointer-events-none rounded-xl w-fit mx-auto mb-3 shadow-sm">
+            <div className="px-6 h-[40px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto mb-3 shadow-sm">
               Choose file
             </div>
 
@@ -181,7 +181,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
           <button 
             type="button"
             onClick={() => runScan('demo_ml_assignment.jpg')}
-            className="flex items-center justify-between px-4 w-full h-[44px] rounded-xl border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] hover:border-black/20 dark:hover:border-white/[0.14] transition-colors cursor-pointer"
+            className="flex items-center justify-between px-4 w-full h-[44px] rounded-none border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] hover:border-black/20 dark:hover:border-white/[0.14] transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-2 text-[12px] font-bold text-black/70 dark:text-[#94A3B8]">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
@@ -201,14 +201,11 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
             </div>
           </div>
           
-          <h4 className="text-[18px] font-bold text-black dark:text-[#F4F4F6]">
-            Analyzing your assignment...
-          </h4>
-          <p className="text-[14px] text-black/60 dark:text-[#94A3B8] mt-1 mb-8 max-w-[280px]">
-            Reading subjects, questions, and submission dates.
-          </p>
-
-          <div className="flex items-center gap-3 w-full max-w-[280px] mx-auto mb-10">
+          <div className="w-full max-w-[280px] flex flex-col gap-2 mb-6">
+            <div className="flex items-center justify-between text-[11px] font-bold tracking-[1px] uppercase text-black/50 dark:text-white/40">
+              <span>SCANNING WITH GEMINI</span>
+              <span className="font-mono">AI AUTO-PARSE</span>
+            </div>
             <div className="flex-1 h-2 bg-black/10 dark:bg-white/[0.08] rounded-full overflow-hidden">
               <motion.div 
                 className="h-full bg-emerald-500"
@@ -219,11 +216,11 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
             </div>
           </div>
 
-          <div className="flex items-start gap-3 p-4 bg-[#F7F7F5] dark:bg-[#121317] text-left border border-black/10 dark:border-white/[0.08] w-full max-w-[320px] rounded-xl shadow-sm">
+          <div className="flex items-start gap-3 p-4 bg-[#F7F7F5] dark:bg-[#121317] text-left border border-black/10 dark:border-white/[0.08] w-full max-w-[320px] rounded-none shadow-sm">
             <Sparkles className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
             <div className="flex flex-col">
-              <span className="text-[14px] font-bold text-black dark:text-[#F4F4F6]">AI is working...</span>
-              <span className="text-[13px] text-black/60 dark:text-[#94A3B8] mt-0.5">This usually takes 10–20 seconds.</span>
+              <span className="text-[14px] font-bold text-black dark:text-[#F4F4F6]">AI is reading assignment...</span>
+              <span className="text-[13px] text-black/60 dark:text-[#94A3B8] mt-0.5">Detecting subject, deadline, priority, and problem details.</span>
             </div>
           </div>
         </div>
@@ -232,19 +229,18 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
       {step === 'review' && (
         <form onSubmit={handleConfirmSave} className="flex flex-col text-left">
           <div className="flex flex-col gap-6">
-            {/* SECTION 1: MATCHED SUBJECT */}
+            {/* SECTION 1: SUBJECT */}
             <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-bold tracking-[0.2em] text-black/50 dark:text-white/40 uppercase">Matched Subject</span>
-              
+              <span className="text-[11px] font-bold tracking-[0.2em] text-black/50 dark:text-white/40 uppercase">Subject</span>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-black/70 dark:text-[#94A3B8] uppercase">Subject</label>
                 <div className="relative">
                   <select
                     value={extractedSubjectId}
                     onChange={(e) => setExtractedSubjectId(e.target.value)}
                     required
-                    className="w-full px-3.5 py-2.5 h-[44px] rounded-xl bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[14px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors appearance-none shadow-sm"
+                    className="w-full px-3.5 py-2.5 h-[44px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[14px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors appearance-none shadow-sm"
                   >
+                    <option value="" disabled className="dark:bg-[#121317]">Select Subject</option>
                     {subjects.map((sub) => (
                       <option key={sub.id} value={sub.id} className="dark:bg-[#121317]">
                         {sub.code && sub.code !== 'UNK' ? `[${sub.code}] ` : ''}{sub.name}
@@ -267,7 +263,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
                   value={extractedTitle}
                   onChange={(e) => setExtractedTitle(e.target.value)}
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[14px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors shadow-sm"
+                  className="w-full px-3.5 py-2.5 rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[14px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors shadow-sm"
                 />
               </div>
 
@@ -276,7 +272,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
                 <textarea
                   value={extractedDescription}
                   onChange={(e) => setExtractedDescription(e.target.value)}
-                  className="w-full p-3.5 rounded-xl min-h-[80px] bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[14px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors resize-y shadow-sm"
+                  className="w-full p-3.5 rounded-none min-h-[80px] bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[14px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors resize-y shadow-sm"
                 />
               </div>
             </div>
@@ -293,7 +289,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
                     value={extractedDeadline}
                     onChange={(e) => setExtractedDeadline(e.target.value)}
                     required
-                    className="w-full px-3.5 py-2.5 h-[44px] rounded-xl bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[14px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors shadow-sm"
+                    className="w-full px-3.5 py-2.5 h-[44px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[14px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors shadow-sm"
                   />
                 </div>
 
@@ -303,7 +299,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
                     <select
                       value={extractedPriority}
                       onChange={(e) => setExtractedPriority(e.target.value as any)}
-                      className="w-full px-3.5 py-2.5 h-[44px] rounded-xl bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[14px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors appearance-none shadow-sm"
+                      className="w-full px-3.5 py-2.5 h-[44px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[14px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors appearance-none shadow-sm"
                     >
                       <option value="Low" className="dark:bg-[#121317]">Low Priority</option>
                       <option value="Medium" className="dark:bg-[#121317]">Medium Priority</option>
@@ -320,13 +316,13 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
             <button 
               type="button" 
               onClick={resetState}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-[13px] font-bold uppercase text-black/70 dark:text-[#94A3B8] hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-none text-[13px] font-bold uppercase text-black/70 dark:text-[#94A3B8] hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
             >
               Scan Another
             </button>
             <button 
               type="submit"
-              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-black text-white dark:bg-white dark:text-black text-[13px] font-bold uppercase hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-none bg-black text-white dark:bg-white dark:text-black text-[13px] font-bold uppercase hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
             >
               Save Task
             </button>

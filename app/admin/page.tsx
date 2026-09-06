@@ -1334,7 +1334,7 @@ export default function SuperAdminPage() {
                     <button
                       key={filter}
                       onClick={() => setCrStatusFilter(filter)}
-                      className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
+                      className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-none transition-all cursor-pointer ${
                         crStatusFilter === filter
                           ? 'bg-[#111111] text-white dark:bg-white dark:text-black shadow-sm'
                           : 'bg-white dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-white'
@@ -1356,7 +1356,7 @@ export default function SuperAdminPage() {
 
               if (filteredRequests.length === 0) {
                 return (
-                  <div className="p-12 text-center border border-dashed border-[#D8D8D8] dark:border-[#333333] rounded-2xl flex flex-col items-center justify-center gap-2">
+                  <div className="p-12 text-center border border-dashed border-[#D8D8D8] dark:border-[#333333] rounded-none flex flex-col items-center justify-center gap-2">
                     <Crown className="w-8 h-8 text-slate-300 dark:text-zinc-700" />
                     <span className="text-sm font-medium text-[#6F6F6F]">
                       No {crStatusFilter === 'all' ? '' : crStatusFilter} CR requests found.
@@ -1375,7 +1375,7 @@ export default function SuperAdminPage() {
                     return (
                       <div
                         key={req.id}
-                        className={`p-5 rounded-2xl border flex flex-col justify-between gap-4 transition-all ${
+                        className={`p-5 rounded-none border flex flex-col justify-between gap-4 transition-all ${
                           isPending
                             ? 'bg-amber-50/40 dark:bg-amber-950/10 border-amber-300 dark:border-amber-900/60 shadow-sm'
                             : isApproved
@@ -1392,7 +1392,7 @@ export default function SuperAdminPage() {
                                   {req.name}
                                 </h3>
                                 {req.rollNumber && (
-                                  <span className="text-[11px] font-mono px-2 py-0.5 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 rounded-md">
+                                  <span className="text-[11px] font-mono px-2 py-0.5 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 rounded-none">
                                     {req.rollNumber}
                                   </span>
                                 )}
@@ -1403,7 +1403,7 @@ export default function SuperAdminPage() {
                             </div>
 
                             <span
-                              className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${
+                              className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-none border ${
                                 isPending
                                   ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800'
                                   : isApproved
@@ -1416,7 +1416,7 @@ export default function SuperAdminPage() {
                           </div>
 
                           {/* Academic Target Info */}
-                          <div className="p-3 bg-white/80 dark:bg-zinc-900/80 border border-slate-200/80 dark:border-zinc-800/80 rounded-xl flex flex-col gap-1 text-[12px]">
+                          <div className="p-3 bg-white/80 dark:bg-zinc-900/80 border border-slate-200/80 dark:border-zinc-800/80 rounded-none flex flex-col gap-1 text-[12px]">
                             <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
                               <span>🏛️</span>
                               <span className="truncate">{req.college}</span>
@@ -1456,7 +1456,7 @@ export default function SuperAdminPage() {
 
                           {/* Reason / Proof Note */}
                           {req.note && (
-                            <div className="text-[12px] text-slate-700 dark:text-zinc-300 italic bg-slate-50 dark:bg-zinc-900/50 p-2.5 rounded-lg border border-slate-100 dark:border-zinc-800/50">
+                            <div className="text-[12px] text-slate-700 dark:text-zinc-300 italic bg-slate-50 dark:bg-zinc-900/50 p-2.5 rounded-none border border-slate-100 dark:border-zinc-800/50">
                               &ldquo;{req.note}&rdquo;
                             </div>
                           )}
@@ -1468,13 +1468,13 @@ export default function SuperAdminPage() {
                             <>
                               <button
                                 onClick={() => handleRejectCRRequest(req)}
-                                className="px-3 py-1.5 border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 text-xs font-bold uppercase rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                                className="px-3 py-1.5 border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 text-xs font-bold uppercase rounded-none hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
                               >
                                 Reject
                               </button>
                               <button
                                 onClick={() => handleApproveCRRequest(req)}
-                                className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase rounded-lg flex items-center gap-1.5 shadow-sm shadow-emerald-600/20 transition-colors cursor-pointer"
+                                className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase rounded-none flex items-center gap-1.5 shadow-sm shadow-emerald-600/20 transition-colors cursor-pointer"
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                 Approve as Batch Pilot

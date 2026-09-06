@@ -67,7 +67,7 @@ export const NotificationCenter: React.FC = () => {
       onClick={() => markNotificationAsRead(n.id)}
       className={`group relative flex items-center justify-between cursor-pointer transition-all ${
         isImportant 
-          ? 'p-4 border border-black/10 dark:border-white/[0.08] rounded-2xl bg-white dark:bg-[#121317] shadow-sm mb-2 hover:border-black/30 dark:hover:border-white/20' 
+          ? 'p-4 border border-black/10 dark:border-white/[0.08] rounded-none bg-white dark:bg-[#121317] shadow-sm mb-2 hover:border-black/30 dark:hover:border-white/20' 
           : 'py-4 border-b border-black/5 dark:border-white/[0.05] last:border-0 hover:bg-black/[0.02] dark:hover:bg-white/[0.03] -mx-4 px-4'
       } ${n.read ? 'opacity-60' : 'opacity-100'}`}
     >

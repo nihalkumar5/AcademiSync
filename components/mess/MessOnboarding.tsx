@@ -232,13 +232,13 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
               <div className="flex items-center gap-3 mt-8">
                 <button
                   onClick={() => setShowJoinInput(true)}
-                  className="flex items-center justify-center h-11 px-5 rounded-xl border border-black/10 dark:border-white/[0.1] bg-white dark:bg-white/[0.06] text-black dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-black/5 dark:hover:bg-white/[0.1] transition-colors cursor-pointer shadow-sm"
+                  className="flex items-center justify-center h-11 px-5 rounded-none border border-black/10 dark:border-white/[0.1] bg-white dark:bg-white/[0.06] text-black dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-black/5 dark:hover:bg-white/[0.1] transition-colors cursor-pointer shadow-sm"
                 >
                   Join Mess
                 </button>
                 <button
                   onClick={() => setShowImportModal(true)}
-                  className="flex items-center justify-center h-11 px-5 rounded-xl bg-black dark:bg-white text-white dark:text-black text-[13px] font-semibold transition-opacity hover:opacity-90 gap-2 cursor-pointer shadow-sm"
+                  className="flex items-center justify-center h-11 px-5 rounded-none bg-black dark:bg-white text-white dark:text-black text-[13px] font-semibold transition-opacity hover:opacity-90 gap-2 cursor-pointer shadow-sm"
                 >
                   <Sparkles className="w-4 h-4 text-amber-500" /> Magic Import
                 </button>
@@ -247,7 +247,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
 
             {/* JOIN EXISTING */}
             {showJoinInput && (
-              <div className="mb-12 rounded-2xl border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] p-5 flex flex-col md:flex-row md:items-center justify-between group gap-4 shadow-sm">
+              <div className="mb-12 rounded-none border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] p-5 flex flex-col md:flex-row md:items-center justify-between group gap-4 shadow-sm">
                 <div className="flex flex-col">
                   <p className="text-[14px] text-black dark:text-[#F4F4F6] font-medium leading-relaxed">
                     Have an invite code?
@@ -261,7 +261,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
                   <input 
                     type="text" 
                     placeholder="e.g. 1a2b3c4d"
-                    className="w-full bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] rounded-xl px-3.5 py-2.5 text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors shadow-sm"
+                    className="w-full bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] rounded-none px-3.5 py-2.5 text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors shadow-sm"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && e.currentTarget.value) {
                         executeJoinMess(e.currentTarget.value);
@@ -333,7 +333,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
 
             <div className="flex-1 overflow-y-auto mb-8 pr-2 flex flex-col gap-6">
               {/* Meal Timings Card */}
-              <div className="bg-white dark:bg-[#121317] border border-black/10 dark:border-white/[0.08] rounded-2xl p-6 shadow-sm">
+              <div className="bg-white dark:bg-[#121317] border border-black/10 dark:border-white/[0.08] rounded-none p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-4 border-b border-black/10 dark:border-white/[0.08] pb-3">
                   <h3 className="text-[13px] font-bold tracking-[1.5px] uppercase text-black dark:text-[#F4F4F6]">
                     MEAL TIMINGS
@@ -359,7 +359,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
                             })
                           }
                           placeholder="e.g. 8:00 - 10:00"
-                          className="bg-[#F7F7F5] dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] rounded-xl px-3.5 py-2 text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30"
+                          className="bg-[#F7F7F5] dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] rounded-none px-3.5 py-2 text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30"
                         />
                       ) : (
                         <p className="text-[14px] font-mono font-medium text-black dark:text-[#F4F4F6]">
@@ -377,7 +377,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
                 if (!isEditing && day !== 'Monday') return null;
 
                 return (
-                  <div key={day} className="bg-white dark:bg-[#121317] border border-black/10 dark:border-white/[0.08] rounded-2xl p-6 shadow-sm">
+                  <div key={day} className="bg-white dark:bg-[#121317] border border-black/10 dark:border-white/[0.08] rounded-none p-6 shadow-sm">
                     <h3 className="text-[15px] font-bold text-black dark:text-[#F4F4F6] mb-6 border-b border-black/10 dark:border-white/[0.08] pb-3">
                       {day.toUpperCase()} {(!isEditing && day === 'Monday') && <span className="text-[11px] text-black/50 dark:text-[#94A3B8] ml-2 font-normal lowercase">(preview)</span>}
                     </h3>
@@ -406,7 +406,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
                                 });
                               }}
                               placeholder="e.g. Aloo Paratha, Curd"
-                              className="w-full bg-[#F7F7F5] dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] rounded-xl px-3.5 py-2.5 text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
+                              className="w-full bg-[#F7F7F5] dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] rounded-none px-3.5 py-2.5 text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
                             />
                           ) : (
                             <p className="text-[14px] text-black dark:text-[#F4F4F6] leading-relaxed">
@@ -425,18 +425,18 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
               {isEditing ? (
                 <button 
                   onClick={() => setIsEditing(false)} 
-                  className="w-full h-12 rounded-xl bg-black dark:bg-white text-white dark:text-black text-[14px] font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+                  className="w-full h-12 rounded-none bg-black dark:bg-white text-white dark:text-black text-[14px] font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
                 >
                   Done Editing
                 </button>
               ) : (
                 <>
-                  <Button onClick={handlePublish} className="w-full flex justify-center items-center gap-2 h-12 text-[14px] rounded-xl shadow-sm">
+                  <Button onClick={handlePublish} className="w-full flex justify-center items-center gap-2 h-12 text-[14px] rounded-none shadow-sm">
                     Looks good <ArrowRight className="w-4 h-4" />
                   </Button>
                   <button 
                     onClick={() => setIsEditing(true)}
-                    className="w-full h-12 rounded-xl border border-black/10 dark:border-white/[0.1] text-[14px] font-bold text-black dark:text-[#F4F4F6] bg-white dark:bg-white/[0.06] hover:bg-black/5 dark:hover:bg-white/[0.1] transition-colors cursor-pointer"
+                    className="w-full h-12 rounded-none border border-black/10 dark:border-white/[0.1] text-[14px] font-bold text-black dark:text-[#F4F4F6] bg-white dark:bg-white/[0.06] hover:bg-black/5 dark:hover:bg-white/[0.1] transition-colors cursor-pointer"
                   >
                     Edit menu
                   </button>
@@ -463,14 +463,14 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
               Anyone with this link can join.
             </p>
 
-            <div className="flex items-center justify-between w-full p-4 rounded-xl border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] mb-6 shadow-sm">
+            <div className="flex items-center justify-between w-full p-4 rounded-none border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] mb-6 shadow-sm">
               <span className="text-[15px] font-mono font-medium text-black dark:text-[#F4F4F6] truncate mr-4">
                 intersemester.app/join/{messId}
               </span>
             </div>
 
             <div className="flex flex-col w-full gap-3">
-              <Button onClick={handleCopyLink} className="w-full h-12 text-[14px] rounded-xl flex items-center justify-center gap-2 shadow-sm">
+              <Button onClick={handleCopyLink} className="w-full h-12 text-[14px] rounded-none flex items-center justify-center gap-2 shadow-sm">
                 {copying ? <><Check className="w-4 h-4" /> Copied</> : 'Copy invite link'}
               </Button>
 
@@ -480,7 +480,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
                   if (onCancel) onCancel();
                   setActiveView('mess');
                 }}
-                className="w-full h-12 rounded-xl border border-black/10 dark:border-white/[0.1] text-black dark:text-[#F4F4F6] text-[14px] font-semibold hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors cursor-pointer flex items-center justify-center gap-2"
+                className="w-full h-12 rounded-none border border-black/10 dark:border-white/[0.1] text-black dark:text-[#F4F4F6] text-[14px] font-semibold hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors cursor-pointer flex items-center justify-center gap-2"
               >
                 Go to my mess menu <ArrowRight className="w-4 h-4" />
               </button>
@@ -501,14 +501,14 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
               placeholder="e.g., ext_..."
               value={inviteInput}
               onChange={(e) => setInviteInput(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-black/10 dark:border-white/[0.1] bg-white dark:bg-[#090A0C] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors shadow-sm"
+              className="w-full px-4 py-2.5 rounded-none border border-black/10 dark:border-white/[0.1] bg-white dark:bg-[#090A0C] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors shadow-sm"
               required
             />
           </div>
           <button
             type="submit"
             disabled={isJoining}
-            className="h-11 px-5 rounded-xl bg-black dark:bg-white text-white dark:text-black text-[13px] font-bold uppercase tracking-wider flex items-center justify-center disabled:opacity-50 hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
+            className="h-11 px-5 rounded-none bg-black dark:bg-white text-white dark:text-black text-[13px] font-bold uppercase tracking-wider flex items-center justify-center disabled:opacity-50 hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
           >
             {isJoining ? 'Joining...' : 'Join'}
           </button>

@@ -25,7 +25,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           className={twMerge(
             clsx(
-              'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-[#121317] border rounded-xl transition-all placeholder:text-zinc-400 dark:placeholder:text-[#64748B] text-zinc-900 dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white/30 shadow-sm',
+              'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-[#121317] border rounded-none transition-all placeholder:text-zinc-400 dark:placeholder:text-[#64748B] text-zinc-900 dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white/30 shadow-sm',
               error ? 'border-rose-500 dark:border-rose-500' : 'border-[#D8D8D8] dark:border-white/[0.1]',
               className
             )
@@ -63,7 +63,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           className={twMerge(
             clsx(
-              'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-[#121317] border rounded-xl transition-all placeholder:text-zinc-400 dark:placeholder:text-[#64748B] text-zinc-900 dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white/30 min-h-[80px] shadow-sm',
+              'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-[#121317] border rounded-none transition-all placeholder:text-zinc-400 dark:placeholder:text-[#64748B] text-zinc-900 dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white/30 min-h-[80px] shadow-sm',
               error ? 'border-rose-500 dark:border-rose-500' : 'border-[#D8D8D8] dark:border-white/[0.1]',
               className
             )
@@ -101,7 +101,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           className={twMerge(
             clsx(
-              'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-[#121317] border rounded-xl transition-all text-zinc-900 dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white/30 cursor-pointer shadow-sm',
+              'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-[#121317] border rounded-none transition-all text-zinc-900 dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white/30 cursor-pointer shadow-sm',
               error ? 'border-rose-500 dark:border-rose-500' : 'border-[#D8D8D8] dark:border-white/[0.1]',
               className
             )

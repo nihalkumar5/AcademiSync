@@ -93,7 +93,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-stretch font-sans text-left">
           
           {/* Left Column: Hero Illustration & Info Card */}
-          <div className="md:col-span-5 flex flex-col items-center justify-between bg-[#F9F9F8] dark:bg-[#121317] border border-[#E5E5E5] dark:border-white/[0.08] rounded-2xl p-6 text-center relative overflow-hidden">
+          <div className="md:col-span-5 flex flex-col items-center justify-between bg-[#F9F9F8] dark:bg-[#121317] border border-[#E5E5E5] dark:border-white/[0.08] rounded-none p-6 text-center relative overflow-hidden">
             <div className="w-full flex items-center justify-center max-w-[260px] sm:max-w-[300px] my-auto py-2">
               <img 
                 src="/cr.png" 
@@ -126,8 +126,8 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {/* 01 */}
-                <div className="p-3 border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] rounded-xl flex gap-3 items-start">
-                  <div className="w-9 h-9 rounded-lg bg-[#F7F7F5] dark:bg-white/[0.04] border border-[#E5E5E5] dark:border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
+                <div className="p-3 border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] rounded-none flex gap-3 items-start">
+                  <div className="w-9 h-9 rounded-none bg-[#F7F7F5] dark:bg-white/[0.04] border border-[#E5E5E5] dark:border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
                     <Calendar className="w-4 h-4 text-[#111111] dark:text-[#F4F4F6] stroke-[1.8]" />
                   </div>
                   <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
@@ -142,8 +142,8 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
                 </div>
 
                 {/* 02 */}
-                <div className="p-3 border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] rounded-xl flex gap-3 items-start">
-                  <div className="w-9 h-9 rounded-lg bg-[#F7F7F5] dark:bg-white/[0.04] border border-[#E5E5E5] dark:border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
+                <div className="p-3 border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] rounded-none flex gap-3 items-start">
+                  <div className="w-9 h-9 rounded-none bg-[#F7F7F5] dark:bg-white/[0.04] border border-[#E5E5E5] dark:border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
                     <Bell className="w-4 h-4 text-[#111111] dark:text-[#F4F4F6] stroke-[1.8]" />
                   </div>
                   <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
@@ -158,8 +158,8 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
                 </div>
 
                 {/* 03 */}
-                <div className="p-3 border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] rounded-xl flex gap-3 items-start">
-                  <div className="w-9 h-9 rounded-lg bg-[#F7F7F5] dark:bg-white/[0.04] border border-[#E5E5E5] dark:border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
+                <div className="p-3 border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] rounded-none flex gap-3 items-start">
+                  <div className="w-9 h-9 rounded-none bg-[#F7F7F5] dark:bg-white/[0.04] border border-[#E5E5E5] dark:border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
                     <Clock className="w-4 h-4 text-[#111111] dark:text-[#F4F4F6] stroke-[1.8]" />
                   </div>
                   <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
@@ -174,8 +174,8 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
                 </div>
 
                 {/* 04 */}
-                <div className="p-3 border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] rounded-xl flex gap-3 items-start">
-                  <div className="w-9 h-9 rounded-lg bg-[#F7F7F5] dark:bg-white/[0.04] border border-[#E5E5E5] dark:border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
+                <div className="p-3 border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] rounded-none flex gap-3 items-start">
+                  <div className="w-9 h-9 rounded-none bg-[#F7F7F5] dark:bg-white/[0.04] border border-[#E5E5E5] dark:border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
                     <Users className="w-4 h-4 text-[#111111] dark:text-[#F4F4F6] stroke-[1.8]" />
                   </div>
                   <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
@@ -192,7 +192,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
             </div>
 
             {/* Section 2: YOUR RESPONSIBILITY */}
-            <div className="p-3.5 border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FAF9F7] dark:bg-[#121317] rounded-xl flex items-center justify-between">
+            <div className="p-3.5 border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FAF9F7] dark:bg-[#121317] rounded-none flex items-center justify-between">
               <div className="flex flex-col gap-1.5">
                 <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#64748B]">
                   YOUR RESPONSIBILITY
@@ -219,7 +219,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowCRModal(true)}
-                className="w-full h-11 bg-[#111111] dark:bg-white dark:text-black text-[#FFFFFF] font-bold text-[13px] rounded-xl tracking-wide hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                className="w-full h-11 bg-[#111111] dark:bg-white dark:text-black text-[#FFFFFF] font-bold text-[13px] rounded-none tracking-wide hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer shadow-sm"
               >
                 <span>Apply to become a Batch Pilot 🚀</span>
                 <ArrowRight className="w-4 h-4" />
@@ -229,7 +229,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
                 <button
                   type="button"
                   onClick={handleShareToWhatsApp}
-                  className="py-2.5 px-3 border border-[#D8D8D8] dark:border-white/[0.1] bg-[#FFFFFF] dark:bg-[#121317] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] rounded-xl transition-all flex items-center justify-center gap-2 text-[12px] font-bold text-[#111111] dark:text-[#F4F4F6] cursor-pointer"
+                  className="py-2.5 px-3 border border-[#D8D8D8] dark:border-white/[0.1] bg-[#FFFFFF] dark:bg-[#121317] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] rounded-none transition-all flex items-center justify-center gap-2 text-[12px] font-bold text-[#111111] dark:text-[#F4F4F6] cursor-pointer"
                 >
                   <MessageCircle className="w-4 h-4 text-[#111111] dark:text-[#F4F4F6]" />
                   <span>Ask Pilot on WhatsApp</span>
@@ -239,7 +239,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
                 <button
                   type="button"
                   onClick={handlePersonalTimetable}
-                  className="py-2.5 px-3 border border-transparent hover:border-[#D8D8D8] dark:hover:border-white/[0.1] text-[12px] font-medium text-[#888888] dark:text-[#94A3B8] hover:text-[#111111] dark:hover:text-[#F4F4F6] rounded-xl transition-colors text-center cursor-pointer"
+                  className="py-2.5 px-3 border border-transparent hover:border-[#D8D8D8] dark:hover:border-white/[0.1] text-[12px] font-medium text-[#888888] dark:text-[#94A3B8] hover:text-[#111111] dark:hover:text-[#F4F4F6] rounded-none transition-colors text-center cursor-pointer"
                 >
                   Personal mode for now →
                 </button>

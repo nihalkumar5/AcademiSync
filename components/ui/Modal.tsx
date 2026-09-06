@@ -92,8 +92,8 @@ export const Modal: React.FC<ModalProps> = ({
               clsx(
                 'relative bg-white dark:bg-[#121317] border-[#D9D9D6] dark:border-white/[0.08] z-10 text-left shadow-2xl dark:shadow-[0_16px_50px_rgba(0,0,0,0.6)] flex flex-col',
                 mobileFullSheet 
-                  ? 'w-full min-h-[100dvh] sm:min-h-0 sm:max-h-[88vh] sm:my-auto border-0 sm:border sm:rounded-xl overflow-hidden' 
-                  : 'w-full border my-auto max-h-[90dvh] sm:rounded-xl overflow-hidden',
+                  ? 'w-full min-h-[100dvh] sm:min-h-0 sm:max-h-[88vh] sm:my-auto border-0 sm:border sm:rounded-none overflow-hidden' 
+                  : 'w-full border my-auto max-h-[90dvh] sm:rounded-none overflow-hidden',
                 maxWClasses[maxWidth]
               )
             )}
@@ -126,7 +126,7 @@ export const Modal: React.FC<ModalProps> = ({
                       onClose();
                     }}
                     aria-label="Close dialog"
-                    className="w-9 h-9 flex items-center justify-center rounded-lg transition-all text-[#111111] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.08] active:scale-95 z-40 cursor-pointer shrink-0"
+                    className="w-9 h-9 flex items-center justify-center rounded-none transition-all text-[#111111] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.08] active:scale-95 z-40 cursor-pointer shrink-0"
                   >
                     <X className="w-5 h-5 pointer-events-none" />
                   </button>

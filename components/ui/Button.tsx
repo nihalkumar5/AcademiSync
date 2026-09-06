@@ -31,10 +31,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizes = {
-      sm: 'text-xs px-2.5 py-1.5 rounded-md gap-1.5 h-8',
-      md: 'text-sm px-3.5 py-2 rounded-lg gap-2 h-9',
-      lg: 'text-base px-4 py-2.5 rounded-lg gap-2.5 h-11',
-      icon: 'p-2 rounded-lg h-9 w-9 flex items-center justify-center',
+      sm: 'text-xs px-2.5 py-1.5 rounded-none gap-1.5 h-8',
+      md: 'text-sm px-3.5 py-2 rounded-none gap-2 h-9',
+      lg: 'text-base px-4 py-2.5 rounded-none gap-2.5 h-11',
+      icon: 'p-2 rounded-none h-9 w-9 flex items-center justify-center',
     };
 
     return (

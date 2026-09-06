@@ -145,11 +145,11 @@ export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.98 }}
-        className={`relative overflow-hidden border border-black/10 dark:border-white/[0.08] bg-white dark:bg-[#121317] rounded-2xl p-4 sm:p-5 shadow-sm transition-all text-left ${className}`}
+        className={`relative overflow-hidden border border-black/10 dark:border-white/[0.08] bg-white dark:bg-[#121317] rounded-none p-4 sm:p-5 shadow-sm transition-all text-left ${className}`}
       >
         {/* Subtle top banner strip */}
         <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-black/10 dark:border-white/[0.08]">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-black/10 dark:border-white/[0.1] bg-black/5 dark:bg-white/[0.06] text-[10px] font-bold tracking-widest uppercase text-black dark:text-[#F4F4F6]">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-none border border-black/10 dark:border-white/[0.1] bg-black/5 dark:bg-white/[0.06] text-[10px] font-bold tracking-widest uppercase text-black dark:text-[#F4F4F6]">
             {getCategoryIcon(currentCampaign.category)}
             <span>{badgeText}</span>
           </div>
@@ -162,7 +162,7 @@ export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({
             )}
             <button
               onClick={() => setIsDismissed(true)}
-              className="p-1 rounded-lg text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              className="p-1 rounded-none text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
               title="Dismiss"
             >
               <X className="w-3.5 h-3.5" />
@@ -174,7 +174,7 @@ export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           {/* Media image if present */}
           {currentCampaign.imageUrl && (
-            <div className="relative w-full sm:w-28 h-32 sm:h-24 shrink-0 overflow-hidden rounded-xl border border-black/10 dark:border-white/[0.08] bg-black/5 dark:bg-white/[0.04]">
+            <div className="relative w-full sm:w-28 h-32 sm:h-24 shrink-0 overflow-hidden rounded-none border border-black/10 dark:border-white/[0.08] bg-black/5 dark:bg-white/[0.04]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={currentCampaign.imageUrl}
@@ -198,7 +198,7 @@ export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({
           <div className="w-full sm:w-auto shrink-0 pt-1 sm:pt-0">
             <button
               onClick={handleActionClick}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-wider hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-sm"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-none bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-wider hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-sm"
             >
               <span>{currentCampaign.ctaText || 'Learn More'}</span>
               <ExternalLink className="w-3.5 h-3.5" />

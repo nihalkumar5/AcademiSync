@@ -221,8 +221,8 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
             </span>
           </div>
         ) : isCR ? (
-          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] rounded-2xl">
-            <div className="w-14 h-14 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] rounded-2xl flex items-center justify-center shadow-sm">
+          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] rounded-none">
+            <div className="w-14 h-14 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] rounded-none flex items-center justify-center shadow-sm">
               <Crown className="w-7 h-7 text-amber-500" />
             </div>
             <div>
@@ -236,7 +236,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
             <button 
               type="button"
               onClick={onClose} 
-              className="mt-2 px-6 py-2.5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity rounded-xl cursor-pointer"
+              className="mt-2 px-6 py-2.5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity rounded-none cursor-pointer"
             >
               Back to Dashboard
             </button>
@@ -257,7 +257,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
             <p className="text-[13px] text-[#6F6F6F] dark:text-[#94A3B8] leading-relaxed">
               Your Batch Pilot request for <strong>{college}</strong> · <strong>{formatBatchDisplayName(branch, semester, section)}</strong> is currently being reviewed.
             </p>
-            <div className="p-4 bg-white dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.08] rounded-xl text-[12px] space-y-1.5 font-mono text-[#111111] dark:text-[#F4F4F6]">
+            <div className="p-4 bg-white dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.08] rounded-none text-[12px] space-y-1.5 font-mono text-[#111111] dark:text-[#F4F4F6]">
               <div><strong>Roll No:</strong> {existingRequest.rollNumber}</div>
               <div><strong>Email:</strong> {existingRequest.email}</div>
               <div><strong>WhatsApp:</strong> {existingRequest.phone}</div>
@@ -269,7 +269,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="w-full py-3 bg-[#111111] dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity rounded-xl cursor-pointer shadow-sm"
+              className="w-full py-3 bg-[#111111] dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity rounded-none cursor-pointer shadow-sm"
             >
               Got it
             </button>
@@ -279,7 +279,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             
             {/* Batch Details Card */}
-            <div className="p-4 sm:p-5 bg-[#F9F9F8] dark:bg-[#121317] border border-[#E5E5E5] dark:border-white/[0.08] rounded-2xl flex flex-col gap-4">
+            <div className="p-4 sm:p-5 bg-[#F9F9F8] dark:bg-[#121317] border border-[#E5E5E5] dark:border-white/[0.08] rounded-none flex flex-col gap-4">
               <div className="flex items-center justify-between border-b border-[#E5E5E5] dark:border-white/[0.08] pb-3">
                 <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#64748B] flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5" />
@@ -298,7 +298,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                     College / University <span className="text-red-500">*</span>
                   </label>
                   <div className="relative w-full">
-                    <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-xl focus-within:border-black dark:focus-within:border-white/30 transition-colors">
+                    <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none focus-within:border-black dark:focus-within:border-white/30 transition-colors">
                       <School className="w-4 h-4 text-[#888888] shrink-0" />
                       <input
                         type="text"
@@ -318,10 +318,10 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                     </div>
                     
                     {showCollegeDropdown && (suggestedColleges.length > 0 || isLoadingColleges) && (
-                      <div className="absolute top-full left-0 w-full mt-1.5 max-h-52 overflow-y-auto bg-white dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] rounded-xl shadow-2xl z-50 divide-y divide-[#E5E5E5] dark:divide-white/[0.08]">
+                      <div className="absolute top-full left-0 w-full mt-1.5 max-h-52 overflow-y-auto bg-white dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none shadow-2xl z-50 divide-y divide-[#E5E5E5] dark:divide-white/[0.08]">
                         <div className="p-2.5 bg-[#F9F9F8] dark:bg-[#090A0C] text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#94A3B8] flex items-center justify-between sticky top-0">
                           <span>{isLoadingColleges ? 'Searching database...' : 'Select Your College'}</span>
-                          <span className="text-[8.5px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 font-mono font-bold rounded">Database Verified</span>
+                          <span className="text-[8.5px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 font-mono font-bold rounded-none">Database Verified</span>
                         </div>
                         {suggestedColleges.map((item) => (
                           <button
@@ -357,7 +357,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                       Degree / Programme <span className="text-red-500">*</span>
                     </label>
                     <div className="relative w-full">
-                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-xl focus-within:border-black dark:focus-within:border-white/30 transition-colors">
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none focus-within:border-black dark:focus-within:border-white/30 transition-colors">
                         <GraduationCap className="w-4 h-4 text-[#888888] shrink-0" />
                         <input
                           type="text"
@@ -376,7 +376,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                       </div>
 
                       {showProgrammeDropdown && (
-                        <div className="absolute top-full left-0 w-full mt-1.5 max-h-48 overflow-y-auto bg-white dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] rounded-xl shadow-2xl z-50">
+                        <div className="absolute top-full left-0 w-full mt-1.5 max-h-48 overflow-y-auto bg-white dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none shadow-2xl z-50">
                           {STANDARD_PROGRAMMES.filter(p => p.toLowerCase().includes(programme.toLowerCase())).length > 0 ? (
                             STANDARD_PROGRAMMES.filter(p => p.toLowerCase().includes(programme.toLowerCase())).map(p => (
                               <div
@@ -403,7 +403,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                       Major / Branch <span className="text-red-500">*</span>
                     </label>
                     <div className="relative w-full">
-                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-xl focus-within:border-black dark:focus-within:border-white/30 transition-colors">
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none focus-within:border-black dark:focus-within:border-white/30 transition-colors">
                         <Building2 className="w-4 h-4 text-[#888888] shrink-0" />
                         <input
                           type="text"
@@ -422,7 +422,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                       </div>
 
                       {showBranchDropdown && (
-                        <div className="absolute top-full left-0 w-full mt-1.5 max-h-48 overflow-y-auto bg-white dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] rounded-xl shadow-2xl z-50">
+                        <div className="absolute top-full left-0 w-full mt-1.5 max-h-48 overflow-y-auto bg-white dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none shadow-2xl z-50">
                           {STANDARD_BRANCHES.filter(b => b.toLowerCase().includes(branch.toLowerCase())).length > 0 ? (
                             STANDARD_BRANCHES.filter(b => b.toLowerCase().includes(branch.toLowerCase())).map(b => (
                               <div
@@ -456,7 +456,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                     <select
                       value={semester}
                       onChange={(e) => setSemester(Number(e.target.value) || 1)}
-                      className="w-full px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-xl text-[13.5px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors cursor-pointer"
+                      className="w-full px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none text-[13.5px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors cursor-pointer"
                     >
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((sem) => (
                         <option key={sem} value={sem} className="dark:bg-[#121317]">
@@ -476,7 +476,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                       placeholder="e.g. A, B or 1"
                       value={section}
                       onChange={(e) => setSection(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-xl text-[13.5px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors uppercase placeholder:normal-case placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
+                      className="w-full px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none text-[13.5px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors uppercase placeholder:normal-case placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
                     />
                   </div>
 
@@ -485,7 +485,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                     <label className="text-[11px] font-bold tracking-wider uppercase text-[#6F6F6F] dark:text-[#94A3B8]">
                       Roll Number <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex items-center gap-2 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-xl focus-within:border-black dark:focus-within:border-white/30 transition-colors">
+                    <div className="flex items-center gap-2 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none focus-within:border-black dark:focus-within:border-white/30 transition-colors">
                       <Hash className="w-3.5 h-3.5 text-[#888888] shrink-0" />
                       <input
                         type="text"
@@ -505,14 +505,14 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
               {/* Batch Preview Pill */}
               <div className="mt-1 pt-3 border-t border-[#E5E5E5] dark:border-white/[0.08] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 text-[11.5px]">
                 <span className="text-[#888888] dark:text-[#94A3B8] font-medium">Batch Key:</span>
-                <span className="font-mono text-[11px] bg-black/5 dark:bg-white/[0.04] border border-[#E5E5E5] dark:border-white/[0.08] px-2.5 py-1 rounded-md text-[#111111] dark:text-[#F4F4F6] truncate max-w-full">
+                <span className="font-mono text-[11px] bg-black/5 dark:bg-white/[0.04] border border-[#E5E5E5] dark:border-white/[0.08] px-2.5 py-1 rounded-none text-[#111111] dark:text-[#F4F4F6] truncate max-w-full">
                   {canonicalBatchKey || 'batch-key-preview'}
                 </span>
               </div>
             </div>
 
             {/* Contact Information Card */}
-            <div className="p-4 sm:p-5 bg-[#F9F9F8] dark:bg-[#121317] border border-[#E5E5E5] dark:border-white/[0.08] rounded-2xl flex flex-col gap-3.5">
+            <div className="p-4 sm:p-5 bg-[#F9F9F8] dark:bg-[#121317] border border-[#E5E5E5] dark:border-white/[0.08] rounded-none flex flex-col gap-3.5">
               <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#64748B] flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                 CONTACT &amp; VERIFICATION
@@ -523,7 +523,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                 <label className="text-[11px] font-bold tracking-wider uppercase text-[#6F6F6F] dark:text-[#94A3B8]">
                   WhatsApp Phone Number <span className="text-red-500">*</span>
                 </label>
-                <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-xl focus-within:border-black dark:focus-within:border-white/30 transition-colors">
+                <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none focus-within:border-black dark:focus-within:border-white/30 transition-colors">
                   <Phone className="w-4 h-4 text-[#888888] shrink-0" />
                   <input
                     type="tel"
@@ -541,7 +541,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                 <label className="text-[11px] font-bold tracking-wider uppercase text-[#6F6F6F] dark:text-[#94A3B8]">
                   Proof / Verification Note (Optional)
                 </label>
-                <div className="p-3 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-xl focus-within:border-black dark:focus-within:border-white/30 transition-colors">
+                <div className="p-3 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none focus-within:border-black dark:focus-within:border-white/30 transition-colors">
                   <textarea
                     rows={2}
                     placeholder="e.g. Official Class Representative / Batch Leader for CSE 2024 section A"
@@ -558,7 +558,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full h-12 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-black font-bold text-[13px] uppercase tracking-wider hover:opacity-90 transition-all rounded-xl flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-md"
+                className="w-full h-12 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-black font-bold text-[13px] uppercase tracking-wider hover:opacity-90 transition-all rounded-none flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-md"
               >
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
