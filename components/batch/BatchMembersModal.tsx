@@ -375,17 +375,15 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} mobileFullSheet title="Batch Members">
-        <div className="flex flex-col min-h-full bg-[#FFFFFF] dark:bg-[#111111]">
-          
-
-          <div className="p-5 flex flex-col gap-6 overflow-y-auto">
-            {/* Programme & Meta */}
+      <Modal isOpen={isOpen} onClose={onClose} mobileFullSheet maxWidth="2xl" title="Batch Members">
+        <div className="flex flex-col gap-6 font-sans">
+          {/* Programme & Meta */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div className="flex flex-col">
-              <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase">
+              <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wide">
                 {batchData?.programme || 'PROGRAMME'} · {batchData?.branch || 'BRANCH'}
               </span>
-              <div className="flex items-center gap-2 text-[12px] text-[#6F6F6F] mt-1">
+              <div className="flex items-center gap-2 text-[12px] text-[#6F6F6F] mt-0.5">
                 <span>SEMESTER {batchData?.semester || '?'}</span>
                 <span>·</span>
                 <span>YEAR {displayYear}</span>
@@ -398,114 +396,115 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
               </div>
             </div>
 
-            {/* Invite Button */}
-            <button 
-              onClick={handleCopyInvite}
-              className="flex items-center justify-between py-4 border-y border-[#D9D9D6] dark:border-[#333333] hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left group"
-            >
-              <span className="text-[12px] font-bold tracking-[1px] text-[#111111] dark:text-[#FFFFFF] uppercase">
-                {copiedLink ? 'BATCH CODE COPIED' : 'SHARE BATCH CODE'}
-              </span>
-              {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <ArrowRight className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />}
-            </button>
+            <div className="text-[11px] font-mono text-[#6F6F6F] px-2.5 py-1 bg-black/[0.03] dark:bg-white/[0.05] border border-[#D9D9D6] dark:border-[#333333] self-start sm:self-auto uppercase tracking-wider">
+              {members.length} {members.length === 1 ? 'MEMBER' : 'MEMBERS'}
+            </div>
+          </div>
 
-            {/* Batch Pilot Section */}
-            {crMembers.length > 0 && (
-              <div className="flex flex-col">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase">
-                    BATCH PILOT{crMembers.length > 1 ? `S (${crMembers.length}/3)` : ' (1/3)'}
-                  </span>
-                </div>
-                <div className={`grid ${crMembers.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
-                  {crMembers.map((cr) => {
-                    const p = cr.profile || {};
-                    const isCurrentUser = checkIsCurrentUser(cr);
-                    return (
-                      <div key={cr.id} className="relative flex flex-col items-center justify-center p-5 border border-[#D9D9D6] dark:border-[#333333] text-center bg-[#FDFDFD] dark:bg-[#151515]">
-                        <div className="w-16 h-16 flex items-center justify-center mb-2.5">
-                          <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${p.avatarUrl || cr.id}&backgroundColor=transparent`} alt="avatar" className="w-full h-full object-contain drop-shadow-sm" />
-                        </div>
-                        <span className="text-[14px] font-semibold text-[#111111] dark:text-[#FFFFFF] line-clamp-1 break-all w-full px-2">
-                          {p.name || 'Pilot'}
-                        </span>
-                        <span className="text-[11px] text-[#6F6F6F] mt-0.5 break-all line-clamp-2 w-full px-2">
-                          Batch Pilot · {p.rollNumber || p.email}
-                        </span>
-                        {isCurrentUser && (
-                          <span className="absolute top-2.5 left-2.5 text-[9px] font-bold tracking-widest text-[#6F6F6F] border border-[#D9D9D6] dark:border-[#333333] px-1.5 py-0.5 uppercase">YOU</span>
-                        )}
-                        <button 
-                          onClick={() => setSelectedMember(cr)}
-                          className="absolute top-2.5 right-2.5 p-1.5 text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
+          {/* Invite Button */}
+          <button 
+            onClick={handleCopyInvite}
+            className="flex items-center justify-between py-3.5 px-4 border border-[#D9D9D6] dark:border-[#333333] bg-black/[0.01] dark:bg-white/[0.02] hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left group cursor-pointer"
+          >
+            <span className="text-[12px] font-bold tracking-[1px] text-[#111111] dark:text-[#FFFFFF] uppercase">
+              {copiedLink ? 'BATCH CODE COPIED' : 'SHARE BATCH INVITE CODE'}
+            </span>
+            {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <ArrowRight className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] group-hover:translate-x-1 transition-transform" />}
+          </button>
+
+          {/* Batch Pilot Section */}
+          {crMembers.length > 0 && (
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] uppercase flex items-center gap-1.5">
+                  <Crown className="w-3.5 h-3.5 text-amber-500" />
+                  BATCH PILOT{crMembers.length > 1 ? `S (${crMembers.length}/3)` : ' (1/3)'}
+                </span>
+              </div>
+              <div className={`grid ${crMembers.length > 2 ? 'grid-cols-1 sm:grid-cols-3' : crMembers.length > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'} gap-3`}>
+                {crMembers.map((cr) => {
+                  const p = cr.profile || {};
+                  const isCurrentUser = checkIsCurrentUser(cr);
+                  return (
+                    <div key={cr.id} className="relative flex flex-col items-center justify-center p-4 sm:p-5 border border-[#D9D9D6] dark:border-[#333333] text-center bg-[#FDFDFD] dark:bg-[#151515] group">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center mb-2.5">
+                        <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${p.avatarUrl || cr.id}&backgroundColor=transparent`} alt="avatar" className="w-full h-full object-contain drop-shadow-sm group-hover:scale-105 transition-transform" />
                       </div>
-                    );
-                  })}
-                </div>
+                      <span className="text-[13.5px] font-semibold text-[#111111] dark:text-[#FFFFFF] truncate w-full px-2">
+                        {p.name || 'Pilot'}
+                      </span>
+                      <span className="text-[11px] text-[#6F6F6F] mt-0.5 truncate w-full px-2 font-mono">
+                        Batch Pilot · {p.rollNumber || p.email}
+                      </span>
+                      {isCurrentUser && (
+                        <span className="absolute top-2.5 left-2.5 text-[8.5px] font-bold tracking-widest text-[#6F6F6F] border border-[#D9D9D6] dark:border-[#333333] px-1.5 py-0.5 uppercase bg-black/[0.02] dark:bg-white/[0.04]">YOU</span>
+                      )}
+                      <button 
+                        onClick={() => setSelectedMember(cr)}
+                        className="absolute top-2.5 right-2.5 p-1.5 text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 rounded transition-colors cursor-pointer"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Members Section */}
+          <div className="flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] uppercase">MEMBERS ({normalMembers.length})</span>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative mb-4">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6F6F6F]" />
+              <input 
+                placeholder="Search members by name, roll number, email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-black/[0.02] dark:bg-white/[0.03] text-[13.5px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none border border-[#D9D9D6] dark:border-[#333333] transition-colors placeholder:text-[#6F6F6F]"
+              />
+            </div>
+
+            {loading ? (
+              <div className="py-12 text-center text-[12px] font-mono text-[#6F6F6F] animate-pulse">
+                Loading members...
+              </div>
+            ) : normalMembers.length === 0 ? (
+              <div className="py-12 text-center text-[13px] text-[#6F6F6F]">
+                No members found.
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {normalMembers.map((m) => {
+                  const p = m.profile || {};
+                  const isCurrentUser = checkIsCurrentUser(m);
+                  return (
+                    <div 
+                      key={m.id}
+                      onClick={() => setSelectedMember(m)}
+                      className="group flex flex-col items-center text-center border border-[#D9D9D6] dark:border-[#333333] p-4 sm:p-5 cursor-pointer hover:border-[#111111] dark:hover:border-[#FFFFFF] hover:shadow-sm transition-all relative bg-[#FFFFFF] dark:bg-[#111111]"
+                    >
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto flex items-center justify-center mb-3">
+                        <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${p.avatarUrl || m.id}&backgroundColor=transparent`} alt="avatar" className="w-full h-full object-contain drop-shadow-sm group-hover:scale-105 transition-transform" />
+                      </div>
+                      <span className="text-[13px] font-semibold text-[#111111] dark:text-[#FFFFFF] leading-tight truncate w-full px-1">
+                        {p.name || 'Student'}
+                      </span>
+                      <span className="text-[11px] text-[#6F6F6F] dark:text-[#A0A0A0] mt-1 truncate w-full px-1 font-mono">
+                        {p.rollNumber || p.email}
+                      </span>
+                      {isCurrentUser && (
+                        <span className="absolute top-2 right-2 text-[8px] font-bold tracking-widest text-[#6F6F6F] border border-[#D9D9D6] dark:border-[#333333] px-1 py-0.5 uppercase bg-black/[0.02] dark:bg-white/[0.04]">YOU</span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
-
-            {/* Members Section */}
-            <div className="flex flex-col mt-2">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase">MEMBERS</span>
-                <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F]">{normalMembers.length}</span>
-              </div>
-
-              {/* Flat Search Input */}
-              <div className="relative mb-6">
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 text-[#111111] dark:text-[#FFFFFF] text-[16px] leading-none mb-[2px]">⌕</span>
-                <input 
-                  placeholder="Search members..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-6 py-2 bg-transparent text-[14px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none border-b border-[#D9D9D6] dark:border-[#333333] transition-colors placeholder:text-[#6F6F6F]"
-                />
-              </div>
-
-              {loading ? (
-                <div className="py-10 text-center text-[11px] font-mono text-[#6F6F6F] animate-pulse">
-                  Loading members...
-                </div>
-              ) : normalMembers.length === 0 ? (
-                <div className="py-10 text-center text-[11px] text-[#6F6F6F]">
-                  No members found.
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  {normalMembers.map((m) => {
-                    const p = m.profile || {};
-                    const isCurrentUser = checkIsCurrentUser(m);
-                    return (
-                      <div 
-                        key={m.id}
-                        onClick={() => setSelectedMember(m)}
-                        className="flex flex-col items-center text-center border border-[#D9D9D6] dark:border-[#333333] p-5 cursor-pointer hover:border-[#111111] dark:hover:border-[#FFFFFF] transition-colors relative bg-[#FFFFFF] dark:bg-[#111111]"
-                      >
-                        <div className="w-16 h-16 mx-auto flex items-center justify-center mb-4">
-                          <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${p.avatarUrl || m.id}&backgroundColor=transparent`} alt="avatar" className="w-full h-full object-contain drop-shadow-sm" />
-                        </div>
-                        <span className="text-[13px] font-semibold text-[#111111] dark:text-[#FFFFFF] leading-tight line-clamp-1 break-all w-full px-1">
-                          {p.name || 'Student'}
-                        </span>
-                        <span className="text-[11px] text-[#6F6F6F] mt-1 break-all line-clamp-2 w-full px-1">
-                          {p.rollNumber || p.email}
-                        </span>
-                        {isCurrentUser && (
-                          <span className="absolute top-2 right-2 text-[8px] font-bold tracking-widest text-[#6F6F6F] border border-[#D9D9D6] dark:border-[#333333] px-1 py-0.5 uppercase">YOU</span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-            
-            {/* Safe spacing at bottom */}
-            <div className="h-4" />
           </div>
         </div>
       </Modal>

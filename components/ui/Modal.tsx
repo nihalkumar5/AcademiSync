@@ -86,32 +86,33 @@ export const Modal: React.FC<ModalProps> = ({
             initial={mobileFullSheet ? { opacity: 0, y: 40, scale: 0.98 } : { opacity: 0, scale: 0.96, y: 0 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={mobileFullSheet ? { opacity: 0, y: 40, scale: 0.98 } : { opacity: 0, scale: 0.96, y: 0 }}
-            transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
+            transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
             onClick={(e) => e.stopPropagation()}
             className={twMerge(
               clsx(
-                'relative bg-white dark:bg-[#111111] border-[#D9D9D6] dark:border-[#333333] z-10 text-left rounded-none',
-                mobileFullSheet ? 'w-full' : 'w-full sm:w-full',
-                mobileFullSheet ? "min-h-[100dvh] sm:min-h-0 sm:h-auto border-0 sm:border flex flex-col" : "border my-auto max-h-[90dvh] flex flex-col",
+                'relative bg-white dark:bg-[#111111] border-[#D9D9D6] dark:border-[#333333] z-10 text-left shadow-2xl flex flex-col',
+                mobileFullSheet 
+                  ? 'w-full min-h-[100dvh] sm:min-h-0 sm:max-h-[88vh] sm:my-auto border-0 sm:border sm:rounded-xl overflow-hidden' 
+                  : 'w-full border my-auto max-h-[90dvh] sm:rounded-xl overflow-hidden',
                 maxWClasses[maxWidth]
               )
             )}
           >
             {(title || showCloseButton) && (
               <div className={clsx(
-                "flex items-start justify-between border-b border-[#D9D9D6] dark:border-[#333333] bg-white dark:bg-[#111111]",
+                "flex items-center justify-between border-b border-[#D9D9D6] dark:border-[#333333] bg-white dark:bg-[#111111] shrink-0",
                 mobileFullSheet 
-                  ? "sticky top-0 z-30 px-5 pb-4 pt-[max(env(safe-area-inset-top,0px),2.5rem)] sm:p-5" 
-                  : "p-5"
+                  ? "sticky top-0 z-30 px-5 py-4 pt-[max(env(safe-area-inset-top,0px),1rem)] sm:pt-4 sm:px-6" 
+                  : "px-5 py-4 sm:px-6"
               )}>
-                <div className="pr-4">
+                <div className="pr-4 min-w-0 flex-1">
                   {title && (
-                    <h2 className="text-[22px] sm:text-[24px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-snug">
+                    <h2 className="text-[18px] sm:text-[20px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-snug truncate">
                       {title}
                     </h2>
                   )}
                   {description && (
-                    <p className="mt-1.5 text-[13.5px] sm:text-[14px] text-[#6F6F6F] dark:text-[#A0A0A0] leading-snug">
+                    <p className="mt-1 text-[13px] sm:text-[13.5px] text-[#6F6F6F] dark:text-[#A0A0A0] leading-snug">
                       {description}
                     </p>
                   )}
@@ -125,7 +126,7 @@ export const Modal: React.FC<ModalProps> = ({
                       onClose();
                     }}
                     aria-label="Close dialog"
-                    className="min-w-[44px] min-h-[44px] -mr-2.5 -mt-2 flex items-center justify-center rounded-full transition-all text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/10 active:scale-90 active:bg-black/10 z-40 cursor-pointer shrink-0"
+                    className="w-9 h-9 flex items-center justify-center rounded-lg transition-all text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/10 active:scale-95 z-40 cursor-pointer shrink-0"
                   >
                     <X className="w-5 h-5 pointer-events-none" />
                   </button>
@@ -133,8 +134,8 @@ export const Modal: React.FC<ModalProps> = ({
               </div>
             )}
 
-            <div className={clsx(mobileFullSheet ? "flex-1 overflow-y-auto flex flex-col" : "overflow-y-auto flex-1")}>
-              <div className={clsx("p-5", mobileFullSheet ? "flex-1 flex flex-col" : "")}>
+            <div className="flex-1 overflow-y-auto min-h-0">
+              <div className="p-5 sm:p-6">
                 {children}
               </div>
             </div>
