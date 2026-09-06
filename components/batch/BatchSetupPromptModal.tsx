@@ -87,167 +87,167 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
         title="Become a Batch Pilot 🚀"
         description="Keep everyone on the same timetable and never miss what matters."
         mobileFullSheet={true} 
-        maxWidth="md"
+        maxWidth="4xl"
         showCloseButton={true}
       >
-        <div className="flex flex-col text-left font-sans pt-0 pb-4">
-          {/* Hero Illustration - Scaled up & shifted down slightly */}
-          <div className="w-full flex items-center justify-center -mt-12 -mb-28 sm:-mt-10 sm:-mb-24 py-0 relative z-0">
-            <img 
-              src="/cr.png" 
-              alt="Batch Pilot" 
-              className="w-full max-w-[480px] sm:max-w-[540px] h-auto object-contain scale-[1.15]"
-            />
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-stretch font-sans text-left">
+          
+          {/* Left Column: Hero Illustration & Info Card */}
+          <div className="md:col-span-5 flex flex-col items-center justify-between bg-[#F9F9F8] dark:bg-[#161616] border border-[#E5E5E5] dark:border-[#2C2C2C] rounded-2xl p-6 text-center relative overflow-hidden">
+            <div className="w-full flex items-center justify-center max-w-[260px] sm:max-w-[300px] my-auto py-2">
+              <img 
+                src="/cr.png" 
+                alt="Batch Pilot" 
+                className="w-full h-auto object-contain drop-shadow-sm"
+              />
+            </div>
+            
+            <div className="flex flex-col gap-1 mt-3">
+              <span className="text-[10.5px] font-bold font-mono tracking-widest uppercase text-amber-600 dark:text-amber-400">
+                CLASS LEADERSHIP
+              </span>
+              <h3 className="text-[16px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
+                Power your entire batch
+              </h3>
+              <p className="text-[12px] text-[#6F6F6F] dark:text-[#A0A0A0] leading-relaxed">
+                Up to 3 verified Batch Pilots can manage schedules, room changes, and live alerts for {shortCollege}.
+              </p>
+            </div>
           </div>
 
-          {/* Section 1: WHAT YOU'LL UNLOCK */}
-          <div className="flex flex-col gap-2.5 mt-0 relative z-10">
-            <span className="text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#777777]">
-              WHAT YOU&apos;LL UNLOCK
-            </span>
-
+          {/* Right Column: Unlocks, Responsibilities & Actions */}
+          <div className="md:col-span-7 flex flex-col justify-between gap-5">
+            
+            {/* Section 1: WHAT YOU'LL UNLOCK */}
             <div className="flex flex-col gap-2.5">
-              {/* 01 */}
-              <div className="p-3 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FFFFFF] dark:bg-[#111111] rounded-xl flex gap-3.5 items-start">
-                <div className="w-10 h-10 rounded-lg bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#2C2C2C] flex items-center justify-center shrink-0 mt-0.5">
-                  <Calendar className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
+              <span className="text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#777777]">
+                WHAT YOU&apos;LL UNLOCK
+              </span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {/* 01 */}
+                <div className="p-3 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FFFFFF] dark:bg-[#111111] rounded-xl flex gap-3 items-start">
+                  <div className="w-9 h-9 rounded-lg bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#2C2C2C] flex items-center justify-center shrink-0 mt-0.5">
+                    <Calendar className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
+                  </div>
+                  <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
+                    <span className="text-[10px] font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">01</span>
+                    <h4 className="text-[12.5px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug truncate">
+                      One timetable
+                    </h4>
+                    <p className="text-[11px] text-[#888888] dark:text-[#888888] leading-relaxed">
+                      Update once, everyone gets it.
+                    </p>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-0.5 pt-0.5">
-                  <span className="text-[11px] font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">01</span>
-                  <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
-                    One timetable for everyone
-                  </h4>
-                  <p className="text-[11.5px] text-[#888888] dark:text-[#888888] leading-relaxed mt-0.5">
-                    Update the batch timetable once. Everyone gets the latest version.
-                  </p>
+
+                {/* 02 */}
+                <div className="p-3 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FFFFFF] dark:bg-[#111111] rounded-xl flex gap-3 items-start">
+                  <div className="w-9 h-9 rounded-lg bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#2C2C2C] flex items-center justify-center shrink-0 mt-0.5">
+                    <Bell className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
+                  </div>
+                  <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
+                    <span className="text-[10px] font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">02</span>
+                    <h4 className="text-[12.5px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug truncate">
+                      Instant class alerts
+                    </h4>
+                    <p className="text-[11px] text-[#888888] dark:text-[#888888] leading-relaxed">
+                      Room changes &amp; cancellations.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 03 */}
+                <div className="p-3 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FFFFFF] dark:bg-[#111111] rounded-xl flex gap-3 items-start">
+                  <div className="w-9 h-9 rounded-lg bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#2C2C2C] flex items-center justify-center shrink-0 mt-0.5">
+                    <Clock className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
+                  </div>
+                  <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
+                    <span className="text-[10px] font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">03</span>
+                    <h4 className="text-[12.5px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug truncate">
+                      Shared tasks &amp; labs
+                    </h4>
+                    <p className="text-[11px] text-[#888888] dark:text-[#888888] leading-relaxed">
+                      Deadlines visible to the batch.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 04 */}
+                <div className="p-3 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FFFFFF] dark:bg-[#111111] rounded-xl flex gap-3 items-start">
+                  <div className="w-9 h-9 rounded-lg bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#2C2C2C] flex items-center justify-center shrink-0 mt-0.5">
+                    <Users className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
+                  </div>
+                  <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
+                    <span className="text-[10px] font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">04</span>
+                    <h4 className="text-[12.5px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug truncate">
+                      No WhatsApp chaos
+                    </h4>
+                    <p className="text-[11px] text-[#888888] dark:text-[#888888] leading-relaxed">
+                      One authoritative schedule hub.
+                    </p>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              {/* 02 */}
-              <div className="p-3 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FFFFFF] dark:bg-[#111111] rounded-xl flex gap-3.5 items-start">
-                <div className="w-10 h-10 rounded-lg bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#2C2C2C] flex items-center justify-center shrink-0 mt-0.5">
-                  <Bell className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
-                </div>
-                <div className="flex flex-col gap-0.5 pt-0.5">
-                  <span className="text-[11px] font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">02</span>
-                  <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
-                    Instant class alerts
-                  </h4>
-                  <p className="text-[11.5px] text-[#888888] dark:text-[#888888] leading-relaxed mt-0.5">
-                    Room changes, cancelled classes and important updates reach everyone.
-                  </p>
-                </div>
-              </div>
-
-              {/* 03 */}
-              <div className="p-3 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FFFFFF] dark:bg-[#111111] rounded-xl flex gap-3.5 items-start">
-                <div className="w-10 h-10 rounded-lg bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#2C2C2C] flex items-center justify-center shrink-0 mt-0.5">
-                  <Clock className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
-                </div>
-                <div className="flex flex-col gap-0.5 pt-0.5">
-                  <span className="text-[11px] font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">03</span>
-                  <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
-                    Shared academic tasks
-                  </h4>
-                  <p className="text-[11.5px] text-[#888888] dark:text-[#888888] leading-relaxed mt-0.5">
-                    Keep assignments, labs and deadlines visible to your entire batch.
-                  </p>
-                </div>
-              </div>
-
-              {/* 04 */}
-              <div className="p-3 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FFFFFF] dark:bg-[#111111] rounded-xl flex gap-3.5 items-start">
-                <div className="w-10 h-10 rounded-lg bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#2C2C2C] flex items-center justify-center shrink-0 mt-0.5">
-                  <Users className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
-                </div>
-                <div className="flex flex-col gap-0.5 pt-0.5">
-                  <span className="text-[11px] font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">04</span>
-                  <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
-                    No more chaos
-                  </h4>
-                  <p className="text-[11.5px] text-[#888888] dark:text-[#888888] leading-relaxed mt-0.5">
-                    Manage everything in one place instead of WhatsApp groups.
-                  </p>
+            {/* Section 2: YOUR RESPONSIBILITY */}
+            <div className="p-3.5 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FAF9F7] dark:bg-[#161616] rounded-xl flex items-center justify-between">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#777777]">
+                  YOUR RESPONSIBILITY
+                </span>
+                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  <div className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Update timetable</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Broadcast changes</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Accurate info</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Section 2: YOUR RESPONSIBILITY */}
-          <div className="flex flex-col gap-2 mt-5 pt-4 border-t border-[#E5E5E5] dark:border-[#2C2C2C]">
-            <span className="text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#777777]">
-              YOUR RESPONSIBILITY
-            </span>
-
-            <div className="flex items-center justify-between mt-1">
-              <div className="flex flex-col gap-2.5">
-                <div className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF] shrink-0" />
-                  <span className="text-[11.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">Add &amp; update timetable</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF] shrink-0" />
-                  <span className="text-[11.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">Broadcast important changes</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF] shrink-0" />
-                  <span className="text-[11.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">Keep batch information accurate</span>
-                </div>
-              </div>
-              <div className="shrink-0 pr-4">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#111111] dark:text-[#FFFFFF] rotate-[10deg] opacity-80">
-                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-                  <path d="m9 14 2 2 4-4"></path>
-                  <path d="M12 2v2"></path>
-                  <path d="M9 10h.01"></path>
-                  <path d="M9 18h.01"></path>
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-col items-center gap-2 mt-5">
-            {/* Primary Button */}
-            <button
-              type="button"
-              onClick={() => setShowCRModal(true)}
-              className="w-full h-12 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] font-bold text-[13px] rounded-xl tracking-wide hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>Apply to become a Batch Pilot 🚀</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-            <div className="flex items-center gap-1.5 text-[11.5px] text-[#6F6F6F] dark:text-[#888888]">
-              <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-              <span>You&apos;ll need to verify your college &amp; batch.</span>
-            </div>
-
-            {/* Secondary actions: Tell Pilot on WhatsApp & Personal Mode */}
-            <div className="w-full flex flex-col gap-2 mt-2 pt-3 border-t border-[#E5E5E5] dark:border-[#2C2C2C]">
+            {/* Actions */}
+            <div className="flex flex-col gap-2.5">
               <button
                 type="button"
-                onClick={handleShareToWhatsApp}
-                className="w-full py-2.5 px-3 border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-all text-left flex items-center justify-between group cursor-pointer"
+                onClick={() => setShowCRModal(true)}
+                className="w-full h-11 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] font-bold text-[13px] rounded-xl tracking-wide hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer shadow-sm"
               >
-                <div className="flex items-center gap-2.5">
+                <span>Apply to become a Batch Pilot 🚀</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={handleShareToWhatsApp}
+                  className="py-2.5 px-3 border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] rounded-xl transition-all flex items-center justify-center gap-2 text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF] cursor-pointer"
+                >
                   <MessageCircle className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />
-                  <span className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">
-                    Ask Batch Pilot to Setup Timetable
-                  </span>
-                </div>
-                <Share2 className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF] group-hover:scale-110 transition-transform" />
-              </button>
+                  <span>Ask Pilot on WhatsApp</span>
+                  <Share2 className="w-3 h-3 text-[#6F6F6F]" />
+                </button>
 
-              <button
-                type="button"
-                onClick={handlePersonalTimetable}
-                className="w-full py-2 text-[11.5px] font-medium text-[#888888] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors text-center cursor-pointer"
-              >
-                Continue with Personal Timetable for now →
-              </button>
+                <button
+                  type="button"
+                  onClick={handlePersonalTimetable}
+                  className="py-2.5 px-3 border border-transparent hover:border-[#D8D8D8] dark:hover:border-[#333333] text-[12px] font-medium text-[#888888] hover:text-[#111111] dark:hover:text-[#FFFFFF] rounded-xl transition-colors text-center cursor-pointer"
+                >
+                  Personal mode for now →
+                </button>
+              </div>
             </div>
+
           </div>
+
         </div>
       </Modal>
 

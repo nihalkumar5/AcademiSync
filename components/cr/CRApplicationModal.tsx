@@ -169,7 +169,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
       isOpen={isOpen} 
       onClose={onClose} 
       title="Apply for Batch Pilot 🚀"
-      maxWidth="md"
+      maxWidth="lg"
       showCloseButton={true}
     >
       <div className="flex flex-col text-left font-sans gap-4 pt-1">
