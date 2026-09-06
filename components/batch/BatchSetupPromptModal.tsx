@@ -258,11 +258,11 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
           setShowCRModal(false);
           onClose();
         }}
-        targetCollege={activeCollege}
-        targetProgramme={activeProg}
-        targetBranch={activeBranch}
-        targetSemester={activeSem}
-        targetSection={activeSec}
+        targetCollege={college || (profile.college !== 'Your College' ? profile.college : '')}
+        targetProgramme={programme || profile.programme || ''}
+        targetBranch={branch || (profile.branch !== 'Engineering' ? profile.branch : '')}
+        targetSemester={semester || profile.semester || 1}
+        targetSection={section || profile.section || ''}
       />
     </>
   );

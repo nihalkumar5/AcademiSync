@@ -33,6 +33,16 @@ interface CRApplicationModalProps {
   targetSection?: string;
 }
 
+const cleanInit = (val?: string) => {
+  if (!val) return '';
+  const trimmed = val.trim();
+  const lower = trimmed.toLowerCase();
+  if (lower === 'your college' || lower === 'college name' || lower === 'not specified' || lower === 'engineering') {
+    return '';
+  }
+  return trimmed;
+};
+
 export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({ 
   isOpen, 
   onClose,
@@ -53,12 +63,12 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
 
   const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
   
-  const [college, setCollege] = useState(targetCollege || profile.college || '');
-  const [programme, setProgramme] = useState(targetProgramme || profile.programme || 'B.Tech');
-  const [branch, setBranch] = useState(targetBranch || profile.branch || '');
+  const [college, setCollege] = useState(cleanInit(targetCollege) || cleanInit(profile.college) || '');
+  const [programme, setProgramme] = useState(cleanInit(targetProgramme) || cleanInit(profile.programme) || '');
+  const [branch, setBranch] = useState(cleanInit(targetBranch) || cleanInit(profile.branch) || '');
   const [semester, setSemester] = useState(targetSemester || profile.semester || 1);
   const [section, setSection] = useState(targetSection || profile.section || '');
-  const [rollNumber, setRollNumber] = useState(profile.rollNumber || '');
+  const [rollNumber, setRollNumber] = useState(cleanInit(profile.rollNumber) || '');
 
   // Dropdown states
   const [showCollegeDropdown, setShowCollegeDropdown] = useState(false);
@@ -70,11 +80,11 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
 
   // Synchronize when props change
   useEffect(() => {
-    if (targetCollege) setCollege(targetCollege);
-    if (targetProgramme) setProgramme(targetProgramme);
-    if (targetBranch) setBranch(targetBranch);
-    if (targetSemester) setSemester(targetSemester);
-    if (targetSection !== undefined) setSection(targetSection);
+    if (targetCollege !== undefined) setCollege(cleanInit(targetCollege));
+    if (targetProgramme !== undefined) setProgramme(cleanInit(targetProgramme));
+    if (targetBranch !== undefined) setBranch(cleanInit(targetBranch));
+    if (targetSemester !== undefined) setSemester(targetSemester || 1);
+    if (targetSection !== undefined) setSection(targetSection || '');
   }, [targetCollege, targetProgramme, targetBranch, targetSemester, targetSection]);
 
   // SheerID College search autocomplete
