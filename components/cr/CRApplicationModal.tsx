@@ -22,7 +22,7 @@ import {
   ChevronDown,
   Users,
   AlertCircle,
-  LogIn,
+  User,
   CheckCircle2,
   Sparkles,
   MessageCircle,
@@ -302,7 +302,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
         {!user ? (
           <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] rounded-none">
             <div className="w-14 h-14 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] rounded-none flex items-center justify-center shadow-sm">
-              <LogIn className="w-7 h-7 text-black dark:text-white" />
+              <User className="w-7 h-7 text-black dark:text-white stroke-[1.8]" />
             </div>
             <div>
               <span className="text-[10px] font-bold font-mono tracking-widest uppercase text-amber-600 dark:text-amber-400">
@@ -324,7 +324,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                 }} 
                 className="flex-1 px-6 py-3 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity rounded-none cursor-pointer flex items-center justify-center gap-2 shadow-sm"
               >
-                <LogIn className="w-4 h-4" />
+                <User className="w-4 h-4" />
                 <span>Sign In Now</span>
               </button>
               <button 
