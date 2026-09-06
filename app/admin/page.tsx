@@ -301,7 +301,13 @@ export default function SuperAdminPage() {
   // Loading state
   if (!isClerkLoaded) {
     return (
-      <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex items-center justify-center p-6">
+      <div 
+        className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex items-center justify-center p-6"
+        style={{
+          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 20px), 32px)',
+          paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 20px), 32px)',
+        }}
+      >
         <div className="flex items-center gap-3 font-mono text-sm tracking-wider animate-pulse">
           <Shield className="w-5 h-5" />
           <span>AUTHENTICATING SUPER ADMIN...</span>
@@ -313,7 +319,13 @@ export default function SuperAdminPage() {
   // Not logged in
   if (!user) {
     return (
-      <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col items-center justify-center p-6 text-center">
+      <div 
+        className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col items-center justify-center p-6 text-center"
+        style={{
+          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 20px), 32px)',
+          paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 20px), 32px)',
+        }}
+      >
         <div className="w-14 h-14 border border-black dark:border-white flex items-center justify-center mb-6">
           <Lock className="w-6 h-6" />
         </div>
@@ -333,7 +345,13 @@ export default function SuperAdminPage() {
   // Logged in but not Admin
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col items-center justify-center p-6 text-center">
+      <div 
+        className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col items-center justify-center p-6 text-center"
+        style={{
+          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 20px), 32px)',
+          paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 20px), 32px)',
+        }}
+      >
         <div className="w-14 h-14 border border-rose-500 text-rose-500 flex items-center justify-center mb-6">
           <AlertTriangle className="w-6 h-6" />
         </div>
@@ -843,29 +861,39 @@ export default function SuperAdminPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] font-sans selection:bg-[#111111] selection:text-[#FFFFFF] dark:selection:bg-[#FFFFFF] dark:selection:text-[#111111]">
+    <div 
+      className="min-h-screen bg-[#F7F7F5] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] font-sans selection:bg-[#111111] selection:text-[#FFFFFF] dark:selection:bg-[#FFFFFF] dark:selection:text-[#111111]"
+      style={{
+        paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 32px), 48px)',
+      }}
+    >
       {/* Top Super Admin Header */}
-      <header className="sticky top-0 z-40 bg-[#F7F7F5] dark:bg-[#111111]">
-        <div className="px-4 sm:px-8 pt-8 pb-6 border-b border-[#D8D8D8] dark:border-[#333333]">
-          <div className="max-w-7xl w-full mx-auto flex flex-col gap-3">
+      <header 
+        className="sticky top-0 z-40 bg-[#F7F7F5] dark:bg-[#111111] border-b border-[#D8D8D8] dark:border-[#333333] shadow-xs"
+        style={{
+          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 14px), 28px)',
+        }}
+      >
+        <div className="px-4 sm:px-8 pb-4">
+          <div className="max-w-7xl w-full mx-auto flex flex-col gap-2.5">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-[12px] font-bold text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] uppercase tracking-wider transition-colors w-fit"
+              className="inline-flex items-center gap-2 py-1 px-1.5 -ml-1.5 text-[12px] font-bold text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] uppercase tracking-wider transition-colors w-fit rounded-none active:opacity-70"
             >
               <ArrowLeft className="w-4 h-4" />
-              <Crown className="w-3.5 h-3.5 ml-1" />
+              <Crown className="w-3.5 h-3.5 ml-1 text-amber-500" />
               <span>SUPER ADMIN</span>
             </Link>
-            <h1 className="text-[32px] sm:text-[40px] font-bold tracking-tight leading-none text-[#111111] dark:text-[#FFFFFF]">
+            <h1 className="text-[28px] sm:text-[40px] font-bold tracking-tight leading-none text-[#111111] dark:text-[#FFFFFF]">
               Control Center
             </h1>
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="border-b border-[#D8D8D8] dark:border-[#333333]">
+        <div className="border-t border-[#D8D8D8]/60 dark:border-[#333333]/60 bg-[#F7F7F5]/80 dark:bg-[#111111]/80 backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-8">
-            <div className="flex items-center gap-8 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto no-scrollbar scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {(() => {
                 const pendingCRCount = crRequestsList.filter(r => r.status === 'pending').length;
                 return [
@@ -879,9 +907,9 @@ export default function SuperAdminPage() {
                 <button
                   key={id}
                   onClick={() => setActiveTab(id as AdminTab)}
-                  className={`relative py-4 text-[13px] font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                  className={`relative py-3.5 sm:py-4 text-[13px] font-medium whitespace-nowrap transition-colors cursor-pointer ${
                     activeTab === id
-                      ? 'text-[#111111] dark:text-[#FFFFFF]'
+                      ? 'text-[#111111] dark:text-[#FFFFFF] font-bold'
                       : 'text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
                   }`}
                 >
@@ -1976,7 +2004,12 @@ export default function SuperAdminPage() {
               className="min-h-screen flex flex-col max-w-4xl mx-auto"
             >
               {/* Header */}
-              <div className="flex items-center justify-between py-6 px-4 sm:px-8 border-b border-[#D8D8D8] dark:border-[#333333] sticky top-0 bg-[#F7F7F5] dark:bg-[#111111] z-20">
+              <div 
+                className="flex items-center justify-between pb-6 px-4 sm:px-8 border-b border-[#D8D8D8] dark:border-[#333333] sticky top-0 bg-[#F7F7F5] dark:bg-[#111111] z-20 shadow-xs"
+                style={{
+                  paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 16px), 24px)',
+                }}
+              >
                 <div>
                   <h3 className="text-[24px] sm:text-[32px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-none">
                     {editingCampaignId ? 'Edit Campaign' : 'Launch Campaign'}
@@ -1988,7 +2021,7 @@ export default function SuperAdminPage() {
                 <button
                   type="button"
                   onClick={() => setShowCampaignModal(false)}
-                  className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider hover:opacity-70 transition-opacity cursor-pointer"
+                  className="inline-flex items-center gap-1.5 py-1.5 px-2 text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider hover:opacity-70 transition-opacity cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                   <span>Close</span>
