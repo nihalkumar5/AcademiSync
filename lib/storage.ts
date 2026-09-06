@@ -87,19 +87,12 @@ export const storage = {
       '#14B8A6': '#7C897A',
     };
 
-    let migrated = false;
-    const migratedSubjects = rawSubjects.map((sub) => {
+    return rawSubjects.map((sub) => {
       if (colorMap[sub.color]) {
-        migrated = true;
         return { ...sub, color: colorMap[sub.color] };
       }
       return sub;
     });
-
-    if (migrated) {
-      setStoredItem(STORAGE_KEYS.SUBJECTS, migratedSubjects);
-    }
-    return migratedSubjects;
   },
   setSubjects: (subjects: Subject[]) => setStoredItem(STORAGE_KEYS.SUBJECTS, subjects),
 

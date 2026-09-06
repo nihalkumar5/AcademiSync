@@ -47,37 +47,6 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Intersemester" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  if (typeof window !== 'undefined' && /Android/i.test(navigator.userAgent)) {
-                    var params = new URLSearchParams(window.location.search);
-                    var invite = params.get('invite') || params.get('key');
-                    var calendarInvite = params.get('calendar_invite');
-                    var examsInvite = params.get('exams_invite');
-                    var task = params.get('task');
-                    
-                    if (invite) {
-                      var intent = "intent://invite?key=" + encodeURIComponent(invite) + "#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=" + encodeURIComponent(window.location.href) + ";end";
-                      window.location.replace(intent);
-                    } else if (calendarInvite) {
-                      var intent = "intent://calendar_invite?key=" + encodeURIComponent(calendarInvite) + "#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=" + encodeURIComponent(window.location.href) + ";end";
-                      window.location.replace(intent);
-                    } else if (examsInvite) {
-                      var intent = "intent://exams_invite?key=" + encodeURIComponent(examsInvite) + "#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=" + encodeURIComponent(window.location.href) + ";end";
-                      window.location.replace(intent);
-                    } else if (task) {
-                      var intent = "intent://task?task=" + encodeURIComponent(task) + "#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=" + encodeURIComponent(window.location.href) + ";end";
-                      window.location.replace(intent);
-                    }
-                  }
-                } catch(e) {}
-              })();
-            `,
-          }}
-        />
       </head>
       <body className="min-h-[100dvh] bg-[#FAFAF8] dark:bg-[#090A0C] text-[#111111] dark:text-[#F4F4F6] antialiased flex flex-col font-sans selection:bg-[#96725B] selection:text-white">
         <AppProvider>

@@ -244,16 +244,6 @@ export default function AppHome() {
       const params = new URLSearchParams(window.location.search);
       const inviteParam = params.get('invite');
       if (inviteParam && inviteParam !== profile.batchKey) {
-        // If on Android mobile browser, try to launch app natively, fallback to Play Store
-        const ua = navigator.userAgent;
-        const isAndroidBrowser = /Android/i.test(ua) && !Capacitor.isNativePlatform();
-        
-        if (isAndroidBrowser) {
-          const intentUrl = `intent://invite?key=${inviteParam}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end`;
-          window.location.href = intentUrl;
-          return;
-        }
-
         if (!isSignedIn) {
           try {
             localStorage.setItem('pending_join_invite', inviteParam);
@@ -286,22 +276,13 @@ export default function AppHome() {
         checkInvite();
       }
     }
-  }, [isHydrated, profile.batchKey, isSignedIn]);
+  }, [isHydrated, profile.batchKey, isSignedIn, router]);
 
   useEffect(() => {
     if (isHydrated && typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const calendarInviteParam = params.get('calendar_invite');
       if (calendarInviteParam) {
-        const ua = navigator.userAgent;
-        const isAndroidBrowser = /Android/i.test(ua) && !Capacitor.isNativePlatform();
-        
-        if (isAndroidBrowser) {
-          const intentUrl = `intent://calendar_invite?key=${calendarInviteParam}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end`;
-          window.location.href = intentUrl;
-          return;
-        }
-
         const checkCalendarInvite = async () => {
           try {
             const docRef = doc(db, 'shared_calendars', calendarInviteParam);
@@ -323,22 +304,13 @@ export default function AppHome() {
         setActiveView('homework');
       }
     }
-  }, [isHydrated]);
+  }, [isHydrated, setActiveView]);
 
   useEffect(() => {
     if (isHydrated && typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const examsInviteParam = params.get('exams_invite');
       if (examsInviteParam) {
-        const ua = navigator.userAgent;
-        const isAndroidBrowser = /Android/i.test(ua) && !Capacitor.isNativePlatform();
-        
-        if (isAndroidBrowser) {
-          const intentUrl = `intent://exams_invite?key=${examsInviteParam}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end`;
-          window.location.href = intentUrl;
-          return;
-        }
-
         const checkExamsInvite = async () => {
           try {
             const docRef = doc(db, 'shared_exams', examsInviteParam);
