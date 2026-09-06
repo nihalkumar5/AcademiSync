@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useApp } from '@/context/AppContext';
-import { getCanonicalBatchKey, formatBatchDisplayName } from '@/lib/timetableUtils';
+import { getCanonicalBatchKey, formatBatchDisplayName, getShortCollegeName } from '@/lib/timetableUtils';
 import { searchCollegesAsync, CollegeItem } from '@/lib/collegeDirectory';
 import { STANDARD_PROGRAMMES, STANDARD_BRANCHES } from '@/lib/colleges';
-import { doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { 
   Crown, 
@@ -19,7 +19,12 @@ import {
   Building2,
   Hash,
   Layers,
-  ChevronDown
+  ChevronDown,
+  Users,
+  AlertCircle,
+  LogIn,
+  CheckCircle2,
+  Sparkles
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -52,14 +57,18 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
   targetSemester,
   targetSection
 }) => {
-  const { profile, user, showToast } = useApp();
+  const { profile, user, showToast, joinBatchTimetable, searchBatchTimetable } = useApp();
   const router = useRouter();
 
   const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isJoiningExistingBatch, setIsJoiningExistingBatch] = useState(false);
   const [existingRequest, setExistingRequest] = useState<any | null>(null);
-  const [loadingStatus, setLoadingStatus] = useState(true);
+  
+  // Existing batch check states
+  const [existingBatch, setExistingBatch] = useState<any | null>(null);
+  const [isCheckingBatch, setIsCheckingBatch] = useState(false);
 
   const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
   
@@ -87,7 +96,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
     if (targetSection !== undefined) setSection(targetSection || '');
   }, [targetCollege, targetProgramme, targetBranch, targetSemester, targetSection]);
 
-  // SheerID College search autocomplete
+  // SheerID College search autocomplete (debounced)
   useEffect(() => {
     let active = true;
     if (!college.trim()) {
@@ -106,7 +115,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
       } finally {
         if (active) setIsLoadingColleges(false);
       }
-    }, 200);
+    }, 250);
 
     return () => {
       active = false;
@@ -115,31 +124,93 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
   }, [college]);
 
   const canonicalBatchKey = getCanonicalBatchKey(college, programme, branch, semester, section);
-  const requestId = user?.id ? `${user.id}_${canonicalBatchKey}` : null;
+  const requestId = user?.id && canonicalBatchKey ? `${user.id}_${canonicalBatchKey}` : null;
 
-  // Listen to existing request status in Firestore
+  // Background check for existing CR request in Firestore (does NOT unmount form)
   useEffect(() => {
-    if (!isOpen || !requestId) {
-      setLoadingStatus(false);
+    if (!isOpen || !requestId || !user?.id) {
+      setExistingRequest(null);
       return;
     }
 
-    setLoadingStatus(true);
-    const reqRef = doc(db, 'cr_requests', requestId);
-    const unsubscribe = onSnapshot(reqRef, (snap) => {
-      if (snap.exists()) {
-        setExistingRequest(snap.data());
-      } else {
-        setExistingRequest(null);
-      }
-      setLoadingStatus(false);
-    }, (err) => {
-      console.error('Error listening to CR request:', err);
-      setLoadingStatus(false);
-    });
+    const timer = setTimeout(() => {
+      try {
+        const reqRef = doc(db, 'cr_requests', requestId);
+        const unsubscribe = onSnapshot(reqRef, (snap) => {
+          if (snap.exists()) {
+            setExistingRequest(snap.data());
+          } else {
+            setExistingRequest(null);
+          }
+        }, (err) => {
+          console.error('Error listening to CR request:', err);
+        });
 
-    return () => unsubscribe();
-  }, [isOpen, requestId]);
+        return () => unsubscribe();
+      } catch (err) {
+        console.error('Failed to setup request listener:', err);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [isOpen, requestId, user?.id]);
+
+  // Debounced check: Check if this batch already exists in Firestore!
+  useEffect(() => {
+    if (!isOpen || !college.trim() || !branch.trim()) {
+      setExistingBatch(null);
+      return;
+    }
+
+    let active = true;
+    const timer = setTimeout(async () => {
+      setIsCheckingBatch(true);
+      try {
+        // 1. Direct document check by canonicalKey
+        const key = getCanonicalBatchKey(college, programme, branch, semester, section);
+        const docRef = doc(db, 'shared_timetables', key);
+        const snap = await getDoc(docRef);
+
+        if (snap.exists() && active) {
+          setExistingBatch({ ...snap.data(), id: snap.id });
+          return;
+        }
+
+        // 2. Fuzzy search by searchBatchTimetable
+        const matched = await searchBatchTimetable(college, programme, branch, Number(semester), section || 'A');
+        if (matched && active) {
+          setExistingBatch(matched);
+        } else if (active) {
+          setExistingBatch(null);
+        }
+      } catch (err) {
+        console.error('Error checking existing batch:', err);
+      } finally {
+        if (active) setIsCheckingBatch(false);
+      }
+    }, 350);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [isOpen, college, programme, branch, semester, section, searchBatchTimetable]);
+
+  const handleJoinExistingBatch = async () => {
+    if (!existingBatch) return;
+    setIsJoiningExistingBatch(true);
+    try {
+      const codeOrKey = existingBatch.inviteCode || existingBatch.id;
+      await joinBatchTimetable(codeOrKey);
+      showToast('Joined Batch! 🎉', `Connected to official timetable for ${getShortCollegeName(existingBatch.college || college)}.`, 'success');
+      onClose();
+    } catch (err: any) {
+      console.error('Failed to join existing batch:', err);
+      showToast('Join Failed', 'Could not connect to this batch automatically. Please use the batch code.', 'error');
+    } finally {
+      setIsJoiningExistingBatch(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -202,6 +273,8 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
   };
 
   const isCR = profile.role === 'cr' || profile.role === 'super_admin';
+  const existingPilotsCount = (existingBatch?.crUserIds?.length || (existingBatch?.crName ? 1 : 0));
+  const isBatchFull = existingBatch && existingPilotsCount >= 3;
 
   return (
     <Modal 
@@ -213,14 +286,47 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
       showCloseButton={true}
     >
       <div className="flex flex-col text-left font-sans gap-5">
-        {loadingStatus ? (
-          <div className="py-14 flex flex-col items-center justify-center gap-3">
-            <div className="w-6 h-6 border-2 border-black dark:border-white border-t-transparent rounded-full animate-spin" />
-            <span className="text-[12px] font-mono uppercase tracking-wider text-[#6F6F6F]">
-              Checking application status...
-            </span>
+        
+        {/* CASE 1: USER IS NOT SIGNED IN */}
+        {!user ? (
+          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] rounded-none">
+            <div className="w-14 h-14 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] rounded-none flex items-center justify-center shadow-sm">
+              <LogIn className="w-7 h-7 text-black dark:text-white" />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold font-mono tracking-widest uppercase text-amber-600 dark:text-amber-400">
+                AUTHENTICATION REQUIRED
+              </span>
+              <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF] mt-1">
+                Please Sign In First
+              </h3>
+              <p className="text-[13px] text-[#6F6F6F] dark:text-[#A0A0A0] mt-1.5 max-w-md leading-relaxed">
+                You need to sign in with your student account before applying for Batch Pilot verification. This keeps schedule permissions verified and secure.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs mt-2">
+              <button 
+                type="button"
+                onClick={() => {
+                  onClose();
+                  router.push('/sign-in');
+                }} 
+                className="flex-1 px-6 py-3 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity rounded-none cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Sign In Now</span>
+              </button>
+              <button 
+                type="button"
+                onClick={onClose} 
+                className="px-5 py-3 border border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[12px] font-bold uppercase tracking-wider hover:bg-black/5 dark:hover:bg-white/5 transition-colors rounded-none cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         ) : isCR ? (
+          /* CASE 2: USER IS ALREADY A CR / ADMIN */
           <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] rounded-none">
             <div className="w-14 h-14 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] rounded-none flex items-center justify-center shadow-sm">
               <Crown className="w-7 h-7 text-amber-500" />
@@ -242,6 +348,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
             </button>
           </div>
         ) : existingRequest?.status === 'pending' ? (
+          /* CASE 3: APPLICATION UNDER REVIEW */
           <div className="flex flex-col gap-4 text-center py-4">
             <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto">
               <Clock className="w-6 h-6 text-amber-600 dark:text-amber-400" />
@@ -275,9 +382,65 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
             </button>
           </div>
         ) : (
-          /* STANDARDIZED VERIFICATION FORM */
+          /* CASE 4: STANDARDIZED VERIFICATION FORM */
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             
+            {/* EXISTING BATCH DETECTED WARNING BANNER */}
+            {existingBatch && (
+              <div className="p-4 bg-amber-500/10 border-2 border-amber-500/40 rounded-none flex flex-col gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-none bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                    <AlertCircle className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                  </div>
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="text-[10px] font-bold font-mono uppercase tracking-widest text-amber-700 dark:text-amber-400">
+                      BATCH ALREADY CREATED ⚡
+                    </span>
+                    <h4 className="text-[14px] font-bold text-[#111111] dark:text-white leading-snug">
+                      Official timetable already exists for this batch!
+                    </h4>
+                    <p className="text-[12px] text-[#6F6F6F] dark:text-[#A0A0A0] leading-relaxed mt-0.5">
+                      {existingBatch.creatorName || existingBatch.crName 
+                        ? `Created by ${existingBatch.creatorName || existingBatch.crName}`
+                        : 'A live schedule is already published'} · Batch Code: <strong className="font-mono text-black dark:text-white">{existingBatch.inviteCode || existingBatch.id}</strong>
+                    </p>
+                  </div>
+                </div>
+
+                {/* 1-Tap Join Button */}
+                <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
+                  <button
+                    type="button"
+                    disabled={isJoiningExistingBatch}
+                    onClick={handleJoinExistingBatch}
+                    className="flex-1 py-2.5 px-4 bg-[#111111] dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 transition-opacity rounded-none cursor-pointer shadow-sm disabled:opacity-50"
+                  >
+                    {isJoiningExistingBatch ? (
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-3.5 h-3.5 border-2 border-white dark:border-black border-t-transparent rounded-full animate-spin" />
+                        <span>Connecting...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <Users className="w-4 h-4" />
+                        <span>Join This Batch Directly</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {isBatchFull ? (
+                  <p className="text-[11px] text-red-600 dark:text-red-400 font-medium">
+                    ⚠️ This batch already has maximum capacity (3/3 Batch Pilots). Please join directly above to view the schedule.
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8]">
+                    💡 <em>Want to manage this batch together? You can still submit your application below to become a verified Co-Pilot ({existingPilotsCount}/3 Pilots).</em>
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Batch Details Card */}
             <div className="p-4 sm:p-5 bg-[#F9F9F8] dark:bg-[#121317] border border-[#E5E5E5] dark:border-white/[0.08] rounded-none flex flex-col gap-4">
               <div className="flex items-center justify-between border-b border-[#E5E5E5] dark:border-white/[0.08] pb-3">
@@ -286,7 +449,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                   BATCH YOU WILL MANAGE
                 </span>
                 <span className="text-[10px] font-mono text-[#6F6F6F] dark:text-[#94A3B8] uppercase">
-                  STANDARDIZED FORMAT
+                  {isCheckingBatch ? 'Checking availability...' : 'STANDARDIZED FORMAT'}
                 </span>
               </div>
 
@@ -456,7 +619,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                     <select
                       value={semester}
                       onChange={(e) => setSemester(Number(e.target.value) || 1)}
-                      className="w-full px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none text-[13.5px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors cursor-pointer"
+                      className="w-full px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none text-[13.5px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus-border-white/30 transition-colors cursor-pointer"
                     >
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((sem) => (
                         <option key={sem} value={sem} className="dark:bg-[#121317]">
@@ -557,7 +720,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
             <div className="flex flex-col gap-2 pt-1">
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isBatchFull}
                 className="w-full h-12 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-black font-bold text-[13px] uppercase tracking-wider hover:opacity-90 transition-all rounded-none flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-md"
               >
                 {isSubmitting ? (
@@ -568,13 +731,15 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    <span>Submit Request for Approval 🚀</span>
+                    <span>{existingBatch ? 'Apply as Co-Pilot (Up to 3 Allowed) 🚀' : 'Submit Request for Approval 🚀'}</span>
                   </>
                 )}
               </button>
 
               <p className="text-center text-[11.5px] text-[#888888] dark:text-[#94A3B8]">
-                Applications are typically reviewed by admin within 24 hours.
+                {isBatchFull 
+                  ? 'Batch Pilot spots are currently full for this class.'
+                  : 'Applications are typically reviewed by admin within 24 hours.'}
               </p>
             </div>
 
