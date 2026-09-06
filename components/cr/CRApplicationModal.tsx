@@ -24,9 +24,13 @@ import {
   AlertCircle,
   LogIn,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  MessageCircle,
+  Share2,
+  Key
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { shareLink } from '@/lib/shareUtils';
 
 interface CRApplicationModalProps {
   isOpen: boolean;
@@ -57,13 +61,12 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
   targetSemester,
   targetSection
 }) => {
-  const { profile, user, showToast, joinBatchTimetable, searchBatchTimetable } = useApp();
+  const { profile, user, showToast, searchBatchTimetable } = useApp();
   const router = useRouter();
 
   const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isJoiningExistingBatch, setIsJoiningExistingBatch] = useState(false);
   const [existingRequest, setExistingRequest] = useState<any | null>(null);
   
   // Existing batch check states
@@ -196,19 +199,27 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
     };
   }, [isOpen, college, programme, branch, semester, section, searchBatchTimetable]);
 
-  const handleJoinExistingBatch = async () => {
-    if (!existingBatch) return;
-    setIsJoiningExistingBatch(true);
+  const handleAskPilotWhatsApp = async () => {
+    const courseTitle = `${branch || 'Class'} (Sem ${semester}${section ? `, Section ${section}` : ''})`;
+    const messageText = `Hey Batch Pilot! 👋
+
+Could you please share the official *Intersemester Batch Code* for our class:
+🏛️ *${getShortCollegeName(college)}*
+📚 *${courseTitle}*
+
+Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
+
     try {
-      const codeOrKey = existingBatch.inviteCode || existingBatch.id;
-      await joinBatchTimetable(codeOrKey);
-      showToast('Joined Batch! 🎉', `Connected to official timetable for ${getShortCollegeName(existingBatch.college || college)}.`, 'success');
-      onClose();
-    } catch (err: any) {
-      console.error('Failed to join existing batch:', err);
-      showToast('Join Failed', 'Could not connect to this batch automatically. Please use the batch code.', 'error');
-    } finally {
-      setIsJoiningExistingBatch(false);
+      const res = await shareLink({
+        title: `Request Batch Code: ${courseTitle}`,
+        text: messageText,
+        dialogTitle: 'Ask Batch Pilot on WhatsApp'
+      });
+      if (res === 'copied') {
+        showToast('Message Copied!', 'Paste this message in your class group or DM your Batch Pilot.', 'success');
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -399,43 +410,35 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
                     <h4 className="text-[14px] font-bold text-[#111111] dark:text-white leading-snug">
                       Official timetable already exists for this batch!
                     </h4>
-                    <p className="text-[12px] text-[#6F6F6F] dark:text-[#A0A0A0] leading-relaxed mt-0.5">
+                    <p className="text-[12.5px] text-[#555555] dark:text-[#A0A0A0] leading-relaxed mt-0.5">
                       {existingBatch.creatorName || existingBatch.crName 
-                        ? `Created by ${existingBatch.creatorName || existingBatch.crName}`
-                        : 'A live schedule is already published'} · Batch Code: <strong className="font-mono text-black dark:text-white">{existingBatch.inviteCode || existingBatch.id}</strong>
+                        ? `Created by ${existingBatch.creatorName || existingBatch.crName}. `
+                        : 'A live schedule is already published. '}
+                      To prevent unauthorized access, please <strong>ask your Batch Pilot for the official Batch Code</strong> to connect.
                     </p>
                   </div>
                 </div>
 
-                {/* 1-Tap Join Button */}
+                {/* Ask Pilot on WhatsApp Action */}
                 <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
                   <button
                     type="button"
-                    disabled={isJoiningExistingBatch}
-                    onClick={handleJoinExistingBatch}
-                    className="flex-1 py-2.5 px-4 bg-[#111111] dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 transition-opacity rounded-none cursor-pointer shadow-sm disabled:opacity-50"
+                    onClick={handleAskPilotWhatsApp}
+                    className="flex-1 py-2.5 px-4 bg-[#111111] dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 transition-opacity rounded-none cursor-pointer shadow-sm"
                   >
-                    {isJoiningExistingBatch ? (
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-3.5 h-3.5 border-2 border-white dark:border-black border-t-transparent rounded-full animate-spin" />
-                        <span>Connecting...</span>
-                      </div>
-                    ) : (
-                      <>
-                        <Users className="w-4 h-4" />
-                        <span>Join This Batch Directly</span>
-                      </>
-                    )}
+                    <MessageCircle className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
+                    <span>Ask Batch Pilot on WhatsApp</span>
+                    <Share2 className="w-3.5 h-3.5 text-white/60 dark:text-black/60" />
                   </button>
                 </div>
 
                 {isBatchFull ? (
-                  <p className="text-[11px] text-red-600 dark:text-red-400 font-medium">
-                    ⚠️ This batch already has maximum capacity (3/3 Batch Pilots). Please join directly above to view the schedule.
+                  <p className="text-[11.5px] text-red-600 dark:text-red-400 font-medium">
+                    ⚠️ This batch already has maximum capacity (3/3 Batch Pilots). Ask your Pilot for the batch code to join from the app.
                   </p>
                 ) : (
                   <p className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8]">
-                    💡 <em>Want to manage this batch together? You can still submit your application below to become a verified Co-Pilot ({existingPilotsCount}/3 Pilots).</em>
+                    💡 <em>Are you an official CR/Pilot for this section? You can still submit your application below to become an authorized Co-Pilot ({existingPilotsCount}/3 Pilots).</em>
                   </p>
                 )}
               </div>
