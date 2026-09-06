@@ -154,21 +154,21 @@ export const WeeklyTimetable: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowJoinModal(true)}
-              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
+              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
             >
               Join Batch
             </button>
             <button
               type="button"
               onClick={handleImportTimetable}
-              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors gap-2 cursor-pointer"
+              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] transition-colors gap-2 cursor-pointer"
             >
               <Sparkles className="w-4 h-4" /> Magic Import
             </button>
             <button
               type="button"
               onClick={() => handleAddForDay(selectedMobileDay)}
-              className="flex items-center justify-center gap-1.5 h-10 px-4 rounded-none bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] hover:opacity-90 transition-opacity text-[13px] font-semibold cursor-pointer w-auto"
+              className="flex items-center justify-center gap-1.5 h-10 px-4 rounded-none bg-[#111111] text-[#FFFFFF] dark:bg-white dark:text-[#090A0C] hover:opacity-90 transition-opacity text-[13px] font-semibold cursor-pointer w-auto shadow-sm"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               Add Class
@@ -177,20 +177,20 @@ export const WeeklyTimetable: React.FC = () => {
 
           {profile.isBatchSynced && profile.batchKey && (
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold tracking-widest text-[#6F6F6F] uppercase mb-1.5">BATCH</span>
+              <span className="text-[10px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] uppercase mb-1.5">BATCH</span>
               <button
                 onClick={() => setShowBatchMembersModal(true)}
-                className="flex items-center justify-between p-4 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left cursor-pointer"
+                className="flex items-center justify-between p-4 bg-[#FFFFFF] dark:bg-[#121317] border border-[#D9D9D6] dark:border-white/[0.08] hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors text-left cursor-pointer dark:shadow-md"
               >
                 <div className="flex flex-col gap-1">
-                  <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wide">
+                  <span className="text-[13px] font-bold text-[#111111] dark:text-[#F4F4F6] uppercase tracking-wide">
                     {profile.programme} · {profile.branch?.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')}
                   </span>
-                  <span className="text-[12px] font-medium text-[#6F6F6F] uppercase">
+                  <span className="text-[12px] font-medium text-[#6F6F6F] dark:text-[#94A3B8] uppercase">
                     YEAR {profile.year || 1} · MEMBERS
                   </span>
                 </div>
-                <span className="text-[#6F6F6F]">→</span>
+                <span className="text-[#6F6F6F] dark:text-[#94A3B8]">→</span>
               </button>
             </div>
           )}
@@ -212,7 +212,7 @@ export const WeeklyTimetable: React.FC = () => {
                 'flex flex-col items-center justify-center px-4 py-2.5 rounded-2xl text-xs font-semibold shrink-0 transition-all border cursor-pointer',
                 isSelected
                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/20'
-                  : 'glass-card text-slate-600 dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50'
+                  : 'glass-card border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-[#94A3B8] hover:bg-white/50 dark:hover:bg-white/[0.06]'
               )}
             >
               <div className="flex items-center gap-1.5">
@@ -224,7 +224,7 @@ export const WeeklyTimetable: React.FC = () => {
               <span
                 className={clsx(
                   'text-[10px] font-medium mt-0.5',
-                  isSelected ? 'text-indigo-100' : 'text-slate-400'
+                  isSelected ? 'text-indigo-100' : 'text-slate-400 dark:text-zinc-500'
                 )}
               >
                 {classCount} classes
@@ -283,31 +283,31 @@ export const WeeklyTimetable: React.FC = () => {
               className={clsx(
                 "flex flex-col gap-4 p-4 border transition-all rounded-none",
                 isToday
-                  ? "bg-[#F7F7F5] dark:bg-[#1E1E1E] border-[#111111] dark:border-[#FFFFFF]"
-                  : "bg-[#FFFFFF] dark:bg-[#181818] border-[#D9D9D6] dark:border-[#2C2C2C]"
+                  ? "bg-[#F7F7F5] dark:bg-[#13151D] border-[#111111] dark:border-emerald-500/40 dark:shadow-[0_0_25px_-5px_rgba(16,185,129,0.12)]"
+                  : "bg-[#FFFFFF] dark:bg-[#121317] border-[#D9D9D6] dark:border-white/[0.08]"
               )}
             >
               {/* Day Header */}
-              <div className="flex items-center justify-between px-1 pb-3 border-b border-[#EEEEEC] dark:border-[#2C2C2C]">
+              <div className="flex items-center justify-between px-1 pb-3 border-b border-[#EEEEEC] dark:border-white/[0.08]">
                 <div className="flex flex-col gap-0.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-[14px] font-bold tracking-tight text-[#111111] dark:text-[#FFFFFF]">
+                    <span className="text-[14px] font-bold tracking-tight text-[#111111] dark:text-[#F4F4F6]">
                       {day}
                     </span>
                     {isToday && (
-                      <span className="text-[10px] font-bold text-white bg-[#111111] dark:bg-[#FFFFFF] dark:text-[#111111] px-2 py-0.5 uppercase tracking-wider font-mono">
+                      <span className="text-[10px] font-bold text-white dark:text-emerald-400 bg-[#111111] dark:bg-emerald-500/20 dark:border dark:border-emerald-500/30 px-2 py-0.5 uppercase tracking-wider font-mono">
                         Today
                       </span>
                     )}
                   </div>
-                  <span className="text-[11px] font-medium text-[#6F6F6F] dark:text-[#999999]">
+                  <span className="text-[11px] font-medium text-[#6F6F6F] dark:text-[#94A3B8]">
                     {daySessions.length} {daySessions.length === 1 ? 'class' : 'classes'}
                   </span>
                 </div>
 
                 <button
                   onClick={() => handleAddForDay(day)}
-                  className="p-1.5 border border-[#D9D9D6] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] text-[#111111] dark:text-[#FFFFFF] bg-white dark:bg-[#1A1A1A] transition-colors cursor-pointer"
+                  className="p-1.5 border border-[#D9D9D6] dark:border-white/[0.1] hover:border-[#111111] dark:hover:border-white text-[#111111] dark:text-[#F4F4F6] bg-white dark:bg-white/[0.04] hover:dark:bg-white/[0.08] transition-colors cursor-pointer"
                   title={`Add class to ${day}`}
                 >
                   <Plus className="w-4 h-4" />
@@ -317,12 +317,12 @@ export const WeeklyTimetable: React.FC = () => {
               {/* Class Cards List */}
               <div className="flex flex-col gap-3 min-h-[400px]">
                 {daySessions.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-48 text-center bg-black/[0.02] dark:bg-white/[0.02] border border-dashed border-[#D9D9D6] dark:border-[#2C2C2C]">
+                  <div className="flex flex-col items-center justify-center h-48 text-center bg-black/[0.02] dark:bg-white/[0.02] border border-dashed border-[#D9D9D6] dark:border-white/[0.08]">
                     <CalendarDays className="w-6 h-6 text-[#888888] mb-2 opacity-50" />
-                    <span className="text-xs font-semibold text-[#888888]">No Classes</span>
+                    <span className="text-xs font-semibold text-[#888888] dark:text-[#64748B]">No Classes</span>
                     <button
                       onClick={() => handleAddForDay(day)}
-                      className="mt-1.5 text-[11px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider underline cursor-pointer"
+                      className="mt-1.5 text-[11px] font-bold text-[#111111] dark:text-[#F4F4F6] uppercase tracking-wider underline cursor-pointer"
                     >
                       + Add class
                     </button>

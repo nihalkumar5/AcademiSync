@@ -33,32 +33,32 @@ export const LiveClassCard: React.FC = () => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full p-5 relative overflow-hidden bg-[#FFF8E7] border border-[#D8CCB4] rounded-none"
+        className="w-full p-5 relative overflow-hidden bg-[#FFF8E7] dark:bg-[#16130B] border border-[#D8CCB4] dark:border-amber-900/40 rounded-none shadow-xs"
       >
         {/* Subtle Background Monochrome Vector Illustration */}
         <div className="absolute -bottom-1 -right-2 opacity-[0.12] pointer-events-none select-none z-0">
-          <MonochromeIllustration type="holiday" size={90} className="!text-[#D8C9A8] dark:!text-[#D8C9A8]" />
+          <MonochromeIllustration type="holiday" size={90} className="!text-[#D8C9A8] dark:!text-amber-500/20" />
         </div>
         
         <div className="relative z-10 flex flex-col w-full h-full">
           {/* Header */}
           <div className="flex items-center gap-1.5 mb-2">
             <span className="text-[#D99A2B] text-[11px] leading-none">●</span>
-            <span className="text-[11px] font-semibold text-[#111111] uppercase tracking-[1.4px] leading-none">
+            <span className="text-[11px] font-semibold text-[#111111] dark:text-[#FDE68A] uppercase tracking-[1.4px] leading-none">
               Campus Holiday
             </span>
           </div>
           
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between gap-4">
-              <h3 className="text-[24px] font-bold text-[#111111] uppercase leading-[1.1] tracking-tight">
+              <h3 className="text-[24px] font-bold text-[#111111] dark:text-[#F4F4F6] uppercase leading-[1.1] tracking-tight">
                 {todayHoliday.title}
               </h3>
-              <div className="w-[50px] h-[50px] bg-[#111111] flex flex-col items-center justify-center shrink-0">
-                <span className="font-mono text-base font-black uppercase tracking-widest text-white">OFF</span>
+              <div className="w-[50px] h-[50px] bg-[#111111] dark:bg-amber-400 flex flex-col items-center justify-center shrink-0">
+                <span className="font-mono text-base font-black uppercase tracking-widest text-white dark:text-[#16130B]">OFF</span>
               </div>
             </div>
-            <p className="text-[14px] text-[#6B665D] leading-snug line-clamp-2 max-w-[260px]">
+            <p className="text-[14px] text-[#6B665D] dark:text-[#94A3B8] leading-snug line-clamp-2 max-w-[260px]">
               {todayHoliday.description || "No regular lectures or labs today."}
             </p>
           </div>
@@ -79,32 +79,32 @@ export const LiveClassCard: React.FC = () => {
     };
 
     return (
-      <div className="w-full bg-[#111111] border border-[#111111] rounded-none p-5 flex flex-col cursor-pointer relative group">
+      <div className="w-full bg-[#111111] dark:bg-gradient-to-br dark:from-[#13151D] dark:to-[#0C0E12] border border-[#111111] dark:border-emerald-500/30 dark:shadow-[0_8px_30px_-6px_rgba(16,185,129,0.18)] rounded-none p-5 flex flex-col cursor-pointer relative group">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[#FFFFFF] text-[10px] animate-pulse">●</span>
-            <span className="text-[11px] font-semibold text-[#FFFFFF] uppercase tracking-[1.4px] leading-none">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 dark:shadow-[0_0_8px_#34d399] animate-pulse" />
+            <span className="text-[11px] font-bold text-[#FFFFFF] dark:text-emerald-300 uppercase tracking-[1.4px] leading-none">
               LIVE NOW
             </span>
           </div>
-          <span className="text-[13px] font-semibold text-[#FFFFFF] leading-none">
+          <span className="text-[13px] font-semibold text-[#FFFFFF] dark:text-[#F4F4F6] leading-none">
             {currentClass.remainingMinutes}m left
           </span>
         </div>
 
         {/* Subject */}
-        <h3 className="text-[20px] font-semibold text-[#FFFFFF] leading-[24px] mb-[12px] line-clamp-2">
+        <h3 className="text-[20px] font-semibold text-[#FFFFFF] dark:text-[#F4F4F6] leading-[24px] mb-[12px] line-clamp-2">
           {sub?.name || 'Class Session'}
         </h3>
 
         {/* Time */}
-        <div className="text-[13px] text-[#FFFFFF] font-medium leading-none mb-[8px]">
+        <div className="text-[13px] text-[#FFFFFF] dark:text-[#E2E8F0] font-medium leading-none mb-[8px]">
           {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
         </div>
 
         {/* Metadata */}
-        <div className="flex items-center gap-2 text-[12px] text-[#999999] leading-none mb-5">
+        <div className="flex items-center gap-2 text-[12px] text-[#999999] dark:text-[#94A3B8] leading-none mb-5">
           <span className="flex items-center gap-1.5 shrink-0">
             <MapPin className="w-3.5 h-3.5" />
             {session.room}
@@ -118,30 +118,30 @@ export const LiveClassCard: React.FC = () => {
         </div>
 
         {/* Progress Bar (3px) */}
-        <div className="w-full bg-white/20 h-[3px] overflow-hidden mb-5">
+        <div className="w-full bg-white/20 dark:bg-white/10 h-[3px] overflow-hidden mb-5">
           <div
-            className="bg-[#FFFFFF] h-full transition-all duration-1000"
+            className="bg-[#FFFFFF] dark:bg-emerald-400 dark:shadow-[0_0_6px_#34d399] h-full transition-all duration-1000"
             style={{ width: `${currentClass.progressPercentage}%` }}
           />
         </div>
 
         {/* Up Next */}
         {nextClass && (
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between border-t border-white/10 dark:border-white/[0.08] pt-3.5">
             <div className="flex flex-col gap-1.5 min-w-0 pr-4">
-              <span className="text-[11px] font-semibold text-[#808080] uppercase tracking-[1.4px] leading-none">
+              <span className="text-[11px] font-semibold text-[#808080] dark:text-[#71717A] uppercase tracking-[1.4px] leading-none">
                 NEXT · {formatTime12Hour(nextClass.session.startTime)}
               </span>
-              <span className="text-[14px] text-[#FFFFFF] font-medium truncate leading-none">
+              <span className="text-[14px] text-[#FFFFFF] dark:text-[#F4F4F6] font-medium truncate leading-none">
                 {nextClass.subject?.name || 'Next Class'}
               </span>
               {(nextClass.session.room || nextClass.minutesUntilStart !== undefined) && (
-                <span className="text-[12px] text-[#808080] leading-none mt-0.5">
+                <span className="text-[12px] text-[#808080] dark:text-[#71717A] leading-none mt-0.5">
                   {nextClass.session.room ? `${nextClass.session.room} · ` : ''}{nextClass.minutesUntilStart}m
                 </span>
               )}
             </div>
-            <ArrowRight className="w-4 h-4 text-[#BDBDBD] shrink-0 transition-transform group-hover:translate-x-1" />
+            <ArrowRight className="w-4 h-4 text-[#BDBDBD] dark:text-[#94A3B8] shrink-0 transition-transform group-hover:translate-x-1" />
           </div>
         )}
       </div>
@@ -167,18 +167,18 @@ export const LiveClassCard: React.FC = () => {
 
     return (
       <div 
-        className="w-full bg-[#FFFFFF] dark:bg-[#111111] border border-[#BDBDBD] dark:border-[#333333] rounded-none p-4 flex flex-col cursor-pointer relative group"
+        className="w-full bg-[#FFFFFF] dark:bg-[#121317] border border-[#BDBDBD] dark:border-white/[0.08] dark:hover:border-white/20 dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] rounded-none p-4 flex flex-col cursor-pointer relative group transition-all"
       >
         <div className="flex items-center justify-between mb-3">
-          <span className="text-[11px] font-semibold text-[#808080] uppercase tracking-[1.4px] leading-none">NEXT CLASS</span>
-          <span className="text-[12px] font-semibold text-[#111111] dark:text-[#FFFFFF] leading-none">{formatTime12Hour(session.startTime)}</span>
+          <span className="text-[11px] font-semibold text-[#808080] dark:text-[#94A3B8] uppercase tracking-[1.4px] leading-none">NEXT CLASS</span>
+          <span className="text-[12px] font-semibold text-[#111111] dark:text-[#F4F4F6] leading-none">{formatTime12Hour(session.startTime)}</span>
         </div>
 
-        <h3 className="text-[20px] font-semibold text-[#111111] dark:text-[#FFFFFF] leading-[24px] mb-[10px] pr-8 line-clamp-2">
+        <h3 className="text-[20px] font-semibold text-[#111111] dark:text-[#F4F4F6] leading-[24px] mb-[10px] pr-8 line-clamp-2">
           {sub?.name || 'Class Session'}
         </h3>
 
-        <div className="flex items-center gap-2 text-[12px] text-[#6B6B6B] dark:text-[#999999] leading-none mb-4">
+        <div className="flex items-center gap-2 text-[12px] text-[#6B6B6B] dark:text-[#94A3B8] leading-none mb-4">
           <span className="flex items-center gap-1.5 shrink-0">
             <MapPin className="w-3.5 h-3.5" />
             {session.room}
@@ -191,11 +191,11 @@ export const LiveClassCard: React.FC = () => {
           )}
         </div>
 
-        <div className="flex items-center justify-between text-[#111111] dark:text-[#FFFFFF]">
+        <div className="flex items-center justify-between text-[#111111] dark:text-[#F4F4F6]">
           <span className="text-[13px] font-medium leading-none">
             {formatCountdown(nextClass.minutesUntilStart)}
           </span>
-          <ArrowRight className="w-4 h-4 text-[#BDBDBD] dark:text-[#666666] transition-transform group-hover:translate-x-1" />
+          <ArrowRight className="w-4 h-4 text-[#BDBDBD] dark:text-[#71717A] transition-transform group-hover:translate-x-1" />
         </div>
       </div>
     );
@@ -210,14 +210,14 @@ export const LiveClassCard: React.FC = () => {
   const completedToday = totalToday - cancelledToday;
   
   return (
-    <div className="w-full bg-[#FAFAFA] dark:bg-[#111111] border border-[#E0E0E0] dark:border-[#333333] rounded-none p-5 flex flex-col">
-      <span className="text-[11px] font-semibold text-[#808080] uppercase tracking-[1.4px] leading-none mb-3">
+    <div className="w-full bg-[#FAFAFA] dark:bg-[#121317] border border-[#E0E0E0] dark:border-white/[0.08] rounded-none p-5 flex flex-col">
+      <span className="text-[11px] font-semibold text-[#808080] dark:text-[#94A3B8] uppercase tracking-[1.4px] leading-none mb-3">
         SCHEDULE COMPLETE
       </span>
-      <h3 className="text-[16px] font-semibold text-[#111111] dark:text-[#FFFFFF] leading-snug mb-2">
+      <h3 className="text-[16px] font-semibold text-[#111111] dark:text-[#F4F4F6] leading-snug mb-2">
         You&apos;re done for today.
       </h3>
-      <span className="text-[13px] text-[#6B6B6B] dark:text-[#999999] leading-none">
+      <span className="text-[13px] text-[#6B6B6B] dark:text-[#94A3B8] leading-none">
         {totalToday === 0
           ? 'No classes scheduled for today.'
           : `${totalToday} ${totalToday === 1 ? 'class' : 'classes'} · ${completedToday} completed${

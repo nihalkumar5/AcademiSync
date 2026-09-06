@@ -86,20 +86,20 @@ export const SmartFocusList: React.FC = () => {
                   }
                 }}
                 className={clsx(
-                  'relative flex flex-col p-[16px] bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] w-full overflow-hidden transition-opacity cursor-pointer group hover:bg-[#FDFDFD] dark:hover:bg-[#151515]',
+                  'relative flex flex-col p-[16px] bg-[#FFFFFF] dark:bg-[#121317] border border-[#D9D9D6] dark:border-white/[0.08] dark:hover:border-white/20 dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] w-full overflow-hidden transition-all cursor-pointer group hover:bg-[#FDFDFD] dark:hover:bg-[#16171D] rounded-none',
                   isCompleted ? 'opacity-60' : 'opacity-100'
                 )}
               >
                 <div className="relative z-10 flex flex-col h-full">
                   {/* Number Row */}
                   <div className="flex items-start justify-between">
-                    <div className="text-[44px] font-bold text-black/10 dark:text-white/10 select-none pointer-events-none leading-[40px] tracking-tighter">
+                    <div className="text-[44px] font-bold text-black/10 dark:text-white/[0.07] select-none pointer-events-none leading-[40px] tracking-tighter">
                       {String(idx + 1).padStart(2, '0')}
                     </div>
                     {item.type === 'homework' && item.originalPriority && item.originalPriority !== 'Low' && !isCompleted && (
                       <span className={clsx(
                         "text-[9px] font-bold uppercase tracking-widest border px-2 py-0.5",
-                        item.originalPriority === 'High' ? "text-amber-600 border-amber-600/30 bg-amber-500/5" : "text-amber-600/70 border-amber-600/20 bg-amber-500/5"
+                        item.originalPriority === 'High' ? "text-amber-600 dark:text-amber-400 border-amber-600/30 dark:border-amber-500/30 bg-amber-500/5 dark:bg-amber-950/30" : "text-amber-600/70 dark:text-amber-400/70 border-amber-600/20 dark:border-amber-500/20 bg-amber-500/5 dark:bg-amber-950/20"
                       )}>
                         {item.originalPriority}
                       </span>
@@ -107,7 +107,7 @@ export const SmartFocusList: React.FC = () => {
                   </div>
 
                   {/* Course Name */}
-                  <span className="text-[10px] font-semibold uppercase tracking-[1.3px] text-[#817B75] break-words pr-2 mt-4">
+                  <span className="text-[10px] font-semibold uppercase tracking-[1.3px] text-[#817B75] dark:text-[#94A3B8] break-words pr-2 mt-4">
                     {item.tag}
                   </span>
 
@@ -116,7 +116,7 @@ export const SmartFocusList: React.FC = () => {
                     <div className="flex flex-col">
                       <h4 className={clsx(
                         "text-[17px] font-semibold leading-[21px]",
-                        isCompleted ? "text-[#6F6F6F] line-through" : "text-[#111111] dark:text-[#FFFFFF]"
+                        isCompleted ? "text-[#6F6F6F] dark:text-[#71717A] line-through" : "text-[#111111] dark:text-[#F4F4F6]"
                       )}>
                         {item.title}
                       </h4>
@@ -127,7 +127,7 @@ export const SmartFocusList: React.FC = () => {
                   <div className="flex items-center justify-between mt-[20px] text-[11px] font-semibold uppercase tracking-[1px] leading-none">
                     {/* Date */}
                     {item.deadlineText ? (
-                      <span className={clsx(item.urgency === 'high' ? "text-red-600" : "text-[#6F6F6F]")}>
+                      <span className={clsx(item.urgency === 'high' ? "text-red-600 dark:text-rose-400" : "text-[#6F6F6F] dark:text-[#A1A1AA]")}>
                         {item.deadlineText.toUpperCase()}
                       </span>
                     ) : (
@@ -137,7 +137,7 @@ export const SmartFocusList: React.FC = () => {
                     {/* Status indicators */}
                     <div className="flex items-center gap-3">
                       {item.type === 'homework' && item.status === 'In Progress' && (
-                        <span className="flex items-center gap-1 text-blue-600">
+                        <span className="flex items-center gap-1 text-blue-600 dark:text-sky-400">
                           ● IN PROGRESS
                         </span>
                       )}

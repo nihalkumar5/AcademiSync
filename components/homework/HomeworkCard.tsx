@@ -86,20 +86,20 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
 
   return (
     <div className={clsx(
-      "relative flex flex-col p-[16px] bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] w-full overflow-hidden transition-opacity",
+      "relative flex flex-col p-[16px] bg-[#FFFFFF] dark:bg-[#121317] border border-[#D9D9D6] dark:border-white/[0.08] dark:shadow-md w-full overflow-hidden transition-opacity",
       isDone ? 'opacity-60' : 'opacity-100'
     )}>
       <div className="relative z-10 flex flex-col">
         {/* Number and Menu Row */}
         <div className="flex items-start justify-between">
-          <div className="text-[44px] font-bold text-black/10 dark:text-white/10 select-none pointer-events-none leading-[40px] tracking-tighter">
+          <div className="text-[44px] font-bold text-black/10 dark:text-white/[0.06] select-none pointer-events-none leading-[40px] tracking-tighter font-mono">
             {formattedIndex}
           </div>
           <div className="flex items-center gap-2">
             {!isDone && homework.priority !== 'Low' && (
               <span className={clsx(
                 "text-[9px] font-bold uppercase tracking-widest border px-2 py-0.5",
-                homework.priority === 'High' ? "text-amber-600 border-amber-600/30 bg-amber-500/5" : "text-amber-600/70 border-amber-600/20 bg-amber-500/5"
+                homework.priority === 'High' ? "text-amber-600 dark:text-amber-400 border-amber-600/30 dark:border-amber-400/30 bg-amber-500/5 dark:bg-amber-400/10" : "text-amber-600/70 dark:text-amber-400/70 border-amber-600/20 dark:border-amber-400/20 bg-amber-500/5"
               )}>
                 {homework.priority}
               </span>
@@ -111,7 +111,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                 e.stopPropagation();
                 setShowMenu(!showMenu);
               }}
-              className="w-8 h-8 flex items-center justify-center -mr-1.5 -mt-1.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer text-[#6F6F6F]"
+              className="w-8 h-8 flex items-center justify-center -mr-1.5 -mt-1.5 hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors cursor-pointer text-[#6F6F6F] dark:text-[#94A3B8]"
               aria-label="More options"
             >
               <MoreVertical className="w-4 h-4" />
@@ -123,14 +123,14 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -5 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] shadow-xl z-50 py-1"
+                  className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-[#121317] border border-[#D9D9D6] dark:border-white/[0.1] shadow-2xl z-50 py-1"
                 >
                   {homework.attachmentName && (
                     <a
                       href={homework.attachmentName.startsWith('http') ? homework.attachmentName : `https://${homework.attachmentName}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors w-full cursor-pointer"
+                      className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#111111] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors w-full cursor-pointer"
                     >
                       <Link className="w-3.5 h-3.5" />
                       Open Attachment
@@ -143,7 +143,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                         onShare(homework);
                         setShowMenu(false);
                       }}
-                      className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors w-full cursor-pointer"
+                      className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#111111] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors w-full cursor-pointer"
                     >
                       <Share2 className="w-3.5 h-3.5" />
                       Share Task
@@ -177,7 +177,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                       onEdit(homework);
                       setShowMenu(false);
                     }}
-                    className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors w-full cursor-pointer border-t border-[#D9D9D6] dark:border-[#333333]"
+                    className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#111111] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors w-full cursor-pointer border-t border-[#D9D9D6] dark:border-white/[0.08]"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                     Edit Task
@@ -188,7 +188,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                       onDelete(homework.id);
                       setShowMenu(false);
                     }}
-                    className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors w-full cursor-pointer border-t border-[#D9D9D6] dark:border-[#333333]"
+                    className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-red-600 dark:text-rose-400 hover:bg-red-50 dark:hover:bg-rose-950/40 transition-colors w-full cursor-pointer border-t border-[#D9D9D6] dark:border-white/[0.08]"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     Delete Task
@@ -201,7 +201,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
         </div>
 
         {/* Course Name */}
-        <span className="text-[10px] font-semibold uppercase tracking-[1.3px] text-[#817B75] break-words pr-2 mt-4">
+        <span className="text-[10px] font-semibold uppercase tracking-[1.3px] text-[#817B75] dark:text-[#94A3B8] break-words pr-2 mt-4">
           {subject?.name || homework.subjectName || 'GENERAL'}
         </span>
 
@@ -213,8 +213,8 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
             className={clsx(
               "mt-[3px] shrink-0 w-[20px] h-[20px] rounded-full border-[1.5px] flex items-center justify-center transition-colors cursor-pointer",
               isDone 
-                ? "bg-[#111111] border-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:border-[#FFFFFF] dark:text-[#111111]" 
-                : "border-[#D9D9D6] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-transparent"
+                ? "bg-[#111111] border-[#111111] text-[#FFFFFF] dark:bg-[#F4F4F6] dark:border-[#F4F4F6] dark:text-[#090A0C]" 
+                : "border-[#D9D9D6] dark:border-white/[0.15] hover:border-[#111111] dark:hover:border-white bg-transparent"
             )}
           >
             {isDone ? (
@@ -227,7 +227,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
           >
             <h4 className={clsx(
               "text-[17px] font-semibold leading-[21px] group-hover:opacity-80 transition-opacity",
-              isDone ? "text-[#6F6F6F] line-through" : "text-[#111111] dark:text-[#FFFFFF]"
+              isDone ? "text-[#6F6F6F] dark:text-[#64748B] line-through" : "text-[#111111] dark:text-[#F4F4F6]"
             )}>
               {homework.title}
             </h4>

@@ -35,8 +35,8 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
           className={clsx(
             'w-[22px] h-[22px] flex items-center justify-center border transition-all shrink-0 cursor-pointer rounded-none',
             item.isPacked
-              ? 'bg-[#111111] dark:bg-[#FFFFFF] border-[#111111] dark:border-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111]'
-              : 'bg-[#FFFFFF] dark:bg-transparent border-[#D8D8D8] dark:border-[#333333]'
+              ? 'bg-[#111111] dark:bg-[#F4F4F6] border-[#111111] dark:border-[#F4F4F6] text-[#FFFFFF] dark:text-[#090A0C]'
+              : 'bg-[#FFFFFF] dark:bg-transparent border-[#D8D8D8] dark:border-white/[0.15]'
           )}
         >
           {item.isPacked && (
@@ -56,14 +56,14 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
             className={clsx(
               'text-[15px] font-[600] tracking-tight truncate transition-all leading-snug',
               item.isPacked
-                ? 'line-through text-[#6F6F6F]'
-                : 'text-[#111111] dark:text-[#FFFFFF]'
+                ? 'line-through text-[#6F6F6F] dark:text-[#64748B]'
+                : 'text-[#111111] dark:text-[#F4F4F6]'
             )}
           >
             {item.title}
           </span>
 
-          <div className="flex items-center gap-1.5 mt-0.5 text-[12px] text-[#6F6F6F] font-normal min-w-0">
+          <div className="flex items-center gap-1.5 mt-0.5 text-[12px] text-[#6F6F6F] dark:text-[#94A3B8] font-normal min-w-0">
             {item.source === 'subject' ? (
               <span className="flex items-center gap-1.5 truncate">
                 <BookOpen className="w-[13px] h-[13px] shrink-0 stroke-[2]" />
@@ -93,7 +93,7 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
             e.stopPropagation();
             setShowMenu(!showMenu);
           }}
-          className="p-1 text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer outline-none"
+          className="p-1 text-[#6F6F6F] hover:text-[#111111] dark:text-[#94A3B8] dark:hover:text-white transition-colors cursor-pointer outline-none"
         >
           <MoreVertical className="w-4 h-4" />
         </button>
@@ -101,17 +101,17 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
         {showMenu && (
           <>
             <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setShowMenu(false); }} />
-            <div className="absolute right-0 top-8 w-40 bg-[#FFFFFF] dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] shadow-lg z-50 py-1 flex flex-col">
+            <div className="absolute right-0 top-8 w-40 bg-[#FFFFFF] dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] shadow-2xl z-50 py-1 flex flex-col">
               <button 
                 onClick={(e) => { e.stopPropagation(); setShowMenu(false); }}
-                className="w-full text-left px-4 py-2 text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#333333] transition-colors cursor-pointer"
+                className="w-full text-left px-4 py-2 text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
               >
                 Edit item
               </button>
               {onDelete && item.source === 'custom' && (
                 <button 
                   onClick={(e) => { e.stopPropagation(); onDelete(item.id); setShowMenu(false); }}
-                  className="w-full text-left px-4 py-2 text-[13px] font-medium text-[#E03131] hover:bg-[#F7F7F5] dark:hover:bg-[#333333] transition-colors cursor-pointer"
+                  className="w-full text-left px-4 py-2 text-[13px] font-medium text-[#E03131] dark:text-rose-400 hover:bg-[#F7F7F5] dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                 >
                   Remove from list
                 </button>

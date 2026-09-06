@@ -73,10 +73,10 @@ export const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-[#FAFAF8] dark:bg-[#111110] border-r border-black dark:border-white h-screen sticky top-0 select-none p-4 justify-between z-20">
+    <aside className="hidden md:flex flex-col w-64 bg-[#FAFAF8] dark:bg-[#090A0C] border-r border-black/10 dark:border-white/[0.07] h-screen sticky top-0 select-none p-4 justify-between z-20">
       <div className="flex flex-col gap-4">
         {/* Workspace Brand / Header */}
-        <div className="flex items-center justify-between px-2 pt-1 pb-3 border-b border-black/10 dark:border-white/10">
+        <div className="flex items-center justify-between px-2 pt-1 pb-3 border-b border-black/10 dark:border-white/[0.07]">
           <div className="flex items-center gap-2">
             <IntersemesterLogo size="md" showTagline={true} taglineText="Student Edition" />
           </div>
@@ -85,13 +85,13 @@ export const Sidebar: React.FC = () => {
         {/* Quick Search trigger button */}
         <button
           onClick={() => setCommandPaletteOpen(true)}
-          className="flex items-center justify-between w-full px-3 py-2.5 rounded-none bg-transparent border border-black dark:border-white text-black/60 dark:text-white/60 text-xs hover:bg-black/5 dark:hover:bg-white/5 transition-colors group text-left"
+          className="flex items-center justify-between w-full px-3 py-2.5 rounded-none bg-transparent border border-black/15 dark:border-white/[0.08] text-black/60 dark:text-[#A1A1AA] text-xs hover:bg-black/5 dark:hover:bg-white/[0.04] dark:hover:border-white/20 transition-all group text-left"
         >
           <span className="flex items-center gap-2">
             <Command className="w-3.5 h-3.5 text-black/40 dark:text-white/40" />
             <span className="font-semibold">Search or jump...</span>
           </span>
-          <kbd className="text-[10px] font-mono bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded-none border border-black/20 dark:border-white/20 text-black/50 dark:text-white/50">
+          <kbd className="text-[10px] font-mono bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded-none border border-black/15 dark:border-white/10 text-black/50 dark:text-white/50">
             ⌘K
           </kbd>
         </button>
@@ -110,12 +110,12 @@ export const Sidebar: React.FC = () => {
                 className={clsx(
                   'flex items-center justify-between px-3 py-2.5 rounded-none text-xs font-semibold transition-all group border',
                   isActive
-                    ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white font-bold'
-                    : 'text-black/70 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 hover:text-black dark:hover:text-white border-transparent'
+                    ? 'bg-black text-white dark:bg-white/[0.08] dark:text-white border-black dark:border-white/[0.14] dark:shadow-sm font-bold'
+                    : 'text-black/70 dark:text-[#94A3B8] hover:bg-black/5 dark:hover:bg-white/[0.04] hover:text-black dark:hover:text-white border-transparent'
                 )}
               >
                 <span className="flex items-center gap-2.5">
-                  <span className={clsx(isActive ? 'text-white dark:text-black' : 'text-black/40 dark:text-white/40 group-hover:text-black dark:group-hover:text-white')}>
+                  <span className={clsx(isActive ? 'text-white dark:text-white' : 'text-black/40 dark:text-white/40 group-hover:text-black dark:group-hover:text-white')}>
                     {item.icon}
                   </span>
                   {item.label}
@@ -125,8 +125,8 @@ export const Sidebar: React.FC = () => {
                     className={clsx(
                       'text-[9px] font-mono font-bold px-1.5 py-0.5 border rounded-none',
                       isActive
-                        ? 'bg-white dark:bg-black text-black dark:text-white border-white dark:border-black'
-                        : 'bg-black/10 dark:bg-white/10 border-black/15 dark:border-white/15 text-black/70 dark:text-white/70'
+                        ? 'bg-white text-black dark:bg-white/20 dark:text-white border-white dark:border-white/20'
+                        : 'bg-black/10 dark:bg-white/[0.06] border-black/15 dark:border-white/[0.08] text-black/70 dark:text-[#A1A1AA]'
                     )}
                   >
                     {item.badge}
@@ -151,12 +151,12 @@ export const Sidebar: React.FC = () => {
                 className={clsx(
                   'flex items-center justify-between px-3 py-2.5 rounded-none text-xs font-semibold transition-all group border',
                   isActive
-                    ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white font-bold'
-                    : 'text-black/70 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 hover:text-black dark:hover:text-white border-transparent'
+                    ? 'bg-black text-white dark:bg-white/[0.08] dark:text-white border-black dark:border-white/[0.14] dark:shadow-sm font-bold'
+                    : 'text-black/70 dark:text-[#94A3B8] hover:bg-black/5 dark:hover:bg-white/[0.04] hover:text-black dark:hover:text-white border-transparent'
                 )}
               >
                 <span className="flex items-center gap-2.5">
-                  <span className={clsx(isActive ? 'text-white dark:text-black' : 'text-black/40 dark:text-white/40 group-hover:text-black dark:group-hover:text-white')}>
+                  <span className={clsx(isActive ? 'text-white dark:text-white' : 'text-black/40 dark:text-white/40 group-hover:text-black dark:group-hover:text-white')}>
                     {item.icon}
                   </span>
                   {item.label}
@@ -165,7 +165,7 @@ export const Sidebar: React.FC = () => {
                   <span
                     className={clsx(
                       'text-[9px] font-mono font-bold px-1.5 py-0.5 border rounded-none bg-rose-500 text-white',
-                      isActive ? 'border-white dark:border-black' : 'border-rose-600'
+                      isActive ? 'border-white dark:border-rose-400' : 'border-rose-600'
                     )}
                   >
                     {item.badge}
@@ -178,19 +178,19 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Footer Profile & Theme Toggle */}
-      <div className="flex flex-col gap-2 pt-3 border-t border-black/10 dark:border-white/10">
-        <div className="flex items-center justify-between p-2 rounded-none bg-black/[0.02] dark:bg-white/[0.02] border border-black/15 dark:border-white/15">
+      <div className="flex flex-col gap-2 pt-3 border-t border-black/10 dark:border-white/[0.07]">
+        <div className="flex items-center justify-between p-2 rounded-none bg-black/[0.02] dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08]">
           <div className="flex items-center gap-2.5 overflow-hidden flex-1 mr-2">
             {isClerkLoaded && user ? (
               <>
-                <div className="w-7 h-7 flex items-center justify-center bg-black dark:bg-white text-white dark:text-black font-bold text-xs border border-black/15 dark:border-white/15 rounded-none shrink-0 uppercase">
+                <div className="w-7 h-7 flex items-center justify-center bg-black dark:bg-[#1E2028] text-white dark:text-[#F4F4F6] font-bold text-xs border border-black/15 dark:border-white/10 rounded-none shrink-0 uppercase">
                   {profile.name ? profile.name.charAt(0) : 'U'}
                 </div>
                 <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-xs font-bold text-black dark:text-white truncate">
+                  <span className="text-xs font-bold text-black dark:text-[#F4F4F6] truncate">
                     {profile.name || 'User'}
                   </span>
-                  <span className="text-[10px] text-black/50 dark:text-white/50 font-mono truncate">
+                  <span className="text-[10px] text-black/50 dark:text-[#71717A] font-mono truncate">
                     Firebase Auth
                   </span>
                 </div>
@@ -198,7 +198,7 @@ export const Sidebar: React.FC = () => {
             ) : (
               <button 
                 onClick={() => router.push('/sign-in')}
-                className="text-xs font-bold bg-black text-white dark:bg-white dark:text-black px-3 py-1.5 rounded-none border border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer w-full text-center"
+                className="text-xs font-bold bg-black text-white dark:bg-white/[0.1] dark:text-white px-3 py-1.5 rounded-none border border-black dark:border-white/20 hover:bg-transparent hover:text-black dark:hover:bg-white/20 transition-colors cursor-pointer w-full text-center"
               >
                 Sign In
               </button>
@@ -208,7 +208,7 @@ export const Sidebar: React.FC = () => {
           <button
             onClick={toggleTheme}
             aria-label="Toggle theme"
-            className="p-1.5 rounded-none text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 border border-transparent hover:border-black/15 dark:hover:border-white/15 transition-all"
+            className="p-1.5 rounded-none text-black/50 dark:text-[#A1A1AA] hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/[0.06] border border-transparent hover:border-black/15 dark:hover:border-white/10 transition-all cursor-pointer"
           >
             {settings.theme === 'dark' ? (
               <Sun className="w-3.5 h-3.5 text-amber-400" />

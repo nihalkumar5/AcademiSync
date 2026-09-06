@@ -145,24 +145,24 @@ export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.98 }}
-        className={`relative overflow-hidden border border-black dark:border-white bg-white dark:bg-zinc-950 p-4 sm:p-5 shadow-sm transition-all text-left ${className}`}
+        className={`relative overflow-hidden border border-black/10 dark:border-white/[0.08] bg-white dark:bg-[#121317] rounded-2xl p-4 sm:p-5 shadow-sm transition-all text-left ${className}`}
       >
         {/* Subtle top banner strip */}
-        <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-black/10 dark:border-white/10">
-          <div className="flex items-center gap-1.5 px-2 py-0.5 border border-black dark:border-white bg-black/5 dark:bg-white/10 text-[10px] font-bold tracking-widest uppercase text-black dark:text-white">
+        <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-black/10 dark:border-white/[0.08]">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-black/10 dark:border-white/[0.1] bg-black/5 dark:bg-white/[0.06] text-[10px] font-bold tracking-widest uppercase text-black dark:text-[#F4F4F6]">
             {getCategoryIcon(currentCampaign.category)}
             <span>{badgeText}</span>
           </div>
 
           <div className="flex items-center gap-2">
             {campaigns.length > 1 && (
-              <span className="text-[10px] font-mono text-black/50 dark:text-white/50">
+              <span className="text-[10px] font-mono text-black/50 dark:text-white/40">
                 {currentIndex + 1} / {campaigns.length}
               </span>
             )}
             <button
               onClick={() => setIsDismissed(true)}
-              className="p-1 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
+              className="p-1 rounded-lg text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
               title="Dismiss"
             >
               <X className="w-3.5 h-3.5" />
@@ -174,7 +174,7 @@ export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           {/* Media image if present */}
           {currentCampaign.imageUrl && (
-            <div className="relative w-full sm:w-28 h-32 sm:h-24 shrink-0 overflow-hidden border border-black/15 dark:border-white/15 bg-black/5 dark:bg-white/5">
+            <div className="relative w-full sm:w-28 h-32 sm:h-24 shrink-0 overflow-hidden rounded-xl border border-black/10 dark:border-white/[0.08] bg-black/5 dark:bg-white/[0.04]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={currentCampaign.imageUrl}
@@ -186,10 +186,10 @@ export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({
 
           {/* Text details */}
           <div className="flex-1 flex flex-col gap-1 min-w-0">
-            <h4 className="text-sm font-bold text-black dark:text-white tracking-tight leading-snug">
+            <h4 className="text-sm font-bold text-black dark:text-[#F4F4F6] tracking-tight leading-snug">
               {currentCampaign.title}
             </h4>
-            <p className="text-xs text-black/70 dark:text-white/70 font-medium line-clamp-2">
+            <p className="text-xs text-black/70 dark:text-[#94A3B8] font-medium line-clamp-2">
               {currentCampaign.subtitle || currentCampaign.description}
             </p>
           </div>
@@ -198,7 +198,7 @@ export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({
           <div className="w-full sm:w-auto shrink-0 pt-1 sm:pt-0">
             <button
               onClick={handleActionClick}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-wider hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer border border-black dark:border-white"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-wider hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-sm"
             >
               <span>{currentCampaign.ctaText || 'Learn More'}</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -208,14 +208,14 @@ export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({
 
         {/* Next Campaign dot switcher */}
         {campaigns.length > 1 && (
-          <div className="flex items-center justify-center gap-1.5 mt-3 pt-2 border-t border-black/5 dark:border-white/5">
+          <div className="flex items-center justify-center gap-1.5 mt-3 pt-2 border-t border-black/5 dark:border-white/[0.06]">
             {campaigns.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCurrentIndex(i)}
                 className={`h-1.5 rounded-full transition-all cursor-pointer ${
                   i === currentIndex
-                    ? 'w-5 bg-black dark:bg-white'
+                    ? 'w-5 bg-black dark:bg-[#F4F4F6]'
                     : 'w-1.5 bg-black/20 dark:bg-white/20 hover:bg-black/40'
                 }`}
               />

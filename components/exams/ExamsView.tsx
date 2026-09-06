@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Sparkles, CalendarDays, BookOpen, Clock, AlertCircle, Plus, Share2, UserPlus } from 'lucide-react';
+import { Sparkles, Calendar, CalendarDays, BookOpen, Clock, AlertCircle, Plus, Share2, UserPlus } from 'lucide-react';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { ExamImportModal } from './ExamImportModal';
 import { useRouter } from 'next/navigation';
@@ -101,13 +101,13 @@ export const ExamsView: React.FC = () => {
               if (!isSignedIn) { router.push('/sign-in'); return; }
               setShowJoinModal(true);
             }}
-            className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
+            className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-white/[0.08] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
           >
             Join Exams
           </button>
           <button
             onClick={handleMagicImport}
-            className="flex items-center justify-center h-10 px-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold transition-colors gap-2 cursor-pointer"
+            className="flex items-center justify-center h-10 px-4 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] text-[13px] font-semibold transition-colors gap-2 cursor-pointer shadow-xs"
           >
             <Sparkles className="w-4 h-4" /> Magic Import
           </button>
@@ -122,7 +122,7 @@ export const ExamsView: React.FC = () => {
                   showToast('Batch Shared', 'Timetable, calendar, and exams link copied!', 'success');
                 } catch (err) {}
               }}
-              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors gap-2"
+              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-white/[0.08] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors gap-2 cursor-pointer"
             >
               <Share2 className="w-4 h-4" /> Share
             </button>
@@ -131,22 +131,22 @@ export const ExamsView: React.FC = () => {
       </div>
 
       {nextExam && (
-        <div className="mb-12 flex flex-col p-5 bg-[#FFFBEB] dark:bg-[#1A1407] border border-[#FDE68A] dark:border-[#78350F] rounded-none shadow-xs text-left">
+        <div className="mb-12 flex flex-col p-5 bg-[#FFFBEB] dark:bg-[#16130B] border border-[#FDE68A] dark:border-amber-900/40 rounded-none shadow-xs text-left">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
               </span>
-              <span className="text-[11px] font-mono font-bold tracking-[1.5px] uppercase text-[#B45309] dark:text-[#FBBF24]">
+              <span className="text-[11px] font-mono font-bold tracking-[1.5px] uppercase text-[#B45309] dark:text-amber-400">
                 NEXT EXAM
               </span>
             </div>
-            <span className="text-[11.5px] font-mono font-bold text-[#78350F] dark:text-[#FDE68A] bg-amber-200/70 dark:bg-amber-900/40 border border-amber-300/80 dark:border-amber-700/60 px-2.5 py-1 rounded-none uppercase tracking-wider">
+            <span className="text-[11.5px] font-mono font-bold text-[#78350F] dark:text-amber-200 bg-amber-200/70 dark:bg-amber-950/50 border border-amber-300/80 dark:border-amber-800/50 px-2.5 py-1 rounded-none uppercase tracking-wider">
               {getCountdown(nextExam.date)}
             </span>
           </div>
-          <h3 className="text-[19px] sm:text-[21px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight mb-2">
+          <h3 className="text-[19px] sm:text-[21px] font-bold text-[#111111] dark:text-[#F4F4F6] tracking-tight mb-2">
             {nextExam.subjectName}
           </h3>
           <p className="text-[13px] font-mono text-[#92400E] dark:text-[#FDE68A]/80 leading-relaxed font-medium">
@@ -168,16 +168,15 @@ export const ExamsView: React.FC = () => {
       )}
 
       <div className="flex flex-col">
-        <p className="text-[10px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-4">
+        <p className="text-[10px] font-bold tracking-[2px] uppercase text-[#6F6F6F] dark:text-[#A1A1AA] mb-4">
           ALL UPCOMING EXAMS
         </p>
 
         {exams.length === 0 ? (
-          <div className="flex flex-col py-8">
-            <p className="text-[18px] text-[#111111] dark:text-[#FFFFFF] font-medium leading-snug">
-              No exams scheduled.
-            </p>
-            <p className="text-[14px] text-[#6F6F6F] mt-1 mb-4">
+          <div className="py-12 border border-dashed border-[#D9D9D6] dark:border-white/[0.08] flex flex-col items-center justify-center text-center p-6">
+            <Calendar className="w-8 h-8 text-[#6F6F6F] dark:text-[#A1A1AA] mb-3" />
+            <h4 className="text-[16px] font-semibold text-[#111111] dark:text-[#F4F4F6]">No exams scheduled</h4>
+            <p className="text-[14px] text-[#6F6F6F] dark:text-[#94A3B8] mt-1 mb-4">
               Upload your exam timetable using magic scanner or add manually.
             </p>
           </div>
@@ -190,23 +189,23 @@ export const ExamsView: React.FC = () => {
               const isPast = dateObj.getTime() < now.getTime();
               
               return (
-                <div key={exam.id} className={`border border-[#E5E5E5] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-5 flex flex-col md:flex-row md:items-start justify-between group rounded-none ${idx !== 0 ? 'border-t-0' : ''} ${isPast ? 'opacity-50' : ''}`}>
+                <div key={exam.id} className={`border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] p-5 flex flex-col md:flex-row md:items-start justify-between group rounded-none ${idx !== 0 ? 'border-t-0' : ''} ${isPast ? 'opacity-50' : ''}`}>
                   <div className="flex items-start gap-5 w-full">
                     <div className="flex flex-col items-center justify-center min-w-[40px]">
-                      <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none">{dateDay}</span>
-                      <span className="text-[10px] font-bold tracking-[1px] uppercase text-[#111111] dark:text-[#FFFFFF] mt-1">{dateMonth}</span>
+                      <span className="text-[14px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-none">{dateDay}</span>
+                      <span className="text-[10px] font-bold tracking-[1px] uppercase text-[#111111] dark:text-[#A1A1AA] mt-1">{dateMonth}</span>
                     </div>
                     <div className="flex flex-col flex-1">
-                      <p className="text-[15px] text-[#111111] dark:text-[#FFFFFF] font-medium leading-relaxed">
+                      <p className="text-[15px] text-[#111111] dark:text-[#F4F4F6] font-medium leading-relaxed">
                         {exam.subjectName}
                       </p>
-                      <p className="text-[10px] font-bold tracking-[1.5px] uppercase text-[#6F6F6F] mt-1 mb-2">
+                      <p className="text-[10px] font-bold tracking-[1.5px] uppercase text-[#6F6F6F] dark:text-[#94A3B8] mt-1 mb-2">
                         {isPast ? 'COMPLETED' : getCountdown(exam.date)}
                       </p>
                       
                       {(exam.syllabus) && (
-                        <div className="mt-2 pt-3 border-t border-[#E5E5E5] dark:border-[#333333] w-full">
-                          <p className="text-[13px] text-[#6F6F6F] whitespace-pre-wrap leading-relaxed">{exam.syllabus}</p>
+                        <div className="mt-2 pt-3 border-t border-[#E5E5E5] dark:border-white/[0.08] w-full">
+                          <p className="text-[13px] text-[#6F6F6F] dark:text-[#94A3B8] whitespace-pre-wrap leading-relaxed">{exam.syllabus}</p>
                         </div>
                       )}
                     </div>
@@ -222,7 +221,7 @@ export const ExamsView: React.FC = () => {
 
       <Modal isOpen={showJoinModal} onClose={() => setShowJoinModal(false)} title="Join Shared Exams">
         <form onSubmit={handleJoinSubmit} className="flex flex-col gap-4">
-          <p className="text-[13px] text-[#6B6B6B]">
+          <p className="text-[13px] text-[#6B6B6B] dark:text-[#94A3B8]">
             Enter the 6-character Batch Code to sync exams with your class.
           </p>
           <div className="flex flex-col gap-2">
@@ -231,14 +230,14 @@ export const ExamsView: React.FC = () => {
               placeholder="e.g. 65SQ9K"
               value={inviteInput}
               onChange={(e) => setInviteInput(e.target.value.toUpperCase())}
-              className="w-full px-4 py-2.5 border border-[#E5E5E5] dark:border-[#333333] bg-transparent text-[14px] font-mono font-bold tracking-[2px] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors uppercase"
+              className="w-full px-4 py-2.5 border border-[#E5E5E5] dark:border-white/[0.1] bg-transparent text-[14px] font-mono font-bold tracking-[2px] focus:outline-none focus:border-[#111111] dark:focus:border-white/30 text-[#111111] dark:text-[#F4F4F6] transition-colors uppercase"
               required
             />
           </div>
           <button
             type="submit"
             disabled={isJoining}
-            className="h-10 px-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold flex items-center justify-center disabled:opacity-50"
+            className="h-10 px-4 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] text-[13px] font-semibold flex items-center justify-center disabled:opacity-50 cursor-pointer"
           >
             {isJoining ? 'Joining...' : 'Join'}
           </button>

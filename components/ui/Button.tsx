@@ -19,11 +19,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       primary:
         'bg-[#111111] text-white hover:bg-black dark:bg-[#FFFFFF] dark:text-[#111111] dark:hover:bg-white/90 shadow-sm border border-[#111111] dark:border-transparent',
       secondary:
-        'bg-zinc-100 text-zinc-800 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700/80 border border-zinc-200/50 dark:border-zinc-700/50',
+        'bg-zinc-100 text-zinc-800 hover:bg-zinc-200 dark:bg-white/[0.08] dark:text-[#F4F4F6] dark:hover:bg-white/[0.12] border border-black/10 dark:border-white/[0.1]',
       outline:
-        'bg-transparent text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-300 dark:border-zinc-700',
+        'bg-transparent text-zinc-700 dark:text-[#94A3B8] hover:bg-zinc-100 dark:hover:bg-white/[0.06] border border-zinc-300 dark:border-white/[0.1]',
       ghost:
-        'bg-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800',
+        'bg-transparent text-zinc-600 dark:text-[#94A3B8] hover:text-zinc-900 dark:hover:text-[#F4F4F6] hover:bg-zinc-100 dark:hover:bg-white/[0.06]',
       danger:
         'bg-rose-500 text-white hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 shadow-sm',
       accent:

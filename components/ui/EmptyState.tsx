@@ -23,19 +23,19 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   className = "",
 }) => {
   return (
-    <div className={`flex flex-col items-start justify-center p-6 sm:p-8 text-left border border-black/15 dark:border-white/15 bg-black/[0.02] dark:bg-white/[0.02] my-4 relative overflow-hidden group ${className}`}>
+    <div className={`flex flex-col items-start justify-center p-6 sm:p-8 text-left border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] rounded-2xl my-4 relative overflow-hidden group shadow-sm ${className}`}>
       {/* Subtle Aesthetic Glow */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-black/5 dark:bg-white/5 blur-3xl rounded-full pointer-events-none" />
+      <div className="absolute top-0 right-0 w-32 h-32 bg-black/5 dark:bg-white/[0.03] blur-3xl rounded-full pointer-events-none" />
       
       {icon && (
         <div className="mb-4 text-black/40 dark:text-white/40">
           {icon}
         </div>
       )}
-      <h3 className="text-sm font-black text-black dark:text-white tracking-widest uppercase">
+      <h3 className="text-sm font-bold text-black dark:text-[#F4F4F6] tracking-wider uppercase">
         {title}
       </h3>
-      <p className="text-xs text-black/60 dark:text-white/60 mt-1.5 max-w-sm leading-relaxed font-medium">
+      <p className="text-xs text-black/60 dark:text-[#94A3B8] mt-1.5 max-w-sm leading-relaxed font-medium">
         {description}
       </p>
       {actionLabel && onAction && (
@@ -44,10 +44,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             variant="primary" 
             size="sm" 
             onClick={onAction}
-            className="rounded-none bg-black text-white dark:bg-white dark:text-black border-black dark:border-white hover:bg-transparent hover:text-black dark:hover:text-white transition-colors"
+            className="rounded-xl bg-black text-white dark:bg-white dark:text-black hover:opacity-90 transition-opacity shadow-sm"
           >
             {actionIcon && <span className="mr-1">{actionIcon}</span>}
-            <span className="uppercase font-bold tracking-wider text-[10px]">{actionLabel}</span>
+            <span className="uppercase font-bold tracking-wider text-[11px]">{actionLabel}</span>
           </Button>
         </div>
       )}

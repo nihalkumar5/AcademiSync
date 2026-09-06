@@ -142,14 +142,14 @@ export const TodayTimeline: React.FC = () => {
       <form onSubmit={handleAddExtraSubmit} className="flex flex-col gap-4 mt-3">
         {/* Custom Theme-Aware Subject Dropdown */}
         <div className="flex flex-col gap-1.5 text-left relative">
-          <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+          <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
             Subject / Course
           </label>
           
           <button
             type="button"
             onClick={() => setExtraIsSubjectDropdownOpen(!extraIsSubjectDropdownOpen)}
-            className="w-full flex items-center justify-between px-3 py-2.5 bg-white dark:bg-[#18181B] border border-black dark:border-white text-sm focus:outline-none rounded-none text-[#111111] dark:text-[#FFFFFF] transition-colors cursor-pointer text-left shadow-xs"
+            className="w-full flex items-center justify-between px-3 py-2.5 bg-white dark:bg-[#16171D] border border-black/15 dark:border-white/[0.1] text-sm focus:outline-none rounded-none text-[#111111] dark:text-[#F4F4F6] transition-colors cursor-pointer text-left shadow-xs"
           >
             <span className="truncate font-medium">
               {(() => {
@@ -158,7 +158,7 @@ export const TodayTimeline: React.FC = () => {
                 return `${sel.code && sel.code !== 'UNK' ? `[${sel.code}] ` : ''}${sel.name}`;
               })()}
             </span>
-            <ChevronDown className={`w-4 h-4 shrink-0 text-black/60 dark:text-white/60 transition-transform duration-200 ${extraIsSubjectDropdownOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 shrink-0 text-black/60 dark:text-[#A1A1AA] transition-transform duration-200 ${extraIsSubjectDropdownOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {extraIsSubjectDropdownOpen && (
@@ -167,7 +167,7 @@ export const TodayTimeline: React.FC = () => {
                 className="fixed inset-0 z-40" 
                 onClick={() => setExtraIsSubjectDropdownOpen(false)} 
               />
-              <div className="absolute top-[100%] left-0 right-0 mt-1 z-50 max-h-52 overflow-y-auto bg-white dark:bg-[#18181B] border border-black dark:border-white shadow-2xl flex flex-col divide-y divide-black/5 dark:divide-white/5">
+              <div className="absolute top-[100%] left-0 right-0 mt-1 z-50 max-h-52 overflow-y-auto bg-white dark:bg-[#16171D] border border-black/15 dark:border-white/[0.1] shadow-2xl flex flex-col divide-y divide-black/5 dark:divide-white/[0.06]">
                 {subjects.map((sub) => {
                   const isSelected = sub.id === extraSubjectId;
                   return (
@@ -183,21 +183,21 @@ export const TodayTimeline: React.FC = () => {
                       }}
                       className={`w-full px-3.5 py-2.5 text-left flex items-center justify-between text-xs sm:text-sm transition-colors cursor-pointer ${
                         isSelected 
-                          ? 'bg-black/10 dark:bg-white/15 font-bold text-black dark:text-white' 
-                          : 'text-[#222222] dark:text-[#E0E0E0] hover:bg-black/5 dark:hover:bg-white/5'
+                          ? 'bg-black/10 dark:bg-white/[0.1] font-bold text-black dark:text-white' 
+                          : 'text-[#222222] dark:text-[#E2E8F0] hover:bg-black/5 dark:hover:bg-white/[0.04]'
                       }`}
                     >
                       <div className="flex flex-col min-w-0 pr-2">
                         <span className="truncate leading-tight">
                           {sub.code && sub.code !== 'UNK' && (
-                            <span className="font-mono font-bold text-black/60 dark:text-white/60 mr-1.5">
+                            <span className="font-mono font-bold text-black/60 dark:text-[#94A3B8] mr-1.5">
                               [{sub.code}]
                             </span>
                           )}
                           {sub.name}
                         </span>
                         {sub.facultyName && (
-                          <span className="text-[10.5px] text-black/40 dark:text-white/40 truncate mt-0.5">
+                          <span className="text-[10.5px] text-black/40 dark:text-[#71717A] truncate mt-0.5">
                             {sub.facultyName}
                           </span>
                         )}
@@ -215,7 +215,7 @@ export const TodayTimeline: React.FC = () => {
 
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
               Start Time
             </label>
             <input 
@@ -223,12 +223,12 @@ export const TodayTimeline: React.FC = () => {
               value={extraTimeStart}
               onChange={(e) => setExtraTimeStart(e.target.value)}
               required
-              className="px-3 py-2 bg-transparent border border-black dark:border-white text-sm focus:outline-none rounded-none"
+              className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] text-sm focus:outline-none rounded-none"
             />
           </div>
 
           <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
               End Time
             </label>
             <input 
@@ -236,14 +236,14 @@ export const TodayTimeline: React.FC = () => {
               value={extraTimeEnd}
               onChange={(e) => setExtraTimeEnd(e.target.value)}
               required
-              className="px-3 py-2 bg-transparent border border-black dark:border-white text-sm focus:outline-none rounded-none"
+              className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] text-sm focus:outline-none rounded-none"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
               Room / Venue
             </label>
             <input 
@@ -251,12 +251,12 @@ export const TodayTimeline: React.FC = () => {
               value={extraRoom}
               onChange={(e) => setExtraRoom(e.target.value)}
               placeholder="e.g. LT-2, Lab-3"
-              className="px-3 py-2 bg-transparent border border-black dark:border-white text-sm focus:outline-none rounded-none"
+              className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] placeholder:dark:text-[#71717A] text-sm focus:outline-none rounded-none"
             />
           </div>
 
           <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
               Faculty (Optional)
             </label>
             <input 
@@ -264,13 +264,13 @@ export const TodayTimeline: React.FC = () => {
               value={extraFaculty}
               onChange={(e) => setExtraFaculty(e.target.value)}
               placeholder="Prof. Name"
-              className="px-3 py-2 bg-transparent border border-black dark:border-white text-sm focus:outline-none rounded-none"
+              className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] placeholder:dark:text-[#71717A] text-sm focus:outline-none rounded-none"
             />
           </div>
         </div>
 
         <div className="flex flex-col gap-1.5 text-left">
-          <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+          <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
             Notes / Reason (Optional)
           </label>
           <input 
@@ -278,7 +278,7 @@ export const TodayTimeline: React.FC = () => {
             value={extraNotes}
             onChange={(e) => setExtraNotes(e.target.value)}
             placeholder="e.g. Compensatory lecture for Monday"
-            className="px-3 py-2 bg-transparent border border-black dark:border-white text-sm focus:outline-none rounded-none"
+            className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] placeholder:dark:text-[#71717A] text-sm focus:outline-none rounded-none"
           />
         </div>
 
@@ -290,7 +290,7 @@ export const TodayTimeline: React.FC = () => {
             onChange={(e) => setExtraIsLab(e.target.checked)}
             className="w-4 h-4 accent-black dark:accent-white cursor-pointer"
           />
-          <label htmlFor="extraIsLab" className="text-xs font-semibold cursor-pointer text-black dark:text-white">
+          <label htmlFor="extraIsLab" className="text-xs font-semibold cursor-pointer text-black dark:text-[#F4F4F6]">
             Practical / Lab Session
           </label>
         </div>
@@ -299,13 +299,13 @@ export const TodayTimeline: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsAddExtraOpen(false)}
-            className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
+            className="px-4 py-2 border border-black/15 dark:border-white/[0.1] dark:text-[#A1A1AA] text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+            className="px-4 py-2 bg-black text-white dark:bg-white/[0.1] dark:text-white border border-black dark:border-white/20 text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:bg-white/20 transition-colors cursor-pointer rounded-none"
           >
             Add Extra Class
           </button>
@@ -494,163 +494,178 @@ export const TodayTimeline: React.FC = () => {
               setIsAddExtraOpen(true);
             }}
             className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
-          >
-            <span>+ Extra Class</span>
-          </button>
-        )}
-      </div>
-      <div className="relative flex flex-col gap-0 border-l-[3px] border-slate-100 dark:border-zinc-800 ml-3">
+            >
+              <span>+ Extra Class</span>
+            </button>
+          )}
+        </div>
+        <div className="relative flex flex-col gap-0 border-l-[2px] border-slate-200 dark:border-white/[0.08] ml-3">
           {(() => {
-            return displaySessions.map((session) => {
-              const reschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
-              const activeSubjectId = reschedule?.subjectId || session.subjectId;
-              const sub = subjectMap.get(activeSubjectId);
-              const start = timeToMinutes(reschedule ? reschedule.startTime : session.startTime);
-              const end = timeToMinutes(reschedule ? reschedule.endTime : session.endTime);
-              const isCancelled = isSessionCancelled(session.id, targetDateStr);
-              const cancelledMeta = isCancelled ? getCancelledSessionMeta(session.id, targetDateStr) : null;
-              const isNow = !isAfter8PM && !isCancelled && currentMinutes >= start && currentMinutes < end;
+            let hasFoundFirstValid = false;
+            let firstValidVisibleId: string | null = null;
+            
+            for (const s of targetSessions) {
+              const isCancelled = isSessionCancelled(s.id, targetDateStr);
+              const resched = rescheduledSessions[`${targetDateStr}_${s.id}`];
+              const end = timeToMinutes(resched ? resched.endTime : s.endTime);
               const isPassed = isCancelled || (isAfter8PM ? false : currentMinutes >= end);
-              const isNextClass = session.id === firstValidVisibleId;
-
-              let dotClass = '';
-              if (isCancelled) {
-                dotClass = 'bg-[#FCA5A5] dark:bg-[#7f1d1d]'; // Muted red dot
-              } else if (isNow) {
-                dotClass = 'bg-[#111111] dark:bg-[#FFFFFF]'; // Black filled
-              } else if (isNextClass) {
-                dotClass = 'bg-[#111111] dark:bg-[#FFFFFF]'; // Black dot
-              } else {
-                dotClass = 'bg-[#D4D4D4] dark:bg-[#444444]'; // Grey dot
+              if (!isCancelled && !isPassed && !hasFoundFirstValid) {
+                firstValidVisibleId = s.id;
+                hasFoundFirstValid = true;
+                break;
               }
+            }
 
-              let cardColorClass = '';
-              let textColorClass = '';
-              if (isCancelled) {
-                cardColorClass = 'bg-[#FEF2F2] dark:bg-[#450a0a] border-[#FCA5A5] dark:border-[#7f1d1d] opacity-70';
-                textColorClass = 'text-[#991B1B] dark:text-[#fca5a5]';
-              } else if (isNow) {
-                cardColorClass = 'bg-[#111111] dark:bg-[#FFFFFF] border-[#111111] dark:border-[#FFFFFF] shadow-lg';
-                textColorClass = 'text-[#FFFFFF] dark:text-[#111111]';
-              } else if (isPassed) {
-                cardColorClass = 'bg-[#FAFAFA] dark:bg-[#1a1a1a] border-[#E0E0E0] dark:border-[#333333] opacity-60'; // Completed -> Light grey
-                textColorClass = 'text-[#111111] dark:text-[#FFFFFF]';
-              } else if (isNextClass) {
-                cardColorClass = 'bg-[#F9F9F9] dark:bg-[#1f1f1f] border-[#BDBDBD] dark:border-[#555555]'; // Next -> Very subtle accent
-                textColorClass = 'text-[#111111] dark:text-[#FFFFFF]';
-              } else {
-                cardColorClass = 'bg-[#FFFFFF] dark:bg-[#111111] border-[#E0E0E0] dark:border-[#333333]'; // Normal -> White
-                textColorClass = 'text-[#111111] dark:text-[#FFFFFF]';
-              }
+            return targetSessions.map((session, index) => {
+                const sub = subjectMap.get(session.subjectId);
+                const reschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
+                const start = timeToMinutes(reschedule ? reschedule.startTime : session.startTime);
+                const end = timeToMinutes(reschedule ? reschedule.endTime : session.endTime);
 
-              return (
-                <div key={session.id} className="relative pl-6 pb-6 last:pb-0 group">
-                  {/* Node Dot */}
-                  <div 
-                    className={`absolute left-[-6px] top-[2px] w-3 h-3 rounded-full border-2 border-white dark:border-[#1C1C1E] shadow-sm z-10 ${dotClass}`}
-                  />
-                  
-                  {isNow && (
+                const isCancelled = isSessionCancelled(session.id, targetDateStr);
+                const cancelledMeta = isCancelled ? getCancelledSessionMeta(session.id, targetDateStr) : null;
+                const isNow = !isAfter8PM && !isCancelled && currentMinutes >= start && currentMinutes < end;
+                const isPassed = isCancelled || (isAfter8PM ? false : currentMinutes >= end);
+                const isNextClass = session.id === firstValidVisibleId;
+
+                let dotClass = '';
+                if (isCancelled) {
+                  dotClass = 'bg-[#FCA5A5] dark:bg-rose-500';
+                } else if (isNow) {
+                  dotClass = 'bg-[#111111] dark:bg-emerald-400 dark:shadow-[0_0_8px_#34d399]';
+                } else if (isNextClass) {
+                  dotClass = 'bg-[#111111] dark:bg-white';
+                } else {
+                  dotClass = 'bg-[#D4D4D4] dark:bg-white/20';
+                }
+
+                let cardColorClass = '';
+                let textColorClass = '';
+                if (isCancelled) {
+                  cardColorClass = 'bg-[#FEF2F2] dark:bg-rose-950/20 border-[#FCA5A5] dark:border-rose-900/40 opacity-75';
+                  textColorClass = 'text-[#991B1B] dark:text-rose-300';
+                } else if (isNow) {
+                  cardColorClass = 'bg-[#111111] dark:bg-gradient-to-br dark:from-[#151720] dark:to-[#0D0F14] border-[#111111] dark:border-emerald-500/35 shadow-lg dark:shadow-[0_8px_30px_-6px_rgba(16,185,129,0.2)]';
+                  textColorClass = 'text-[#FFFFFF] dark:text-[#F4F4F6]';
+                } else if (isPassed) {
+                  cardColorClass = 'bg-[#FAFAFA] dark:bg-[#0D0E11]/60 border-[#E0E0E0] dark:border-white/[0.04] opacity-60';
+                  textColorClass = 'text-[#111111] dark:text-[#94A3B8]';
+                } else if (isNextClass) {
+                  cardColorClass = 'bg-[#F9F9F9] dark:bg-[#15161C] border-[#BDBDBD] dark:border-white/[0.12] dark:shadow-md';
+                  textColorClass = 'text-[#111111] dark:text-[#F4F4F6]';
+                } else {
+                  cardColorClass = 'bg-[#FFFFFF] dark:bg-[#121317] border-[#E0E0E0] dark:border-white/[0.08] dark:hover:border-white/20';
+                  textColorClass = 'text-[#111111] dark:text-[#F4F4F6]';
+                }
+
+                return (
+                  <div key={session.id} className="relative pl-6 pb-6 last:pb-0 group">
+                    {/* Node Dot */}
                     <div 
-                      className="absolute left-[-9px] top-[-1px] w-[18px] h-[18px] rounded-full animate-ping opacity-40 z-0 bg-[#111111] dark:bg-[#FFFFFF]"
+                      className={`absolute left-[-7px] top-[2px] w-3 h-3 rounded-full border-2 border-white dark:border-[#090A0C] shadow-sm z-10 ${dotClass}`}
                     />
-                  )}
+                    
+                    {isNow && (
+                      <div 
+                        className="absolute left-[-10px] top-[-1px] w-[18px] h-[18px] rounded-full animate-ping opacity-40 z-0 bg-[#111111] dark:bg-emerald-400"
+                      />
+                    )}
 
-                  <div className={`flex flex-col gap-3 transition-all`}>
-                      {/* Time */}
-                      <div className="w-16 shrink-0 flex flex-col pt-0.5">
-                        {reschedule ? (
-                          <div className="flex flex-col">
-                            <span className="text-[11px] line-through opacity-40 font-mono font-bold leading-none mb-0.5">
+                    <div className={`flex flex-col gap-3 transition-all`}>
+                        {/* Time */}
+                        <div className="w-16 shrink-0 flex flex-col pt-0.5">
+                          {reschedule ? (
+                            <div className="flex flex-col">
+                              <span className="text-[11px] line-through opacity-40 font-mono font-bold leading-none mb-0.5">
+                                {session.startTime}
+                              </span>
+                              <span className="text-[13px] font-black tracking-tighter font-mono text-black dark:text-white leading-none">
+                                {reschedule.startTime}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className={`text-[13px] font-black tracking-tighter font-mono ${
+                              isCancelled ? 'line-through text-zinc-400 dark:text-zinc-600' : 'text-slate-800 dark:text-zinc-100'
+                            }`}>
                               {session.startTime}
                             </span>
-                            <span className="text-[13px] font-black tracking-tighter font-mono text-black dark:text-white leading-none">
-                              {reschedule.startTime}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className={`text-[13px] font-black tracking-tighter font-mono ${
-                            isCancelled ? 'line-through text-zinc-400 dark:text-zinc-600' : 'text-slate-800 dark:text-zinc-100'
-                          }`}>
-                            {session.startTime}
-                          </span>
-                        )}
-                      </div>
+                          )}
+                        </div>
 
-                      {/* Class Info Box */}
-                      <div className={`flex-1 rounded-none p-3 border transition-all ${cardColorClass}`}>
-                        <div className="flex flex-wrap items-start justify-between gap-2">
-                          <div className="flex flex-col gap-1 min-w-0 flex-1">
-                            <div className="flex items-start gap-2 flex-wrap">
-                              <h4 className={`text-[16px] leading-[21px] font-semibold line-clamp-2 ${textColorClass} ${isCancelled ? 'line-through opacity-70' : ''}`}>
-                                {sub?.name || 'Class Session'}
-                              </h4>
+                        {/* Class Info Box */}
+                        <div className={`flex-1 rounded-none p-3 border transition-all ${cardColorClass}`}>
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div className="flex flex-col gap-1 min-w-0 flex-1">
+                              <div className="flex items-start gap-2 flex-wrap">
+                                <h4 className={`text-[16px] leading-[21px] font-semibold line-clamp-2 ${textColorClass} ${isCancelled ? 'line-through opacity-70' : ''}`}>
+                                  {sub?.name || 'Class Session'}
+                                </h4>
+                                
+                                {isCancelled ? (
+                                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#FEF2F2] dark:bg-rose-950/40 text-[#991B1B] dark:text-rose-300 border border-[#FCA5A5] dark:border-rose-800/40 shrink-0">
+                                    Cancelled
+                                  </span>
+                                ) : session.isExtra ? (
+                                  <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider border shrink-0 ${
+                                    isNow ? 'bg-black text-white dark:bg-indigo-900/50 dark:text-indigo-200 border-white dark:border-indigo-400/40' : 'bg-indigo-500/15 text-indigo-800 dark:text-indigo-300 border-indigo-500/30'
+                                  }`}>
+                                    Extra Class
+                                  </span>
+                                ) : isNow ? (
+                                  <span className="px-2 py-0.5 rounded-none bg-white text-black dark:bg-emerald-500/20 dark:text-emerald-300 text-[10px] font-bold uppercase tracking-wider animate-pulse border border-current dark:border-emerald-500/40 shrink-0">
+                                    Now
+                                  </span>
+                                ) : reschedule ? (
+                                  <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider border shrink-0 ${
+                                    isNow ? 'bg-black text-white border-white' : 'bg-[#FFFBEB] dark:bg-amber-950/40 text-[#B45309] dark:text-amber-300 border-[#FDE68A] dark:border-amber-800/40'
+                                  }`}>
+                                    Rescheduled
+                                  </span>
+                                ) : null}
+                              </div>
                               
-                              {isCancelled ? (
-                                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#FEF2F2] dark:bg-[#450a0a] text-[#991B1B] dark:text-[#fca5a5] border border-[#FCA5A5] dark:border-[#7f1d1d] shrink-0">
-                                  Cancelled
+                              <div className={`flex items-center gap-[6px] text-[12px] leading-[18px] font-normal flex-wrap mt-[4px] ${isNow ? textColorClass : 'text-[#666666] dark:text-[#94A3B8]'} ${isNow ? 'opacity-80' : ''}`}>
+                                <span className="flex items-center gap-[4px]">
+                                  <MapPin className="w-[14px] h-[14px]" />
+                                  {reschedule?.room || session.room}
                                 </span>
-                              ) : session.isExtra ? (
-                                <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider border shrink-0 ${
-                                  isNow ? 'bg-black text-white border-white' : 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30'
-                                }`}>
-                                  Extra Class
+                                {session.faculty && (
+                                  <>
+                                    <span className="opacity-50">·</span>
+                                    <span className="flex items-center gap-[4px]">
+                                      {session.faculty}
+                                    </span>
+                                  </>
+                                )}
+                                {session.isLab && (
+                                  <>
+                                    <span className="opacity-50">·</span>
+                                    <span className="flex items-center gap-[4px] font-medium text-[12px]">
+                                      <FlaskConical className="w-[14px] h-[14px]" />
+                                      Lab
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+
+                              {session.notes && (
+                                <span className={`text-[11.5px] font-mono mt-1 block italic opacity-80 ${textColorClass}`}>
+                                  Note: {session.notes}
                                 </span>
-                              ) : isNow ? (
-                                <span className="px-2 py-0.5 rounded-none bg-white text-black dark:bg-black dark:text-white text-[10px] font-bold uppercase tracking-wider animate-pulse border border-current shrink-0">
-                                  Now
-                                </span>
-                              ) : reschedule ? (
-                                <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider border shrink-0 ${
-                                  isNow ? 'bg-black text-white border-white' : 'bg-[#FFFBEB] dark:bg-[#422006] text-[#B45309] dark:text-[#FCD34D] border-[#FDE68A] dark:border-[#78350F]'
-                                }`}>
-                                  Rescheduled
-                                </span>
-                              ) : null}
-                            </div>
-                            
-                            <div className={`flex items-center gap-[6px] text-[12px] leading-[18px] font-normal flex-wrap mt-[4px] ${isNow ? textColorClass : 'text-[#666666] dark:text-[#A0A0A0]'} ${isNow ? 'opacity-80' : ''}`}>
-                              <span className="flex items-center gap-[4px]">
-                                <MapPin className="w-[14px] h-[14px]" />
-                                {reschedule?.room || session.room}
-                              </span>
-                              {session.faculty && (
-                                <>
-                                  <span className="opacity-50">·</span>
-                                  <span className="flex items-center gap-[4px]">
-                                    {session.faculty}
-                                  </span>
-                                </>
                               )}
-                              {session.isLab && (
-                                <>
-                                  <span className="opacity-50">·</span>
-                                  <span className="flex items-center gap-[4px] font-medium text-[12px]">
-                                    <FlaskConical className="w-[14px] h-[14px]" />
-                                    Lab
-                                  </span>
-                                </>
+
+                              {isCancelled && (
+                                <span className="text-[11px] font-mono text-[#991B1B] dark:text-rose-300 mt-1 font-semibold block">
+                                  Cancelled for today {cancelledMeta?.by ? `· by ${cancelledMeta.by} (CR)` : ''}
+                                </span>
+                              )}
+
+                              {reschedule && !isCancelled && (
+                                <span className="text-[11px] font-mono text-[#B45309] dark:text-amber-300 mt-1 font-semibold block">
+                                  Rescheduled from {session.startTime}–{session.endTime} {reschedule.by ? `· by ${reschedule.by} (CR)` : ''}
+                                </span>
                               )}
                             </div>
-
-                            {session.notes && (
-                              <span className={`text-[11.5px] font-mono mt-1 block italic opacity-80 ${textColorClass}`}>
-                                Note: {session.notes}
-                              </span>
-                            )}
-
-                            {isCancelled && (
-                              <span className="text-[11px] font-mono text-[#991B1B] dark:text-[#fca5a5] mt-1 font-semibold block">
-                                Cancelled for today {cancelledMeta?.by ? `· by ${cancelledMeta.by} (CR)` : ''}
-                              </span>
-                            )}
-
-                            {reschedule && !isCancelled && (
-                              <span className="text-[11px] font-mono text-[#B45309] dark:text-[#FCD34D] mt-1 font-semibold block">
-                                Rescheduled from {session.startTime}–{session.endTime} {reschedule.by ? `· by ${reschedule.by} (CR)` : ''}
-                              </span>
-                            )}
-                          </div>
 
                           {/* Options Dropdown Menu */}
                           <div className="shrink-0 flex items-center gap-1.5 self-start relative">
@@ -669,11 +684,11 @@ export const TodayTimeline: React.FC = () => {
                                   className="fixed inset-0 z-20"
                                   onClick={() => setOpenMenuSessionId(null)}
                                 />
-                                <div className="absolute right-0 mt-6 w-52 rounded-none bg-white dark:bg-zinc-950 border border-black dark:border-white shadow-lg py-1 z-30 text-left overflow-hidden">
+                                <div className="absolute right-0 mt-6 w-52 rounded-none bg-white dark:bg-[#121317] border border-black/10 dark:border-white/[0.08] shadow-[0_8px_30px_rgba(0,0,0,0.4)] py-1 z-30 text-left overflow-hidden">
                                   {session.isExtra ? (
                                     <>
                                       {profile.isBatchSynced && (
-                                        <div className="px-3 py-1 bg-black/5 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-[9px] font-mono font-bold uppercase text-black/60 dark:text-white/60">
+                                        <div className="px-3 py-1 bg-black/5 dark:bg-white/[0.04] border-b border-black/10 dark:border-white/[0.08] text-[9px] font-mono font-bold uppercase text-black/60 dark:text-[#A1A1AA]">
                                           👑 CR Extra Slot
                                         </div>
                                       )}
@@ -690,19 +705,19 @@ export const TodayTimeline: React.FC = () => {
                                       </button>
                                     </>
                                   ) : profile.isBatchSynced && !isBatchCR ? (
-                                    <div className="p-3 text-[11px] text-black/70 dark:text-white/70 flex flex-col gap-1">
+                                    <div className="p-3 text-[11px] text-black/70 dark:text-[#A1A1AA] flex flex-col gap-1">
                                       <div className="font-bold text-black dark:text-white flex items-center gap-1.5 uppercase text-[10px]">
                                         <Ban className="w-3.5 h-3.5 text-amber-500" />
                                         <span>Pilot Managed Schedule</span>
                                       </div>
-                                      <p className="text-[10px] text-black/60 dark:text-white/60 leading-tight mt-0.5">
+                                      <p className="text-[10px] text-black/60 dark:text-[#71717A] leading-tight mt-0.5">
                                         Only a verified Batch Pilot can cancel or reschedule classes for this batch.
                                       </p>
                                     </div>
                                   ) : isCancelled ? (
                                     <>
                                       {profile.isBatchSynced && (
-                                        <div className="px-3 py-1 bg-black/5 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-[9px] font-mono font-bold uppercase text-black/60 dark:text-white/60">
+                                        <div className="px-3 py-1 bg-black/5 dark:bg-white/[0.04] border-b border-black/10 dark:border-white/[0.08] text-[9px] font-mono font-bold uppercase text-black/60 dark:text-[#A1A1AA]">
                                           🚀 Pilot Live Action
                                         </div>
                                       )}
@@ -721,7 +736,7 @@ export const TodayTimeline: React.FC = () => {
                                   ) : (
                                     <>
                                       {profile.isBatchSynced && (
-                                        <div className="px-3 py-1 bg-black/5 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-[9px] font-mono font-bold uppercase text-black/60 dark:text-white/60">
+                                        <div className="px-3 py-1 bg-black/5 dark:bg-white/[0.04] border-b border-black/10 dark:border-white/[0.08] text-[9px] font-mono font-bold uppercase text-black/60 dark:text-[#A1A1AA]">
                                           👑 CR Live Controls
                                         </div>
                                       )}
@@ -737,7 +752,7 @@ export const TodayTimeline: React.FC = () => {
                                         <span>Cancel Class for Batch</span>
                                       </button>
                                       
-                                      <div className="h-px bg-black/10 dark:bg-white/10 my-0.5"></div>
+                                      <div className="h-px bg-black/10 dark:border-white/[0.08] my-0.5"></div>
                                       
                                       {reschedule ? (
                                         <button
@@ -763,7 +778,7 @@ export const TodayTimeline: React.FC = () => {
                                             setRescheduleSubjectId(currentReschedule?.subjectId || session.subjectId);
                                             setRescheduleTarget(session);
                                           }}
-                                          className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-bold text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 text-left transition-colors cursor-pointer"
+                                          className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-bold text-black dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
                                         >
                                           <Clock className="w-3.5 h-3.5 opacity-60" />
                                           <span>Reschedule Class</span>
@@ -794,14 +809,14 @@ export const TodayTimeline: React.FC = () => {
         <form onSubmit={handleRescheduleSubmit} className="flex flex-col gap-4 mt-3">
           {/* Custom Theme-Aware Subject Dropdown */}
           <div className="flex flex-col gap-1.5 text-left relative">
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
               Subject / Course
             </label>
             
             <button
               type="button"
               onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
-              className="w-full flex items-center justify-between px-3 py-2.5 bg-white dark:bg-[#18181B] border border-black dark:border-white text-sm focus:outline-none rounded-none text-[#111111] dark:text-[#FFFFFF] transition-colors cursor-pointer text-left shadow-xs"
+              className="w-full flex items-center justify-between px-3 py-2.5 bg-white dark:bg-[#16171D] border border-black/15 dark:border-white/[0.1] text-sm focus:outline-none rounded-none text-[#111111] dark:text-[#F4F4F6] transition-colors cursor-pointer text-left shadow-xs"
             >
               <span className="truncate font-medium">
                 {(() => {
@@ -810,7 +825,7 @@ export const TodayTimeline: React.FC = () => {
                   return `${sel.code && sel.code !== 'UNK' ? `[${sel.code}] ` : ''}${sel.name}`;
                 })()}
               </span>
-              <ChevronDown className={`w-4 h-4 shrink-0 text-black/60 dark:text-white/60 transition-transform duration-200 ${isSubjectDropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 shrink-0 text-black/60 dark:text-[#A1A1AA] transition-transform duration-200 ${isSubjectDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isSubjectDropdownOpen && (
@@ -819,7 +834,7 @@ export const TodayTimeline: React.FC = () => {
                   className="fixed inset-0 z-40" 
                   onClick={() => setIsSubjectDropdownOpen(false)} 
                 />
-                <div className="absolute top-[100%] left-0 right-0 mt-1 z-50 max-h-52 overflow-y-auto bg-white dark:bg-[#18181B] border border-black dark:border-white shadow-2xl flex flex-col divide-y divide-black/5 dark:divide-white/5">
+                <div className="absolute top-[100%] left-0 right-0 mt-1 z-50 max-h-52 overflow-y-auto bg-white dark:bg-[#16171D] border border-black/15 dark:border-white/[0.1] shadow-2xl flex flex-col divide-y divide-black/5 dark:divide-white/[0.06]">
                   {subjects.map((sub) => {
                     const isSelected = sub.id === rescheduleSubjectId;
                     return (
@@ -832,21 +847,21 @@ export const TodayTimeline: React.FC = () => {
                         }}
                         className={`w-full px-3.5 py-2.5 text-left flex items-center justify-between text-xs sm:text-sm transition-colors cursor-pointer ${
                           isSelected 
-                            ? 'bg-black/10 dark:bg-white/15 font-bold text-black dark:text-white' 
-                            : 'text-[#222222] dark:text-[#E0E0E0] hover:bg-black/5 dark:hover:bg-white/5'
+                            ? 'bg-black/10 dark:bg-white/[0.1] font-bold text-black dark:text-white' 
+                            : 'text-[#222222] dark:text-[#E2E8F0] hover:bg-black/5 dark:hover:bg-white/[0.04]'
                         }`}
                       >
                         <div className="flex flex-col min-w-0 pr-2">
                           <span className="truncate leading-tight">
                             {sub.code && sub.code !== 'UNK' && (
-                              <span className="font-mono font-bold text-black/60 dark:text-white/60 mr-1.5">
+                              <span className="font-mono font-bold text-black/60 dark:text-[#94A3B8] mr-1.5">
                                 [{sub.code}]
                               </span>
                             )}
                             {sub.name}
                           </span>
                           {sub.facultyName && (
-                            <span className="text-[10.5px] text-black/40 dark:text-white/40 truncate mt-0.5">
+                            <span className="text-[10.5px] text-black/40 dark:text-[#71717A] truncate mt-0.5">
                               {sub.facultyName}
                             </span>
                           )}
@@ -863,7 +878,7 @@ export const TodayTimeline: React.FC = () => {
           </div>
 
           <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
               New Start Time
             </label>
             <input 
@@ -871,12 +886,12 @@ export const TodayTimeline: React.FC = () => {
               value={rescheduleTimeStart}
               onChange={(e) => setRescheduleTimeStart(e.target.value)}
               required
-              className="px-3 py-2 bg-transparent border border-black dark:border-white text-sm focus:outline-none rounded-none"
+              className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] text-sm focus:outline-none rounded-none"
             />
           </div>
 
           <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
               New End Time
             </label>
             <input 
@@ -884,12 +899,12 @@ export const TodayTimeline: React.FC = () => {
               value={rescheduleTimeEnd}
               onChange={(e) => setRescheduleTimeEnd(e.target.value)}
               required
-              className="px-3 py-2 bg-transparent border border-black dark:border-white text-sm focus:outline-none rounded-none"
+              className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] text-sm focus:outline-none rounded-none"
             />
           </div>
 
           <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
               New Room (Optional)
             </label>
             <input 
@@ -897,7 +912,7 @@ export const TodayTimeline: React.FC = () => {
               value={rescheduleRoom}
               onChange={(e) => setRescheduleRoom(e.target.value)}
               placeholder="e.g. LT-2, Lab-3"
-              className="px-3 py-2 bg-transparent border border-black dark:border-white text-sm focus:outline-none rounded-none"
+              className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] placeholder:dark:text-[#71717A] text-sm focus:outline-none rounded-none"
             />
           </div>
 
@@ -905,13 +920,13 @@ export const TodayTimeline: React.FC = () => {
             <button
               type="button"
               onClick={() => setRescheduleTarget(null)}
-              className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
+              className="px-4 py-2 border border-black/15 dark:border-white/[0.1] dark:text-[#A1A1AA] text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+              className="px-4 py-2 bg-black text-white dark:bg-white/[0.1] dark:text-white border border-black dark:border-white/20 text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:bg-white/20 transition-colors cursor-pointer rounded-none"
             >
               Save Schedule
             </button>

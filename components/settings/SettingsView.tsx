@@ -324,19 +324,19 @@ export const SettingsView: React.FC = () => {
 
   // Shared input class for the brutalist theme
   const inputClass =
-    'w-full px-3.5 py-2.5 bg-white dark:bg-zinc-950 border border-black dark:border-white text-sm font-medium text-black dark:text-white focus:outline-none placeholder:text-black/30 dark:placeholder:text-white/30';
+    'w-full px-3.5 py-2.5 bg-white dark:bg-[#090A0C] border border-black/15 dark:border-white/[0.1] text-sm font-medium text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 placeholder:text-black/30 dark:placeholder:text-[#64748B]';
 
-  const labelClass = 'text-[11px] font-bold tracking-widest uppercase text-black/60 dark:text-white/60';
+  const labelClass = 'text-[11px] font-bold tracking-widest uppercase text-black/60 dark:text-[#94A3B8]';
 
   return (
     <div className="flex flex-col gap-6 text-left max-w-4xl mx-auto w-full max-w-full overflow-x-hidden pb-12">
       {/* Editorial Stacked Header */}
       <div className="flex flex-col gap-4 pt-2 sm:pt-6">
         <div>
-          <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
+          <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#F4F4F6] tracking-tight leading-[44px]">
             Settings,<br />Profile
           </h2>
-          <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4 max-w-md">
+          <p className="text-[14px] font-normal text-[#6B6B6B] dark:text-[#94A3B8] leading-[20px] mt-4 max-w-md">
             Manage your student identity, reminders, and data preferences.
           </p>
         </div>
@@ -344,11 +344,11 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* Student Identity Card */}
-      <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-[20px] rounded-none">
+      <div className="border border-[#D8D8D8] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] p-[20px] rounded-none dark:shadow-md">
         <div className="flex items-start gap-5">
           {/* Avatar & Change Photo Column */}
           <div className="flex flex-col gap-3 items-center shrink-0">
-            <div className="w-[64px] h-[64px] border border-[#D8D8D8] dark:border-[#333333] flex items-center justify-center overflow-hidden bg-[#F7F7F5] dark:bg-[#1A1A1A]">
+            <div className="w-[64px] h-[64px] border border-[#D8D8D8] dark:border-white/[0.08] flex items-center justify-center overflow-hidden bg-[#F7F7F5] dark:bg-[#161820]">
               <img
                 src={`https://api.dicebear.com/7.x/notionists/svg?seed=${avatarSeed}&backgroundColor=transparent`}
                 alt="avatar"
@@ -435,16 +435,16 @@ export const SettingsView: React.FC = () => {
         {/* Left Column: Academic Profile & Batch Content */}
         <div className="lg:col-span-7 flex flex-col gap-6">
         
-          <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-0 flex flex-col rounded-none">
-            <div className="flex items-center justify-between p-5 pb-4 border-b border-[#D8D8D8] dark:border-[#333333]">
-              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+          <div className="border border-[#D8D8D8] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] p-0 flex flex-col rounded-none dark:shadow-md">
+            <div className="flex items-center justify-between p-5 pb-4 border-b border-[#D8D8D8] dark:border-white/[0.08]">
+              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#F4F4F6]">
                 <GraduationCap className="w-[18px] h-[18px] stroke-[1.5]" />
                 <span>Academic Information</span>
               </div>
               {!isEditingAcademic && (
                 <button
                   onClick={() => setIsEditingAcademic(true)}
-                  className="text-[11px] font-bold tracking-widest uppercase text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer"
+                  className="text-[11px] font-bold tracking-widest uppercase text-[#6F6F6F] hover:text-[#111111] dark:text-[#94A3B8] dark:hover:text-white transition-colors cursor-pointer"
                 >
                   Edit
                 </button>
@@ -455,28 +455,28 @@ export const SettingsView: React.FC = () => {
               {!isEditingAcademic ? (
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Full Name</span>
-                    <span className="text-[15px] font-[600] text-[#111111] dark:text-[#FFFFFF] leading-snug break-words">{name || 'Not specified'}</span>
+                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Full Name</span>
+                    <span className="text-[15px] font-[600] text-[#111111] dark:text-[#F4F4F6] leading-snug break-words">{name || 'Not specified'}</span>
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">College / University</span>
-                    <span className="text-[15px] font-[600] text-[#111111] dark:text-[#FFFFFF] leading-snug break-words">{college || 'Not specified'}</span>
+                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">College / University</span>
+                    <span className="text-[15px] font-[600] text-[#111111] dark:text-[#F4F4F6] leading-snug break-words">{college || 'Not specified'}</span>
                   </div>
                   
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Programme</span>
-                    <span className="text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] break-words">{programme} {branch ? `· ${branch}` : ''}</span>
+                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Programme</span>
+                    <span className="text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] break-words">{programme} {branch ? `· ${branch}` : ''}</span>
                   </div>
                   
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Roll Number</span>
-                    <span className="text-[14px] font-mono font-medium text-[#111111] dark:text-[#FFFFFF] break-all">{rollNumber || 'Not specified'}</span>
+                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Roll Number</span>
+                    <span className="text-[14px] font-mono font-medium text-[#111111] dark:text-[#F4F4F6] break-all">{rollNumber || 'Not specified'}</span>
                   </div>
                   
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Institute Email</span>
-                    <a href={`mailto:${email}`} className="text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:underline underline-offset-2 break-all">{email || 'Not specified'}</a>
+                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Institute Email</span>
+                    <a href={`mailto:${email}`} className="text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:underline underline-offset-2 break-all">{email || 'Not specified'}</a>
                   </div>
                 </div>
               ) : (
@@ -486,8 +486,8 @@ export const SettingsView: React.FC = () => {
                 }} className="flex flex-col gap-5">
                   {/* Full Name */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Full Name</label>
-                    <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
+                    <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Full Name</label>
+                    <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
                       <User className="w-4 h-4 text-[#A0A0A0] shrink-0" />
                       <input
                         type="text"
@@ -495,20 +495,20 @@ export const SettingsView: React.FC = () => {
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Your full name"
                         required
-                        className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
+                        className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
                       />
                     </div>
                   </div>
 
                   {/* College Name (Strict Verification) */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">College / University</label>
+                    <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">College / University</label>
                     <div className="relative w-full">
                       {college && !isChangingCollege ? (
-                        <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
+                        <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
                           <div className="flex items-center gap-2.5 overflow-hidden">
                             <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                            <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] truncate">{college}</span>
+                            <span className="text-[13px] font-bold text-[#111111] dark:text-[#F4F4F6] truncate">{college}</span>
                           </div>
                           <button
                             type="button"
@@ -516,14 +516,14 @@ export const SettingsView: React.FC = () => {
                               setIsChangingCollege(true);
                               setShowCollegeDropdown(true);
                             }}
-                            className="text-[11px] font-bold text-[#111111] dark:text-[#FFFFFF] hover:underline uppercase tracking-wider shrink-0 ml-3 cursor-pointer"
+                            className="text-[11px] font-bold text-[#111111] dark:text-[#F4F4F6] hover:underline uppercase tracking-wider shrink-0 ml-3 cursor-pointer"
                           >
                             Change
                           </button>
                         </div>
                       ) : (
                         <div className="relative">
-                          <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#111111] dark:border-[#FFFFFF]">
+                          <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#111111] dark:border-white/30">
                             <Building2 className="w-4 h-4 text-[#888888] shrink-0" />
                             <input
                               type="text"
@@ -534,7 +534,7 @@ export const SettingsView: React.FC = () => {
                               }}
                               onFocus={() => setShowCollegeDropdown(true)}
                               placeholder="Search verified college e.g. IIIT Naya Raipur, VIT, IIT..."
-                              className="w-full bg-transparent text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
+                              className="w-full bg-transparent text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
                               autoFocus
                             />
                             {college && (
@@ -548,7 +548,7 @@ export const SettingsView: React.FC = () => {
                             )}
                           </div>
                           {showCollegeDropdown && (
-                            <div className="absolute top-full left-0 w-full mt-1.5 max-h-60 overflow-y-auto bg-white dark:bg-[#1A1A1A] border border-slate-200 dark:border-zinc-800 shadow-xl rounded-xl z-50 divide-y divide-slate-100 dark:divide-zinc-800">
+                            <div className="absolute top-full left-0 w-full mt-1.5 max-h-60 overflow-y-auto bg-white dark:bg-[#121317] border border-slate-200 dark:border-white/[0.1] shadow-2xl rounded-xl z-50 divide-y divide-slate-100 dark:divide-white/[0.06]">
                               <div className="p-2 bg-slate-50 dark:bg-zinc-900/80 text-[10.5px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between sticky top-0 backdrop-blur-sm">
                                 <span>{isLoadingColleges ? 'Searching verified directory...' : 'Select Your University'}</span>
                                 <span className="text-[9px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold">SheerID Verified</span>
@@ -597,28 +597,28 @@ export const SettingsView: React.FC = () => {
                   {/* Roll Number & Email */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Roll Number</label>
-                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
-                        <Hash className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Roll Number</label>
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
+                        <Hash className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
                         <input
                           type="text"
                           value={rollNumber}
                           onChange={(e) => setRollNumber(e.target.value)}
                           required
-                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
                         />
                       </div>
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Institute Email</label>
-                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
-                        <Mail className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Institute Email</label>
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
+                        <Mail className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
                         <input
                           type="email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
-                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -627,10 +627,10 @@ export const SettingsView: React.FC = () => {
                   {/* Programme & Branch */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Degree / Programme</label>
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Degree / Programme</label>
                       <div className="relative w-full">
-                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
-                          <GraduationCap className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
+                          <GraduationCap className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
                           <input
                             type="text"
                             value={programme}
@@ -642,23 +642,23 @@ export const SettingsView: React.FC = () => {
                             onBlur={() => setTimeout(() => setShowProgrammeDropdown(false), 200)}
                             placeholder="e.g. B.Tech, B.Sc"
                             required
-                            className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
+                            className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
                           />
                         </div>
                         {showProgrammeDropdown && (
-                          <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] shadow-lg z-50">
+                          <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-[#FFFFFF] dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] shadow-2xl z-50">
                             {STANDARD_PROGRAMMES.filter(p => p.toLowerCase().includes(programme.toLowerCase())).length > 0 ? (
                               STANDARD_PROGRAMMES.filter(p => p.toLowerCase().includes(programme.toLowerCase())).map(p => (
                                 <div
                                   key={p}
                                   onMouseDown={() => { setProgramme(p); setShowProgrammeDropdown(false); }}
-                                  className="px-4 py-2 hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] border-b border-[#D8D8D8] dark:border-[#333333] last:border-0"
+                                  className="px-4 py-2 hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] border-b border-[#D8D8D8] dark:border-white/[0.06] last:border-0"
                                 >
                                   {p}
                                 </div>
                               ))
                             ) : (
-                              <div className="px-4 py-2 text-xs text-[#6F6F6F] font-mono">
+                              <div className="px-4 py-2 text-xs text-[#6F6F6F] dark:text-[#94A3B8] font-mono">
                                 Press Enter to use custom degree
                               </div>
                             )}
@@ -668,10 +668,10 @@ export const SettingsView: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Major / Branch</label>
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Major / Branch</label>
                       <div className="relative w-full">
-                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333]">
-                          <Building2 className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
+                          <Building2 className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
                           <input
                             type="text"
                             value={branch}
@@ -683,23 +683,23 @@ export const SettingsView: React.FC = () => {
                             onBlur={() => setTimeout(() => setShowBranchDropdown(false), 200)}
                             placeholder="e.g. Computer Science"
                             required
-                            className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none placeholder:text-[#A0A0A0]"
+                            className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
                           />
                         </div>
                         {showBranchDropdown && (
-                          <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] shadow-lg z-50">
+                          <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-[#FFFFFF] dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] shadow-2xl z-50">
                             {STANDARD_BRANCHES.filter(b => b.toLowerCase().includes(branch.toLowerCase())).length > 0 ? (
                               STANDARD_BRANCHES.filter(b => b.toLowerCase().includes(branch.toLowerCase())).map(b => (
                                 <div
                                   key={b}
                                   onMouseDown={() => { setBranch(b); setShowBranchDropdown(false); }}
-                                  className="px-4 py-2 hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] border-b border-[#D8D8D8] dark:border-[#333333] last:border-0"
+                                  className="px-4 py-2 hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] border-b border-[#D8D8D8] dark:border-white/[0.06] last:border-0"
                                 >
                                   {b}
                                 </div>
                               ))
                             ) : (
-                              <div className="px-4 py-2 text-xs text-[#6F6F6F] font-mono">
+                              <div className="px-4 py-2 text-xs text-[#6F6F6F] dark:text-[#94A3B8] font-mono">
                                 Press Enter to use custom branch
                               </div>
                             )}
@@ -712,9 +712,9 @@ export const SettingsView: React.FC = () => {
                   {/* Year, Semester */}
                   <div className="grid grid-cols-2 gap-4 items-start">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] h-4 flex items-center">Year</label>
-                      <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] h-[44px]">
-                        <CalendarDays className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8] h-4 flex items-center">Year</label>
+                      <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[44px]">
+                        <CalendarDays className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
                         <input
                           type="number"
                           min="1"
@@ -722,13 +722,13 @@ export const SettingsView: React.FC = () => {
                           value={year}
                           onChange={(e) => setYear(Number(e.target.value))}
                           required
-                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
                         />
                       </div>
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] h-4 flex items-center">Semester</label>
-                      <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] h-[44px]">
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8] h-4 flex items-center">Semester</label>
+                      <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[44px]">
                         <input
                           type="number"
                           min="1"
@@ -737,18 +737,18 @@ export const SettingsView: React.FC = () => {
                           onChange={(e) => setSemester(Number(e.target.value))}
                           placeholder="1-14"
                           required
-                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
                         />
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3 pt-3">
-                    <button type="submit" className="bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] px-5 py-2.5 text-[13px] font-bold hover:opacity-90 transition-opacity cursor-pointer">
+                    <button type="submit" className="bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] px-5 py-2.5 text-[13px] font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-sm">
                       {profile.college && profile.branch ? 'Save Changes' : 'Create Profile'}
                     </button>
                     {profile.college && (
-                      <button type="button" onClick={() => setIsEditingAcademic(false)} className="px-4 py-2.5 text-[13px] font-bold text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer">
+                      <button type="button" onClick={() => setIsEditingAcademic(false)} className="px-4 py-2.5 text-[13px] font-bold text-[#6F6F6F] hover:text-[#111111] dark:text-[#94A3B8] dark:hover:text-white transition-colors cursor-pointer">
                         Cancel
                       </button>
                     )}
@@ -760,21 +760,21 @@ export const SettingsView: React.FC = () => {
           
           {/* YOUR BATCH */}
           <div className="flex flex-col gap-0 mt-6">
-            <div className="flex items-center justify-between pb-3 border-b border-[#D8D8D8] dark:border-[#333333]">
-              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+            <div className="flex items-center justify-between pb-3 border-b border-[#D8D8D8] dark:border-white/[0.08]">
+              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#F4F4F6]">
                 <Users className="w-[18px] h-[18px] stroke-[1.5]" />
                 <span>Your Batch</span>
               </div>
             </div>
 
             {profile.isBatchSynced ? (
-              <div className="flex flex-col p-4 sm:p-5 bg-[#F9F9F8] dark:bg-[#161616] border border-[#D8D8D8] dark:border-[#333333] mt-3 gap-4">
+              <div className="flex flex-col p-4 sm:p-5 bg-[#F9F9F8] dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.08] mt-3 gap-4 dark:shadow-md">
                 <div className="flex items-start justify-between">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wide">
+                    <span className="text-[14px] font-bold text-[#111111] dark:text-[#F4F4F6] uppercase tracking-wide">
                       {profile.programme} {profile.branch ? `· ${profile.branch}` : ''}
                     </span>
-                    <div className="flex items-center gap-2 text-[12px] text-[#6F6F6F]">
+                    <div className="flex items-center gap-2 text-[12px] text-[#6F6F6F] dark:text-[#94A3B8]">
                       <span>Semester {profile.semester} · Year {Math.ceil((profile.semester || 1) / 2)}</span>
                       {profile.section && (
                         <>
@@ -785,7 +785,7 @@ export const SettingsView: React.FC = () => {
                     </div>
                   </div>
                   {isBatchCR && (
-                    <span className="text-[10px] font-bold tracking-widest text-[#111111] dark:text-[#FFFFFF] border border-[#111111] dark:border-[#FFFFFF] px-1.5 py-0.5 uppercase">
+                    <span className="text-[10px] font-bold tracking-widest text-[#111111] dark:text-emerald-400 border border-[#111111] dark:border-emerald-500/30 dark:bg-emerald-500/10 px-1.5 py-0.5 uppercase">
                       CR
                     </span>
                   )}
@@ -793,10 +793,10 @@ export const SettingsView: React.FC = () => {
 
                 {/* Class Join Passcode - INSIDE the card, visible only to CR / Admins */}
                 {isBatchCR && currentBatchData?.inviteCode && (
-                  <div className="flex items-center justify-between p-3 bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#2C2C2C]">
+                  <div className="flex items-center justify-between p-3 bg-white dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.08]">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#888888]">BATCH CODE:</span>
-                      <span className="text-[14px] font-mono font-bold tracking-[2px] text-[#111111] dark:text-[#FFFFFF] select-all">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#94A3B8]">BATCH CODE:</span>
+                      <span className="text-[14px] font-mono font-bold tracking-[2px] text-[#111111] dark:text-[#F4F4F6] select-all">
                         {currentBatchData.inviteCode}
                       </span>
                     </div>
@@ -806,18 +806,18 @@ export const SettingsView: React.FC = () => {
                         navigator.clipboard.writeText(currentBatchData.inviteCode);
                         showToast('Code Copied', `Batch code ${currentBatchData.inviteCode} copied to clipboard.`, 'success');
                       }}
-                      className="px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] hover:opacity-90 transition-opacity cursor-pointer"
+                      className="px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider bg-[#111111] dark:bg-white text-white dark:text-[#090A0C] hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                     >
                       Copy Code
                     </button>
                   </div>
                 )}
                 
-                <div className="flex items-center justify-between pt-2 border-t border-[#E5E5E5] dark:border-[#2C2C2C]">
+                <div className="flex items-center justify-between pt-2 border-t border-[#E5E5E5] dark:border-white/[0.08]">
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => setShowBatchMembersModal(true)} 
-                      className="px-4 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity cursor-pointer"
+                      className="px-4 py-2 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] text-[11px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                     >
                       {isBatchCR ? 'Manage members' : 'View members'}
                     </button>
@@ -845,26 +845,26 @@ export const SettingsView: React.FC = () => {
                           if (res === 'copied') showToast('Code Copied', `Batch code copied: ${code}`, 'success');
                         } catch (err) {}
                       }} 
-                      className="px-4 py-2 border border-[#D8D8D8] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] text-[#111111] dark:text-[#FFFFFF] text-[11px] font-bold uppercase tracking-wider rounded-none transition-colors cursor-pointer"
+                      className="px-4 py-2 border border-[#D8D8D8] dark:border-white/[0.1] hover:border-[#111111] dark:hover:border-white text-[#111111] dark:text-[#F4F4F6] text-[11px] font-bold uppercase tracking-wider rounded-none transition-colors cursor-pointer"
                     >
                       Share Code
                     </button>
                   </div>
                   <button 
                     onClick={() => setShowBatchSettingsModal(true)} 
-                    className="p-2 -mr-2 text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer"
+                    className="p-2 -mr-2 text-[#6F6F6F] hover:text-[#111111] dark:text-[#94A3B8] dark:hover:text-white transition-colors cursor-pointer"
                   >
                     <MoreHorizontal className="w-5 h-5" />
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333] gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-white/[0.08] gap-3">
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+                  <span className="text-[13px] font-bold text-[#111111] dark:text-[#F4F4F6]">
                     No Live Batch Connected
                   </span>
-                  <span className="text-[11px] text-[#6F6F6F]">
+                  <span className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8]">
                     Join your class batch with a 6-digit code or claim CR access.
                   </span>
                 </div>
@@ -872,7 +872,7 @@ export const SettingsView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowDiscoveryModal(true)}
-                    className="px-3.5 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-1.5"
+                    className="px-3.5 py-2 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] text-[11px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-1.5 shadow-xs"
                   >
                     <Users className="w-3.5 h-3.5" />
                     Connect Batch
@@ -880,7 +880,7 @@ export const SettingsView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowBatchSetupPrompt(true)}
-                    className="px-3 py-2 border border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[11px] font-bold uppercase tracking-wider hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer flex items-center gap-1.5"
+                    className="px-3 py-2 border border-[#D8D8D8] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] text-[11px] font-bold uppercase tracking-wider hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors cursor-pointer flex items-center gap-1.5"
                   >
                     <Crown className="w-3.5 h-3.5" />
                     Setup Batch
@@ -895,7 +895,7 @@ export const SettingsView: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col gap-6">
           {/* Account & Cloud Sync */}
           <div className="flex flex-col gap-0 mt-6 lg:mt-0">
-            <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D8D8D8] dark:border-[#333333]">
+            <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#F4F4F6] pb-3 border-b border-[#D8D8D8] dark:border-white/[0.08]">
               <Cloud className="w-[18px] h-[18px] stroke-[1.5]" />
               <span>Account & Cloud Sync</span>
             </div>
@@ -903,47 +903,47 @@ export const SettingsView: React.FC = () => {
             {user ? (
               <div 
                 onClick={() => setShowCloudSyncModal(true)}
-                className="flex items-center justify-between py-5 border-b border-[#D8D8D8] dark:border-[#333333] cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors -mx-5 px-5 sm:mx-0 sm:px-0 sm:hover:bg-transparent group"
+                className="flex items-center justify-between py-5 border-b border-[#D8D8D8] dark:border-white/[0.08] cursor-pointer hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors -mx-5 px-5 sm:mx-0 sm:px-0 sm:hover:bg-transparent group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 border border-[#D8D8D8] dark:border-[#333333] flex items-center justify-center overflow-hidden bg-[#F4F4F4] dark:bg-[#1A1A1A]">
+                  <div className="w-10 h-10 border border-[#D8D8D8] dark:border-white/[0.08] flex items-center justify-center overflow-hidden bg-[#F4F4F4] dark:bg-[#161820]">
                     <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${avatarSeed}&backgroundColor=transparent`} className="w-full h-full object-contain" />
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none group-hover:underline underline-offset-2">
+                    <span className="text-[14px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-none group-hover:underline underline-offset-2">
                       {user?.fullName || profile?.name || 'Student'}
                     </span>
-                    <span className="text-[12px] text-[#6F6F6F]">
+                    <span className="text-[12px] text-[#6F6F6F] dark:text-[#94A3B8]">
                       {user?.primaryEmailAddress?.emailAddress || profile?.email || 'Connected'}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-[#6F6F6F] hidden sm:inline-block">Cloud Active</span>
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] hidden sm:inline-block">Cloud Active</span>
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col gap-3 py-5 border-b border-[#D8D8D8] dark:border-[#333333]">
+              <div className="flex flex-col gap-3 py-5 border-b border-[#D8D8D8] dark:border-white/[0.08]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 border border-[#D8D8D8] dark:border-[#333333] flex items-center justify-center overflow-hidden bg-[#F4F4F4] dark:bg-[#1A1A1A] font-bold text-[13px] text-[#888888]">
+                    <div className="w-10 h-10 border border-[#D8D8D8] dark:border-white/[0.08] flex items-center justify-center overflow-hidden bg-[#F4F4F4] dark:bg-[#161820] font-bold text-[13px] text-[#888888]">
                       G
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-none">Guest User</span>
-                      <span className="text-[12px] text-[#888888]">Local mode · Not connected</span>
+                      <span className="text-[14px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-none">Guest User</span>
+                      <span className="text-[12px] text-[#888888] dark:text-[#94A3B8]">Local mode · Not connected</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-amber-400" />
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-[#888888] hidden sm:inline-block">Local Only</span>
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-[#888888] dark:text-[#94A3B8] hidden sm:inline-block">Local Only</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                   <Link
                     href="/sign-in"
-                    className="px-4 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity inline-flex items-center gap-1.5"
+                    className="px-4 py-2 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] text-[11px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity inline-flex items-center gap-1.5 shadow-xs"
                   >
                     <LogIn className="w-3.5 h-3.5" />
                     Sign In / Sync
@@ -1243,21 +1243,21 @@ export const SettingsView: React.FC = () => {
           description="A shared timetable already exists for this college, branch, and semester."
         >
           <div className="flex flex-col gap-4 mt-3 text-left">
-            <div className="p-4 border border-black dark:border-white bg-black/5 dark:bg-white/5 flex flex-col gap-2">
-              <h4 className="text-sm font-bold text-black dark:text-white">
+            <div className="p-4 border border-black/20 dark:border-white/[0.1] bg-black/5 dark:bg-white/[0.04] flex flex-col gap-2">
+              <h4 className="text-sm font-bold text-black dark:text-[#F4F4F6]">
                 {matchedBatchData.college}
               </h4>
-              <p className="text-xs text-black/75 dark:text-white/75 font-medium">
+              <p className="text-xs text-black/75 dark:text-[#94A3B8] font-medium">
                 {matchedBatchData.programme} - {matchedBatchData.branch} (Sem {matchedBatchData.semester})
               </p>
-              <div className="h-px bg-black/20 dark:bg-white/20 my-1" />
+              <div className="h-px bg-black/10 dark:bg-white/[0.08] my-1" />
               <div className="flex items-center justify-between text-[11px] font-mono opacity-70">
                 <span>Created by: {matchedBatchData.creatorName}</span>
                 <span>Synced: {matchedBatchData.studentCount || 1} students</span>
               </div>
             </div>
 
-            <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed">
+            <p className="text-xs text-black/60 dark:text-[#94A3B8] leading-relaxed">
               Joining will download the batch subjects and classes, overwriting your current timetable. You will receive real-time updates when schedule changes occur.
             </p>
 
@@ -1280,7 +1280,7 @@ export const SettingsView: React.FC = () => {
                   });
                   showToast('Profile Saved', 'Saved manually without syncing to batch.', 'success');
                 }}
-                className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
+                className="px-4 py-2 border border-black/20 dark:border-white/[0.1] text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/[0.06] text-black dark:text-[#F4F4F6] transition-colors cursor-pointer rounded-none"
               >
                 Keep Local
               </button>
@@ -1290,7 +1290,7 @@ export const SettingsView: React.FC = () => {
                   setPendingBatchKey(null);
                   await joinBatchTimetable(pendingBatchKey);
                 }}
-                className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+                className="px-4 py-2 bg-black text-white dark:bg-white dark:text-[#090A0C] border border-black dark:border-white text-xs font-bold uppercase hover:opacity-90 transition-opacity cursor-pointer rounded-none shadow-sm"
               >
                 Sync & Join Batch
               </button>
@@ -1313,7 +1313,7 @@ export const SettingsView: React.FC = () => {
         <div className="p-5 flex flex-col gap-5">
           {activeSetting === 'classReminder' && (
             <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Remind me before class</span>
+              <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Remind me before class</span>
               <div className="grid grid-cols-2 gap-2">
                 {[5, 10, 15, 30].map(mins => (
                   <button
@@ -1326,11 +1326,11 @@ export const SettingsView: React.FC = () => {
                     }}
                     className={`flex items-center gap-2 py-2.5 px-3 border text-[13px] font-bold cursor-pointer ${
                       settings.classReminderMinutes === mins
-                        ? 'border-[#111111] dark:border-[#FFFFFF] bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111]'
-                        : 'border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#1A1A1A] text-[#111111] dark:text-[#FFFFFF]'
+                        ? 'border-[#111111] dark:border-white bg-[#111111] text-[#FFFFFF] dark:bg-white dark:text-[#090A0C]'
+                        : 'border-[#D8D8D8] dark:border-white/[0.1] bg-[#FFFFFF] dark:bg-[#121317] text-[#111111] dark:text-[#F4F4F6]'
                     }`}
                   >
-                    <div className={`w-3 h-3 rounded-full border ${settings.classReminderMinutes === mins ? 'border-[#FFFFFF] dark:border-[#111111] bg-[#FFFFFF] dark:bg-[#111111]' : 'border-[#A0A0A0] bg-transparent'}`} />
+                    <div className={`w-3 h-3 rounded-full border ${settings.classReminderMinutes === mins ? 'border-[#FFFFFF] dark:border-[#090A0C] bg-[#FFFFFF] dark:bg-[#090A0C]' : 'border-[#A0A0A0] bg-transparent'}`} />
                     {mins} min
                   </button>
                 ))}
@@ -1340,7 +1340,7 @@ export const SettingsView: React.FC = () => {
 
           {activeSetting === 'eveningCheck' && (
             <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Daily evening check time</span>
+              <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Daily evening check time</span>
               <div className="flex flex-col gap-2">
                 <input
                   type="time"
@@ -1348,7 +1348,7 @@ export const SettingsView: React.FC = () => {
                   onChange={(e) => {
                     updateSettings({ eveningCarryReminderTime: e.target.value });
                   }}
-                  className="w-full px-3.5 py-3 bg-[#FFFFFF] dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                  className="w-full px-3.5 py-3 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] text-[14px] font-bold text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
                 />
                 <button
                   type="button"
@@ -1356,7 +1356,7 @@ export const SettingsView: React.FC = () => {
                     setShowSettingModal(false);
                     showToast('Updated', 'Evening reminder updated', 'success');
                   }}
-                  className="w-full mt-2 py-2.5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-bold hover:opacity-90 transition-opacity cursor-pointer"
+                  className="w-full mt-2 py-2.5 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] text-[13px] font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
                 >
                   Save Time
                 </button>
@@ -1366,7 +1366,7 @@ export const SettingsView: React.FC = () => {
 
           {activeSetting === 'hwWarning' && (
             <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0]">Days before deadline</span>
+              <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Days before deadline</span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[1, 2, 3, 5].map(days => (
                   <button
@@ -1379,11 +1379,11 @@ export const SettingsView: React.FC = () => {
                     }}
                     className={`flex items-center gap-2 py-2.5 px-3 border text-[13px] font-bold cursor-pointer ${
                       settings.homeworkWarningDays === days
-                        ? 'border-[#111111] dark:border-[#FFFFFF] bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111]'
-                        : 'border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#1A1A1A] text-[#111111] dark:text-[#FFFFFF]'
+                        ? 'border-[#111111] dark:border-white bg-[#111111] text-[#FFFFFF] dark:bg-white dark:text-[#090A0C]'
+                        : 'border-[#D8D8D8] dark:border-white/[0.1] bg-[#FFFFFF] dark:bg-[#121317] text-[#111111] dark:text-[#F4F4F6]'
                     }`}
                   >
-                    <div className={`w-3 h-3 rounded-full border ${settings.homeworkWarningDays === days ? 'border-[#FFFFFF] dark:border-[#111111] bg-[#FFFFFF] dark:bg-[#111111]' : 'border-[#A0A0A0] bg-transparent'}`} />
+                    <div className={`w-3 h-3 rounded-full border ${settings.homeworkWarningDays === days ? 'border-[#FFFFFF] dark:border-[#090A0C] bg-[#FFFFFF] dark:bg-[#090A0C]' : 'border-[#A0A0A0] bg-transparent'}`} />
                     {days} {days === 1 ? 'day' : 'days'}
                   </button>
                 ))}

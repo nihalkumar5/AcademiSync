@@ -186,33 +186,41 @@ export const HomeMessCard: React.FC = () => {
   return (
     <div 
       onClick={() => setActiveView('mess')}
-      className="w-full p-5 sm:p-6 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] border border-[#111111] dark:border-[#FFFFFF] rounded-none cursor-pointer transition-all hover:bg-[#1A1A1A] dark:hover:bg-[#F5F5F3] text-left flex flex-col gap-3.5 group shadow-sm mt-2"
+      className={`w-full p-5 sm:p-6 rounded-none cursor-pointer transition-all text-left flex flex-col gap-3.5 group shadow-sm mt-2 ${
+        isLive
+          ? 'bg-[#111111] dark:bg-gradient-to-br dark:from-[#13151D] dark:to-[#0C0E12] text-[#FFFFFF] dark:text-[#F4F4F6] border border-[#111111] dark:border-emerald-500/30 dark:shadow-[0_8px_30px_-6px_rgba(16,185,129,0.18)]'
+          : 'bg-[#111111] dark:bg-[#121317] text-[#FFFFFF] dark:text-[#F4F4F6] border border-[#111111] dark:border-white/[0.08] dark:hover:border-white/20 dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:bg-[#1A1A1A] dark:hover:bg-[#16171D]'
+      }`}
     >
       {/* Row 1: Header Status + Countdown Box */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           {isLive ? (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
               </span>
-              <span className="font-mono text-[11px] sm:text-[11.5px] font-black uppercase tracking-[1.6px] text-emerald-400 dark:text-emerald-600">
+              <span className="font-mono text-[11px] sm:text-[11.5px] font-black uppercase tracking-[1.6px] text-emerald-400 dark:text-emerald-300">
                 SERVING NOW · {mealInfo.mealName.toUpperCase()}
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 font-mono text-[11px] sm:text-[11.5px] font-bold uppercase tracking-[1.4px] text-[#A0A0A0] dark:text-[#666666]">
+            <div className="flex items-center gap-1.5 font-mono text-[11px] sm:text-[11.5px] font-bold uppercase tracking-[1.4px] text-[#A0A0A0] dark:text-[#94A3B8]">
               <span className="text-[9px]">●</span>
               <span>{mealInfo.status === 'TOMORROW' ? 'TOMORROW' : 'UPCOMING'}</span>
               <span>·</span>
-              <span className="text-white dark:text-black font-extrabold">{mealInfo.mealName.toUpperCase()}</span>
+              <span className="text-white dark:text-[#F4F4F6] font-extrabold">{mealInfo.mealName.toUpperCase()}</span>
             </div>
           )}
         </div>
 
         {/* Right Time Badge */}
-        <div className="px-3.5 py-1.5 bg-[#FFFFFF] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider font-mono font-black text-[11px] sm:text-[11.5px] shrink-0 shadow-sm flex items-center justify-center text-center">
+        <div className={`px-3.5 py-1.5 uppercase tracking-wider font-mono font-black text-[11px] sm:text-[11.5px] shrink-0 shadow-sm flex items-center justify-center text-center rounded-none ${
+          isLive
+            ? 'bg-[#FFFFFF] dark:bg-emerald-500/20 text-[#111111] dark:text-emerald-300 dark:border dark:border-emerald-500/40'
+            : 'bg-[#FFFFFF] dark:bg-white/[0.08] text-[#111111] dark:text-[#F4F4F6] dark:border dark:border-white/10'
+        }`}>
           {mealInfo.timeLeft}
         </div>
       </div>
@@ -240,7 +248,7 @@ export const HomeMessCard: React.FC = () => {
         </div>
 
         {/* Action Link Arrow */}
-        <div className="flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-widest text-[#A0A0A0] dark:text-[#666666] group-hover:text-white dark:group-hover:text-black group-hover:translate-x-0.5 transition-all shrink-0">
+        <div className="flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-widest text-[#A0A0A0] dark:text-[#94A3B8] group-hover:text-white dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0">
           <span>FULL MENU</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </div>

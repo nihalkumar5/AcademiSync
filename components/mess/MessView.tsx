@@ -145,7 +145,7 @@ const LiveMealCard = ({
   if (!timeState) return null;
 
   return (
-    <div className="w-full bg-[#111111] dark:bg-[#1A1A1A] border border-[#111111] dark:border-[#333333] rounded-none p-5 sm:p-6 flex flex-col relative text-left text-white shadow-lg mb-2">
+    <div className="w-full bg-[#111111] dark:bg-gradient-to-br dark:from-[#13151D] dark:to-[#0C0E12] border border-[#111111] dark:border-white/[0.08] rounded-none p-5 sm:p-6 flex flex-col relative text-left text-white shadow-lg dark:shadow-[0_8px_30px_-6px_rgba(0,0,0,0.5)] mb-2">
       {/* Header */}
       <div className="flex items-center justify-between mb-3.5">
         <div className="flex items-center gap-2">
@@ -173,7 +173,7 @@ const LiveMealCard = ({
 
       {/* Dishes */}
       {timeState.items.length > 0 && (
-        <p className="text-[14.5px] font-normal text-[#D1D1D1] leading-relaxed">
+        <p className="text-[14.5px] font-normal text-[#D1D1D1] dark:text-[#CBD5E1] leading-relaxed">
           {timeState.items.join(' · ')}
         </p>
       )}
@@ -298,18 +298,18 @@ export const MessView: React.FC = () => {
     if (!quickEditMeal) return;
 
     const { day, meal, dishes, timing } = quickEditMeal;
-    const dishArray = dishes.split(',').map(s => s.trim()).filter(Boolean);
+    const itemsArray = dishes.split(',').map(s => s.trim()).filter(Boolean);
 
     const updatedMenu = {
       ...(messMenu.menu || {}),
       [day]: {
-        ...((messMenu.menu || {})[day] || {}),
-        [meal]: dishArray,
+        ...(messMenu.menu?.[day] || {}),
+        [meal]: itemsArray,
       },
     };
 
     const updatedTimings = {
-      ...(messMenu.timings || DEFAULT_TIMINGS),
+      ...effectiveTimings,
       [meal]: timing.trim(),
     };
 
@@ -331,34 +331,34 @@ export const MessView: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full pb-12 text-left">
-      <div className="flex flex-col items-start pt-2 sm:pt-6 mb-4">
-        <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
-          Hostel,<br />
-          Mess,<br />
-          Weekly,<br />
-          Menu
-        </h2>
-        <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4">
-          Your complete week's dining schedule & live meal countdowns.
-        </p>
+    <div className="flex flex-col gap-6 text-left max-w-4xl mx-auto w-full pb-16 font-sans">
+      {/* Header */}
+      <div className="flex flex-col gap-4 pt-2 sm:pt-6">
+        <div>
+          <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#F4F4F6] tracking-tight leading-[44px]">
+            Mess,<br />Hostel,<br />Food,<br />Menu
+          </h2>
+          <p className="text-[14px] font-normal text-[#6B6B6B] dark:text-[#94A3B8] leading-[20px] mt-4">
+            Weekly breakfast, lunch, snacks, and dinner menu with live meal countdowns.
+          </p>
+        </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 mt-8">
+        <div className="flex flex-wrap items-center gap-2.5 mt-2">
           <button
             onClick={handleShare}
-            className="flex items-center justify-center h-9 px-3.5 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[12px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors gap-2 cursor-pointer"
+            className="flex items-center justify-center h-9 px-3.5 border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] text-[12px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] transition-colors gap-1.5 cursor-pointer"
           >
             <Share className="w-3.5 h-3.5" /> Share
           </button>
           <button
             onClick={() => setShowJoinModal(true)}
-            className="flex items-center justify-center h-9 px-3.5 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[12px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer"
+            className="flex items-center justify-center h-9 px-3.5 border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] text-[12px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
           >
             Join Mess
           </button>
           <button
             onClick={() => setIsImporting(true)}
-            className="flex items-center justify-center h-9 px-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[12px] font-semibold transition-colors gap-2 cursor-pointer shadow-sm"
+            className="flex items-center justify-center h-9 px-4 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] text-[12px] font-semibold transition-colors gap-2 cursor-pointer shadow-sm"
           >
             <Sparkles className="w-3.5 h-3.5" /> Magic Import
           </button>
@@ -384,7 +384,7 @@ export const MessView: React.FC = () => {
               className={`flex flex-col items-center justify-center px-4 py-2.5 rounded-2xl text-xs font-semibold shrink-0 transition-all border cursor-pointer ${
                 isSelected
                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/20'
-                  : 'glass-card border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50'
+                  : 'glass-card border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-[#94A3B8] hover:bg-white/50 dark:hover:bg-white/[0.06]'
               }`}
             >
               <div className="flex items-center gap-1.5">
@@ -415,13 +415,13 @@ export const MessView: React.FC = () => {
           const displayTiming = resolveMealTimingForDay(rawTiming, selectedDay);
 
           return (
-            <div key={meal} className="flex flex-col p-5 border border-[#D9D9D6] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors">
-              <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-[#EAEAEA] dark:border-[#262626]">
-                <h4 className="text-[13px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF]">
+            <div key={meal} className="flex flex-col p-5 border border-[#D9D9D6] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] hover:bg-[#F7F7F5] dark:hover:bg-[#161820] transition-colors dark:shadow-md">
+              <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-[#EAEAEA] dark:border-white/[0.08]">
+                <h4 className="text-[13px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#F4F4F6]">
                   {meal}
                 </h4>
                 <div className="flex items-center gap-2.5">
-                  <span className="text-[12px] text-[#777777] dark:text-[#AAAAAA] font-mono font-medium">
+                  <span className="text-[12px] text-[#777777] dark:text-[#94A3B8] font-mono font-medium">
                     {displayTiming}
                   </span>
                   <button
@@ -434,7 +434,7 @@ export const MessView: React.FC = () => {
                         timing: rawTiming,
                       });
                     }}
-                    className="text-[10px] font-bold tracking-wider uppercase text-[#666666] hover:text-black dark:text-[#AAAAAA] dark:hover:text-white px-2 py-0.5 border border-[#D9D9D6] dark:border-[#333333] hover:bg-[#F0F0ED] dark:hover:bg-[#222222] transition-colors cursor-pointer"
+                    className="text-[10px] font-bold tracking-wider uppercase text-[#666666] hover:text-black dark:text-[#94A3B8] dark:hover:text-white px-2 py-0.5 border border-[#D9D9D6] dark:border-white/[0.1] hover:bg-[#F0F0ED] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
                   >
                     Edit
                   </button>
@@ -442,8 +442,8 @@ export const MessView: React.FC = () => {
               </div>
               <ul className="flex flex-col gap-2">
                 {items.map((item: string, idx: number) => (
-                  <li key={idx} className="flex items-center gap-2 text-[14px] text-[#444444] dark:text-[#D1D1D1] font-normal">
-                    <span className="w-1.5 h-1.5 bg-[#111111] dark:bg-[#FFFFFF] shrink-0" />
+                  <li key={idx} className="flex items-center gap-2 text-[14px] text-[#444444] dark:text-[#E2E8F0] font-normal">
+                    <span className="w-1.5 h-1.5 bg-[#111111] dark:bg-emerald-400 shrink-0" />
                     {item}
                   </li>
                 ))}

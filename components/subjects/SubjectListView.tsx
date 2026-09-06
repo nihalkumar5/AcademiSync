@@ -75,7 +75,7 @@ export const SubjectListView: React.FC = () => {
           {subjects.map((sub) => (
             <div
               key={sub.id}
-              className="group p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-sm flex flex-col justify-between transition-all"
+              className="group p-4 rounded-xl border border-zinc-200/80 dark:border-white/[0.08] bg-white dark:bg-[#121317] hover:border-zinc-300 dark:hover:border-white/[0.15] shadow-sm flex flex-col justify-between transition-all"
             >
               <div>
                 {/* Header: Code & Action Buttons */}
@@ -110,7 +110,7 @@ export const SubjectListView: React.FC = () => {
                         setEditSubject(sub);
                         setShowModal(true);
                       }}
-                      className="p-1 text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      className="p-1 text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 rounded hover:bg-zinc-100 dark:hover:bg-white/[0.06]"
                       title="Edit Subject"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -126,26 +126,26 @@ export const SubjectListView: React.FC = () => {
                 </div>
 
                 {/* Subject Name */}
-                <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 tracking-tight mt-2">
+                <h3 className="text-base font-bold text-zinc-900 dark:text-[#F4F4F6] tracking-tight mt-2">
                   {sub.name}
                 </h3>
 
                 {/* Faculty & Classroom */}
-                <div className="flex flex-col gap-1 mt-2.5 text-xs text-zinc-500 dark:text-zinc-400">
+                <div className="flex flex-col gap-1 mt-2.5 text-xs text-zinc-500 dark:text-[#94A3B8]">
                   <div className="flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5 text-zinc-400" />
-                    <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                    <User className="w-3.5 h-3.5 text-zinc-400 dark:text-[#64748B]" />
+                    <span className="font-medium text-zinc-700 dark:text-[#CBD5E1]">
                       {sub.facultyName}
                     </span>
                     {sub.facultyEmail && (
-                      <span className="text-[11px] font-mono text-zinc-400">
+                      <span className="text-[11px] font-mono text-zinc-400 dark:text-[#64748B]">
                         ({sub.facultyEmail})
                       </span>
                     )}
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-zinc-400" />
+                    <MapPin className="w-3.5 h-3.5 text-zinc-400 dark:text-[#64748B]" />
                     <span>
                       Room: <strong>{sub.room}</strong>
                       {sub.isLab && sub.labRoom && ` · Lab: ${sub.labRoom}`}
@@ -155,9 +155,9 @@ export const SubjectListView: React.FC = () => {
               </div>
 
               {/* Carry Requirements Footer */}
-              <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800/80">
-                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-400 mb-1.5">
-                  <Backpack className="w-3.5 h-3.5 text-[#8C6B5D]" />
+              <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-white/[0.08]">
+                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-600 dark:text-[#94A3B8] mb-1.5">
+                  <Backpack className="w-3.5 h-3.5 text-[#8C6B5D] dark:text-sky-300" />
                   <span>Configured Things to Carry:</span>
                 </div>
 
@@ -166,14 +166,14 @@ export const SubjectListView: React.FC = () => {
                     {sub.carryRequirements.map((item, idx) => (
                       <span
                         key={idx}
-                        className="text-[10.5px] px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium"
+                        className="text-[10.5px] px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-white/[0.04] dark:border dark:border-white/[0.08] text-zinc-700 dark:text-[#CBD5E1] font-medium"
                       >
                         {item}
                       </span>
                     ))}
                   </div>
                 ) : (
-                  <span className="text-[11px] text-zinc-400 italic">
+                  <span className="text-[11px] text-zinc-400 dark:text-[#64748B] italic">
                     No carry requirements configured
                   </span>
                 )}

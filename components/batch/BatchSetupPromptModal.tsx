@@ -93,7 +93,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-stretch font-sans text-left">
           
           {/* Left Column: Hero Illustration & Info Card */}
-          <div className="md:col-span-5 flex flex-col items-center justify-between bg-[#F9F9F8] dark:bg-[#161616] border border-[#E5E5E5] dark:border-[#2C2C2C] rounded-2xl p-6 text-center relative overflow-hidden">
+          <div className="md:col-span-5 flex flex-col items-center justify-between bg-[#F9F9F8] dark:bg-[#121317] border border-[#E5E5E5] dark:border-white/[0.08] rounded-2xl p-6 text-center relative overflow-hidden">
             <div className="w-full flex items-center justify-center max-w-[260px] sm:max-w-[300px] my-auto py-2">
               <img 
                 src="/cr.png" 
@@ -106,10 +106,10 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
               <span className="text-[10.5px] font-bold font-mono tracking-widest uppercase text-amber-600 dark:text-amber-400">
                 CLASS LEADERSHIP
               </span>
-              <h3 className="text-[16px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
+              <h3 className="text-[16px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-snug">
                 Power your entire batch
               </h3>
-              <p className="text-[12px] text-[#6F6F6F] dark:text-[#A0A0A0] leading-relaxed">
+              <p className="text-[12px] text-[#6F6F6F] dark:text-[#94A3B8] leading-relaxed">
                 Up to 3 verified Batch Pilots can manage schedules, room changes, and live alerts for {shortCollege}.
               </p>
             </div>
@@ -120,70 +120,70 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
             
             {/* Section 1: WHAT YOU'LL UNLOCK */}
             <div className="flex flex-col gap-2.5">
-              <span className="text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#777777]">
+              <span className="text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#64748B]">
                 WHAT YOU&apos;LL UNLOCK
               </span>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {/* 01 */}
-                <div className="p-3 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FFFFFF] dark:bg-[#111111] rounded-xl flex gap-3 items-start">
-                  <div className="w-9 h-9 rounded-lg bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#2C2C2C] flex items-center justify-center shrink-0 mt-0.5">
-                    <Calendar className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
+                <div className="p-3 border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] rounded-xl flex gap-3 items-start">
+                  <div className="w-9 h-9 rounded-lg bg-[#F7F7F5] dark:bg-white/[0.04] border border-[#E5E5E5] dark:border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
+                    <Calendar className="w-4 h-4 text-[#111111] dark:text-[#F4F4F6] stroke-[1.8]" />
                   </div>
                   <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
-                    <span className="text-[10px] font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">01</span>
-                    <h4 className="text-[12.5px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug truncate">
+                    <span className="text-[10px] font-bold font-mono text-[#111111] dark:text-[#F4F4F6]">01</span>
+                    <h4 className="text-[12.5px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-snug truncate">
                       One timetable
                     </h4>
-                    <p className="text-[11px] text-[#888888] dark:text-[#888888] leading-relaxed">
+                    <p className="text-[11px] text-[#888888] dark:text-[#94A3B8] leading-relaxed">
                       Update once, everyone gets it.
                     </p>
                   </div>
                 </div>
 
                 {/* 02 */}
-                <div className="p-3 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FFFFFF] dark:bg-[#111111] rounded-xl flex gap-3 items-start">
-                  <div className="w-9 h-9 rounded-lg bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#2C2C2C] flex items-center justify-center shrink-0 mt-0.5">
-                    <Bell className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
+                <div className="p-3 border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] rounded-xl flex gap-3 items-start">
+                  <div className="w-9 h-9 rounded-lg bg-[#F7F7F5] dark:bg-white/[0.04] border border-[#E5E5E5] dark:border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
+                    <Bell className="w-4 h-4 text-[#111111] dark:text-[#F4F4F6] stroke-[1.8]" />
                   </div>
                   <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
-                    <span className="text-[10px] font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">02</span>
-                    <h4 className="text-[12.5px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug truncate">
+                    <span className="text-[10px] font-bold font-mono text-[#111111] dark:text-[#F4F4F6]">02</span>
+                    <h4 className="text-[12.5px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-snug truncate">
                       Instant class alerts
                     </h4>
-                    <p className="text-[11px] text-[#888888] dark:text-[#888888] leading-relaxed">
+                    <p className="text-[11px] text-[#888888] dark:text-[#94A3B8] leading-relaxed">
                       Room changes &amp; cancellations.
                     </p>
                   </div>
                 </div>
 
                 {/* 03 */}
-                <div className="p-3 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FFFFFF] dark:bg-[#111111] rounded-xl flex gap-3 items-start">
-                  <div className="w-9 h-9 rounded-lg bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#2C2C2C] flex items-center justify-center shrink-0 mt-0.5">
-                    <Clock className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
+                <div className="p-3 border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] rounded-xl flex gap-3 items-start">
+                  <div className="w-9 h-9 rounded-lg bg-[#F7F7F5] dark:bg-white/[0.04] border border-[#E5E5E5] dark:border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
+                    <Clock className="w-4 h-4 text-[#111111] dark:text-[#F4F4F6] stroke-[1.8]" />
                   </div>
                   <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
-                    <span className="text-[10px] font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">03</span>
-                    <h4 className="text-[12.5px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug truncate">
+                    <span className="text-[10px] font-bold font-mono text-[#111111] dark:text-[#F4F4F6]">03</span>
+                    <h4 className="text-[12.5px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-snug truncate">
                       Shared tasks &amp; labs
                     </h4>
-                    <p className="text-[11px] text-[#888888] dark:text-[#888888] leading-relaxed">
+                    <p className="text-[11px] text-[#888888] dark:text-[#94A3B8] leading-relaxed">
                       Deadlines visible to the batch.
                     </p>
                   </div>
                 </div>
 
                 {/* 04 */}
-                <div className="p-3 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FFFFFF] dark:bg-[#111111] rounded-xl flex gap-3 items-start">
-                  <div className="w-9 h-9 rounded-lg bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#E5E5E5] dark:border-[#2C2C2C] flex items-center justify-center shrink-0 mt-0.5">
-                    <Users className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
+                <div className="p-3 border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] rounded-xl flex gap-3 items-start">
+                  <div className="w-9 h-9 rounded-lg bg-[#F7F7F5] dark:bg-white/[0.04] border border-[#E5E5E5] dark:border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
+                    <Users className="w-4 h-4 text-[#111111] dark:text-[#F4F4F6] stroke-[1.8]" />
                   </div>
                   <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
-                    <span className="text-[10px] font-bold font-mono text-[#111111] dark:text-[#FFFFFF]">04</span>
-                    <h4 className="text-[12.5px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug truncate">
+                    <span className="text-[10px] font-bold font-mono text-[#111111] dark:text-[#F4F4F6]">04</span>
+                    <h4 className="text-[12.5px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-snug truncate">
                       No WhatsApp chaos
                     </h4>
-                    <p className="text-[11px] text-[#888888] dark:text-[#888888] leading-relaxed">
+                    <p className="text-[11px] text-[#888888] dark:text-[#94A3B8] leading-relaxed">
                       One authoritative schedule hub.
                     </p>
                   </div>
@@ -192,22 +192,22 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
             </div>
 
             {/* Section 2: YOUR RESPONSIBILITY */}
-            <div className="p-3.5 border border-[#E5E5E5] dark:border-[#2C2C2C] bg-[#FAF9F7] dark:bg-[#161616] rounded-xl flex items-center justify-between">
+            <div className="p-3.5 border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FAF9F7] dark:bg-[#121317] rounded-xl flex items-center justify-between">
               <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#777777]">
+                <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#64748B]">
                   YOUR RESPONSIBILITY
                 </span>
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
-                  <div className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <div className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#111111] dark:text-[#F4F4F6]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                     <span>Update timetable</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <div className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#111111] dark:text-[#F4F4F6]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                     <span>Broadcast changes</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#111111] dark:text-[#FFFFFF]">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <div className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#111111] dark:text-[#F4F4F6]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                     <span>Accurate info</span>
                   </div>
                 </div>
@@ -219,7 +219,7 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowCRModal(true)}
-                className="w-full h-11 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] font-bold text-[13px] rounded-xl tracking-wide hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                className="w-full h-11 bg-[#111111] dark:bg-white dark:text-black text-[#FFFFFF] font-bold text-[13px] rounded-xl tracking-wide hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer shadow-sm"
               >
                 <span>Apply to become a Batch Pilot 🚀</span>
                 <ArrowRight className="w-4 h-4" />
@@ -229,17 +229,17 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
                 <button
                   type="button"
                   onClick={handleShareToWhatsApp}
-                  className="py-2.5 px-3 border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] rounded-xl transition-all flex items-center justify-center gap-2 text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF] cursor-pointer"
+                  className="py-2.5 px-3 border border-[#D8D8D8] dark:border-white/[0.1] bg-[#FFFFFF] dark:bg-[#121317] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] rounded-xl transition-all flex items-center justify-center gap-2 text-[12px] font-bold text-[#111111] dark:text-[#F4F4F6] cursor-pointer"
                 >
-                  <MessageCircle className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />
+                  <MessageCircle className="w-4 h-4 text-[#111111] dark:text-[#F4F4F6]" />
                   <span>Ask Pilot on WhatsApp</span>
-                  <Share2 className="w-3 h-3 text-[#6F6F6F]" />
+                  <Share2 className="w-3 h-3 text-[#6F6F6F] dark:text-[#94A3B8]" />
                 </button>
 
                 <button
                   type="button"
                   onClick={handlePersonalTimetable}
-                  className="py-2.5 px-3 border border-transparent hover:border-[#D8D8D8] dark:hover:border-[#333333] text-[12px] font-medium text-[#888888] hover:text-[#111111] dark:hover:text-[#FFFFFF] rounded-xl transition-colors text-center cursor-pointer"
+                  className="py-2.5 px-3 border border-transparent hover:border-[#D8D8D8] dark:hover:border-white/[0.1] text-[12px] font-medium text-[#888888] dark:text-[#94A3B8] hover:text-[#111111] dark:hover:text-[#F4F4F6] rounded-xl transition-colors text-center cursor-pointer"
                 >
                   Personal mode for now →
                 </button>

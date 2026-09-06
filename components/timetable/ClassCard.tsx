@@ -25,16 +25,16 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 
   // Colors
   const cardBgClass = isCurrent 
-    ? 'bg-[#111111] dark:bg-[#FFFFFF] border-[#111111] dark:border-[#FFFFFF]' 
-    : 'bg-[#FFFFFF] dark:bg-[#111111] border-[#D9D9D6] dark:border-[#333333]';
+    ? 'bg-[#111111] dark:bg-gradient-to-br dark:from-[#151720] dark:to-[#0D0F14] border-[#111111] dark:border-emerald-500/40 shadow-lg dark:shadow-[0_8px_30px_-6px_rgba(16,185,129,0.2)]' 
+    : 'bg-[#FFFFFF] dark:bg-[#121317] border-[#D9D9D6] dark:border-white/[0.08] dark:hover:border-white/20';
 
   const textPrimaryClass = isCurrent
-    ? 'text-[#FFFFFF] dark:text-[#111111]'
-    : 'text-[#111111] dark:text-[#FFFFFF]';
+    ? 'text-[#FFFFFF] dark:text-[#F4F4F6]'
+    : 'text-[#111111] dark:text-[#F4F4F6]';
     
   const textSecondaryClass = isCurrent
-    ? 'text-[#FFFFFF]/70 dark:text-[#111111]/70'
-    : 'text-[#6F6F6F] dark:text-[#999999]';
+    ? 'text-[#FFFFFF]/70 dark:text-[#94A3B8]'
+    : 'text-[#6F6F6F] dark:text-[#94A3B8]';
 
   const displayFaculty = session.faculty || subject?.facultyName || '';
   const roomStr = session.room || (session.isLab ? subject?.labRoom : subject?.room) || 'TBA';
@@ -54,18 +54,18 @@ export const ClassCard: React.FC<ClassCardProps> = ({
           </span>
           {session.isLab && (
             <span className={clsx(
-              "text-[10px] font-bold tracking-widest px-1.5 py-0.5 uppercase",
+              "text-[10px] font-bold tracking-widest px-1.5 py-0.5 uppercase border",
               isCurrent 
-                ? "text-black bg-white/20 dark:text-white dark:bg-black/20" 
-                : "text-[#B35900] dark:text-[#FFA033] bg-[#B35900]/10 dark:bg-[#FFA033]/10"
+                ? "text-black bg-white/20 dark:text-emerald-300 dark:bg-emerald-950/40 dark:border-emerald-500/30" 
+                : "text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-500/30"
             )}>
               LAB
             </span>
           )}
           {isCurrent && (
             <span className="flex h-1.5 w-1.5 relative ml-1">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-current"></span>
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-current"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-400"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400"></span>
             </span>
           )}
         </div>
@@ -75,11 +75,11 @@ export const ClassCard: React.FC<ClassCardProps> = ({
           <button
             onClick={() => setMenuOpen((prev) => !prev)}
             className={clsx(
-              "p-1 rounded-none transition-colors",
+              "p-1 rounded-none transition-colors cursor-pointer",
               textSecondaryClass,
               isCurrent 
-                ? "hover:text-white dark:hover:text-black hover:bg-white/10 dark:hover:bg-black/10"
-                : "hover:text-[#111111] dark:hover:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5"
+                ? "hover:text-white dark:hover:text-white hover:bg-white/10 dark:hover:bg-white/[0.08]"
+                : "hover:text-[#111111] dark:hover:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/[0.06]"
             )}
           >
             <MoreHorizontal className="w-4 h-4" />
@@ -91,13 +91,13 @@ export const ClassCard: React.FC<ClassCardProps> = ({
                 className="fixed inset-0 z-20"
                 onClick={() => setMenuOpen(false)}
               />
-              <div className="absolute right-0 mt-1 w-32 bg-[#FFFFFF] dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333] py-1 z-30 text-left rounded-none shadow-sm">
+              <div className="absolute right-0 mt-1 w-32 bg-[#FFFFFF] dark:bg-[#121317] border border-[#D9D9D6] dark:border-white/[0.08] py-1 z-30 text-left rounded-none shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
                 <button
                   onClick={() => {
                     setMenuOpen(false);
                     onEdit(session);
                   }}
-                  className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 text-left transition-colors"
+                  className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.04] text-left transition-colors cursor-pointer"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                   Edit Class
@@ -107,7 +107,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
                     setMenuOpen(false);
                     onDelete(session.id);
                   }}
-                  className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] font-medium text-[#D32F2F] hover:bg-[#D32F2F]/5 text-left transition-colors"
+                  className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] font-medium text-[#D32F2F] dark:text-rose-400 hover:bg-[#D32F2F]/5 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   Remove

@@ -215,44 +215,44 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
           >
             <div className="mb-12 relative">
               {onCancel && (
-                <button onClick={onCancel} className="absolute top-0 right-0 p-2 text-[#6B6B6B] hover:text-[#111111] dark:hover:text-[#FFFFFF]">
+                <button onClick={onCancel} className="absolute top-0 right-0 p-2 text-[#6B6B6B] hover:text-black dark:hover:text-white transition-colors">
                   <X className="w-6 h-6" />
                 </button>
               )}
-              <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
+              <h2 className="text-[40px] font-normal text-black dark:text-[#F4F4F6] tracking-tight leading-[44px]">
                 Hostel,<br />
                 Mess,<br />
                 Weekly,<br />
                 Menu
               </h2>
-              <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4 max-w-[280px]">
+              <p className="text-[14px] font-normal text-black/60 dark:text-[#94A3B8] leading-[20px] mt-4 max-w-[280px]">
                 Upload the weekly menu once. We'll organise meals, timings and days automatically.
               </p>
 
               <div className="flex items-center gap-3 mt-8">
                 <button
                   onClick={() => setShowJoinInput(true)}
-                  className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
+                  className="flex items-center justify-center h-11 px-5 rounded-xl border border-black/10 dark:border-white/[0.1] bg-white dark:bg-white/[0.06] text-black dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-black/5 dark:hover:bg-white/[0.1] transition-colors cursor-pointer shadow-sm"
                 >
                   Join Mess
                 </button>
                 <button
                   onClick={() => setShowImportModal(true)}
-                  className="flex items-center justify-center h-10 px-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold transition-colors gap-2 cursor-pointer"
+                  className="flex items-center justify-center h-11 px-5 rounded-xl bg-black dark:bg-white text-white dark:text-black text-[13px] font-semibold transition-opacity hover:opacity-90 gap-2 cursor-pointer shadow-sm"
                 >
-                  <Sparkles className="w-4 h-4" /> Magic Import
+                  <Sparkles className="w-4 h-4 text-amber-500" /> Magic Import
                 </button>
               </div>
             </div>
 
             {/* JOIN EXISTING */}
             {showJoinInput && (
-              <div className="mb-12 border border-[#E5E5E5] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-5 flex flex-col md:flex-row md:items-center justify-between group rounded-none gap-4">
+              <div className="mb-12 rounded-2xl border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] p-5 flex flex-col md:flex-row md:items-center justify-between group gap-4 shadow-sm">
                 <div className="flex flex-col">
-                  <p className="text-[14px] text-[#111111] dark:text-[#FFFFFF] font-medium leading-relaxed">
+                  <p className="text-[14px] text-black dark:text-[#F4F4F6] font-medium leading-relaxed">
                     Have an invite code?
                   </p>
-                  <p className="text-[10px] font-bold tracking-[1px] uppercase text-[#6F6F6F] mt-1">
+                  <p className="text-[10px] font-bold tracking-[1px] uppercase text-black/50 dark:text-[#64748B] mt-1">
                     ENTER MESS ID BELOW
                   </p>
                 </div>
@@ -261,7 +261,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
                   <input 
                     type="text" 
                     placeholder="e.g. 1a2b3c4d"
-                    className="w-full bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] px-3 py-2.5 text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
+                    className="w-full bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] rounded-xl px-3.5 py-2.5 text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors shadow-sm"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && e.currentTarget.value) {
                         executeJoinMess(e.currentTarget.value);
@@ -281,38 +281,38 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
             exit={{ opacity: 0, y: -10 }}
             className="flex flex-col justify-center flex-1 min-h-[500px] max-w-sm mx-auto w-full"
           >
-            <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-10 text-center">
+            <p className="text-[11px] font-bold tracking-[2px] uppercase text-black/50 dark:text-white/40 mb-10 text-center">
               READING YOUR MENU
             </p>
 
             <div className="flex flex-col gap-5 mb-12">
               <div className="flex items-center gap-3">
-                {progress > 20 ? <CheckCircle2 className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF]" /> : <div className="w-5 h-5 rounded-full border-2 border-[#D8D8D8] dark:border-[#333333]" />}
-                <span className={`text-[16px] font-medium ${progress > 20 ? 'text-[#111111] dark:text-[#FFFFFF]' : 'text-[#A0A0A0]'}`}>Finding days</span>
+                {progress > 20 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-black/20 dark:border-white/20" />}
+                <span className={`text-[16px] font-medium ${progress > 20 ? 'text-black dark:text-[#F4F4F6]' : 'text-black/40 dark:text-[#64748B]'}`}>Finding days</span>
               </div>
               <div className="flex items-center gap-3">
-                {progress > 40 ? <CheckCircle2 className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF]" /> : <div className="w-5 h-5 rounded-full border-2 border-[#D8D8D8] dark:border-[#333333]" />}
-                <span className={`text-[16px] font-medium ${progress > 40 ? 'text-[#111111] dark:text-[#FFFFFF]' : 'text-[#A0A0A0]'}`}>Detecting meals</span>
+                {progress > 40 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-black/20 dark:border-white/20" />}
+                <span className={`text-[16px] font-medium ${progress > 40 ? 'text-black dark:text-[#F4F4F6]' : 'text-black/40 dark:text-[#64748B]'}`}>Detecting meals</span>
               </div>
               <div className="flex items-center gap-3">
-                {progress > 60 ? <CheckCircle2 className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF]" /> : <div className="w-5 h-5 rounded-full border-2 border-[#D8D8D8] dark:border-[#333333]" />}
-                <span className={`text-[16px] font-medium ${progress > 60 ? 'text-[#111111] dark:text-[#FFFFFF]' : 'text-[#A0A0A0]'}`}>Reading dishes</span>
+                {progress > 60 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-black/20 dark:border-white/20" />}
+                <span className={`text-[16px] font-medium ${progress > 60 ? 'text-black dark:text-[#F4F4F6]' : 'text-black/40 dark:text-[#64748B]'}`}>Reading dishes</span>
               </div>
               <div className="flex items-center gap-3">
-                {progress > 80 ? <CheckCircle2 className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF]" /> : <div className="w-5 h-5 rounded-full border-2 border-[#D8D8D8] dark:border-[#333333]" />}
-                <span className={`text-[16px] font-medium ${progress > 80 ? 'text-[#111111] dark:text-[#FFFFFF]' : 'text-[#A0A0A0]'}`}>Matching timings</span>
+                {progress > 80 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-black/20 dark:border-white/20" />}
+                <span className={`text-[16px] font-medium ${progress > 80 ? 'text-black dark:text-[#F4F4F6]' : 'text-black/40 dark:text-[#64748B]'}`}>Matching timings</span>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="h-1 bg-[#F7F7F5] dark:bg-[#1A1A1A] flex-1 overflow-hidden">
+              <div className="h-1.5 bg-black/10 dark:bg-white/[0.08] rounded-full flex-1 overflow-hidden">
                 <motion.div 
-                  className="h-full bg-[#111111] dark:bg-[#FFFFFF]" 
+                  className="h-full bg-emerald-500 rounded-full" 
                   initial={{ width: '0%' }}
                   animate={{ width: `${progress}%` }}
                 />
               </div>
-              <span className="text-[12px] font-mono text-[#6F6F6F]">
+              <span className="text-[12px] font-mono text-black/60 dark:text-[#94A3B8]">
                 {Math.floor(progress)}%
               </span>
             </div>
@@ -327,25 +327,25 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
             exit={{ opacity: 0, y: -10 }}
             className="flex flex-col h-full py-4 max-h-[80vh]"
           >
-            <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-6 text-center">
+            <p className="text-[11px] font-bold tracking-[2px] uppercase text-black/50 dark:text-white/40 mb-6 text-center">
               {isEditing ? 'EDIT YOUR MENU' : 'YOUR MENU IS READY'}
             </p>
 
             <div className="flex-1 overflow-y-auto mb-8 pr-2 flex flex-col gap-6">
               {/* Meal Timings Card */}
-              <div className="bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] p-6">
-                <div className="flex items-center justify-between mb-4 border-b border-[#D8D8D8] dark:border-[#333333] pb-2">
-                  <h3 className="text-[14px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF]">
+              <div className="bg-white dark:bg-[#121317] border border-black/10 dark:border-white/[0.08] rounded-2xl p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4 border-b border-black/10 dark:border-white/[0.08] pb-3">
+                  <h3 className="text-[13px] font-bold tracking-[1.5px] uppercase text-black dark:text-[#F4F4F6]">
                     MEAL TIMINGS
                   </h3>
-                  <span className="text-[11px] text-[#6F6F6F]">
+                  <span className="text-[11px] text-black/60 dark:text-[#94A3B8]">
                     Used for live notifications & meal tracker
                   </span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {['Breakfast', 'Lunch', 'Snacks', 'Dinner'].map((meal) => (
                     <div key={meal} className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F]">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-black/60 dark:text-[#94A3B8]">
                         {meal}
                       </label>
                       {isEditing ? (
@@ -359,10 +359,10 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
                             })
                           }
                           placeholder="e.g. 8:00 - 10:00"
-                          className="bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] px-3 py-2 text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF]"
+                          className="bg-[#F7F7F5] dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] rounded-xl px-3.5 py-2 text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30"
                         />
                       ) : (
-                        <p className="text-[14px] font-mono font-medium text-[#111111] dark:text-[#FFFFFF]">
+                        <p className="text-[14px] font-mono font-medium text-black dark:text-[#F4F4F6]">
                           {extractedTimings[meal] || '8:00 - 10:00'}
                         </p>
                       )}
@@ -377,9 +377,9 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
                 if (!isEditing && day !== 'Monday') return null;
 
                 return (
-                  <div key={day} className="bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] p-6">
-                    <h3 className="text-[16px] font-bold text-[#111111] dark:text-[#FFFFFF] mb-6 border-b border-[#D8D8D8] dark:border-[#333333] pb-2">
-                      {day.toUpperCase()} {(!isEditing && day === 'Monday') && <span className="text-[11px] text-[#6F6F6F] ml-2 font-normal lowercase">(preview)</span>}
+                  <div key={day} className="bg-white dark:bg-[#121317] border border-black/10 dark:border-white/[0.08] rounded-2xl p-6 shadow-sm">
+                    <h3 className="text-[15px] font-bold text-black dark:text-[#F4F4F6] mb-6 border-b border-black/10 dark:border-white/[0.08] pb-3">
+                      {day.toUpperCase()} {(!isEditing && day === 'Monday') && <span className="text-[11px] text-black/50 dark:text-[#94A3B8] ml-2 font-normal lowercase">(preview)</span>}
                     </h3>
                     
                     {['Breakfast', 'Lunch', 'Snacks', 'Dinner'].map(meal => {
@@ -388,7 +388,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
                       
                       return (
                         <div key={meal} className="mb-6 last:mb-0">
-                          <h4 className="text-[12px] font-bold tracking-[1px] uppercase text-[#6F6F6F] mb-2">
+                          <h4 className="text-[11px] font-bold tracking-[1px] uppercase text-black/50 dark:text-[#94A3B8] mb-2">
                             {meal}
                           </h4>
                           {isEditing ? (
@@ -406,10 +406,10 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
                                 });
                               }}
                               placeholder="e.g. Aloo Paratha, Curd"
-                              className="w-full bg-[#F7F7F5] dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] px-3 py-2.5 text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
+                              className="w-full bg-[#F7F7F5] dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] rounded-xl px-3.5 py-2.5 text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
                             />
                           ) : (
-                            <p className="text-[15px] text-[#111111] dark:text-[#FFFFFF] leading-relaxed">
+                            <p className="text-[14px] text-black dark:text-[#F4F4F6] leading-relaxed">
                               {Array.isArray(items) ? items.join(' · ') : items}
                             </p>
                           )}
@@ -425,18 +425,18 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
               {isEditing ? (
                 <button 
                   onClick={() => setIsEditing(false)} 
-                  className="w-full h-12 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[14px] font-medium"
+                  className="w-full h-12 rounded-xl bg-black dark:bg-white text-white dark:text-black text-[14px] font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
                 >
                   Done Editing
                 </button>
               ) : (
                 <>
-                  <Button onClick={handlePublish} className="w-full flex justify-center items-center gap-2 h-12 text-[14px]">
+                  <Button onClick={handlePublish} className="w-full flex justify-center items-center gap-2 h-12 text-[14px] rounded-xl shadow-sm">
                     Looks good <ArrowRight className="w-4 h-4" />
                   </Button>
                   <button 
                     onClick={() => setIsEditing(true)}
-                    className="w-full h-12 border border-[#D8D8D8] dark:border-[#333333] text-[14px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
+                    className="w-full h-12 rounded-xl border border-black/10 dark:border-white/[0.1] text-[14px] font-bold text-black dark:text-[#F4F4F6] bg-white dark:bg-white/[0.06] hover:bg-black/5 dark:hover:bg-white/[0.1] transition-colors cursor-pointer"
                   >
                     Edit menu
                   </button>
@@ -453,24 +453,24 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
             animate={{ opacity: 1, scale: 1 }}
             className="flex flex-col items-center justify-center flex-1 min-h-[500px] text-center"
           >
-            <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] mb-6">
+            <p className="text-[11px] font-bold tracking-[2px] uppercase text-black/50 dark:text-white/40 mb-6">
               YOUR MESS IS READY 🎉
             </p>
-            <h2 className="text-[32px] font-medium leading-[1.1] text-[#111111] dark:text-[#FFFFFF] mb-4">
+            <h2 className="text-[32px] font-semibold leading-[1.1] text-black dark:text-[#F4F4F6] mb-4">
               Share this link with your hostel mates.
             </h2>
-            <p className="text-[#6F6F6F] text-[14px] mb-8">
+            <p className="text-black/60 dark:text-[#94A3B8] text-[14px] mb-8">
               Anyone with this link can join.
             </p>
 
-            <div className="flex items-center justify-between w-full p-4 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] mb-6">
-              <span className="text-[15px] font-medium text-[#111111] dark:text-[#FFFFFF] truncate mr-4">
+            <div className="flex items-center justify-between w-full p-4 rounded-xl border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] mb-6 shadow-sm">
+              <span className="text-[15px] font-mono font-medium text-black dark:text-[#F4F4F6] truncate mr-4">
                 intersemester.app/join/{messId}
               </span>
             </div>
 
             <div className="flex flex-col w-full gap-3">
-              <Button onClick={handleCopyLink} className="w-full h-12 text-[14px] flex items-center justify-center gap-2">
+              <Button onClick={handleCopyLink} className="w-full h-12 text-[14px] rounded-xl flex items-center justify-center gap-2 shadow-sm">
                 {copying ? <><Check className="w-4 h-4" /> Copied</> : 'Copy invite link'}
               </Button>
 
@@ -480,7 +480,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
                   if (onCancel) onCancel();
                   setActiveView('mess');
                 }}
-                className="w-full h-12 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[14px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer flex items-center justify-center gap-2"
+                className="w-full h-12 rounded-xl border border-black/10 dark:border-white/[0.1] text-black dark:text-[#F4F4F6] text-[14px] font-semibold hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors cursor-pointer flex items-center justify-center gap-2"
               >
                 Go to my mess menu <ArrowRight className="w-4 h-4" />
               </button>
@@ -492,7 +492,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
       
       <Modal isOpen={showJoinInput} onClose={() => setShowJoinInput(false)} title="Join Mess Menu">
         <form onSubmit={handleJoinSubmit} className="flex flex-col gap-4">
-          <p className="text-[13px] text-[#6B6B6B]">
+          <p className="text-[13px] text-black/60 dark:text-[#94A3B8]">
             Enter a mess invite code or paste an invite link to view the shared menu.
           </p>
           <div className="flex flex-col gap-2">
@@ -501,20 +501,20 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
               placeholder="e.g., ext_..."
               value={inviteInput}
               onChange={(e) => setInviteInput(e.target.value)}
-              className="w-full px-4 py-2 border border-[#E5E5E5] dark:border-[#333333] bg-transparent text-[13px] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
+              className="w-full px-4 py-2.5 rounded-xl border border-black/10 dark:border-white/[0.1] bg-white dark:bg-[#090A0C] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors shadow-sm"
               required
             />
           </div>
           <button
             type="submit"
             disabled={isJoining}
-            className="h-10 px-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold flex items-center justify-center disabled:opacity-50"
+            className="h-11 px-5 rounded-xl bg-black dark:bg-white text-white dark:text-black text-[13px] font-bold uppercase tracking-wider flex items-center justify-center disabled:opacity-50 hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
           >
             {isJoining ? 'Joining...' : 'Join'}
           </button>
         </form>
       </Modal>
-<MessImportModal 
+      <MessImportModal 
         isOpen={showImportModal} 
         onClose={() => setShowImportModal(false)} 
         onFileSelect={handleModalFileSelect} 

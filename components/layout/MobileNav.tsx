@@ -39,7 +39,7 @@ export const MobileNav: React.FC = () => {
   return (
     <nav 
       id="mobile-nav"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FFFFFF] dark:bg-[#111111] border-t border-[#D9D9D6] dark:border-[#333333] px-2 pt-2 select-none"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FFFFFF]/90 dark:bg-[#090A0C]/90 backdrop-blur-xl border-t border-[#D9D9D6] dark:border-white/[0.08] px-2 pt-2 select-none shadow-[0_-4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_-4px_25px_rgba(0,0,0,0.4)]"
       style={{
         paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 8px), 20px)',
       }}
@@ -52,17 +52,17 @@ export const MobileNav: React.FC = () => {
               key={tab.id}
               onClick={() => setActiveView(tab.id)}
               className={clsx(
-                'flex flex-col items-center justify-center relative cursor-pointer flex-1 h-full select-none gap-0.5',
+                'flex flex-col items-center justify-center relative cursor-pointer flex-1 h-full select-none gap-0.5 transition-colors',
                 isActive
-                  ? 'text-[#111111] dark:text-[#FFFFFF]'
-                  : 'text-[#8A8A8A] dark:text-[#8A8A8A] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
+                  ? 'text-[#111111] dark:text-[#F4F4F6]'
+                  : 'text-[#8A8A8A] dark:text-[#71717A] hover:text-[#111111] dark:hover:text-[#F4F4F6]'
               )}
             >
               <div className="relative mb-0.5">
                 {tab.icon}
 
                 {tab.badge !== undefined && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[14px] h-[14px] px-1 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] font-mono text-[9px] font-bold flex items-center justify-center leading-none rounded-full border border-white dark:border-[#111111]">
+                  <span className="absolute -top-1.5 -right-2 min-w-[14px] h-[14px] px-1 bg-[#111111] dark:bg-white text-white dark:text-[#090A0C] font-mono text-[9px] font-bold flex items-center justify-center leading-none rounded-full border border-white dark:border-[#090A0C]">
                     {tab.badge}
                   </span>
                 )}
@@ -79,7 +79,7 @@ export const MobileNav: React.FC = () => {
                 {isActive && (
                   <motion.div
                     layoutId="mobile-nav-indicator"
-                    className="absolute inset-0 bg-[#111111] dark:bg-[#FFFFFF]"
+                    className="absolute inset-0 bg-[#111111] dark:bg-[#F4F4F6] dark:shadow-[0_0_8px_rgba(255,255,255,0.7)]"
                   />
                 )}
               </div>

@@ -17,16 +17,17 @@
 }
 
 :root {
-  /* Clean, crisp off-white minimal background */
-  --background: #F7F7F5; 
+  /* Clean, crisp off-white minimal Japanese paper background */
+  --background: #FAFAF8; 
   /* Stark charcoal/black text */
   --foreground: #111111; 
 }
 
 .dark {
-  /* Clean dark mode background */
-  --background: #111111;
-  --foreground: #F7F7F5;
+  /* Luxury Obsidian Noir dark mode background */
+  --background: #090A0C;
+  --foreground: #F4F4F6;
+  color-scheme: dark;
 }
 
 html {
@@ -51,25 +52,27 @@ body {
 }
 
 .dark body, body.dark {
-  background-color: var(--background);
+  background-color: #090A0C;
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.05), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(56, 189, 248, 0.025), transparent 60%);
+  background-attachment: fixed;
 }
 
-/* Brutalist reset for existing cards */
+/* Card surfaces with subtle modern elevation */
 .bento-card, .glass-card, .hero-mesh-card {
   background: #FFFFFF;
-  border-radius: 0px;
-  border: 1px solid #D9D9D6;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  transition: all 0.15s ease-in-out;
+  border: 1px solid #E5E5E2;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark .bento-card, .dark .glass-card, .dark .hero-mesh-card,
 html.dark .bento-card, html.dark .glass-card, html.dark .hero-mesh-card {
-  background: #181818 !important;
-  border-color: #2C2C2C !important;
-  color: #FFFFFF !important;
+  background: #121317 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #F4F4F6 !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
 }
 
 /* Custom subtle scrollbars */

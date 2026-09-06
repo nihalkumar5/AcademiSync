@@ -188,7 +188,7 @@ export const HomeworkView: React.FC = () => {
         <div className="flex flex-wrap items-center gap-3 mb-1">
           <button
             onClick={() => setShowScanModal(true)}
-            className="flex items-center justify-center h-[36px] px-[14px] rounded-none border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-[12px] font-semibold cursor-pointer w-auto gap-2"
+            className="flex items-center justify-center h-[36px] px-[14px] rounded-none border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] bg-transparent hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors text-[12px] font-semibold cursor-pointer w-auto gap-2"
           >
             <Sparkles className="w-4 h-4" /> Magic Import
           </button>
@@ -198,7 +198,7 @@ export const HomeworkView: React.FC = () => {
               setEditHomework(null);
               setShowAddModal(true);
             }}
-            className="flex items-center justify-center gap-1.5 h-[36px] px-[14px] rounded-none bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] hover:opacity-90 transition-opacity text-[12px] font-semibold cursor-pointer w-auto"
+            className="flex items-center justify-center gap-1.5 h-[36px] px-[14px] rounded-none bg-[#111111] text-[#FFFFFF] dark:bg-white dark:text-[#090A0C] hover:opacity-90 transition-opacity text-[12px] font-semibold cursor-pointer w-auto shadow-sm"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
             New Task
@@ -210,14 +210,14 @@ export const HomeworkView: React.FC = () => {
 
       {/* Search Bar */}
       <div className="relative w-full">
-        <div className="flex items-center gap-3 px-4 py-2.5 h-[44px] rounded-none bg-white dark:bg-[#111111] border border-[#D9D9D6] dark:border-[#333333]">
-          <Search className="w-4 h-4 text-[#6F6F6F] shrink-0" />
+        <div className="flex items-center gap-3 px-4 py-2.5 h-[44px] rounded-none bg-white dark:bg-[#121317] border border-[#D9D9D6] dark:border-white/[0.08] shadow-xs">
+          <Search className="w-4 h-4 text-[#6F6F6F] dark:text-[#94A3B8] shrink-0" />
           <input
             type="text"
             placeholder="Search assignments, topics, or notes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-transparent text-[14px] text-[#111111] dark:text-[#FFFFFF] placeholder:text-[#6F6F6F] focus:outline-none font-medium"
+            className="w-full bg-transparent text-[14px] text-[#111111] dark:text-[#F4F4F6] placeholder:text-[#6F6F6F] dark:placeholder:text-[#64748B] focus:outline-none font-medium"
           />
           {searchQuery && (
             <button
@@ -231,7 +231,7 @@ export const HomeworkView: React.FC = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center w-full mt-4 mb-2 h-[44px] border-b border-[#D9D9D6] dark:border-[#333333]">
+      <div className="flex items-center w-full mt-4 mb-2 h-[44px] border-b border-[#D9D9D6] dark:border-white/[0.08]">
         {filterTabs.map((tab) => {
           const isSelected = statusFilter === tab.id;
           return (
@@ -240,14 +240,14 @@ export const HomeworkView: React.FC = () => {
               onClick={() => setStatusFilter(tab.id as 'All' | HomeworkStatus)}
               className={`relative flex-1 flex items-center justify-center gap-1.5 h-full text-[11px] font-semibold tracking-[1px] uppercase transition-colors whitespace-nowrap cursor-pointer ${
                 isSelected
-                  ? 'text-[#111111] dark:text-[#FFFFFF]'
-                  : 'text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
+                  ? 'text-[#111111] dark:text-[#F4F4F6]'
+                  : 'text-[#6F6F6F] dark:text-[#94A3B8] hover:text-[#111111] dark:hover:text-white'
               }`}
             >
               <span>{tab.label}</span>
               <span className="font-mono text-[11px] font-bold">{tab.count}</span>
               {isSelected && (
-                <span className="absolute bottom-[-1px] left-1/2 -translate-x-1/2 w-[38px] h-[2px] bg-[#111111] dark:bg-[#FFFFFF]" />
+                <span className="absolute bottom-[-1px] left-1/2 -translate-x-1/2 w-[38px] h-[2px] bg-[#111111] dark:bg-[#F4F4F6]" />
               )}
             </button>
           );

@@ -16,18 +16,18 @@ export const ApplyForCRCard: React.FC = () => {
 
   return (
     <>
-      <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-start gap-3 z-10">
-          <div className="w-8 h-8 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] flex items-center justify-center shrink-0">
-            <Crown className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF]" />
+      <div className="border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-black/20 dark:hover:border-white/[0.14] shadow-sm">
+        <div className="flex items-start gap-3.5 z-10">
+          <div className="w-9 h-9 rounded-xl border border-black/10 dark:border-white/[0.1] bg-white dark:bg-white/[0.06] flex items-center justify-center shrink-0">
+            <Crown className="w-4 h-4 text-amber-500" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+              <h4 className="text-[13px] font-bold text-black dark:text-[#F4F4F6]">
                 Are you a Batch Pilot? 🚀
               </h4>
             </div>
-            <p className="text-[12px] text-[#6F6F6F] mt-0.5 max-w-md leading-relaxed">
+            <p className="text-[12px] text-black/60 dark:text-[#94A3B8] mt-0.5 max-w-md leading-relaxed font-medium">
               Apply to become a Batch Pilot (up to 3 per batch) to manage, publish & broadcast verified schedules and class alerts.
             </p>
           </div>
@@ -36,7 +36,7 @@ export const ApplyForCRCard: React.FC = () => {
         <button
           type="button"
           onClick={() => setShowApplyModal(true)}
-          className="shrink-0 px-4 py-2.5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer"
+          className="shrink-0 px-4 py-2.5 rounded-xl bg-black dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer shadow-sm"
         >
           <Crown className="w-3.5 h-3.5" />
           Apply for Batch Pilot

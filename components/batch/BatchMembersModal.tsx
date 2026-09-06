@@ -396,7 +396,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
               </div>
             </div>
 
-            <div className="text-[11px] font-mono text-[#6F6F6F] px-2.5 py-1 bg-black/[0.03] dark:bg-white/[0.05] border border-[#D9D9D6] dark:border-[#333333] self-start sm:self-auto uppercase tracking-wider">
+            <div className="text-[11px] font-mono text-[#6F6F6F] dark:text-[#94A3B8] px-2.5 py-1 bg-black/[0.03] dark:bg-white/[0.05] border border-[#D9D9D6] dark:border-white/[0.08] self-start sm:self-auto uppercase tracking-wider">
               {members.length} {members.length === 1 ? 'MEMBER' : 'MEMBERS'}
             </div>
           </div>
@@ -404,19 +404,19 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
           {/* Invite Button */}
           <button 
             onClick={handleCopyInvite}
-            className="flex items-center justify-between py-3.5 px-4 border border-[#D9D9D6] dark:border-[#333333] bg-black/[0.01] dark:bg-white/[0.02] hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left group cursor-pointer"
+            className="flex items-center justify-between py-3.5 px-4 border border-[#D9D9D6] dark:border-white/[0.08] bg-black/[0.01] dark:bg-white/[0.03] hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors text-left group cursor-pointer"
           >
-            <span className="text-[12px] font-bold tracking-[1px] text-[#111111] dark:text-[#FFFFFF] uppercase">
+            <span className="text-[12px] font-bold tracking-[1px] text-[#111111] dark:text-[#F4F4F6] uppercase">
               {copiedLink ? 'BATCH CODE COPIED' : 'SHARE BATCH INVITE CODE'}
             </span>
-            {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <ArrowRight className="w-4 h-4 text-[#111111] dark:text-[#FFFFFF] group-hover:translate-x-1 transition-transform" />}
+            {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <ArrowRight className="w-4 h-4 text-[#111111] dark:text-[#F4F4F6] group-hover:translate-x-1 transition-transform" />}
           </button>
 
           {/* Batch Pilot Section */}
           {crMembers.length > 0 && (
             <div className="flex flex-col">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] uppercase flex items-center gap-1.5">
+                <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] dark:text-[#94A3B8] uppercase flex items-center gap-1.5">
                   <Crown className="w-3.5 h-3.5 text-amber-500" />
                   BATCH PILOT{crMembers.length > 1 ? `S (${crMembers.length}/3)` : ' (1/3)'}
                 </span>
@@ -426,22 +426,22 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
                   const p = cr.profile || {};
                   const isCurrentUser = checkIsCurrentUser(cr);
                   return (
-                    <div key={cr.id} className="relative flex flex-col items-center justify-center p-4 sm:p-5 border border-[#D9D9D6] dark:border-[#333333] text-center bg-[#FDFDFD] dark:bg-[#151515] group">
+                    <div key={cr.id} className="relative flex flex-col items-center justify-center p-4 sm:p-5 border border-[#D9D9D6] dark:border-white/[0.08] text-center bg-[#FDFDFD] dark:bg-[#121317] group dark:shadow-md">
                       <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center mb-2.5">
                         <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${p.avatarUrl || cr.id}&backgroundColor=transparent`} alt="avatar" className="w-full h-full object-contain drop-shadow-sm group-hover:scale-105 transition-transform" />
                       </div>
-                      <span className="text-[13.5px] font-semibold text-[#111111] dark:text-[#FFFFFF] truncate w-full px-2">
+                      <span className="text-[13.5px] font-semibold text-[#111111] dark:text-[#F4F4F6] truncate w-full px-2">
                         {p.name || 'Pilot'}
                       </span>
-                      <span className="text-[11px] text-[#6F6F6F] mt-0.5 truncate w-full px-2 font-mono">
+                      <span className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8] mt-0.5 truncate w-full px-2 font-mono">
                         Batch Pilot · {p.rollNumber || p.email}
                       </span>
                       {isCurrentUser && (
-                        <span className="absolute top-2.5 left-2.5 text-[8.5px] font-bold tracking-widest text-[#6F6F6F] border border-[#D9D9D6] dark:border-[#333333] px-1.5 py-0.5 uppercase bg-black/[0.02] dark:bg-white/[0.04]">YOU</span>
+                        <span className="absolute top-2.5 left-2.5 text-[8.5px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] border border-[#D9D9D6] dark:border-white/[0.1] px-1.5 py-0.5 uppercase bg-black/[0.02] dark:bg-white/[0.06]">YOU</span>
                       )}
                       <button 
                         onClick={() => setSelectedMember(cr)}
-                        className="absolute top-2.5 right-2.5 p-1.5 text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 rounded transition-colors cursor-pointer"
+                        className="absolute top-2.5 right-2.5 p-1.5 text-[#6F6F6F] hover:text-[#111111] dark:text-[#94A3B8] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/[0.06] rounded transition-colors cursor-pointer"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -455,26 +455,26 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
           {/* Members Section */}
           <div className="flex flex-col">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] uppercase">MEMBERS ({normalMembers.length})</span>
+              <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] dark:text-[#94A3B8] uppercase">MEMBERS ({normalMembers.length})</span>
             </div>
 
             {/* Search Input */}
             <div className="relative mb-4">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6F6F6F]" />
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6F6F6F] dark:text-[#94A3B8]" />
               <input 
                 placeholder="Search members by name, roll number, email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-black/[0.02] dark:bg-white/[0.03] text-[13.5px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none border border-[#D9D9D6] dark:border-[#333333] transition-colors placeholder:text-[#6F6F6F]"
+                className="w-full pl-9 pr-4 py-2 bg-black/[0.02] dark:bg-[#090A0C] text-[13.5px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none border border-[#D9D9D6] dark:border-white/[0.08] transition-colors placeholder:text-[#6F6F6F] dark:placeholder:text-[#64748B]"
               />
             </div>
 
             {loading ? (
-              <div className="py-12 text-center text-[12px] font-mono text-[#6F6F6F] animate-pulse">
+              <div className="py-12 text-center text-[12px] font-mono text-[#6F6F6F] dark:text-[#94A3B8] animate-pulse">
                 Loading members...
               </div>
             ) : normalMembers.length === 0 ? (
-              <div className="py-12 text-center text-[13px] text-[#6F6F6F]">
+              <div className="py-12 text-center text-[13px] text-[#6F6F6F] dark:text-[#94A3B8]">
                 No members found.
               </div>
             ) : (
@@ -486,19 +486,19 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
                     <div 
                       key={m.id}
                       onClick={() => setSelectedMember(m)}
-                      className="group flex flex-col items-center text-center border border-[#D9D9D6] dark:border-[#333333] p-4 sm:p-5 cursor-pointer hover:border-[#111111] dark:hover:border-[#FFFFFF] hover:shadow-sm transition-all relative bg-[#FFFFFF] dark:bg-[#111111]"
+                      className="group flex flex-col items-center text-center border border-[#D9D9D6] dark:border-white/[0.08] p-4 sm:p-5 cursor-pointer hover:border-[#111111] dark:hover:border-white/[0.2] hover:shadow-sm transition-all relative bg-[#FFFFFF] dark:bg-[#121317] dark:shadow-md"
                     >
                       <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto flex items-center justify-center mb-3">
                         <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${p.avatarUrl || m.id}&backgroundColor=transparent`} alt="avatar" className="w-full h-full object-contain drop-shadow-sm group-hover:scale-105 transition-transform" />
                       </div>
-                      <span className="text-[13px] font-semibold text-[#111111] dark:text-[#FFFFFF] leading-tight truncate w-full px-1">
+                      <span className="text-[13px] font-semibold text-[#111111] dark:text-[#F4F4F6] leading-tight truncate w-full px-1">
                         {p.name || 'Student'}
                       </span>
-                      <span className="text-[11px] text-[#6F6F6F] dark:text-[#A0A0A0] mt-1 truncate w-full px-1 font-mono">
+                      <span className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8] mt-1 truncate w-full px-1 font-mono">
                         {p.rollNumber || p.email}
                       </span>
                       {isCurrentUser && (
-                        <span className="absolute top-2 right-2 text-[8px] font-bold tracking-widest text-[#6F6F6F] border border-[#D9D9D6] dark:border-[#333333] px-1 py-0.5 uppercase bg-black/[0.02] dark:bg-white/[0.04]">YOU</span>
+                        <span className="absolute top-2 right-2 text-[8px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] border border-[#D9D9D6] dark:border-white/[0.1] px-1 py-0.5 uppercase bg-black/[0.02] dark:bg-white/[0.06]">YOU</span>
                       )}
                     </div>
                   );
@@ -517,7 +517,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
       >
         {selectedMember && (
           <div className="-m-5 p-5">
-            <div className="border-b border-[#D9D9D6] dark:border-[#333333] pb-4 mb-4">
+            <div className="border-b border-[#D9D9D6] dark:border-white/[0.08] pb-4 mb-4">
               <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF]">
                 {selectedMember.profile?.name || 'Student'}
               </h3>

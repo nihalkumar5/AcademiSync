@@ -97,7 +97,7 @@ export const Header: React.FC = () => {
   return (
     <>
       <header
-        className="sticky top-0 z-40 w-full flex items-center justify-center px-4 sm:px-8 bg-[#FAFAF8]/65 dark:bg-[#111110]/65 backdrop-blur-xl border-b border-[#D8D8D8]/40 dark:border-[#333333]/40 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-colors"
+        className="sticky top-0 z-40 w-full flex items-center justify-center px-4 sm:px-8 bg-[#FAFAF8]/75 dark:bg-[#090A0C]/75 backdrop-blur-xl border-b border-[#D8D8D8]/40 dark:border-white/[0.07] shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-colors"
         style={{
           paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 12px), 28px)',
           paddingBottom: '12px',
@@ -106,7 +106,7 @@ export const Header: React.FC = () => {
         <div className="flex items-center justify-between w-full max-w-6xl mx-auto relative">
           <div className="flex items-center gap-3 select-none">
           {/* Logo only shown on mobile where sidebar is hidden */}
-          <h1 className="md:hidden text-xl sm:text-2xl text-[#1A1918] dark:text-[#F4F1EA] tracking-tighter font-sans">
+          <h1 className="md:hidden text-xl sm:text-2xl text-[#1A1918] dark:text-[#F4F4F6] tracking-tighter font-sans">
             <span className="font-extrabold">inter</span>
             <span className="font-normal opacity-80">semester</span>
           </h1>
@@ -114,7 +114,7 @@ export const Header: React.FC = () => {
           {/* Desktop Breadcrumb indicator so logo is never duplicated */}
           <div className="hidden md:flex items-center gap-2 font-mono text-xs">
             <span className="text-black/35 dark:text-white/35 uppercase">Workspace /</span>
-            <span className="font-bold uppercase tracking-wider text-black dark:text-white">
+            <span className="font-bold uppercase tracking-wider text-black dark:text-[#F4F4F6]">
               {viewTitles[activeView] || 'Dashboard'}
             </span>
           </div>
@@ -123,8 +123,8 @@ export const Header: React.FC = () => {
         <div className="flex items-center gap-1 sm:gap-2.5 text-sm font-medium tracking-tight text-black dark:text-white">
           {/* Live Clock Pill */}
           {currentTime && (
-            <div className="hidden lg:flex items-center gap-2 h-8 px-3 border border-[#D9D9D6] dark:border-[#333333] bg-black/[0.02] dark:bg-white/[0.03] text-[11.5px] font-mono text-[#555555] dark:text-[#AAAAAA] rounded-none">
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+            <div className="hidden lg:flex items-center gap-2 h-8 px-3 border border-[#D9D9D6] dark:border-white/[0.08] bg-black/[0.02] dark:bg-white/[0.03] text-[11.5px] font-mono text-[#555555] dark:text-[#A1A1AA] rounded-none">
+              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_6px_#10b981]" />
               <span className="tracking-wide">{currentTime}</span>
             </div>
           )}
@@ -133,12 +133,12 @@ export const Header: React.FC = () => {
           <button
             type="button"
             onClick={() => setCommandPaletteOpen(true)}
-            className="w-10 h-10 md:w-auto md:h-8 flex items-center justify-center p-2 md:px-3 md:border md:border-[#D9D9D6] md:dark:border-[#333333] md:hover:border-[#111111] md:dark:hover:border-[#FFFFFF] md:bg-black/[0.02] md:dark:bg-white/[0.03] text-[#111111] dark:text-[#FFFFFF] md:text-[#555555] md:dark:text-[#AAAAAA] md:hover:text-[#111111] md:dark:hover:text-[#FFFFFF] transition-all cursor-pointer rounded-none active:scale-95"
+            className="w-10 h-10 md:w-auto md:h-8 flex items-center justify-center p-2 md:px-3 md:border md:border-[#D9D9D6] md:dark:border-white/[0.08] md:hover:border-[#111111] md:dark:hover:border-white/20 md:bg-black/[0.02] md:dark:bg-white/[0.03] text-[#111111] dark:text-[#F4F4F6] md:text-[#555555] md:dark:text-[#A1A1AA] md:hover:text-[#111111] md:dark:hover:text-[#FFFFFF] transition-all cursor-pointer rounded-none active:scale-95"
             title="Search (⌘K)"
           >
-            <Search className="w-4 h-4 md:w-3.5 md:h-3.5 md:mr-1.5 text-[#111111] dark:text-[#FFFFFF]" />
+            <Search className="w-4 h-4 md:w-3.5 md:h-3.5 md:mr-1.5 text-[#111111] dark:text-[#F4F4F6]" />
             <span className="hidden md:inline text-[12px] font-medium">Search</span>
-            <kbd className="hidden md:inline text-[10px] font-mono px-1.5 py-0.5 border border-[#D9D9D6] dark:border-[#444444] bg-black/5 dark:bg-white/5 opacity-75 ml-1.5">
+            <kbd className="hidden md:inline text-[10px] font-mono px-1.5 py-0.5 border border-[#D9D9D6] dark:border-white/10 bg-black/5 dark:bg-white/5 opacity-75 ml-1.5">
               ⌘K
             </kbd>
           </button>
@@ -148,11 +148,11 @@ export const Header: React.FC = () => {
             type="button"
             onClick={toggleTheme}
             aria-label="Toggle theme"
-            className="hidden md:flex items-center justify-center w-8 h-8 border border-[#D9D9D6] dark:border-[#333333] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-black/[0.02] dark:bg-white/[0.03] text-[#111111] dark:text-[#FFFFFF] transition-all cursor-pointer rounded-none active:scale-95"
+            className="hidden md:flex items-center justify-center w-8 h-8 border border-[#D9D9D6] dark:border-white/[0.08] hover:border-[#111111] dark:hover:border-white/20 bg-black/[0.02] dark:bg-white/[0.03] text-[#111111] dark:text-[#F4F4F6] transition-all cursor-pointer rounded-none active:scale-95"
             title={`Switch to ${settings.theme === 'dark' ? 'Light' : 'Dark'} Mode`}
           >
             {settings.theme === 'dark' ? (
-              <Sun className="w-3.5 h-3.5" />
+              <Sun className="w-3.5 h-3.5 text-amber-400" />
             ) : (
               <Moon className="w-3.5 h-3.5" />
             )}
@@ -162,12 +162,12 @@ export const Header: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveView('notifications')}
-            className="relative w-10 h-10 md:w-8 md:h-8 flex items-center justify-center p-2 md:p-0 md:border md:border-[#D9D9D6] md:dark:border-[#333333] md:hover:border-[#111111] md:dark:hover:border-[#FFFFFF] md:bg-black/[0.02] md:dark:bg-white/[0.03] text-[#111111] dark:text-[#FFFFFF] transition-all cursor-pointer rounded-none active:scale-95"
+            className="relative w-10 h-10 md:w-8 md:h-8 flex items-center justify-center p-2 md:p-0 md:border md:border-[#D9D9D6] md:dark:border-white/[0.08] md:hover:border-[#111111] md:dark:hover:border-white/20 md:bg-black/[0.02] md:dark:bg-white/[0.03] text-[#111111] dark:text-[#F4F4F6] transition-all cursor-pointer rounded-none active:scale-95"
             title={`Notifications (${unreadNotifs} unread)`}
           >
-            <Bell className="w-4 h-4 md:w-3.5 md:h-3.5 text-[#111111] dark:text-[#FFFFFF]" />
+            <Bell className="w-4 h-4 md:w-3.5 md:h-3.5 text-[#111111] dark:text-[#F4F4F6]" />
             {unreadNotifs > 0 && (
-              <span className="absolute top-1.5 right-1.5 md:-top-1 md:-right-1 min-w-[14px] h-[14px] md:min-w-[15px] md:h-[15px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[9px] font-bold flex items-center justify-center border border-[#FAFAF8] dark:border-[#111110] leading-none rounded-full">
+              <span className="absolute top-1.5 right-1.5 md:-top-1 md:-right-1 min-w-[14px] h-[14px] md:min-w-[15px] md:h-[15px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[9px] font-bold flex items-center justify-center border border-[#FAFAF8] dark:border-[#090A0C] leading-none rounded-full">
                 {unreadNotifs > 99 ? '99+' : unreadNotifs}
               </span>
             )}
@@ -178,7 +178,7 @@ export const Header: React.FC = () => {
             <button
               type="button"
               onClick={() => setAddMenuOpen(!addMenuOpen)}
-              className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-[#111111] dark:text-[#FFFFFF] md:bg-[#111111] md:dark:bg-[#FFFFFF] md:text-[#FFFFFF] md:dark:text-[#111111] hover:opacity-70 transition-all cursor-pointer rounded-none active:scale-95"
+              className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-[#111111] dark:text-[#F4F4F6] md:bg-[#111111] md:dark:bg-[#F4F4F6] md:text-[#FFFFFF] md:dark:text-[#090A0C] hover:opacity-80 transition-all cursor-pointer rounded-none active:scale-95 shadow-xs"
               title="Add New Action"
             >
               <Plus className={`w-5 h-5 md:w-4 md:h-4 stroke-[2.5] transition-transform duration-200 ${addMenuOpen ? 'rotate-45' : ''}`} />
@@ -187,13 +187,13 @@ export const Header: React.FC = () => {
             {addMenuOpen && (
               <>
                 <div className="fixed inset-0 z-40 sm:hidden" onClick={() => setAddMenuOpen(false)} />
-                <div className="absolute right-0 mt-2 w-[280px] sm:w-[320px] bg-[#FFFFFF] dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] shadow-[0_8px_24px_rgba(0,0,0,0.12)] py-2 z-50 text-left rounded-none">
+                <div className="absolute right-0 mt-2 w-[280px] sm:w-[320px] bg-[#FFFFFF] dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.08] shadow-[0_8px_30px_rgba(0,0,0,0.4)] py-2 z-50 text-left rounded-none">
                   <button
                     onClick={() => {
                       setAddMenuOpen(false);
                       setShowAddHwModal(true);
                     }}
-                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors text-left cursor-pointer"
+                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
                   >
                     <CheckSquare className="w-5 h-5" />
                     New Homework
@@ -204,7 +204,7 @@ export const Header: React.FC = () => {
                       setAddMenuOpen(false);
                       setShowHwScanModal(true);
                     }}
-                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors text-left cursor-pointer"
+                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
                   >
                     <Sparkles className="w-5 h-5" />
                     Scan Homework
@@ -215,20 +215,20 @@ export const Header: React.FC = () => {
                       setAddMenuOpen(false);
                       setShowAddCarryModal(true);
                     }}
-                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors text-left cursor-pointer"
+                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
                   >
                     <Backpack className="w-5 h-5" />
                     Add Bag Item
                   </button>
 
-                  <div className="my-2 border-t border-[#D8D8D8] dark:border-[#333333] mx-0" />
+                  <div className="my-2 border-t border-[#D8D8D8] dark:border-white/[0.08] mx-0" />
 
                   <button
                     onClick={() => {
                       setAddMenuOpen(false);
                       setShowTimetableImportModal(true);
                     }}
-                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors text-left cursor-pointer"
+                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
                   >
                     <Upload className="w-5 h-5" />
                     Import Timetable
@@ -239,7 +239,7 @@ export const Header: React.FC = () => {
                       setAddMenuOpen(false);
                       setShowCalendarImportModal(true);
                     }}
-                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors text-left cursor-pointer"
+                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
                   >
                     <Calendar className="w-5 h-5" />
                     Import Academic Calendar

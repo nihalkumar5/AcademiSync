@@ -90,7 +90,7 @@ export const Modal: React.FC<ModalProps> = ({
             onClick={(e) => e.stopPropagation()}
             className={twMerge(
               clsx(
-                'relative bg-white dark:bg-[#111111] border-[#D9D9D6] dark:border-[#333333] z-10 text-left shadow-2xl flex flex-col',
+                'relative bg-white dark:bg-[#121317] border-[#D9D9D6] dark:border-white/[0.08] z-10 text-left shadow-2xl dark:shadow-[0_16px_50px_rgba(0,0,0,0.6)] flex flex-col',
                 mobileFullSheet 
                   ? 'w-full min-h-[100dvh] sm:min-h-0 sm:max-h-[88vh] sm:my-auto border-0 sm:border sm:rounded-xl overflow-hidden' 
                   : 'w-full border my-auto max-h-[90dvh] sm:rounded-xl overflow-hidden',
@@ -100,19 +100,19 @@ export const Modal: React.FC<ModalProps> = ({
           >
             {(title || showCloseButton) && (
               <div className={clsx(
-                "flex items-center justify-between border-b border-[#D9D9D6] dark:border-[#333333] bg-white dark:bg-[#111111] shrink-0",
+                "flex items-center justify-between border-b border-[#D9D9D6] dark:border-white/[0.08] bg-white dark:bg-[#121317] shrink-0",
                 mobileFullSheet 
                   ? "sticky top-0 z-30 px-5 py-4 pt-[max(env(safe-area-inset-top,0px),1rem)] sm:pt-4 sm:px-6" 
                   : "px-5 py-4 sm:px-6"
               )}>
                 <div className="pr-4 min-w-0 flex-1">
                   {title && (
-                    <h2 className="text-[18px] sm:text-[20px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-snug truncate">
+                    <h2 className="text-[18px] sm:text-[20px] font-bold text-[#111111] dark:text-[#F4F4F6] tracking-tight leading-snug truncate">
                       {title}
                     </h2>
                   )}
                   {description && (
-                    <p className="mt-1 text-[13px] sm:text-[13.5px] text-[#6F6F6F] dark:text-[#A0A0A0] leading-snug">
+                    <p className="mt-1 text-[13px] sm:text-[13.5px] text-[#6F6F6F] dark:text-[#94A3B8] leading-snug">
                       {description}
                     </p>
                   )}
@@ -126,7 +126,7 @@ export const Modal: React.FC<ModalProps> = ({
                       onClose();
                     }}
                     aria-label="Close dialog"
-                    className="w-9 h-9 flex items-center justify-center rounded-lg transition-all text-[#111111] dark:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/10 active:scale-95 z-40 cursor-pointer shrink-0"
+                    className="w-9 h-9 flex items-center justify-center rounded-lg transition-all text-[#111111] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.08] active:scale-95 z-40 cursor-pointer shrink-0"
                   >
                     <X className="w-5 h-5 pointer-events-none" />
                   </button>

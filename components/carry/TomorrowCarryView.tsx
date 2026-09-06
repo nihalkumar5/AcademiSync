@@ -141,31 +141,31 @@ export const TomorrowCarryView: React.FC = () => {
         {/* Right Column: Things to Carry List */}
         <div className="lg:col-span-7 flex flex-col gap-4">
           {totalCount === 0 && !targetHoliday ? (
-            <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-5 flex flex-col items-start rounded-none">
-              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+            <div className="border border-[#D8D8D8] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] p-5 flex flex-col items-start rounded-none dark:shadow-md">
+              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#F4F4F6]">
                 <Backpack className="w-[18px] h-[18px] stroke-[1.5]" />
                 <span>Things to Carry</span>
               </div>
               <div className="flex flex-col mt-4 mb-5">
-                <span className="text-[14px] text-[#6F6F6F]">Nothing packed yet.</span>
-                <span className="text-[14px] text-[#6F6F6F]">Add what you need for {isAfterReminderTime ? 'tomorrow' : 'today'}.</span>
+                <span className="text-[14px] text-[#6F6F6F] dark:text-[#94A3B8]">Nothing packed yet.</span>
+                <span className="text-[14px] text-[#6F6F6F] dark:text-[#94A3B8]">Add what you need for {isAfterReminderTime ? 'tomorrow' : 'today'}.</span>
               </div>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="h-[44px] px-6 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] flex items-center justify-center gap-2 font-medium text-[14px] hover:opacity-90 transition-opacity rounded-none"
+                className="h-[44px] px-6 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] flex items-center justify-center gap-2 font-semibold text-[13px] hover:opacity-90 transition-opacity rounded-none cursor-pointer shadow-sm"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add item</span>
               </button>
             </div>
           ) : (
-            <div className="border border-[#D8D8D8] dark:border-[#333333] rounded-none flex flex-col p-5 sm:p-6 bg-[#FFFFFF] dark:bg-[#111111]">
-              <div className="flex items-center justify-between pb-[14px] border-b border-[#D8D8D8] dark:border-[#333333] mb-[16px]">
-                <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+            <div className="border border-[#D8D8D8] dark:border-white/[0.08] rounded-none flex flex-col p-5 sm:p-6 bg-[#FFFFFF] dark:bg-[#121317] dark:shadow-md">
+              <div className="flex items-center justify-between pb-[14px] border-b border-[#D8D8D8] dark:border-white/[0.08] mb-[16px]">
+                <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#F4F4F6]">
                   <Backpack className="w-[18px] h-[18px] stroke-[1.5]" />
                   <span>Things to Carry</span>
                 </div>
-                <div className="text-[12px] font-bold font-mono tracking-widest text-[#111111] dark:text-[#FFFFFF]">
+                <div className="text-[12px] font-bold font-mono tracking-widest text-[#111111] dark:text-[#F4F4F6]">
                   {packedCount} / {totalCount}
                 </div>
               </div>
@@ -192,7 +192,7 @@ export const TomorrowCarryView: React.FC = () => {
               {visibleCarryItems.length > 0 && (
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="flex items-center gap-2 text-[14px] font-bold text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-all w-fit cursor-pointer mt-[18px]"
+                  className="flex items-center gap-2 text-[14px] font-bold text-[#6F6F6F] hover:text-[#111111] dark:text-[#94A3B8] dark:hover:text-white transition-all w-fit cursor-pointer mt-[18px]"
                 >
                   <Plus className="w-4 h-4 stroke-[2]" />
                   <span>Add another item</span>
@@ -204,23 +204,23 @@ export const TomorrowCarryView: React.FC = () => {
 
         {/* Left Column: Schedule Preview */}
         <div className="lg:col-span-5 flex flex-col mt-4 lg:mt-0">
-          <div className="flex items-center justify-between pb-[14px] border-b border-[#D8D8D8] dark:border-[#333333]">
-            <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+          <div className="flex items-center justify-between pb-[14px] border-b border-[#D8D8D8] dark:border-white/[0.08]">
+            <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#F4F4F6]">
               <Clock className="w-[18px] h-[18px] stroke-[1.5]" />
               <span>{isAfterReminderTime ? "Tomorrow's Schedule" : "Today's Schedule"}</span>
             </div>
-            <div className="text-[12px] font-bold font-mono tracking-widest text-[#111111] dark:text-[#FFFFFF]">
+            <div className="text-[12px] font-bold font-mono tracking-widest text-[#111111] dark:text-[#F4F4F6]">
               {targetHoliday ? '0' : targetClasses.length}
             </div>
           </div>
 
           <div className="flex flex-col">
             {targetHoliday ? (
-              <div className="py-6 text-center text-[#6F6F6F] text-[14px]">
+              <div className="py-6 text-center text-[#6F6F6F] dark:text-[#94A3B8] text-[14px]">
                 No classes today. Enjoy your holiday!
               </div>
             ) : targetClasses.length === 0 ? (
-              <div className="py-6 text-center text-[#6F6F6F] text-[14px]">
+              <div className="py-6 text-center text-[#6F6F6F] dark:text-[#94A3B8] text-[14px]">
                 No classes scheduled for {isAfterReminderTime ? 'tomorrow' : 'today'}.
               </div>
             ) : (
@@ -233,33 +233,33 @@ export const TomorrowCarryView: React.FC = () => {
                     onClick={() => {
                       setDetailSession(sess);
                     }}
-                    className="flex items-start gap-4 py-[16px] border-b border-[#D8D8D8] dark:border-[#333333] last:border-b-0 group text-left transition-colors cursor-pointer"
+                    className="flex items-start gap-4 py-[16px] border-b border-[#D8D8D8] dark:border-white/[0.08] last:border-b-0 group text-left transition-colors cursor-pointer"
                   >
                     <div className="w-[52px] shrink-0 pt-[1px]">
-                      <span className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF]">
+                      <span className="text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] font-mono">
                         {sess.startTime}
                       </span>
                     </div>
                     
                     <div className="flex-1 flex flex-col min-w-0">
                       <div className="flex items-start justify-between gap-4">
-                        <span className="text-[14px] font-[600] text-[#111111] dark:text-[#FFFFFF] leading-[18px] line-clamp-2">
+                        <span className="text-[14px] font-[600] text-[#111111] dark:text-[#F4F4F6] leading-[18px] line-clamp-2">
                           {subject?.name || 'Unknown Subject'}
                         </span>
-                        <span className="text-[#A0A0A0] group-hover:text-[#111111] dark:group-hover:text-[#FFFFFF] transition-colors shrink-0 mt-0.5">
+                        <span className="text-[#A0A0A0] dark:text-[#64748B] group-hover:text-[#111111] dark:group-hover:text-white transition-colors shrink-0 mt-0.5">
                           <ChevronRight className="w-4 h-4 stroke-[2]" />
                         </span>
                       </div>
                       
                       {sess.room && (
-                        <span className="text-[12px] text-[#6F6F6F] dark:text-[#A0A0A0] flex items-center gap-1.5 mt-1 font-medium">
-                          <MapPin className="w-3.5 h-3.5 shrink-0 text-black/60 dark:text-white/60" />
+                        <span className="text-[12px] text-[#6F6F6F] dark:text-[#94A3B8] flex items-center gap-1.5 mt-1 font-medium">
+                          <MapPin className="w-3.5 h-3.5 shrink-0 text-black/60 dark:text-[#94A3B8]" />
                           <span>{sess.room}</span>
                         </span>
                       )}
                       
                       {reqs.length > 0 && (
-                        <div className="mt-2 text-[12px] text-[#8C6B5D] dark:text-[#B5988C] flex items-center gap-1.5 truncate font-medium">
+                        <div className="mt-2 text-[12px] text-[#8C6B5D] dark:text-sky-300 flex items-center gap-1.5 truncate font-medium">
                           <Backpack className="w-[11px] h-[11px] shrink-0 stroke-[2.5]" />
                           <span className="truncate">{reqs.join(' · ')}</span>
                         </div>

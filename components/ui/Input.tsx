@@ -16,7 +16,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full flex flex-col gap-1.5 text-left">
         {label && (
-          <label htmlFor={inputId} className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+          <label htmlFor={inputId} className="text-xs font-semibold text-zinc-700 dark:text-[#94A3B8]">
             {label}
           </label>
         )}
@@ -25,15 +25,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           className={twMerge(
             clsx(
-              'w-full px-3 py-2 text-sm bg-white dark:bg-zinc-900 border rounded-none transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#111111] dark:focus:ring-[#FFFFFF] focus:border-[#111111] dark:focus:border-[#FFFFFF]',
-              error ? 'border-rose-500 dark:border-rose-500' : 'border-[#D8D8D8] dark:border-zinc-700/80',
+              'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-[#121317] border rounded-xl transition-all placeholder:text-zinc-400 dark:placeholder:text-[#64748B] text-zinc-900 dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white/30 shadow-sm',
+              error ? 'border-rose-500 dark:border-rose-500' : 'border-[#D8D8D8] dark:border-white/[0.1]',
               className
             )
           )}
           {...props}
         />
         {helperText && !error && (
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{helperText}</p>
+          <p className="text-[11px] text-zinc-500 dark:text-[#64748B]">{helperText}</p>
         )}
         {error && <p className="text-[11px] text-rose-500 font-medium">{error}</p>}
       </div>
@@ -54,7 +54,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="w-full flex flex-col gap-1.5 text-left">
         {label && (
-          <label htmlFor={inputId} className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+          <label htmlFor={inputId} className="text-xs font-semibold text-zinc-700 dark:text-[#94A3B8]">
             {label}
           </label>
         )}
@@ -63,15 +63,15 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           className={twMerge(
             clsx(
-              'w-full px-3 py-2 text-sm bg-white dark:bg-zinc-900 border rounded-none transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#111111] dark:focus:ring-[#FFFFFF] focus:border-[#111111] dark:focus:border-[#FFFFFF] min-h-[80px]',
-              error ? 'border-rose-500 dark:border-rose-500' : 'border-[#D8D8D8] dark:border-zinc-700/80',
+              'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-[#121317] border rounded-xl transition-all placeholder:text-zinc-400 dark:placeholder:text-[#64748B] text-zinc-900 dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white/30 min-h-[80px] shadow-sm',
+              error ? 'border-rose-500 dark:border-rose-500' : 'border-[#D8D8D8] dark:border-white/[0.1]',
               className
             )
           )}
           {...props}
         />
         {helperText && !error && (
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{helperText}</p>
+          <p className="text-[11px] text-zinc-500 dark:text-[#64748B]">{helperText}</p>
         )}
         {error && <p className="text-[11px] text-rose-500 font-medium">{error}</p>}
       </div>
@@ -92,7 +92,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="w-full flex flex-col gap-1.5 text-left">
         {label && (
-          <label htmlFor={inputId} className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+          <label htmlFor={inputId} className="text-xs font-semibold text-zinc-700 dark:text-[#94A3B8]">
             {label}
           </label>
         )}
@@ -101,8 +101,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           className={twMerge(
             clsx(
-              'w-full px-3 py-2 text-base bg-white dark:bg-zinc-900 border rounded-none transition-colors text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#111111] dark:focus:ring-[#FFFFFF] focus:border-[#111111] dark:focus:border-[#FFFFFF] cursor-pointer',
-              error ? 'border-rose-500 dark:border-rose-500' : 'border-[#D8D8D8] dark:border-zinc-700/80',
+              'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-[#121317] border rounded-xl transition-all text-zinc-900 dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white/30 cursor-pointer shadow-sm',
+              error ? 'border-rose-500 dark:border-rose-500' : 'border-[#D8D8D8] dark:border-white/[0.1]',
               className
             )
           )}
@@ -111,7 +111,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           {children}
         </select>
         {helperText && !error && (
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{helperText}</p>
+          <p className="text-[11px] text-zinc-500 dark:text-[#64748B]">{helperText}</p>
         )}
         {error && <p className="text-[11px] text-rose-500 font-medium">{error}</p>}
       </div>
