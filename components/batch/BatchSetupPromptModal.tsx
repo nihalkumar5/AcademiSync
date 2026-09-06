@@ -97,16 +97,16 @@ If you are our Batch Pilot or want to setup the synced batch timetable for all o
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-stretch font-sans text-left">
           
           {/* Left Column: Hero Illustration & Info Card */}
-          <div className="md:col-span-5 flex flex-col items-center justify-between bg-[#F9F9F8] dark:bg-[#121317] border border-[#E5E5E5] dark:border-white/[0.08] rounded-none p-6 text-center relative overflow-hidden">
-            <div className="w-full flex items-center justify-center max-w-[260px] sm:max-w-[300px] my-auto py-2">
+          <div className="md:col-span-5 flex flex-col items-center justify-between bg-[#F9F9F8] dark:bg-[#121317] border border-[#E5E5E5] dark:border-white/[0.08] rounded-none p-4 sm:p-6 text-center relative overflow-hidden">
+            <div className="w-full flex items-center justify-center my-auto py-3 px-1">
               <img 
                 src="/cr.png" 
                 alt="Batch Pilot" 
-                className="w-full h-auto object-contain drop-shadow-sm"
+                className="w-full max-w-[340px] sm:max-w-[300px] h-auto object-contain drop-shadow-sm scale-[1.18] sm:scale-100 transform origin-center"
               />
             </div>
             
-            <div className="flex flex-col gap-1 mt-3">
+            <div className="flex flex-col gap-1 mt-3 z-10 relative">
               <span className="text-[10.5px] font-bold font-mono tracking-widest uppercase text-amber-600 dark:text-amber-400">
                 CLASS LEADERSHIP
               </span>
