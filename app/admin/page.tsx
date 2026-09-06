@@ -41,7 +41,8 @@ import {
   Upload,
   Phone,
   Mail,
-  Clock
+  Clock,
+  Copy
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -63,6 +64,7 @@ export default function SuperAdminPage() {
 
   const [searchUserQuery, setSearchUserQuery] = useState('');
   const [searchBatchQuery, setSearchBatchQuery] = useState('');
+  const [copiedBatchCode, setCopiedBatchCode] = useState<string | null>(null);
 
   // Modal for Campaign creation/editing
   const [activeRoleDropdown, setActiveRoleDropdown] = useState<string | null>(null);
@@ -168,14 +170,26 @@ export default function SuperAdminPage() {
     }
   }, [isAdmin]);
 
-  // 2. Stream Shared Batches from Firestore
+  // 2. Stream Shared Batches from Firestore & auto-backfill 6-char inviteCode
   useEffect(() => {
     if (!isAdmin) return;
     try {
       const unsubscribe = onSnapshot(collection(db, 'shared_timetables'), (snapshot) => {
         const fetched: any[] = [];
         snapshot.forEach((d) => {
-          fetched.push({ id: d.id, ...d.data() });
+          const data = d.data();
+          if (!data.inviteCode) {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let generatedCode = '';
+            for (let i = 0; i < 6; i++) {
+              generatedCode += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            data.inviteCode = generatedCode;
+            updateDoc(doc(db, 'shared_timetables', d.id), { inviteCode: generatedCode }).catch((err) => {
+              console.warn('Could not auto-assign inviteCode for batch:', d.id, err);
+            });
+          }
+          fetched.push({ id: d.id, ...data });
         });
         setBatchesList(fetched);
       }, (err) => console.error('Error fetching batches:', err));
@@ -378,6 +392,30 @@ export default function SuperAdminPage() {
     } catch (e) {
       console.error(e);
       showToast('Error', 'Failed to delete batch', 'error');
+    }
+  };
+
+  const handleCopyBatchCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedBatchCode(code);
+    showToast('Copied!', `Batch code "${code}" copied to clipboard`, 'success');
+    setTimeout(() => setCopiedBatchCode(null), 2000);
+  };
+
+  const handleGenerateBatchCode = async (batchId: string) => {
+    try {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let code = '';
+      for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      await updateDoc(doc(db, 'shared_timetables', batchId), {
+        inviteCode: code,
+      });
+      showToast('Code Generated', `Batch code "${code}" assigned to ${batchId}`, 'success');
+    } catch (e) {
+      console.error(e);
+      showToast('Error', 'Failed to generate batch code', 'error');
     }
   };
 
@@ -647,7 +685,8 @@ export default function SuperAdminPage() {
       (b.college || '').toLowerCase().includes(q) ||
       (b.branch || '').toLowerCase().includes(q) ||
       (b.programme || '').toLowerCase().includes(q) ||
-      (b.id || '').toLowerCase().includes(q)
+      (b.id || '').toLowerCase().includes(q) ||
+      (b.inviteCode || '').toLowerCase().includes(q)
     );
   });
 
@@ -1031,8 +1070,38 @@ export default function SuperAdminPage() {
                   <div key={b.id} className="border border-[#D8D8D8] dark:border-[#333333] p-4 flex flex-col gap-4 bg-white dark:bg-[#111111]">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-col flex-1">
-                        <span className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#A0A0A0]">Batch ID</span>
-                        <span className="font-mono text-[11px] text-[#111111] dark:text-[#FFFFFF] break-all">{b.id}</span>
+                        <span className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#A0A0A0]">Batch Code</span>
+                        <div className="flex items-center gap-2 mt-1">
+                          {b.inviteCode ? (
+                            <span className="font-mono font-black text-[14px] tracking-wider px-2.5 py-0.5 bg-black/5 dark:bg-white/10 text-black dark:text-white border border-black/10 dark:border-white/20 select-all">
+                              {b.inviteCode}
+                            </span>
+                          ) : (
+                            <span className="text-[12px] font-mono text-[#A0A0A0] italic">No code set</span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleCopyBatchCode(b.inviteCode || b.id)}
+                            className="p-1 text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
+                            title="Copy Batch Code"
+                          >
+                            {copiedBatchCode === (b.inviteCode || b.id) ? (
+                              <Check className="w-3.5 h-3.5 text-emerald-500" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                          {!b.inviteCode && (
+                            <button
+                              type="button"
+                              onClick={() => handleGenerateBatchCode(b.id)}
+                              className="text-[10px] uppercase font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                            >
+                              Generate
+                            </button>
+                          )}
+                        </div>
+                        <span className="font-mono text-[10px] text-[#6F6F6F] break-all mt-1">Key: {b.id}</span>
                       </div>
                       <button
                         onClick={() => handleDeleteBatch(b.id)}
@@ -1046,7 +1115,7 @@ export default function SuperAdminPage() {
                     <div className="flex flex-col gap-1 pt-3 border-t border-[#F0F0F0] dark:border-[#222222]">
                       <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-tight line-clamp-2" title={b.college}>{b.college}</span>
                       <span className="text-[11px] text-[#6F6F6F]">
-                        {b.programme} • {b.branch} (Sem {b.semester})
+                        {b.programme} • {b.branch} (Sem {b.semester}{b.section ? ` · Sec ${b.section}` : ''})
                       </span>
                     </div>
 
@@ -1069,10 +1138,10 @@ export default function SuperAdminPage() {
 
             {/* Desktop Batches Table */}
             <div className="hidden sm:block border border-[#D8D8D8] dark:border-[#333333] overflow-x-auto bg-white dark:bg-[#111111]">
-              <table className="w-full text-[12px] text-left border-collapse min-w-[900px]">
+              <table className="w-full text-[12px] text-left border-collapse min-w-[950px]">
                 <thead>
                   <tr className="border-b border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] font-bold uppercase tracking-[1px] text-[10px] text-[#A0A0A0]">
-                    <th className="p-4 font-bold">Batch Key / ID</th>
+                    <th className="p-4 font-bold">Batch Code & Key</th>
                     <th className="p-4 font-bold">College & Programme</th>
                     <th className="p-4 font-bold">Branch & Semester</th>
                     <th className="p-4 font-bold">Creator</th>
@@ -1090,14 +1159,50 @@ export default function SuperAdminPage() {
                   ) : (
                     filteredBatches.map((b) => (
                       <tr key={b.id} className="hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors">
-                        <td className="p-4 font-mono font-bold text-[11px] max-w-[200px] truncate" title={b.id}>{b.id}</td>
+                        <td className="p-4 max-w-[220px]">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-1.5">
+                              {b.inviteCode ? (
+                                <span className="font-mono font-black text-[13px] tracking-wider px-2 py-0.5 bg-black/5 dark:bg-white/10 text-black dark:text-white border border-black/10 dark:border-white/20 select-all">
+                                  {b.inviteCode}
+                                </span>
+                              ) : (
+                                <span className="text-[11px] font-mono text-[#A0A0A0] italic">No code set</span>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleCopyBatchCode(b.inviteCode || b.id)}
+                                className="p-1 text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
+                                title="Copy Batch Code"
+                              >
+                                {copiedBatchCode === (b.inviteCode || b.id) ? (
+                                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                ) : (
+                                  <Copy className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                              {!b.inviteCode && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleGenerateBatchCode(b.id)}
+                                  className="text-[10px] uppercase font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                                >
+                                  Generate
+                                </button>
+                              )}
+                            </div>
+                            <div className="font-mono text-[10.5px] text-[#6F6F6F] truncate max-w-[210px]" title={b.id}>
+                              Key: {b.id}
+                            </div>
+                          </div>
+                        </td>
                         <td className="p-4 max-w-[250px]">
                           <div className="font-medium text-[#111111] dark:text-[#FFFFFF] truncate" title={b.college}>{b.college}</div>
                           <div className="text-[11px] text-[#6F6F6F]">{b.programme}</div>
                         </td>
                         <td className="p-4">
                           <div className="text-[#111111] dark:text-[#FFFFFF] font-medium">{b.branch}</div>
-                          <div className="text-[11px] text-[#6F6F6F]">Semester {b.semester}</div>
+                          <div className="text-[11px] text-[#6F6F6F]">Semester {b.semester}{b.section ? ` · Sec ${b.section}` : ''}</div>
                         </td>
                         <td className="p-4">
                           <div className="font-medium text-[#111111] dark:text-[#FFFFFF]">{b.creatorName || 'Anonymous'}</div>
@@ -1108,13 +1213,28 @@ export default function SuperAdminPage() {
                           <div>{b.events?.length || 0} Evt</div>
                         </td>
                         <td className="p-4 text-right">
-                          <button
-                            onClick={() => handleDeleteBatch(b.id)}
-                            className="p-1.5 border border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer rounded-none inline-flex items-center justify-center"
-                            title="Delete Batch"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleCopyBatchCode(b.inviteCode || b.id)}
+                              className="p-1.5 border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 text-[#111111] dark:text-[#FFFFFF] transition-colors cursor-pointer rounded-none inline-flex items-center justify-center gap-1 text-[11px] font-mono"
+                              title="Copy Code"
+                            >
+                              {copiedBatchCode === (b.inviteCode || b.id) ? (
+                                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                              ) : (
+                                <Copy className="w-3.5 h-3.5" />
+                              )}
+                              <span className="hidden md:inline">Code</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteBatch(b.id)}
+                              className="p-1.5 border border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer rounded-none inline-flex items-center justify-center"
+                              title="Delete Batch"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
