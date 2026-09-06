@@ -141,10 +141,10 @@ export const AndroidAppGate: React.FC = () => {
               href={playStoreUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full py-3 bg-white border border-black text-black text-[12px] font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:bg-black/5 transition-colors cursor-pointer shadow-xs rounded-none"
+              className="w-full py-3.5 bg-white border-2 border-black text-black text-[12.5px] font-black uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:bg-black/5 transition-colors cursor-pointer shadow-sm rounded-none"
             >
               <Download className="w-4 h-4" />
-              <span>Download on Google Play</span>
+              <span>Download on Google Play Store</span>
             </a>
           </div>
         </div>
