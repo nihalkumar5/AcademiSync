@@ -8,6 +8,7 @@ import { isUserSuperAdmin } from '@/lib/adminAuth';
 import { collection, onSnapshot, doc, updateDoc, increment, query, where, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Modal } from '@/components/ui/Modal';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Crown, Search, Check, Share2, ArrowRight, MoreVertical, ChevronLeft } from 'lucide-react';
 
 interface BatchMembersModalProps {
@@ -111,6 +112,8 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
   const [loading, setLoading] = useState(true);
   
   const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [memberToRemove, setMemberToRemove] = useState<any | null>(null);
+  const [isRemovingMember, setIsRemovingMember] = useState(false);
 
   const batchKey = profile.batchKey;
   const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
@@ -276,19 +279,22 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
     }
   };
 
-  const handleRemoveMember = async (member: any) => {
+  const handleRemoveMember = (member: any) => {
     if (!batchKey) return;
     if (!isAuthorizedCR) {
       showToast('Unauthorized', 'Only the Class Representative can remove members.', 'error');
       return;
     }
-    const memberName = member.profile?.name || 'Student';
-    const ids: string[] = member.allIds || [member.id];
-    const emails: string[] = member.allEmails || [member.profile?.email || ''];
+    setMemberToRemove(member);
+  };
 
-    if (!window.confirm(`Are you sure you want to remove ${memberName} from this batch?`)) {
-      return;
-    }
+  const confirmRemoveMember = async () => {
+    if (!memberToRemove || !batchKey) return;
+    const memberName = memberToRemove.profile?.name || 'Student';
+    const ids: string[] = memberToRemove.allIds || [memberToRemove.id];
+    const emails: string[] = memberToRemove.allEmails || [memberToRemove.profile?.email || ''];
+
+    setIsRemovingMember(true);
     try {
       for (const id of ids) {
         await updateDoc(doc(db, 'users', id), {
@@ -304,9 +310,12 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
         crEmails: arrayRemove(...emails)
       }).catch(() => {});
       showToast('Member Removed', `${memberName} has been removed from the batch.`, 'success');
+      setMemberToRemove(null);
     } catch (e) {
       console.error('Error removing member:', e);
       showToast('Error', 'Failed to remove member.', 'error');
+    } finally {
+      setIsRemovingMember(false);
     }
   };
 
@@ -577,6 +586,20 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
           </div>
         )}
       </Modal>
+
+      {/* Remove Member Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!memberToRemove}
+        onClose={() => setMemberToRemove(null)}
+        onConfirm={confirmRemoveMember}
+        title="Remove Member from Batch"
+        description="Are you sure you want to remove this student from the shared batch? They will be unlinked from the shared timetable."
+        highlightText={memberToRemove ? `${memberToRemove.profile?.name || 'Student'}${memberToRemove.profile?.rollNumber ? ` (${memberToRemove.profile.rollNumber})` : ''} — ${memberToRemove.profile?.email || 'No email'}` : undefined}
+        confirmLabel="Remove Member"
+        cancelLabel="Cancel"
+        variant="danger"
+        isLoading={isRemovingMember}
+      />
     </>
   );
 };

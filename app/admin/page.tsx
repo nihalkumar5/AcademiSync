@@ -7,6 +7,7 @@ import { collection, onSnapshot, doc, getDoc, updateDoc, setDoc, deleteDoc, quer
 import { db } from '@/lib/firebase';
 import { PromotionalCampaign, CampaignCategory, AdminRole } from '@/lib/types';
 import { searchCollegesAsync, CollegeItem, POPULAR_INDIAN_COLLEGES } from '@/lib/collegeDirectory';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import {
   Shield,
   Users,
@@ -65,6 +66,12 @@ export default function SuperAdminPage() {
   const [searchUserQuery, setSearchUserQuery] = useState('');
   const [searchBatchQuery, setSearchBatchQuery] = useState('');
   const [copiedBatchCode, setCopiedBatchCode] = useState<string | null>(null);
+
+  // Custom in-theme delete confirmation states
+  const [batchToDelete, setBatchToDelete] = useState<string | null>(null);
+  const [isDeletingBatch, setIsDeletingBatch] = useState(false);
+  const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
+  const [isDeletingCampaign, setIsDeletingCampaign] = useState(false);
 
   // Modal for Campaign creation/editing
   const [activeRoleDropdown, setActiveRoleDropdown] = useState<string | null>(null);
@@ -384,14 +391,22 @@ export default function SuperAdminPage() {
     }
   };
 
-  const handleDeleteBatch = async (batchId: string) => {
-    if (!window.confirm(`Are you sure you want to delete shared batch: ${batchId}?`)) return;
+  const handleDeleteBatch = (batchId: string) => {
+    setBatchToDelete(batchId);
+  };
+
+  const confirmDeleteBatch = async () => {
+    if (!batchToDelete) return;
+    setIsDeletingBatch(true);
     try {
-      await deleteDoc(doc(db, 'shared_timetables', batchId));
-      showToast('Batch Removed', `Batch ${batchId} was deleted`, 'info');
+      await deleteDoc(doc(db, 'shared_timetables', batchToDelete));
+      showToast('Batch Removed', `Batch ${batchToDelete} was deleted`, 'info');
+      setBatchToDelete(null);
     } catch (e) {
       console.error(e);
       showToast('Error', 'Failed to delete batch', 'error');
+    } finally {
+      setIsDeletingBatch(false);
     }
   };
 
@@ -562,13 +577,22 @@ export default function SuperAdminPage() {
     }
   };
 
-  const handleDeleteCampaign = async (campaignId: string) => {
-    if (!window.confirm('Are you sure you want to delete this campaign?')) return;
+  const handleDeleteCampaign = (campaignId: string) => {
+    setCampaignToDelete(campaignId);
+  };
+
+  const confirmDeleteCampaign = async () => {
+    if (!campaignToDelete) return;
+    setIsDeletingCampaign(true);
     try {
-      await deleteDoc(doc(db, 'promotional_campaigns', campaignId));
+      await deleteDoc(doc(db, 'promotional_campaigns', campaignToDelete));
       showToast('Campaign Deleted', 'Campaign removed permanently', 'info');
+      setCampaignToDelete(null);
     } catch (e) {
       console.error(e);
+      showToast('Error', 'Failed to delete campaign', 'error');
+    } finally {
+      setIsDeletingCampaign(false);
     }
   };
 
@@ -2105,6 +2129,34 @@ export default function SuperAdminPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Delete Shared Batch Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!batchToDelete}
+        onClose={() => setBatchToDelete(null)}
+        onConfirm={confirmDeleteBatch}
+        title="Delete Shared Batch"
+        description="Are you sure you want to permanently delete this shared timetable batch? All published schedules and student memberships tied to this batch key will be removed."
+        highlightText={batchToDelete ? `Batch ID: ${batchToDelete}` : undefined}
+        confirmLabel="Delete Batch"
+        cancelLabel="Cancel"
+        variant="danger"
+        isLoading={isDeletingBatch}
+      />
+
+      {/* Delete Promotional Campaign Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!campaignToDelete}
+        onClose={() => setCampaignToDelete(null)}
+        onConfirm={confirmDeleteCampaign}
+        title="Delete Campaign"
+        description="Are you sure you want to permanently delete this promotional spotlight campaign? This action cannot be reversed."
+        highlightText={campaignToDelete ? `Campaign ID: ${campaignToDelete}` : undefined}
+        confirmLabel="Delete Campaign"
+        cancelLabel="Cancel"
+        variant="danger"
+        isLoading={isDeletingCampaign}
+      />
     </div>
   );
 }
