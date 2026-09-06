@@ -15,6 +15,7 @@ import { Modal } from '@/components/ui/Modal';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
+import { Copy, Download, ExternalLink } from 'lucide-react';
 
 // Views
 import { OverviewHeader } from '@/components/dashboard/OverviewHeader';
@@ -244,7 +245,7 @@ export default function AppHome() {
       const params = new URLSearchParams(window.location.search);
       const inviteParam = params.get('invite');
       if (inviteParam && inviteParam !== profile.batchKey) {
-        if (!isSignedIn) {
+        if (Capacitor.isNativePlatform() && !isSignedIn) {
           try {
             localStorage.setItem('pending_join_invite', inviteParam);
           } catch (_) {}
@@ -407,92 +408,161 @@ export default function AppHome() {
       {inviteModalOpen && inviteData && inviteKey && (
         <Modal
           isOpen={inviteModalOpen}
-          onClose={() => setInviteModalOpen(false)}
-          title="Accept Batch Timetable Invite?"
-          description="You have been invited to join a shared academic schedule."
+          onClose={() => {
+            setInviteModalOpen(false);
+            if (typeof window !== 'undefined') {
+              window.history.replaceState({}, document.title, window.location.pathname);
+            }
+          }}
+          title={Capacitor.isNativePlatform() ? "Accept Batch Timetable Invite?" : "Open in Intersemester App"}
+          description={
+            Capacitor.isNativePlatform()
+              ? "You have been invited to join a shared academic schedule."
+              : "Timetable synchronization is available exclusively in the Intersemester mobile app."
+          }
         >
-          <div className="flex flex-col gap-4 mt-3 text-left">
+          <div className="flex flex-col gap-4 mt-3 text-left font-sans">
             <div className="p-4 border border-black dark:border-white bg-black/5 dark:bg-white/5 flex flex-col gap-2">
-              <h4 className="text-sm font-bold text-black dark:text-white">
-                {inviteData.college}
-              </h4>
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold text-black dark:text-white">
+                  {inviteData.college || 'Academic Batch'}
+                </h4>
+                {inviteData.section && (
+                  <span className="text-[10px] font-mono px-2 py-0.5 bg-black text-white dark:bg-white dark:text-black font-bold uppercase tracking-wider">
+                    Sec {inviteData.section}
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-black/75 dark:text-white/75 font-medium">
-                {inviteData.programme} - {inviteData.branch} (Sem {inviteData.semester})
+                {inviteData.programme} - {inviteData.branch} {inviteData.semester ? `(Sem ${inviteData.semester})` : ''}
               </p>
               <div className="h-px bg-black/20 dark:bg-white/20 my-1" />
               <div className="flex items-center justify-between text-[11px] font-mono opacity-70">
-                <span>Created by: {inviteData.creatorName}</span>
+                <span>Created by: {inviteData.creatorName || 'Batch Pilot'}</span>
                 <span>Active: {inviteData.studentCount || 1} students</span>
               </div>
             </div>
 
-            {!Capacitor.isNativePlatform() && isAndroid && (
-              <div className="flex flex-col gap-2 p-3 bg-[#01875f]/10 border border-[#01875f] text-[#01875f] dark:text-[#00e699]">
-                <p className="text-[11px] font-bold leading-normal">
-                  Have the Android App installed?
-                </p>
-                <div className="flex gap-2">
+            {!Capacitor.isNativePlatform() ? (
+              /* Strictly Web View -> Mobile App Gate Only */
+              <div className="flex flex-col gap-4">
+                {/* Prominent 6-Digit Batch Code */}
+                <div className="p-4 bg-[#111111] dark:bg-white text-white dark:text-[#111111] flex flex-col gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-[2px] opacity-70">
+                    6-Digit Batch Code
+                  </span>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-2xl font-mono font-black tracking-[4px] select-all">
+                      {inviteData.inviteCode || inviteKey}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const codeToCopy = inviteData.inviteCode || inviteKey;
+                        navigator.clipboard.writeText(codeToCopy);
+                        showToast('Code Copied', `Batch code copied: ${codeToCopy}`, 'success');
+                      }}
+                      className="px-3 py-1.5 bg-white/20 dark:bg-black/20 hover:bg-white/30 dark:hover:bg-black/30 text-white dark:text-black text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copy</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Step-by-Step Instructions */}
+                <div className="p-3.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex flex-col gap-1.5 text-xs text-black/80 dark:text-white/80">
+                  <span className="font-bold text-[11px] uppercase tracking-wider text-black dark:text-white">
+                    How to join:
+                  </span>
+                  <ol className="list-decimal list-inside space-y-1 text-[12px] opacity-90">
+                    <li>Download <strong>Intersemester</strong> from Google Play.</li>
+                    <li>Open app &amp; tap <strong>&quot;Connect Batch&quot;</strong> on the dashboard.</li>
+                    <li>Enter code <strong className="font-mono">{inviteData.inviteCode || inviteKey}</strong> to sync timetable and alerts.</li>
+                  </ol>
+                </div>
+
+                {/* CTA Links */}
+                <div className="flex flex-col gap-2 pt-1">
                   <a
-                    href={`intent://invite?key=${inviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end`}
-                    className="w-full py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+                    href={`intent://invite?key=${inviteData.inviteCode || inviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent('https://play.google.com/store/apps/details?id=com.intersemester.app')};end`}
+                    className="w-full py-3 bg-[#111111] dark:bg-white text-white dark:text-black text-xs font-black uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:opacity-90 transition-opacity cursor-pointer"
                   >
-                    Open in Intersemester App
+                    <span>Open in Intersemester App</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+
+                  <a
+                    href="https://play.google.com/store/apps/details?id=com.intersemester.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 border border-black dark:border-white text-black dark:text-white text-xs font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download on Google Play</span>
                   </a>
                 </div>
+
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInviteModalOpen(false);
+                      if (typeof window !== 'undefined') {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                      }
+                    }}
+                    className="text-xs font-bold uppercase text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white cursor-pointer"
+                  >
+                    Dismiss
+                  </button>
+                </div>
               </div>
-            )}
-
-            {!Capacitor.isNativePlatform() && isIOS && (
-              <div className="flex flex-col gap-2 p-3 bg-indigo-500/10 border border-indigo-500 text-indigo-700 dark:text-indigo-300">
-                <p className="text-[11px] font-bold leading-normal">
-                  PWA Quick Tip for iPhone Users:
+            ) : (
+              /* Native Mobile App Flow */
+              <>
+                <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed">
+                  Accepting will download the batch subjects and classes, replacing your current timetable. You will stay synced in real-time.
                 </p>
-                <p className="text-[10px] leading-relaxed opacity-90 font-medium">
-                  Tap Safari's <span className="font-bold text-indigo-800 dark:text-indigo-400">Share</span> button (at the bottom) and select <span className="font-bold text-indigo-800 dark:text-indigo-400">&quot;Add to Home Screen&quot;</span> to run Intersemester as a full-screen app!
-                </p>
-              </div>
+
+                <div className="flex gap-2.5 justify-end mt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInviteModalOpen(false);
+                      if (typeof window !== 'undefined') {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                      }
+                    }}
+                    className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
+                  >
+                    Dismiss
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!isSignedIn) {
+                        showToast('Login Required', 'Please log in or sign up to sync with your batch.', 'info');
+                        try {
+                          localStorage.setItem('pending_join_invite', inviteKey);
+                        } catch (_) {}
+                        setInviteModalOpen(false);
+                        router.push('/sign-in');
+                        return;
+                      }
+                      setInviteModalOpen(false);
+                      await joinBatchTimetable(inviteKey);
+                      if (typeof window !== 'undefined') {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                      }
+                    }}
+                    className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+                  >
+                    Accept & Sync
+                  </button>
+                </div>
+              </>
             )}
-
-            <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed">
-              Accepting will download the batch subjects and classes, replacing your current timetable. You will stay synced in real-time.
-            </p>
-
-            <div className="flex gap-2.5 justify-end mt-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setInviteModalOpen(false);
-                  if (typeof window !== 'undefined') {
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                  }
-                }}
-                className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
-              >
-                Dismiss
-              </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  if (!isSignedIn) {
-                    showToast('Login Required', 'Please log in or sign up to sync with your batch.', 'info');
-                    try {
-                      localStorage.setItem('pending_join_invite', inviteKey);
-                    } catch (_) {}
-                    setInviteModalOpen(false);
-                    router.push('/sign-in');
-                    return;
-                  }
-                  setInviteModalOpen(false);
-                  await joinBatchTimetable(inviteKey);
-                  if (typeof window !== 'undefined') {
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                  }
-                }}
-                className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
-              >
-                Accept & Sync
-              </button>
-            </div>
           </div>
         </Modal>
       )}
@@ -506,10 +576,14 @@ export default function AppHome() {
               window.history.replaceState({}, document.title, window.location.pathname);
             }
           }}
-          title="Import Academic Calendar?"
-          description="You have been invited to import this batch's academic calendar (events, exams, and holidays)."
+          title={Capacitor.isNativePlatform() ? "Import Academic Calendar?" : "Open in Intersemester App"}
+          description={
+            Capacitor.isNativePlatform()
+              ? "You have been invited to import this batch's academic calendar (events, exams, and holidays)."
+              : "Calendar synchronization is available exclusively in the Intersemester mobile app."
+          }
         >
-          <div className="flex flex-col gap-4 mt-3 text-left">
+          <div className="flex flex-col gap-4 mt-3 text-left font-sans">
             <div className="p-4 border border-black dark:border-white bg-black/5 dark:bg-white/5 flex flex-col gap-2">
               <h4 className="text-sm font-bold text-black dark:text-white">
                 {calendarInviteData.college}
@@ -524,71 +598,120 @@ export default function AppHome() {
               </div>
             </div>
 
-            {!Capacitor.isNativePlatform() && isAndroid && (
-              <div className="flex flex-col gap-2 p-3 bg-[#01875f]/10 border border-[#01875f] text-[#01875f] dark:text-[#00e699]">
-                <p className="text-[11px] font-bold leading-normal">
-                  Have the Android App installed?
-                </p>
-                <div className="flex gap-2">
+            {!Capacitor.isNativePlatform() ? (
+              /* Strictly Web View -> Mobile App Gate Only */
+              <div className="flex flex-col gap-4">
+                <div className="p-4 bg-[#111111] dark:bg-white text-white dark:text-[#111111] flex flex-col gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-[2px] opacity-70">
+                    Calendar Code / ID
+                  </span>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-lg font-mono font-black tracking-[2px] truncate select-all">
+                      {calendarInviteKey}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(calendarInviteKey);
+                        showToast('Code Copied', `Calendar ID copied to clipboard!`, 'success');
+                      }}
+                      className="px-3 py-1.5 bg-white/20 dark:bg-black/20 hover:bg-white/30 dark:hover:bg-black/30 text-white dark:text-black text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copy</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-3.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex flex-col gap-1.5 text-xs text-black/80 dark:text-white/80">
+                  <span className="font-bold text-[11px] uppercase tracking-wider text-black dark:text-white">
+                    How to import:
+                  </span>
+                  <ol className="list-decimal list-inside space-y-1 text-[12px] opacity-90">
+                    <li>Download <strong>Intersemester</strong> from Google Play.</li>
+                    <li>Open app &amp; go to the <strong>Calendar</strong> view.</li>
+                    <li>Import calendar schedule with code: <strong className="font-mono">{calendarInviteKey}</strong></li>
+                  </ol>
+                </div>
+
+                <div className="flex flex-col gap-2 pt-1">
                   <a
-                    href={`intent://calendar_invite?key=${calendarInviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end`}
-                    className="w-full py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+                    href={`intent://calendar_invite?key=${calendarInviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent('https://play.google.com/store/apps/details?id=com.intersemester.app')};end`}
+                    className="w-full py-3 bg-[#111111] dark:bg-white text-white dark:text-black text-xs font-black uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:opacity-90 transition-opacity cursor-pointer"
                   >
-                    Open in Intersemester App
+                    <span>Open in Intersemester App</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+
+                  <a
+                    href="https://play.google.com/store/apps/details?id=com.intersemester.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 border border-black dark:border-white text-black dark:text-white text-xs font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download on Google Play</span>
                   </a>
                 </div>
+
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCalendarInviteModalOpen(false);
+                      if (typeof window !== 'undefined') {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                      }
+                    }}
+                    className="text-xs font-bold uppercase text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white cursor-pointer"
+                  >
+                    Dismiss
+                  </button>
+                </div>
               </div>
-            )}
-
-            {!Capacitor.isNativePlatform() && isIOS && (
-              <div className="flex flex-col gap-2 p-3 bg-indigo-500/10 border border-indigo-500 text-indigo-700 dark:text-indigo-300">
-                <p className="text-[11px] font-bold leading-normal">
-                  PWA Quick Tip for iPhone Users:
+            ) : (
+              /* Native Mobile App Flow */
+              <>
+                <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed">
+                  Accepting will download the shared academic calendar events and exams, replacing your current calendar data.
                 </p>
-                <p className="text-[10px] leading-relaxed opacity-90 font-medium">
-                  Tap Safari's <span className="font-bold text-indigo-800 dark:text-indigo-400">Share</span> button (at the bottom) and select <span className="font-bold text-indigo-800 dark:text-indigo-400">&quot;Add to Home Screen&quot;</span> to run Intersemester as a full-screen app!
-                </p>
-              </div>
+
+                <div className="flex gap-2.5 justify-end mt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCalendarInviteModalOpen(false);
+                      if (typeof window !== 'undefined') {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                      }
+                    }}
+                    className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
+                  >
+                    Dismiss
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!isSignedIn) {
+                        showToast('Login Required', 'Please log in or sign up to sync with a calendar.', 'info');
+                        if (typeof window !== 'undefined') {
+                          window.location.href = `/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`;
+                        }
+                        return;
+                      }
+                      setCalendarInviteModalOpen(false);
+                      await joinSharedCalendar(calendarInviteKey);
+                      if (typeof window !== 'undefined') {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                      }
+                    }}
+                    className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+                  >
+                    Accept & Import
+                  </button>
+                </div>
+              </>
             )}
-
-            <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed">
-              Accepting will download the shared academic calendar events and exams, replacing your current calendar data.
-            </p>
-
-            <div className="flex gap-2.5 justify-end mt-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setCalendarInviteModalOpen(false);
-                  if (typeof window !== 'undefined') {
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                  }
-                }}
-                className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
-              >
-                Dismiss
-              </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  if (!isSignedIn) {
-                    showToast('Login Required', 'Please log in or sign up to sync with a calendar.', 'info');
-                    if (typeof window !== 'undefined') {
-                      window.location.href = `/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`;
-                    }
-                    return;
-                  }
-                  setCalendarInviteModalOpen(false);
-                  await joinSharedCalendar(calendarInviteKey);
-                  if (typeof window !== 'undefined') {
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                  }
-                }}
-                className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
-              >
-                Accept & Import
-              </button>
-            </div>
           </div>
         </Modal>
       )}
@@ -602,10 +725,14 @@ export default function AppHome() {
               window.history.replaceState({}, document.title, window.location.pathname);
             }
           }}
-          title="Import Exam Schedule?"
-          description="You have been invited to import this batch's academic exam timetable."
+          title={Capacitor.isNativePlatform() ? "Import Exam Schedule?" : "Open in Intersemester App"}
+          description={
+            Capacitor.isNativePlatform()
+              ? "You have been invited to import this batch's academic exam timetable."
+              : "Exam schedule synchronization is available exclusively in the Intersemester mobile app."
+          }
         >
-          <div className="flex flex-col gap-4 mt-3 text-left">
+          <div className="flex flex-col gap-4 mt-3 text-left font-sans">
             <div className="p-4 border border-black dark:border-white bg-black/5 dark:bg-white/5 flex flex-col gap-2">
               <h4 className="text-sm font-bold text-black dark:text-white">
                 {examsInviteData.college}
@@ -620,71 +747,120 @@ export default function AppHome() {
               </div>
             </div>
 
-            {!Capacitor.isNativePlatform() && isAndroid && (
-              <div className="flex flex-col gap-2 p-3 bg-[#01875f]/10 border border-[#01875f] text-[#01875f] dark:text-[#00e699]">
-                <p className="text-[11px] font-bold leading-normal">
-                  Have the Android App installed?
-                </p>
-                <div className="flex gap-2">
+            {!Capacitor.isNativePlatform() ? (
+              /* Strictly Web View -> Mobile App Gate Only */
+              <div className="flex flex-col gap-4">
+                <div className="p-4 bg-[#111111] dark:bg-white text-white dark:text-[#111111] flex flex-col gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-[2px] opacity-70">
+                    Exam Schedule Code / ID
+                  </span>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-lg font-mono font-black tracking-[2px] truncate select-all">
+                      {examsInviteKey}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(examsInviteKey);
+                        showToast('Code Copied', `Exam schedule ID copied to clipboard!`, 'success');
+                      }}
+                      className="px-3 py-1.5 bg-white/20 dark:bg-black/20 hover:bg-white/30 dark:hover:bg-black/30 text-white dark:text-black text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copy</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-3.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex flex-col gap-1.5 text-xs text-black/80 dark:text-white/80">
+                  <span className="font-bold text-[11px] uppercase tracking-wider text-black dark:text-white">
+                    How to import:
+                  </span>
+                  <ol className="list-decimal list-inside space-y-1 text-[12px] opacity-90">
+                    <li>Download <strong>Intersemester</strong> from Google Play.</li>
+                    <li>Open app &amp; go to the <strong>Exams</strong> view.</li>
+                    <li>Import exam schedule with code: <strong className="font-mono">{examsInviteKey}</strong></li>
+                  </ol>
+                </div>
+
+                <div className="flex flex-col gap-2 pt-1">
                   <a
-                    href={`intent://exams_invite?key=${examsInviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end`}
-                    className="w-full py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-[10px] font-black uppercase tracking-wider text-center block hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+                    href={`intent://exams_invite?key=${examsInviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent('https://play.google.com/store/apps/details?id=com.intersemester.app')};end`}
+                    className="w-full py-3 bg-[#111111] dark:bg-white text-white dark:text-black text-xs font-black uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:opacity-90 transition-opacity cursor-pointer"
                   >
-                    Open in Intersemester App
+                    <span>Open in Intersemester App</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+
+                  <a
+                    href="https://play.google.com/store/apps/details?id=com.intersemester.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 border border-black dark:border-white text-black dark:text-white text-xs font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download on Google Play</span>
                   </a>
                 </div>
+
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setExamsInviteModalOpen(false);
+                      if (typeof window !== 'undefined') {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                      }
+                    }}
+                    className="text-xs font-bold uppercase text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white cursor-pointer"
+                  >
+                    Dismiss
+                  </button>
+                </div>
               </div>
-            )}
-
-            {!Capacitor.isNativePlatform() && isIOS && (
-              <div className="flex flex-col gap-2 p-3 bg-indigo-500/10 border border-indigo-500 text-indigo-700 dark:text-indigo-300">
-                <p className="text-[11px] font-bold leading-normal">
-                  PWA Quick Tip for iPhone Users:
+            ) : (
+              /* Native Mobile App Flow */
+              <>
+                <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed">
+                  Accepting will download the shared exam sessions, replacing your current exam calendar data.
                 </p>
-                <p className="text-[10px] leading-relaxed opacity-90 font-medium">
-                  Tap Safari's <span className="font-bold text-indigo-800 dark:text-indigo-400">Share</span> button (at the bottom) and select <span className="font-bold text-indigo-800 dark:text-indigo-400">&quot;Add to Home Screen&quot;</span> to run Intersemester as a full-screen app!
-                </p>
-              </div>
+
+                <div className="flex gap-2.5 justify-end mt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setExamsInviteModalOpen(false);
+                      if (typeof window !== 'undefined') {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                      }
+                    }}
+                    className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
+                  >
+                    Dismiss
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!isSignedIn) {
+                        showToast('Login Required', 'Please log in or sign up to sync with an exam schedule.', 'info');
+                        if (typeof window !== 'undefined') {
+                          window.location.href = `/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`;
+                        }
+                        return;
+                      }
+                      setExamsInviteModalOpen(false);
+                      await joinSharedExams(examsInviteKey);
+                      if (typeof window !== 'undefined') {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                      }
+                    }}
+                    className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+                  >
+                    Accept & Import
+                  </button>
+                </div>
+              </>
             )}
-
-            <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed">
-              Accepting will download the shared exam sessions, replacing your current exam calendar data.
-            </p>
-
-            <div className="flex gap-2.5 justify-end mt-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setExamsInviteModalOpen(false);
-                  if (typeof window !== 'undefined') {
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                  }
-                }}
-                className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
-              >
-                Dismiss
-              </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  if (!isSignedIn) {
-                    showToast('Login Required', 'Please log in or sign up to sync with an exam schedule.', 'info');
-                    if (typeof window !== 'undefined') {
-                      window.location.href = `/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`;
-                    }
-                    return;
-                  }
-                  setExamsInviteModalOpen(false);
-                  await joinSharedExams(examsInviteKey);
-                  if (typeof window !== 'undefined') {
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                  }
-                }}
-                className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
-              >
-                Accept & Import
-              </button>
-            </div>
           </div>
         </Modal>
       )}

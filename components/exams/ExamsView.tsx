@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
 
 export const ExamsView: React.FC = () => {
-  const { exams, isBatchCR, shareTimetableWithBatch, shareExamsWithBatch, joinSharedExams, showToast, user } = useApp();
+  const { exams, isBatchCR, shareTimetableWithBatch, shareExamsWithBatch, joinSharedExams, showToast, user, profile, currentBatchData } = useApp();
   const router = useRouter();
   const isSignedIn = !!user;
   const [showImportModal, setShowImportModal] = useState(false);
@@ -117,9 +117,25 @@ export const ExamsView: React.FC = () => {
                 if (!isSignedIn) { router.push('/sign-in'); return; }
                 try {
                   const key = await shareTimetableWithBatch();
-                  const link = `${window.location.origin}/?invite=${key}`;
-                  navigator.clipboard.writeText(link);
-                  showToast('Batch Shared', 'Timetable, calendar, and exams link copied!', 'success');
+                  const code = currentBatchData?.inviteCode || (profile?.batchKey && profile.batchKey.length <= 8 ? profile.batchKey : key);
+                  const link = `https://academi-sync-chi.vercel.app/?invite=${code}`;
+                  const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
+                  const shareText = `🔥 *Join our official ${batchTitle} Exam Schedule & Timetable on Intersemester!*
+
+🔑 *Batch Code:* ${code}
+
+⚡ Realtime Class Cancellation & Reschedule Alerts
+📅 Live Exam Schedule, Room Numbers & Lab Sessions
+
+👉 Open Intersemester App → Tap *Connect Batch* → Enter Code: *${code}*`;
+
+                  const res = await shareLink({
+                    title: 'Join our Class Timetable & Exam Schedule',
+                    text: shareText,
+                    url: link,
+                    dialogTitle: 'Share Batch Code via',
+                  });
+                  if (res === 'copied') showToast('Code Copied', `Batch code copied: ${code}`, 'success');
                 } catch (err) {}
               }}
               className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-white/[0.08] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors gap-2 cursor-pointer"
