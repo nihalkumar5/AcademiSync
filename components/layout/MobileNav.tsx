@@ -51,14 +51,12 @@ export const MobileNav: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveView(tab.id)}
-              className={clsx(
-                'flex flex-col items-center justify-center relative cursor-pointer flex-1 h-full select-none gap-0.5 transition-colors',
-                isActive
-                  ? 'text-[#111111] dark:text-[#F4F4F6]'
-                  : 'text-[#8A8A8A] dark:text-[#71717A] hover:text-[#111111] dark:hover:text-[#F4F4F6]'
-              )}
+              className="flex flex-col items-center justify-center relative cursor-pointer flex-1 h-full select-none gap-0.5 transition-colors"
             >
-              <div className="relative mb-0.5">
+              <div className={clsx(
+                "relative mb-0.5 transition-colors",
+                isActive ? "text-[#2438B8] dark:text-[#F4F4F6]" : "text-[#98A2B3] dark:text-[#71717A]"
+              )}>
                 {tab.icon}
 
                 {tab.badge !== undefined && (
@@ -69,8 +67,10 @@ export const MobileNav: React.FC = () => {
               </div>
 
               <span className={clsx(
-                'text-[10px] tracking-wide leading-none',
-                isActive ? 'font-bold' : 'font-medium'
+                'text-[10px] tracking-wide leading-none transition-colors',
+                isActive
+                  ? 'font-bold text-[#2438B8] dark:text-[#F4F4F6]'
+                  : 'font-medium text-[#667085] dark:text-[#94A3B8]'
               )}>
                 {tab.label}
               </span>
@@ -79,7 +79,7 @@ export const MobileNav: React.FC = () => {
                 {isActive && (
                   <motion.div
                     layoutId="mobile-nav-indicator"
-                    className="absolute inset-0 bg-[#111111] dark:bg-[#F4F4F6] dark:shadow-[0_0_8px_rgba(255,255,255,0.7)]"
+                    className="absolute inset-0 bg-[#2438B8] dark:bg-[#F4F4F6] dark:shadow-[0_0_8px_rgba(255,255,255,0.7)]"
                   />
                 )}
               </div>
