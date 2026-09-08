@@ -319,10 +319,10 @@ export const TodayTimeline: React.FC = () => {
       <div className="flex flex-col text-left">
         <div className="flex items-center justify-between gap-3 px-1 mb-6">
           <div className="flex flex-col min-w-0">
-            <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
+            <h3 className="text-[12px] sm:text-[13px] font-bold text-[#101828] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
               {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
             </h3>
-            <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#808080] uppercase tracking-wider mt-0.5">
+            <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#667085] uppercase tracking-wider mt-0.5">
               {targetDay}
             </span>
           </div>
@@ -340,7 +340,7 @@ export const TodayTimeline: React.FC = () => {
                 }
                 setIsAddExtraOpen(true);
               }}
-              className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
+              className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#2438B8] text-[#FFFFFF] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
             >
               <span>+ Extra Class</span>
             </button>
@@ -372,10 +372,10 @@ export const TodayTimeline: React.FC = () => {
       <div className="flex flex-col text-left">
         <div className="flex items-center justify-between gap-3 px-1 mb-6">
           <div className="flex flex-col min-w-0">
-            <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
+            <h3 className="text-[12px] sm:text-[13px] font-bold text-[#101828] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
               {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
             </h3>
-            <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#808080] uppercase tracking-wider mt-0.5">
+            <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#667085] uppercase tracking-wider mt-0.5">
               {targetDay}
             </span>
           </div>
@@ -393,7 +393,7 @@ export const TodayTimeline: React.FC = () => {
                 }
                 setIsAddExtraOpen(true);
               }}
-              className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
+              className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#2438B8] text-[#FFFFFF] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
             >
               <span>+ Extra Class</span>
             </button>
@@ -472,10 +472,10 @@ export const TodayTimeline: React.FC = () => {
     <div className="flex flex-col text-left">
       <div className="flex items-center justify-between gap-3 px-1 mb-6">
         <div className="flex flex-col min-w-0">
-          <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
+          <h3 className="text-[12px] sm:text-[13px] font-bold text-[#101828] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
             {isAfter8PM ? "TOMORROW'S SCHEDULE" : "LATER TODAY"}
           </h3>
-          <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#808080] uppercase tracking-wider mt-0.5">
+          <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#667085] uppercase tracking-wider mt-0.5">
             {targetDay}
           </span>
         </div>
@@ -493,11 +493,11 @@ export const TodayTimeline: React.FC = () => {
               }
               setIsAddExtraOpen(true);
             }}
-            className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
-            >
-              <span>+ Extra Class</span>
-            </button>
-          )}
+            className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#2438B8] text-[#FFFFFF] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
+          >
+            <span>+ Extra Class</span>
+          </button>
+        )}
         </div>
         <div className="relative flex flex-col gap-0 border-l-[2px] border-slate-200 dark:border-white/[0.08] ml-3">
           {displaySessions.map((session, index) => {
