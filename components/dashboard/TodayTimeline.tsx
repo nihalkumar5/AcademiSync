@@ -512,35 +512,45 @@ export const TodayTimeline: React.FC = () => {
                 const isNow = !isAfter8PM && !isCancelled && currentMinutes >= start && currentMinutes < end;
                 const isPassed = isCancelled || (isAfter8PM ? false : currentMinutes >= end);
                 const isNextClass = session.id === firstValidVisibleId;
+                const isLab = session.isLab || sub?.isLab;
+                const isSpecial = session.isExtra || sub?.name?.toLowerCase().includes('elective') || session.notes?.toLowerCase().includes('elective');
+                const isRescheduled = !!reschedule && !isCancelled;
 
                 let dotClass = '';
-                if (isCancelled) {
-                  dotClass = 'bg-[#FCA5A5] dark:bg-rose-500';
-                } else if (isNow) {
-                  dotClass = 'bg-[#111111] dark:bg-emerald-400 dark:shadow-[0_0_8px_#34d399]';
-                } else if (isNextClass) {
-                  dotClass = 'bg-[#111111] dark:bg-white';
-                } else {
-                  dotClass = 'bg-[#D4D4D4] dark:bg-white/20';
-                }
-
                 let cardColorClass = '';
-                let textColorClass = '';
+                let textColorClass = 'text-[#15171C] dark:text-[#F4F4F6]';
+                let subTextColorClass = 'text-[#6F737C] dark:text-[#94A3B8]';
+
                 if (isCancelled) {
-                  cardColorClass = 'bg-[#FEF2F2] dark:bg-rose-950/20 border-[#FCA5A5] dark:border-rose-900/40 opacity-75';
-                  textColorClass = 'text-[#991B1B] dark:text-rose-300';
+                  dotClass = 'bg-[#C94B5C]';
+                  cardColorClass = 'bg-[#FCEBED] dark:bg-rose-950/20 border-l-[3.5px] border-l-[#C94B5C] border border-[#F5D5D9] dark:border-rose-900/40 opacity-80';
+                  textColorClass = 'text-[#15171C] dark:text-rose-200';
+                  subTextColorClass = 'text-[#6F737C] dark:text-rose-300/80';
                 } else if (isNow) {
-                  cardColorClass = 'bg-[#111111] dark:bg-gradient-to-br dark:from-[#151720] dark:to-[#0D0F14] border-[#111111] dark:border-emerald-500/35 shadow-lg dark:shadow-[0_8px_30px_-6px_rgba(16,185,129,0.2)]';
+                  dotClass = 'bg-[#22A77A]';
+                  cardColorClass = 'bg-[#111111] dark:bg-gradient-to-br dark:from-[#151720] dark:to-[#0D0F14] border border-[#111111] dark:border-emerald-500/35 shadow-lg';
                   textColorClass = 'text-[#FFFFFF] dark:text-[#F4F4F6]';
-                } else if (isPassed) {
-                  cardColorClass = 'bg-[#FAFAFA] dark:bg-[#0D0E11]/60 border-[#E0E0E0] dark:border-white/[0.04] opacity-60';
-                  textColorClass = 'text-[#111111] dark:text-[#94A3B8]';
-                } else if (isNextClass) {
-                  cardColorClass = 'bg-[#F9F9F9] dark:bg-[#15161C] border-[#BDBDBD] dark:border-white/[0.12] dark:shadow-md';
-                  textColorClass = 'text-[#111111] dark:text-[#F4F4F6]';
+                  subTextColorClass = 'text-[#A8A8A8] dark:text-[#94A3B8]';
+                } else if (isRescheduled) {
+                  dotClass = 'bg-[#C76B3D]';
+                  cardColorClass = 'bg-[#FFF0E8] dark:bg-amber-950/20 border-l-[3.5px] border-l-[#C76B3D] border border-[#FCE3D7] dark:border-amber-900/30';
+                  textColorClass = 'text-[#15171C] dark:text-[#F4F4F6]';
+                  subTextColorClass = 'text-[#6F737C] dark:text-[#94A3B8]';
+                } else if (isLab) {
+                  dotClass = 'bg-[#159A78]';
+                  cardColorClass = 'bg-[#E4F4EE] dark:bg-emerald-950/20 border-l-[3.5px] border-l-[#159A78] border border-[#D0EFE3] dark:border-emerald-900/30';
+                  textColorClass = 'text-[#15171C] dark:text-[#F4F4F6]';
+                  subTextColorClass = 'text-[#6F737C] dark:text-[#94A3B8]';
+                } else if (isSpecial) {
+                  dotClass = 'bg-[#7661C9]';
+                  cardColorClass = 'bg-[#EEE9FA] dark:bg-purple-950/20 border-l-[3.5px] border-l-[#7661C9] border border-[#DFD7F5] dark:border-purple-900/30';
+                  textColorClass = 'text-[#15171C] dark:text-[#F4F4F6]';
+                  subTextColorClass = 'text-[#6F737C] dark:text-[#94A3B8]';
                 } else {
-                  cardColorClass = 'bg-[#FFFFFF] dark:bg-[#121317] border-[#E0E0E0] dark:border-white/[0.08] dark:hover:border-white/20';
-                  textColorClass = 'text-[#111111] dark:text-[#F4F4F6]';
+                  dotClass = 'bg-[#3045B8]';
+                  cardColorClass = 'bg-[#E8EEFF] dark:bg-blue-950/20 border-l-[3.5px] border-l-[#3045B8] border border-[#DCE4FA] dark:border-blue-900/30';
+                  textColorClass = 'text-[#15171C] dark:text-[#F4F4F6]';
+                  subTextColorClass = 'text-[#6F737C] dark:text-[#94A3B8]';
                 }
 
                 return (
@@ -552,7 +562,7 @@ export const TodayTimeline: React.FC = () => {
                     
                     {isNow && (
                       <div 
-                        className="absolute left-[-10px] top-[-1px] w-[18px] h-[18px] rounded-full animate-ping opacity-40 z-0 bg-[#111111] dark:bg-emerald-400"
+                        className="absolute left-[-10px] top-[-1px] w-[18px] h-[18px] rounded-full animate-ping opacity-40 z-0 bg-[#22A77A]"
                       />
                     )}
 
@@ -564,7 +574,7 @@ export const TodayTimeline: React.FC = () => {
                               <span className="text-[11px] line-through opacity-40 font-mono font-bold leading-none mb-0.5">
                                 {session.startTime}
                               </span>
-                              <span className="text-[13px] font-black tracking-tighter font-mono text-black dark:text-white leading-none">
+                              <span className="text-[13px] font-black tracking-tighter font-mono text-[#C76B3D] leading-none">
                                 {reschedule.startTime}
                               </span>
                             </div>
@@ -578,7 +588,7 @@ export const TodayTimeline: React.FC = () => {
                         </div>
 
                         {/* Class Info Box */}
-                        <div className={`flex-1 rounded-none p-3 border transition-all ${cardColorClass}`}>
+                        <div className={`flex-1 rounded-none p-3.5 border transition-all ${cardColorClass}`}>
                           <div className="flex flex-wrap items-start justify-between gap-2">
                             <div className="flex flex-col gap-1 min-w-0 flex-1">
                               <div className="flex items-start gap-2 flex-wrap">
@@ -587,29 +597,29 @@ export const TodayTimeline: React.FC = () => {
                                 </h4>
                                 
                                 {isCancelled ? (
-                                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#FEF2F2] dark:bg-rose-950/40 text-[#991B1B] dark:text-rose-300 border border-[#FCA5A5] dark:border-rose-800/40 shrink-0">
+                                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#C94B5C]/10 text-[#C94B5C] border border-[#C94B5C]/30 shrink-0">
                                     Cancelled
                                   </span>
-                                ) : session.isExtra ? (
-                                  <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider border shrink-0 ${
-                                    isNow ? 'bg-black text-white dark:bg-indigo-900/50 dark:text-indigo-200 border-white dark:border-indigo-400/40' : 'bg-indigo-500/15 text-indigo-800 dark:text-indigo-300 border-indigo-500/30'
-                                  }`}>
-                                    Extra Class
-                                  </span>
                                 ) : isNow ? (
-                                  <span className="px-2 py-0.5 rounded-none bg-white text-black dark:bg-emerald-500/20 dark:text-emerald-300 text-[10px] font-bold uppercase tracking-wider animate-pulse border border-current dark:border-emerald-500/40 shrink-0">
+                                  <span className="px-2 py-0.5 rounded-none bg-[#22A77A]/15 text-[#22A77A] text-[10px] font-bold uppercase tracking-wider animate-pulse border border-[#22A77A]/40 shrink-0">
                                     Now
                                   </span>
                                 ) : reschedule ? (
-                                  <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider border shrink-0 ${
-                                    isNow ? 'bg-black text-white border-white' : 'bg-[#FFFBEB] dark:bg-amber-950/40 text-[#B45309] dark:text-amber-300 border-[#FDE68A] dark:border-amber-800/40'
-                                  }`}>
+                                  <span className="px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider bg-[#C76B3D]/10 text-[#C76B3D] border border-[#C76B3D]/30 shrink-0">
                                     Rescheduled
+                                  </span>
+                                ) : isLab ? (
+                                  <span className="px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider bg-[#159A78]/10 text-[#159A78] border border-[#159A78]/30 shrink-0">
+                                    Lab
+                                  </span>
+                                ) : session.isExtra ? (
+                                  <span className="px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider bg-[#7661C9]/10 text-[#7661C9] border border-[#7661C9]/30 shrink-0">
+                                    Extra Class
                                   </span>
                                 ) : null}
                               </div>
                               
-                              <div className={`flex items-center gap-[6px] text-[12px] leading-[18px] font-normal flex-wrap mt-[4px] ${isNow ? textColorClass : 'text-[#666666] dark:text-[#94A3B8]'} ${isNow ? 'opacity-80' : ''}`}>
+                              <div className={`flex items-center gap-[6px] text-[12px] leading-[18px] font-normal flex-wrap mt-[4px] ${subTextColorClass}`}>
                                 <span className="flex items-center gap-[4px]">
                                   <MapPin className="w-[14px] h-[14px]" />
                                   {reschedule?.room || session.room}
@@ -640,13 +650,13 @@ export const TodayTimeline: React.FC = () => {
                               )}
 
                               {isCancelled && (
-                                <span className="text-[11px] font-mono text-[#991B1B] dark:text-rose-300 mt-1 font-semibold block">
+                                <span className="text-[11px] font-mono text-[#C94B5C] mt-1 font-semibold block">
                                   Cancelled for today {cancelledMeta?.by ? `· by ${cancelledMeta.by} (BP)` : ''}
                                 </span>
                               )}
 
                               {reschedule && !isCancelled && (
-                                <span className="text-[11px] font-mono text-[#B45309] dark:text-amber-300 mt-1 font-semibold block">
+                                <span className="text-[11px] font-mono text-[#C76B3D] mt-1 font-semibold block">
                                   Rescheduled from {session.startTime}–{session.endTime} {reschedule.by ? `· by ${reschedule.by} (BP)` : ''}
                                 </span>
                               )}

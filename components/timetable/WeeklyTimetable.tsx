@@ -209,22 +209,22 @@ export const WeeklyTimetable: React.FC = () => {
               key={day}
               onClick={() => setSelectedMobileDay(day)}
               className={clsx(
-                'flex flex-col items-center justify-center px-4 py-2.5 rounded-none text-xs font-semibold shrink-0 transition-all border cursor-pointer',
+                'flex flex-col items-center justify-center px-4 py-2 rounded-none text-xs font-semibold shrink-0 transition-all border cursor-pointer',
                 isSelected
-                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/20'
-                  : 'glass-card border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-[#94A3B8] hover:bg-white/50 dark:hover:bg-white/[0.06]'
+                  ? 'bg-[#111111] text-white border-[#111111] dark:bg-white dark:text-[#111111] shadow-sm'
+                  : 'bg-white dark:bg-[#121317] border-[#D9D9D6] dark:border-white/[0.08] text-[#6F737C] dark:text-[#94A3B8] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06]'
               )}
             >
               <div className="flex items-center gap-1.5">
                 <span className={isSelected ? "font-bold" : "font-semibold"}>{day.slice(0, 3)}</span>
                 {isToday && (
-                  <span className={clsx('w-1.5 h-1.5 rounded-full', isSelected ? 'bg-white' : 'bg-indigo-500')} />
+                  <span className={clsx('w-1.5 h-1.5 rounded-full', isSelected ? 'bg-emerald-400' : 'bg-emerald-500')} />
                 )}
               </div>
               <span
                 className={clsx(
                   'text-[10px] font-medium mt-0.5',
-                  isSelected ? 'text-indigo-100' : 'text-slate-400 dark:text-zinc-500'
+                  isSelected ? 'text-white/80 dark:text-[#111111]/80' : 'text-[#888888] dark:text-zinc-500'
                 )}
               >
                 {classCount} classes
