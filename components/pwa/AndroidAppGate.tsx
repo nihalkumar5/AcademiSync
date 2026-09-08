@@ -42,6 +42,13 @@ export const AndroidAppGate: React.FC = () => {
   const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.intersemester.app';
   const intentUrl = `intent://open#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
 
+  const handleBypass = () => {
+    try {
+      sessionStorage.setItem('android_gate_bypassed', 'true');
+    } catch (_) {}
+    setDismissed(true);
+  };
+
   return (
     <AnimatePresence>
       <motion.div
@@ -124,7 +131,7 @@ export const AndroidAppGate: React.FC = () => {
 
           {/* Action Buttons Footer */}
           <div 
-            className="w-full px-6 sm:px-8 pt-3 pb-6 flex flex-col gap-2.5 shrink-0 bg-[#F7F7F5] z-10 relative"
+            className="w-full px-6 sm:px-8 pt-3 pb-6 flex flex-col gap-2 shrink-0 bg-[#F7F7F5] z-10 relative"
             style={{
               paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 16px), 24px)',
             }}
@@ -141,11 +148,19 @@ export const AndroidAppGate: React.FC = () => {
               href={playStoreUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full py-3.5 bg-white border-2 border-black text-black text-[12.5px] font-black uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:bg-black/5 transition-colors cursor-pointer shadow-sm rounded-none"
+              className="w-full py-3 bg-white border-2 border-black text-black text-[12px] font-black uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:bg-black/5 transition-colors cursor-pointer shadow-sm rounded-none"
             >
               <Download className="w-4 h-4" />
-              <span>Download on Google Play Store</span>
+              <span>Download on Google Play</span>
             </a>
+
+            <button
+              type="button"
+              onClick={handleBypass}
+              className="w-full py-1.5 text-center text-[11.5px] font-semibold text-black/60 hover:text-black transition-colors cursor-pointer uppercase tracking-wider underline underline-offset-4"
+            >
+              Continue on Web
+            </button>
           </div>
         </div>
       </motion.div>

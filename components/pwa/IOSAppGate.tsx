@@ -128,7 +128,7 @@ export const IOSAppGate: React.FC = () => {
 
           {/* Controls Footer */}
           <div 
-            className="w-full px-6 sm:px-8 pt-2 pb-6 flex items-center justify-center shrink-0 bg-[#F7F7F5] z-10 relative"
+            className="w-full px-6 sm:px-8 pt-2 pb-6 flex flex-col items-center justify-center gap-2 shrink-0 bg-[#F7F7F5] z-10 relative"
             style={{
               paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 16px), 24px)',
             }}
@@ -137,6 +137,14 @@ export const IOSAppGate: React.FC = () => {
               <ArrowDown className="w-4 h-4 text-blue-600" />
               <span>Tap the <strong className="text-blue-600">Share</strong> button at the bottom of Safari</span>
             </div>
+
+            <button
+              type="button"
+              onClick={handleBypass}
+              className="w-full pt-2 text-center text-[11.5px] font-semibold text-black/60 hover:text-black transition-colors cursor-pointer uppercase tracking-wider underline underline-offset-4"
+            >
+              Continue on Web
+            </button>
           </div>
         </div>
       </motion.div>
