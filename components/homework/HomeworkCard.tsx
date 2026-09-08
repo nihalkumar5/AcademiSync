@@ -86,7 +86,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
 
   return (
     <div className={clsx(
-      "relative flex flex-col p-[16px] bg-[#FFFFFF] dark:bg-[#121317] border border-[#D9D9D6] dark:border-white/[0.08] dark:shadow-md w-full overflow-hidden transition-opacity",
+      "relative flex flex-col p-[16px] bg-[#FFFFFF] dark:bg-[#121317] border border-[#D9D9D6] dark:border-white/[0.08] dark:shadow-md w-full transition-opacity",
       isDone ? 'opacity-60' : 'opacity-100'
     )}>
       <div className="relative z-10 flex flex-col">
@@ -95,7 +95,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
           <div className="text-[44px] font-bold text-black/10 dark:text-white/[0.06] select-none pointer-events-none leading-[40px] tracking-tighter font-mono">
             {formattedIndex}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {!isDone && homework.priority !== 'Low' && (
               <span className={clsx(
                 "text-[9px] font-bold uppercase tracking-widest border px-2 py-0.5",
@@ -104,6 +104,21 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                 {homework.priority}
               </span>
             )}
+
+            {/* Direct Quick Delete Button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(homework.id);
+              }}
+              className="w-8 h-8 flex items-center justify-center -mt-1.5 text-[#6F6F6F]/70 hover:text-red-600 dark:text-[#94A3B8]/70 dark:hover:text-rose-400 hover:bg-red-50/50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+              title="Delete Task"
+              aria-label="Delete Task"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+
             <div className="relative shrink-0" ref={dropdownRef}>
             <button
               type="button"
