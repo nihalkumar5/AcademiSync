@@ -20,6 +20,7 @@ import {
   DEFAULT_EVENTS,
   DEFAULT_NOTIFICATIONS,
 } from './initialData';
+import { autoAssignHarmonicColorsToSubjects } from './cardColors';
 
 const STORAGE_KEYS = {
   PROFILE: 'iiitnr_profile_v2',
@@ -69,31 +70,7 @@ export const storage = {
 
   getSubjects: (): Subject[] => {
     const rawSubjects = getStoredItem<Subject[]>(STORAGE_KEYS.SUBJECTS, []);
-    const colorMap: Record<string, string> = {
-      '#3b82f6': '#7A8B99', // Blue -> Cozy Slate
-      '#3B82F6': '#7A8B99',
-      '#8b5cf6': '#9C8E80', // Purple -> Cocoa
-      '#8B5CF6': '#9C8E80',
-      '#ec4899': '#B88B8C', // Pink -> Muted Rose
-      '#EC4899': '#B88B8C',
-      '#f59e0b': '#C79F6F', // Amber -> Ochre
-      '#F59E0B': '#C79F6F',
-      '#10b981': '#7C897A', // Emerald -> Sage
-      '#10B981': '#7C897A',
-      '#6366f1': '#7A8B99', // Indigo -> Slate
-      '#6366F1': '#7A8B99',
-      '#06b6d4': '#7C897A', // Cyan -> Sage
-      '#06B6D4': '#7C897A',
-      '#14b8a6': '#7C897A', // Teal -> Sage
-      '#14B8A6': '#7C897A',
-    };
-
-    return rawSubjects.map((sub) => {
-      if (colorMap[sub.color]) {
-        return { ...sub, color: colorMap[sub.color] };
-      }
-      return sub;
-    });
+    return autoAssignHarmonicColorsToSubjects(rawSubjects);
   },
   setSubjects: (subjects: Subject[]) => setStoredItem(STORAGE_KEYS.SUBJECTS, subjects),
 

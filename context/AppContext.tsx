@@ -37,6 +37,7 @@ import { db, auth } from '@/lib/firebase';
 import { registerPushNotifications, broadcastBatchPushNotification } from '@/lib/pushNotifications';
 import { triggerLocalNotification, scheduleTimetableLocalNotifications } from '@/lib/localNotifications';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
+import { getHarmonicColorForSubject } from '@/lib/cardColors';
 import { Capacitor } from '@capacitor/core';
 
 export const syncNativeStatusBar = async (isDark: boolean) => {
@@ -1037,8 +1038,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const addSubject = (subjectData: Omit<Subject, 'id'>): Subject => {
+    const cleanCol = (subjectData.color || '').toLowerCase().trim();
+    const isLegacyDefault = !cleanCol || ['#000000', '#7c897a', '#7a8b99', '#9c8e80', '#b88b8c', '#c79f6f', '#c08a76'].includes(cleanCol);
+
+    const chosenColor = !isLegacyDefault && subjectData.color
+      ? subjectData.color
+      : getHarmonicColorForSubject(subjectData, subjects.map(s => s.color));
+
     const newSub: Subject = {
       ...subjectData,
+      color: chosenColor,
       id: `sub_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
     };
     const updated = [...subjects, newSub];

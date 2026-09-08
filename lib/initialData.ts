@@ -1,9 +1,9 @@
 import { Subject, ClassSession, Homework, UserSettings, AcademicEvent, AppNotification } from './types';
 
 export const DEFAULT_SUBJECTS: Subject[] = [
-  { id: 'sub1', code: 'CS101', name: 'Data Structures', shortName: 'DSA', facultyName: 'Dr. Smith', room: 'Room 201', color: '#000000', credits: 4, carryRequirements: ['Laptop', 'Notebook'] },
-  { id: 'sub2', code: 'CS102', name: 'Digital Logic', shortName: 'DLD', facultyName: 'Prof. Jones', room: 'Room 105', color: '#000000', credits: 3, carryRequirements: ['Calculator'] },
-  { id: 'sub3', code: 'CS103', name: 'DBMS Lab', shortName: 'DBMS Lab', facultyName: 'Mr. White', room: 'Lab 3', color: '#000000', credits: 2, carryRequirements: ['Lab File'], isLab: true },
+  { id: 'sub1', code: 'CS101', name: 'Data Structures', shortName: 'DSA', facultyName: 'Dr. Smith', room: 'Room 201', color: '#334CC4', credits: 4, carryRequirements: ['Laptop', 'Notebook'] },
+  { id: 'sub2', code: 'CS102', name: 'Digital Logic', shortName: 'DLD', facultyName: 'Prof. Jones', room: 'Room 105', color: '#C85F3D', credits: 3, carryRequirements: ['Calculator'] },
+  { id: 'sub3', code: 'CS103', name: 'DBMS Lab', shortName: 'DBMS Lab', facultyName: 'Mr. White', room: 'Lab 3', color: '#18A889', credits: 2, carryRequirements: ['Lab File'], isLab: true },
 ];
 
 const today = new Date();

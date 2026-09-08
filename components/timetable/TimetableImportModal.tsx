@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ExtractedClassSession, DayOfWeek, ClassSession, Subject } from '@/lib/types';
 import { DAYS_OF_WEEK, mergeConsecutiveSessions } from '@/lib/timetableUtils';
+import { autoAssignHarmonicColorsToSubjects, getHarmonicColorForSubject } from '@/lib/cardColors';
 import { validateUploadedFile } from '@/lib/fileSafety';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
@@ -149,6 +150,11 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
       );
 
       if (!matchedSubject) {
+        const assignedColor = getHarmonicColorForSubject(
+          { name: extSession.subjectName, code: extSession.subjectCode, isLab: extSession.isLab },
+          newSubjects.map((s) => s.color)
+        );
+
         matchedSubject = {
           id: `subj_${Date.now()}_${idx}`,
           name: extSession.subjectName,
@@ -157,8 +163,8 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
           facultyName: extSession.faculty || 'TBD',
           room: extSession.room || 'TBD',
           credits: 3,
-          color: ['#7C897A', '#C08A76', '#C79F6F', '#B88B8C', '#7A8B99', '#9C8E80'][idx % 6],
-          carryRequirements: ['Notebook'],
+          color: assignedColor,
+          carryRequirements: extSession.isLab ? ['Laptop (Charged)', 'Lab Manual / Record'] : ['Lecture Notebook'],
           isLab: extSession.isLab,
         };
         newSubjects.push(matchedSubject);
@@ -176,11 +182,13 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
       });
     });
 
+    const finalHarmonizedSubjects = autoAssignHarmonicColorsToSubjects(newSubjects);
+
     // Save subjects and timetable together atomically with matching IDs
-    setFullSubjectsAndTimetable(newSubjects, newSessions);
+    setFullSubjectsAndTimetable(finalHarmonizedSubjects, newSessions);
     updateProfile({ onboardingCompleted: true });
     setShowOnboarding(false);
-    showToast('Timetable Sorted!', `Extracted ${newSubjects.length} subjects & ${newSessions.length} weekly classes!`, 'success');
+    showToast('Timetable Sorted!', `Extracted ${finalHarmonizedSubjects.length} subjects & ${newSessions.length} weekly classes with optimal aesthetic colors!`, 'success');
     handleClose();
   };
 

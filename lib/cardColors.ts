@@ -198,6 +198,112 @@ export function generatePastelThemeFromHex(rawColor: string, name: string = 'Cus
 }
 
 /**
+ * Harmonic sequence of theme keys specifically tuned so that consecutive subjects
+ * have maximum pleasant contrast and zero visual clash.
+ */
+export const HARMONIC_COLOR_SEQUENCE: typeof THEME_KEYS[number][] = [
+  'blue',      // Periwinkle Blue (#334CC4)
+  'peach',     // Warm Peach (#C85F3D)
+  'mint',      // Mint Green (#18A889)
+  'lavender',  // Lavender (#8067B5)
+  'emerald',   // Emerald Green (#15803D)
+  'yellow',    // Amber Yellow (#C99A32)
+  'cyan',      // Ocean Cyan (#0284C7)
+  'rose',      // Rose Pink (#C94B5C)
+  'indigo',    // Electric Indigo (#4F46E5)
+  'slate',     // Slate Charcoal (#475569)
+];
+
+/**
+ * Intelligent color selector for a single subject based on its academic type & attributes
+ */
+export function getHarmonicColorForSubject(subject: {
+  name: string;
+  code?: string;
+  isLab?: boolean;
+}, usedColors: string[] = []): string {
+  const nameLower = (subject.name || '').toLowerCase();
+  const codeLower = (subject.code || '').toLowerCase();
+
+  // 1. Labs always get Mint or Emerald for crystal-clear practical distinction
+  if (subject.isLab || nameLower.includes('lab') || nameLower.includes('practical') || codeLower.includes('lab')) {
+    if (!usedColors.includes(PASTEL_THEMES.mint.accent)) {
+      return PASTEL_THEMES.mint.accent;
+    }
+    if (!usedColors.includes(PASTEL_THEMES.emerald.accent)) {
+      return PASTEL_THEMES.emerald.accent;
+    }
+    return PASTEL_THEMES.mint.accent;
+  }
+
+  // 2. Electives / Open / Special get Lavender or Indigo
+  if (nameLower.includes('elective') || nameLower.includes('special') || nameLower.includes('seminar') || nameLower.includes('minor')) {
+    if (!usedColors.includes(PASTEL_THEMES.lavender.accent)) {
+      return PASTEL_THEMES.lavender.accent;
+    }
+    if (!usedColors.includes(PASTEL_THEMES.indigo.accent)) {
+      return PASTEL_THEMES.indigo.accent;
+    }
+  }
+
+  // 3. Mathematical / Statistical / Electronic topics
+  if (nameLower.includes('math') || nameLower.includes('stat') || nameLower.includes('signal') || nameLower.includes('circuit') || nameLower.includes('digital')) {
+    if (!usedColors.includes(PASTEL_THEMES.peach.accent)) {
+      return PASTEL_THEMES.peach.accent;
+    }
+    if (!usedColors.includes(PASTEL_THEMES.yellow.accent)) {
+      return PASTEL_THEMES.yellow.accent;
+    }
+  }
+
+  // 4. Core Algorithms / Systems / Network / Data
+  if (nameLower.includes('data') || nameLower.includes('algorithm') || nameLower.includes('structure') || nameLower.includes('network') || nameLower.includes('os') || nameLower.includes('system') || nameLower.includes('database') || nameLower.includes('dbms')) {
+    if (!usedColors.includes(PASTEL_THEMES.blue.accent)) {
+      return PASTEL_THEMES.blue.accent;
+    }
+    if (!usedColors.includes(PASTEL_THEMES.cyan.accent)) {
+      return PASTEL_THEMES.cyan.accent;
+    }
+  }
+
+  // 5. Pick the first unused color from the harmonic sequence
+  for (const key of HARMONIC_COLOR_SEQUENCE) {
+    const accent = PASTEL_THEMES[key].accent;
+    if (!usedColors.includes(accent)) {
+      return accent;
+    }
+  }
+
+  // Fallback to deterministic hash
+  const key = getSubjectThemeKey(subject.name || subject.code || '');
+  return PASTEL_THEMES[key].accent;
+}
+
+/**
+ * Assigns harmonic non-colliding colors across an entire array of subjects
+ */
+export function autoAssignHarmonicColorsToSubjects<T extends { name: string; code?: string; isLab?: boolean; color?: string }>(subjects: T[]): T[] {
+  const usedColors: string[] = [];
+
+  return subjects.map((sub) => {
+    // If subject has a legacy dull default color (e.g. #000000, muddy slate #7c897a, etc.)
+    const cleanCol = (sub.color || '').toLowerCase().trim();
+    const isLegacyDefault = !cleanCol || ['#000000', '#7c897a', '#7a8b99', '#9c8e80', '#b88b8c', '#c79f6f', '#c08a76', '#71717a'].includes(cleanCol);
+    
+    let chosenColor = sub.color;
+    if (isLegacyDefault || !chosenColor) {
+      chosenColor = getHarmonicColorForSubject(sub, usedColors);
+    }
+
+    usedColors.push(chosenColor);
+    return {
+      ...sub,
+      color: chosenColor,
+    };
+  });
+}
+
+/**
  * Returns the card theme for any given subject or session.
  */
 export function getSubjectCardTheme(options: {
