@@ -43,10 +43,11 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
   onDelete,
   onShare,
 }) => {
-  const { profile, proposeBatchTask, updateHomework, isBatchCR, showToast } = useApp();
+  const { profile, proposeBatchTask, updateHomework, isBatchCR, showToast, triggerConfetti } = useApp();
   const [showMenu, setShowMenu] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [showCompleteConfirmModal, setShowCompleteConfirmModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -90,6 +91,18 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
   const isOverdue = diffDays < 0 && !isDone;
   const isUrgent = diffDays >= 0 && diffDays <= 1 && !isDone;
   const isInProgress = homework.status === 'In Progress' && !isDone;
+
+  const handleStatusAction = () => {
+    if (homework.status === 'Not Started') {
+      updateHomework(homework.id, { status: 'In Progress' });
+      showToast('In Progress', `"${homework.title}" marked as in progress ⏳`, 'info');
+    } else if (homework.status === 'In Progress') {
+      setShowCompleteConfirmModal(true);
+    } else {
+      updateHomework(homework.id, { status: 'Not Started', completedAt: undefined });
+      showToast('Task Reopened', `"${homework.title}" reset to to-do`, 'info');
+    }
+  };
 
   const theme = getTaskCardTheme({
     isDone,
@@ -148,10 +161,10 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onToggleStatus(homework.id);
+                  setShowCompleteConfirmModal(true);
                 }}
                 className="px-2 py-0.5 rounded-[2px] bg-[#DCE4FF] text-[#334CC4] text-[9.5px] font-bold uppercase tracking-wider hover:opacity-80 transition-opacity cursor-pointer"
-                title="Click to mark Done"
+                title="Click to complete"
               >
                 DOING
               </button>
@@ -161,7 +174,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onToggleStatus(homework.id);
+                  handleStatusAction();
                 }}
                 className="px-2 py-0.5 rounded-[2px] bg-[#D2F1E8] text-[#18A889] text-[9.5px] font-bold uppercase tracking-wider hover:opacity-80 transition-opacity cursor-pointer"
                 title="Click to reopen"
@@ -225,8 +238,8 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                     {homework.status !== 'Completed' && (
                       <button
                         onClick={() => {
-                          onToggleStatus(homework.id);
                           setShowMenu(false);
+                          setShowCompleteConfirmModal(true);
                         }}
                         className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#18A889] hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors w-full cursor-pointer"
                       >
@@ -335,10 +348,10 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onToggleStatus(homework.id);
+              handleStatusAction();
             }}
-            aria-label={isDone ? "Mark as incomplete" : "Mark as completed"}
-            title={isDone ? "Mark as incomplete" : "Mark as completed"}
+            aria-label={isDone ? "Mark as incomplete" : isInProgress ? "Complete task" : "Start task"}
+            title={isDone ? "Mark as incomplete" : isInProgress ? "Complete task" : "Start task"}
             className={clsx(
               "mt-[3px] shrink-0 w-[20px] h-[20px] rounded-full border-[1.5px] flex items-center justify-center transition-all cursor-pointer",
               isDone 
@@ -428,6 +441,44 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
               }}
             >
               {isBatchCR ? "Yes, Post Task" : "Yes, Propose Task"}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Complete Confirmation Modal */}
+      <Modal
+        isOpen={showCompleteConfirmModal}
+        onClose={() => setShowCompleteConfirmModal(false)}
+        title="Complete Task"
+        maxWidth="sm"
+      >
+        <div className="flex flex-col gap-4 text-left">
+          <p className="text-[14px] text-[#111111] dark:text-[#FFFFFF]">
+            Are you sure you want to mark <span className="font-bold">"{homework.title}"</span> as completed?
+          </p>
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#D9D9D6] dark:border-[#333333] mt-2">
+            <button 
+              type="button"
+              className="text-[13px] font-bold uppercase text-[#737373] dark:text-[#A0A0A0] hover:text-[#111111] dark:hover:text-white px-4 py-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              onClick={() => setShowCompleteConfirmModal(false)}
+            >
+              No, Keep Doing
+            </button>
+            <button 
+              type="button"
+              className="text-[13px] font-bold uppercase bg-[#18A889] hover:bg-[#159A78] text-[#FFFFFF] px-6 py-2.5 transition-colors cursor-pointer rounded-[2px]"
+              onClick={() => {
+                setShowCompleteConfirmModal(false);
+                updateHomework(homework.id, {
+                  status: 'Completed',
+                  completedAt: new Date().toISOString(),
+                });
+                triggerConfetti();
+                showToast('Assignment Completed', `"${homework.title}" completed! 🎉`, 'success');
+              }}
+            >
+              Yes, Complete
             </button>
           </div>
         </div>
