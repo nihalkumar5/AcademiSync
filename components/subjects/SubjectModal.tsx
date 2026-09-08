@@ -31,8 +31,20 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
   const [color, setColor] = useState('#7C897A');
   const [isLab, setIsLab] = useState(false);
   const [labRoom, setLabRoom] = useState('');
+  const [driveLink, setDriveLink] = useState('');
+  const [syllabusLink, setSyllabusLink] = useState('');
+  const [notes, setNotes] = useState('');
   const [carryReqs, setCarryReqs] = useState<string[]>([]);
   const [newCarryInput, setNewCarryInput] = useState('');
+
+  const carryPresets = [
+    'Laptop (Charged)',
+    'Lecture Notebook',
+    'Lab Manual / Record',
+    'Scientific Calculator',
+    'Graph Sheet & Pen',
+    'Drawing Instruments',
+  ];
 
   const defaultColors = [
     { name: 'Mint', value: '#18A889', bg: '#E5F4EF' },
@@ -54,6 +66,9 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
       setColor(subjectToEdit.color);
       setIsLab(subjectToEdit.isLab || false);
       setLabRoom(subjectToEdit.labRoom || '');
+      setDriveLink(subjectToEdit.driveLink || '');
+      setSyllabusLink(subjectToEdit.syllabusLink || '');
+      setNotes(subjectToEdit.notes || '');
       setCarryReqs(subjectToEdit.carryRequirements || []);
     } else {
       setName('');
@@ -63,19 +78,23 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
       setFacultyEmail('');
       setRoom('LT-1');
       setCredits(4);
-      setColor('#3B82F6');
+      setColor('#334CC4');
       setIsLab(false);
       setLabRoom('');
+      setDriveLink('');
+      setSyllabusLink('');
+      setNotes('');
       setCarryReqs(['Laptop (Charged)', 'Lecture Notebook']);
     }
   }, [subjectToEdit, isOpen]);
 
-  const handleAddCarryItem = () => {
-    if (!newCarryInput.trim()) return;
-    if (!carryReqs.includes(newCarryInput.trim())) {
-      setCarryReqs([...carryReqs, newCarryInput.trim()]);
+  const handleAddCarryItem = (textToAdd?: string) => {
+    const val = (textToAdd || newCarryInput).trim();
+    if (!val) return;
+    if (!carryReqs.includes(val)) {
+      setCarryReqs([...carryReqs, val]);
     }
-    setNewCarryInput('');
+    if (!textToAdd) setNewCarryInput('');
   };
 
   const handleRemoveCarryItem = (index: number) => {
@@ -106,6 +125,9 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
       color,
       isLab,
       labRoom: isLab ? labRoom.trim() || room.trim() : undefined,
+      driveLink: driveLink.trim() || undefined,
+      syllabusLink: syllabusLink.trim() || undefined,
+      notes: notes.trim() || undefined,
       carryRequirements: carryReqs,
     };
 
@@ -186,6 +208,31 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
           />
         </div>
 
+        {/* Course Links & Materials */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Input
+            label="Notes / Drive / Classroom Link (Optional)"
+            placeholder="e.g. https://drive.google.com/..."
+            type="url"
+            value={driveLink}
+            onChange={(e) => setDriveLink(e.target.value)}
+          />
+          <Input
+            label="Syllabus / Reference Link (Optional)"
+            placeholder="e.g. https://curriculum.edu/..."
+            type="url"
+            value={syllabusLink}
+            onChange={(e) => setSyllabusLink(e.target.value)}
+          />
+        </div>
+
+        <Input
+          label="Subject Notes / Description (Optional)"
+          placeholder="e.g. 75% attendance criteria, 3 quizzes + Midsem"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+        />
+
         {/* Color Picker */}
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-medium text-[#151515] dark:text-zinc-300">
@@ -219,16 +266,16 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
         </div>
 
         {/* Lab Toggle */}
-        <div className="flex flex-col gap-2 p-3 rounded-none bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/80">
+        <div className="flex flex-col gap-2 p-3 rounded-[3px] bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/80">
           <div className="flex items-center gap-2.5">
             <input
               type="checkbox"
               id="subIsLab"
               checked={isLab}
               onChange={(e) => setIsLab(e.target.checked)}
-              className="w-4 h-4 rounded-none text-[#8C6B5D] focus:ring-[#8C6B5D]"
+              className="w-4 h-4 rounded-[2px] accent-black dark:accent-white cursor-pointer"
             />
-            <label htmlFor="subIsLab" className="text-xs font-medium text-zinc-800 dark:text-zinc-200 cursor-pointer">
+            <label htmlFor="subIsLab" className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 cursor-pointer">
               Includes Practical Lab Sessions
             </label>
           </div>
@@ -242,22 +289,39 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
           )}
         </div>
 
-        {/* Things to Carry Requirements (Critical Requirement) */}
-        <div className="flex flex-col gap-2 p-3.5 rounded-none bg-[#8C6B5D]/5 dark:bg-[#8C6B5D]/10 border border-[#8C6B5D]/20 dark:border-[#8C6B5D]/30">
+        {/* Things to Carry Requirements */}
+        <div className="flex flex-col gap-2 p-3.5 rounded-[3px] bg-[#111111]/[0.03] dark:bg-white/[0.03] border border-black/10 dark:border-white/10">
           <div className="flex items-center gap-1.5">
-            <Backpack className="w-4 h-4 text-[#8C6B5D]" />
-            <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+            <Backpack className="w-4 h-4 text-[#18A889]" />
+            <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
               Required Things to Carry for this Subject
             </h4>
           </div>
           <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-            These items will automatically appear in your &quot;Tomorrow&apos;s Bag&quot; whenever this subject is scheduled.
+            These items will automatically appear in your &quot;Carry Bag&quot; whenever this subject is scheduled.
           </p>
 
-          <div className="flex items-center gap-2 mt-1">
+          {/* Quick Presets */}
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            <span className="text-[10.5px] font-bold text-zinc-400 dark:text-zinc-500 self-center mr-1">
+              Quick Add:
+            </span>
+            {carryPresets.map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => handleAddCarryItem(preset)}
+                className="text-[10.5px] font-medium px-2 py-0.5 rounded-[2px] bg-white dark:bg-[#1E1F24] border border-zinc-200 dark:border-zinc-700 hover:border-black/30 dark:hover:border-white/30 text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
+              >
+                + {preset}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 mt-2">
             <input
               type="text"
-              placeholder="e.g. Laptop (CUDA), Lab Manual, Record Diary, Calculator"
+              placeholder="e.g. Custom Item (e.g. Hardware Board, Record Book)"
               value={newCarryInput}
               onChange={(e) => setNewCarryInput(e.target.value)}
               onKeyDown={(e) => {
@@ -266,9 +330,9 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
                   handleAddCarryItem();
                 }
               }}
-              className="flex-1 px-3 py-1.5 text-xs bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-none text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#8C6B5D]/20 focus:border-[#8C6B5D]"
+              className="flex-1 px-3 py-1.5 text-xs bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-[2px] text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none"
             />
-            <Button type="button" size="sm" variant="secondary" onClick={handleAddCarryItem}>
+            <Button type="button" size="sm" variant="secondary" onClick={() => handleAddCarryItem()}>
               <Plus className="w-3.5 h-3.5 mr-1" />
               Add
             </Button>
@@ -278,13 +342,13 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
             {carryReqs.map((req, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-none bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200"
+                className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-[2px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 font-medium"
               >
                 <span>{req}</span>
                 <button
                   type="button"
                   onClick={() => handleRemoveCarryItem(idx)}
-                  className="text-zinc-400 hover:text-rose-500"
+                  className="text-zinc-400 hover:text-rose-500 cursor-pointer"
                 >
                   <X className="w-3 h-3" />
                 </button>

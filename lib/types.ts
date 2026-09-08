@@ -39,6 +39,8 @@ export interface Subject {
   isLab?: boolean;
   labRoom?: string;
   notes?: string;
+  driveLink?: string;
+  syllabusLink?: string;
 }
 
 export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
