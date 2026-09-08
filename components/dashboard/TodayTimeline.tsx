@@ -10,6 +10,8 @@ import { EmptyState } from '../ui/EmptyState';
 import { Subject, ClassSession } from '@/lib/types';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { Modal } from '../ui/Modal';
+import { getSubjectCardTheme } from '@/lib/cardColors';
+import { clsx } from 'clsx';
 
 
 
@@ -516,57 +518,35 @@ export const TodayTimeline: React.FC = () => {
                 const isSpecial = session.isExtra || sub?.name?.toLowerCase().includes('elective') || session.notes?.toLowerCase().includes('elective');
                 const isRescheduled = !!reschedule && !isCancelled;
 
-                let dotClass = '';
-                let cardColorClass = '';
-                let textColorClass = 'text-[#15171C] dark:text-[#F4F4F6]';
-                let subTextColorClass = 'text-[#6F737C] dark:text-[#94A3B8]';
+                const theme = getSubjectCardTheme({
+                  subjectName: sub?.name,
+                  subjectCode: sub?.code,
+                  subjectColor: sub?.color,
+                  isLab,
+                  isCancelled,
+                  isRescheduled,
+                  isSpecial,
+                });
 
-                if (isCancelled) {
-                  dotClass = 'bg-[#C94B5C]';
-                  cardColorClass = 'bg-[#FCEBED] dark:bg-rose-950/20 border-l-[3.5px] border-l-[#C94B5C] border border-[#F5D5D9] dark:border-rose-900/40 opacity-80';
-                  textColorClass = 'text-[#15171C] dark:text-rose-200';
-                  subTextColorClass = 'text-[#6F737C] dark:text-rose-300/80';
-                } else if (isNow) {
-                  dotClass = 'bg-[#22A77A]';
-                  cardColorClass = 'bg-[#111111] dark:bg-gradient-to-br dark:from-[#151720] dark:to-[#0D0F14] border border-[#111111] dark:border-emerald-500/35 shadow-lg';
-                  textColorClass = 'text-[#FFFFFF] dark:text-[#F4F4F6]';
-                  subTextColorClass = 'text-[#A8A8A8] dark:text-[#94A3B8]';
-                } else if (isRescheduled) {
-                  dotClass = 'bg-[#C76B3D]';
-                  cardColorClass = 'bg-[#FFF0E8] dark:bg-amber-950/20 border-l-[3.5px] border-l-[#C76B3D] border border-[#FCE3D7] dark:border-amber-900/30';
-                  textColorClass = 'text-[#15171C] dark:text-[#F4F4F6]';
-                  subTextColorClass = 'text-[#6F737C] dark:text-[#94A3B8]';
-                } else if (isLab) {
-                  dotClass = 'bg-[#159A78]';
-                  cardColorClass = 'bg-[#E4F4EE] dark:bg-emerald-950/20 border-l-[3.5px] border-l-[#159A78] border border-[#D0EFE3] dark:border-emerald-900/30';
-                  textColorClass = 'text-[#15171C] dark:text-[#F4F4F6]';
-                  subTextColorClass = 'text-[#6F737C] dark:text-[#94A3B8]';
-                } else if (isSpecial) {
-                  dotClass = 'bg-[#7661C9]';
-                  cardColorClass = 'bg-[#EEE9FA] dark:bg-purple-950/20 border-l-[3.5px] border-l-[#7661C9] border border-[#DFD7F5] dark:border-purple-900/30';
-                  textColorClass = 'text-[#15171C] dark:text-[#F4F4F6]';
-                  subTextColorClass = 'text-[#6F737C] dark:text-[#94A3B8]';
-                } else {
-                  dotClass = 'bg-[#3045B8]';
-                  cardColorClass = 'bg-[#E8EEFF] dark:bg-blue-950/20 border-l-[3.5px] border-l-[#3045B8] border border-[#DCE4FA] dark:border-blue-900/30';
-                  textColorClass = 'text-[#15171C] dark:text-[#F4F4F6]';
-                  subTextColorClass = 'text-[#6F737C] dark:text-[#94A3B8]';
-                }
+                const dotColor = isNow ? '#18A889' : theme.accent;
+                const titleColor = isNow ? '#FFFFFF' : '#151515';
+                const subTextColor = isNow ? '#A8A8A8' : '#737373';
 
                 return (
                   <div key={session.id} className="relative pl-6 pb-6 last:pb-0 group">
                     {/* Node Dot */}
                     <div 
-                      className={`absolute left-[-7px] top-[2px] w-3 h-3 rounded-full border-2 border-white dark:border-[#090A0C] shadow-sm z-10 ${dotClass}`}
+                      className="absolute left-[-7px] top-[2px] w-3 h-3 rounded-full border-2 border-white dark:border-[#090A0C] shadow-sm z-10"
+                      style={{ backgroundColor: dotColor }}
                     />
                     
                     {isNow && (
                       <div 
-                        className="absolute left-[-10px] top-[-1px] w-[18px] h-[18px] rounded-full animate-ping opacity-40 z-0 bg-[#22A77A]"
+                        className="absolute left-[-10px] top-[-1px] w-[18px] h-[18px] rounded-full animate-ping opacity-40 z-0 bg-[#18A889]"
                       />
                     )}
 
-                    <div className={`flex flex-col gap-3 transition-all`}>
+                    <div className="flex flex-col gap-2.5 transition-all">
                         {/* Time */}
                         <div className="w-16 shrink-0 flex flex-col pt-0.5">
                           {reschedule ? (
@@ -574,13 +554,13 @@ export const TodayTimeline: React.FC = () => {
                               <span className="text-[11px] line-through opacity-40 font-mono font-bold leading-none mb-0.5">
                                 {session.startTime}
                               </span>
-                              <span className="text-[13px] font-black tracking-tighter font-mono text-[#C76B3D] leading-none">
+                              <span className="text-[13px] font-bold tracking-tighter font-mono text-[#D9795F] leading-none">
                                 {reschedule.startTime}
                               </span>
                             </div>
                           ) : (
-                            <span className={`text-[13px] font-black tracking-tighter font-mono ${
-                              isCancelled ? 'line-through text-zinc-400 dark:text-zinc-600' : 'text-slate-800 dark:text-zinc-100'
+                            <span className={`text-[13px] font-bold tracking-tighter font-mono ${
+                              isCancelled ? 'line-through text-zinc-400 dark:text-zinc-600' : 'text-[#151515] dark:text-zinc-100'
                             }`}>
                               {session.startTime}
                             </span>
@@ -588,63 +568,96 @@ export const TodayTimeline: React.FC = () => {
                         </div>
 
                         {/* Class Info Box */}
-                        <div className={`flex-1 rounded-none p-3.5 border transition-all ${cardColorClass}`}>
+                        <div 
+                          className={clsx(
+                            "relative flex-1 rounded-[3px] p-4 sm:p-[18px] border transition-all overflow-hidden",
+                            isNow
+                              ? "bg-[#111111] border-[#111111] shadow-md"
+                              : "border-black/[0.04] dark:border-white/[0.04] shadow-none"
+                          )}
+                          style={{
+                            backgroundColor: isNow ? '#111111' : undefined,
+                            borderLeft: isNow ? '4px solid #18A889' : `4px solid ${theme.accent}`,
+                          }}
+                        >
+                          {/* Light pastel background */}
+                          {!isNow && (
+                            <div 
+                              className="absolute inset-0 -z-10 dark:opacity-20"
+                              style={{ backgroundColor: theme.bg }}
+                            />
+                          )}
+                          {!isNow && (
+                            <div 
+                              className="hidden dark:block absolute inset-0 -z-10"
+                              style={{ backgroundColor: theme.darkBg }}
+                            />
+                          )}
+
                           <div className="flex flex-wrap items-start justify-between gap-2">
                             <div className="flex flex-col gap-1 min-w-0 flex-1">
                               <div className="flex items-start gap-2 flex-wrap">
-                                <h4 className={`text-[16px] leading-[21px] font-semibold line-clamp-2 ${textColorClass} ${isCancelled ? 'line-through opacity-70' : ''}`}>
+                                <h4 
+                                  className={`text-[16px] sm:text-[17px] leading-[22px] font-bold tracking-tight line-clamp-2 ${isCancelled ? 'line-through opacity-70' : ''}`}
+                                  style={{ color: titleColor }}
+                                >
                                   {sub?.name || 'Class Session'}
                                 </h4>
                                 
                                 {isCancelled ? (
-                                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#C94B5C]/10 text-[#C94B5C] border border-[#C94B5C]/30 shrink-0">
+                                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#FAD3D9] text-[#C94B5C] rounded-[2px] shrink-0">
                                     Cancelled
                                   </span>
                                 ) : isNow ? (
-                                  <span className="px-2 py-0.5 rounded-none bg-[#22A77A]/15 text-[#22A77A] text-[10px] font-bold uppercase tracking-wider animate-pulse border border-[#22A77A]/40 shrink-0">
+                                  <span className="px-2 py-0.5 rounded-[2px] bg-[#18A889]/20 text-[#18A889] text-[10px] font-bold uppercase tracking-wider animate-pulse border border-[#18A889]/40 shrink-0">
                                     Now
                                   </span>
                                 ) : reschedule ? (
-                                  <span className="px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider bg-[#C76B3D]/10 text-[#C76B3D] border border-[#C76B3D]/30 shrink-0">
+                                  <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-bold uppercase tracking-wider bg-[#F8D8CF] text-[#D9795F] shrink-0">
                                     Rescheduled
                                   </span>
                                 ) : isLab ? (
-                                  <span className="px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider bg-[#159A78]/10 text-[#159A78] border border-[#159A78]/30 shrink-0">
+                                  <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-bold uppercase tracking-wider bg-[#D2F1E8] text-[#18A889] shrink-0">
                                     Lab
                                   </span>
                                 ) : session.isExtra ? (
-                                  <span className="px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider bg-[#7661C9]/10 text-[#7661C9] border border-[#7661C9]/30 shrink-0">
+                                  <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-bold uppercase tracking-wider bg-[#E4D8F8] text-[#8067B5] shrink-0">
                                     Extra Class
                                   </span>
                                 ) : null}
                               </div>
                               
-                              <div className={`flex items-center gap-[6px] text-[12px] leading-[18px] font-normal flex-wrap mt-[4px] ${subTextColorClass}`}>
-                                <span className="flex items-center gap-[4px]">
-                                  <MapPin className="w-[14px] h-[14px]" />
+                              <div 
+                                className="flex items-center gap-1.5 text-[12px] font-medium flex-wrap mt-1"
+                                style={{ color: subTextColor }}
+                              >
+                                <span className="flex items-center gap-1">
+                                  <span className="text-[10px] leading-none opacity-80">◉</span>
                                   {reschedule?.room || session.room}
                                 </span>
                                 {session.faculty && (
                                   <>
-                                    <span className="opacity-50">·</span>
-                                    <span className="flex items-center gap-[4px]">
+                                    <span className="opacity-40">·</span>
+                                    <span>
                                       {session.faculty}
                                     </span>
                                   </>
                                 )}
                                 {session.isLab && (
                                   <>
-                                    <span className="opacity-50">·</span>
-                                    <span className="flex items-center gap-[4px] font-medium text-[12px]">
-                                      <FlaskConical className="w-[14px] h-[14px]" />
-                                      Lab
+                                    <span className="opacity-40">·</span>
+                                    <span className="font-semibold text-[11px] text-[#18A889]">
+                                      Practical Lab
                                     </span>
                                   </>
                                 )}
                               </div>
 
                               {session.notes && (
-                                <span className={`text-[11.5px] font-mono mt-1 block italic opacity-80 ${textColorClass}`}>
+                                <span 
+                                  className="text-[11.5px] font-mono mt-1 block italic opacity-80"
+                                  style={{ color: titleColor }}
+                                >
                                   Note: {session.notes}
                                 </span>
                               )}
@@ -656,7 +669,7 @@ export const TodayTimeline: React.FC = () => {
                               )}
 
                               {reschedule && !isCancelled && (
-                                <span className="text-[11px] font-mono text-[#C76B3D] mt-1 font-semibold block">
+                                <span className="text-[11px] font-mono text-[#D9795F] mt-1 font-semibold block">
                                   Rescheduled from {session.startTime}–{session.endTime} {reschedule.by ? `· by ${reschedule.by} (BP)` : ''}
                                 </span>
                               )}

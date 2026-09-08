@@ -35,14 +35,11 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
   const [newCarryInput, setNewCarryInput] = useState('');
 
   const defaultColors = [
-    '#7C897A', // Sage
-    '#C08A76', // Terracotta
-    '#C79F6F', // Ochre
-    '#B88B8C', // Muted Rose
-    '#7A8B99', // Slate
-    '#9C8E80', // Cocoa
-    '#8C6B5D', // Brand Bronze
-    '#687680', // Deep Grey-blue
+    { name: 'Mint', value: '#18A889', bg: '#E5F4EF' },
+    { name: 'Periwinkle Blue', value: '#334CC4', bg: '#E8EDFF' },
+    { name: 'Peach', value: '#D9795F', bg: '#F9E9E3' },
+    { name: 'Lavender', value: '#8067B5', bg: '#F0EAFB' },
+    { name: 'Yellow', value: '#C99A32', bg: '#F8F0D8' },
   ];
 
   useEffect(() => {
@@ -191,21 +188,33 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
 
         {/* Color Picker */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
-            Subject Theme Tag Color
+          <label className="text-xs font-medium text-[#151515] dark:text-zinc-300">
+            Subject Pastel Theme
           </label>
           <div className="flex items-center gap-2 flex-wrap">
-            {defaultColors.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setColor(c)}
-                className="w-6 h-6 rounded-full transition-transform hover:scale-110 flex items-center justify-center border border-white/20"
-                style={{ backgroundColor: c }}
-              >
-                {color === c && <span className="w-1.5 h-1.5 bg-white rounded-full" />}
-              </button>
-            ))}
+            {defaultColors.map((c) => {
+              const isSelected = color === c.value || color === c.name.toLowerCase();
+              return (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => setColor(c.value)}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] border transition-all cursor-pointer text-xs font-semibold"
+                  style={{
+                    backgroundColor: c.bg,
+                    borderColor: isSelected ? c.value : 'transparent',
+                    color: c.value,
+                    boxShadow: isSelected ? `0 0 0 1.5px ${c.value}` : 'none',
+                  }}
+                >
+                  <span 
+                    className="w-2.5 h-2.5 rounded-full shrink-0" 
+                    style={{ backgroundColor: c.value }}
+                  />
+                  <span>{c.name}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 

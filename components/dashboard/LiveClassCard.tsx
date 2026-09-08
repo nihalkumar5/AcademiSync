@@ -79,48 +79,48 @@ export const LiveClassCard: React.FC = () => {
     };
 
     return (
-      <div className="w-full bg-[#111111] border border-[#111111] rounded-none p-5 flex flex-col cursor-pointer relative group">
+      <div className="w-full bg-[#111111] border border-[#111111] rounded-[3px] p-5 flex flex-col cursor-pointer relative group shadow-lg">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3.5">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#22A77A] animate-pulse" />
-            <span className="text-[11px] font-bold text-[#22A77A] uppercase tracking-[1.4px] leading-none">
+            <span className="w-2 h-2 rounded-full bg-[#18A889] animate-pulse" />
+            <span className="text-[11px] font-bold text-[#18A889] uppercase tracking-[1.4px] leading-none">
               LIVE NOW
             </span>
           </div>
-          <span className="text-[13px] font-semibold text-[#FFFFFF] leading-none">
+          <span className="text-[13px] font-bold text-[#FFFFFF] font-mono leading-none">
             {currentClass.remainingMinutes}m left
           </span>
         </div>
 
         {/* Subject */}
-        <h3 className="text-[20px] font-semibold text-[#FFFFFF] leading-[24px] mb-[12px] line-clamp-2">
+        <h3 className="text-[20px] sm:text-[22px] font-bold text-[#FFFFFF] leading-[26px] mb-2 line-clamp-2 tracking-tight">
           {sub?.name || 'Class Session'}
         </h3>
 
         {/* Time */}
-        <div className="text-[13px] text-[#FFFFFF] font-medium leading-none mb-[8px]">
+        <div className="text-[13px] text-[#FFFFFF]/90 font-mono font-medium leading-none mb-3">
           {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
         </div>
 
         {/* Metadata */}
         <div className="flex items-center gap-2 text-[12px] text-[#A8A8A8] leading-none mb-5">
           <span className="flex items-center gap-1.5 shrink-0">
-            <MapPin className="w-3.5 h-3.5 text-[#A8A8A8]" />
+            <span className="text-[10px] leading-none opacity-80">◉</span>
             {session.room}
           </span>
           {session.faculty && (
             <>
-              <span className="opacity-50 shrink-0">·</span>
+              <span className="opacity-40 shrink-0">·</span>
               <span className="truncate">{renderFaculty(session.faculty)}</span>
             </>
           )}
         </div>
 
         {/* Progress Bar (3px) */}
-        <div className="w-full bg-[#3A3A3A] h-[3px] overflow-hidden mb-5">
+        <div className="w-full bg-[#3A3A3A] h-[3px] overflow-hidden mb-5 rounded-full">
           <div
-            className="bg-[#F5F5F5] h-full transition-all duration-1000"
+            className="bg-[#18A889] h-full transition-all duration-1000"
             style={{ width: `${currentClass.progressPercentage}%` }}
           />
         </div>
@@ -129,10 +129,10 @@ export const LiveClassCard: React.FC = () => {
         {nextClass && (
           <div className="flex items-center justify-between border-t border-[#262626] pt-3.5">
             <div className="flex flex-col gap-1.5 min-w-0 pr-4">
-              <span className="text-[11px] font-semibold text-[#A8A8A8] uppercase tracking-[1.4px] leading-none">
+              <span className="text-[11px] font-bold text-[#A8A8A8] uppercase tracking-[1.4px] leading-none">
                 NEXT · {formatTime12Hour(nextClass.session.startTime)}
               </span>
-              <span className="text-[14px] text-[#FFFFFF] font-medium truncate leading-none">
+              <span className="text-[14px] text-[#FFFFFF] font-semibold truncate leading-none">
                 {nextClass.subject?.name || 'Next Class'}
               </span>
               {(nextClass.session.room || nextClass.minutesUntilStart !== undefined) && (
@@ -167,35 +167,35 @@ export const LiveClassCard: React.FC = () => {
 
     return (
       <div 
-        className="w-full bg-[#E8EEFF] dark:bg-[#121829] border-l-[4px] border-l-[#3045B8] border border-[#DCE4FA] dark:border-blue-900/30 rounded-none p-4 flex flex-col cursor-pointer relative group transition-all"
+        className="w-full bg-[#E8EDFF] dark:bg-[#12182B] border-l-[4px] border-l-[#334CC4] border border-black/[0.04] dark:border-white/[0.04] rounded-[3px] p-4 sm:p-5 flex flex-col cursor-pointer relative group transition-all"
       >
         <div className="flex items-center justify-between mb-3">
-          <span className="text-[11px] font-bold text-[#3045B8] dark:text-[#8AA4FF] uppercase tracking-[1.4px] leading-none">NEXT CLASS</span>
-          <span className="text-[12px] font-semibold text-[#15171C] dark:text-[#F4F4F6] leading-none">{formatTime12Hour(session.startTime)}</span>
+          <span className="text-[11px] font-bold text-[#334CC4] dark:text-[#8AA4FF] uppercase tracking-[1.4px] leading-none">NEXT CLASS</span>
+          <span className="text-[12px] font-bold text-[#151515] dark:text-[#F4F4F6] font-mono leading-none">{formatTime12Hour(session.startTime)}</span>
         </div>
 
-        <h3 className="text-[20px] font-semibold text-[#15171C] dark:text-[#F4F4F6] leading-[24px] mb-[10px] pr-8 line-clamp-2">
+        <h3 className="text-[18px] sm:text-[20px] font-bold text-[#151515] dark:text-[#F4F4F6] leading-[24px] mb-2 pr-8 line-clamp-2">
           {sub?.name || 'Class Session'}
         </h3>
 
-        <div className="flex items-center gap-2 text-[12px] text-[#6F737C] dark:text-[#94A3B8] leading-none mb-4">
+        <div className="flex items-center gap-2 text-[12px] text-[#737373] dark:text-[#94A3B8] leading-none mb-4">
           <span className="flex items-center gap-1.5 shrink-0">
-            <MapPin className="w-3.5 h-3.5 text-[#6F737C] dark:text-[#94A3B8]" />
+            <span className="text-[10px] leading-none opacity-80">◉</span>
             {session.room}
           </span>
           {session.faculty && (
             <>
-              <span className="opacity-50 shrink-0">·</span>
+              <span className="opacity-40 shrink-0">·</span>
               <span className="truncate">{renderFaculty(session.faculty)}</span>
             </>
           )}
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-[13px] font-semibold leading-none text-[#3045B8] dark:text-[#8AA4FF]">
+          <span className="text-[13px] font-bold leading-none text-[#334CC4] dark:text-[#8AA4FF]">
             {formatCountdown(nextClass.minutesUntilStart)}
           </span>
-          <ArrowRight className="w-4 h-4 text-[#3045B8] dark:text-[#8AA4FF] transition-transform group-hover:translate-x-1" />
+          <ArrowRight className="w-4 h-4 text-[#334CC4] dark:text-[#8AA4FF] transition-transform group-hover:translate-x-1" />
         </div>
       </div>
     );

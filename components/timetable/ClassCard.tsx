@@ -1,10 +1,8 @@
-'use client';
-
 import React, { useState } from 'react';
 import { ClassSession, Subject } from '@/lib/types';
-import { MoreHorizontal, Edit2, Trash2, MapPin } from 'lucide-react';
+import { MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useApp } from '@/context/AppContext';
+import { getSubjectCardTheme } from '@/lib/cardColors';
 
 export interface ClassCardProps {
   session: ClassSession;
@@ -23,74 +21,89 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Color system
   const isLab = session.isLab || subject?.isLab;
   const isSpecial = session.isExtra || subject?.name?.toLowerCase().includes('elective') || session.notes?.toLowerCase().includes('elective');
-  
-  let cardBg = '#E8EEFF';
-  let accentColor = '#3045B8';
-  let badgeColor = '#3045B8';
-  let badgeBg = '#DCE6FF';
-  let badgeText = 'CLASS';
 
-  if (isLab) {
-    cardBg = '#E4F4EE';
-    accentColor = '#159A78';
-    badgeColor = '#159A78';
-    badgeBg = '#D2EFE4';
-    badgeText = 'LAB';
-  } else if (isSpecial) {
-    cardBg = '#EEE9FA';
-    accentColor = '#7661C9';
-    badgeColor = '#7661C9';
-    badgeBg = '#E2D9F7';
-    badgeText = 'ELECTIVE';
-  }
-
-  const isDarkClass = isCurrent;
-  const titleColor = isDarkClass ? '#FFFFFF' : '#15171C';
-  const secondaryColor = isDarkClass ? '#A8A8A8' : '#6F737C';
+  const theme = getSubjectCardTheme({
+    subjectName: subject?.name,
+    subjectCode: subject?.code,
+    subjectColor: subject?.color,
+    isLab,
+    isSpecial,
+  });
 
   const displayFaculty = session.faculty || subject?.facultyName || '';
   const roomStr = session.room || (session.isLab ? subject?.labRoom : subject?.room) || 'TBA';
 
+  const renderFaculty = (facultyStr: string) => {
+    const faculties = facultyStr.split(/[,/&]/).map(f => f.trim()).filter(Boolean);
+    return faculties.join(' / ');
+  };
+
   return (
     <div
       className={clsx(
-        "group relative flex flex-col p-[14px] text-left transition-all border rounded-none overflow-hidden",
+        "group relative flex flex-col p-[18px] text-left transition-all rounded-[3px] overflow-hidden",
         isCurrent
-          ? "bg-[#111111] border-[#111111] shadow-lg"
-          : "border-black/[0.06] hover:border-black/15 shadow-sm"
+          ? "bg-[#111111] dark:bg-[#111111] border border-[#111111] shadow-md"
+          : "border border-black/[0.04] dark:border-white/[0.04] shadow-none"
       )}
       style={{
-        backgroundColor: isCurrent ? '#111111' : cardBg,
-        borderLeft: isCurrent ? '4px solid #22A77A' : `4px solid ${accentColor}`,
+        backgroundColor: isCurrent ? '#111111' : undefined,
+        borderLeft: isCurrent ? '4px solid #18A889' : `4px solid ${theme.accent}`,
       }}
     >
-      {/* Top Bar: Time & Actions */}
-      <div className="flex items-start justify-between gap-1.5">
+      {/* Light background pastel container */}
+      {!isCurrent && (
+        <div 
+          className="absolute inset-0 -z-10 dark:opacity-20"
+          style={{ backgroundColor: theme.bg }}
+        />
+      )}
+      {!isCurrent && (
+        <div 
+          className="hidden dark:block absolute inset-0 -z-10"
+          style={{ backgroundColor: theme.darkBg }}
+        />
+      )}
+
+      {/* Top Bar: Time, Badge & Actions */}
+      <div className="flex items-center justify-between gap-2 mb-2.5">
         <div className="flex items-center gap-2 flex-wrap">
           <span 
-            className="text-[12px] font-bold tracking-wide font-mono"
-            style={{ color: isCurrent ? '#FFFFFF' : '#15171C' }}
+            className="text-[13px] font-bold font-mono tracking-tight"
+            style={{ color: isCurrent ? '#FFFFFF' : '#151515' }}
           >
-            {session.startTime} — {session.endTime}
+            {session.startTime} – {session.endTime}
           </span>
+
           {isLab && (
             <span 
-              className="text-[10px] font-bold tracking-wider px-1.5 py-0.5 uppercase border"
+              className="text-[10px] font-bold tracking-widest px-2 py-0.5 uppercase rounded-[2px]"
               style={{
-                color: isCurrent ? '#22A77A' : badgeColor,
-                backgroundColor: isCurrent ? 'rgba(34,167,122,0.15)' : badgeBg,
-                borderColor: isCurrent ? 'rgba(34,167,122,0.3)' : badgeColor + '40',
+                color: isCurrent ? '#18A889' : '#18A889',
+                backgroundColor: isCurrent ? 'rgba(24,168,137,0.18)' : '#D2F1E8',
               }}
             >
               LAB
             </span>
           )}
+
+          {isSpecial && !isLab && (
+            <span 
+              className="text-[10px] font-bold tracking-widest px-2 py-0.5 uppercase rounded-[2px]"
+              style={{
+                color: isCurrent ? '#8067B5' : '#8067B5',
+                backgroundColor: isCurrent ? 'rgba(128,103,181,0.18)' : '#E4D8F8',
+              }}
+            >
+              ELECTIVE
+            </span>
+          )}
+
           {isCurrent && (
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-widest px-2 py-0.5 text-[#22A77A] bg-[#22A77A]/15 border border-[#22A77A]/30 uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#22A77A] animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-widest px-2 py-0.5 text-[#18A889] bg-[#18A889]/15 border border-[#18A889]/30 uppercase rounded-[2px]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#18A889] animate-pulse" />
               LIVE
             </span>
           )}
@@ -100,8 +113,9 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         <div className="relative">
           <button
             onClick={() => setMenuOpen((prev) => !prev)}
-            className="p-1 rounded-none transition-colors cursor-pointer hover:bg-black/5 dark:hover:bg-white/10"
-            style={{ color: secondaryColor }}
+            className="p-1 rounded transition-colors cursor-pointer opacity-70 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10"
+            style={{ color: isCurrent ? '#A8A8A8' : '#737373' }}
+            title="Class actions"
           >
             <MoreHorizontal className="w-4 h-4" />
           </button>
@@ -112,13 +126,13 @@ export const ClassCard: React.FC<ClassCardProps> = ({
                 className="fixed inset-0 z-20"
                 onClick={() => setMenuOpen(false)}
               />
-              <div className="absolute right-0 mt-1 w-32 bg-[#FFFFFF] dark:bg-[#121317] border border-[#D9D9D6] dark:border-white/[0.08] py-1 z-30 text-left rounded-none shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
+              <div className="absolute right-0 mt-1 w-32 bg-[#FFFFFF] dark:bg-[#16171D] border border-[#D9D9D6] dark:border-white/[0.08] py-1 z-30 text-left rounded-[3px] shadow-[0_8px_30px_rgba(0,0,0,0.3)]">
                 <button
                   onClick={() => {
                     setMenuOpen(false);
                     onEdit(session);
                   }}
-                  className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.04] text-left transition-colors cursor-pointer"
+                  className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] font-medium text-[#151515] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.04] text-left transition-colors cursor-pointer"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                   Edit Class
@@ -140,27 +154,25 @@ export const ClassCard: React.FC<ClassCardProps> = ({
       </div>
 
       {/* Title */}
-      <div className="mt-2.5 flex items-start">
-        <h4 
-          className="text-[15px] leading-[20px] font-bold tracking-tight break-words"
-          style={{ color: titleColor }}
-        >
-          {subject?.name || 'Subject'}
-        </h4>
-      </div>
+      <h4 
+        className="text-[16px] sm:text-[17px] leading-[22px] font-bold tracking-tight break-words mb-2"
+        style={{ color: isCurrent ? '#FFFFFF' : '#151515' }}
+      >
+        {subject?.name || 'Class Session'}
+      </h4>
 
       {/* Metadata */}
       <div 
-        className="mt-1.5 flex items-center gap-1.5 text-[12px] font-medium truncate"
-        style={{ color: secondaryColor }}
+        className="flex items-center gap-1.5 text-[12px] font-medium truncate"
+        style={{ color: isCurrent ? '#A8A8A8' : '#737373' }}
       >
         <span className="shrink-0 flex items-center gap-1">
-          <MapPin className="w-3.5 h-3.5" /> {roomStr}
+          <span className="text-[10px] leading-none opacity-80">◉</span> {roomStr}
         </span>
         {displayFaculty && (
           <>
-            <span className="shrink-0">·</span>
-            <span className="truncate">{displayFaculty}</span>
+            <span className="shrink-0 opacity-40">·</span>
+            <span className="truncate">{renderFaculty(displayFaculty)}</span>
           </>
         )}
       </div>

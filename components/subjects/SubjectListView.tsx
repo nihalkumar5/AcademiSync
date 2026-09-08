@@ -19,6 +19,8 @@ import {
   FlaskConical,
 } from 'lucide-react';
 
+import { getSubjectCardTheme } from '@/lib/cardColors';
+
 export const SubjectListView: React.FC = () => {
   const { subjects, deleteSubject, profile } = useApp();
 
@@ -33,14 +35,14 @@ export const SubjectListView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#151515] dark:text-[#F4F4F6] tracking-tight">
               Enrolled Subjects
             </h2>
             <Badge variant="neutral" size="sm">
               {subjects.length} courses · {totalCredits} credits
             </Badge>
           </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+          <p className="text-xs text-[#737373] dark:text-[#94A3B8] mt-0.5">
             {profile.programme} {profile.branch} Semester {profile.semester} Curriculum
           </p>
         </div>
@@ -52,7 +54,7 @@ export const SubjectListView: React.FC = () => {
             setEditSubject(null);
             setShowModal(true);
           }}
-          className="gap-1.5"
+          className="gap-1.5 rounded-[3px] bg-[#111111] text-white dark:bg-white dark:text-[#111111]"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Add Subject</span>
@@ -72,114 +74,134 @@ export const SubjectListView: React.FC = () => {
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {subjects.map((sub) => (
-            <div
-              key={sub.id}
-              className="group p-4 rounded-none border border-zinc-200/80 dark:border-white/[0.08] bg-white dark:bg-[#121317] hover:border-zinc-300 dark:hover:border-white/[0.15] shadow-sm flex flex-col justify-between transition-all"
-            >
-              <div>
-                {/* Header: Code & Action Buttons */}
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    {sub.code && sub.code !== 'UNK' && (
-                      <span
-                        className="text-[10px] font-mono font-bold px-2 py-0.5 rounded shadow-sm"
-                        style={{
-                          backgroundColor: `${sub.color}15`,
-                          color: sub.color,
-                          border: `1px solid ${sub.color}30`,
+          {subjects.map((sub) => {
+            const theme = getSubjectCardTheme({
+              subjectName: sub.name,
+              subjectCode: sub.code,
+              subjectColor: sub.color,
+              isLab: sub.isLab,
+            });
+
+            return (
+              <div
+                key={sub.id}
+                className="group relative p-5 rounded-[3px] border border-black/[0.04] dark:border-white/[0.04] shadow-none flex flex-col justify-between transition-all overflow-hidden"
+                style={{
+                  borderLeft: `4px solid ${theme.accent}`,
+                }}
+              >
+                {/* Light pastel background */}
+                <div 
+                  className="absolute inset-0 -z-10 dark:opacity-20"
+                  style={{ backgroundColor: theme.bg }}
+                />
+                <div 
+                  className="hidden dark:block absolute inset-0 -z-10"
+                  style={{ backgroundColor: theme.darkBg }}
+                />
+
+                <div>
+                  {/* Header: Code, Badges & Actions */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {sub.code && sub.code !== 'UNK' && (
+                        <span
+                          className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-[2px]"
+                          style={{
+                            backgroundColor: theme.badgeBg,
+                            color: theme.badgeText,
+                          }}
+                        >
+                          {sub.code}
+                        </span>
+                      )}
+                      <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-[2px] bg-white/70 dark:bg-black/30 border border-black/[0.06] dark:border-white/[0.08] text-[#151515] dark:text-[#E2E8F0]">
+                        {sub.credits} Credits
+                      </span>
+                      {sub.isLab && (
+                        <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 uppercase rounded-[2px] bg-[#D2F1E8] text-[#18A889]">
+                          LAB
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => {
+                          setEditSubject(sub);
+                          setShowModal(true);
                         }}
+                        className="p-1 text-[#737373] hover:text-[#151515] dark:hover:text-white rounded hover:bg-black/5 dark:hover:bg-white/[0.06] cursor-pointer"
+                        title="Edit Subject"
                       >
-                        {sub.code}
-                      </span>
-                    )}
-                    <Badge variant="neutral" size="sm">
-                      {sub.credits} Credits
-                    </Badge>
-                    {sub.isLab && (
-                      <Badge variant="amber" size="sm">
-                        <FlaskConical className="w-3 h-3 mr-1" />
-                        Practical Lab
-                      </Badge>
-                    )}
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => deleteSubject(sub.id)}
+                        className="p-1 text-[#737373] hover:text-[#C94B5C] rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                        title="Delete Subject"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => {
-                        setEditSubject(sub);
-                        setShowModal(true);
-                      }}
-                      className="p-1 text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 rounded hover:bg-zinc-100 dark:hover:bg-white/[0.06]"
-                      title="Edit Subject"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => deleteSubject(sub.id)}
-                      className="p-1 text-zinc-400 hover:text-rose-500 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40"
-                      title="Delete Subject"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                  {/* Subject Name */}
+                  <h3 className="text-[16px] sm:text-[17px] font-bold text-[#151515] dark:text-[#F4F4F6] tracking-tight mt-2.5">
+                    {sub.name}
+                  </h3>
+
+                  {/* Faculty & Classroom */}
+                  <div className="flex flex-col gap-1 mt-2.5 text-xs text-[#737373] dark:text-[#94A3B8]">
+                    <div className="flex items-center gap-1.5">
+                      <User className="w-3.5 h-3.5 opacity-70" />
+                      <span className="font-medium text-[#151515] dark:text-[#CBD5E1]">
+                        {sub.facultyName || 'No Faculty Specified'}
+                      </span>
+                      {sub.facultyEmail && (
+                        <span className="text-[11px] font-mono opacity-70">
+                          ({sub.facultyEmail})
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 opacity-70" />
+                      <span>
+                        Room: <strong className="font-semibold text-[#151515] dark:text-white">{sub.room}</strong>
+                        {sub.isLab && sub.labRoom && ` · Lab: ${sub.labRoom}`}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Subject Name */}
-                <h3 className="text-base font-bold text-zinc-900 dark:text-[#F4F4F6] tracking-tight mt-2">
-                  {sub.name}
-                </h3>
-
-                {/* Faculty & Classroom */}
-                <div className="flex flex-col gap-1 mt-2.5 text-xs text-zinc-500 dark:text-[#94A3B8]">
-                  <div className="flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5 text-zinc-400 dark:text-[#64748B]" />
-                    <span className="font-medium text-zinc-700 dark:text-[#CBD5E1]">
-                      {sub.facultyName}
-                    </span>
-                    {sub.facultyEmail && (
-                      <span className="text-[11px] font-mono text-zinc-400 dark:text-[#64748B]">
-                        ({sub.facultyEmail})
-                      </span>
-                    )}
+                {/* Carry Requirements Footer */}
+                <div className="mt-4 pt-3 border-t border-black/[0.06] dark:border-white/[0.08]">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#737373] dark:text-[#94A3B8] mb-1.5">
+                    <Backpack className="w-3.5 h-3.5 text-[#18A889]" />
+                    <span>Configured Things to Carry:</span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-zinc-400 dark:text-[#64748B]" />
-                    <span>
-                      Room: <strong>{sub.room}</strong>
-                      {sub.isLab && sub.labRoom && ` · Lab: ${sub.labRoom}`}
+                  {sub.carryRequirements && sub.carryRequirements.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {sub.carryRequirements.map((item, idx) => (
+                        <span
+                          key={idx}
+                          className="text-[10.5px] px-2 py-0.5 rounded-[2px] bg-white/80 dark:bg-white/[0.06] border border-black/[0.04] dark:border-white/[0.08] text-[#151515] dark:text-[#CBD5E1] font-medium"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-[11px] text-[#737373]/70 dark:text-[#64748B] italic">
+                      No carry requirements configured
                     </span>
-                  </div>
+                  )}
                 </div>
               </div>
-
-              {/* Carry Requirements Footer */}
-              <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-white/[0.08]">
-                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-600 dark:text-[#94A3B8] mb-1.5">
-                  <Backpack className="w-3.5 h-3.5 text-[#8C6B5D] dark:text-sky-300" />
-                  <span>Configured Things to Carry:</span>
-                </div>
-
-                {sub.carryRequirements && sub.carryRequirements.length > 0 ? (
-                  <div className="flex flex-wrap gap-1.5">
-                    {sub.carryRequirements.map((item, idx) => (
-                      <span
-                        key={idx}
-                        className="text-[10.5px] px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-white/[0.04] dark:border dark:border-white/[0.08] text-zinc-700 dark:text-[#CBD5E1] font-medium"
-                      >
-                        {item}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="text-[11px] text-zinc-400 dark:text-[#64748B] italic">
-                    No carry requirements configured
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
