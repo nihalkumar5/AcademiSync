@@ -362,7 +362,7 @@ export default function AppHome() {
                 </span>
               </div>
               <a
-                href={`intent://open#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end`}
+                href={typeof window !== 'undefined' ? `intent://open#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end` : 'https://play.google.com/store/apps/details?id=com.intersemester.app'}
                 className="px-4 py-2 bg-[#FFFFFF] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider font-bold text-[11px] shrink-0 flex items-center justify-center text-center"
               >
                 OPEN APP
