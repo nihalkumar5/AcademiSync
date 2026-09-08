@@ -233,27 +233,30 @@ export const HomeMessCard: React.FC = () => {
         </div>
       </div>
 
-      {/* Row 2: Food Items Pill Grid + Full Menu Link */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-0.5">
-        <div className="flex flex-wrap items-center gap-1.5 min-w-0 flex-1">
+      {/* Row 2: Food Items Inline Text + Full Menu Link */}
+      <div className="flex items-center justify-between gap-4 pt-0.5">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 min-w-0 flex-1">
           {displayItems.length > 0 ? (
             displayItems.map((item, idx) => (
               <span 
                 key={idx} 
-                className="inline-flex items-center px-2.5 py-1 rounded-[3px] bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-[13px] sm:text-[13.5px] font-medium text-white/95 leading-tight transition-colors"
+                className="text-[14px] sm:text-[15px] font-semibold text-white tracking-tight leading-snug"
               >
                 {item}
+                {idx < displayItems.length - 1 && (
+                  <span className="text-white/30 ml-2.5 font-normal select-none">·</span>
+                )}
               </span>
             ))
           ) : (
-            <span className="text-[13px] font-medium text-[#737373]">
+            <span className="text-[13.5px] font-medium text-[#737373]">
               Menu items updating soon
             </span>
           )}
         </div>
 
         {/* Action Link Arrow */}
-        <div className="flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-widest text-[#A0A0A0] group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0 self-end sm:self-center">
+        <div className="flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-widest text-[#A0A0A0] group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0">
           <span>FULL MENU</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </div>
