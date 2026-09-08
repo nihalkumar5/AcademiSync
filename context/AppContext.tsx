@@ -1574,7 +1574,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     storage.setCancelledSessionsMeta(updatedMeta);
 
     if (!isAlreadyCancelled) {
-      showToast('Class Cancelled', `Session marked as cancelled by ${crName} (CR).`, 'info');
+      showToast('Class Cancelled', `Session marked as cancelled by ${crName} (BP).`, 'info');
     } else {
       showToast('Class Restored', 'Session restored to regular schedule.', 'success');
     }

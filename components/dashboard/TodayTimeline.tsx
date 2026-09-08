@@ -517,8 +517,9 @@ export const TodayTimeline: React.FC = () => {
             }
 
             return targetSessions.map((session, index) => {
-                const sub = subjectMap.get(session.subjectId);
                 const reschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
+                const effectiveSubjectId = reschedule?.subjectId || session.subjectId;
+                const sub = subjectMap.get(effectiveSubjectId);
                 const start = timeToMinutes(reschedule ? reschedule.startTime : session.startTime);
                 const end = timeToMinutes(reschedule ? reschedule.endTime : session.endTime);
 
@@ -656,13 +657,13 @@ export const TodayTimeline: React.FC = () => {
 
                               {isCancelled && (
                                 <span className="text-[11px] font-mono text-[#991B1B] dark:text-rose-300 mt-1 font-semibold block">
-                                  Cancelled for today {cancelledMeta?.by ? `· by ${cancelledMeta.by} (CR)` : ''}
+                                  Cancelled for today {cancelledMeta?.by ? `· by ${cancelledMeta.by} (BP)` : ''}
                                 </span>
                               )}
 
                               {reschedule && !isCancelled && (
                                 <span className="text-[11px] font-mono text-[#B45309] dark:text-amber-300 mt-1 font-semibold block">
-                                  Rescheduled from {session.startTime}–{session.endTime} {reschedule.by ? `· by ${reschedule.by} (CR)` : ''}
+                                  Rescheduled from {session.startTime}–{session.endTime} {reschedule.by ? `· by ${reschedule.by} (BP)` : ''}
                                 </span>
                               )}
                             </div>
@@ -689,7 +690,7 @@ export const TodayTimeline: React.FC = () => {
                                     <>
                                       {profile.isBatchSynced && (
                                         <div className="px-3 py-1 bg-black/5 dark:bg-white/[0.04] border-b border-black/10 dark:border-white/[0.08] text-[9px] font-mono font-bold uppercase text-black/60 dark:text-[#A1A1AA]">
-                                          👑 CR Extra Slot
+                                          👑 BP Extra Slot
                                         </div>
                                       )}
                                       <button
@@ -737,7 +738,7 @@ export const TodayTimeline: React.FC = () => {
                                     <>
                                       {profile.isBatchSynced && (
                                         <div className="px-3 py-1 bg-black/5 dark:bg-white/[0.04] border-b border-black/10 dark:border-white/[0.08] text-[9px] font-mono font-bold uppercase text-black/60 dark:text-[#A1A1AA]">
-                                          👑 CR Live Controls
+                                          👑 BP Live Controls
                                         </div>
                                       )}
                                       <button
