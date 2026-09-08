@@ -82,13 +82,13 @@ export const SmartFocusList: React.FC = () => {
                   borderColor: theme.border,
                 }}
               >
-                {/* Light pastel background */}
+                {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
                 <div 
-                  className="absolute inset-0 -z-10 dark:opacity-20"
+                  className="dark:hidden absolute inset-0 z-0 pointer-events-none"
                   style={{ backgroundColor: theme.bg }}
                 />
                 <div 
-                  className="hidden dark:block absolute inset-0 -z-10"
+                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none"
                   style={{ backgroundColor: theme.darkBg }}
                 />
 

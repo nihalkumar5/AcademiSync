@@ -570,33 +570,34 @@ export const TodayTimeline: React.FC = () => {
                         {/* Class Info Box */}
                         <div 
                           className={clsx(
-                            "relative flex-1 rounded-[5px] p-4 sm:p-[18px] border transition-all overflow-hidden",
+                            "relative flex-1 rounded-[4px] p-4 sm:p-[18px] border transition-all overflow-hidden",
                             isNow
                               ? "bg-[#111111] border-[#111111] shadow-md"
                               : isRescheduled
                               ? "border-[#F5D8CC] dark:border-[#C85F3D]/25 shadow-none"
-                              : "border-black/[0.04] dark:border-white/[0.04] shadow-none"
+                              : "shadow-none"
                           )}
                           style={{
                             backgroundColor: isNow ? '#111111' : undefined,
+                            borderColor: isNow ? '#111111' : isRescheduled ? undefined : (theme.border || 'rgba(0,0,0,0.06)'),
                             borderLeft: isNow ? '4px solid #18A889' : `4px solid ${theme.accent}`,
                           }}
                         >
-                          {/* Light pastel background */}
+                          {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
                           {!isNow && (
-                            <div 
-                              className="absolute inset-0 -z-10 dark:opacity-20"
-                              style={{ backgroundColor: theme.bg }}
-                            />
-                          )}
-                          {!isNow && (
-                            <div 
-                              className="hidden dark:block absolute inset-0 -z-10"
-                              style={{ backgroundColor: theme.darkBg }}
-                            />
+                            <>
+                              <div 
+                                className="dark:hidden absolute inset-0 z-0 pointer-events-none"
+                                style={{ backgroundColor: theme.bg }}
+                              />
+                              <div 
+                                className="hidden dark:block absolute inset-0 z-0 pointer-events-none"
+                                style={{ backgroundColor: theme.darkBg }}
+                              />
+                            </>
                           )}
 
-                          <div className="flex flex-wrap items-start justify-between gap-2">
+                          <div className="relative z-10 flex flex-wrap items-start justify-between gap-2">
                             <div className="flex flex-col gap-1 min-w-0 flex-1">
                               <div className="flex items-start gap-2 flex-wrap">
                                 <h4 

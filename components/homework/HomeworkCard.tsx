@@ -109,13 +109,13 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
         borderColor: theme.border,
       }}
     >
-      {/* Light background pastel container */}
+      {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
       <div 
-        className="absolute inset-0 -z-10 dark:opacity-20"
+        className="dark:hidden absolute inset-0 z-0 pointer-events-none"
         style={{ backgroundColor: theme.bg }}
       />
       <div 
-        className="hidden dark:block absolute inset-0 -z-10"
+        className="hidden dark:block absolute inset-0 z-0 pointer-events-none"
         style={{ backgroundColor: theme.darkBg }}
       />
 

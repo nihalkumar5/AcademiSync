@@ -6,6 +6,7 @@ import { getLiveClassStatus, formatTime12Hour, getTodayDateString, getCurrentDay
 import { Clock, MapPin, User, CheckCircle2, ChevronRight, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
+import { getSubjectCardTheme } from '@/lib/cardColors';
 
 export const LiveClassCard: React.FC = () => {
   const { timetable, subjects, events, isSessionCancelled, rescheduledSessions, extraSessions } = useApp();
@@ -151,6 +152,16 @@ export const LiveClassCard: React.FC = () => {
   if (nextClass) {
     const sub = nextClass.subject;
     const session = nextClass.session;
+    const isLab = session.isLab || sub?.isLab;
+    const isSpecial = session.isExtra || sub?.name?.toLowerCase().includes('elective') || session.notes?.toLowerCase().includes('elective');
+    
+    const theme = getSubjectCardTheme({
+      subjectName: sub?.name,
+      subjectCode: sub?.code,
+      subjectColor: sub?.color,
+      isLab,
+      isSpecial,
+    });
     
     const formatCountdown = (minutes: number) => {
       if (minutes <= 0) return "Starting now";
@@ -165,37 +176,80 @@ export const LiveClassCard: React.FC = () => {
       return faculties.join(' / ');
     };
 
+    const typeLabel = isLab ? 'NEXT LAB' : isSpecial ? 'NEXT ELECTIVE' : 'NEXT CLASS';
+
     return (
       <div 
-        className="w-full bg-[#E8EDFF] dark:bg-[#12182B] border-l-[4px] border-l-[#334CC4] border border-black/[0.04] dark:border-white/[0.04] rounded-[3px] p-4 sm:p-5 flex flex-col cursor-pointer relative group transition-all"
+        className="w-full border shadow-none rounded-[3px] p-4 sm:p-5 flex flex-col cursor-pointer relative group transition-all overflow-hidden"
+        style={{
+          borderColor: theme.border || 'rgba(0,0,0,0.06)',
+          borderLeft: `4px solid ${theme.accent}`,
+        }}
       >
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[11px] font-bold text-[#334CC4] dark:text-[#8AA4FF] uppercase tracking-[1.4px] leading-none">NEXT CLASS</span>
-          <span className="text-[12px] font-bold text-[#151515] dark:text-[#F4F4F6] font-mono leading-none">{formatTime12Hour(session.startTime)}</span>
-        </div>
+        {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
+        <div 
+          className="dark:hidden absolute inset-0 z-0 pointer-events-none"
+          style={{ backgroundColor: theme.bg }}
+        />
+        <div 
+          className="hidden dark:block absolute inset-0 z-0 pointer-events-none"
+          style={{ backgroundColor: theme.darkBg }}
+        />
 
-        <h3 className="text-[18px] sm:text-[20px] font-bold text-[#151515] dark:text-[#F4F4F6] leading-[24px] mb-2 pr-8 line-clamp-2">
-          {sub?.name || 'Class Session'}
-        </h3>
+        <div className="relative z-10 flex flex-col">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span 
+                className="text-[11px] font-bold uppercase tracking-[1.4px] leading-none"
+                style={{ color: theme.accent }}
+              >
+                {typeLabel}
+              </span>
+              {isLab && (
+                <span 
+                  className="text-[9.5px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[2px]"
+                  style={{
+                    color: theme.badgeText,
+                    backgroundColor: theme.badgeBg,
+                  }}
+                >
+                  LAB
+                </span>
+              )}
+            </div>
+            <span className="text-[12px] font-bold text-[#151515] dark:text-[#F4F4F6] font-mono leading-none">
+              {formatTime12Hour(session.startTime)}
+            </span>
+          </div>
 
-        <div className="flex items-center gap-2 text-[12px] text-[#737373] dark:text-[#94A3B8] leading-none mb-4">
-          <span className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[10px] leading-none opacity-80">◉</span>
-            {session.room}
-          </span>
-          {session.faculty && (
-            <>
-              <span className="opacity-40 shrink-0">·</span>
-              <span className="truncate">{renderFaculty(session.faculty)}</span>
-            </>
-          )}
-        </div>
+          <h3 className="text-[18px] sm:text-[20px] font-bold text-[#151515] dark:text-[#F4F4F6] leading-[24px] mb-2 pr-8 line-clamp-2">
+            {sub?.name || 'Class Session'}
+          </h3>
 
-        <div className="flex items-center justify-between">
-          <span className="text-[13px] font-bold leading-none text-[#334CC4] dark:text-[#8AA4FF]">
-            {formatCountdown(nextClass.minutesUntilStart)}
-          </span>
-          <ArrowRight className="w-4 h-4 text-[#334CC4] dark:text-[#8AA4FF] transition-transform group-hover:translate-x-1" />
+          <div className="flex items-center gap-2 text-[12px] text-[#6F737C] dark:text-[#94A3B8] leading-none mb-4">
+            <span className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[10px] leading-none opacity-80">◉</span>
+              {session.room}
+            </span>
+            {session.faculty && (
+              <>
+                <span className="opacity-40 shrink-0">·</span>
+                <span className="truncate">{renderFaculty(session.faculty)}</span>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span 
+              className="text-[13px] font-bold leading-none"
+              style={{ color: theme.accent }}
+            >
+              {formatCountdown(nextClass.minutesUntilStart)}
+            </span>
+            <div style={{ color: theme.accent }}>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </div>
+          </div>
         </div>
       </div>
     );

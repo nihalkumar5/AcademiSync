@@ -90,17 +90,17 @@ export const SubjectListView: React.FC = () => {
                   borderLeft: `4px solid ${theme.accent}`,
                 }}
               >
-                {/* Light pastel background */}
+                {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
                 <div 
-                  className="absolute inset-0 -z-10 dark:opacity-20"
+                  className="dark:hidden absolute inset-0 z-0 pointer-events-none"
                   style={{ backgroundColor: theme.bg }}
                 />
                 <div 
-                  className="hidden dark:block absolute inset-0 -z-10"
+                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none"
                   style={{ backgroundColor: theme.darkBg }}
                 />
 
-                <div>
+                <div className="relative z-10">
                   {/* Header: Code, Badges & Actions */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2 flex-wrap">
