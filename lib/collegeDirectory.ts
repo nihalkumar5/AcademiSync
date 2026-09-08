@@ -107,10 +107,10 @@ export async function searchCollegesAsync(query: string): Promise<CollegeItem[]>
   if (!q) return POPULAR_INDIAN_COLLEGES.slice(0, 8);
 
   const localMatches = POPULAR_INDIAN_COLLEGES.filter(c => 
-    c.name.toLowerCase().includes(q) ||
-    c.shortName.toLowerCase().includes(q) ||
+    (c.name && c.name.toLowerCase().includes(q)) ||
+    (c.shortName && c.shortName.toLowerCase().includes(q)) ||
     (c.state && c.state.toLowerCase().includes(q)) ||
-    c.aliases.some(a => a.toLowerCase().includes(q))
+    (Array.isArray(c.aliases) && c.aliases.some(a => typeof a === 'string' && a.toLowerCase().includes(q)))
   );
 
   // If query is 3+ chars, also query SheerID API in parallel to cover all 45,000+ colleges across India
@@ -121,20 +121,20 @@ export async function searchCollegesAsync(query: string): Promise<CollegeItem[]>
       );
       if (res.ok) {
         const data = await res.json();
-        const sheerIdItems: CollegeItem[] = data.map((item: any) => ({
+        const sheerIdItems: CollegeItem[] = Array.isArray(data) ? data.map((item: any) => ({
           id: `sheer_${item.id || Math.random().toString(36).substring(2, 7)}`,
-          name: item.name,
-          shortName: item.name,
+          name: item.name || '',
+          shortName: item.name || '',
           state: item.city || item.state || 'India',
-          aliases: [item.name.toLowerCase()]
-        }));
+          aliases: [String(item.name || '').toLowerCase()]
+        })) : [];
 
         // Merge without duplicates
-        const seen = new Set(localMatches.map(m => m.name.toLowerCase()));
+        const seen = new Set(localMatches.map(m => (m.name || '').toLowerCase()));
         for (const s of sheerIdItems) {
-          if (!seen.has(s.name.toLowerCase())) {
+          if (!seen.has((s.name || '').toLowerCase())) {
             localMatches.push(s);
-            seen.add(s.name.toLowerCase());
+            seen.add((s.name || '').toLowerCase());
           }
         }
       }
@@ -151,9 +151,9 @@ export function searchColleges(query: string): CollegeItem[] {
   if (!q) return POPULAR_INDIAN_COLLEGES.slice(0, 8);
 
   return POPULAR_INDIAN_COLLEGES.filter(c => 
-    c.name.toLowerCase().includes(q) ||
-    c.shortName.toLowerCase().includes(q) ||
+    (c.name && c.name.toLowerCase().includes(q)) ||
+    (c.shortName && c.shortName.toLowerCase().includes(q)) ||
     (c.state && c.state.toLowerCase().includes(q)) ||
-    c.aliases.some(a => a.toLowerCase().includes(q))
+    (Array.isArray(c.aliases) && c.aliases.some(a => typeof a === 'string' && a.toLowerCase().includes(q)))
   ).slice(0, 10);
 }

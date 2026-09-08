@@ -153,6 +153,10 @@ export const scheduleTimetableLocalNotifications = async (
       });
     }
 
+    const safeCancelledSessionKeys = Array.isArray(cancelledSessionKeys)
+      ? cancelledSessionKeys
+      : (cancelledSessionKeys && typeof cancelledSessionKeys === 'object' ? Object.keys(cancelledSessionKeys) : []);
+
     const notificationsToSchedule: any[] = [];
 
     // Day name -> JS getDay() value (0 = Sunday)
@@ -199,7 +203,7 @@ export const scheduleTimetableLocalNotifications = async (
         }
 
         // Check if this class session is cancelled for this specific date
-        if (cancelledSessionKeys.includes(`${dateStr}_${session.id}`)) {
+        if (safeCancelledSessionKeys.includes(`${dateStr}_${session.id}`)) {
           console.log(`Skipping class notification on ${dateStr} — class cancelled.`);
           occurrenceCount++;
           continue;
@@ -336,10 +340,10 @@ export const scheduleTimetableLocalNotifications = async (
       if (skipDates.has(tomorrowDateStr)) continue;
 
       // Check if tomorrow has regular classes
-      const tomorrowRegularClasses = timetable.filter((s) => {
+      const tomorrowRegularClasses = (Array.isArray(timetable) ? timetable : []).filter((s) => {
         const jsDay = dayNameToJsDay[s.day];
         if (jsDay !== tomorrowJsDay) return false;
-        if (cancelledSessionKeys.includes(`${tomorrowDateStr}_${s.id}`)) return false;
+        if (safeCancelledSessionKeys.includes(`${tomorrowDateStr}_${s.id}`)) return false;
         return true;
       });
 

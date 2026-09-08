@@ -54,9 +54,21 @@ export const NotificationCenter: React.FC = () => {
   };
 
   // Grouping Logic
-  const needsAttention = filtered.filter(n => !n.read && (n.category === 'deadlines' || n.category === 'homework' || n.category === 'carry'));
-  const today = filtered.filter(n => !needsAttention.includes(n) && new Date(n.timestamp).toDateString() === new Date().toDateString());
-  const earlier = filtered.filter(n => !needsAttention.includes(n) && !today.includes(n));
+  const needsAttention = Array.isArray(filtered)
+    ? filtered.filter(n => n && !n.read && (n.category === 'deadlines' || n.category === 'homework' || n.category === 'carry'))
+    : [];
+  const needsAttentionIds = new Set(needsAttention.map(n => n?.id).filter(Boolean));
+  const today = Array.isArray(filtered)
+    ? filtered.filter(n => {
+        if (!n || needsAttentionIds.has(n.id)) return false;
+        const d = new Date(n.timestamp);
+        return !isNaN(d.getTime()) && d.toDateString() === new Date().toDateString();
+      })
+    : [];
+  const todayIds = new Set(today.map(n => n?.id).filter(Boolean));
+  const earlier = Array.isArray(filtered)
+    ? filtered.filter(n => n && !needsAttentionIds.has(n.id) && !todayIds.has(n.id))
+    : [];
 
   const NotificationCard = ({ n, isImportant }: { n: AppNotification, isImportant?: boolean }) => (
     <motion.div

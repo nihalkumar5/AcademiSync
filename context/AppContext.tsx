@@ -236,7 +236,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const isSuperAdmin = !!user && isUserSuperAdmin(profile, userEmail);
   const isLegacyBatch = !currentBatchData?.crUserIds && !currentBatchData?.crEmails;
   const isPrimaryCreator = !!user && isLegacyBatch && (currentBatchData?.creatorId === user?.id || (currentBatchData?.creatorEmail && currentBatchData?.creatorEmail === userEmail));
-  const isCoCR = !!user && (currentBatchData?.crUserIds?.includes(user?.id) || currentBatchData?.crEmails?.includes(userEmail) || profile.role === 'cr');
+  const isCoCR = !!user && (
+    (Array.isArray(currentBatchData?.crUserIds) && currentBatchData.crUserIds.includes(user?.id)) ||
+    (Array.isArray(currentBatchData?.crEmails) && currentBatchData.crEmails.includes(userEmail)) ||
+    profile.role === 'cr'
+  );
   const isBatchCR = !!user && (profile.isBatchSynced ? (isSuperAdmin || isPrimaryCreator || isCoCR) : profile.role === 'cr');
 
   // Handle User Logout / Switch Account Cleanup
@@ -358,7 +362,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (data.events) { setEventsState(data.events); storage.setEvents(data.events); }
         if (data.exams) { setExamsState(data.exams); storage.setExams(data.exams); }
         if (data.settings) { setSettingsState(data.settings); storage.setSettings(data.settings); }
-        if (data.cancelledSessions) { setCancelledSessionsState(data.cancelledSessions); storage.setCancelledSessions(data.cancelledSessions); }
+        if (data.cancelledSessions) {
+          const safeCancelled = Array.isArray(data.cancelledSessions) ? data.cancelledSessions : (typeof data.cancelledSessions === 'object' ? Object.keys(data.cancelledSessions) : []);
+          setCancelledSessionsState(safeCancelled);
+          storage.setCancelledSessions(safeCancelled);
+        }
         if (data.rescheduledSessions) { setRescheduledSessionsState(data.rescheduledSessions); storage.setRescheduledSessions(data.rescheduledSessions); }
         if (data.messMenu !== undefined) { setMessMenu(data.messMenu); if(data.messMenu) { window.localStorage.setItem("intersemester_mess_menu_v1", JSON.stringify(data.messMenu)); } else { window.localStorage.removeItem("intersemester_mess_menu_v1"); } }
 
@@ -1449,12 +1457,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     const targetDate = dateStr || new Date().toISOString().split('T')[0];
     const key = `${targetDate}_${sessionId}`;
-    const isAlreadyCancelled = cancelledSessions.includes(key);
+    const safeList = Array.isArray(cancelledSessions) ? cancelledSessions : [];
+    const isAlreadyCancelled = safeList.includes(key);
     const updated = isAlreadyCancelled
-      ? cancelledSessions.filter((k) => k !== key)
-      : [...cancelledSessions, key];
+      ? safeList.filter((k) => k !== key)
+      : [...safeList, key];
 
-    const updatedMeta = { ...cancelledSessionsMeta };
+    const updatedMeta = { ...(cancelledSessionsMeta || {}) };
     const crName = profile.name || 'CR';
 
     if (isAlreadyCancelled) {
@@ -1538,9 +1547,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const isSessionCancelled = (sessionId: string, dateStr?: string) => {
-    const targetDate = dateStr || new Date().toISOString().split('T')[0];
-    const key = `${targetDate}_${sessionId}`;
-    return cancelledSessions.includes(key);
+    try {
+      const targetDate = dateStr || new Date().toISOString().split('T')[0];
+      const key = `${targetDate}_${sessionId}`;
+      if (Array.isArray(cancelledSessions)) {
+        return cancelledSessions.includes(key);
+      }
+      if (cancelledSessions && typeof cancelledSessions === 'object') {
+        return (cancelledSessions as any)[key] === true || Object.keys(cancelledSessions).includes(key);
+      }
+      return false;
+    } catch {
+      return false;
+    }
   };
 
   const getCancelledSessionMeta = (sessionId: string, dateStr?: string) => {

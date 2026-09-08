@@ -117,8 +117,16 @@ export const storage = {
   getExams: (): Exam[] => getStoredItem(STORAGE_KEYS.EXAMS, []),
   setExams: (exams: Exam[]) => setStoredItem(STORAGE_KEYS.EXAMS, exams),
 
-  getCancelledSessions: (): string[] => getStoredItem(STORAGE_KEYS.CANCELLED_SESSIONS, []),
-  setCancelledSessions: (cancelled: string[]) => setStoredItem(STORAGE_KEYS.CANCELLED_SESSIONS, cancelled),
+  getCancelledSessions: (): string[] => {
+    const val = getStoredItem<any>(STORAGE_KEYS.CANCELLED_SESSIONS, []);
+    if (Array.isArray(val)) return val;
+    if (val && typeof val === 'object') return Object.keys(val);
+    return [];
+  },
+  setCancelledSessions: (cancelled: string[]) => {
+    const safe = Array.isArray(cancelled) ? cancelled : (cancelled && typeof cancelled === 'object' ? Object.keys(cancelled) : []);
+    setStoredItem(STORAGE_KEYS.CANCELLED_SESSIONS, safe);
+  },
 
   getCancelledSessionsMeta: (): Record<string, { by: string; role?: string; timestamp?: string }> => getStoredItem(STORAGE_KEYS.CANCELLED_SESSIONS_META, {}),
   setCancelledSessionsMeta: (meta: Record<string, { by: string; role?: string; timestamp?: string }>) => setStoredItem(STORAGE_KEYS.CANCELLED_SESSIONS_META, meta),

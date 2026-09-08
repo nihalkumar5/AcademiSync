@@ -164,26 +164,28 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
 
   const isLegacyBatch = !batchData?.crUserIds && !batchData?.crEmails;
   const isPrimaryCreator = isLegacyBatch && (batchData?.creatorId === user?.id || (batchData?.creatorEmail && batchData?.creatorEmail === userEmail));
-  const isCoCR = batchData?.crUserIds?.includes(user?.id) || batchData?.crEmails?.includes(userEmail) || profile.role === 'cr';
+  const isCoCR = (Array.isArray(batchData?.crUserIds) && batchData.crUserIds.includes(user?.id)) || 
+                 (Array.isArray(batchData?.crEmails) && batchData.crEmails.includes(userEmail)) || 
+                 profile.role === 'cr';
   const isAuthorizedCR = isSuperAdmin || isPrimaryCreator || isCoCR;
 
   const checkMemberIsCR = (m: any) => {
-    const ids: string[] = m.allIds || [m.id];
-    const emails: string[] = (m.allEmails || [m.profile?.email || '']).map((e: string) => e.toLowerCase());
+    const ids: string[] = Array.isArray(m.allIds) ? m.allIds : [m.id];
+    const emails: string[] = (Array.isArray(m.allEmails) ? m.allEmails : [m.profile?.email || '']).map((e: string) => String(e || '').toLowerCase());
 
     const isCreator = isLegacyBatch && (
       ids.includes(batchData?.creatorId) || 
       (batchData?.creatorEmail && emails.includes(batchData.creatorEmail.toLowerCase()))
     );
-    const inCRUserIds = batchData?.crUserIds?.some((id: string) => ids.includes(id));
-    const inCREmails = batchData?.crEmails?.some((e: string) => emails.includes(e.toLowerCase()));
+    const inCRUserIds = Array.isArray(batchData?.crUserIds) && batchData.crUserIds.some((id: string) => ids.includes(id));
+    const inCREmails = Array.isArray(batchData?.crEmails) && batchData.crEmails.some((e: string) => emails.includes(String(e || '').toLowerCase()));
 
     return isCreator || inCRUserIds || inCREmails || m.profile?.role === 'cr';
   };
 
   const checkMemberIsCreator = (m: any) => {
-    const ids: string[] = m.allIds || [m.id];
-    const emails: string[] = (m.allEmails || [m.profile?.email || '']).map((e: string) => e.toLowerCase());
+    const ids: string[] = Array.isArray(m.allIds) ? m.allIds : [m.id];
+    const emails: string[] = (Array.isArray(m.allEmails) ? m.allEmails : [m.profile?.email || '']).map((e: string) => String(e || '').toLowerCase());
     return isLegacyBatch && (
       ids.includes(batchData?.creatorId) || 
       (batchData?.creatorEmail && emails.includes(batchData.creatorEmail.toLowerCase()))
@@ -191,8 +193,8 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
   };
 
   const checkIsCurrentUser = (m: any) => {
-    const ids: string[] = m.allIds || [m.id];
-    const emails: string[] = (m.allEmails || [m.profile?.email || '']).map((e: string) => e.toLowerCase());
+    const ids: string[] = Array.isArray(m.allIds) ? m.allIds : [m.id];
+    const emails: string[] = (Array.isArray(m.allEmails) ? m.allEmails : [m.profile?.email || '']).map((e: string) => String(e || '').toLowerCase());
     return ids.includes(user?.id) || (userEmail && emails.includes(userEmail.toLowerCase()));
   };
 

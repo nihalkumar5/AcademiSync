@@ -45,29 +45,32 @@ export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({
           const userBranch = (profile.branch || '').toLowerCase().trim();
           const userSemester = profile.semester;
 
+          const targetColleges = Array.isArray(data.targetColleges) ? data.targetColleges : [];
+          const targetBranches = Array.isArray(data.targetBranches) ? data.targetBranches : [];
+          const targetSemesters = Array.isArray(data.targetSemesters) ? data.targetSemesters : [];
+
           // 1. College Match
           const collegeMatch =
-            !data.targetColleges ||
-            data.targetColleges.length === 0 ||
-            data.targetColleges.some((c) => {
+            targetColleges.length === 0 ||
+            targetColleges.some((c) => {
+              if (typeof c !== 'string') return false;
               const target = c.toLowerCase().trim();
               return userCollege.includes(target) || target.includes(userCollege);
             });
 
           // 2. Branch Match
           const branchMatch =
-            !data.targetBranches ||
-            data.targetBranches.length === 0 ||
-            data.targetBranches.some((b) => {
+            targetBranches.length === 0 ||
+            targetBranches.some((b) => {
+              if (typeof b !== 'string') return false;
               const target = b.toLowerCase().trim();
               return userBranch.includes(target) || target.includes(userBranch);
             });
 
           // 3. Semester Match
           const semesterMatch =
-            !data.targetSemesters ||
-            data.targetSemesters.length === 0 ||
-            (userSemester && data.targetSemesters.includes(userSemester));
+            targetSemesters.length === 0 ||
+            (userSemester && targetSemesters.includes(userSemester));
 
           if (collegeMatch && branchMatch && semesterMatch) {
             fetched.push({ ...data, id: docSnap.id });
