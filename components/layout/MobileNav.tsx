@@ -55,7 +55,7 @@ export const MobileNav: React.FC = () => {
             >
               <div className={clsx(
                 "relative mb-0.5 transition-colors",
-                isActive ? "text-[#2438B8] dark:text-[#F4F4F6]" : "text-[#98A2B3] dark:text-[#71717A]"
+                isActive ? "text-[#111111] dark:text-[#FFFFFF]" : "text-[#808080] dark:text-[#71717A]"
               )}>
                 {tab.icon}
 
@@ -69,8 +69,8 @@ export const MobileNav: React.FC = () => {
               <span className={clsx(
                 'text-[10px] tracking-wide leading-none transition-colors',
                 isActive
-                  ? 'font-bold text-[#2438B8] dark:text-[#F4F4F6]'
-                  : 'font-medium text-[#667085] dark:text-[#94A3B8]'
+                  ? 'font-bold text-[#111111] dark:text-[#FFFFFF]'
+                  : 'font-medium text-[#808080] dark:text-[#94A3B8]'
               )}>
                 {tab.label}
               </span>
@@ -79,7 +79,7 @@ export const MobileNav: React.FC = () => {
                 {isActive && (
                   <motion.div
                     layoutId="mobile-nav-indicator"
-                    className="absolute inset-0 bg-[#2438B8] dark:bg-[#F4F4F6] dark:shadow-[0_0_8px_rgba(255,255,255,0.7)]"
+                    className="absolute inset-0 bg-[#111111] dark:bg-[#FFFFFF] dark:shadow-[0_0_8px_rgba(255,255,255,0.7)]"
                   />
                 )}
               </div>

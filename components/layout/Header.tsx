@@ -173,12 +173,12 @@ export const Header: React.FC = () => {
             )}
           </button>
           
-          {/* Quick Create Dropdown: Primary Brand Color + Button */}
+          {/* Quick Create Dropdown: High-Contrast Black + Button */}
           <div className="relative" ref={menuRef}>
             <button
               type="button"
               onClick={() => setAddMenuOpen(!addMenuOpen)}
-              className="w-8 h-8 flex items-center justify-center bg-[#2438B8] text-[#FFFFFF] hover:opacity-90 transition-all cursor-pointer rounded-none active:scale-95 shadow-xs"
+              className="w-8 h-8 flex items-center justify-center bg-[#111111] text-[#FFFFFF] hover:opacity-90 transition-all cursor-pointer rounded-none active:scale-95 shadow-xs"
               title="Add New Action"
             >
               <Plus className={`w-4 h-4 stroke-[2.5] text-[#FFFFFF] transition-transform duration-200 ${addMenuOpen ? 'rotate-45' : ''}`} />

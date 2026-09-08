@@ -167,20 +167,20 @@ export const LiveClassCard: React.FC = () => {
 
     return (
       <div 
-        className="w-full bg-[#FFFFFF] border border-[#E6E8EC] rounded-none p-4 flex flex-col cursor-pointer relative group transition-all"
+        className="w-full bg-[#FFFFFF] dark:bg-[#121317] border border-[#E0E0E0] dark:border-white/[0.08] rounded-none p-4 flex flex-col cursor-pointer relative group transition-all"
       >
         <div className="flex items-center justify-between mb-3">
-          <span className="text-[11px] font-semibold text-[#2438B8] uppercase tracking-[1.4px] leading-none">NEXT CLASS</span>
-          <span className="text-[12px] font-semibold text-[#101828] leading-none">{formatTime12Hour(session.startTime)}</span>
+          <span className="text-[11px] font-semibold text-[#808080] dark:text-[#94A3B8] uppercase tracking-[1.4px] leading-none">NEXT CLASS</span>
+          <span className="text-[12px] font-semibold text-[#111111] dark:text-[#F4F4F6] leading-none">{formatTime12Hour(session.startTime)}</span>
         </div>
 
-        <h3 className="text-[20px] font-semibold text-[#101828] leading-[24px] mb-[10px] pr-8 line-clamp-2">
+        <h3 className="text-[20px] font-semibold text-[#111111] dark:text-[#F4F4F6] leading-[24px] mb-[10px] pr-8 line-clamp-2">
           {sub?.name || 'Class Session'}
         </h3>
 
-        <div className="flex items-center gap-2 text-[12px] text-[#667085] leading-none mb-4">
+        <div className="flex items-center gap-2 text-[12px] text-[#6B6B6B] dark:text-[#94A3B8] leading-none mb-4">
           <span className="flex items-center gap-1.5 shrink-0">
-            <MapPin className="w-3.5 h-3.5 text-[#667085]" />
+            <MapPin className="w-3.5 h-3.5" />
             {session.room}
           </span>
           {session.faculty && (
@@ -192,10 +192,10 @@ export const LiveClassCard: React.FC = () => {
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-[13px] font-medium leading-none text-[#2438B8]">
+          <span className="text-[13px] font-medium leading-none text-[#111111] dark:text-[#F4F4F6]">
             {formatCountdown(nextClass.minutesUntilStart)}
           </span>
-          <ArrowRight className="w-4 h-4 text-[#2438B8] transition-transform group-hover:translate-x-1" />
+          <ArrowRight className="w-4 h-4 text-[#808080] dark:text-[#71717A] transition-transform group-hover:translate-x-1" />
         </div>
       </div>
     );

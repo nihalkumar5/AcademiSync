@@ -340,7 +340,7 @@ export const TodayTimeline: React.FC = () => {
                 }
                 setIsAddExtraOpen(true);
               }}
-              className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#2438B8] text-[#FFFFFF] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
+              className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
             >
               <span>+ Extra Class</span>
             </button>
@@ -393,7 +393,7 @@ export const TodayTimeline: React.FC = () => {
                 }
                 setIsAddExtraOpen(true);
               }}
-              className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#2438B8] text-[#FFFFFF] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
+              className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
             >
               <span>+ Extra Class</span>
             </button>
@@ -493,7 +493,7 @@ export const TodayTimeline: React.FC = () => {
               }
               setIsAddExtraOpen(true);
             }}
-            className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#2438B8] text-[#FFFFFF] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-90 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
+            className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
           >
             <span>+ Extra Class</span>
           </button>

@@ -113,15 +113,15 @@ export const OverviewHeader: React.FC = () => {
           onClick={() => setActiveView('timetable')}
           className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center cursor-pointer"
         >
-          <span className="text-[32px] font-medium text-[#2438B8] tracking-tighter leading-none mb-1">
+          <span className="text-[32px] font-medium text-[#111111] dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
             {todayClasses.length}
           </span>
           <div className="flex flex-col items-center">
-            <span className="text-[14px] font-medium text-[#667085] leading-tight">
+            <span className="text-[14px] font-medium text-[#666666] dark:text-[#A1A1AA] leading-tight">
               Classes
             </span>
             {todayHoliday ? (
-              <span className="text-[13px] text-[#667085]/80 leading-tight">
+              <span className="text-[13px] text-[#666666]/80 dark:text-[#71717A] leading-tight">
                 Holiday
               </span>
             ) : (
@@ -137,11 +137,11 @@ export const OverviewHeader: React.FC = () => {
           onClick={() => setActiveView('homework')}
           className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center cursor-pointer"
         >
-          <span className="text-[32px] font-medium text-[#B54708] tracking-tighter leading-none mb-1">
+          <span className="text-[32px] font-medium text-[#111111] dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
             {pendingHw.length}
           </span>
           <div className="flex flex-col items-center">
-            <span className="text-[14px] font-medium text-[#667085] leading-tight">
+            <span className="text-[14px] font-medium text-[#666666] dark:text-[#A1A1AA] leading-tight">
               Tasks Due
             </span>
             <span className="text-[13px] text-transparent leading-tight select-none" aria-hidden="true">
@@ -155,11 +155,11 @@ export const OverviewHeader: React.FC = () => {
           onClick={() => setActiveView('homework')}
           className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center cursor-pointer"
         >
-          <span className="text-[32px] font-medium text-[#087F5B] tracking-tighter leading-none mb-1">
+          <span className="text-[32px] font-medium text-[#111111] dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
             {upcomingDeadlines.length}
           </span>
           <div className="flex flex-col items-center">
-            <span className="text-[14px] font-medium text-[#667085] leading-tight">
+            <span className="text-[14px] font-medium text-[#666666] dark:text-[#A1A1AA] leading-tight">
               Deadlines
             </span>
             <span className="text-[13px] text-transparent leading-tight select-none" aria-hidden="true">
