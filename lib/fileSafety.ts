@@ -50,17 +50,30 @@ export function validateBase64MagicBytes(base64Data: string, declaredMimeType?: 
   const cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, '').trim();
   if (cleanBase64.length < 8) return false;
 
-  // Magic header prefix patterns in base64:
-  // PDF: %PDF- -> "JVBERi0"
-  // JPEG: \xFF\xD8\xFF -> "/9j/"
-  // PNG: \x89PNG\r\n\x1a\n -> "iVBORw0KGgo"
-  // WEBP: RIFF....WEBP -> "UklGR"
-  // HEIC/HEIF: ftyp... -> starts with "AAAA" followed by ftyp
+  try {
+    const rawPrefix = Buffer.from(cleanBase64.substring(0, 48), 'base64');
+    if (rawPrefix.length >= 2) {
+      // JPEG: FF D8
+      if (rawPrefix[0] === 0xff && rawPrefix[1] === 0xd8) return true;
+      // PNG: 89 50 4E 47
+      if (rawPrefix[0] === 0x89 && rawPrefix[1] === 0x50 && rawPrefix[2] === 0x4e && rawPrefix[3] === 0x47) return true;
+      // PDF: 25 50 44 46 (%PDF)
+      if (rawPrefix[0] === 0x25 && rawPrefix[1] === 0x50 && rawPrefix[2] === 0x44 && rawPrefix[3] === 0x46) return true;
+      // GIF: 47 49 46 38 (GIF8)
+      if (rawPrefix[0] === 0x47 && rawPrefix[1] === 0x49 && rawPrefix[2] === 0x46 && rawPrefix[3] === 0x38) return true;
+      // WEBP: starts with "RIFF"
+      if (rawPrefix[0] === 0x52 && rawPrefix[1] === 0x49 && rawPrefix[2] === 0x46 && rawPrefix[3] === 0x46) return true;
+      // HEIF / HEIC / AVIF: ftyp box
+      if (rawPrefix.length >= 8 && rawPrefix.toString('ascii', 4, 8) === 'ftyp') return true;
+    }
+  } catch {}
+
+  // String prefix fallback
   const isPdf = cleanBase64.startsWith('JVBERi0');
-  const isJpeg = cleanBase64.startsWith('/9j/');
-  const isPng = cleanBase64.startsWith('iVBORw0KGgo');
+  const isJpeg = cleanBase64.startsWith('/9j/') || cleanBase64.startsWith('/9j');
+  const isPng = cleanBase64.startsWith('iVBORw0K');
   const isWebp = cleanBase64.startsWith('UklGR');
-  const isHeic = cleanBase64.includes('ZnR5cGhlaWM') || cleanBase64.includes('ZnR5cG1pZjE') || cleanBase64.startsWith('AAA');
+  const isHeic = cleanBase64.includes('ZnR5cGhlaWM') || cleanBase64.includes('ZnR5cG1pZjE') || cleanBase64.startsWith('AAAA');
 
   return isPdf || isJpeg || isPng || isWebp || isHeic;
 }

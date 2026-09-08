@@ -61,37 +61,42 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
       const data = await res.json();
       if (data.success && data.homework) {
         const hw = data.homework;
-        const matchedSub =
-          subjects.find(
-            (s) =>
-              s.name.toLowerCase().includes((hw.subjectName || '').toLowerCase()) ||
-              s.shortName.toLowerCase().includes((hw.subjectName || '').toLowerCase())
-          ) || subjects[0];
+        const hwSubName = (hw.subjectName || '').toLowerCase().trim();
+        const matchedSub = subjects.find(
+          (s) =>
+            (s.name && s.name.toLowerCase().includes(hwSubName)) ||
+            (s.shortName && s.shortName.toLowerCase().includes(hwSubName)) ||
+            (s.code && s.code.toLowerCase().includes(hwSubName))
+        );
 
         const defaultDeadline = new Date();
         defaultDeadline.setDate(defaultDeadline.getDate() + 2);
         defaultDeadline.setHours(23, 59, 0, 0);
 
-        setExtractedSubjectId(matchedSub ? matchedSub.id : subjects[0]?.id || '');
-        setExtractedTitle(hw.title || 'Assignment');
+        setExtractedSubjectId(matchedSub ? matchedSub.id : (subjects[0]?.id || ''));
+        setExtractedTitle(hw.title || '');
         setExtractedDescription(hw.description || '');
         setExtractedDeadline(
-          hw.deadline ? new Date(hw.deadline).toISOString().slice(0, 10) : defaultDeadline.toISOString().slice(0, 10)
+          hw.deadline && !isNaN(new Date(hw.deadline).getTime())
+            ? new Date(hw.deadline).toISOString().slice(0, 10)
+            : defaultDeadline.toISOString().slice(0, 10)
         );
         setExtractedPriority(hw.priority || 'High');
+        showToast('Extracted with AI', 'Assignment details parsed successfully.', 'success');
       } else {
-        throw new Error('No homework extracted');
+        throw new Error(data.error || 'Could not parse document details');
       }
-    } catch (e) {
-      console.warn('API error, using fallback:', e);
-      const mlSub = subjects.find((s) => s.shortName === 'ML' || s.name.includes('Machine Learning')) || subjects[0];
+    } catch (e: any) {
+      console.warn('API extraction error:', e);
+      showToast('Manual Review', 'Could not auto-extract details. Please verify the fields.', 'info');
+      
       const defaultDeadline = new Date();
       defaultDeadline.setDate(defaultDeadline.getDate() + 2);
       defaultDeadline.setHours(23, 59, 0, 0);
 
-      setExtractedSubjectId(mlSub ? mlSub.id : '');
-      setExtractedTitle('Assignment 3: Neural Networks & Backpropagation');
-      setExtractedDescription('Derive the gradient update rules for a 3-layer MLP with Cross-Entropy loss. Submit handwritten derivations + Python code.');
+      setExtractedSubjectId(subjects[0]?.id || '');
+      setExtractedTitle(name ? name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ') : '');
+      setExtractedDescription('');
       setExtractedDeadline(defaultDeadline.toISOString().slice(0, 10));
       setExtractedPriority('High');
     }
