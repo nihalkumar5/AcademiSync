@@ -1229,15 +1229,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const target = prev.find((h) => h.id === id);
       if (!target) return prev;
 
-      // 3-Stage Progress Lifecycle for Assignments: Not Started -> In Progress -> Completed -> Not Started
-      let nextStatus: HomeworkStatus = 'In Progress';
-      if (target.status === 'Not Started') {
-        nextStatus = 'In Progress';
-      } else if (target.status === 'In Progress') {
-        nextStatus = 'Completed';
-      } else {
-        nextStatus = 'Not Started';
-      }
+      // 1-Tap Toggle: If already Completed -> Reopen to Not Started. If Not Started or In Progress -> Mark Completed.
+      const isCurrentlyDone = target.status === 'Completed';
+      const nextStatus: HomeworkStatus = isCurrentlyDone ? 'Not Started' : 'Completed';
 
       const updated = prev.map((h) =>
         h.id === id
@@ -1250,13 +1244,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       );
       storage.setHomework(updated);
 
-      if (nextStatus === 'In Progress') {
-        showToast('In Progress', `"${target.title}" marked as in progress ⏳`, 'info');
-      } else if (nextStatus === 'Completed') {
+      if (nextStatus === 'Completed') {
         triggerConfetti();
         showToast('Assignment Completed', `"${target.title}" completed! 🎉`, 'success');
       } else {
-        showToast('Assignment Reset', `"${target.title}" reset to not started`, 'info');
+        showToast('Assignment Reopened', `"${target.title}" marked as to-do`, 'info');
       }
 
       return updated;

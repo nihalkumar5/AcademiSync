@@ -13,6 +13,8 @@ import {
   Link,
   Users,
   Vote,
+  Clock,
+  RotateCcw,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -142,14 +144,30 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
               </span>
             )}
             {isInProgress && (
-              <span className="px-2 py-0.5 rounded-[2px] bg-[#DCE4FF] text-[#334CC4] text-[9.5px] font-bold uppercase tracking-wider">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleStatus(homework.id);
+                }}
+                className="px-2 py-0.5 rounded-[2px] bg-[#DCE4FF] text-[#334CC4] text-[9.5px] font-bold uppercase tracking-wider hover:opacity-80 transition-opacity cursor-pointer"
+                title="Click to mark Done"
+              >
                 DOING
-              </span>
+              </button>
             )}
             {isDone && (
-              <span className="px-2 py-0.5 rounded-[2px] bg-[#D2F1E8] text-[#18A889] text-[9.5px] font-bold uppercase tracking-wider">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleStatus(homework.id);
+                }}
+                className="px-2 py-0.5 rounded-[2px] bg-[#D2F1E8] text-[#18A889] text-[9.5px] font-bold uppercase tracking-wider hover:opacity-80 transition-opacity cursor-pointer"
+                title="Click to reopen"
+              >
                 DONE
-              </span>
+              </button>
             )}
 
             {/* Direct Quick Delete Button */}
@@ -187,14 +205,56 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -5 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-[#16171D] border border-[#D9D9D6] dark:border-white/[0.1] shadow-2xl z-50 py-1 rounded-[3px]"
+                    className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-[#16171D] border border-[#D9D9D6] dark:border-white/[0.1] shadow-2xl z-50 py-1 rounded-[3px]"
                   >
+                    {/* Status Changer Actions */}
+                    {homework.status !== 'In Progress' && (
+                      <button
+                        onClick={() => {
+                          updateHomework(homework.id, { status: 'In Progress' });
+                          setShowMenu(false);
+                          showToast('In Progress', `"${homework.title}" marked as in progress ⏳`, 'info');
+                        }}
+                        className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#334CC4] dark:text-[#5A75F0] hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors w-full cursor-pointer"
+                      >
+                        <Clock className="w-3.5 h-3.5" />
+                        Mark as Doing
+                      </button>
+                    )}
+
+                    {homework.status !== 'Completed' && (
+                      <button
+                        onClick={() => {
+                          onToggleStatus(homework.id);
+                          setShowMenu(false);
+                        }}
+                        className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#18A889] hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors w-full cursor-pointer"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        Mark as Done
+                      </button>
+                    )}
+
+                    {homework.status !== 'Not Started' && (
+                      <button
+                        onClick={() => {
+                          updateHomework(homework.id, { status: 'Not Started', completedAt: undefined });
+                          setShowMenu(false);
+                          showToast('Reset to To-Do', `"${homework.title}" reset to to-do`, 'info');
+                        }}
+                        className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#737373] dark:text-[#94A3B8] hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors w-full cursor-pointer"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        Reset to To-Do
+                      </button>
+                    )}
+
                     {homework.attachmentName && (
                       <a
                         href={homework.attachmentName.startsWith('http') ? homework.attachmentName : `https://${homework.attachmentName}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#151515] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors w-full cursor-pointer"
+                        className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#151515] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors w-full cursor-pointer border-t border-black/[0.06] dark:border-white/[0.08]"
                       >
                         <Link className="w-3.5 h-3.5" />
                         Open Attachment
@@ -226,7 +286,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                         }
                         setShowConfirmModal(true);
                       }}
-                      className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors w-full cursor-pointer"
+                      className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors w-full cursor-pointer border-t border-black/[0.06] dark:border-white/[0.08]"
                     >
                       {isBatchCR ? (
                         <Users className="w-3.5 h-3.5" />
@@ -273,15 +333,25 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
         <div className="flex items-start gap-3 mt-2.5">
           <button 
             type="button"
-            onClick={() => onToggleStatus(homework.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleStatus(homework.id);
+            }}
+            aria-label={isDone ? "Mark as incomplete" : "Mark as completed"}
+            title={isDone ? "Mark as incomplete" : "Mark as completed"}
             className={clsx(
-              "mt-[3px] shrink-0 w-[20px] h-[20px] rounded-full border-[1.5px] flex items-center justify-center transition-colors cursor-pointer",
+              "mt-[3px] shrink-0 w-[20px] h-[20px] rounded-full border-[1.5px] flex items-center justify-center transition-all cursor-pointer",
               isDone 
                 ? "bg-[#18A889] border-[#18A889] text-white" 
+                : isInProgress
+                ? "border-[#334CC4] dark:border-[#5A75F0] bg-[#334CC4]/10 hover:bg-[#334CC4]/20"
                 : "border-[#8067B5] dark:border-[#8067B5]/70 hover:bg-[#8067B5]/15 bg-transparent"
             )}
           >
             {isDone && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
+            {isInProgress && (
+              <div className="w-2.5 h-2.5 rounded-full bg-[#334CC4] dark:bg-[#5A75F0]" />
+            )}
           </button>
           <div 
             onClick={() => onEdit(homework)}
