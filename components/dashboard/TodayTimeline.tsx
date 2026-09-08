@@ -500,28 +500,12 @@ export const TodayTimeline: React.FC = () => {
           )}
         </div>
         <div className="relative flex flex-col gap-0 border-l-[2px] border-slate-200 dark:border-white/[0.08] ml-3">
-          {(() => {
-            let hasFoundFirstValid = false;
-            let firstValidVisibleId: string | null = null;
-            
-            for (const s of targetSessions) {
-              const isCancelled = isSessionCancelled(s.id, targetDateStr);
-              const resched = rescheduledSessions[`${targetDateStr}_${s.id}`];
-              const end = timeToMinutes(resched ? resched.endTime : s.endTime);
-              const isPassed = isCancelled || (isAfter8PM ? false : currentMinutes >= end);
-              if (!isCancelled && !isPassed && !hasFoundFirstValid) {
-                firstValidVisibleId = s.id;
-                hasFoundFirstValid = true;
-                break;
-              }
-            }
-
-            return targetSessions.map((session, index) => {
-                const reschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
-                const effectiveSubjectId = reschedule?.subjectId || session.subjectId;
-                const sub = subjectMap.get(effectiveSubjectId);
-                const start = timeToMinutes(reschedule ? reschedule.startTime : session.startTime);
-                const end = timeToMinutes(reschedule ? reschedule.endTime : session.endTime);
+          {displaySessions.map((session, index) => {
+            const reschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
+            const effectiveSubjectId = reschedule?.subjectId || session.subjectId;
+            const sub = subjectMap.get(effectiveSubjectId);
+            const start = timeToMinutes(reschedule ? reschedule.startTime : session.startTime);
+            const end = timeToMinutes(reschedule ? reschedule.endTime : session.endTime);
 
                 const isCancelled = isSessionCancelled(session.id, targetDateStr);
                 const cancelledMeta = isCancelled ? getCancelledSessionMeta(session.id, targetDateStr) : null;
@@ -796,8 +780,7 @@ export const TodayTimeline: React.FC = () => {
                     </div>
                 </div>
               );
-            });
-          })()}
+            })}
         </div>
 
 
