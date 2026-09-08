@@ -376,7 +376,7 @@ export default function AppHome() {
                 <LiveClassCard />
                 <ProposedBatchTasksVoting />
                 <CampusSpotlightCard placement="home" />
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mt-2 sm:mt-3">
                   <TodayTimeline />
                   <SmartFocusList />
                 </div>

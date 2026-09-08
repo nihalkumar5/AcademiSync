@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { motion } from 'framer-motion';
 import { getCurrentDayOfWeek, timeToMinutes, getTodayDateString, getTomorrowDayOfWeek, getTomorrowDateString, getSubjectThemeStyle } from '@/lib/timetableUtils';
-import { MapPin, User, Clock, FlaskConical, Ban, RotateCcw, MoreVertical, ChevronDown, Check } from 'lucide-react';
+import { MapPin, User, Clock, FlaskConical, Ban, RotateCcw, MoreVertical, ChevronDown, Check, Calendar } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
 import { Subject, ClassSession } from '@/lib/types';
@@ -551,10 +551,10 @@ export const TodayTimeline: React.FC = () => {
                         <div className="w-16 shrink-0 flex flex-col pt-0.5">
                           {reschedule ? (
                             <div className="flex flex-col">
-                              <span className="text-[11px] line-through opacity-40 font-mono font-bold leading-none mb-0.5">
+                              <span className="text-[11px] line-through text-[#9CA3AF] font-mono font-medium leading-none mb-1">
                                 {session.startTime}
                               </span>
-                              <span className="text-[13px] font-bold tracking-tighter font-mono text-[#D9795F] leading-none">
+                              <span className="text-[13px] font-bold tracking-tighter font-mono text-[#C85F3D] leading-none">
                                 {reschedule.startTime}
                               </span>
                             </div>
@@ -570,9 +570,11 @@ export const TodayTimeline: React.FC = () => {
                         {/* Class Info Box */}
                         <div 
                           className={clsx(
-                            "relative flex-1 rounded-[3px] p-4 sm:p-[18px] border transition-all overflow-hidden",
+                            "relative flex-1 rounded-[5px] p-4 sm:p-[18px] border transition-all overflow-hidden",
                             isNow
                               ? "bg-[#111111] border-[#111111] shadow-md"
+                              : isRescheduled
+                              ? "border-[#F5D8CC] dark:border-[#C85F3D]/25 shadow-none"
                               : "border-black/[0.04] dark:border-white/[0.04] shadow-none"
                           )}
                           style={{
@@ -613,7 +615,7 @@ export const TodayTimeline: React.FC = () => {
                                     Now
                                   </span>
                                 ) : reschedule ? (
-                                  <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-bold uppercase tracking-wider bg-[#F8D8CF] text-[#D9795F] shrink-0">
+                                  <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-bold uppercase tracking-wider bg-[#FCE0D5] text-[#C85F3D] shrink-0">
                                     Rescheduled
                                   </span>
                                 ) : isLab ? (
@@ -668,10 +670,21 @@ export const TodayTimeline: React.FC = () => {
                                 </span>
                               )}
 
+                              {/* Separate Soft Peach Info Area for Rescheduled Class */}
                               {reschedule && !isCancelled && (
-                                <span className="text-[11px] font-mono text-[#D9795F] mt-1 font-semibold block">
-                                  Rescheduled from {session.startTime}–{session.endTime} {reschedule.by ? `· by ${reschedule.by} (BP)` : ''}
-                                </span>
+                                <div className="flex items-start gap-2 bg-[#FDECE4] dark:bg-[#2C1813] border border-[#F5D8CC] dark:border-[#C85F3D]/30 p-2.5 rounded-[4px] mt-2.5">
+                                  <Calendar className="w-3.5 h-3.5 text-[#C85F3D] mt-0.5 shrink-0" />
+                                  <div className="flex flex-col text-xs leading-snug">
+                                    <span className="font-semibold text-[#C85F3D] dark:text-[#E88C6E]">
+                                      Rescheduled from {session.startTime}–{session.endTime}
+                                    </span>
+                                    {reschedule.by && (
+                                      <span className="text-[11px] text-[#A65437] dark:text-[#E88C6E]/80 mt-0.5 font-normal">
+                                        by {reschedule.by} (BP)
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
                               )}
                             </div>
 
@@ -680,7 +693,7 @@ export const TodayTimeline: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => setOpenMenuSessionId(openMenuSessionId === session.id ? null : session.id)}
-                              className="p-1.5 text-black/40 hover:text-black dark:text-white/40 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer rounded-none border border-transparent hover:border-black/10"
+                              className="p-1 text-[#A0A0A0] hover:text-[#151515] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer rounded-[2px]"
                               title="More Options"
                             >
                               <MoreVertical className="w-4 h-4" />

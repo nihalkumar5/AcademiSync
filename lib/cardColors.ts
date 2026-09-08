@@ -29,12 +29,12 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
   },
   peach: {
     name: 'Peach',
-    bg: '#F9E9E3',
-    darkBg: '#261612',
-    accent: '#D9795F',
-    badgeBg: '#F8D8CF',
-    badgeText: '#D9795F',
-    border: '#F4D2C7',
+    bg: '#FFF3EE',
+    darkBg: '#241612',
+    accent: '#C85F3D',
+    badgeBg: '#FCE0D5',
+    badgeText: '#C85F3D',
+    border: '#F5D8CC',
   },
   lavender: {
     name: 'Lavender',
