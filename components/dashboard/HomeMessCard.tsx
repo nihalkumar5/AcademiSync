@@ -183,82 +183,95 @@ export const HomeMessCard: React.FC = () => {
   const displayItems = Array.isArray(mealInfo.items) ? mealInfo.items : [];
 
   return (
-    <div 
-      onClick={() => setActiveView('mess')}
-      className={`w-full p-4 sm:p-5 rounded-[4px] cursor-pointer transition-all text-left flex flex-col gap-3 group relative overflow-hidden shadow-sm mt-2 border ${
-        isLive
-          ? 'bg-[#111111] dark:bg-[#111111] text-[#FFFFFF] border-[#111111] dark:border-emerald-500/30'
-          : 'bg-[#111111] dark:bg-[#111111] text-[#FFFFFF] border-[#111111] dark:border-white/[0.08] hover:border-black/40 dark:hover:border-white/20'
-      }`}
-      style={{
-        borderLeft: isLive ? '4px solid #18A889' : '4px solid #C99A32',
-      }}
-    >
-      {/* Row 1: Header Status + Countdown Box */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 min-w-0">
-          {isLive ? (
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#18A889] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#18A889]"></span>
-              </span>
-              <span className="font-mono text-[11px] font-bold uppercase tracking-[1.4px] text-[#18A889]">
-                SERVING NOW · {mealInfo.mealName.toUpperCase()}
-              </span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[1.4px] text-[#A0A0A0]">
-              <span className="text-[#C99A32] text-[9px]">●</span>
-              <span>{mealInfo.status === 'TOMORROW' ? 'TOMORROW' : 'UPCOMING'}</span>
-              <span>·</span>
-              <span className="text-white font-extrabold">{mealInfo.mealName.toUpperCase()}</span>
-            </div>
-          )}
-          {mealInfo.timingStr && (
-            <span className="hidden sm:inline font-mono text-[10.5px] text-[#737373] tracking-normal">
-              ({mealInfo.timingStr})
-            </span>
-          )}
-        </div>
-
-        {/* Right Time Badge */}
-        <div className={`px-2.5 py-1 uppercase tracking-wider font-mono font-bold text-[10.5px] sm:text-[11px] shrink-0 rounded-[3px] border flex items-center gap-1.5 ${
-          isLive
-            ? 'bg-[#18A889]/15 text-[#2DD4BF] border-[#18A889]/30'
-            : 'bg-white/[0.08] text-white/90 border-white/10'
-        }`}>
-          <Clock className="w-3 h-3 opacity-70" />
-          <span>{mealInfo.timeLeft}</span>
-        </div>
+    <div className="flex flex-col text-left mt-2 sm:mt-3">
+      {/* Section Header */}
+      <div className="flex items-center justify-between px-1 mb-2.5">
+        <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
+          MESS MENU
+        </h3>
+        <span className="text-[10.5px] sm:text-[11px] font-mono font-bold text-[#808080] uppercase tracking-wider">
+          {isLive ? 'LIVE NOW' : 'NEXT MEAL'}
+        </span>
       </div>
 
-      {/* Row 2: Food Items Inline Text + Full Menu Link */}
-      <div className="flex items-center justify-between gap-4 pt-0.5">
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 min-w-0 flex-1">
-          {displayItems.length > 0 ? (
-            displayItems.map((item, idx) => (
-              <span 
-                key={idx} 
-                className="text-[14px] sm:text-[15px] font-semibold text-white tracking-tight leading-snug"
-              >
-                {item}
-                {idx < displayItems.length - 1 && (
-                  <span className="text-white/30 ml-2.5 font-normal select-none">·</span>
-                )}
+      {/* Card */}
+      <div 
+        onClick={() => setActiveView('mess')}
+        className={`w-full p-4 sm:p-5 rounded-[4px] cursor-pointer transition-all text-left flex flex-col gap-3 group relative overflow-hidden shadow-sm border ${
+          isLive
+            ? 'bg-[#111111] dark:bg-[#111111] text-[#FFFFFF] border-[#111111] dark:border-emerald-500/30'
+            : 'bg-[#111111] dark:bg-[#111111] text-[#FFFFFF] border-[#111111] dark:border-white/[0.08] hover:border-black/40 dark:hover:border-white/20'
+        }`}
+        style={{
+          borderLeft: isLive ? '4px solid #18A889' : '4px solid #C99A32',
+        }}
+      >
+        {/* Row 1: Header Status + Countdown Box */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            {isLive ? (
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#18A889] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#18A889]"></span>
+                </span>
+                <span className="font-mono text-[11px] font-bold uppercase tracking-[1.4px] text-[#18A889]">
+                  SERVING NOW · {mealInfo.mealName.toUpperCase()}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[1.4px] text-[#A0A0A0]">
+                <span className="text-[#C99A32] text-[9px]">●</span>
+                <span>{mealInfo.status === 'TOMORROW' ? 'TOMORROW' : 'UPCOMING'}</span>
+                <span>·</span>
+                <span className="text-white font-extrabold">{mealInfo.mealName.toUpperCase()}</span>
+              </div>
+            )}
+            {mealInfo.timingStr && (
+              <span className="hidden sm:inline font-mono text-[10.5px] text-[#737373] tracking-normal">
+                ({mealInfo.timingStr})
               </span>
-            ))
-          ) : (
-            <span className="text-[13.5px] font-medium text-[#737373]">
-              Menu items updating soon
-            </span>
-          )}
+            )}
+          </div>
+
+          {/* Right Time Badge */}
+          <div className={`px-2.5 py-1 uppercase tracking-wider font-mono font-bold text-[10.5px] sm:text-[11px] shrink-0 rounded-[3px] border flex items-center gap-1.5 ${
+            isLive
+              ? 'bg-[#18A889]/15 text-[#2DD4BF] border-[#18A889]/30'
+              : 'bg-white/[0.08] text-white/90 border-white/10'
+          }`}>
+            <Clock className="w-3 h-3 opacity-70" />
+            <span>{mealInfo.timeLeft}</span>
+          </div>
         </div>
 
-        {/* Action Link Arrow */}
-        <div className="flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-widest text-[#A0A0A0] group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0">
-          <span>FULL MENU</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+        {/* Row 2: Food Items Inline Text + Full Menu Link */}
+        <div className="flex items-center justify-between gap-4 pt-0.5">
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 min-w-0 flex-1">
+            {displayItems.length > 0 ? (
+              displayItems.map((item, idx) => (
+                <span 
+                  key={idx} 
+                  className="text-[14px] sm:text-[15px] font-semibold text-white tracking-tight leading-snug"
+                >
+                  {item}
+                  {idx < displayItems.length - 1 && (
+                    <span className="text-white/30 ml-2.5 font-normal select-none">·</span>
+                  )}
+                </span>
+              ))
+            ) : (
+              <span className="text-[13.5px] font-medium text-[#737373]">
+                Menu items updating soon
+              </span>
+            )}
+          </div>
+
+          {/* Action Link Arrow */}
+          <div className="flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-widest text-[#A0A0A0] group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0">
+            <span>FULL MENU</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </div>
         </div>
       </div>
     </div>
