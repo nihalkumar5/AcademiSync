@@ -17,8 +17,8 @@
 }
 
 :root {
-  /* Clean, crisp off-white minimal Japanese paper background */
-  --background: #FAFAF8; 
+  /* Warm, premium neutral base background */
+  --background: #F8F8F5; 
   /* Stark charcoal/black text */
   --foreground: #111111; 
 }

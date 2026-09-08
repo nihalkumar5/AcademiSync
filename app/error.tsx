@@ -51,7 +51,7 @@ export default function Error({
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#FAFAF8] dark:bg-[#090A0C] text-[#111111] dark:text-[#FFFFFF] p-6 font-sans">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#F8F8F5] dark:bg-[#090A0C] text-[#111111] dark:text-[#FFFFFF] p-6 font-sans">
       <div className="max-w-md w-full p-6 sm:p-8 bg-white dark:bg-[#111110] border border-[#E5E5E3] dark:border-[#222222] shadow-sm text-center flex flex-col items-center rounded-none">
         <div className="w-11 h-11 rounded-none bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 flex items-center justify-center mb-5 text-red-600 dark:text-red-400">
           <AlertCircle className="w-5 h-5" />

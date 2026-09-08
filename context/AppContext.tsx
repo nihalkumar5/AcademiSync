@@ -45,7 +45,7 @@ export const syncNativeStatusBar = async (isDark: boolean) => {
       const { StatusBar, Style } = await import('@capacitor/status-bar');
       // In Capacitor: Style.Dark = White icons (for dark bg), Style.Light = Dark icons (for light bg)
       await StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light }).catch(() => {});
-      await StatusBar.setBackgroundColor({ color: isDark ? '#111110' : '#FAFAF8' }).catch(() => {});
+      await StatusBar.setBackgroundColor({ color: isDark ? '#111110' : '#F8F8F5' }).catch(() => {});
     } catch (_) {}
   }
 };
@@ -768,7 +768,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         metaTheme.setAttribute('name', 'theme-color');
         document.head.appendChild(metaTheme);
       }
-      metaTheme.setAttribute('content', isDark ? '#111110' : '#FAFAF8');
+      metaTheme.setAttribute('content', isDark ? '#111110' : '#F8F8F5');
     } catch (e) {}
 
     // Check for holiday to trigger balloons animation once per session
@@ -1534,7 +1534,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           metaTheme.setAttribute('name', 'theme-color');
           document.head.appendChild(metaTheme);
         }
-        metaTheme.setAttribute('content', isDark ? '#111110' : '#FAFAF8');
+        metaTheme.setAttribute('content', isDark ? '#111110' : '#F8F8F5');
       } catch (e) {}
     }
     showToast('Preferences Saved', 'Updated application settings', 'success');

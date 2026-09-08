@@ -9,7 +9,7 @@ export const viewport: Viewport = {
   userScalable: false,
   viewportFit: 'cover',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#FAFAF8' },
+    { media: '(prefers-color-scheme: light)', color: '#F8F8F5' },
     { media: '(prefers-color-scheme: dark)', color: '#090A0C' },
   ],
 };
@@ -40,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="bg-[#FAFAF8] dark:bg-[#090A0C]" suppressHydrationWarning>
+    <html lang="en" className="bg-[#F8F8F5] dark:bg-[#090A0C]" suppressHydrationWarning>
       <head>
         <link rel="apple-touch-icon" href="/logo51.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/logo51.png" />
@@ -48,7 +48,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
-      <body className="min-h-[100dvh] bg-[#FAFAF8] dark:bg-[#090A0C] text-[#111111] dark:text-[#F4F4F6] antialiased flex flex-col font-sans selection:bg-[#96725B] selection:text-white">
+      <body className="min-h-[100dvh] bg-[#F8F8F5] dark:bg-[#090A0C] text-[#111111] dark:text-[#F4F4F6] antialiased flex flex-col font-sans selection:bg-[#96725B] selection:text-white">
         <AppProvider>
           {children}
           <Analytics />

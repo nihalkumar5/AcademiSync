@@ -97,7 +97,7 @@ export const Header: React.FC = () => {
   return (
     <>
       <header
-        className="sticky top-0 z-40 w-full flex items-center justify-center px-4 sm:px-8 bg-[#FAFAF8]/75 dark:bg-[#090A0C]/75 backdrop-blur-xl border-b border-[#D8D8D8]/40 dark:border-white/[0.07] shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-colors"
+        className="sticky top-0 z-40 w-full flex items-center justify-center px-4 sm:px-8 bg-[#F8F8F5]/80 dark:bg-[#090A0C]/75 backdrop-blur-xl border-b border-[#D8D8D8]/40 dark:border-white/[0.07] shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-colors"
         style={{
           paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 12px), 28px)',
           paddingBottom: '12px',

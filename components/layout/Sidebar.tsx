@@ -73,7 +73,7 @@ export const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-[#FAFAF8] dark:bg-[#090A0C] border-r border-black/10 dark:border-white/[0.07] h-screen sticky top-0 select-none p-4 justify-between z-20">
+    <aside className="hidden md:flex flex-col w-64 bg-[#F8F8F5] dark:bg-[#090A0C] border-r border-black/10 dark:border-white/[0.07] h-screen sticky top-0 select-none p-4 justify-between z-20">
       <div className="flex flex-col gap-4">
         {/* Workspace Brand / Header */}
         <div className="flex items-center justify-between px-2 pt-1 pb-3 border-b border-black/10 dark:border-white/[0.07]">

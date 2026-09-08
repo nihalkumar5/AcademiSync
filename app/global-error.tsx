@@ -49,12 +49,12 @@ export default function GlobalError({
   };
 
   return (
-    <html lang="en" className="bg-[#FAFAF8] dark:bg-[#090A0C]">
+    <html lang="en" className="bg-[#F8F8F5] dark:bg-[#090A0C]">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
         <title>Application Error — Intersemester</title>
       </head>
-      <body className="min-h-screen w-full flex items-center justify-center bg-[#FAFAF8] dark:bg-[#090A0C] text-[#111111] dark:text-[#F4F4F6] p-6 font-sans antialiased selection:bg-[#96725B] selection:text-white">
+      <body className="min-h-screen w-full flex items-center justify-center bg-[#F8F8F5] dark:bg-[#090A0C] text-[#111111] dark:text-[#F4F4F6] p-6 font-sans antialiased selection:bg-[#96725B] selection:text-white">
         <div className="max-w-md w-full p-6 sm:p-8 bg-white dark:bg-[#111110] border border-[#E5E5E3] dark:border-[#222222] shadow-sm text-center flex flex-col items-center rounded-none">
           {/* Status Badge */}
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-5 border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 text-[10px] font-mono uppercase tracking-widest rounded-none">
