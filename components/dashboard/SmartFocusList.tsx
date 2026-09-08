@@ -31,29 +31,17 @@ export const SmartFocusList: React.FC = () => {
     return (
       <div className="flex flex-col text-left">
         <div className="flex items-center justify-between px-1 mb-6">
-          <h3 className="text-[12px] sm:text-[13px] font-bold text-[#101828] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
+          <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
             TODAY'S FOCUS
           </h3>
         </div>
-        <div className="flex flex-col items-start justify-center pt-8 pb-7 px-5 sm:px-6 text-left border border-[#E6E8EC] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] rounded-none relative overflow-hidden group">
-          <div className="mb-3 text-emerald-500">
-            <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-          </div>
-          <h3 className="text-[22px] font-semibold text-[#101828] dark:text-[#F4F4F6] tracking-tight leading-[26px] uppercase">
-            YOU'RE ALL CAUGHT UP!
-          </h3>
-          <p className="text-[15px] text-[#667085] dark:text-[#94A3B8] mt-1 max-w-sm leading-relaxed">
-            No pending homework or urgent submissions due today.
-          </p>
-          <div className="mt-4">
-            <button 
-              onClick={() => setActiveView('homework')}
-              className="w-[190px] py-2.5 px-4 bg-[#101828] text-white dark:bg-white dark:text-[#101828] hover:opacity-90 transition-opacity uppercase font-bold tracking-wider text-[11px] text-center rounded-none flex items-center justify-center cursor-pointer"
-            >
-              VIEW ALL TASKS
-            </button>
-          </div>
-        </div>
+        <EmptyState
+          icon={<CheckCircle2 className="w-5 h-5 text-emerald-500" />}
+          title="You're all caught up!"
+          description="No pending homework or urgent submissions due today."
+          actionLabel="View All Tasks"
+          onAction={() => setActiveView('homework')}
+        />
       </div>
     );
   }
@@ -62,10 +50,10 @@ export const SmartFocusList: React.FC = () => {
     <div className="flex flex-col text-left">
       {/* Header */}
       <div className="flex items-center justify-between px-1 mb-6">
-        <h3 className="text-[12px] sm:text-[13px] font-bold text-[#101828] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
+        <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
           TODAY'S FOCUS
         </h3>
-        <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#667085] uppercase tracking-wider">
+        <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wider">
           {focusItems.length} {focusItems.length === 1 ? 'PRIORITY' : 'PRIORITIES'}
         </span>
       </div>

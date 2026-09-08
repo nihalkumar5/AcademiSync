@@ -97,7 +97,7 @@ export const Header: React.FC = () => {
   return (
     <>
       <header
-        className="sticky top-0 z-40 w-full flex items-center justify-center px-4 sm:px-8 bg-[#F8F8F5] dark:bg-[#090A0C] border-b border-[#E6E8EC] dark:border-white/[0.08] transition-colors"
+        className="sticky top-0 z-40 w-full flex items-center justify-center px-4 sm:px-8 bg-[#FAFAF8]/75 dark:bg-[#090A0C]/75 backdrop-blur-xl border-b border-[#D8D8D8]/40 dark:border-white/[0.07] shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-colors"
         style={{
           paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 12px), 28px)',
           paddingBottom: '12px',
@@ -167,21 +167,21 @@ export const Header: React.FC = () => {
           >
             <Bell className="w-4 h-4 md:w-3.5 md:h-3.5 text-[#111111] dark:text-[#F4F4F6]" />
             {unreadNotifs > 0 && (
-              <span className="absolute top-1.5 right-1.5 md:-top-1 md:-right-1 min-w-[14px] h-[14px] md:min-w-[15px] md:h-[15px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[9px] font-bold flex items-center justify-center border border-[#F8F8F5] dark:border-[#090A0C] leading-none rounded-full">
+              <span className="absolute top-1.5 right-1.5 md:-top-1 md:-right-1 min-w-[14px] h-[14px] md:min-w-[15px] md:h-[15px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[9px] font-bold flex items-center justify-center border border-[#FAFAF8] dark:border-[#090A0C] leading-none rounded-full">
                 {unreadNotifs > 99 ? '99+' : unreadNotifs}
               </span>
             )}
           </button>
           
-          {/* Quick Create Dropdown: High-Contrast Black + Button */}
+          {/* Quick Create Dropdown: Original clean icon on mobile */}
           <div className="relative" ref={menuRef}>
             <button
               type="button"
               onClick={() => setAddMenuOpen(!addMenuOpen)}
-              className="w-8 h-8 flex items-center justify-center bg-[#111111] text-[#FFFFFF] hover:opacity-90 transition-all cursor-pointer rounded-none active:scale-95 shadow-xs"
+              className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-[#111111] dark:text-[#F4F4F6] md:bg-[#111111] md:dark:bg-[#F4F4F6] md:text-[#FFFFFF] md:dark:text-[#090A0C] hover:opacity-80 transition-all cursor-pointer rounded-none active:scale-95 shadow-xs"
               title="Add New Action"
             >
-              <Plus className={`w-4 h-4 stroke-[2.5] text-[#FFFFFF] transition-transform duration-200 ${addMenuOpen ? 'rotate-45' : ''}`} />
+              <Plus className={`w-5 h-5 md:w-4 md:h-4 stroke-[2.5] transition-transform duration-200 ${addMenuOpen ? 'rotate-45' : ''}`} />
             </button>
 
             {addMenuOpen && (

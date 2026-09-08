@@ -186,10 +186,10 @@ export const HomeMessCard: React.FC = () => {
   return (
     <div 
       onClick={() => setActiveView('mess')}
-      className={`w-full p-4 sm:p-4.5 rounded-none cursor-pointer transition-all text-left flex flex-col gap-2.5 group ${
+      className={`w-full p-5 sm:p-6 rounded-none cursor-pointer transition-all text-left flex flex-col gap-3.5 group shadow-sm mt-2 ${
         isLive
-          ? 'bg-[#101828] dark:bg-gradient-to-br dark:from-[#13151D] dark:to-[#0C0E12] text-[#FFFFFF] dark:text-[#F4F4F6] border border-[#101828] dark:border-emerald-500/30'
-          : 'bg-[#101828] dark:bg-[#121317] text-[#FFFFFF] dark:text-[#F4F4F6] border border-[#101828] dark:border-white/[0.08] hover:bg-[#1A2234] dark:hover:bg-[#16171D]'
+          ? 'bg-[#111111] dark:bg-gradient-to-br dark:from-[#13151D] dark:to-[#0C0E12] text-[#FFFFFF] dark:text-[#F4F4F6] border border-[#111111] dark:border-emerald-500/30 dark:shadow-[0_8px_30px_-6px_rgba(16,185,129,0.18)]'
+          : 'bg-[#111111] dark:bg-[#121317] text-[#FFFFFF] dark:text-[#F4F4F6] border border-[#111111] dark:border-white/[0.08] dark:hover:border-white/20 dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:bg-[#1A1A1A] dark:hover:bg-[#16171D]'
       }`}
     >
       {/* Row 1: Header Status + Countdown Box */}
@@ -206,7 +206,7 @@ export const HomeMessCard: React.FC = () => {
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 font-mono text-[11px] sm:text-[11.5px] font-bold uppercase tracking-[1.4px] text-[#98A2B3]">
+            <div className="flex items-center gap-1.5 font-mono text-[11px] sm:text-[11.5px] font-bold uppercase tracking-[1.4px] text-[#A0A0A0] dark:text-[#94A3B8]">
               <span className="text-[9px]">●</span>
               <span>{mealInfo.status === 'TOMORROW' ? 'TOMORROW' : 'UPCOMING'}</span>
               <span>·</span>
@@ -216,10 +216,10 @@ export const HomeMessCard: React.FC = () => {
         </div>
 
         {/* Right Time Badge */}
-        <div className={`px-3 py-1 uppercase tracking-wider font-mono font-black text-[10.5px] sm:text-[11px] shrink-0 shadow-sm flex items-center justify-center text-center rounded-none ${
+        <div className={`px-3.5 py-1.5 uppercase tracking-wider font-mono font-black text-[11px] sm:text-[11.5px] shrink-0 shadow-sm flex items-center justify-center text-center rounded-none ${
           isLive
-            ? 'bg-[#FFFFFF] dark:bg-emerald-500/20 text-[#101828] dark:text-emerald-300 dark:border dark:border-emerald-500/40'
-            : 'bg-[#FFFFFF] dark:bg-white/[0.08] text-[#101828] dark:text-[#F4F4F6] dark:border dark:border-white/10'
+            ? 'bg-[#FFFFFF] dark:bg-emerald-500/20 text-[#111111] dark:text-emerald-300 dark:border dark:border-emerald-500/40'
+            : 'bg-[#FFFFFF] dark:bg-white/[0.08] text-[#111111] dark:text-[#F4F4F6] dark:border dark:border-white/10'
         }`}>
           {mealInfo.timeLeft}
         </div>
@@ -227,30 +227,30 @@ export const HomeMessCard: React.FC = () => {
 
       {/* Row 2: Food Items + Full Menu Action */}
       <div className="flex items-center justify-between gap-4 pt-0.5">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 min-w-0 flex-1">
           {displayItems.length > 0 ? (
             displayItems.map((item, idx) => (
               <span 
                 key={idx} 
-                className="text-[15px] sm:text-[16px] font-bold tracking-tight leading-none text-white dark:text-[#F4F4F6]"
+                className="text-[15px] sm:text-[16px] font-bold tracking-tight leading-snug"
               >
                 {item}
                 {idx < displayItems.length - 1 && (
-                  <span className="opacity-30 ml-2 font-normal">·</span>
+                  <span className="opacity-30 ml-2.5 font-normal">·</span>
                 )}
               </span>
             ))
           ) : (
-            <span className="text-[13px] font-medium opacity-60">
+            <span className="text-[14px] font-medium opacity-60">
               Menu items updating soon
             </span>
           )}
         </div>
 
         {/* Action Link Arrow */}
-        <div className="flex items-center gap-1.5 text-[11px] font-mono font-bold uppercase tracking-wider text-white dark:text-[#F4F4F6] group-hover:text-white/80 transition-all shrink-0">
+        <div className="flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-widest text-[#A0A0A0] dark:text-[#94A3B8] group-hover:text-white dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0">
           <span>FULL MENU</span>
-          <ArrowRight className="w-3.5 h-3.5 text-white dark:text-[#F4F4F6]" />
+          <ArrowRight className="w-3.5 h-3.5" />
         </div>
       </div>
     </div>
