@@ -232,7 +232,7 @@ export const HomeMessCard: React.FC = () => {
             displayItems.map((item, idx) => (
               <span 
                 key={idx} 
-                className="text-[15px] sm:text-[16px] font-bold tracking-tight leading-tight"
+                className="text-[15px] sm:text-[16px] font-bold tracking-tight leading-none text-white dark:text-[#F4F4F6]"
               >
                 {item}
                 {idx < displayItems.length - 1 && (
@@ -248,9 +248,9 @@ export const HomeMessCard: React.FC = () => {
         </div>
 
         {/* Action Link Arrow */}
-        <div className="flex items-center gap-1 text-[10px] font-mono font-medium uppercase tracking-wider text-[#98A2B3] group-hover:text-white transition-all shrink-0">
+        <div className="flex items-center gap-1.5 text-[11px] font-mono font-bold uppercase tracking-wider text-white dark:text-[#F4F4F6] group-hover:text-white/80 transition-all shrink-0">
           <span>FULL MENU</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <ArrowRight className="w-3.5 h-3.5 text-white dark:text-[#F4F4F6]" />
         </div>
       </div>
     </div>

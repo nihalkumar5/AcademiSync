@@ -58,10 +58,10 @@ export const InviteBatchmatesCard = () => {
             </p>
             {isSynced && sixDigitCode && (
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-[10px] font-semibold text-[#667085] dark:text-[#A1A1AA] uppercase tracking-wider">
+                <span className="text-[10px] font-semibold text-[#667085] dark:text-[#A1A1AA] uppercase tracking-wider leading-none">
                   Batch Code:
                 </span>
-                <span className="text-[12px] font-mono font-bold tracking-[1.5px] text-[#101828] dark:text-[#F4F4F6] border border-[#E6E8EC] dark:border-white/10 px-2.5 py-0.5 rounded-none select-all bg-transparent">
+                <span className="inline-flex items-center text-[12px] font-mono font-bold tracking-[1.5px] text-[#101828] dark:text-[#F4F4F6] border border-[#E6E8EC] dark:border-white/10 px-2.5 py-0.5 rounded-none select-all bg-transparent leading-none">
                   {sixDigitCode}
                 </span>
               </div>
@@ -86,14 +86,14 @@ export const InviteBatchmatesCard = () => {
           )}
         </div>
 
-        <div className="absolute right-0 bottom-0 z-0 flex items-end justify-end h-[100%] pr-0 pointer-events-none">
+        <div className="absolute right-3 bottom-2 z-0 flex items-end justify-end pointer-events-none">
           {/* White Frosted Glass backdrop in dark mode */}
-          <div className="hidden dark:block absolute right-2 bottom-1 w-[125px] sm:w-[145px] h-[105px] sm:h-[120px] rounded-none bg-white/90 -z-10" />
+          <div className="hidden dark:block absolute right-1 bottom-1 w-[120px] sm:w-[140px] h-[100px] sm:h-[115px] rounded-none bg-white/90 -z-10" />
 
           <img 
             src="/invite2.png" 
             alt="Invite illustration" 
-            className="relative z-10 w-[145px] sm:w-[165px] h-[120px] sm:h-[135px] object-contain object-bottom translate-y-[8%] translate-x-[4%]" 
+            className="relative z-10 w-[135px] sm:w-[155px] h-[110px] sm:h-[125px] object-contain object-bottom" 
           />
         </div>
       </div>

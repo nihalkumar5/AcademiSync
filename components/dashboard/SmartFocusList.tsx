@@ -35,7 +35,7 @@ export const SmartFocusList: React.FC = () => {
             TODAY'S FOCUS
           </h3>
         </div>
-        <div className="flex flex-col items-start justify-center p-5 text-left border border-[#E6E8EC] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] rounded-none relative overflow-hidden group">
+        <div className="flex flex-col items-start justify-center pt-8 pb-7 px-5 sm:px-6 text-left border border-[#E6E8EC] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] rounded-none relative overflow-hidden group">
           <div className="mb-3 text-emerald-500">
             <CheckCircle2 className="w-5 h-5 text-emerald-500" />
           </div>
