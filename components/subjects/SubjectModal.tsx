@@ -8,6 +8,8 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Plus, X, Backpack, Sparkles } from 'lucide-react';
 
+import { PASTEL_THEMES, THEME_KEYS } from '@/lib/cardColors';
+
 export interface SubjectModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -28,7 +30,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
   const [facultyEmail, setFacultyEmail] = useState('');
   const [room, setRoom] = useState('LT-1');
   const [credits, setCredits] = useState(4);
-  const [color, setColor] = useState('#7C897A');
+  const [color, setColor] = useState('#334CC4');
   const [isLab, setIsLab] = useState(false);
   const [labRoom, setLabRoom] = useState('');
   const [driveLink, setDriveLink] = useState('');
@@ -46,13 +48,13 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
     'Drawing Instruments',
   ];
 
-  const defaultColors = [
-    { name: 'Mint', value: '#18A889', bg: '#E5F4EF' },
-    { name: 'Periwinkle Blue', value: '#334CC4', bg: '#E8EDFF' },
-    { name: 'Peach', value: '#D9795F', bg: '#F9E9E3' },
-    { name: 'Lavender', value: '#8067B5', bg: '#F0EAFB' },
-    { name: 'Yellow', value: '#C99A32', bg: '#F8F0D8' },
-  ];
+  const defaultColors = THEME_KEYS.map((key) => ({
+    key,
+    name: PASTEL_THEMES[key].name,
+    value: PASTEL_THEMES[key].accent,
+    bg: PASTEL_THEMES[key].bg,
+    border: PASTEL_THEMES[key].border || PASTEL_THEMES[key].accent,
+  }));
 
   useEffect(() => {
     if (subjectToEdit) {
@@ -234,31 +236,47 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
         />
 
         {/* Color Picker */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-[#151515] dark:text-zinc-300">
-            Subject Pastel Theme
-          </label>
-          <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-medium text-[#151515] dark:text-zinc-300">
+              Subject Pastel Theme & Accent
+            </label>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-zinc-400">Custom:</span>
+              <input
+                type="color"
+                value={color.startsWith('#') ? color : '#334CC4'}
+                onChange={(e) => setColor(e.target.value)}
+                className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent p-0"
+                title="Choose custom shade"
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             {defaultColors.map((c) => {
-              const isSelected = color === c.value || color === c.name.toLowerCase();
+              const isSelected =
+                color.toLowerCase() === c.value.toLowerCase() ||
+                color.toLowerCase() === c.key.toLowerCase() ||
+                color.toLowerCase() === c.bg.toLowerCase();
               return (
                 <button
-                  key={c.value}
+                  key={c.key}
                   type="button"
                   onClick={() => setColor(c.value)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] border transition-all cursor-pointer text-xs font-semibold"
+                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-[3px] border transition-all cursor-pointer text-xs font-semibold text-left"
                   style={{
                     backgroundColor: c.bg,
                     borderColor: isSelected ? c.value : 'transparent',
                     color: c.value,
-                    boxShadow: isSelected ? `0 0 0 1.5px ${c.value}` : 'none',
+                    boxShadow: isSelected ? `0 0 0 2px ${c.value}` : 'none',
                   }}
                 >
                   <span 
-                    className="w-2.5 h-2.5 rounded-full shrink-0" 
+                    className="w-3 h-3 rounded-full shrink-0 shadow-xs" 
                     style={{ backgroundColor: c.value }}
                   />
-                  <span>{c.name}</span>
+                  <span className="truncate">{c.name}</span>
                 </button>
               );
             })}
