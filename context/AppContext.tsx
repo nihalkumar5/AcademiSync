@@ -151,6 +151,7 @@ export interface AppContextType {
     attachmentName?: string;
   }) => Promise<string>;
   voteBatchTask: (proposalId: string, vote: 'approve' | 'reject') => Promise<void>;
+  deleteBatchProposal: (proposalId: string) => Promise<void>;
   showHolidayAnimation: boolean;
   resetAllData: () => Promise<void>;
   user: any;
@@ -535,40 +536,83 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
       setProposedBatchTasks(fetched);
 
-      // Check for approved proposals to auto-insert into local homework
+      // Check for approved proposals to auto-insert / sync into local homework
       const dismissedProposals = new Set(storage.getDismissedProposals());
-      fetched.forEach((prop) => {
-        if (prop.status === 'approved') {
-          // If the user already deleted/dismissed this proposal, do NOT re-insert it
+      const approvedProps = fetched.filter(p => p.status === 'approved');
+      const approvedIds = new Set(approvedProps.map(p => p.id));
+      const approvedSignatures = new Set(approvedProps.map(p => `${p.title}_${p.deadline || ''}`));
+
+      setHomeworkState((prevHw) => {
+        let changed = false;
+
+        // 1. If a batch-shared task was deleted by the Pilot/CR (no longer in approved proposals),
+        // remove it from everyone's list in real-time!
+        // NOTE: Personal tasks created by the student (!h.isBatchShared && !h.proposalId) remain completely untouched and separate!
+        const filteredHw = prevHw.filter((h) => {
+          const isShared = h.isBatchShared || !!h.proposalId;
+          if (!isShared) {
+            // Strictly personal task - keep it untouched
+            return true;
+          }
+          // Batch task - verify it still exists in the active approved batch proposals
+          const stillApproved = (h.proposalId && approvedIds.has(h.proposalId)) ||
+                                approvedSignatures.has(`${h.title}_${h.deadline || ''}`);
+          if (!stillApproved) {
+            changed = true;
+            return false;
+          }
+          return true;
+        });
+
+        // 2. Add newly approved batch tasks that are not dismissed
+        const newTasksToAdd: Homework[] = [];
+        approvedProps.forEach((prop) => {
           if (dismissedProposals.has(prop.id) || dismissedProposals.has(`${prop.title}_${prop.deadline || ''}`)) {
             return;
           }
 
-          setHomeworkState((prevHw) => {
-            const alreadyExists = prevHw.some(
-              (h) => h.proposalId === prop.id || (h.title === prop.title && h.deadline === prop.deadline)
-            );
-            if (alreadyExists) return prevHw;
+          const existingIndex = filteredHw.findIndex(
+            (h) => h.proposalId === prop.id || (h.title === prop.title && h.deadline === prop.deadline)
+          );
 
-            const newHw: Homework = {
-              id: `hw_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-              subjectId: prop.subjectId,
-              subjectName: prop.subjectName,
-              title: prop.title,
-              description: prop.description || '',
-              deadline: prop.deadline,
-              priority: prop.priority,
-              status: 'Not Started',
-              attachmentName: prop.attachmentName || '',
-              createdAt: new Date().toISOString(),
-              isBatchShared: true,
-              proposalId: prop.id,
-            };
-            const updated = [newHw, ...prevHw];
-            storage.setHomework(updated);
-            return updated;
-          });
+          if (existingIndex >= 0) {
+            const existing = filteredHw[existingIndex];
+            if (!existing.isBatchShared || !existing.proposalId) {
+              filteredHw[existingIndex] = {
+                ...existing,
+                isBatchShared: true,
+                proposalId: prop.id,
+              };
+              changed = true;
+            }
+            return;
+          }
+
+          const newHw: Homework = {
+            id: `hw_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+            subjectId: prop.subjectId,
+            subjectName: prop.subjectName,
+            title: prop.title,
+            description: prop.description || '',
+            deadline: prop.deadline,
+            priority: prop.priority,
+            status: 'Not Started',
+            attachmentName: prop.attachmentName || '',
+            createdAt: new Date().toISOString(),
+            isBatchShared: true,
+            proposalId: prop.id,
+          };
+          newTasksToAdd.push(newHw);
+          changed = true;
+        });
+
+        if (!changed && newTasksToAdd.length === 0) {
+          return prevHw;
         }
+
+        const updated = [...newTasksToAdd, ...filteredHw];
+        storage.setHomework(updated);
+        return updated;
       });
     }, (err) => {
       console.error('Error listening to batch proposals:', err);
@@ -1151,12 +1195,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
 
         // If CR / Batch Pilot deletes a shared task, also delete from Firestore shared_timetables
-        if (profile.isBatchSynced && profile.batchKey && isBatchCR && target.proposalId) {
-          try {
-            const propDocRef = doc(db, 'shared_timetables', profile.batchKey, 'proposed_tasks', target.proposalId);
-            deleteDoc(propDocRef).catch((e) => console.error('Error deleting batch proposed task doc:', e));
-          } catch (e) {
-            console.error('Error deleting batch proposal:', e);
+        if (profile.isBatchSynced && profile.batchKey && isBatchCR && (target.isBatchShared || target.proposalId)) {
+          let propIdToDelete = target.proposalId;
+          if (!propIdToDelete) {
+            const matchingProp = proposedBatchTasks.find(
+              (p) => p.title === target.title && (p.deadline === target.deadline || !target.deadline)
+            );
+            if (matchingProp) propIdToDelete = matchingProp.id;
+          }
+
+          if (propIdToDelete) {
+            try {
+              const propDocRef = doc(db, 'shared_timetables', profile.batchKey, 'proposed_tasks', propIdToDelete);
+              deleteDoc(propDocRef)
+                .then(() => {
+                  showToast('Batch Task Removed', 'Deleted for all batch members in real-time.', 'info');
+                })
+                .catch((e) => console.error('Error deleting batch proposed task doc:', e));
+            } catch (e) {
+              console.error('Error deleting batch proposal:', e);
+            }
           }
         }
       }
@@ -2489,18 +2547,37 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     await setDoc(proposalDocRef, sanitizeForFirestore(newProposal));
 
-    // Also add to creator's local tasks immediately
-    addHomework({
-      subjectId: taskData.subjectId,
-      subjectName: taskData.subjectName,
-      title: taskData.title,
-      description: taskData.description,
-      deadline: taskData.deadline,
-      priority: taskData.priority,
-      status: 'Not Started',
-      attachmentName: taskData.attachmentName,
-      isBatchShared: true,
-      proposalId: proposalId,
+    // Update existing or add to creator's local tasks immediately
+    setHomeworkState((prev) => {
+      const existing = prev.find(
+        (h) =>
+          (h.title === taskData.title && h.deadline === taskData.deadline) ||
+          (taskData.subjectId && h.subjectId === taskData.subjectId && h.title === taskData.title)
+      );
+      if (existing) {
+        const updated = prev.map((h) =>
+          h.id === existing.id ? { ...h, isBatchShared: true, proposalId } : h
+        );
+        storage.setHomework(updated);
+        return updated;
+      }
+      const newHw: Homework = {
+        id: `hw_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        subjectId: taskData.subjectId,
+        subjectName: taskData.subjectName,
+        title: taskData.title,
+        description: taskData.description || '',
+        deadline: taskData.deadline,
+        priority: taskData.priority,
+        status: 'Not Started',
+        attachmentName: taskData.attachmentName || '',
+        createdAt: new Date().toISOString(),
+        isBatchShared: true,
+        proposalId: proposalId,
+      };
+      const updated = [newHw, ...prev];
+      storage.setHomework(updated);
+      return updated;
     });
 
     if (memberCount <= 1 || isBatchCR) {
@@ -2510,6 +2587,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
     
     return proposalId;
+  };
+
+  const deleteBatchProposal = async (proposalId: string): Promise<void> => {
+    if (!profile.isBatchSynced || !profile.batchKey) return;
+    try {
+      const propDocRef = doc(db, 'shared_timetables', profile.batchKey, 'proposed_tasks', proposalId);
+      await deleteDoc(propDocRef);
+      showToast('Proposal Removed', 'Task proposal deleted.', 'info');
+    } catch (e) {
+      console.error('Error deleting proposal:', e);
+      showToast('Delete Failed', 'Could not delete proposal.', 'error');
+    }
   };
 
   const voteBatchTask = async (proposalId: string, vote: 'approve' | 'reject'): Promise<void> => {
@@ -2575,6 +2664,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         proposedBatchTasks,
         proposeBatchTask,
         voteBatchTask,
+        deleteBatchProposal,
         isHydrated,
         activeView,
         setActiveView,

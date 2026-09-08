@@ -287,7 +287,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
               className="text-[13px] font-bold uppercase bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] px-6 py-2.5 hover:opacity-90 transition-opacity"
               onClick={async () => {
                 setShowConfirmModal(false);
-                await proposeBatchTask({
+                const propId = await proposeBatchTask({
                   subjectId: homework.subjectId,
                   subjectName: homework.subjectName,
                   title: homework.title,
@@ -296,7 +296,9 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                   priority: homework.priority,
                   attachmentName: homework.attachmentName,
                 });
-                updateHomework(homework.id, { isBatchShared: true });
+                if (propId) {
+                  updateHomework(homework.id, { isBatchShared: true, proposalId: propId });
+                }
               }}
             >
               {isBatchCR ? "Yes, Post Task" : "Yes, Propose Task"}

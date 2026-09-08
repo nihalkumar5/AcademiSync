@@ -12,13 +12,12 @@ import {
   Clock,
   Users,
   AlertCircle,
-  Calendar,
-  Sparkles
+  Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const ProposedBatchTasksVoting: React.FC = () => {
-  const { profile, proposedBatchTasks, voteBatchTask, subjects, user } = useApp();
+  const { profile, proposedBatchTasks, voteBatchTask, deleteBatchProposal, isBatchCR, subjects, user } = useApp();
 
   if (!profile.isBatchSynced || !profile.batchKey) return null;
 
@@ -82,6 +81,18 @@ export const ProposedBatchTasksVoting: React.FC = () => {
                         day: 'numeric',
                       })}
                     </span>
+                    {(isBatchCR || proposal.creatorId === user?.id) && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteBatchProposal(proposal.id);
+                        }}
+                        title="Delete Proposal"
+                        className="p-1 text-black/40 hover:text-rose-600 dark:text-white/40 dark:hover:text-rose-400 transition-colors ml-1 cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
 
                   {/* Title & Description */}
