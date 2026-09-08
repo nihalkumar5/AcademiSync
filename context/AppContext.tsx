@@ -536,8 +536,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setProposedBatchTasks(fetched);
 
       // Check for approved proposals to auto-insert into local homework
+      const dismissedProposals = new Set(storage.getDismissedProposals());
       fetched.forEach((prop) => {
         if (prop.status === 'approved') {
+          // If the user already deleted/dismissed this proposal, do NOT re-insert it
+          if (dismissedProposals.has(prop.id) || dismissedProposals.has(`${prop.title}_${prop.deadline || ''}`)) {
+            return;
+          }
+
           setHomeworkState((prevHw) => {
             const alreadyExists = prevHw.some(
               (h) => h.proposalId === prop.id || (h.title === prop.title && h.deadline === prop.deadline)
@@ -1125,8 +1131,36 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const deleteHomework = (id: string) => {
     setHomeworkState(prev => {
+      const target = prev.find((h) => h.id === id);
       const updated = prev.filter((h) => h.id !== id);
       storage.setHomework(updated);
+
+      if (target) {
+        // Track dismissed proposal signatures so real-time batch listeners never resurrect it
+        const dismissed = storage.getDismissedProposals();
+        const toAdd: string[] = [];
+        if (target.proposalId && !dismissed.includes(target.proposalId)) {
+          toAdd.push(target.proposalId);
+        }
+        const signature = `${target.title}_${target.deadline || ''}`;
+        if (!dismissed.includes(signature)) {
+          toAdd.push(signature);
+        }
+        if (toAdd.length > 0) {
+          storage.setDismissedProposals([...dismissed, ...toAdd]);
+        }
+
+        // If CR / Batch Pilot deletes a shared task, also delete from Firestore shared_timetables
+        if (profile.isBatchSynced && profile.batchKey && isBatchCR && target.proposalId) {
+          try {
+            const propDocRef = doc(db, 'shared_timetables', profile.batchKey, 'proposed_tasks', target.proposalId);
+            deleteDoc(propDocRef).catch((e) => console.error('Error deleting batch proposed task doc:', e));
+          } catch (e) {
+            console.error('Error deleting batch proposal:', e);
+          }
+        }
+      }
+
       return updated;
     });
     showToast('Task Deleted', 'Assignment removed from list', 'info');

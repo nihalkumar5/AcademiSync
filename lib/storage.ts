@@ -37,6 +37,7 @@ const STORAGE_KEYS = {
   CANCELLED_SESSIONS_META: 'iiitnr_cancelled_sessions_meta_v1',
   RESCHEDULED_SESSIONS: 'iiitnr_rescheduled_sessions_v1',
   EXTRA_SESSIONS: 'iiitnr_extra_sessions_v1',
+  DISMISSED_PROPOSALS: 'iiitnr_dismissed_proposals_v1',
 };
 
 // Safe LocalStorage helpers
@@ -136,6 +137,15 @@ export const storage = {
 
   getExtraSessions: (): Record<string, any> => getStoredItem(STORAGE_KEYS.EXTRA_SESSIONS, {}),
   setExtraSessions: (extra: Record<string, any>) => setStoredItem(STORAGE_KEYS.EXTRA_SESSIONS, extra),
+
+  getDismissedProposals: (): string[] => {
+    const val = getStoredItem<any>(STORAGE_KEYS.DISMISSED_PROPOSALS, []);
+    return Array.isArray(val) ? val : [];
+  },
+  setDismissedProposals: (ids: string[]) => {
+    const safe = Array.isArray(ids) ? ids : [];
+    setStoredItem(STORAGE_KEYS.DISMISSED_PROPOSALS, safe);
+  },
 
   resetAll: () => {
     if (typeof window === 'undefined') return;
