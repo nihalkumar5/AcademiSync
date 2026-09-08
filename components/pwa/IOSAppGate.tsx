@@ -29,6 +29,12 @@ export const IOSAppGate: React.FC = () => {
       return;
     }
 
+    // Auto-bypass on localhost / local development unless preview is requested
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocalhost) {
+      return;
+    }
+
     // Session bypass check
     const isTempBypassed = sessionStorage.getItem('ios_gate_bypassed') === 'true';
 

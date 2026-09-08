@@ -29,6 +29,12 @@ export const AndroidAppGate: React.FC = () => {
       return;
     }
 
+    // Auto-bypass on localhost / local development unless preview is requested
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocalhost) {
+      return;
+    }
+
     // Session bypass check (for admin previews if needed)
     const isTempBypassed = sessionStorage.getItem('android_gate_bypassed') === 'true';
 
