@@ -295,7 +295,7 @@ export const scheduleTimetableLocalNotifications = async (
       });
     }
 
-    // 2. Schedule Daily Evening Bag Packing Reminder
+    // 2. Schedule Evening Bag Packing Reminder (only for evenings preceding active class days!)
     let bagH = 20;
     let bagM = 0;
     if (eveningBagTime) {
@@ -316,21 +316,58 @@ export const scheduleTimetableLocalNotifications = async (
       }
     }
 
-    notificationsToSchedule.push({
-      title: '🎒 Pack Your Bag for Tomorrow',
-      body: 'Check your carry bag items and timetable for tomorrow\'s classes.',
-      id: 5001,
-      schedule: {
-        on: {
-          hour: bagH,
-          minute: bagM,
+    const now = new Date();
+    const nowTimeMs = now.getTime();
+    for (let dayOffset = 0; dayOffset < WEEKS_AHEAD * 7; dayOffset++) {
+      const eveningDate = new Date(now);
+      eveningDate.setDate(now.getDate() + dayOffset);
+      eveningDate.setHours(bagH, bagM, 0, 0);
+
+      // Skip if this specific evening reminder time is already in the past
+      if (eveningDate.getTime() <= nowTimeMs) continue;
+
+      // Target day: tomorrow relative to this evening
+      const tomorrowDate = new Date(eveningDate);
+      tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+      const tomorrowDateStr = getLocalDateString(tomorrowDate);
+      const tomorrowJsDay = tomorrowDate.getDay();
+
+      // If tomorrow is a holiday or exam day, skip packing reminder
+      if (skipDates.has(tomorrowDateStr)) continue;
+
+      // Check if tomorrow has regular classes
+      const tomorrowRegularClasses = timetable.filter((s) => {
+        const jsDay = dayNameToJsDay[s.day];
+        if (jsDay !== tomorrowJsDay) return false;
+        if (cancelledSessionKeys.includes(`${tomorrowDateStr}_${s.id}`)) return false;
+        return true;
+      });
+
+      // Check if tomorrow has extra classes
+      let hasExtraClass = false;
+      if (extraSessions && typeof extraSessions === 'object') {
+        hasExtraClass = Object.values(extraSessions).some((extra: any) => extra?.date === tomorrowDateStr);
+      }
+
+      // If tomorrow has NO classes at all (blank day / off day / weekend), do NOT schedule!
+      if (tomorrowRegularClasses.length === 0 && !hasExtraClass) continue;
+
+      const totalClassesTomorrow = tomorrowRegularClasses.length + (hasExtraClass ? 1 : 0);
+      const notifId = 5000 + dayOffset;
+
+      notificationsToSchedule.push({
+        title: '🎒 Pack Your Bag for Tomorrow',
+        body: `You have ${totalClassesTomorrow} ${totalClassesTomorrow === 1 ? 'class' : 'classes'} scheduled tomorrow. Check your carry bag items.`,
+        id: notifId,
+        schedule: {
+          at: eveningDate,
+          allowWhileIdle: true,
         },
-        allowWhileIdle: true,
-      },
-      sound: 'class_bell',
-      channelId: 'class_alerts_v3',
-      extra: null,
-    });
+        sound: 'class_bell',
+        channelId: 'class_alerts_v3',
+        extra: null,
+      });
+    }
 
     // 3. Schedule Homework / Assignment Due Reminders
     if (homework && homework.length > 0) {

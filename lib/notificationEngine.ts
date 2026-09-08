@@ -1,5 +1,5 @@
 import { AppNotification, ClassSession, Homework, Subject, UserSettings, AcademicEvent } from './types';
-import { getCurrentDayOfWeek, timeToMinutes, formatTime12Hour, getTodayDateString, getTomorrowDateString } from './timetableUtils';
+import { getCurrentDayOfWeek, getTomorrowDayOfWeek, timeToMinutes, formatTime12Hour, getTodayDateString, getTomorrowDateString } from './timetableUtils';
 
 export const checkAndGenerateSmartNotifications = (
   timetable: ClassSession[],
@@ -126,7 +126,13 @@ export const checkAndGenerateSmartNotifications = (
 
   if (isCarryTime) {
     const carryCheckKey = `carry_evening_${dateTodayStr}`;
+    const tomorrowDay = getTomorrowDayOfWeek();
     const tomorrowHoliday = events.find((e) => e.date === dateTomorrowStr && e.type === 'holiday');
+    const tomorrowExam = events.find((e) => e.date === dateTomorrowStr && e.type === 'exam');
+    const isTomorrowHolidayOrExam = !!(tomorrowHoliday || tomorrowExam);
+
+    const tomorrowClasses = isTomorrowHolidayOrExam ? [] : timetable
+      .filter((s) => s.day === tomorrowDay && !cancelledSessionKeys.includes(`${dateTomorrowStr}_${s.id}`));
 
     if (!existingIds.has(carryCheckKey)) {
       if (tomorrowHoliday) {
@@ -139,11 +145,11 @@ export const checkAndGenerateSmartNotifications = (
           read: false,
           relatedId: carryCheckKey,
         });
-      } else {
+      } else if (tomorrowClasses.length > 0) {
         newNotifications.push({
           id: `notif_${Date.now()}_carry`,
           title: `🎒 Pack Your Bag for Tomorrow`,
-          message: `Check your carry bag items and lab requirements for tomorrow's classes.`,
+          message: `You have ${tomorrowClasses.length} ${tomorrowClasses.length === 1 ? 'class' : 'classes'} tomorrow. Check your carry bag items and lab requirements.`,
           category: 'carry',
           timestamp: new Date().toISOString(),
           read: false,

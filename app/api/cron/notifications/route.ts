@@ -95,16 +95,32 @@ export async function GET(request: Request) {
         }
       }
 
-      // 2. Check for Evening Bag Pack (skip on holidays too)
-      if (!isHoliday) {
-        const bagCheckTime = settings?.eveningCarryReminderTime ?? settings?.eveningBagCheckTime ?? "20:00";
-        const [bagHour, bagMin] = bagCheckTime.split(':').map(Number);
-        if (currentHour === bagHour && currentMinute === bagMin) {
+      // 2. Check for Evening Bag Pack (only if tomorrow has active classes and is not a holiday/exam)
+      const bagCheckTime = settings?.eveningCarryReminderTime ?? settings?.eveningBagCheckTime ?? "20:00";
+      const [bagHour, bagMin] = bagCheckTime.split(':').map(Number);
+      if (currentHour === bagHour && currentMinute === bagMin) {
+        // Calculate tomorrow's date & day in IST
+        const tomorrowIst = new Date(istNow.getTime() + 24 * 60 * 60 * 1000);
+        const tomorrowDateStr = tomorrowIst.toISOString().split('T')[0];
+        const tomorrowDayStr = dayNames[tomorrowIst.getDay()];
+
+        const isTomorrowHolidayOrExam = events.some((event: any) => {
+          if (!event.date) return false;
+          const eventDate = typeof event.date === 'string'
+            ? event.date
+            : new Date(event.date.seconds * 1000 + istOffset).toISOString().split('T')[0];
+          return eventDate === tomorrowDateStr && (event.type === 'holiday' || event.type === 'exam');
+        });
+
+        const tomorrowClasses = isTomorrowHolidayOrExam ? [] : timetable.filter((c: any) => c.day === tomorrowDayStr);
+
+        // ONLY send if tomorrow has classes!
+        if (tomorrowClasses.length > 0) {
           messages.push({
             token: fcmToken,
             notification: {
               title: "Pack your bag for tomorrow! 🎒",
-              body: "Check Intersemester to see tomorrow's classes and what to carry."
+              body: `You have ${tomorrowClasses.length} ${tomorrowClasses.length === 1 ? 'class' : 'classes'} tomorrow. Check what to carry.`
             }
           });
         }
