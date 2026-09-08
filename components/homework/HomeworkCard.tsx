@@ -42,6 +42,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
   const { profile, proposeBatchTask, updateHomework, isBatchCR, showToast } = useApp();
   const [showMenu, setShowMenu] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -105,12 +106,12 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
               </span>
             )}
 
-            {/* Direct Quick Delete Button */}
+            {/* Direct Quick Delete Button with Confirmation */}
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                onDelete(homework.id);
+                setShowDeleteConfirmModal(true);
               }}
               className="w-8 h-8 flex items-center justify-center -mt-1.5 text-[#6F6F6F]/70 hover:text-red-600 dark:text-[#94A3B8]/70 dark:hover:text-rose-400 hover:bg-red-50/50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
               title="Delete Task"
@@ -200,8 +201,8 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                   
                   <button
                     onClick={() => {
-                      onDelete(homework.id);
                       setShowMenu(false);
+                      setShowDeleteConfirmModal(true);
                     }}
                     className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-red-600 dark:text-rose-400 hover:bg-red-50 dark:hover:bg-rose-950/40 transition-colors w-full cursor-pointer border-t border-[#D9D9D6] dark:border-white/[0.08]"
                   >
@@ -317,6 +318,46 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
               }}
             >
               {isBatchCR ? "Yes, Post Task" : "Yes, Propose Task"}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteConfirmModal}
+        onClose={() => setShowDeleteConfirmModal(false)}
+        title="Delete Task"
+        maxWidth="sm"
+      >
+        <div className="flex flex-col gap-4 text-left">
+          <div className="flex flex-col gap-2">
+            <p className="text-[14px] text-[#111111] dark:text-[#FFFFFF]">
+              Are you sure you want to delete <span className="font-bold">"{homework.title}"</span>?
+            </p>
+            {homework.isBatchShared && isBatchCR && (
+              <p className="text-[12px] font-medium text-amber-600 dark:text-amber-400 bg-amber-500/10 p-2.5 border border-amber-500/20">
+                ⚠️ As a Batch Pilot, this will remove the task for all batch members in real-time.
+              </p>
+            )}
+          </div>
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#D9D9D6] dark:border-[#333333] mt-2">
+            <button 
+              type="button"
+              className="text-[13px] font-bold uppercase text-[#111111] dark:text-[#FFFFFF] px-4 py-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              onClick={() => setShowDeleteConfirmModal(false)}
+            >
+              No, Keep
+            </button>
+            <button 
+              type="button"
+              className="text-[13px] font-bold uppercase bg-red-600 hover:bg-red-700 text-[#FFFFFF] px-6 py-2.5 transition-colors cursor-pointer"
+              onClick={() => {
+                setShowDeleteConfirmModal(false);
+                onDelete(homework.id);
+              }}
+            >
+              Yes, Delete
             </button>
           </div>
         </div>

@@ -37,6 +37,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
   const [showSubjectModal, setShowSubjectModal] = useState(false);
   const [showPriorityModal, setShowPriorityModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   const [subjectSearch, setSubjectSearch] = useState('');
 
@@ -279,10 +280,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
               {homeworkToEdit ? (
                 <button 
                   type="button" 
-                  onClick={() => {
-                    deleteHomework(homeworkToEdit.id);
-                    onClose();
-                  }}
+                  onClick={() => setShowDeleteConfirm(true)}
                   className="flex items-center gap-1.5 px-3 py-2 text-[12.5px] font-bold uppercase text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer rounded-none"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -432,6 +430,42 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
                 {status === s && <Check className="w-5 h-5 shrink-0 text-[#111111] dark:text-[#F4F4F6]" />}
               </button>
             ))}
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        title="Delete Task"
+        maxWidth="sm"
+      >
+        <div className="flex flex-col gap-4 text-left">
+          <p className="text-[14px] text-[#111111] dark:text-[#FFFFFF]">
+            Are you sure you want to delete <span className="font-bold">"{title || homeworkToEdit?.title}"</span>?
+          </p>
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#D9D9D6] dark:border-[#333333] mt-2">
+            <button 
+              type="button"
+              className="text-[13px] font-bold uppercase text-[#111111] dark:text-[#FFFFFF] px-4 py-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              onClick={() => setShowDeleteConfirm(false)}
+            >
+              No, Keep
+            </button>
+            <button 
+              type="button"
+              className="text-[13px] font-bold uppercase bg-red-600 hover:bg-red-700 text-[#FFFFFF] px-6 py-2.5 transition-colors cursor-pointer"
+              onClick={() => {
+                if (homeworkToEdit) {
+                  deleteHomework(homeworkToEdit.id);
+                }
+                setShowDeleteConfirm(false);
+                onClose();
+              }}
+            >
+              Yes, Delete
+            </button>
           </div>
         </div>
       </Modal>
