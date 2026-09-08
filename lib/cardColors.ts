@@ -127,3 +127,70 @@ export function getSubjectCardTheme(options: {
   const key = getSubjectThemeKey(subjectName || subjectCode || '');
   return PASTEL_THEMES[key];
 }
+
+export interface TaskTheme {
+  bg: string;
+  darkBg: string;
+  border: string;
+  accent: string;
+  numberColor: string;
+}
+
+export function getTaskCardTheme(options: {
+  isDone?: boolean;
+  isOverdue?: boolean;
+  isInProgress?: boolean;
+  priority?: 'High' | 'Medium' | 'Low' | string;
+}): TaskTheme {
+  const { isDone, isOverdue, isInProgress, priority } = options;
+
+  if (isDone) {
+    return {
+      bg: '#E5F4EF',
+      darkBg: '#0F241E',
+      border: '#CBEBE0',
+      accent: '#18A889',
+      numberColor: '#CEE8DE',
+    };
+  }
+
+  if (isOverdue) {
+    return {
+      bg: '#FCEBED',
+      darkBg: '#261216',
+      border: '#F5CBD1',
+      accent: '#C94B5C',
+      numberColor: '#F3CCD2',
+    };
+  }
+
+  if (priority === 'High') {
+    return {
+      bg: '#FFF0E8',
+      darkBg: '#241612',
+      border: '#F5D8CC',
+      accent: '#C96B45',
+      numberColor: '#F3D5C8',
+    };
+  }
+
+  if (isInProgress) {
+    return {
+      bg: '#E8EDFF',
+      darkBg: '#12182B',
+      border: '#D3DCFF',
+      accent: '#334CC4',
+      numberColor: '#D4DCFA',
+    };
+  }
+
+  // Normal Task (Default Lavender)
+  return {
+    bg: '#F3F0FF',
+    darkBg: '#1C172B',
+    border: '#E5E0F2',
+    accent: '#8067B5',
+    numberColor: '#D9D4EF',
+  };
+}
+

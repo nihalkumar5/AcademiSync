@@ -1,31 +1,17 @@
-'use client';
-
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { calculateTodayFocus } from '@/lib/timetableUtils';
-import { Check, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Check, CheckCircle2, Calendar } from 'lucide-react';
 import { EmptyState } from '../ui/EmptyState';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
+import { getTaskCardTheme } from '@/lib/cardColors';
 
 export const SmartFocusList: React.FC = () => {
   const { homework, timetable, subjects, toggleHomeworkStatus, setActiveView, settings } = useApp();
   const [completingId, setCompletingId] = useState<string | null>(null);
 
   const focusItems = calculateTodayFocus(homework, timetable, subjects, settings.homeworkWarningDays);
-
-  // handleCheck is no longer used for immediate clicks since we removed the checkbox,
-  // but kept for structure. Active view takes them to homework module.
-  const handleCheck = (e: React.MouseEvent, id: string, type: string) => {
-    e.stopPropagation();
-    if (type === 'homework') {
-      setCompletingId(id);
-      setTimeout(() => {
-        toggleHomeworkStatus(id);
-        setCompletingId(null);
-      }, 350);
-    }
-  };
 
   if (focusItems.length === 0) {
     return (
@@ -62,15 +48,17 @@ export const SmartFocusList: React.FC = () => {
       <div className="flex flex-col gap-4">
         <AnimatePresence>
           {focusItems.map((item, idx) => {
-            const isCompleted = completingId === item.id;
-            
-            // Background hierarchy
-            let surfaceClass = '';
-            if (isCompleted) {
-              surfaceClass = 'bg-[#FAFAFA] dark:bg-[#1A1A1A] border-[#E0E0E0] dark:border-[#333333] opacity-60';
-            } else {
-              surfaceClass = 'bg-[#FFFFFF] dark:bg-[#111111] border-[#E0E0E0] dark:border-[#333333]'; // white
-            }
+            const isCompleted = completingId === item.id || item.status === 'Completed';
+            const isOverdue = item.urgency === 'high' && item.deadlineText?.toLowerCase().includes('overdue');
+            const isUrgent = item.urgency === 'high';
+            const isInProgress = item.type === 'homework' && item.status === 'In Progress';
+
+            const theme = getTaskCardTheme({
+              isDone: isCompleted,
+              isOverdue,
+              isInProgress,
+              priority: item.originalPriority,
+            });
 
             return (
               <motion.div
@@ -86,67 +74,92 @@ export const SmartFocusList: React.FC = () => {
                   }
                 }}
                 className={clsx(
-                  'relative flex flex-col p-[16px] bg-[#FFFFFF] dark:bg-[#121317] border border-[#D9D9D6] dark:border-white/[0.08] dark:hover:border-white/20 dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] w-full overflow-hidden transition-all cursor-pointer group hover:bg-[#FDFDFD] dark:hover:bg-[#16171D] rounded-none',
-                  isCompleted ? 'opacity-60' : 'opacity-100'
+                  'relative flex flex-col p-4 sm:p-[18px] rounded-[5px] border w-full overflow-hidden transition-all cursor-pointer group',
+                  isCompleted ? 'opacity-65' : 'opacity-100'
                 )}
+                style={{
+                  borderLeft: `4px solid ${theme.accent}`,
+                  borderColor: theme.border,
+                }}
               >
+                {/* Light pastel background */}
+                <div 
+                  className="absolute inset-0 -z-10 dark:opacity-20"
+                  style={{ backgroundColor: theme.bg }}
+                />
+                <div 
+                  className="hidden dark:block absolute inset-0 -z-10"
+                  style={{ backgroundColor: theme.darkBg }}
+                />
+
                 <div className="relative z-10 flex flex-col h-full">
-                  {/* Number Row */}
-                  <div className="flex items-start justify-between">
-                    <div className="text-[44px] font-bold text-black/10 dark:text-white/[0.07] select-none pointer-events-none leading-[40px] tracking-tighter">
+                  {/* Number and Top Right Toolbar */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div 
+                      className="text-[44px] font-bold leading-[40px] tracking-tighter font-mono select-none pointer-events-none"
+                      style={{ color: theme.numberColor }}
+                    >
                       {String(idx + 1).padStart(2, '0')}
                     </div>
-                    {item.type === 'homework' && item.originalPriority && item.originalPriority !== 'Low' && !isCompleted && (
-                      <span className={clsx(
-                        "text-[9px] font-bold uppercase tracking-widest border px-2 py-0.5",
-                        item.originalPriority === 'High' ? "text-amber-600 dark:text-amber-400 border-amber-600/30 dark:border-amber-500/30 bg-amber-500/5 dark:bg-amber-950/30" : "text-amber-600/70 dark:text-amber-400/70 border-amber-600/20 dark:border-amber-500/20 bg-amber-500/5 dark:bg-amber-950/20"
-                      )}>
-                        {item.originalPriority}
-                      </span>
-                    )}
+
+                    <div className="flex items-center gap-1.5 self-start">
+                      {item.type === 'homework' && item.originalPriority === 'High' && !isCompleted && (
+                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8] text-[#C96B45] text-[9.5px] font-bold uppercase tracking-wider">
+                          HIGH
+                        </span>
+                      )}
+                      {item.type === 'homework' && item.originalPriority === 'Medium' && !isCompleted && (
+                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8]/70 text-[#C96B45]/90 text-[9.5px] font-bold uppercase tracking-wider">
+                          MED
+                        </span>
+                      )}
+                      {isInProgress && (
+                        <span className="px-2 py-0.5 rounded-[2px] bg-[#DCE4FF] text-[#334CC4] text-[9.5px] font-bold uppercase tracking-wider">
+                          DOING
+                        </span>
+                      )}
+                      {isCompleted && (
+                        <span className="px-2 py-0.5 rounded-[2px] bg-[#D2F1E8] text-[#18A889] text-[9.5px] font-bold uppercase tracking-wider">
+                          DONE
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Course Name */}
-                  <span className="text-[10px] font-semibold uppercase tracking-[1.3px] text-[#817B75] dark:text-[#94A3B8] break-words pr-2 mt-4">
+                  <span className="text-[10.5px] font-bold uppercase tracking-[1.3px] text-[#737373] dark:text-[#94A3B8] break-words pr-2 mt-3.5">
                     {item.tag}
                   </span>
 
-                  {/* Title Row Without Checkbox */}
-                  <div className="flex items-start mt-[12px]">
+                  {/* Title Row */}
+                  <div className="flex items-start mt-2.5">
                     <div className="flex flex-col">
                       <h4 className={clsx(
-                        "text-[17px] font-semibold leading-[21px]",
-                        isCompleted ? "text-[#6F6F6F] dark:text-[#71717A] line-through" : "text-[#111111] dark:text-[#F4F4F6]"
+                        "text-[16px] sm:text-[17px] font-bold leading-[22px] tracking-tight group-hover:opacity-80 transition-opacity",
+                        isCompleted ? "text-[#737373] dark:text-[#64748B] line-through" : "text-[#151515] dark:text-[#F4F4F6]"
                       )}>
                         {item.title}
                       </h4>
                     </div>
                   </div>
 
-                  {/* Bottom row metadata */}
-                  <div className="flex items-center justify-between mt-[20px] text-[11px] font-semibold uppercase tracking-[1px] leading-none">
-                    {/* Date */}
+                  {/* Bottom row metadata pill */}
+                  <div className="flex items-center justify-between mt-[16px]">
                     {item.deadlineText ? (
-                      <span className={clsx(item.urgency === 'high' ? "text-red-600 dark:text-rose-400" : "text-[#6F6F6F] dark:text-[#A1A1AA]")}>
+                      <span className={clsx(
+                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[10.5px] font-bold font-mono uppercase tracking-wider",
+                        isUrgent
+                          ? "bg-[#FFF0E8] text-[#C96B45] border border-[#F5D8CC]"
+                          : isOverdue
+                          ? "bg-[#FCEBED] text-[#C94B5C] border border-[#F5CBD1]"
+                          : "bg-black/[0.04] dark:bg-white/[0.05] text-[#737373] dark:text-[#94A3B8] border border-black/[0.04] dark:border-white/[0.06]"
+                      )}>
+                        <Calendar className="w-3 h-3 shrink-0" />
                         {item.deadlineText.toUpperCase()}
                       </span>
                     ) : (
                       <span />
                     )}
-                    
-                    {/* Status indicators */}
-                    <div className="flex items-center gap-3">
-                      {item.type === 'homework' && item.status === 'In Progress' && (
-                        <span className="flex items-center gap-1 text-blue-600 dark:text-sky-400">
-                          ● IN PROGRESS
-                        </span>
-                      )}
-                      {item.type === 'homework' && item.status === 'Completed' && (
-                        <span className="flex items-center gap-1 text-[#6F6F6F]">
-                          ● COMPLETED
-                        </span>
-                      )}
-                    </div>
                   </div>
                 </div>
               </motion.div>
