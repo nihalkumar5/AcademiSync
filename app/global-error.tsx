@@ -89,7 +89,7 @@ export default function GlobalError({
           </div>
 
           {/* Collapsible Error Digest for Diagnostics */}
-          {error?.digest && (
+          {(error?.digest || error?.message) && (
             <div className="mt-6 pt-4 border-t border-[#EEEEEC] dark:border-[#222222] w-full text-left">
               <button
                 type="button"
@@ -100,7 +100,8 @@ export default function GlobalError({
               </button>
               {showDetails && (
                 <pre className="mt-2 p-2.5 bg-[#F5F5F3] dark:bg-[#181817] border border-[#E5E5E3] dark:border-[#262626] text-[10px] font-mono text-[#555555] dark:text-[#999999] overflow-x-auto rounded-none whitespace-pre-wrap break-all">
-                  Digest: {error.digest}
+                  {error?.message ? `Error: ${error.message}\n` : ''}
+                  {error?.digest ? `Digest: ${error.digest}` : ''}
                 </pre>
               )}
             </div>

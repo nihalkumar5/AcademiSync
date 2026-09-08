@@ -262,86 +262,94 @@ export const calculateTomorrowCarryItems = (
   const resolvedDateStr = targetDateStr || defaultDateStr;
   const resolvedDay = targetDay || defaultDay;
 
-  // Check if target date is an academic holiday
-  const isHoliday = events.some(
-    (e) => e.date === resolvedDateStr && e.type === 'holiday'
-  );
-
-  // If holiday, there are no subject bag requirements needed!
-  if (isHoliday) {
-    return existingCarryItems.filter(
-      (i) => i.date === resolvedDateStr && i.source === 'custom'
+  try {
+    // Check if target date is an academic holiday
+    const isHoliday = safeEvents.some(
+      (e) => e && e.date === resolvedDateStr && e.type === 'holiday'
     );
-  }
 
-  const subjectMap = new Map(subjects.map((s) => [s.id, s]));
-  const tomorrowRegularClasses = timetable.filter((s) => s.day === resolvedDay);
-  const extraForTarget = Object.values(safeExtra).filter(
-    (ex: any) => ex && ex.date === resolvedDateStr
-  );
-  const tomorrowClasses = [...tomorrowRegularClasses, ...extraForTarget];
-
-  // Collect items required from tomorrow's subjects
-  const requiredMap = new Map<string, { subjectId: string; subjectName: string }>();
-
-  tomorrowClasses.forEach((session) => {
-    const subject = subjectMap.get(session.subjectId);
-    if (!subject) return;
-
-    // Add subject's configured carry requirements
-    if (Array.isArray(subject.carryRequirements)) {
-      subject.carryRequirements.forEach((req) => {
-        const trimmed = req.trim();
-        if (trimmed && !requiredMap.has(trimmed.toLowerCase())) {
-          requiredMap.set(trimmed.toLowerCase(), {
-            subjectId: subject.id,
-            subjectName: subject.name,
-          });
-        }
-      });
+    // If holiday, there are no subject bag requirements needed!
+    if (isHoliday) {
+      return safeExistingCarry.filter(
+        (i) => i && i.date === resolvedDateStr && i.source === 'custom'
+      );
     }
-  });
 
-  // Map of existing items for the date to preserve packed state
-  const existingMap = new Map(
-    existingCarryItems
-      .filter((i) => i.date === resolvedDateStr)
-      .map((i) => [i.title.toLowerCase(), i])
-  );
+    const subjectMap = new Map(safeSubjects.map((s) => [s.id, s]));
+    const tomorrowRegularClasses = safeTimetable.filter((s) => s && s.day === resolvedDay);
+    const extraForTarget = Object.values(safeExtra).filter(
+      (ex: any) => ex && ex.date === resolvedDateStr
+    );
+    const tomorrowClasses = [...tomorrowRegularClasses, ...extraForTarget];
 
-  const result: CarryItem[] = [];
+    // Collect items required from tomorrow's subjects
+    const requiredMap = new Map<string, { subjectId: string; subjectName: string }>();
 
-  // Add all subject required items
-  requiredMap.forEach((meta, titleLower) => {
-    const existing = existingMap.get(titleLower);
-    // Find original case
-    const originalTitle =
-      existing?.title ||
-      subjects
-        .flatMap((s) => s.carryRequirements)
-        .find((r) => r.toLowerCase() === titleLower) ||
-      titleLower;
+    tomorrowClasses.forEach((session) => {
+      if (!session) return;
+      const subject = subjectMap.get(session.subjectId);
+      if (!subject) return;
 
-    result.push({
-      id: existing?.id || `carry_auto_${meta.subjectId}_${Math.random().toString(36).substring(2, 7)}`,
-      title: originalTitle,
-      source: 'subject',
-      subjectId: meta.subjectId,
-      subjectName: meta.subjectName,
-      isPacked: existing?.isPacked ?? false,
-      isHidden: existing?.isHidden ?? false,
-      date: resolvedDateStr,
-    });
-  });
-
-  // Also include custom items added by user for this date
-  existingCarryItems
-    .filter((i) => i.date === resolvedDateStr && i.source === 'custom')
-    .forEach((customItem) => {
-      result.push(customItem);
+      // Add subject's configured carry requirements
+      if (Array.isArray(subject.carryRequirements)) {
+        subject.carryRequirements.forEach((req) => {
+          if (typeof req === 'string') {
+            const trimmed = req.trim();
+            if (trimmed && !requiredMap.has(trimmed.toLowerCase())) {
+              requiredMap.set(trimmed.toLowerCase(), {
+                subjectId: subject.id,
+                subjectName: subject.name,
+              });
+            }
+          }
+        });
+      }
     });
 
-  return result;
+    // Map of existing items for the date to preserve packed state
+    const existingMap = new Map(
+      safeExistingCarry
+        .filter((i) => i && i.date === resolvedDateStr)
+        .map((i) => [i.title ? i.title.toLowerCase() : '', i])
+    );
+
+    const result: CarryItem[] = [];
+
+    // Add all subject required items
+    requiredMap.forEach((meta, titleLower) => {
+      const existing = existingMap.get(titleLower);
+      // Find original case
+      const originalTitle =
+        existing?.title ||
+        safeSubjects
+          .flatMap((s) => (Array.isArray(s?.carryRequirements) ? s.carryRequirements : []))
+          .find((r) => typeof r === 'string' && r.toLowerCase() === titleLower) ||
+        titleLower;
+
+      result.push({
+        id: existing?.id || `carry_auto_${meta.subjectId}_${Math.random().toString(36).substring(2, 7)}`,
+        title: originalTitle,
+        source: 'subject',
+        subjectId: meta.subjectId,
+        subjectName: meta.subjectName,
+        isPacked: existing?.isPacked ?? false,
+        isHidden: existing?.isHidden ?? false,
+        date: resolvedDateStr,
+      });
+    });
+
+    // Also include custom items added by user for this date
+    safeExistingCarry
+      .filter((i) => i && i.date === resolvedDateStr && i.source === 'custom')
+      .forEach((customItem) => {
+        result.push(customItem);
+      });
+
+    return result;
+  } catch (err) {
+    console.error('Error calculating carry items:', err);
+    return safeExistingCarry;
+  }
 };
 
 /**

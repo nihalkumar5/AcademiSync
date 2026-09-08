@@ -2,27 +2,37 @@ import { AppNotification, ClassSession, Homework, Subject, UserSettings, Academi
 import { getCurrentDayOfWeek, getTomorrowDayOfWeek, timeToMinutes, formatTime12Hour, getTodayDateString, getTomorrowDateString } from './timetableUtils';
 
 export const checkAndGenerateSmartNotifications = (
-  timetable: ClassSession[],
-  subjects: Subject[],
-  homework: Homework[],
-  events: AcademicEvent[],
-  settings: UserSettings,
-  existingNotifications: AppNotification[],
+  timetable: ClassSession[] = [],
+  subjects: Subject[] = [],
+  homework: Homework[] = [],
+  events: AcademicEvent[] = [],
+  settings: UserSettings = {} as UserSettings,
+  existingNotifications: AppNotification[] = [],
   cancelledSessionKeys: string[] = [],
   rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string }> = {}
 ): AppNotification[] => {
-  const newNotifications: AppNotification[] = [];
-  const existingIds = new Set(existingNotifications.map((n) => n.relatedId || n.id));
-  const now = new Date();
-  const todayDay = getCurrentDayOfWeek();
-  const dateTodayStr = getTodayDateString();
-  const dateTomorrowStr = getTomorrowDateString();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const subjectMap = new Map(subjects.map((s) => [s.id, s]));
+  try {
+    const safeTimetable = Array.isArray(timetable) ? timetable : [];
+    const safeSubjects = Array.isArray(subjects) ? subjects : [];
+    const safeHomework = Array.isArray(homework) ? homework : [];
+    const safeEvents = Array.isArray(events) ? events : [];
+    const safeExisting = Array.isArray(existingNotifications) ? existingNotifications : [];
+    const safeSettings = settings || ({} as UserSettings);
+    const safeCancelledKeys = Array.isArray(cancelledSessionKeys) ? cancelledSessionKeys : [];
+    const safeRescheduled = (rescheduledSessions && typeof rescheduledSessions === 'object') ? rescheduledSessions : {};
 
-  const todayEvents = events.filter((e) => e.date === dateTodayStr);
-  const todayHoliday = todayEvents.find((e) => e.type === 'holiday');
-  const isHolidayOrExam = todayEvents.some((e) => e.type === 'holiday' || e.type === 'exam');
+    const newNotifications: AppNotification[] = [];
+    const existingIds = new Set(safeExisting.map((n) => n?.relatedId || n?.id).filter(Boolean));
+    const now = new Date();
+    const todayDay = getCurrentDayOfWeek();
+    const dateTodayStr = getTodayDateString();
+    const dateTomorrowStr = getTomorrowDateString();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const subjectMap = new Map(safeSubjects.map((s) => [s.id, s]));
+
+    const todayEvents = safeEvents.filter((e) => e && e.date === dateTodayStr);
+    const todayHoliday = todayEvents.find((e) => e && e.type === 'holiday');
+    const isHolidayOrExam = todayEvents.some((e) => e && (e.type === 'holiday' || e.type === 'exam'));
 
   // 0. Today's Holiday Alert
   const holidayAlertKey = `holiday_alert_${dateTodayStr}`;
@@ -39,11 +49,11 @@ export const checkAndGenerateSmartNotifications = (
   }
 
   // 1. Daily Morning Schedule Summary — skip on holidays AND exam days (no classes on either)
-  const todayClasses = isHolidayOrExam ? [] : timetable
-    .filter((s) => s.day === todayDay && !cancelledSessionKeys.includes(`${dateTodayStr}_${s.id}`))
+  const todayClasses = isHolidayOrExam ? [] : safeTimetable
+    .filter((s) => s && s.day === todayDay && !safeCancelledKeys.includes(`${dateTodayStr}_${s.id}`))
     .map((s) => {
       const rescheduleKey = `${dateTodayStr}_${s.id}`;
-      const reschedule = rescheduledSessions[rescheduleKey];
+      const reschedule = safeRescheduled[rescheduleKey];
       if (reschedule) {
         return {
           ...s,
@@ -54,31 +64,34 @@ export const checkAndGenerateSmartNotifications = (
       }
       return s;
     })
-    .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+    .sort((a, b) => timeToMinutes(a.startTime || '') - timeToMinutes(b.startTime || ''));
 
   const dailySummaryKey = `daily_summary_${dateTodayStr}`;
   if (todayClasses.length > 0 && !existingIds.has(dailySummaryKey)) {
     const firstClass = todayClasses[0];
-    const sub = subjectMap.get(firstClass.subjectId);
-    newNotifications.push({
-      id: `notif_${Date.now()}_ds`,
-      title: `📅 Today's Schedule (${todayClasses.length} ${todayClasses.length === 1 ? 'class' : 'classes'})`,
-      message: `Your first class is ${sub?.name || 'Class'} at ${formatTime12Hour(firstClass.startTime)} in ${firstClass.room}.`,
-      category: 'classes',
-      timestamp: new Date().toISOString(),
-      read: false,
-      relatedId: dailySummaryKey,
-    });
+    const sub = firstClass ? subjectMap.get(firstClass.subjectId) : null;
+    if (firstClass) {
+      newNotifications.push({
+        id: `notif_${Date.now()}_ds`,
+        title: `📅 Today's Schedule (${todayClasses.length} ${todayClasses.length === 1 ? 'class' : 'classes'})`,
+        message: `Your first class is ${sub?.name || 'Class'} at ${formatTime12Hour(firstClass.startTime || '')} in ${firstClass.room || 'Classroom'}.`,
+        category: 'classes',
+        timestamp: new Date().toISOString(),
+        read: false,
+        relatedId: dailySummaryKey,
+      });
+    }
   }
 
   // 2. Class reminders (Up to 30 mins before & Starting Now)
-  const maxReminderMins = settings.classReminderMinutes || 30;
+  const maxReminderMins = (safeSettings as any)?.classReminderMinutes || 30;
   todayClasses.forEach((session) => {
+    if (!session || !session.startTime) return;
     const startMinutes = timeToMinutes(session.startTime);
     const diff = startMinutes - currentMinutes;
     const sub = subjectMap.get(session.subjectId);
     const rescheduleKey = `${dateTodayStr}_${session.id}`;
-    const isRescheduled = rescheduledSessions[rescheduleKey] !== undefined;
+    const isRescheduled = safeRescheduled[rescheduleKey] !== undefined;
 
     // Reminder 5-30 mins before
     const remindKey = `class_remind_${session.id}_${dateTodayStr}`;
@@ -86,7 +99,7 @@ export const checkAndGenerateSmartNotifications = (
       newNotifications.push({
         id: `notif_${Date.now()}_cr_${session.id}`,
         title: `⏰ Class in ${diff} mins: ${sub?.name || 'Lecture'}${isRescheduled ? ' (Rescheduled)' : ''}`,
-        message: `Starts at ${formatTime12Hour(session.startTime)} in ${session.room}${session.faculty ? ` with ${session.faculty}` : ''}.`,
+        message: `Starts at ${formatTime12Hour(session.startTime)} in ${session.room || 'Classroom'}${session.faculty ? ` with ${session.faculty}` : ''}.`,
         category: 'classes',
         timestamp: new Date().toISOString(),
         read: false,
@@ -100,7 +113,7 @@ export const checkAndGenerateSmartNotifications = (
       newNotifications.push({
         id: `notif_${Date.now()}_cn_${session.id}`,
         title: `🔔 Class Starting Now: ${sub?.name || 'Lecture'}${isRescheduled ? ' (Rescheduled)' : ''}`,
-        message: `Class in ${session.room}${session.faculty ? ` with ${session.faculty}` : ''} has begun.`,
+        message: `Class in ${session.room || 'Classroom'}${session.faculty ? ` with ${session.faculty}` : ''} has begun.`,
         category: 'classes',
         timestamp: new Date().toISOString(),
         read: false,
@@ -110,7 +123,7 @@ export const checkAndGenerateSmartNotifications = (
   });
 
   // 3. Evening Carry Bag Check — fires at user's configured eveningCarryReminderTime (±1 min window)
-  const bagTimeStr = settings.eveningCarryReminderTime || '20:00';
+  const bagTimeStr = (safeSettings as any)?.eveningCarryReminderTime || '20:00';
   const bagTimeParts = bagTimeStr.trim().split(' ');
   const bagTimeClock = bagTimeParts[0].split(':');
   let bagHour = parseInt(bagTimeClock[0], 10);
@@ -127,12 +140,12 @@ export const checkAndGenerateSmartNotifications = (
   if (isCarryTime) {
     const carryCheckKey = `carry_evening_${dateTodayStr}`;
     const tomorrowDay = getTomorrowDayOfWeek();
-    const tomorrowHoliday = events.find((e) => e.date === dateTomorrowStr && e.type === 'holiday');
-    const tomorrowExam = events.find((e) => e.date === dateTomorrowStr && e.type === 'exam');
+    const tomorrowHoliday = safeEvents.find((e) => e && e.date === dateTomorrowStr && e.type === 'holiday');
+    const tomorrowExam = safeEvents.find((e) => e && e.date === dateTomorrowStr && e.type === 'exam');
     const isTomorrowHolidayOrExam = !!(tomorrowHoliday || tomorrowExam);
 
-    const tomorrowClasses = isTomorrowHolidayOrExam ? [] : timetable
-      .filter((s) => s.day === tomorrowDay && !cancelledSessionKeys.includes(`${dateTomorrowStr}_${s.id}`));
+    const tomorrowClasses = isTomorrowHolidayOrExam ? [] : safeTimetable
+      .filter((s) => s && s.day === tomorrowDay && !safeCancelledKeys.includes(`${dateTomorrowStr}_${s.id}`));
 
     if (!existingIds.has(carryCheckKey)) {
       if (tomorrowHoliday) {
@@ -160,10 +173,12 @@ export const checkAndGenerateSmartNotifications = (
   }
 
   // 4. Homework & Assignment Deadline Alerts
-  const incompleteHw = homework.filter((h) => h.status !== 'Completed');
+  const incompleteHw = safeHomework.filter((h) => h && h.status !== 'Completed');
   incompleteHw.forEach((hw) => {
+    if (!hw || !hw.deadline) return;
     const sub = subjectMap.get(hw.subjectId);
     const deadlineDate = new Date(hw.deadline);
+    if (isNaN(deadlineDate.getTime())) return;
     const diffDays = Math.ceil((deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     const relatedKey = `hw_remind_${hw.id}_${diffDays}d`;
 
@@ -192,6 +207,7 @@ export const checkAndGenerateSmartNotifications = (
 
   // 5. Academic Calendar Events & Holidays for Today (Generates once per day per event)
   todayEvents.forEach((ev) => {
+    if (!ev || !ev.id) return;
     const eventKey = `event_today_${ev.id}_${dateTodayStr}`;
     if (!existingIds.has(eventKey)) {
       let emoji = '📅';
@@ -220,5 +236,9 @@ export const checkAndGenerateSmartNotifications = (
     }
   });
 
-  return newNotifications;
+    return newNotifications;
+  } catch (err) {
+    console.error('Error in checkAndGenerateSmartNotifications:', err);
+    return [];
+  }
 };

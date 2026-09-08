@@ -753,38 +753,50 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (!isHydrated) return;
 
     const runCheck = () => {
-      refreshCarryItems(timetable, subjects, events, settings);
+      try {
+        refreshCarryItems(timetable, subjects, events, settings);
+      } catch (e) {
+        console.error('Error refreshing carry items in periodic check:', e);
+      }
 
       setNotificationsState((prevNotifications) => {
-        const nowMs = Date.now();
-        const prunedNotifications = prevNotifications.filter(n => {
-          return nowMs - new Date(n.timestamp).getTime() < 24 * 60 * 60 * 1000;
-        });
+        try {
+          const nowMs = Date.now();
+          const safePrev = Array.isArray(prevNotifications) ? prevNotifications : [];
+          const prunedNotifications = safePrev.filter((n) => {
+            if (!n || !n.timestamp) return false;
+            const t = new Date(n.timestamp).getTime();
+            return !isNaN(t) && nowMs - t < 24 * 60 * 60 * 1000;
+          });
 
-        const newNotifs = checkAndGenerateSmartNotifications(
-          timetable,
-          subjects,
-          homework,
-          events,
-          settings,
-          prunedNotifications,
-          cancelledSessions,
-          rescheduledSessions
-        );
-        
-        if (newNotifs.length > 0 || prunedNotifications.length !== prevNotifications.length) {
-          const updated = [...newNotifs, ...prunedNotifications];
-          storage.setNotifications(updated);
+          const newNotifs = checkAndGenerateSmartNotifications(
+            timetable,
+            subjects,
+            homework,
+            events,
+            settings,
+            prunedNotifications,
+            cancelledSessions,
+            rescheduledSessions
+          );
           
-          if (newNotifs.length > 0) {
-            showToast(newNotifs[0].title, newNotifs[0].message, 'info');
-            newNotifs.forEach((n) => {
-              triggerLocalNotification(n.title, n.message);
-            });
+          if (newNotifs.length > 0 || prunedNotifications.length !== safePrev.length) {
+            const updated = [...newNotifs, ...prunedNotifications];
+            storage.setNotifications(updated);
+            
+            if (newNotifs.length > 0) {
+              showToast(newNotifs[0].title, newNotifs[0].message, 'info');
+              newNotifs.forEach((n) => {
+                triggerLocalNotification(n.title, n.message);
+              });
+            }
+            return updated;
           }
-          return updated;
+          return prevNotifications;
+        } catch (err) {
+          console.error('Error in setNotificationsState callback:', err);
+          return prevNotifications;
         }
-        return prevNotifications;
       });
     };
 
@@ -794,7 +806,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // Check every 60 seconds for time-based triggers
     const interval = setInterval(runCheck, 60000);
     return () => clearInterval(interval);
-  }, [timetable, subjects, homework, events, settings, carryItems, cancelledSessions, rescheduledSessions, isHydrated]);
+  }, [timetable, subjects, homework, events, settings, cancelledSessions, rescheduledSessions, isHydrated]);
 
   // Native Local Notification Scheduler Effect (debounced 500ms to avoid race conditions)
   useEffect(() => {
