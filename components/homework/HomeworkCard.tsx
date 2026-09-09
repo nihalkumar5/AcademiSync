@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '@/context/AppContext';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
+import { Capacitor } from '@capacitor/core';
 
 import { getTaskCardTheme } from '@/lib/cardColors';
 
@@ -101,6 +102,29 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
     } else {
       updateHomework(homework.id, { status: 'Not Started', completedAt: undefined });
       showToast('Task Reopened', `"${homework.title}" reset to to-do`, 'info');
+    }
+  };
+
+  const openAttachment = async (url?: string) => {
+    if (!url) return;
+    const clean = url.trim();
+    if (!clean) return;
+    const targetUrl = clean.startsWith('http://') || clean.startsWith('https://')
+      ? clean
+      : `https://${clean}`;
+
+    try {
+      if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
+        const { Browser } = await import('@capacitor/browser');
+        await Browser.open({ url: targetUrl });
+        return;
+      }
+    } catch (e) {
+      console.warn('Browser.open failed, fallback:', e);
+    }
+
+    if (typeof window !== 'undefined') {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -272,15 +296,18 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                     )}
 
                     {homework.attachmentName && (
-                      <a
-                        href={homework.attachmentName.startsWith('http') ? homework.attachmentName : `https://${homework.attachmentName}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowMenu(false);
+                          openAttachment(homework.attachmentName);
+                        }}
                         className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#151515] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors w-full cursor-pointer border-t border-black/[0.06] dark:border-white/[0.08]"
                       >
-                        <Link className="w-3.5 h-3.5" />
+                        <Link className="w-3.5 h-3.5 text-blue-500" />
                         Open Attachment
-                      </a>
+                      </button>
                     )}
 
                     {onShare && (
@@ -395,7 +422,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
         </div>
 
         {/* Bottom row metadata pill */}
-        <div className="flex items-center justify-between mt-[16px]">
+        <div className="flex items-center justify-between mt-[16px] gap-2 flex-wrap">
           {/* Due Date Pill */}
           <span className={clsx(
             "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[10.5px] font-bold font-mono uppercase tracking-wider",
@@ -408,6 +435,22 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
             <Calendar className="w-3 h-3 shrink-0" />
             DUE {deadlineLabel.toUpperCase()}
           </span>
+
+          {/* Quick 1-Tap Attachment Button */}
+          {homework.attachmentName && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                openAttachment(homework.attachmentName);
+              }}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[10.5px] font-bold font-mono uppercase tracking-wider bg-black/[0.04] hover:bg-black/[0.08] dark:bg-white/[0.06] dark:hover:bg-white/[0.12] text-[#111111] dark:text-[#FFFFFF] border border-black/[0.06] dark:border-white/[0.08] transition-colors cursor-pointer"
+              title="Open Attachment"
+            >
+              <Paperclip className="w-3 h-3 text-blue-500" />
+              <span>ATTACHMENT</span>
+            </button>
+          )}
         </div>
       </div>
 
