@@ -45,7 +45,8 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   return (
     <div
       className={clsx(
-        "group relative flex flex-col p-4 sm:p-[18px] text-left transition-all rounded-[3px] overflow-hidden",
+        "group relative flex flex-col p-4 sm:p-[18px] text-left transition-all rounded-[3px]",
+        menuOpen ? 'z-40' : 'z-0',
         isCurrent
           ? "bg-[#111111] dark:bg-[#111111] text-white border border-[#111111] shadow-md"
           : "border shadow-none"
@@ -60,11 +61,11 @@ export const ClassCard: React.FC<ClassCardProps> = ({
       {!isCurrent && (
         <>
           <div 
-            className="dark:hidden absolute inset-0 z-0 pointer-events-none"
+            className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[2px]"
             style={{ backgroundColor: theme.bg }}
           />
           <div 
-            className="hidden dark:block absolute inset-0 z-0 pointer-events-none"
+            className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[2px]"
             style={{ backgroundColor: theme.darkBg }}
           />
         </>

@@ -116,7 +116,8 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
   return (
     <div 
       className={clsx(
-        "relative flex flex-col p-4 sm:p-[18px] rounded-[5px] border transition-all overflow-hidden w-full",
+        "relative flex flex-col p-4 sm:p-[18px] rounded-[5px] border transition-all w-full",
+        showMenu ? 'z-40' : 'z-0',
         isDone ? 'opacity-65' : 'opacity-100'
       )}
       style={{
@@ -126,11 +127,11 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
     >
       {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
       <div 
-        className="dark:hidden absolute inset-0 z-0 pointer-events-none"
+        className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[4px]"
         style={{ backgroundColor: theme.bg }}
       />
       <div 
-        className="hidden dark:block absolute inset-0 z-0 pointer-events-none"
+        className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[4px]"
         style={{ backgroundColor: theme.darkBg }}
       />
 
@@ -213,13 +214,21 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
 
               <AnimatePresence>
                 {showMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: -5 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-[#16171D] border border-[#D9D9D6] dark:border-white/[0.1] shadow-2xl z-50 py-1 rounded-[3px]"
-                  >
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40 bg-transparent"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowMenu(false);
+                      }}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-[#16171D] border border-[#D9D9D6] dark:border-white/[0.1] shadow-[0_12px_32px_rgba(0,0,0,0.2)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.6)] z-50 py-1 rounded-[4px] overflow-hidden"
+                    >
                     {/* Status Changer Actions */}
                     {homework.status !== 'In Progress' && (
                       <button
@@ -330,7 +339,8 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                       <Trash2 className="w-3.5 h-3.5" />
                       Delete Task
                     </button>
-                  </motion.div>
+                    </motion.div>
+                  </>
                 )}
               </AnimatePresence>
             </div>

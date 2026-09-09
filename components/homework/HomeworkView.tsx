@@ -166,7 +166,7 @@ export const HomeworkView: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-5 text-left max-w-4xl mx-auto w-full pb-10">
+    <div className="flex flex-col gap-5 text-left max-w-4xl mx-auto w-full min-h-[70vh] pb-36 sm:pb-28">
       {/* Editorial Stacked Header — matches Weekly Timetable style */}
       <div className="flex flex-col gap-4 pt-2 sm:pt-6">
         {/* Large stacked heading with badge inline */}

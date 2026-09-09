@@ -369,7 +369,7 @@ export default function AppHome() {
               </a>
             </div>
           )}
-          <div className="w-full max-w-full min-w-0 overflow-x-hidden" key={activeView}>
+          <div className="w-full max-w-full min-w-0" key={activeView}>
             {activeView === 'home' && (
               <div className="flex flex-col gap-6">
                 <OverviewHeader />

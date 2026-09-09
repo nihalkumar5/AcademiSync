@@ -570,7 +570,8 @@ export const TodayTimeline: React.FC = () => {
                         {/* Class Info Box */}
                         <div 
                           className={clsx(
-                            "relative flex-1 rounded-[4px] p-4 sm:p-[18px] border transition-all overflow-hidden",
+                            "relative flex-1 rounded-[4px] p-4 sm:p-[18px] border transition-all",
+                            openMenuSessionId === session.id ? "z-30" : "z-0",
                             isNow
                               ? "bg-[#111111] border-[#111111] shadow-md"
                               : isRescheduled
@@ -587,11 +588,11 @@ export const TodayTimeline: React.FC = () => {
                           {!isNow && (
                             <>
                               <div 
-                                className="dark:hidden absolute inset-0 z-0 pointer-events-none"
+                                className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[3px]"
                                 style={{ backgroundColor: theme.bg }}
                               />
                               <div 
-                                className="hidden dark:block absolute inset-0 z-0 pointer-events-none"
+                                className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[3px]"
                                 style={{ backgroundColor: theme.darkBg }}
                               />
                             </>
