@@ -27,7 +27,8 @@ import {
   normalizeProgrammeName,
   normalizeBranchName,
   normalizeSection,
-  extractCleanInviteCode
+  extractCleanInviteCode,
+  getTodayDateString,
 } from '@/lib/timetableUtils';
 import { checkAndGenerateSmartNotifications } from '@/lib/notificationEngine';
 import confetti from 'canvas-confetti';
@@ -479,9 +480,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setExamsState(data.exams);
         storage.setExams(data.exams);
       }
-      if (Array.isArray(data.cancelledSessions)) {
-        setCancelledSessionsState(data.cancelledSessions);
-        storage.setCancelledSessions(data.cancelledSessions);
+      if (data.cancelledSessions) {
+        const safeCancelled = Array.isArray(data.cancelledSessions)
+          ? data.cancelledSessions
+          : (typeof data.cancelledSessions === 'object'
+            ? Object.keys(data.cancelledSessions).filter((k) => (data.cancelledSessions as any)[k] !== false)
+            : []);
+        setCancelledSessionsState(safeCancelled);
+        storage.setCancelledSessions(safeCancelled);
       }
       if (data.cancelledSessionsMeta && typeof data.cancelledSessionsMeta === 'object') {
         setCancelledSessionsMeta(data.cancelledSessionsMeta);
@@ -1548,12 +1554,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return;
     }
 
-    const targetDate = dateStr || new Date().toISOString().split('T')[0];
+    const targetDate = dateStr || getTodayDateString();
     const key = `${targetDate}_${sessionId}`;
     const safeList = Array.isArray(cancelledSessions) ? cancelledSessions : [];
-    const isAlreadyCancelled = safeList.includes(key);
+    const isAlreadyCancelled = safeList.includes(key) || safeList.includes(sessionId);
     const updated = isAlreadyCancelled
-      ? safeList.filter((k) => k !== key)
+      ? safeList.filter((k) => k !== key && k !== sessionId && !k.endsWith(`_${sessionId}`))
       : [...safeList, key];
 
     const updatedMeta = { ...(cancelledSessionsMeta || {}) };
@@ -1561,6 +1567,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     if (isAlreadyCancelled) {
       delete updatedMeta[key];
+      delete updatedMeta[sessionId];
     } else {
       updatedMeta[key] = {
         by: crName,
@@ -1641,13 +1648,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const isSessionCancelled = (sessionId: string, dateStr?: string) => {
     try {
-      const targetDate = dateStr || new Date().toISOString().split('T')[0];
+      const targetDate = dateStr || getTodayDateString();
       const key = `${targetDate}_${sessionId}`;
-      if (Array.isArray(cancelledSessions)) {
-        return cancelledSessions.includes(key);
+      const safeList = Array.isArray(cancelledSessions)
+        ? cancelledSessions
+        : (cancelledSessions && typeof cancelledSessions === 'object' ? Object.keys(cancelledSessions) : []);
+
+      if (safeList.includes(key) || safeList.includes(sessionId)) {
+        return true;
       }
+
+      for (const k of safeList) {
+        if (k === key || k === sessionId) return true;
+        if (typeof k === 'string' && k.includes('_')) {
+          const parts = k.split('_');
+          const kDate = parts[0];
+          const kSessionId = parts.slice(1).join('_');
+          if (kSessionId === sessionId && (!targetDate || kDate === targetDate)) {
+            return true;
+          }
+        }
+      }
+
       if (cancelledSessions && typeof cancelledSessions === 'object') {
-        return (cancelledSessions as any)[key] === true || Object.keys(cancelledSessions).includes(key);
+        return (cancelledSessions as any)[key] === true || (cancelledSessions as any)[sessionId] === true;
       }
       return false;
     } catch {
@@ -1656,9 +1680,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const getCancelledSessionMeta = (sessionId: string, dateStr?: string) => {
-    const targetDate = dateStr || new Date().toISOString().split('T')[0];
+    const targetDate = dateStr || getTodayDateString();
     const key = `${targetDate}_${sessionId}`;
-    return cancelledSessionsMeta[key] || null;
+    if (cancelledSessionsMeta[key]) return cancelledSessionsMeta[key];
+    if (cancelledSessionsMeta[sessionId]) return cancelledSessionsMeta[sessionId];
+    for (const [k, meta] of Object.entries(cancelledSessionsMeta || {})) {
+      if (k === key || k === sessionId || (k.includes('_') && k.split('_').slice(1).join('_') === sessionId && k.startsWith(targetDate))) {
+        return meta;
+      }
+    }
+    return null;
   };
 
   const rescheduleSession = async (
@@ -1672,7 +1703,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return;
     }
 
-    const targetDate = dateStr || new Date().toISOString().split('T')[0];
+    const targetDate = dateStr || getTodayDateString();
     const key = `${targetDate}_${sessionId}`;
     const updated = { ...rescheduledSessions };
     const crName = profile.name || 'Batch Pilot';

@@ -122,7 +122,8 @@ export const getLiveClassStatus = (
   day: DayOfWeek = getCurrentDayOfWeek(),
   dateStr: string = getTodayDateString(),
   rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string; subjectId?: string }> = {},
-  extraSessions: Record<string, any> = {}
+  extraSessions: Record<string, any> = {},
+  isCancelledFn?: (sessionId: string, dateStr?: string) => boolean
 ): LiveClassStatus => {
   const safeTimetable = Array.isArray(timetable) ? timetable : [];
   const safeSubjects = Array.isArray(subjects) ? subjects : [];
@@ -133,7 +134,7 @@ export const getLiveClassStatus = (
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
   const regularSessions = safeTimetable
-    .filter((s) => s && s.day === day)
+    .filter((s) => s && s.day === day && (!isCancelledFn || !isCancelledFn(s.id, dateStr)))
     .map((s) => {
       const rescheduleKey = `${dateStr}_${s.id}`;
       const reschedule = safeRescheduled[rescheduleKey];
@@ -150,7 +151,7 @@ export const getLiveClassStatus = (
     });
 
   const extraList = Object.values(safeExtra)
-    .filter((ex: any) => ex && ex.date === dateStr)
+    .filter((ex: any) => ex && ex.date === dateStr && (!isCancelledFn || !isCancelledFn(ex.id, dateStr)))
     .map((ex: any) => ({
       id: ex.id,
       subjectId: ex.subjectId,

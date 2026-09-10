@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 export const OverviewHeader: React.FC = () => {
-  const { profile, timetable, homework, carryItems, events, setActiveView, extraSessions, isSessionCancelled } = useApp();
+  const { profile, timetable, homework, carryItems, events, setActiveView, extraSessions, isSessionCancelled, cancelledSessions } = useApp();
 
   const [time, setTime] = useState<Date | null>(null);
 
