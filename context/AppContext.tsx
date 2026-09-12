@@ -1795,7 +1795,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const toggleSessionCancelled = async (sessionId: string, dateStr?: string) => {
     // Non-CR batch users cannot cancel/restore — personal users always free
     if (profile.isBatchSynced && profile.batchKey && !isBatchCR) {
-      showToast('CR Access Required', 'Only the CR can cancel or restore classes for the batch.', 'error');
+      showToast('Pilot Access Required', 'Only a Batch Pilot can cancel or restore classes for the batch.', 'error');
       return;
     }
 
@@ -1808,7 +1808,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       : [...safeList, key];
 
     const updatedMeta = { ...(cancelledSessionsMeta || {}) };
-    const crName = profile.name || (isSuperAdmin ? 'Super Admin' : 'CR');
+    const crName = profile.name || (isSuperAdmin ? 'Super Admin' : 'Batch Pilot');
 
     if (isAlreadyCancelled) {
       delete updatedMeta[key];
@@ -1816,7 +1816,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     } else {
       updatedMeta[key] = {
         by: crName,
-        role: isSuperAdmin ? 'Super Admin' : 'CR',
+        role: isSuperAdmin ? 'Super Admin' : 'Batch Pilot',
         timestamp: new Date().toISOString(),
       };
     }

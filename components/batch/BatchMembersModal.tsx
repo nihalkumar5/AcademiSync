@@ -324,7 +324,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
     if (!primaryRemains && otherCRs.length === 0 && otherCREmails.length === 0) {
       showToast(
         'Cannot Withdraw',
-        'You are the only CR! Promote another student to CR first before withdrawing.',
+        'You are the only Batch Pilot! Promote another student to Batch Pilot first before stepping down.',
         'error'
       );
       return;
@@ -339,9 +339,9 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
       if (user?.id) {
         await updateDoc(doc(db, 'users', user.id), { 'profile.role': 'student' });
       }
-      showToast('CR Role Given Up', 'You have successfully stepped down from the CR role.', 'info');
+      showToast('Pilot Role Given Up', 'You have successfully stepped down as Batch Pilot.', 'info');
     } catch (e) {
-      console.error('Error withdrawing CR role:', e);
+      console.error('Error withdrawing Batch Pilot role:', e);
       showToast('Error', 'Failed to update your role.', 'error');
     }
   };

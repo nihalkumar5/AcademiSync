@@ -98,7 +98,13 @@ export const SettingsView: React.FC = () => {
   // Verification status logic
   const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || email || '';
   const isSuperAdmin = !!user && isUserSuperAdmin(profile, userEmail);
-  const isCR = !!user && (profile.role === 'cr' || isBatchCR);
+  const isBatchPilotUser = !isSuperAdmin && !!user && (
+    profile.role === 'cr' ||
+    (currentBatchData?.creatorId === user?.id) ||
+    (currentBatchData?.creatorEmail && currentBatchData.creatorEmail.toLowerCase() === userEmail.toLowerCase()) ||
+    (Array.isArray(currentBatchData?.crUserIds) && currentBatchData.crUserIds.includes(user?.id)) ||
+    (Array.isArray(currentBatchData?.crEmails) && currentBatchData.crEmails.map((e: string) => String(e).toLowerCase()).includes(userEmail.toLowerCase()))
+  );
   const isEduEmail = !!user && !!userEmail.toLowerCase().match(/\.(edu|ac\.in|edu\.in)$/);
   const isStudentVerified = !!(user && profile.college && (profile.isBatchSynced || isEduEmail));
 
@@ -388,7 +394,7 @@ export const SettingsView: React.FC = () => {
                     ADMIN
                   </span>
                 </span>
-              ) : isCR ? (
+              ) : isBatchPilotUser ? (
                 <span 
                   title="Verified Batch Pilot"
                   className="inline-flex items-center gap-1.5 bg-[#F3F2EF] dark:bg-[#222222] text-[#111111] dark:text-[#F4F1EA] px-2 py-0.5 shrink-0 h-[22px] border border-[#D8D8D8] dark:border-[#333333]"
@@ -807,9 +813,12 @@ export const SettingsView: React.FC = () => {
                       <span>Semester {profile.semester} · Year {Math.ceil((profile.semester || 1) / 2)}</span>
                     </div>
                   </div>
-                  {isBatchCR && (
-                    <span className="text-[10px] font-bold tracking-widest text-[#111111] dark:text-emerald-400 border border-[#111111] dark:border-emerald-500/30 dark:bg-emerald-500/10 px-1.5 py-0.5 uppercase">
-                      CR
+                  {isBatchPilotUser && (
+                    <span 
+                      title="Batch Pilot"
+                      className="text-[10px] font-bold tracking-widest text-[#111111] dark:text-emerald-400 border border-[#111111] dark:border-emerald-500/30 dark:bg-emerald-500/10 px-1.5 py-0.5 uppercase"
+                    >
+                      BP
                     </span>
                   )}
                 </div>
@@ -893,7 +902,7 @@ export const SettingsView: React.FC = () => {
                     No Live Batch Connected
                   </span>
                   <span className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8]">
-                    Join your class batch with a 6-digit code or claim CR access.
+                    Join your class batch with a 6-digit code or claim Batch Pilot access.
                   </span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">

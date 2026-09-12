@@ -4,13 +4,17 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Crown, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
 import { CRApplicationModal } from './CRApplicationModal';
+import { isUserSuperAdmin } from '@/lib/adminAuth';
 
 export const ApplyForCRCard: React.FC = () => {
-  const { profile } = useApp();
+  const { profile, user } = useApp();
   const [showApplyModal, setShowApplyModal] = useState(false);
 
-  // If user is already CR or Super Admin, do not show the apply card
-  if (profile.role === 'cr' || profile.role === 'super_admin') {
+  const userEmail = (user?.primaryEmailAddress?.emailAddress || profile.email || '').trim().toLowerCase();
+  const isSuperAdmin = !!user && isUserSuperAdmin(profile, userEmail);
+
+  // If user is already CR/Pilot or Super Admin, do not show the apply card
+  if (isSuperAdmin || profile.role === 'cr' || profile.role === 'super_admin') {
     return null;
   }
 
