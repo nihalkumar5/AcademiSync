@@ -93,16 +93,16 @@ If you are our Batch Pilot or want to setup the synced batch timetable for all o
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-stretch font-sans text-left">
           
           {/* Left Column: Hero Illustration & Info Card */}
-          <div className="md:col-span-5 flex flex-col items-center justify-between bg-[#F9F9F8] dark:bg-[#121317] border border-[#E5E5E5] dark:border-white/[0.08] rounded-none p-4 sm:p-5 text-center relative overflow-hidden">
-            <div className="w-full flex items-center justify-center relative pt-4 sm:pt-5">
+          <div className="md:col-span-5 flex flex-col items-center justify-center bg-[#F9F9F8] dark:bg-[#121317] border border-[#E5E5E5] dark:border-white/[0.08] rounded-none p-4 sm:p-5 text-center relative overflow-hidden gap-3">
+            <div className="w-full flex items-center justify-center relative">
               <img 
                 src="/cr.png" 
                 alt="Batch Pilot" 
-                className="w-full max-w-[300px] sm:max-w-[270px] h-auto object-contain drop-shadow-sm translate-y-3 sm:translate-y-4"
+                className="w-full max-w-[300px] sm:max-w-[280px] h-auto object-contain drop-shadow-sm"
               />
             </div>
             
-            <div className="flex flex-col gap-1 -mt-6 sm:-mt-8 z-10 relative px-3 py-2 bg-[#F9F9F8]/90 dark:bg-[#121317]/90 backdrop-blur-sm">
+            <div className="flex flex-col gap-1 z-10 relative px-3 py-2 bg-[#F9F9F8]/90 dark:bg-[#121317]/90 backdrop-blur-sm">
               <span className="text-[10.5px] font-bold font-mono tracking-widest uppercase text-amber-600 dark:text-amber-400">
                 CLASS LEADERSHIP
               </span>
