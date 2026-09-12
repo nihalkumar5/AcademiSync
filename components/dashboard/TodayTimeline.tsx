@@ -529,8 +529,8 @@ export const TodayTimeline: React.FC = () => {
                 });
 
                 const dotColor = isNow ? '#18A889' : theme.accent;
-                const titleColor = isNow ? '#FFFFFF' : '#151515';
-                const subTextColor = isNow ? '#A8A8A8' : '#737373';
+                const titleColor = isNow ? '#FFFFFF' : undefined;
+                const subTextColor = isNow ? '#A8A8A8' : undefined;
 
                 return (
                   <div key={session.id} className="relative pl-6 pb-6 last:pb-0 group">
@@ -602,7 +602,7 @@ export const TodayTimeline: React.FC = () => {
                             <div className="flex flex-col gap-1 min-w-0 flex-1">
                               <div className="flex items-start gap-2 flex-wrap">
                                 <h4 
-                                  className={`text-[16px] sm:text-[17px] leading-[22px] font-bold tracking-tight line-clamp-2 ${isCancelled ? 'line-through opacity-70' : ''}`}
+                                  className={`text-[16px] sm:text-[17px] leading-[22px] font-bold tracking-tight line-clamp-2 text-[#151515] dark:text-white ${isCancelled ? 'line-through opacity-70' : ''}`}
                                   style={{ color: titleColor }}
                                 >
                                   {sub?.name || 'Class Session'}
@@ -632,7 +632,7 @@ export const TodayTimeline: React.FC = () => {
                               </div>
                               
                               <div 
-                                className="flex items-center gap-1.5 text-[12px] font-medium flex-wrap mt-1"
+                                className="flex items-center gap-1.5 text-[12px] font-medium flex-wrap mt-1 text-[#737373] dark:text-[#CBD5E1]"
                                 style={{ color: subTextColor }}
                               >
                                 <span className="flex items-center gap-1">

@@ -3,6 +3,7 @@ export interface CardTheme {
   bg: string;
   darkBg: string;
   accent: string;
+  darkAccent?: string;
   badgeBg: string;
   badgeText: string;
   border?: string;
@@ -14,6 +15,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
     bg: '#E5F4EF',
     darkBg: '#0F241E',
     accent: '#18A889',
+    darkAccent: '#34D399',
     badgeBg: '#D2F1E8',
     badgeText: '#18A889',
     border: '#CBEBE0',
@@ -23,6 +25,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
     bg: '#E8EDFF',
     darkBg: '#12182B',
     accent: '#334CC4',
+    darkAccent: '#93C5FD',
     badgeBg: '#DCE4FF',
     badgeText: '#334CC4',
     border: '#D3DCFF',
@@ -32,6 +35,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
     bg: '#FFF3EE',
     darkBg: '#241612',
     accent: '#C85F3D',
+    darkAccent: '#FB923C',
     badgeBg: '#FCE0D5',
     badgeText: '#C85F3D',
     border: '#F5D8CC',
@@ -41,6 +45,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
     bg: '#F0EAFB',
     darkBg: '#1E172B',
     accent: '#8067B5',
+    darkAccent: '#C084FC',
     badgeBg: '#E4D8F8',
     badgeText: '#8067B5',
     border: '#E1D3F7',
@@ -50,6 +55,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
     bg: '#F8F0D8',
     darkBg: '#262112',
     accent: '#C99A32',
+    darkAccent: '#FBBF24',
     badgeBg: '#F5E4B5',
     badgeText: '#C99A32',
     border: '#EDDFAF',
@@ -59,6 +65,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
     bg: '#FCEBED',
     darkBg: '#261216',
     accent: '#C94B5C',
+    darkAccent: '#F472B6',
     badgeBg: '#FAD3D9',
     badgeText: '#C94B5C',
     border: '#F5CBD1',
@@ -68,6 +75,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
     bg: '#E7F7ED',
     darkBg: '#0D2115',
     accent: '#15803D',
+    darkAccent: '#4ADE80',
     badgeBg: '#D4F0DF',
     badgeText: '#15803D',
     border: '#C6EAD3',
@@ -77,6 +85,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
     bg: '#E0F2FE',
     darkBg: '#0B1E2E',
     accent: '#0284C7',
+    darkAccent: '#38BDF8',
     badgeBg: '#BAE6FD',
     badgeText: '#0284C7',
     border: '#B9E2FC',
@@ -86,6 +95,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
     bg: '#EEF2FF',
     darkBg: '#16172E',
     accent: '#4F46E5',
+    darkAccent: '#A5B4FC',
     badgeBg: '#E0E7FF',
     badgeText: '#4F46E5',
     border: '#D8DEFC',
@@ -95,6 +105,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
     bg: '#F1F5F9',
     darkBg: '#191E24',
     accent: '#475569',
+    darkAccent: '#94A3B8',
     badgeBg: '#E2E8F0',
     badgeText: '#475569',
     border: '#CBD5E1',

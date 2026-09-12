@@ -77,9 +77,13 @@ export const ClassCard: React.FC<ClassCardProps> = ({
           <div className="flex items-center gap-2 flex-wrap">
             <span 
               className="text-[11px] font-bold uppercase tracking-[1.4px] leading-none"
-              style={{ color: isCurrent ? '#18A889' : theme.accent }}
             >
-              {categoryLabel}
+              <span className="dark:hidden" style={{ color: isCurrent ? '#18A889' : theme.accent }}>
+                {categoryLabel}
+              </span>
+              <span className="hidden dark:inline" style={{ color: isCurrent ? '#18A889' : (theme.darkAccent || theme.accent) }}>
+                {categoryLabel}
+              </span>
             </span>
 
             {isLab && (
@@ -116,8 +120,8 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 
           <div className="flex items-center gap-2">
             <span 
-              className="text-[12px] sm:text-[13px] font-bold font-mono tracking-tight"
-              style={{ color: isCurrent ? '#FFFFFF' : '#151515' }}
+              className="text-[12px] sm:text-[13px] font-bold font-mono tracking-tight text-[#151515] dark:text-[#F4F4F6]"
+              style={{ color: isCurrent ? '#FFFFFF' : undefined }}
             >
               {session.startTime} – {session.endTime}
             </span>
@@ -127,8 +131,8 @@ export const ClassCard: React.FC<ClassCardProps> = ({
               <button
                 type="button"
                 onClick={() => setMenuOpen((prev) => !prev)}
-                className="p-1 rounded transition-colors cursor-pointer opacity-70 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10"
-                style={{ color: isCurrent ? '#A8A8A8' : '#737373' }}
+                className="p-1 rounded transition-colors cursor-pointer opacity-70 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 text-[#737373] dark:text-[#CBD5E1]"
+                style={{ color: isCurrent ? '#A8A8A8' : undefined }}
                 title="Class actions"
               >
                 <MoreHorizontal className="w-4 h-4" />
@@ -172,19 +176,19 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 
         {/* Title */}
         <h4 
-          className="text-[16px] sm:text-[17px] leading-[22px] font-bold tracking-tight break-words mb-2.5"
-          style={{ color: isCurrent ? '#FFFFFF' : '#151515' }}
+          className="text-[16px] sm:text-[17px] leading-[22px] font-bold tracking-tight break-words mb-2.5 text-[#151515] dark:text-white"
+          style={{ color: isCurrent ? '#FFFFFF' : undefined }}
         >
           {subject?.name || 'Class Session'}
         </h4>
 
         {/* Metadata */}
         <div 
-          className="flex items-center gap-1.5 text-[12px] font-medium truncate"
-          style={{ color: isCurrent ? '#A8A8A8' : '#6F737C' }}
+          className="flex items-center gap-1.5 text-[12px] font-medium truncate text-[#6F737C] dark:text-[#CBD5E1]"
+          style={{ color: isCurrent ? '#A8A8A8' : undefined }}
         >
           <span className="shrink-0 flex items-center gap-1">
-            <span className="text-[10px] leading-none opacity-80">◉</span> {roomStr}
+            <span className="text-[10px] leading-none opacity-80 text-[#8E929C] dark:text-[#CBD5E1]">◉</span> {roomStr}
           </span>
           {displayFaculty && (
             <>
