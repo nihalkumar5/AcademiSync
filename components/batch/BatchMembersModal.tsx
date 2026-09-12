@@ -63,6 +63,11 @@ function deduplicateBatchMembers(rawList: any[], currentUserId?: string, current
                             (currentUserEmail && itemEmail && itemEmail === currentUserEmail.toLowerCase());
       if (rawIsCurrent && itemIsCurrent) return true;
 
+      // Deduplicate admin accounts so Super Admin never has multiple duplicate cards
+      const rawIsAdmin = rawP.role === 'super_admin' || isUserSuperAdmin(rawP, rawEmail);
+      const itemIsAdmin = itemP.role === 'super_admin' || isUserSuperAdmin(itemP, itemEmail);
+      if (rawIsAdmin && itemIsAdmin) return true;
+
       // CRITICAL CHECK: If both have valid DIFFERENT roll numbers, they are DEFINITELY two different students in the class!
       if (isRawRollValid && isItemRollValid && rawRoll !== itemRoll) {
         return false;
@@ -553,7 +558,6 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
                 {normalMembers.map((m) => {
                   const p = m.profile || {};
                   const isCurrentUser = checkIsCurrentUser(m);
-                  const isMemberSuperAdmin = checkMemberIsSuperAdmin(m);
                   return (
                     <div 
                       key={m.id}
@@ -567,14 +571,8 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
                         {p.name || 'Student'}
                       </span>
                       <span className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8] mt-1 truncate w-full px-1 font-mono">
-                        {isMemberSuperAdmin ? `Super Admin · ${p.rollNumber || p.email}` : (p.rollNumber || p.email)}
+                        {p.rollNumber || p.email}
                       </span>
-                      {isMemberSuperAdmin && (
-                        <span className="absolute top-2 left-2 inline-flex items-center gap-1 bg-[#111111] dark:bg-white text-white dark:text-[#111111] px-1.5 py-0.5 text-[8px] font-bold tracking-widest uppercase">
-                          <Crown className="w-2.5 h-2.5" />
-                          ADMIN
-                        </span>
-                      )}
                       {isCurrentUser && (
                         <span className="absolute top-2 right-2 text-[8px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] border border-[#D9D9D6] dark:border-white/[0.1] px-1 py-0.5 uppercase bg-black/[0.02] dark:bg-white/[0.06]">YOU</span>
                       )}
@@ -596,32 +594,18 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
         {selectedMember && (
           <div className="-m-5 p-5">
             <div className="border-b border-[#D9D9D6] dark:border-white/[0.08] pb-4 mb-4">
-              <div className="flex items-center gap-2">
-                <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF]">
-                  {selectedMember.profile?.name || 'Student'}
-                </h3>
-                {checkMemberIsSuperAdmin(selectedMember) && (
-                  <span className="inline-flex items-center gap-1 bg-[#111111] dark:bg-white text-white dark:text-[#111111] px-1.5 py-0.5 text-[9px] font-bold tracking-widest uppercase">
-                    <Crown className="w-2.5 h-2.5" />
-                    ADMIN
-                  </span>
-                )}
-              </div>
+              <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+                {selectedMember.profile?.name || 'Student'}
+              </h3>
               <p className="text-[13px] text-[#6F6F6F] mt-1">
-                {checkMemberIsSuperAdmin(selectedMember) ? `Super Admin · ${selectedMember.profile?.email}` : (selectedMember.profile?.rollNumber || selectedMember.profile?.email)}
+                {selectedMember.profile?.rollNumber || selectedMember.profile?.email}
               </p>
             </div>
             
             <div className="flex flex-col">
               {checkMemberIsSuperAdmin(selectedMember) ? (
-                <div className="flex flex-col gap-2 py-2">
-                  <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold text-[13px]">
-                    <Crown className="w-4 h-4" />
-                    <span>Official Super Administrator</span>
-                  </div>
-                  <p className="text-[12px] text-[#6F6F6F] dark:text-[#94A3B8] leading-relaxed">
-                    Global platform administrator with full system permissions across all batches and timetables. Role cannot be modified at the batch level.
-                  </p>
+                <div className="py-4 text-[13px] text-[#6F6F6F]">
+                  No administrative actions available for this member.
                 </div>
               ) : isAuthorizedCR && !checkIsCurrentUser(selectedMember) && !checkMemberIsCreator(selectedMember) ? (
                  <>
