@@ -18,14 +18,10 @@ interface BatchMembersModalProps {
   onJoinBatch?: () => void;
 }
 
-function normalizeCleanName(s?: string): string {
-  if (!s) return '';
-  return s.toLowerCase().trim().replace(/(.)\1+/g, '$1').replace(/[^a-z0-9]/g, '');
-}
-
 // ── Robust Deduplication & Sanitization Engine ─────────────────────────────
 // Filters phantom/anonymous ghost accounts, validates emails, and deduplicates
-// real students based on UID, Roll Number, verified Email, or normalized Name.
+// duplicate logins by the SAME person based on UID, Roll Number, or verified Email.
+// Students with the same name but different roll numbers or emails are preserved as distinct students.
 function deduplicateBatchMembers(rawList: any[], currentUserId?: string, currentUserEmail?: string): any[] {
   // 1. Filter out pure ghost accounts (no name, no email, no roll number) and obvious fake/joke emails
   const validList = rawList.filter((raw) => {
@@ -57,47 +53,40 @@ function deduplicateBatchMembers(rawList: any[], currentUserId?: string, current
     const rawP = raw.profile || {};
     const rawRoll = (rawP.rollNumber || '').trim().toLowerCase();
     const rawEmail = (rawP.email || '').trim().toLowerCase();
-    const rawName = (rawP.name || '').trim();
-    const rawNormName = normalizeCleanName(rawName);
-    const isRawGeneric = !rawName || rawName.toLowerCase() === 'student' || rawName.toLowerCase() === 'student name';
-    const rawEmailUser = rawEmail.split('@')[0].replace(/[^a-z]/g, '');
+    const isRawRollValid = rawRoll.length >= 2 && rawRoll !== 'n/a';
 
-    // Find if there's already an entry for this person in mergedList
+    // Find if there's already an entry for this exact same person in mergedList
     const existingIndex = mergedList.findIndex((item) => {
       const itemP = item.profile || {};
       const itemRoll = (itemP.rollNumber || '').trim().toLowerCase();
       const itemEmail = (itemP.email || '').trim().toLowerCase();
-      const itemName = (itemP.name || '').trim();
-      const itemNormName = normalizeCleanName(itemName);
-      const isItemGeneric = !itemName || itemName.toLowerCase() === 'student' || itemName.toLowerCase() === 'student name';
-      const itemEmailUser = itemEmail.split('@')[0].replace(/[^a-z]/g, '');
+      const isItemRollValid = itemRoll.length >= 2 && itemRoll !== 'n/a';
 
-      // 1. Direct UID match
+      // 1. Direct UID match (same user account)
       if (item.id === raw.id || item.allIds?.includes(raw.id)) return true;
 
-      // 2. Exact Roll Number match (if valid length >= 3)
-      if (rawRoll && itemRoll && rawRoll.length >= 3 && rawRoll === itemRoll) return true;
-
-      // 3. Exact Email match (if non-empty)
-      if (rawEmail && itemEmail && rawEmail === itemEmail) return true;
-
-      // 4. Current logged-in user match
-      const rawIsCurrent = raw.id === currentUserId || (rawEmail && rawEmail === currentUserEmail?.toLowerCase());
-      const itemIsCurrent = item.id === currentUserId || (itemEmail && itemEmail === currentUserEmail?.toLowerCase());
+      // 2. Current logged-in user match (both records belong to the active user)
+      const rawIsCurrent = (currentUserId && raw.id === currentUserId) || 
+                           (currentUserEmail && rawEmail && rawEmail === currentUserEmail.toLowerCase());
+      const itemIsCurrent = (currentUserId && item.id === currentUserId) || 
+                            (currentUserEmail && itemEmail && itemEmail === currentUserEmail.toLowerCase());
       if (rawIsCurrent && itemIsCurrent) return true;
 
-      // 5. Normalized Name match (e.g. "Nihal Kumar" vs "Nihal Kumarr")
-      if (!isRawGeneric && !isItemGeneric && rawNormName && itemNormName && rawNormName === itemNormName) {
-        return true;
+      // CRITICAL CHECK: If both have valid DIFFERENT roll numbers, they are DEFINITELY two different students in the class!
+      if (isRawRollValid && isItemRollValid && rawRoll !== itemRoll) {
+        return false;
       }
 
-      // 6. Generic "Student" whose email prefix starts with an existing member's first name
-      if (!isItemGeneric && isRawGeneric && itemNormName && rawEmailUser && rawEmailUser.startsWith(itemNormName.slice(0, 5))) {
-        return true;
+      // CRITICAL CHECK: If both have valid DIFFERENT emails, they are DEFINITELY two different students!
+      if (rawEmail && itemEmail && rawEmail !== itemEmail) {
+        return false;
       }
-      if (!isRawGeneric && isItemGeneric && rawNormName && itemEmailUser && itemEmailUser.startsWith(rawNormName.slice(0, 5))) {
-        return true;
-      }
+
+      // 3. Exact Roll Number match (same roll number in the same batch means duplicate login by same student)
+      if (isRawRollValid && isItemRollValid && rawRoll === itemRoll) return true;
+
+      // 4. Exact Email match (same verified email means duplicate login by same student)
+      if (rawEmail && itemEmail && rawEmail === itemEmail) return true;
 
       return false;
     });
@@ -106,6 +95,7 @@ function deduplicateBatchMembers(rawList: any[], currentUserId?: string, current
       const target = mergedList[existingIndex];
       const targetP = target.profile || {};
       const isTargetGeneric = !targetP.name || targetP.name.toLowerCase() === 'student' || targetP.name.toLowerCase() === 'student name';
+      const isRawGeneric = !rawP.name || rawP.name.toLowerCase() === 'student' || rawP.name.toLowerCase() === 'student name';
 
       // Pick the cleanest name & roll number
       const chosenName = !isTargetGeneric ? targetP.name : (!isRawGeneric ? rawP.name : 'Student');
