@@ -1974,14 +1974,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
           const progMatch = !cleanInputProg || docProg === cleanInputProg || docProg.includes(cleanInputProg) || cleanInputProg.includes(docProg);
           const branchMatch = !cleanInputBranch || docBranch === cleanInputBranch;
-          const sectionMatch = !data.section || docSection === cleanInputSec;
           const collegeMatch = 
             shortDocCol === cleanInputCollege ||
             docCollege.includes(cleanInputCollege) || 
             cleanInputCollege.includes(docCollege) ||
             (cleanInputCollege.includes('iiit') && docCollege.includes('iiit') && (cleanInputCollege.includes('raipur') || cleanInputCollege.includes('nr')));
 
-          if (progMatch && collegeMatch && branchMatch && sectionMatch) {
+          if (progMatch && collegeMatch && branchMatch) {
             return { ...data, id: d.id };
           }
         }
@@ -2334,7 +2333,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
 
     try {
-      const canonicalKey = getCanonicalBatchKey(profile.college, profile.programme, profile.branch, profile.semester, profile.section || '');
+      const canonicalKey = getCanonicalBatchKey(profile.college, profile.programme, profile.branch, profile.semester);
       const docRef = doc(db, 'shared_timetables', canonicalKey);
       const newInviteCode = generateInviteCode();
 
@@ -2344,7 +2343,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         programme: profile.programme,
         branch: profile.branch,
         semester: profile.semester,
-        section: profile.section || 'A',
+        section: '',
         creatorId: user?.id || 'anonymous',
         creatorName: profile.name || 'Student',
         creatorEmail: userEmail,

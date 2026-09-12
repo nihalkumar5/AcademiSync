@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useApp } from '@/context/AppContext';
-import { getShortCollegeName, formatBatchDisplayName, isExplicitSection } from '@/lib/timetableUtils';
+import { getShortCollegeName, formatBatchDisplayName } from '@/lib/timetableUtils';
 import { CRApplicationModal } from '@/components/cr/CRApplicationModal';
 import { 
   Calendar, 
@@ -36,7 +36,6 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
   programme,
   branch,
   semester,
-  section,
   onContinuePersonal
 }) => {
   const { profile, showToast } = useApp();
@@ -46,14 +45,11 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
   const activeProg = programme || profile.programme || 'B.Tech';
   const activeBranch = branch || profile.branch || 'Engineering';
   const activeSem = semester || profile.semester || 1;
-  const activeSec = section || profile.section || '';
 
   const shortCollege = getShortCollegeName(activeCollege);
-  const hasMultipleSections = isExplicitSection(activeSec);
-  const cleanSec = hasMultipleSections ? activeSec.replace(/section\s*/i, '').trim() : '';
 
   const handleShareToWhatsApp = async () => {
-    const courseTitle = `${activeBranch} (Sem ${activeSem}${hasMultipleSections ? `, Section ${cleanSec}` : ''})`;
+    const courseTitle = `${activeBranch} (Sem ${activeSem})`;
     const messageText = `Hey batchmates! 👋
 
 Nobody has created the official timetable for our batch yet on Intersemester:
@@ -266,7 +262,6 @@ If you are our Batch Pilot or want to setup the synced batch timetable for all o
         targetProgramme={programme || profile.programme || ''}
         targetBranch={branch || (profile.branch !== 'Engineering' ? profile.branch : '')}
         targetSemester={semester || profile.semester || 1}
-        targetSection={section || profile.section || ''}
       />
     </>
   );

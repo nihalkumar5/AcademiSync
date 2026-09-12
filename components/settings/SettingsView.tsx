@@ -11,7 +11,7 @@ import { Programme, Branch } from '@/lib/types';
 import { storage } from '@/lib/storage';
 import { INDIAN_COLLEGES, STANDARD_PROGRAMMES, STANDARD_BRANCHES } from '@/lib/colleges';
 import { scheduleTestNotification } from '@/lib/localNotifications';
-import { getCanonicalBatchKey, isExplicitSection, formatBatchDisplayName } from '@/lib/timetableUtils';
+import { getCanonicalBatchKey, formatBatchDisplayName, isValidProperEmail } from '@/lib/timetableUtils';
 import {
   User,
   GraduationCap,
@@ -207,7 +207,7 @@ export const SettingsView: React.FC = () => {
     const cleanProg = programme.trim();
     const cleanBranch = branch.trim();
     const cleanSem = Number(semester);
-    const cleanSec = section.trim();
+    const cleanEmail = email.trim();
 
     if (!cleanCollege) {
       showToast('College Required', 'Please select your verified university from the SheerID directory.', 'error');
@@ -216,26 +216,35 @@ export const SettingsView: React.FC = () => {
       return;
     }
 
+    if (!cleanEmail) {
+      showToast('Email Required', 'Please enter your academic or personal email address.', 'error');
+      return;
+    }
+
+    if (!isValidProperEmail(cleanEmail)) {
+      showToast('Invalid Email', 'Please enter a valid official or personal email address (e.g. name@college.edu.in or name@gmail.com).', 'error');
+      return;
+    }
+
     const hasAcademicChanges = 
       cleanCollege !== profile.college ||
       cleanProg !== profile.programme ||
       cleanBranch !== profile.branch ||
-      cleanSem !== profile.semester ||
-      cleanSec !== (profile.section || '');
+      cleanSem !== profile.semester;
 
     const savedFields = {
       name: name.trim(),
       rollNumber: rollNumber.trim(),
-      email: email.trim(),
+      email: cleanEmail,
       year: Number(year),
-      section: cleanSec,
+      section: '',
     };
 
     if (hasAcademicChanges) {
-      const newKey = getCanonicalBatchKey(cleanCollege, cleanProg, cleanBranch, cleanSem, cleanSec);
+      const newKey = getCanonicalBatchKey(cleanCollege, cleanProg, cleanBranch, cleanSem);
       if (newKey !== profile.batchKey) {
         setIsLoadingColleges(true);
-        const matched = await searchBatchTimetable(cleanCollege, cleanProg, cleanBranch, cleanSem, cleanSec);
+        const matched = await searchBatchTimetable(cleanCollege, cleanProg, cleanBranch, cleanSem);
         setIsLoadingColleges(false);
         
         if (matched) {
@@ -250,7 +259,7 @@ export const SettingsView: React.FC = () => {
             programme: cleanProg,
             branch: cleanBranch,
             semester: cleanSem,
-            section: cleanSec,
+            section: '',
             batchKey: undefined,
             isBatchSynced: false,
           });
@@ -268,7 +277,7 @@ export const SettingsView: React.FC = () => {
       programme: cleanProg,
       branch: cleanBranch,
       semester: cleanSem,
-      section: cleanSec,
+      section: '',
       batchKey: profile.batchKey,
       isBatchSynced: profile.isBatchSynced,
     });
@@ -776,12 +785,6 @@ export const SettingsView: React.FC = () => {
                     </span>
                     <div className="flex items-center gap-2 text-[12px] text-[#6F6F6F] dark:text-[#94A3B8]">
                       <span>Semester {profile.semester} · Year {Math.ceil((profile.semester || 1) / 2)}</span>
-                      {profile.section && (
-                        <>
-                          <span>·</span>
-                          <span>Section {profile.section}</span>
-                        </>
-                      )}
                     </div>
                   </div>
                   {isBatchCR && (
@@ -825,7 +828,7 @@ export const SettingsView: React.FC = () => {
                       onClick={async () => {
                         try {
                           const code = await shareTimetableWithBatch();
-                          const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
+                          const batchTitle = `${profile.branch || 'Class'} (Sem ${profile.semester || ''})`;
                           const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 
 🔑 *Batch Code:* ${code}
@@ -1550,7 +1553,7 @@ export const SettingsView: React.FC = () => {
                   setShowBatchSettingsModal(false);
                   try {
                     const code = await shareTimetableWithBatch();
-                    const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
+                    const batchTitle = `${profile.branch || 'Class'} (Sem ${profile.semester || ''})`;
                     const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 
 🔑 *Batch Code:* ${code}
@@ -1634,7 +1637,6 @@ export const SettingsView: React.FC = () => {
         programme={programme}
         branch={branch}
         semester={Number(semester)}
-        section={section}
       />
     </div>
   );

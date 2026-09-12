@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useApp } from '@/context/AppContext';
-import { getCanonicalBatchKey, formatBatchDisplayName, getShortCollegeName } from '@/lib/timetableUtils';
+import { getCanonicalBatchKey, formatBatchDisplayName, getShortCollegeName, isValidProperEmail } from '@/lib/timetableUtils';
 import { searchCollegesAsync, CollegeItem } from '@/lib/collegeDirectory';
 import { STANDARD_PROGRAMMES, STANDARD_BRANCHES } from '@/lib/colleges';
 import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
@@ -58,8 +58,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
   targetCollege,
   targetProgramme,
   targetBranch,
-  targetSemester,
-  targetSection
+  targetSemester
 }) => {
   const { profile, user, showToast, searchBatchTimetable } = useApp();
   const router = useRouter();
@@ -79,7 +78,6 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
   const [programme, setProgramme] = useState(cleanInit(targetProgramme) || cleanInit(profile.programme) || '');
   const [branch, setBranch] = useState(cleanInit(targetBranch) || cleanInit(profile.branch) || '');
   const [semester, setSemester] = useState(targetSemester || profile.semester || 1);
-  const [section, setSection] = useState(targetSection || profile.section || '');
   const [rollNumber, setRollNumber] = useState(cleanInit(profile.rollNumber) || '');
 
   // Dropdown states
@@ -96,8 +94,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
     if (targetProgramme !== undefined) setProgramme(cleanInit(targetProgramme));
     if (targetBranch !== undefined) setBranch(cleanInit(targetBranch));
     if (targetSemester !== undefined) setSemester(targetSemester || 1);
-    if (targetSection !== undefined) setSection(targetSection || '');
-  }, [targetCollege, targetProgramme, targetBranch, targetSemester, targetSection]);
+  }, [targetCollege, targetProgramme, targetBranch, targetSemester]);
 
   // SheerID College search autocomplete (debounced)
   useEffect(() => {
@@ -126,7 +123,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
     };
   }, [college]);
 
-  const canonicalBatchKey = getCanonicalBatchKey(college, programme, branch, semester, section);
+  const canonicalBatchKey = getCanonicalBatchKey(college, programme, branch, semester);
   const requestId = user?.id && canonicalBatchKey ? `${user.id}_${canonicalBatchKey}` : null;
 
   // Background check for existing CR request in Firestore (does NOT unmount form)
@@ -170,7 +167,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
       setIsCheckingBatch(true);
       try {
         // 1. Direct document check by canonicalKey
-        const key = getCanonicalBatchKey(college, programme, branch, semester, section);
+        const key = getCanonicalBatchKey(college, programme, branch, semester);
         const docRef = doc(db, 'shared_timetables', key);
         const snap = await getDoc(docRef);
 
@@ -180,7 +177,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
         }
 
         // 2. Fuzzy search by searchBatchTimetable
-        const matched = await searchBatchTimetable(college, programme, branch, Number(semester), section || 'A');
+        const matched = await searchBatchTimetable(college, programme, branch, Number(semester));
         if (matched && active) {
           setExistingBatch(matched);
         } else if (active) {
@@ -197,10 +194,10 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
       active = false;
       clearTimeout(timer);
     };
-  }, [isOpen, college, programme, branch, semester, section, searchBatchTimetable]);
+  }, [isOpen, college, programme, branch, semester, searchBatchTimetable]);
 
   const handleAskPilotWhatsApp = async () => {
-    const courseTitle = `${branch || 'Class'} (Sem ${semester}${section ? `, Section ${section}` : ''})`;
+    const courseTitle = `${branch || 'Class'} (Sem ${semester})`;
     const messageText = `Hey Batch Pilot! 👋
 
 Could you please share the official *Intersemester Batch Code* for our class:
@@ -247,6 +244,11 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
       return;
     }
 
+    if (!isValidProperEmail(userEmail)) {
+      showToast('Valid Email Required', 'Please ensure you have a valid university or personal email in your profile before applying.', 'error');
+      return;
+    }
+
     if (!college.trim()) {
       showToast('College Required', 'Please select or enter your college.', 'error');
       return;
@@ -279,7 +281,6 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
         programme: programme.trim(),
         branch: branch.trim(),
         semester: Number(semester) || 1,
-        section: (section || '').trim().toUpperCase(),
         batchKey: canonicalBatchKey,
         phone: phone.trim(),
         note: note.trim() || 'Batch Pilot',
@@ -359,7 +360,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                 You are a Verified Batch Pilot! 🚀
               </h3>
               <p className="text-[13px] text-[#6F6F6F] dark:text-[#A0A0A0] mt-1.5 max-w-md leading-relaxed">
-                You have full authority to manage timetables, cancel classes, and broadcast live alerts to {formatBatchDisplayName(profile.branch, profile.semester, profile.section)}.
+                You have full authority to manage timetables, cancel classes, and broadcast live alerts to {formatBatchDisplayName(profile.branch, profile.semester)}.
               </p>
             </div>
             <button 
@@ -385,7 +386,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
               </h4>
             </div>
             <p className="text-[13px] text-[#6F6F6F] dark:text-[#94A3B8] leading-relaxed">
-              Your Batch Pilot request for <strong>{college}</strong> · <strong>{formatBatchDisplayName(branch, semester, section)}</strong> is currently being reviewed.
+              Your Batch Pilot request for <strong>{college}</strong> · <strong>{formatBatchDisplayName(branch, semester)}</strong> is currently being reviewed.
             </p>
             <div className="p-4 bg-white dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.08] rounded-none text-[12px] space-y-1.5 font-mono text-[#111111] dark:text-[#F4F4F6]">
               <div><strong>Roll No:</strong> {existingRequest.rollNumber}</div>
@@ -450,7 +451,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                   </p>
                 ) : (
                   <p className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8]">
-                    💡 <em>Are you an official CR/Pilot for this section? You can still submit your application below to become an authorized Co-Pilot ({existingPilotsCount}/3 Pilots).</em>
+                    💡 <em>Are you an official CR/Pilot for this branch? You can still submit your application below to become an authorized Co-Pilot ({existingPilotsCount}/3 Pilots).</em>
                   </p>
                 )}
               </div>
@@ -623,8 +624,8 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
 
                 </div>
 
-                {/* 3. Semester, Section & Roll Number Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                {/* 3. Semester & Roll Number Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   
                   {/* Semester Selector */}
                   <div className="flex flex-col gap-1.5">
@@ -642,20 +643,6 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                         </option>
                       ))}
                     </select>
-                  </div>
-
-                  {/* Section */}
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-bold tracking-wider uppercase text-[#6F6F6F] dark:text-[#94A3B8]">
-                      Section (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. A, B or 1"
-                      value={section}
-                      onChange={(e) => setSection(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none text-[13.5px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors uppercase placeholder:normal-case placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
-                    />
                   </div>
 
                   {/* Roll Number */}

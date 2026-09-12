@@ -5,7 +5,7 @@ import { shareLink } from '@/lib/shareUtils';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
-import { normalizeIdList } from '@/lib/timetableUtils';
+import { normalizeIdList, isValidProperEmail } from '@/lib/timetableUtils';
 import { collection, onSnapshot, doc, updateDoc, increment, query, where, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Modal } from '@/components/ui/Modal';
@@ -18,43 +18,86 @@ interface BatchMembersModalProps {
   onJoinBatch?: () => void;
 }
 
-// ── Robust Deduplication Engine ──────────────────────────────────────────────
-// Groups multiple Firestore documents belonging to the same real student
-// based on: User ID, Roll Number, Email, or Full Name.
+function normalizeCleanName(s?: string): string {
+  if (!s) return '';
+  return s.toLowerCase().trim().replace(/(.)\1+/g, '$1').replace(/[^a-z0-9]/g, '');
+}
+
+// ── Robust Deduplication & Sanitization Engine ─────────────────────────────
+// Filters phantom/anonymous ghost accounts, validates emails, and deduplicates
+// real students based on UID, Roll Number, verified Email, or normalized Name.
 function deduplicateBatchMembers(rawList: any[], currentUserId?: string, currentUserEmail?: string): any[] {
+  // 1. Filter out pure ghost accounts (no name, no email, no roll number) and obvious fake/joke emails
+  const validList = rawList.filter((raw) => {
+    const p = raw.profile || {};
+    const rawName = (p.name || '').trim();
+    const rawEmail = (p.email || '').trim().toLowerCase();
+    const rawRoll = (p.rollNumber || '').trim();
+
+    const isGenericName = !rawName || rawName.toLowerCase() === 'student' || rawName.toLowerCase() === 'student name';
+    const hasValidEmail = rawEmail && isValidProperEmail(rawEmail);
+    const hasRoll = rawRoll.length >= 2;
+
+    // Filter out accounts that have no roll, generic name, and no legitimate email
+    if (isGenericName && !hasRoll && !hasValidEmail) {
+      return false;
+    }
+
+    // Filter out accounts with known fake/joke test emails (e.g. woh.pyaar.hai...)
+    if (rawEmail && !isValidProperEmail(rawEmail)) {
+      return false;
+    }
+
+    return true;
+  });
+
   const mergedList: any[] = [];
 
-  for (const raw of rawList) {
+  for (const raw of validList) {
     const rawP = raw.profile || {};
     const rawRoll = (rawP.rollNumber || '').trim().toLowerCase();
     const rawEmail = (rawP.email || '').trim().toLowerCase();
-    const rawName = (rawP.name || '').trim().toLowerCase();
-    const isRawGeneric = !rawName || rawName === 'student' || rawName === 'student name';
+    const rawName = (rawP.name || '').trim();
+    const rawNormName = normalizeCleanName(rawName);
+    const isRawGeneric = !rawName || rawName.toLowerCase() === 'student' || rawName.toLowerCase() === 'student name';
+    const rawEmailUser = rawEmail.split('@')[0].replace(/[^a-z]/g, '');
 
     // Find if there's already an entry for this person in mergedList
     const existingIndex = mergedList.findIndex((item) => {
       const itemP = item.profile || {};
       const itemRoll = (itemP.rollNumber || '').trim().toLowerCase();
       const itemEmail = (itemP.email || '').trim().toLowerCase();
-      const itemName = (itemP.name || '').trim().toLowerCase();
-      const isItemGeneric = !itemName || itemName === 'student' || itemName === 'student name';
+      const itemName = (itemP.name || '').trim();
+      const itemNormName = normalizeCleanName(itemName);
+      const isItemGeneric = !itemName || itemName.toLowerCase() === 'student' || itemName.toLowerCase() === 'student name';
+      const itemEmailUser = itemEmail.split('@')[0].replace(/[^a-z]/g, '');
 
       // 1. Direct UID match
       if (item.id === raw.id || item.allIds?.includes(raw.id)) return true;
 
-      // 2. Exact Roll Number match (if non-empty & valid length >= 3)
+      // 2. Exact Roll Number match (if valid length >= 3)
       if (rawRoll && itemRoll && rawRoll.length >= 3 && rawRoll === itemRoll) return true;
 
       // 3. Exact Email match (if non-empty)
       if (rawEmail && itemEmail && rawEmail === itemEmail) return true;
 
-      // 4. Exact Full Name match (if both are non-generic e.g. "Tejasva Ukey", "Dayman Kumar", "Nihal Kumar")
-      if (!isRawGeneric && !isItemGeneric && rawName === itemName) return true;
-
-      // 5. Current logged-in user match
+      // 4. Current logged-in user match
       const rawIsCurrent = raw.id === currentUserId || (rawEmail && rawEmail === currentUserEmail?.toLowerCase());
       const itemIsCurrent = item.id === currentUserId || (itemEmail && itemEmail === currentUserEmail?.toLowerCase());
       if (rawIsCurrent && itemIsCurrent) return true;
+
+      // 5. Normalized Name match (e.g. "Nihal Kumar" vs "Nihal Kumarr")
+      if (!isRawGeneric && !isItemGeneric && rawNormName && itemNormName && rawNormName === itemNormName) {
+        return true;
+      }
+
+      // 6. Generic "Student" whose email prefix starts with an existing member's first name
+      if (!isItemGeneric && isRawGeneric && itemNormName && rawEmailUser && rawEmailUser.startsWith(itemNormName.slice(0, 5))) {
+        return true;
+      }
+      if (!isRawGeneric && isItemGeneric && rawNormName && itemEmailUser && itemEmailUser.startsWith(rawNormName.slice(0, 5))) {
+        return true;
+      }
 
       return false;
     });
@@ -64,10 +107,10 @@ function deduplicateBatchMembers(rawList: any[], currentUserId?: string, current
       const targetP = target.profile || {};
       const isTargetGeneric = !targetP.name || targetP.name.toLowerCase() === 'student' || targetP.name.toLowerCase() === 'student name';
 
-      // Prefer real name over generic "Student"
+      // Pick the cleanest name & roll number
       const chosenName = !isTargetGeneric ? targetP.name : (!isRawGeneric ? rawP.name : 'Student');
       const chosenRoll = targetP.rollNumber || rawP.rollNumber || '';
-      const chosenEmail = targetP.email || rawP.email || '';
+      const chosenEmail = targetP.email && isValidProperEmail(targetP.email) ? targetP.email : (rawP.email || '');
       const chosenAvatar = targetP.avatarUrl || rawP.avatarUrl;
       const isCR = targetP.role === 'cr' || rawP.role === 'cr';
 
@@ -324,7 +367,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
 
   const handleCopyInvite = async () => {
     if (!batchKey) return;
-    const batchTitle = `${batchData?.branch || profile.branch || 'Class'} - Sec ${batchData?.section || profile.section || 'A'} (Sem ${batchData?.semester || profile.semester || ''})`;
+    const batchTitle = `${batchData?.branch || profile.branch || 'Class'} (Sem ${batchData?.semester || profile.semester || ''})`;
     const code = batchData?.inviteCode || batchKey;
     const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 
@@ -397,17 +440,11 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
                 <span>SEMESTER {batchData?.semester || '?'}</span>
                 <span>·</span>
                 <span>YEAR {displayYear}</span>
-                {batchData?.section && (
-                  <>
-                    <span>·</span>
-                    <span>SECTION {batchData.section}</span>
-                  </>
-                )}
               </div>
             </div>
 
             <div className="text-[11px] font-mono text-[#6F6F6F] dark:text-[#94A3B8] px-2.5 py-1 bg-black/[0.03] dark:bg-white/[0.05] border border-[#D9D9D6] dark:border-white/[0.08] self-start sm:self-auto uppercase tracking-wider">
-              {members.length} {members.length === 1 ? 'MEMBER' : 'MEMBERS'}
+              {deduplicatedMembers.length} {deduplicatedMembers.length === 1 ? 'MEMBER' : 'MEMBERS'}
             </div>
           </div>
 

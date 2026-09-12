@@ -810,27 +810,14 @@ export const isExplicitSection = (section?: string): boolean => {
   return true;
 };
 
-export const formatBatchDisplayName = (branch?: string, semester?: number, section?: string): string => {
+export const formatBatchDisplayName = (branch?: string, semester?: number, _section?: string): string => {
   const b = branch || 'Course';
   const sem = semester ? `Sem ${semester}` : '';
-  const hasSec = isExplicitSection(section);
-  
-  if (hasSec) {
-    const secClean = (section || '').replace(/section\s*/i, '').replace(/sec\s*/i, '').trim() || section;
-    return sem ? `${b} · ${sem} (Sec ${secClean})` : `${b} (Sec ${secClean})`;
-  }
-  
   return sem ? `${b} · ${sem}` : b;
 };
 
 export const normalizeSection = (section?: string): string => {
-  if (!section) return 'secA';
-  const clean = section.toUpperCase().trim().replace(/[^A-Z0-9]/g, '');
-  if (!clean || clean === 'A' || clean === '1') return 'secA';
-  if (clean === 'B' || clean === '2') return 'secB';
-  if (clean === 'C' || clean === '3') return 'secC';
-  if (clean === 'D' || clean === '4') return 'secD';
-  return `sec${clean}`;
+  return '';
 };
 
 export const getCanonicalBatchKey = (
@@ -838,18 +825,14 @@ export const getCanonicalBatchKey = (
   programme: string, 
   branch: string, 
   semester: number, 
-  section?: string
+  _section?: string
 ): string => {
   const shortCollege = getShortCollegeName(college);
   const cleanCollegeKey = shortCollege.toLowerCase().replace(/[^a-z0-9]/g, '');
   const cleanProgKey = normalizeProgrammeName(programme);
   const cleanBranchKey = normalizeBranchName(branch);
 
-  if (isExplicitSection(section)) {
-    const cleanSectionKey = normalizeSection(section);
-    return `${cleanCollegeKey}_${cleanProgKey}_${cleanBranchKey}_sem${semester}_${cleanSectionKey}`;
-  }
-
+  // Branch acts as the primary section; remove separate section suffix to avoid redundancy and fragmentation
   return `${cleanCollegeKey}_${cleanProgKey}_${cleanBranchKey}_sem${semester}`;
 };
 
@@ -935,4 +918,42 @@ export const normalizeIdList = (input: any): string[] => {
     }
   }
   return [];
+};
+
+/**
+ * Validates that an email is a legitimate institute or personal email address,
+ * rejecting joke domains, malformed formats, or nonsensical input.
+ */
+export const isValidProperEmail = (email?: string): boolean => {
+  if (!email || typeof email !== 'string') return false;
+  const trimmed = email.trim().toLowerCase();
+  const standardRegex = /^[a-zA-Z0-9._%+-]+@([a-zA-Z0-9-]+\.)+([a-zA-Z]{2,})$/;
+  if (!standardRegex.test(trimmed)) return false;
+
+  const parts = trimmed.split('@');
+  if (parts.length !== 2) return false;
+  const [userPart, domainPart] = parts;
+
+  if (userPart.length < 2 || userPart.length > 64) return false;
+  if (userPart.startsWith('.') || userPart.endsWith('.') || userPart.includes('..')) return false;
+
+  const domainSegments = domainPart.split('.');
+  if (domainSegments.length < 2 || domainSegments.length > 4) return false;
+
+  const tld = domainSegments[domainSegments.length - 1];
+  if (!tld || tld.length < 2 || tld.length > 10 || !/^[a-z]+$/.test(tld)) return false;
+
+  const validEndings = [
+    'edu.in', 'ac.in', 'res.in', 'ernet.in', 'gov.in', 'co.in', 'net.in', 'org.in',
+    'edu', 'ac.uk', 'edu.au', 'com', 'org', 'net', 'in', 'io', 'ai', 'co', 'me', 'app', 'dev'
+  ];
+  const matchesKnownEnding = validEndings.some((end) => domainPart.endsWith(end));
+  if (!matchesKnownEnding) {
+    if (domainSegments.length > 3) return false;
+    if (!['com', 'org', 'net', 'edu', 'gov', 'mil', 'int', 'in', 'io', 'co'].includes(tld)) {
+      return false;
+    }
+  }
+
+  return true;
 };
