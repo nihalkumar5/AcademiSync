@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
-import { collection, onSnapshot, doc, getDoc, updateDoc, setDoc, deleteDoc, query, orderBy, arrayRemove, arrayUnion } from 'firebase/firestore';
+import { collection, onSnapshot, doc, getDoc, getDocs, updateDoc, setDoc, deleteDoc, query, orderBy, arrayRemove, arrayUnion } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PromotionalCampaign, CampaignCategory, AdminRole } from '@/lib/types';
 import { searchCollegesAsync, CollegeItem, POPULAR_INDIAN_COLLEGES } from '@/lib/collegeDirectory';
@@ -304,28 +304,34 @@ export default function SuperAdminPage() {
 
 
   // Handlers for User Role Updates
-  const handleUpdateUserRole = async (userId: string, targetRole: AdminRole) => {
+  const [isCleaningDb, setIsCleaningDb] = useState(false);
+
+  const handleUpdateUserRole = async (userId: string, targetRole: AdminRole, linkedDocIds?: string[]) => {
     try {
       const targetUser = usersList.find(u => u.id === userId);
-      const userRef = doc(db, 'users', userId);
-      
-      await updateDoc(userRef, {
-        'profile.role': targetRole,
-      });
+      const idsToUpdate = linkedDocIds && linkedDocIds.length > 0 ? linkedDocIds : [userId];
+
+      for (const id of idsToUpdate) {
+        const userRef = doc(db, 'users', id);
+        await updateDoc(userRef, {
+          'profile.role': targetRole,
+        }).catch(console.error);
+      }
 
       // If user is synced to a batch, we MUST update the batch document as well
       // Otherwise, the user will retain/lack CR powers because the batch doc is the source of truth
       if (targetUser?.profile?.isBatchSynced && targetUser?.profile?.batchKey) {
         const batchRef = doc(db, 'shared_timetables', targetUser.profile.batchKey);
+        const emailToMatch = targetUser.profile.email || '';
         if (targetRole === 'student') {
           await updateDoc(batchRef, {
-            crUserIds: arrayRemove(userId),
-            crEmails: arrayRemove(targetUser.profile.email || ''),
+            crUserIds: arrayRemove(...idsToUpdate),
+            ...(emailToMatch ? { crEmails: arrayRemove(emailToMatch) } : {}),
           }).catch(console.error);
         } else if (targetRole === 'cr' || targetRole === 'super_admin') {
           await updateDoc(batchRef, {
-            crUserIds: arrayUnion(userId),
-            crEmails: arrayUnion(targetUser.profile.email || ''),
+            crUserIds: arrayUnion(...idsToUpdate),
+            ...(emailToMatch ? { crEmails: arrayUnion(emailToMatch) } : {}),
           }).catch(console.error);
         }
       }
@@ -337,16 +343,113 @@ export default function SuperAdminPage() {
     }
   };
 
-  const handleToggleUserPro = async (userId: string, currentProStatus: boolean) => {
+  const handleToggleUserPro = async (userId: string, currentProStatus: boolean, linkedDocIds?: string[]) => {
     try {
-      const userRef = doc(db, 'users', userId);
-      await updateDoc(userRef, {
-        'profile.isPro': !currentProStatus,
-      });
+      const idsToUpdate = linkedDocIds && linkedDocIds.length > 0 ? linkedDocIds : [userId];
+      for (const id of idsToUpdate) {
+        const userRef = doc(db, 'users', id);
+        await updateDoc(userRef, {
+          'profile.isPro': !currentProStatus,
+        }).catch(console.error);
+      }
       showToast('Pro Status Toggled', `User is now ${!currentProStatus ? 'PRO MEMBER' : 'FREE USER'}`, 'success');
     } catch (e) {
       console.error(e);
       showToast('Error', 'Failed to toggle Pro status', 'error');
+    }
+  };
+
+  const handleCleanDatabase = async () => {
+    if (!isAdmin || isCleaningDb) return;
+    const confirmClean = window.confirm(
+      'Clean & Deduplicate Database?\n\nThis will merge multiple logins belonging to the same student (e.g. Google Auth vs Clerk), copy their most recent batch & role into their active profile, delete orphaned duplicate docs, and purge abandoned ghost accounts. Do you want to proceed?'
+    );
+    if (!confirmClean) return;
+
+    setIsCleaningDb(true);
+    try {
+      const snap = await getDocs(collection(db, 'users'));
+      const rawList: any[] = [];
+      snap.forEach(d => rawList.push({ id: d.id, ...d.data() }));
+
+      const byKey = new Map<string, any[]>();
+      let ghostCount = 0;
+      let dupCount = 0;
+
+      for (const u of rawList) {
+        const p = u.profile || {};
+        const email = (p.email || '').trim().toLowerCase();
+        const roll = (p.rollNumber || '').trim().toLowerCase();
+        const name = (p.name || '').trim().toLowerCase();
+        const college = (p.college || '').trim().toLowerCase();
+
+        // 1. Ghost / Empty Demo accounts purge
+        if (!email && !roll && (!name || name === 'student' || name === 'anonymous' || college.includes('demo'))) {
+          await deleteDoc(doc(db, 'users', u.id)).catch(console.error);
+          ghostCount++;
+          continue;
+        }
+
+        const key = email || (roll ? `roll_${roll}` : null);
+        if (key) {
+          if (!byKey.has(key)) byKey.set(key, []);
+          byKey.get(key)!.push(u);
+        }
+      }
+
+      // 2. Duplicate consolidation
+      for (const docs of Array.from(byKey.values())) {
+        if (docs.length <= 1) {
+          // Clean obsolete section if present in single doc
+          if (docs[0].profile?.section) {
+            const cleanProfile = { ...docs[0].profile };
+            delete cleanProfile.section;
+            await updateDoc(doc(db, 'users', docs[0].id), { profile: cleanProfile }).catch(console.error);
+          }
+          continue;
+        }
+
+        // Sort so newest active Firebase doc is first
+        docs.sort((a, b) => {
+          const isClerkA = a.id?.startsWith('user_');
+          const isClerkB = b.id?.startsWith('user_');
+          if (isClerkA && !isClerkB) return 1;
+          if (!isClerkA && isClerkB) return -1;
+          const timeA = new Date(a.lastUpdated || a.updatedAt || a.profile?.createdAt || 0).getTime() || 0;
+          const timeB = new Date(b.lastUpdated || b.updatedAt || b.profile?.createdAt || 0).getTime() || 0;
+          return timeB - timeA;
+        });
+
+        const primary = docs[0];
+        const primaryProfile = { ...(primary.profile || {}) };
+        delete primaryProfile.section; // Purge section
+
+        for (const d of docs.slice(1)) {
+          const p = d.profile || {};
+          if (!primaryProfile.rollNumber && p.rollNumber) primaryProfile.rollNumber = p.rollNumber;
+          if ((!primaryProfile.name || primaryProfile.name.toLowerCase() === 'student') && p.name && p.name.toLowerCase() !== 'student') primaryProfile.name = p.name;
+          if (p.role === 'super_admin') primaryProfile.role = 'super_admin';
+          else if (p.role === 'cr' && primaryProfile.role !== 'super_admin') primaryProfile.role = 'cr';
+          if (p.isPro) primaryProfile.isPro = true;
+          if (!primaryProfile.college && p.college) primaryProfile.college = p.college;
+          if (!primaryProfile.branch && p.branch) primaryProfile.branch = p.branch;
+          if (!primaryProfile.batchKey && p.batchKey) primaryProfile.batchKey = p.batchKey;
+
+          await deleteDoc(doc(db, 'users', d.id)).catch(console.error);
+          dupCount++;
+        }
+
+        await updateDoc(doc(db, 'users', primary.id), {
+          profile: primaryProfile
+        }).catch(console.error);
+      }
+
+      showToast('Hygiene Complete! ✨', `Cleaned ${dupCount} duplicate logins and purged ${ghostCount} ghost accounts.`, 'success');
+    } catch (e) {
+      console.error('Database hygiene error:', e);
+      showToast('Cleanup Failed', 'Could not complete database cleanup.', 'error');
+    } finally {
+      setIsCleaningDb(false);
     }
   };
 
@@ -409,8 +512,7 @@ export default function SuperAdminPage() {
         'profile.batchKey': req.batchKey,
         'profile.college': req.college,
         'profile.branch': req.branch,
-        'profile.semester': req.semester,
-        'profile.section': req.section || 'A'
+        'profile.semester': req.semester
       }).catch(console.error);
 
       // 3. Update or create shared_timetables doc
@@ -428,7 +530,6 @@ export default function SuperAdminPage() {
           programme: req.programme || 'B.Tech',
           branch: req.branch,
           semester: req.semester,
-          section: req.section || 'A',
           creatorId: req.userId,
           creatorName: req.name,
           creatorEmail: req.email,
@@ -443,7 +544,7 @@ export default function SuperAdminPage() {
         });
       }
 
-      showToast('CR Approved! 👑', `${req.name} is now verified CR for ${req.branch} (Sec ${req.section || 'A'}).`, 'success');
+      showToast('CR Approved! 👑', `${req.name} is now verified CR for ${req.branch} (Sem ${req.semester}).`, 'success');
     } catch (e) {
       console.error('Error approving CR request:', e);
       showToast('Approval Failed', 'Could not approve CR request.', 'error');
@@ -649,19 +750,111 @@ export default function SuperAdminPage() {
   const totalClicks = campaignsList.reduce((acc, c) => acc + (c.clicks || 0), 0);
   const overallCTR = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(1) : '0.0';
 
-  // Filtered Lists
-  const filteredUsers = usersList.filter((u) => {
+  // Deduplicated and Cleaned Unique Students List
+  const deduplicatedUsersList = useMemo(() => {
+    const byKey = new Map<string, any[]>();
+    const unkeyed: any[] = [];
+
+    for (const u of usersList) {
+      const p = u.profile || {};
+      const email = (p.email || '').trim().toLowerCase();
+      const roll = (p.rollNumber || '').trim().toLowerCase();
+      const name = (p.name || '').trim().toLowerCase();
+      const college = (p.college || '').trim().toLowerCase();
+
+      // Filter out abandoned ghost / demo test accounts
+      if (!email && !roll && (!name || name === 'student' || name === 'anonymous' || college.includes('demo'))) {
+        continue;
+      }
+
+      const key = email || (roll ? `roll_${roll}` : null);
+      if (key) {
+        if (!byKey.has(key)) byKey.set(key, []);
+        byKey.get(key)!.push(u);
+      } else {
+        unkeyed.push({ ...u, linkedDocIds: [u.id] });
+      }
+    }
+
+    const mergedList: any[] = [];
+
+    for (const docs of Array.from(byKey.values())) {
+      if (docs.length === 1) {
+        mergedList.push({
+          ...docs[0],
+          linkedDocIds: [docs[0].id],
+        });
+        continue;
+      }
+
+      // Sort docs so that the newest active Firebase Auth doc is first
+      docs.sort((a, b) => {
+        const isClerkA = a.id?.startsWith('user_');
+        const isClerkB = b.id?.startsWith('user_');
+        if (isClerkA && !isClerkB) return 1;
+        if (!isClerkA && isClerkB) return -1;
+
+        const timeA = new Date(a.lastUpdated || a.updatedAt || a.profile?.createdAt || 0).getTime() || 0;
+        const timeB = new Date(b.lastUpdated || b.updatedAt || b.profile?.createdAt || 0).getTime() || 0;
+        return timeB - timeA;
+      });
+
+      const primary = docs[0];
+      const primaryProfile = { ...(primary.profile || {}) };
+      const allDocIds = docs.map(d => d.id);
+
+      for (const d of docs) {
+        const p = d.profile || {};
+        if (!primaryProfile.rollNumber && p.rollNumber) {
+          primaryProfile.rollNumber = p.rollNumber;
+        }
+        if ((!primaryProfile.name || primaryProfile.name.toLowerCase() === 'student') && p.name && p.name.toLowerCase() !== 'student') {
+          primaryProfile.name = p.name;
+        }
+        if (p.role === 'super_admin') {
+          primaryProfile.role = 'super_admin';
+        } else if (p.role === 'cr' && primaryProfile.role !== 'super_admin') {
+          primaryProfile.role = 'cr';
+        }
+        if (p.isPro) {
+          primaryProfile.isPro = true;
+        }
+        if (!primaryProfile.college && p.college) {
+          primaryProfile.college = p.college;
+        }
+        if (!primaryProfile.branch && p.branch) {
+          primaryProfile.branch = p.branch;
+        }
+        if (!primaryProfile.batchKey && p.batchKey) {
+          primaryProfile.batchKey = p.batchKey;
+        }
+      }
+
+      mergedList.push({
+        ...primary,
+        profile: primaryProfile,
+        linkedDocIds: allDocIds,
+      });
+    }
+
+    return [...mergedList, ...unkeyed];
+  }, [usersList]);
+
+  // Filtered Lists from Deduplicated Users
+  const filteredUsers = useMemo(() => {
     const q = searchUserQuery.toLowerCase();
-    const p = u.profile || {};
-    return (
-      (p.name || '').toLowerCase().includes(q) ||
-      (p.email || '').toLowerCase().includes(q) ||
-      (p.college || '').toLowerCase().includes(q) ||
-      (p.rollNumber || '').toLowerCase().includes(q) ||
-      (p.branch || '').toLowerCase().includes(q) ||
-      (p.programme || '').toLowerCase().includes(q)
-    );
-  });
+    return deduplicatedUsersList.filter((u) => {
+      const p = u.profile || {};
+      return (
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.email || '').toLowerCase().includes(q) ||
+        (p.college || '').toLowerCase().includes(q) ||
+        (p.rollNumber || '').toLowerCase().includes(q) ||
+        (p.branch || '').toLowerCase().includes(q) ||
+        (p.programme || '').toLowerCase().includes(q)
+      );
+    });
+  }, [deduplicatedUsersList, searchUserQuery]);
 
   const normalizeCollegeGroup = (collegeRaw?: string): { key: string; displayName: string; shortName: string } => {
     if (!collegeRaw || !collegeRaw.trim() || collegeRaw.trim().toLowerCase() === 'not set') {
@@ -692,7 +885,7 @@ export default function SuperAdminPage() {
 
   const allCollegeOptions = useMemo(() => {
     const map = new Map<string, { key: string; shortName: string; displayName: string; count: number }>();
-    for (const u of usersList) {
+    for (const u of deduplicatedUsersList) {
       const p = u.profile || {};
       const { key, shortName, displayName } = normalizeCollegeGroup(p.college);
       const existing = map.get(key) || { key, shortName, displayName, count: 0 };
@@ -704,15 +897,15 @@ export default function SuperAdminPage() {
       if (b.key === 'not_set') return -1;
       return b.count - a.count;
     });
-  }, [usersList]);
+  }, [deduplicatedUsersList]);
 
   const totalCRsCount = useMemo(() => {
-    return usersList.filter(u => u.profile?.role === 'cr' || u.profile?.role === 'super_admin').length;
-  }, [usersList]);
+    return deduplicatedUsersList.filter(u => u.profile?.role === 'cr' || u.profile?.role === 'super_admin').length;
+  }, [deduplicatedUsersList]);
 
   const totalProCount = useMemo(() => {
-    return usersList.filter(u => !!u.profile?.isPro).length;
-  }, [usersList]);
+    return deduplicatedUsersList.filter(u => !!u.profile?.isPro).length;
+  }, [deduplicatedUsersList]);
 
   const collegeUserGroups = useMemo(() => {
     const map = new Map<string, {
@@ -904,7 +1097,7 @@ export default function SuperAdminPage() {
                 return [
                   { id: 'overview', label: 'Overview' },
                   { id: 'cr_requests', label: `👑 CR Requests ${pendingCRCount > 0 ? `(${pendingCRCount})` : ''}` },
-                  { id: 'users', label: `Users ${usersList.length}` },
+                  { id: 'users', label: `Users ${deduplicatedUsersList.length}` },
                   { id: 'batches', label: `Batches ${batchesList.length}` },
                   { id: 'campaigns', label: `Campaigns ${campaignsList.length}` },
                 ];
@@ -944,8 +1137,8 @@ export default function SuperAdminPage() {
             {/* Primary Metrics */}
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col py-2">
-                <div className="text-[32px] font-black leading-none text-[#111111] dark:text-[#FFFFFF]">{usersList.length}</div>
-                <div className="text-[11px] font-bold text-[#A0A0A0] uppercase tracking-widest mt-2">Total Users</div>
+                <div className="text-[32px] font-black leading-none text-[#111111] dark:text-[#FFFFFF]">{deduplicatedUsersList.length}</div>
+                <div className="text-[11px] font-bold text-[#A0A0A0] uppercase tracking-widest mt-2">Total Unique Students</div>
               </div>
 
               <div className="flex flex-col py-2">
@@ -998,7 +1191,7 @@ export default function SuperAdminPage() {
                 >
                   <div className="flex flex-col gap-1">
                     <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider">Manage Users & Roles</span>
-                    <span className="text-[12px] text-[#6F6F6F] font-medium">Assign CRs, manage access and student permissions.</span>
+                    <span className="text-[12px] text-[#6F6F6F] font-medium">Assign CRs, manage access and student permissions ({deduplicatedUsersList.length} students).</span>
                   </div>
                   <ArrowRight className="w-[14px] h-[14px] text-[#111111] dark:text-[#FFFFFF] opacity-50 group-hover:opacity-100 transition-opacity" />
                 </button>
@@ -1012,6 +1205,21 @@ export default function SuperAdminPage() {
                     <span className="text-[12px] text-[#6F6F6F] font-medium">Review active schedules and remove spam entries.</span>
                   </div>
                   <ArrowRight className="w-[14px] h-[14px] text-[#111111] dark:text-[#FFFFFF] opacity-50 group-hover:opacity-100 transition-opacity" />
+                </button>
+
+                <button
+                  disabled={isCleaningDb}
+                  onClick={handleCleanDatabase}
+                  className="flex items-center justify-between py-4 border-b border-[#F0F0F0] dark:border-[#333333] hover:bg-amber-500/5 dark:hover:bg-amber-500/10 transition-colors cursor-pointer text-left group"
+                >
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[13px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      {isCleaningDb ? 'Cleaning Database Hygiene...' : 'Clean & Deduplicate Database'}
+                    </span>
+                    <span className="text-[12px] text-[#6F6F6F] font-medium">Merge multi-device user logins, purge abandoned ghost accounts & remove obsolete sections.</span>
+                  </div>
+                  <ArrowRight className="w-[14px] h-[14px] text-amber-600 dark:text-amber-400 opacity-70 group-hover:opacity-100 transition-opacity" />
                 </button>
               </div>
             </div>
@@ -1115,7 +1323,7 @@ export default function SuperAdminPage() {
               >
                 <Building2 className="w-3.5 h-3.5" />
                 <span>All Colleges</span>
-                <span className="font-mono text-[9px] opacity-75">({usersList.length})</span>
+                <span className="font-mono text-[9px] opacity-75">({deduplicatedUsersList.length})</span>
               </button>
 
               {allCollegeOptions.map((c) => (
@@ -1250,7 +1458,7 @@ export default function SuperAdminPage() {
                                           {p.programme || ''} {p.branch ? `- ${p.branch}` : 'Branch not set'}
                                         </div>
                                         <div className="text-[11px] text-[#6F6F6F]">
-                                          {p.semester ? `Semester ${p.semester}` : ''} {p.section ? `• Section ${p.section}` : ''}
+                                          {p.semester ? `Semester ${p.semester}` : ''}
                                         </div>
                                       </td>
                                       <td className="p-3.5 font-mono text-[#111111] dark:text-[#FFFFFF]">
@@ -1276,7 +1484,7 @@ export default function SuperAdminPage() {
                                                   key={role}
                                                   onClick={(e) => {
                                                     e.stopPropagation();
-                                                    handleUpdateUserRole(u.id, role as any);
+                                                    handleUpdateUserRole(u.id, role as any, u.linkedDocIds);
                                                     setActiveRoleDropdown(null);
                                                   }}
                                                   className="px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-[1px] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
@@ -1290,7 +1498,7 @@ export default function SuperAdminPage() {
                                       </td>
                                       <td className="p-3.5">
                                         <button
-                                          onClick={() => handleToggleUserPro(u.id, isPro)}
+                                          onClick={() => handleToggleUserPro(u.id, isPro, u.linkedDocIds)}
                                           className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border cursor-pointer rounded-none transition-colors ${
                                             isPro
                                               ? 'bg-[#111111] text-[#FFFFFF] border-[#111111] dark:bg-[#FFFFFF] dark:text-[#111111] dark:border-[#FFFFFF]'
@@ -1341,7 +1549,7 @@ export default function SuperAdminPage() {
                                       {p.programme || ''} {p.branch ? `- ${p.branch}` : ''} {p.semester ? `(Sem ${p.semester})` : ''}
                                     </span>
                                     <span className="text-[#6F6F6F] font-mono">
-                                      Roll: {p.rollNumber || '—'} {p.section ? `• Sec ${p.section}` : ''}
+                                      Roll: {p.rollNumber || '—'}
                                     </span>
                                   </div>
 
@@ -1365,7 +1573,7 @@ export default function SuperAdminPage() {
                                               key={role}
                                               onClick={(e) => {
                                                 e.stopPropagation();
-                                                handleUpdateUserRole(u.id, role as any);
+                                                handleUpdateUserRole(u.id, role as any, u.linkedDocIds);
                                                 setActiveRoleDropdown(null);
                                               }}
                                               className="px-3 py-2 text-left text-[10px] font-bold uppercase hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
@@ -1378,7 +1586,7 @@ export default function SuperAdminPage() {
                                     </div>
 
                                     <button
-                                      onClick={() => handleToggleUserPro(u.id, isPro)}
+                                      onClick={() => handleToggleUserPro(u.id, isPro, u.linkedDocIds)}
                                       className={`flex-1 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider border cursor-pointer rounded-none transition-colors ${
                                         isPro
                                           ? 'bg-[#111111] text-[#FFFFFF] border-[#111111] dark:bg-[#FFFFFF] dark:text-[#111111] dark:border-[#FFFFFF]'
@@ -1481,7 +1689,7 @@ export default function SuperAdminPage() {
                     <div className="flex flex-col gap-1 pt-3 border-t border-[#F0F0F0] dark:border-[#222222]">
                       <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-tight line-clamp-2" title={b.college}>{b.college}</span>
                       <span className="text-[11px] text-[#6F6F6F]">
-                        {b.programme} • {b.branch} (Sem {b.semester}{b.section ? ` · Sec ${b.section}` : ''})
+                        {b.programme} • {b.branch} (Sem {b.semester})
                       </span>
                     </div>
 
@@ -1568,7 +1776,7 @@ export default function SuperAdminPage() {
                         </td>
                         <td className="p-4">
                           <div className="text-[#111111] dark:text-[#FFFFFF] font-medium">{b.branch}</div>
-                          <div className="text-[11px] text-[#6F6F6F]">Semester {b.semester}{b.section ? ` · Sec ${b.section}` : ''}</div>
+                          <div className="text-[11px] text-[#6F6F6F]">Semester {b.semester}</div>
                         </td>
                         <td className="p-4">
                           <div className="font-medium text-[#111111] dark:text-[#FFFFFF]">{b.creatorName || 'Anonymous'}</div>
@@ -1806,7 +2014,7 @@ export default function SuperAdminPage() {
                   Batch Pilot Requests 🚀
                 </h2>
                 <p className="text-xs text-[#6F6F6F] mt-1">
-                  Approve verified student leaders to create, publish & broadcast official schedules for their college section (up to 3 Pilots per batch).
+                  Approve verified student leaders to create, publish & broadcast official schedules for their college batch (up to 3 Pilots per batch).
                 </p>
               </div>
 
@@ -1909,7 +2117,7 @@ export default function SuperAdminPage() {
                             </div>
                             <div className="flex items-center gap-1.5 text-slate-600 dark:text-zinc-400 font-medium">
                               <span>📚</span>
-                              <span>{req.branch} · Sem {req.semester} · Sec {req.section || 'A'}</span>
+                              <span>{req.branch} · Sem {req.semester}</span>
                             </div>
                             <div className="text-[10px] font-mono text-slate-400 pt-0.5 truncate">
                               Batch Key: {req.batchKey}
@@ -2400,13 +2608,13 @@ export default function SuperAdminPage() {
                       <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#A0A0A0]">Estimated Reach</span>
                       <span className="text-[24px] font-bold text-[#111111] dark:text-[#FFFFFF]">
                         {(() => {
-                          if (campaignForm.targetAudienceType === 'all') return `${usersList.length} students (Everyone)`;
+                          if (campaignForm.targetAudienceType === 'all') return `${deduplicatedUsersList.length} students (Everyone)`;
                           if (campaignForm.targetColleges.length === 0) return '0 students';
                           
                           let matchCount = 0;
                           const matchedUserIds = new Set<string>();
 
-                          usersList.forEach(u => {
+                          deduplicatedUsersList.forEach(u => {
                             const p = u.profile || u || {};
                             const userCollege = (p.college || u.college || '').toLowerCase().trim();
                             const userBranch = (p.branch || u.branch || '').toLowerCase().trim();
