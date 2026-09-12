@@ -93,7 +93,10 @@ function deduplicateBatchMembers(rawList: any[], currentUserId?: string, current
       const chosenRoll = targetP.rollNumber || rawP.rollNumber || '';
       const chosenEmail = targetP.email && isValidProperEmail(targetP.email) ? targetP.email : (rawP.email || '');
       const chosenAvatar = targetP.avatarUrl || rawP.avatarUrl;
-      const isCR = targetP.role === 'cr' || rawP.role === 'cr';
+      const isSuper = targetP.role === 'super_admin' || rawP.role === 'super_admin' || 
+                      isUserSuperAdmin(targetP, targetP.email) || isUserSuperAdmin(rawP, rawP.email) ||
+                      isUserSuperAdmin(null, chosenEmail);
+      const isCR = !isSuper && (targetP.role === 'cr' || rawP.role === 'cr');
 
       // Keep primary ID as the current user's ID if one matches
       const primaryId = (raw.id === currentUserId) ? raw.id : target.id;
@@ -108,14 +111,19 @@ function deduplicateBatchMembers(rawList: any[], currentUserId?: string, current
         rollNumber: chosenRoll,
         email: chosenEmail,
         avatarUrl: chosenAvatar,
-        role: isCR ? 'cr' : (targetP.role || rawP.role || 'student'),
+        role: isSuper ? 'super_admin' : (isCR ? 'cr' : (targetP.role || rawP.role || 'student')),
       };
       target.lastUpdated = Math.max(target.lastUpdated || 0, raw.lastUpdated || 0);
     } else {
+      const isSuper = rawP.role === 'super_admin' || isUserSuperAdmin(rawP, rawP.email);
       mergedList.push({
         ...raw,
         allIds: [raw.id],
         allEmails: rawP.email ? [rawP.email] : [],
+        profile: {
+          ...rawP,
+          role: isSuper ? 'super_admin' : (rawP.role || 'student'),
+        },
       });
     }
   }
@@ -194,7 +202,19 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
                  profile.role === 'cr';
   const isAuthorizedCR = isSuperAdmin || isPrimaryCreator || isCoCR;
 
+  const checkMemberIsSuperAdmin = (m: any) => {
+    if (!m) return false;
+    const emails: string[] = (Array.isArray(m.allEmails) ? m.allEmails : [m.profile?.email || '']).map((e: string) => String(e || '').toLowerCase().trim());
+    return emails.some((em) => isUserSuperAdmin(m.profile, em)) || m.profile?.role === 'super_admin';
+  };
+
   const checkMemberIsCR = (m: any) => {
+    if (!m) return false;
+    // Super Admins are global platform authorities and are NEVER classified as Batch Pilots
+    if (checkMemberIsSuperAdmin(m)) {
+      return false;
+    }
+
     const ids: string[] = Array.isArray(m.allIds) ? m.allIds : [m.id];
     const emails: string[] = (Array.isArray(m.allEmails) ? m.allEmails : [m.profile?.email || '']).map((e: string) => String(e || '').toLowerCase());
 
@@ -209,6 +229,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
   };
 
   const checkMemberIsCreator = (m: any) => {
+    if (checkMemberIsSuperAdmin(m)) return false;
     const ids: string[] = Array.isArray(m.allIds) ? m.allIds : [m.id];
     const emails: string[] = (Array.isArray(m.allEmails) ? m.allEmails : [m.profile?.email || '']).map((e: string) => String(e || '').toLowerCase());
     return isLegacyBatch && (
@@ -225,6 +246,10 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
 
   const handleToggleCR = async (member: any, currentIsCR: boolean) => {
     if (!batchKey) return;
+    if (checkMemberIsSuperAdmin(member)) {
+      showToast('Action Not Allowed', 'Super Admin role cannot be modified at the batch level.', 'error');
+      return;
+    }
     if (!isAuthorizedCR) {
       showToast('Unauthorized', 'Only a Batch Pilot can manage roles.', 'error');
       return;
@@ -283,6 +308,10 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
 
   const handleWithdrawSelfAsCR = async () => {
     if (!batchKey) return;
+    if (isSuperAdmin) {
+      showToast('Super Admin', 'You are a Super Admin, not a Batch Pilot.', 'info');
+      return;
+    }
     const otherCRs = normalizeIdList(batchData?.crUserIds).filter((id: string) => id !== user?.id);
     const otherCREmails = normalizeIdList(batchData?.crEmails).filter((e: string) => e !== userEmail);
     const primaryRemains = isLegacyBatch && batchData?.creatorId && batchData?.creatorId !== user?.id;
@@ -314,6 +343,10 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
 
   const handleRemoveMember = (member: any) => {
     if (!batchKey) return;
+    if (checkMemberIsSuperAdmin(member)) {
+      showToast('Action Not Allowed', 'Super Admins cannot be removed from a batch.', 'error');
+      return;
+    }
     if (!isAuthorizedCR) {
       showToast('Unauthorized', 'Only the Class Representative can remove members.', 'error');
       return;
@@ -520,6 +553,7 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
                 {normalMembers.map((m) => {
                   const p = m.profile || {};
                   const isCurrentUser = checkIsCurrentUser(m);
+                  const isMemberSuperAdmin = checkMemberIsSuperAdmin(m);
                   return (
                     <div 
                       key={m.id}
@@ -533,8 +567,14 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
                         {p.name || 'Student'}
                       </span>
                       <span className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8] mt-1 truncate w-full px-1 font-mono">
-                        {p.rollNumber || p.email}
+                        {isMemberSuperAdmin ? `Super Admin · ${p.rollNumber || p.email}` : (p.rollNumber || p.email)}
                       </span>
+                      {isMemberSuperAdmin && (
+                        <span className="absolute top-2 left-2 inline-flex items-center gap-1 bg-[#111111] dark:bg-white text-white dark:text-[#111111] px-1.5 py-0.5 text-[8px] font-bold tracking-widest uppercase">
+                          <Crown className="w-2.5 h-2.5" />
+                          ADMIN
+                        </span>
+                      )}
                       {isCurrentUser && (
                         <span className="absolute top-2 right-2 text-[8px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] border border-[#D9D9D6] dark:border-white/[0.1] px-1 py-0.5 uppercase bg-black/[0.02] dark:bg-white/[0.06]">YOU</span>
                       )}
@@ -556,16 +596,34 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
         {selectedMember && (
           <div className="-m-5 p-5">
             <div className="border-b border-[#D9D9D6] dark:border-white/[0.08] pb-4 mb-4">
-              <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF]">
-                {selectedMember.profile?.name || 'Student'}
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+                  {selectedMember.profile?.name || 'Student'}
+                </h3>
+                {checkMemberIsSuperAdmin(selectedMember) && (
+                  <span className="inline-flex items-center gap-1 bg-[#111111] dark:bg-white text-white dark:text-[#111111] px-1.5 py-0.5 text-[9px] font-bold tracking-widest uppercase">
+                    <Crown className="w-2.5 h-2.5" />
+                    ADMIN
+                  </span>
+                )}
+              </div>
               <p className="text-[13px] text-[#6F6F6F] mt-1">
-                {selectedMember.profile?.rollNumber || selectedMember.profile?.email}
+                {checkMemberIsSuperAdmin(selectedMember) ? `Super Admin · ${selectedMember.profile?.email}` : (selectedMember.profile?.rollNumber || selectedMember.profile?.email)}
               </p>
             </div>
             
             <div className="flex flex-col">
-              {isAuthorizedCR && !checkIsCurrentUser(selectedMember) && !checkMemberIsCreator(selectedMember) ? (
+              {checkMemberIsSuperAdmin(selectedMember) ? (
+                <div className="flex flex-col gap-2 py-2">
+                  <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold text-[13px]">
+                    <Crown className="w-4 h-4" />
+                    <span>Official Super Administrator</span>
+                  </div>
+                  <p className="text-[12px] text-[#6F6F6F] dark:text-[#94A3B8] leading-relaxed">
+                    Global platform administrator with full system permissions across all batches and timetables. Role cannot be modified at the batch level.
+                  </p>
+                </div>
+              ) : isAuthorizedCR && !checkIsCurrentUser(selectedMember) && !checkMemberIsCreator(selectedMember) ? (
                  <>
                    <div className="flex flex-col gap-1 mb-2">
                      <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-1">BATCH PILOT ROLE</span>

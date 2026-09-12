@@ -1128,8 +1128,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           ...(newEvents !== undefined ? { events: newEvents } : { events }),
           ...(newExams !== undefined ? { exams: newExams } : { exams }),
           updatedAt: new Date().toISOString(),
-          ...(user?.id ? { crUserIds: arrayUnion(user.id) } : {}),
-          ...(email ? { crEmails: arrayUnion(email) } : {}),
         });
         await setDoc(batchDocRef, payload, { merge: true });
         console.log('✅ Instantly broadcasted Batch Pilot changes to all members in Firestore');
@@ -1799,7 +1797,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       : [...safeList, key];
 
     const updatedMeta = { ...(cancelledSessionsMeta || {}) };
-    const crName = profile.name || 'CR';
+    const crName = profile.name || (isSuperAdmin ? 'Super Admin' : 'CR');
 
     if (isAlreadyCancelled) {
       delete updatedMeta[key];
@@ -1807,7 +1805,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     } else {
       updatedMeta[key] = {
         by: crName,
-        role: 'CR',
+        role: isSuperAdmin ? 'Super Admin' : 'CR',
         timestamp: new Date().toISOString(),
       };
     }
@@ -1818,7 +1816,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     storage.setCancelledSessionsMeta(updatedMeta);
 
     if (!isAlreadyCancelled) {
-      showToast('Class Cancelled', `Session marked as cancelled by ${crName} (BP).`, 'info');
+      showToast('Class Cancelled', `Session marked as cancelled by ${crName}.`, 'info');
     } else {
       showToast('Class Restored', 'Session restored to regular schedule.', 'success');
     }
@@ -1863,8 +1861,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           cancelledSessionsMeta: updatedMeta,
           batchAlerts: trimmedAlerts,
           updatedAt: new Date().toISOString(),
-          ...(user?.id ? { crUserIds: arrayUnion(user.id) } : {}),
-          ...(email ? { crEmails: arrayUnion(email) } : {}),
         }, { merge: true });
 
         // Immediate real-time push broadcast to batch members
@@ -1942,7 +1938,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const targetDate = dateStr || getTodayDateString();
     const key = `${targetDate}_${sessionId}`;
     const updated = { ...rescheduledSessions };
-    const crName = profile.name || 'Batch Pilot';
+    const crName = profile.name || (isSuperAdmin ? 'Super Admin' : 'Batch Pilot');
 
     if (details === null) {
       delete updated[key];
@@ -1951,7 +1947,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       updated[key] = {
         ...details,
         by: crName,
-        role: 'Batch Pilot',
+        role: isSuperAdmin ? 'Super Admin' : 'Batch Pilot',
         timestamp: new Date().toISOString(),
       };
       showToast('Class Rescheduled', `Class moved to ${details.startTime}–${details.endTime} by ${crName}.`, 'success');
@@ -1994,8 +1990,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           rescheduledSessions: updated,
           batchAlerts: trimmedAlerts,
           updatedAt: new Date().toISOString(),
-          ...(user?.id ? { crUserIds: arrayUnion(user.id) } : {}),
-          ...(email ? { crEmails: arrayUnion(email) } : {}),
         }, { merge: true });
 
         if (alertPayload) {
@@ -2022,13 +2016,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return;
     }
 
-    const crName = profile.name || 'Batch Pilot';
+    const crName = profile.name || (isSuperAdmin ? 'Super Admin' : 'Batch Pilot');
     const newId = `extra_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const newSession: ExtraClassSession = {
       ...sessionData,
       id: newId,
       by: crName,
-      role: isBatchCR ? 'Batch Pilot' : 'User',
+      role: isSuperAdmin ? 'Super Admin' : (isBatchCR ? 'Batch Pilot' : 'User'),
       createdAt: new Date().toISOString(),
     };
 
@@ -2070,8 +2064,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           extraSessions: sanitizeForFirestore(updated),
           batchAlerts: trimmedAlerts,
           updatedAt: new Date().toISOString(),
-          ...(user?.id ? { crUserIds: arrayUnion(user.id) } : {}),
-          ...(email ? { crEmails: arrayUnion(email) } : {}),
         }, { merge: true });
 
         broadcastBatchPushNotification({
@@ -2118,12 +2110,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (profile.isBatchSynced && profile.batchKey) {
         try {
           const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
-          const email = user?.primaryEmailAddress?.emailAddress || profile.email || '';
           await setDoc(batchDocRef, {
             extraSessions: sanitizeForFirestore(updated),
             updatedAt: new Date().toISOString(),
-            ...(user?.id ? { crUserIds: arrayUnion(user.id) } : {}),
-            ...(email ? { crEmails: arrayUnion(email) } : {}),
           }, { merge: true });
         } catch (e) {
           console.error('Error updating extra classes in batch:', e);
@@ -2567,8 +2556,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         creatorId: user?.id || 'anonymous',
         creatorName: profile.name || 'Student',
         creatorEmail: userEmail,
-        crUserIds: userIsAdmin ? [user?.id].filter(Boolean) : [],
-        crEmails: userIsAdmin ? [userEmail].filter(Boolean) : [],
+        crUserIds: profile.role === 'cr' ? [user?.id].filter(Boolean) : [],
+        crEmails: profile.role === 'cr' ? [userEmail].filter(Boolean) : [],
         inviteCode: newInviteCode,
         subjects: subjects,
         timetable: timetable,

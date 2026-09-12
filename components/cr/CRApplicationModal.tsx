@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useApp } from '@/context/AppContext';
+import { isUserSuperAdmin } from '@/lib/adminAuth';
 import { getCanonicalBatchKey, formatBatchDisplayName, getShortCollegeName, isValidProperEmail } from '@/lib/timetableUtils';
 import { searchCollegesAsync, CollegeItem } from '@/lib/collegeDirectory';
 import { STANDARD_PROGRAMMES, STANDARD_BRANCHES } from '@/lib/colleges';
@@ -220,7 +221,8 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
     }
   };
 
-  const isCR = profile.role === 'cr' || profile.role === 'super_admin';
+  const isSuperAdmin = !!user && isUserSuperAdmin(profile, userEmail);
+  const isCR = !isSuperAdmin && (profile.role === 'cr' || profile.role === 'super_admin');
   const crUserIds = Array.isArray(existingBatch?.crUserIds) ? existingBatch.crUserIds : [];
   const crEmails = Array.isArray(existingBatch?.crEmails) ? existingBatch.crEmails : [];
   const uniquePilotIds = new Set([
@@ -349,8 +351,30 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
               </button>
             </div>
           </div>
+        ) : isSuperAdmin ? (
+          /* CASE 2A: USER IS SUPER ADMIN */
+          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] rounded-none">
+            <div className="w-14 h-14 border border-[#D8D8D8] dark:border-[#333333] bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] rounded-none flex items-center justify-center shadow-sm">
+              <Crown className="w-7 h-7" />
+            </div>
+            <div>
+              <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+                You are the Super Admin 👑
+              </h3>
+              <p className="text-[13px] text-[#6F6F6F] dark:text-[#A0A0A0] mt-1.5 max-w-md leading-relaxed">
+                You hold global administrator authority across the entire platform and all campus batches. You have full management capabilities and do not need to apply as a Batch Pilot.
+              </p>
+            </div>
+            <button 
+              type="button"
+              onClick={onClose} 
+              className="mt-2 px-6 py-2.5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity rounded-none cursor-pointer"
+            >
+              Back to Dashboard
+            </button>
+          </div>
         ) : isCR ? (
-          /* CASE 2: USER IS ALREADY A CR / ADMIN */
+          /* CASE 2B: USER IS ALREADY A CR */
           <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] rounded-none">
             <div className="w-14 h-14 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] rounded-none flex items-center justify-center shadow-sm">
               <Crown className="w-7 h-7 text-amber-500" />
