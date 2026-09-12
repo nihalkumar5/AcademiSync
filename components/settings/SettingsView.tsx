@@ -240,7 +240,7 @@ export const SettingsView: React.FC = () => {
         
         if (matched) {
           setMatchedBatchData(matched);
-          setPendingBatchKey(newKey);
+          setPendingBatchKey(matched.id || matched.inviteCode || newKey);
           return; // Pause profile saving and show modal choice
         } else if (!profile.isBatchSynced && cleanCollege && cleanBranch) {
           // Save profile and trigger Batch Setup / Request Onboarding Prompt
@@ -1285,8 +1285,11 @@ export const SettingsView: React.FC = () => {
               <button
                 type="button"
                 onClick={async () => {
+                  const keyToJoin = matchedBatchData?.id || matchedBatchData?.inviteCode || pendingBatchKey;
                   setPendingBatchKey(null);
-                  await joinBatchTimetable(pendingBatchKey);
+                  if (keyToJoin) {
+                    await joinBatchTimetable(keyToJoin);
+                  }
                 }}
                 className="px-4 py-2 bg-black text-white dark:bg-white dark:text-[#090A0C] border border-black dark:border-white text-xs font-bold uppercase hover:opacity-90 transition-opacity cursor-pointer rounded-none shadow-sm"
               >

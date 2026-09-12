@@ -133,7 +133,7 @@ export interface AppContextType {
   currentBatchData: any | null;
   searchBatchTimetable: (college: string, programme: string, branch: string, semester: number, section?: string) => Promise<any | null>;
   fetchCollegeBatches: (college: string) => Promise<any[]>;
-  joinBatchTimetable: (batchKey: string, providedCode?: string) => Promise<void>;
+  joinBatchTimetable: (batchKey: string, providedCode?: string, isSilent?: boolean) => Promise<void>;
   shareTimetableWithBatch: () => Promise<string>;
   disconnectBatchTimetable: () => Promise<void>;
   shareCalendarWithBatch: () => Promise<string>;
@@ -307,9 +307,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     if (user && isHydrated && typeof window !== 'undefined') {
       const pendingInvite = localStorage.getItem('pending_join_invite');
-      if (pendingInvite && pendingInvite !== profile.batchKey) {
+      if (
+        pendingInvite && 
+        pendingInvite !== profile.batchKey && 
+        pendingInvite !== 'null' && 
+        pendingInvite !== 'undefined' && 
+        pendingInvite.trim().length > 1
+      ) {
         localStorage.removeItem('pending_join_invite');
-        joinBatchTimetable(pendingInvite)
+        joinBatchTimetable(pendingInvite, undefined, true)
           .catch((err) => {
             console.warn('Auto-join on login failed:', err);
           });
@@ -2010,11 +2016,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  const joinBatchTimetable = async (batchKeyOrCode: string, providedCode?: string) => {
+  const joinBatchTimetable = async (batchKeyOrCode: string, providedCode?: string, isSilent = false) => {
     try {
-      const cleanInput = extractCleanInviteCode(batchKeyOrCode);
+      if (!batchKeyOrCode || typeof batchKeyOrCode !== 'string' || batchKeyOrCode.trim() === '' || batchKeyOrCode === 'null' || batchKeyOrCode === 'undefined') {
+        return;
+      }
+
+      const cleanInput = extractCleanInviteCode(batchKeyOrCode) || batchKeyOrCode.trim();
       if (!cleanInput) {
-        showToast('Code Required', 'Please enter a valid batch code or invite link.', 'error');
+        if (!isSilent) {
+          showToast('Code Required', 'Please enter a valid batch code or invite link.', 'error');
+        }
         throw new Error('Empty batch code');
       }
 
@@ -2070,7 +2082,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             const inviteCodeNorm = (dt.inviteCode || '').toLowerCase();
             const batchKeyNorm = (dt.batchKey || '').toLowerCase();
 
-            if (docIdNorm === normalizedInput || inviteCodeNorm === normalizedInput || batchKeyNorm === normalizedInput) {
+            if (docIdNorm === normalizedInput || inviteCodeNorm === normalizedInput || batchKeyNorm === normalizedInput || docIdNorm.includes(normalizedInput)) {
               docSnap = d;
               batchKey = d.id;
               break;
@@ -2080,7 +2092,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
 
       if (!docSnap || !docSnap.exists()) {
-        showToast('Batch Not Found', 'Could not locate batch with that code or identifier.', 'error');
+        if (!isSilent) {
+          showToast('Batch Not Found', 'Could not locate batch with that code or identifier.', 'error');
+        }
         throw new Error('Batch not found');
       }
 
@@ -2214,7 +2228,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       showToast('Synced with Batch', `Successfully joined ${batchDisplay}.`, 'success');
     } catch (e: any) {
       console.error('Error joining batch timetable:', e);
-      showToast('Join Failed', 'Could not connect to batch timetable. Please verify the code.', 'error');
+      if (!isSilent) {
+        showToast('Join Failed', 'Could not connect to batch timetable. Please verify the code.', 'error');
+      }
       throw e;
     }
   };
