@@ -23,23 +23,13 @@ interface BatchMembersModalProps {
 // duplicate logins by the SAME person based on UID, Roll Number, or verified Email.
 // Students with the same name but different roll numbers or emails are preserved as distinct students.
 function deduplicateBatchMembers(rawList: any[], currentUserId?: string, currentUserEmail?: string): any[] {
-  // 1. Filter out pure ghost accounts (no name, no email, no roll number) and obvious fake/joke emails
+  // 1. Keep all registered batch members, only filtering out malformed records or joke/fake emails
   const validList = rawList.filter((raw) => {
+    if (!raw || !raw.id) return false;
     const p = raw.profile || {};
-    const rawName = (p.name || '').trim();
     const rawEmail = (p.email || '').trim().toLowerCase();
-    const rawRoll = (p.rollNumber || '').trim();
 
-    const isGenericName = !rawName || rawName.toLowerCase() === 'student' || rawName.toLowerCase() === 'student name';
-    const hasValidEmail = rawEmail && isValidProperEmail(rawEmail);
-    const hasRoll = rawRoll.length >= 2;
-
-    // Filter out accounts that have no roll, generic name, and no legitimate email
-    if (isGenericName && !hasRoll && !hasValidEmail) {
-      return false;
-    }
-
-    // Filter out accounts with known fake/joke test emails (e.g. woh.pyaar.hai...)
+    // Only filter out if an email IS provided but it is an obvious joke/fake test domain (e.g. woh.pyaar.hai...)
     if (rawEmail && !isValidProperEmail(rawEmail)) {
       return false;
     }

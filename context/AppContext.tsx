@@ -302,16 +302,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [user, isClerkLoaded]);
 
-  // Update profile from Firebase auth user once authenticated
+  // Update profile from auth user once authenticated
   useEffect(() => {
     if (user && isClerkLoaded) {
-      const defaultName = user.fullName || 'Student';
+      const defaultName = user.fullName || '';
       const userEmail = user.primaryEmailAddress?.emailAddress || '';
       
-      if (!profile.name || profile.name === 'Student' || !profile.email) {
+      const isNameDefault = !profile.name || profile.name === 'Student';
+      const shouldUpdateName = isNameDefault && !!defaultName;
+      const shouldUpdateEmail = !profile.email && !!userEmail;
+
+      if (shouldUpdateName || shouldUpdateEmail) {
         const updated = {
           ...profile,
-          name: profile.name || defaultName,
+          name: shouldUpdateName ? defaultName : (profile.name || 'Student'),
           email: profile.email || userEmail,
         };
         setProfileState(updated);
@@ -2222,13 +2226,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const targetSection = data.section || keyFallbacks.section || profile.section || 'A';
 
       // Update profile fields to show it's synced with full academic details
+      const resolvedName = (profile.name && profile.name !== 'Student')
+        ? profile.name
+        : (user?.fullName || profile.name || 'Student');
+      const resolvedEmail = profile.email || userEmail || '';
+
       const updatedProfile: StudentProfile = {
         ...profile,
+        name: resolvedName,
+        email: resolvedEmail,
         college: targetCollege,
         programme: targetProgramme,
         branch: targetBranch,
         semester: targetSemester,
-        section: targetSection,
+        section: '',
         batchKey: batchKey,
         isBatchSynced: true,
         role: assignedRole,
