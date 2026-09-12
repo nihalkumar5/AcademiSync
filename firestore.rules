@@ -15,7 +15,8 @@ service cloud.firestore {
       return isAuthenticated() && (
         request.auth.token.email in [
           'nihalkumar@iiitnr.edu.in',
-          'nihalkumar538@gmail.com'
+          'nihalkumar538@gmail.com',
+          'nihal88758@gmail.com'
         ]
       );
     }
@@ -58,6 +59,14 @@ service cloud.firestore {
     // Read: Public
     // Write: Super Admin only
     match /campus_spotlight/{adId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    // 5. Promotional Campaigns:
+    // Read: Public (to display target banners to students)
+    // Write: Super Admin only
+    match /promotional_campaigns/{campaignId} {
       allow read: if true;
       allow write: if isSuperAdmin();
     }

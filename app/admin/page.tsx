@@ -228,7 +228,8 @@ export default function SuperAdminPage() {
           fetched.push({ id: d.id, ...d.data() } as PromotionalCampaign);
         });
         setCampaignsList(fetched);
-      }, () => {
+      }, (err) => {
+        console.warn('Error fetching campaigns with orderBy, falling back:', err);
         // Fallback without orderBy index
         onSnapshot(collection(db, 'promotional_campaigns'), (snap) => {
           const fetched: PromotionalCampaign[] = [];
@@ -236,6 +237,8 @@ export default function SuperAdminPage() {
             fetched.push({ id: d.id, ...d.data() } as PromotionalCampaign);
           });
           setCampaignsList(fetched);
+        }, (err2) => {
+          console.warn('Error fetching campaigns without orderBy:', err2);
         });
       });
 
@@ -298,79 +301,7 @@ export default function SuperAdminPage() {
     'MCA',
   ];
 
-  // Loading state
-  if (!isClerkLoaded) {
-    return (
-      <div 
-        className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex items-center justify-center p-6"
-        style={{
-          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 20px), 32px)',
-          paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 20px), 32px)',
-        }}
-      >
-        <div className="flex items-center gap-3 font-mono text-sm tracking-wider animate-pulse">
-          <Shield className="w-5 h-5" />
-          <span>AUTHENTICATING SUPER ADMIN...</span>
-        </div>
-      </div>
-    );
-  }
 
-  // Not logged in
-  if (!user) {
-    return (
-      <div 
-        className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col items-center justify-center p-6 text-center"
-        style={{
-          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 20px), 32px)',
-          paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 20px), 32px)',
-        }}
-      >
-        <div className="w-14 h-14 border border-black dark:border-white flex items-center justify-center mb-6">
-          <Lock className="w-6 h-6" />
-        </div>
-        <h1 className="text-xl font-bold uppercase tracking-widest mb-2">Super Admin Access</h1>
-        <p className="text-xs text-black/60 dark:text-white/60 mb-6 max-w-sm">
-          Sign in with your master administrator account to manage users, college batches, and direct campaigns.
-        </p>
-        <Link href="/sign-in">
-          <button className="px-6 py-3 bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-widest border border-black dark:border-white cursor-pointer hover:opacity-90">
-            Sign In with Admin Account
-          </button>
-        </Link>
-      </div>
-    );
-  }
-
-  // Logged in but not Admin
-  if (!isAdmin) {
-    return (
-      <div 
-        className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col items-center justify-center p-6 text-center"
-        style={{
-          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 20px), 32px)',
-          paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 20px), 32px)',
-        }}
-      >
-        <div className="w-14 h-14 border border-rose-500 text-rose-500 flex items-center justify-center mb-6">
-          <AlertTriangle className="w-6 h-6" />
-        </div>
-        <h1 className="text-xl font-bold uppercase tracking-widest text-rose-600 dark:text-rose-400 mb-2">
-          Access Restricted
-        </h1>
-        <p className="text-xs text-black/60 dark:text-white/60 mb-6 max-w-md">
-          Your account ({userEmail}) is not authorized to access the Super Admin Control Center.
-        </p>
-        <Link
-          href="/"
-          className="flex items-center gap-2 px-6 py-3 border border-black dark:border-white text-xs font-bold uppercase tracking-widest hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Return to Student App</span>
-        </Link>
-      </div>
-    );
-  }
 
   // Handlers for User Role Updates
   const handleUpdateUserRole = async (userId: string, targetRole: AdminRole) => {
@@ -859,6 +790,80 @@ export default function SuperAdminPage() {
       (b.inviteCode || '').toLowerCase().includes(q)
     );
   });
+
+  // 1. Loading state (Clerk / Auth initializing)
+  if (!isClerkLoaded) {
+    return (
+      <div 
+        className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex items-center justify-center p-6"
+        style={{
+          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 20px), 32px)',
+          paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 20px), 32px)',
+        }}
+      >
+        <div className="flex items-center gap-3 font-mono text-sm tracking-wider animate-pulse">
+          <Shield className="w-5 h-5" />
+          <span>AUTHENTICATING SUPER ADMIN...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Not logged in
+  if (!user) {
+    return (
+      <div 
+        className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col items-center justify-center p-6 text-center"
+        style={{
+          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 20px), 32px)',
+          paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 20px), 32px)',
+        }}
+      >
+        <div className="w-14 h-14 border border-black dark:border-white flex items-center justify-center mb-6">
+          <Lock className="w-6 h-6" />
+        </div>
+        <h1 className="text-xl font-bold uppercase tracking-widest mb-2">Super Admin Access</h1>
+        <p className="text-xs text-black/60 dark:text-white/60 mb-6 max-w-sm">
+          Sign in with your master administrator account to manage users, college batches, and direct campaigns.
+        </p>
+        <Link href="/sign-in">
+          <button className="px-6 py-3 bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-widest border border-black dark:border-white cursor-pointer hover:opacity-90">
+            Sign In with Admin Account
+          </button>
+        </Link>
+      </div>
+    );
+  }
+
+  // 3. Logged in but not Admin
+  if (!isAdmin) {
+    return (
+      <div 
+        className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col items-center justify-center p-6 text-center"
+        style={{
+          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 20px), 32px)',
+          paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 20px), 32px)',
+        }}
+      >
+        <div className="w-14 h-14 border border-rose-500 text-rose-500 flex items-center justify-center mb-6">
+          <AlertTriangle className="w-6 h-6" />
+        </div>
+        <h1 className="text-xl font-bold uppercase tracking-widest text-rose-600 dark:text-rose-400 mb-2">
+          Access Restricted
+        </h1>
+        <p className="text-xs text-black/60 dark:text-white/60 mb-6 max-w-md">
+          Your account ({userEmail}) is not authorized to access the Super Admin Control Center.
+        </p>
+        <Link
+          href="/"
+          className="flex items-center gap-2 px-6 py-3 border border-black dark:border-white text-xs font-bold uppercase tracking-widest hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Return to Student App</span>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div 
