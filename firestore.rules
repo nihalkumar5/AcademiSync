@@ -38,8 +38,8 @@ service cloud.firestore {
         ('crUserIds' in resource.data && resource.data.crUserIds is list && request.auth.uid in resource.data.crUserIds) ||
         ('crEmails' in resource.data && resource.data.crEmails is list && request.auth.token.email in resource.data.crEmails) ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.profile.role in ['cr', 'super_admin']) ||
-        // Allow joining (incrementing studentCount or updating lastActive / member list / homework proposals)
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['studentCount', 'members', 'lastActive', 'inviteCode', 'homeworkProposals'])
+        // Allow joining (incrementing studentCount or updating lastActive / member list / homework proposals / creatorId)
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['studentCount', 'members', 'lastActive', 'inviteCode', 'homeworkProposals', 'creatorId'])
       );
       allow delete: if isSuperAdmin() || (isAuthenticated() && resource.data.creatorId == request.auth.uid);
     }

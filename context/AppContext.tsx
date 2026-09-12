@@ -2170,17 +2170,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
       }
 
-      // Increment batch student counter in Firestore
-      const isFirstPerson = ((data.studentCount || 0) <= 0);
-      const updatePayload: any = {
-        studentCount: increment(1),
-      };
-      if (isFirstPerson) {
-        updatePayload.creatorId = user?.id || 'anonymous';
-        updatePayload.creatorName = profile.name || user?.fullName || 'Student';
-        updatePayload.creatorEmail = userEmail;
+      // Increment batch student counter in Firestore (best-effort, non-blocking)
+      try {
+        const isFirstPerson = ((data.studentCount || 0) <= 0);
+        const updatePayload: any = {
+          studentCount: increment(1),
+          lastActive: Date.now()
+        };
+        if (isFirstPerson && !data.creatorId) {
+          updatePayload.creatorId = user?.id || 'anonymous';
+        }
+        await updateDoc(docRef, updatePayload);
+      } catch (countErr) {
+        console.warn('Non-fatal: could not increment student count on batch doc:', countErr);
       }
-      await updateDoc(docRef, updatePayload);
 
       const batchDisplay = targetCollege ? `${targetCollege} · ${targetBranch || 'Batch'} · Sem ${targetSemester}` : `Batch · Sem ${targetSemester}`;
       showToast('Synced with Batch', `Successfully joined ${batchDisplay}.`, 'success');
