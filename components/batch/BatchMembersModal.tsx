@@ -4,7 +4,7 @@ import { shareLink } from '@/lib/shareUtils';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
-import { isUserSuperAdmin } from '@/lib/adminAuth';
+import { isUserSuperAdmin, SUPER_ADMIN_EMAILS } from '@/lib/adminAuth';
 import { normalizeIdList, isValidProperEmail } from '@/lib/timetableUtils';
 import { collection, onSnapshot, doc, updateDoc, increment, query, where, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -64,8 +64,8 @@ function deduplicateBatchMembers(rawList: any[], currentUserId?: string, current
       if (rawIsCurrent && itemIsCurrent) return true;
 
       // Deduplicate admin accounts so Super Admin never has multiple duplicate cards
-      const rawIsAdmin = rawP.role === 'super_admin' || isUserSuperAdmin(rawP, rawEmail);
-      const itemIsAdmin = itemP.role === 'super_admin' || isUserSuperAdmin(itemP, itemEmail);
+      const rawIsAdmin = SUPER_ADMIN_EMAILS.some((e) => e.toLowerCase() === rawEmail);
+      const itemIsAdmin = SUPER_ADMIN_EMAILS.some((e) => e.toLowerCase() === itemEmail);
       if (rawIsAdmin && itemIsAdmin) return true;
 
       // CRITICAL CHECK: If both have valid DIFFERENT roll numbers, they are DEFINITELY two different students in the class!
