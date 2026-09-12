@@ -23,6 +23,7 @@ interface BatchMembersModalProps {
 // duplicate logins by the SAME person based on UID, Roll Number, or verified Email.
 // Students with the same name but different roll numbers or emails are preserved as distinct students.
 function deduplicateBatchMembers(rawList: any[], currentUserId?: string, currentUserEmail?: string): any[] {
+  if (!Array.isArray(rawList)) return [];
   // 1. Keep all registered batch members, only filtering out malformed records or joke/fake emails
   const validList = rawList.filter((raw) => {
     if (!raw || !raw.id) return false;
@@ -231,6 +232,8 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
     const ids: string[] = member.allIds || [member.id];
     const emails: string[] = member.allEmails || [member.profile?.email || ''];
     const memberName = member.profile?.name || 'Student';
+    const validIds = ids.filter(Boolean);
+    const validEmails = emails.filter((e) => Boolean(e && e.trim()));
 
     try {
       const batchDocRef = doc(db, 'shared_timetables', batchKey);
@@ -242,11 +245,13 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
           showToast('Cannot Demote', 'Batch must have at least one Batch Pilot. Promote another student first.', 'error');
           return;
         }
-        await updateDoc(batchDocRef, {
-          crUserIds: arrayRemove(...ids),
-          crEmails: arrayRemove(...emails),
-        });
-        for (const id of ids) {
+        const updates: any = {};
+        if (validIds.length > 0) updates.crUserIds = arrayRemove(...validIds);
+        if (validEmails.length > 0) updates.crEmails = arrayRemove(...validEmails);
+        if (Object.keys(updates).length > 0) {
+          await updateDoc(batchDocRef, updates);
+        }
+        for (const id of validIds) {
           await updateDoc(doc(db, 'users', id), { 'profile.role': 'student' }).catch(() => {});
         }
         showToast('Role Updated', `${memberName} is no longer a Batch Pilot.`, 'info');
@@ -259,11 +264,13 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
           );
           return;
         }
-        await updateDoc(batchDocRef, {
-          crUserIds: arrayUnion(...ids),
-          crEmails: arrayUnion(...emails),
-        });
-        for (const id of ids) {
+        const updates: any = {};
+        if (validIds.length > 0) updates.crUserIds = arrayUnion(...validIds);
+        if (validEmails.length > 0) updates.crEmails = arrayUnion(...validEmails);
+        if (Object.keys(updates).length > 0) {
+          await updateDoc(batchDocRef, updates);
+        }
+        for (const id of validIds) {
           await updateDoc(doc(db, 'users', id), { 'profile.role': 'cr' }).catch(() => {});
         }
         showToast('Batch Pilot Promoted! 🚀', `${memberName} is now a Batch Pilot!`, 'success');
@@ -320,9 +327,12 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
     const ids: string[] = memberToRemove.allIds || [memberToRemove.id];
     const emails: string[] = memberToRemove.allEmails || [memberToRemove.profile?.email || ''];
 
+    const validIds = ids.filter(Boolean);
+    const validEmails = emails.filter((e) => Boolean(e && e.trim()));
+
     setIsRemovingMember(true);
     try {
-      for (const id of ids) {
+      for (const id of validIds) {
         await updateDoc(doc(db, 'users', id), {
           'profile.isBatchSynced': false,
           'profile.batchKey': null,
@@ -330,11 +340,12 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
         }).catch(() => {});
       }
       const batchDocRef = doc(db, 'shared_timetables', batchKey);
-      await updateDoc(batchDocRef, {
+      const updates: any = {
         memberCount: increment(-1),
-        crUserIds: arrayRemove(...ids),
-        crEmails: arrayRemove(...emails)
-      }).catch(() => {});
+      };
+      if (validIds.length > 0) updates.crUserIds = arrayRemove(...validIds);
+      if (validEmails.length > 0) updates.crEmails = arrayRemove(...validEmails);
+      await updateDoc(batchDocRef, updates).catch(() => {});
       showToast('Member Removed', `${memberName} has been removed from the batch.`, 'success');
       setMemberToRemove(null);
     } catch (e) {

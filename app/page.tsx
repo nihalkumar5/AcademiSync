@@ -431,11 +431,6 @@ export default function AppHome() {
                 <h4 className="text-sm font-bold text-black dark:text-white">
                   {inviteData.college || 'Academic Batch'}
                 </h4>
-                {inviteData.section && (
-                  <span className="text-[10px] font-mono px-2 py-0.5 bg-black text-white dark:bg-white dark:text-black font-bold uppercase tracking-wider">
-                    Sec {inviteData.section}
-                  </span>
-                )}
               </div>
               <p className="text-xs text-black/75 dark:text-white/75 font-medium">
                 {inviteData.programme} - {inviteData.branch} {inviteData.semester ? `(Sem ${inviteData.semester})` : ''}

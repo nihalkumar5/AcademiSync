@@ -113,7 +113,6 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
         programme={profile.programme || ''}
         branch={profile.branch || ''}
         semester={profile.semester || 1}
-        section={profile.section || ''}
       />
     </>
   );

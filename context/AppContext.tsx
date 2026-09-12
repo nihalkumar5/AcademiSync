@@ -2500,12 +2500,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (oldBatchKey) {
       try {
         const batchRef = doc(db, 'shared_timetables', oldBatchKey);
-        await updateDoc(batchRef, {
+        const batchUpdates: any = {
           studentCount: increment(-1),
-          crUserIds: arrayRemove(user?.id || ''),
-          crEmails: arrayRemove(userEmail),
           lastActive: Date.now(),
-        });
+        };
+        if (user?.id) batchUpdates.crUserIds = arrayRemove(user.id);
+        if (userEmail && userEmail.trim()) batchUpdates.crEmails = arrayRemove(userEmail.trim());
+        await updateDoc(batchRef, batchUpdates);
       } catch (e) {
         console.warn('Non-fatal: could not update batch doc on leave batch:', e);
       }

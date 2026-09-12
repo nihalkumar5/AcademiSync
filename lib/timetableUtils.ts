@@ -925,35 +925,39 @@ export const normalizeIdList = (input: any): string[] => {
  * rejecting joke domains, malformed formats, or nonsensical input.
  */
 export const isValidProperEmail = (email?: string): boolean => {
-  if (!email || typeof email !== 'string') return false;
-  const trimmed = email.trim().toLowerCase();
-  const standardRegex = /^[a-zA-Z0-9._%+-]+@([a-zA-Z0-9-]+\.)+([a-zA-Z]{2,})$/;
-  if (!standardRegex.test(trimmed)) return false;
+  try {
+    if (!email || typeof email !== 'string') return false;
+    const trimmed = email.trim().toLowerCase();
+    const standardRegex = /^[a-zA-Z0-9._%+-]+@([a-zA-Z0-9-]+\.)+([a-zA-Z]{2,})$/;
+    if (!standardRegex.test(trimmed)) return false;
 
-  const parts = trimmed.split('@');
-  if (parts.length !== 2) return false;
-  const [userPart, domainPart] = parts;
+    const parts = trimmed.split('@');
+    if (parts.length !== 2) return false;
+    const [userPart, domainPart] = parts;
 
-  if (userPart.length < 2 || userPart.length > 64) return false;
-  if (userPart.startsWith('.') || userPart.endsWith('.') || userPart.includes('..')) return false;
+    if (userPart.length < 1 || userPart.length > 64) return false;
+    if (userPart.startsWith('.') || userPart.endsWith('.') || userPart.includes('..')) return false;
 
-  const domainSegments = domainPart.split('.');
-  if (domainSegments.length < 2 || domainSegments.length > 4) return false;
+    const domainSegments = domainPart.split('.');
+    if (domainSegments.length < 2 || domainSegments.length > 4) return false;
 
-  const tld = domainSegments[domainSegments.length - 1];
-  if (!tld || tld.length < 2 || tld.length > 10 || !/^[a-z]+$/.test(tld)) return false;
+    const tld = domainSegments[domainSegments.length - 1];
+    if (!tld || tld.length < 2 || tld.length > 10 || !/^[a-z]+$/.test(tld)) return false;
 
-  const validEndings = [
-    'edu.in', 'ac.in', 'res.in', 'ernet.in', 'gov.in', 'co.in', 'net.in', 'org.in',
-    'edu', 'ac.uk', 'edu.au', 'com', 'org', 'net', 'in', 'io', 'ai', 'co', 'me', 'app', 'dev'
-  ];
-  const matchesKnownEnding = validEndings.some((end) => domainPart.endsWith(end));
-  if (!matchesKnownEnding) {
-    if (domainSegments.length > 3) return false;
-    if (!['com', 'org', 'net', 'edu', 'gov', 'mil', 'int', 'in', 'io', 'co'].includes(tld)) {
-      return false;
+    const validEndings = [
+      'edu.in', 'ac.in', 'res.in', 'ernet.in', 'gov.in', 'co.in', 'net.in', 'org.in',
+      'edu', 'ac.uk', 'edu.au', 'com', 'org', 'net', 'in', 'io', 'ai', 'co', 'me', 'app', 'dev'
+    ];
+    const matchesKnownEnding = validEndings.some((end) => domainPart.endsWith(end));
+    if (!matchesKnownEnding) {
+      if (domainSegments.length > 3) return false;
+      if (!['com', 'org', 'net', 'edu', 'gov', 'mil', 'int', 'in', 'io', 'co'].includes(tld)) {
+        return false;
+      }
     }
-  }
 
-  return true;
+    return true;
+  } catch (_) {
+    return false;
+  }
 };
