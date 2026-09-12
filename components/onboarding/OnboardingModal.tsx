@@ -235,21 +235,21 @@ export const OnboardingModal = () => {
                   <img 
                     src={slides[currentIndex].image} 
                     alt="Onboarding" 
-                    className={`relative z-10 max-h-[54vh] w-auto max-w-[95vw] object-contain object-bottom pointer-events-none translate-y-[2%] ${
-                      currentIndex === 0 ? 'scale-[1.35]' :
-                      currentIndex === 1 ? 'scale-[1.5]' :
-                      'scale-[1.3]'
+                    className={`relative z-10 max-h-[54vh] w-auto max-w-[95vw] object-contain object-bottom pointer-events-none ${
+                      currentIndex === 0 ? 'scale-[1.35] translate-y-[2%]' :
+                      currentIndex === 1 ? 'scale-[1.5] translate-y-[9%]' :
+                      'scale-[1.3] translate-y-[2%]'
                     }`}
                   />
                 </div>
 
                 {/* Text Sheet */}
-                <div className="w-full bg-[#F4F4F4] dark:bg-[#121317] shrink-0 z-10 relative rounded-none pt-7 pb-4 -mt-5 border-t border-black/5 dark:border-white/[0.08]">
+                <div className="w-full bg-[#F4F4F4] dark:bg-[#121317] shrink-0 z-20 relative rounded-none pt-7 pb-4 -mt-5 border-t border-black/5 dark:border-white/[0.08]">
                   <div className="w-full px-6 flex flex-col gap-2.5">
-                    <h2 className="text-[26px] leading-[1.12] font-bold text-black dark:text-[#F4F4F6] whitespace-pre-line text-left">
+                    <h2 className="text-[28px] sm:text-[32px] leading-[34px] sm:leading-[38px] font-normal text-[#111111] dark:text-[#FFFFFF] whitespace-pre-line text-left tracking-tight">
                       {slides[currentIndex].title}
                     </h2>
-                    <p className="text-[13.5px] text-black/65 dark:text-[#94A3B8] font-medium leading-relaxed whitespace-pre-line mb-1 text-left">
+                    <p className="text-[14px] text-[#6B6B6B] dark:text-[#94A3B8] font-normal leading-[20px] whitespace-pre-line mb-1 text-left mt-1">
                       {slides[currentIndex].subtitle}
                     </p>
 
@@ -273,7 +273,7 @@ export const OnboardingModal = () => {
 
                 {/* Footer Controls */}
                 <div 
-                  className="w-full bg-[#F4F4F4] dark:bg-[#121317] z-10 relative pt-2 pb-6 px-6 flex items-center justify-between"
+                  className="w-full bg-[#F4F4F4] dark:bg-[#121317] z-20 relative pt-2 pb-6 px-6 flex items-center justify-between"
                   style={{
                     paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 16px), 24px)',
                   }}
@@ -312,19 +312,21 @@ export const OnboardingModal = () => {
                 className="absolute inset-0 w-full h-full flex flex-col overflow-y-auto px-6 py-8 bg-white dark:bg-[#090A0C]"
               >
                 <div className="flex flex-col max-w-[460px] mx-auto w-full my-auto pb-10">
-                  <div className="flex flex-col mb-5">
-                    <h2 className="text-[30px] font-bold text-black dark:text-[#F4F4F6] tracking-tight leading-[1.12]">
-                      Connect,<br />Batch,<br />Timetable
+                  <div className="flex flex-col mb-6">
+                    <h2 className="text-[36px] sm:text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[40px] sm:leading-[44px]">
+                      Connect,<br />
+                      Batch,<br />
+                      Timetable
                     </h2>
-                    <p className="text-[13.5px] font-medium text-black/60 dark:text-[#94A3B8] leading-relaxed mt-2.5">
+                    <p className="text-[14px] font-normal text-[#6B6B6B] dark:text-[#94A3B8] leading-[20px] mt-4">
                       Join your classmates and sync your academic schedule.
                     </p>
                   </div>
 
-                  <div className="rounded-none border border-black/10 dark:border-white/[0.08] bg-[#FAFAF8] dark:bg-[#121317] p-4 mb-4 shadow-sm">
+                  <div className="rounded-none border border-[#D8D8D8] dark:border-white/[0.08] bg-[#F9F9F8] dark:bg-[#121317] p-4 mb-4 shadow-xs">
                     <div className="flex items-center gap-1.5 mb-2.5">
-                      <ArrowUpRight className="w-3.5 h-3.5 text-black dark:text-[#F4F4F6]" />
-                      <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-black dark:text-[#F4F4F6]">
+                      <ArrowUpRight className="w-3.5 h-3.5 text-[#111111] dark:text-[#F4F4F6]" />
+                      <span className="text-[11px] font-mono font-bold tracking-[1.5px] uppercase text-[#6B6B6B] dark:text-[#94A3B8]">
                         HAVE AN INVITE?
                       </span>
                     </div>
@@ -337,16 +339,16 @@ export const OnboardingModal = () => {
                           setInviteCode(e.target.value);
                           if (inviteError) setInviteError(false);
                         }}
-                        className={`flex-1 h-11 px-3.5 bg-white dark:bg-[#090A0C] border rounded-none text-[13.5px] text-black dark:text-[#F4F4F6] focus:outline-none transition-all shadow-sm ${
+                        className={`flex-1 h-11 px-3.5 bg-white dark:bg-[#090A0C] border rounded-none text-[13.5px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none transition-all shadow-xs ${
                           inviteError
                             ? 'border-rose-500 ring-1 ring-rose-500'
-                            : 'border-black/10 dark:border-white/[0.1] focus:border-black dark:focus:border-white/30'
+                            : 'border-[#D8D8D8] dark:border-white/[0.1] focus:border-[#111111] dark:focus:border-white/40'
                         }`}
                       />
                       <button
                         type="submit"
                         disabled={isJoiningCode}
-                        className="h-11 px-5 bg-black text-white dark:bg-white dark:text-black text-[13px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0 shadow-sm"
+                        className="h-11 px-5 bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-[12px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0 shadow-xs"
                       >
                         {isJoiningCode ? 'Joining...' : 'Join'}
                       </button>
@@ -359,26 +361,26 @@ export const OnboardingModal = () => {
                   </div>
 
                   <div className="flex items-center gap-3 my-1 mb-4">
-                    <div className="flex-1 h-[1px] bg-black/10 dark:bg-white/[0.08]" />
-                    <span className="text-[10.5px] font-bold tracking-[1.5px] text-black/40 dark:text-white/40 uppercase font-mono">
+                    <div className="flex-1 h-[1px] bg-[#E5E5E5] dark:bg-white/[0.08]" />
+                    <span className="text-[10px] font-mono font-bold tracking-[1.5px] text-[#888888] dark:text-[#64748B] uppercase">
                       OR SCAN TIMETABLE
                     </span>
-                    <div className="flex-1 h-[1px] bg-black/10 dark:bg-white/[0.08]" />
+                    <div className="flex-1 h-[1px] bg-[#E5E5E5] dark:bg-white/[0.08]" />
                   </div>
 
                   <div 
                     onClick={() => setIsImportModalOpen(true)}
-                    className="relative group w-full py-6 px-4 flex flex-col items-center justify-center rounded-none border-2 border-dashed border-black/15 dark:border-white/[0.1] hover:border-black/30 dark:hover:border-white/20 bg-[#F7F7F5]/50 dark:bg-[#121317] hover:bg-[#F7F7F5] dark:hover:bg-[#181A20] transition-all cursor-pointer text-center shadow-sm"
+                    className="relative group w-full py-6 px-4 flex flex-col items-center justify-center rounded-none border-2 border-dashed border-[#D8D8D8] dark:border-white/[0.1] hover:border-[#111111]/40 dark:hover:border-white/30 bg-[#F9F9F8]/60 dark:bg-[#121317] hover:bg-[#F9F9F8] transition-all cursor-pointer text-center shadow-xs"
                   >
-                    <Upload className="w-5 h-5 mb-2 text-black dark:text-[#F4F4F6] group-hover:-translate-y-0.5 transition-transform" />
-                    <h3 className="text-[15.5px] font-bold text-black dark:text-[#F4F4F6] mb-1">Just Upload & Chill</h3>
-                    <p className="text-[12.5px] text-black/60 dark:text-[#94A3B8] max-w-[280px] leading-snug mb-3">
+                    <Upload className="w-5 h-5 mb-2 text-[#111111] dark:text-[#F4F4F6] group-hover:-translate-y-0.5 transition-transform" />
+                    <h3 className="text-[15px] font-semibold text-[#111111] dark:text-[#F4F4F6] mb-1">Just Upload & Chill</h3>
+                    <p className="text-[13px] font-normal text-[#6B6B6B] dark:text-[#94A3B8] max-w-[280px] leading-snug mb-3">
                       Drop your routine photo or PDF. Intersemester builds your weekly schedule automatically.
                     </p>
-                    <div className="px-6 h-[40px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[12.5px] pointer-events-none rounded-none w-fit mx-auto mb-2 shadow-sm uppercase tracking-wider">
+                    <div className="px-6 h-[40px] flex items-center justify-center bg-[#111111] text-white dark:bg-white dark:text-[#111111] font-bold text-[12px] pointer-events-none rounded-none w-fit mx-auto mb-2 shadow-xs uppercase tracking-wider">
                       Choose file
                     </div>
-                    <div className="text-[10.5px] text-black/40 dark:text-[#64748B] font-bold tracking-[0.5px] uppercase font-mono">
+                    <div className="text-[10.5px] text-[#888888] dark:text-[#64748B] font-bold tracking-[0.5px] uppercase font-mono">
                       JPG · PNG · PDF (Multi-Page)
                     </div>
                   </div>
@@ -490,10 +492,10 @@ export const OnboardingModal = () => {
                   className="flex flex-col gap-5"
                 >
                   <div className="flex flex-col gap-2.5">
-                    <h2 className="text-[36px] lg:text-[42px] leading-[1.1] font-bold text-black dark:text-[#F4F4F6] whitespace-pre-line text-left tracking-tight">
+                    <h2 className="text-[36px] lg:text-[42px] leading-[44px] lg:leading-[48px] font-normal text-[#111111] dark:text-[#F4F4F6] whitespace-pre-line text-left tracking-tight">
                       {slides[currentIndex].title}
                     </h2>
-                    <p className="text-[16px] text-black/65 dark:text-[#94A3B8] font-medium leading-relaxed whitespace-pre-line text-left">
+                    <p className="text-[15px] text-[#6B6B6B] dark:text-[#94A3B8] font-normal leading-[22px] whitespace-pre-line text-left mt-1">
                       {slides[currentIndex].subtitle}
                     </p>
                   </div>
@@ -529,10 +531,10 @@ export const OnboardingModal = () => {
                   className="flex flex-col"
                 >
                   <div className="flex flex-col mb-6">
-                    <h2 className="text-[36px] font-bold text-black dark:text-[#F4F4F6] tracking-tight leading-[1.12]">
+                    <h2 className="text-[36px] sm:text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[40px] sm:leading-[44px]">
                       Connect, Batch, Timetable
                     </h2>
-                    <p className="text-[15px] font-medium text-black/60 dark:text-[#94A3B8] leading-relaxed mt-2">
+                    <p className="text-[14px] font-normal text-[#6B6B6B] dark:text-[#94A3B8] leading-[20px] mt-3">
                       Join your classmates and sync your academic schedule.
                     </p>
                   </div>
