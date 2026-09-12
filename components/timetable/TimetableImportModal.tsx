@@ -50,10 +50,17 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         body: JSON.stringify({
           fileName: isString ? filesInfo : (filesInfo.length === 1 ? filesInfo[0].name : 'Multiple Files'),
           images: isString ? [] : filesInfo,
+          userId: user?.id || (user as any)?.uid || null,
         }),
       });
 
       const data = await res.json();
+      if (res.status === 429) {
+        showToast('Scan Limit', data.error || 'Please wait a few minutes before scanning again.', 'error');
+        resetState();
+        return;
+      }
+
       if (data.success && Array.isArray(data.sessions)) {
         setExtractedSessions(mergeConsecutiveSessions(data.sessions));
       } else {

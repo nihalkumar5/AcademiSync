@@ -2,11 +2,25 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logServerError } from '@/lib/errorUtils';
 import { validateServerUploadPayload } from '@/lib/fileSafety';
+import { checkAiRateLimit } from '@/lib/rateLimit';
 
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { images, imageBase64, mimeType, fileName } = body;
+    const { images, imageBase64, mimeType, fileName, userId } = body;
+    const clientUserId = userId || req.headers.get('x-user-id') || null;
+
+    // Campus-Safe AI Rate Limiter Guard
+    const rateCheck = checkAiRateLimit(req, clientUserId);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: rateCheck.error || 'Rate limit exceeded. Please wait a few minutes before scanning again.' },
+        { 
+          status: 429, 
+          headers: rateCheck.retryAfterSeconds ? { 'Retry-After': String(rateCheck.retryAfterSeconds) } : undefined 
+        }
+      );
+    }
 
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 

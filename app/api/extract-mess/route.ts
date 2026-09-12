@@ -2,24 +2,26 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logServerError } from '@/lib/errorUtils';
 import { validateServerUploadPayload } from '@/lib/fileSafety';
+import { checkAiRateLimit } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-    
     // Check if JSON body (from multi-image/PDF converter) or FormData
     let imageList: { name?: string; base64: string; mimeType: string }[] = [];
+    let userId: string | null = req.headers.get('x-user-id');
     const contentType = req.headers.get('content-type') || '';
 
     if (contentType.includes('application/json')) {
       const body = await req.json().catch(() => ({}));
       const { images, imageBase64, mimeType, fileName } = body;
+      if (body.userId) userId = body.userId;
       imageList = images || (imageBase64 ? [{ name: fileName, base64: imageBase64, mimeType }] : []);
     } else {
       const formData = await req.formData();
+      if (formData.get('userId')) userId = String(formData.get('userId'));
       const files = formData.getAll('files') as File[];
       const singleFile = formData.get('file') as File;
       const allFiles = files.length > 0 ? files : (singleFile ? [singleFile] : []);
@@ -34,6 +36,20 @@ export async function POST(req: Request) {
         });
       }
     }
+
+    // Campus-Safe AI Rate Limiter Guard
+    const rateCheck = checkAiRateLimit(req, userId);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: rateCheck.error || 'Rate limit exceeded. Please wait a few minutes before scanning again.' },
+        { 
+          status: 429, 
+          headers: rateCheck.retryAfterSeconds ? { 'Retry-After': String(rateCheck.retryAfterSeconds) } : undefined 
+        }
+      );
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 
     // File Upload Safety Validation
     if (imageList.length > 0) {

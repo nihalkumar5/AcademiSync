@@ -15,7 +15,7 @@ interface ExamImportModalProps {
 }
 
 export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClose }) => {
-  const { exams, setFullExams, showToast } = useApp();
+  const { exams, setFullExams, showToast, user } = useApp();
 
   const [step, setStep] = useState<'upload' | 'extracting' | 'review'>('upload');
   const [extractedExams, setExtractedExams] = useState<ExtractedExam[]>([]);
@@ -66,10 +66,17 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
         body: JSON.stringify({
           fileName: filesInfo.length === 1 ? filesInfo[0].name : 'Multiple Files',
           images: filesInfo,
+          userId: user?.id || (user as any)?.uid || null,
         }),
       });
 
       const data = await res.json();
+      if (res.status === 429) {
+        showToast('Scan Limit', data.error || 'Please wait a few minutes before scanning again.', 'error');
+        resetState();
+        return;
+      }
+
       if (data.success && Array.isArray(data.exams)) {
         setExtractedExams(data.exams);
         setStep('review');

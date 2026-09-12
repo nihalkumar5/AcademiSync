@@ -2,10 +2,27 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logServerError } from '@/lib/errorUtils';
 import { validateServerUploadPayload } from '@/lib/fileSafety';
+import { checkAiRateLimit } from '@/lib/rateLimit';
 
 export async function POST(req: Request) {
   try {
-    const { imageBase64, mimeType, fileName } = await req.json().catch(() => ({}));
+    const body = await req.json().catch(() => ({}));
+    const { imageBase64, mimeType, fileName, userId } = body;
+    const clientUserId = userId || req.headers.get('x-user-id') || null;
+
+    // Campus-Safe AI Rate Limiter Guard (skip for mock demo clicks without image)
+    if (imageBase64) {
+      const rateCheck = checkAiRateLimit(req, clientUserId);
+      if (!rateCheck.allowed) {
+        return NextResponse.json(
+          { success: false, error: rateCheck.error || 'Rate limit exceeded. Please wait a few minutes before scanning again.' },
+          { 
+            status: 429, 
+            headers: rateCheck.retryAfterSeconds ? { 'Retry-After': String(rateCheck.retryAfterSeconds) } : undefined 
+          }
+        );
+      }
+    }
 
     // Handle demo sample button directly
     if (fileName === 'demo_ml_assignment.jpg' && !imageBase64) {

@@ -132,7 +132,10 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
         const res = await fetch('/api/extract-mess', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ images: filesOrSample }),
+          body: JSON.stringify({
+            images: filesOrSample,
+            userId: user?.id || (user as any)?.uid || null,
+          }),
         });
         data = await res.json();
       }

@@ -16,7 +16,7 @@ export interface CalendarImportModalProps {
 }
 
 export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen, onClose }) => {
-  const { addEvent, addEvents, showToast } = useApp();
+  const { addEvent, addEvents, showToast, user } = useApp();
 
   const [step, setStep] = useState<'upload' | 'extracting' | 'review'>('upload');
   const [fileName, setFileName] = useState('');
@@ -46,6 +46,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
           fileName: isString ? filesInfo : (filesInfo.length === 1 ? filesInfo[0].name : 'Multiple Files'),
           images: isString ? [] : filesInfo,
           isSample: isString,
+          userId: user?.id || (user as any)?.uid || null,
         }),
       });
 
@@ -57,6 +58,11 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
         } catch {
           const text = await res.text();
           errMsg = text.substring(0, 100) || errMsg;
+        }
+        if (res.status === 429) {
+          showToast('Scan Limit', errMsg, 'error');
+          resetState();
+          return;
         }
         throw new Error(errMsg);
       }

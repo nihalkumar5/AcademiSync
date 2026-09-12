@@ -16,7 +16,7 @@ export interface HomeworkScanModalProps {
 }
 
 export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, onClose }) => {
-  const { subjects, addHomework, showToast } = useApp();
+  const { subjects, addHomework, showToast, user } = useApp();
 
   const [step, setStep] = useState<'upload' | 'scanning' | 'review'>('upload');
   const [fileName, setFileName] = useState('');
@@ -55,10 +55,17 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
           fileName: name,
           imageBase64: base64,
           mimeType,
+          userId: user?.id || (user as any)?.uid || null,
         }),
       });
 
       const data = await res.json();
+      if (res.status === 429) {
+        showToast('Scan Limit', data.error || 'Please wait a few minutes before scanning again.', 'error');
+        resetState();
+        return;
+      }
+
       if (data.success && data.homework) {
         const hw = data.homework;
         const hwSubName = (hw.subjectName || '').toLowerCase().trim();
