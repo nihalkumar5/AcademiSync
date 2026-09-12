@@ -31,7 +31,7 @@ import { getSubjectCardTheme } from '@/lib/cardColors';
 import { clsx } from 'clsx';
 
 export const SubjectListView: React.FC = () => {
-  const { subjects, deleteSubject, profile, timetable, showToast } = useApp();
+  const { subjects, deleteSubject, profile, timetable, showToast, isBatchCR, currentBatchData } = useApp();
 
   const [showModal, setShowModal] = useState(false);
   const [editSubject, setEditSubject] = useState<Subject | null>(null);
@@ -257,15 +257,34 @@ export const SubjectListView: React.FC = () => {
 
             const scheduledSessions = getSubjectSessions(sub.id);
 
+            const isBatchSubject = !!currentBatchData?.subjects?.some((b: Subject) => 
+              b.id === sub.id || 
+              (b.code && sub.code && b.code.trim().toUpperCase() === sub.code.trim().toUpperCase()) ||
+              b.name.trim().toLowerCase() === sub.name.trim().toLowerCase()
+            );
+            const isReadOnlyOfficial = isBatchSubject && profile.isBatchSynced && !isBatchCR;
+
             return (
               <div
                 key={sub.id}
-                className="group relative p-5 rounded-[3px] border shadow-none flex flex-col justify-between transition-all overflow-hidden"
+                onClick={() => {
+                  setEditSubject(sub);
+                  setShowModal(true);
+                }}
+                className="group relative p-5 rounded-[3px] border shadow-none flex flex-col justify-between transition-all overflow-hidden cursor-pointer hover:border-black/20 dark:hover:border-white/20"
                 style={{
-                  borderColor: theme.border || 'rgba(0,0,0,0.06)',
-                  borderLeft: `4px solid ${theme.accent}`,
+                  borderColor: theme.border || 'rgba(0,0,0,0.08)',
+                  borderLeft: `5px solid ${theme.accent}`,
+                  borderTop: `2px solid ${theme.accent}60`,
                 }}
               >
+                {/* Ambient Pastel Gradient Tint */}
+                <div 
+                  className="absolute inset-0 z-0 pointer-events-none"
+                  style={{
+                    background: `linear-gradient(135deg, ${theme.accent}1A 0%, transparent 65%)`,
+                  }}
+                />
                 {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
                 <div 
                   className="dark:hidden absolute inset-0 z-0 pointer-events-none"
@@ -277,20 +296,26 @@ export const SubjectListView: React.FC = () => {
                 />
 
                 <div className="relative z-10 flex flex-col gap-3">
-                  {/* Header: Code, Badges & Top Actions */}
+                  {/* Header: Theme Pill, Badges & Top Actions */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2 flex-wrap">
-                      {sub.code && sub.code !== 'UNK' && (
-                        <span
-                          className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-[2px]"
-                          style={{
-                            backgroundColor: theme.badgeBg,
-                            color: theme.badgeText,
-                          }}
-                        >
-                          {sub.code}
-                        </span>
-                      )}
+                      {/* Prominent Theme Pill / Badge showing pastel theme */}
+                      <span
+                        className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-[3px] shadow-2xs border"
+                        style={{
+                          backgroundColor: theme.badgeBg,
+                          color: theme.badgeText,
+                          borderColor: `${theme.accent}40`,
+                        }}
+                        title="Subject Color Theme"
+                      >
+                        <span className="w-2 h-2 rounded-full shrink-0 shadow-xs" style={{ backgroundColor: theme.accent }} />
+                        <span>{theme.name}</span>
+                        {sub.code && sub.code !== 'UNK' && (
+                          <span className="opacity-75 font-mono">· {sub.code}</span>
+                        )}
+                      </span>
+
                       <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-[2px] bg-white/80 dark:bg-black/40 border border-black/[0.06] dark:border-white/[0.08] text-[#151515] dark:text-[#E2E8F0]">
                         {sub.credits} Credits
                       </span>
@@ -299,28 +324,39 @@ export const SubjectListView: React.FC = () => {
                           LAB
                         </span>
                       )}
+                      {isReadOnlyOfficial && (
+                        <span className="text-[9.5px] font-semibold tracking-wide px-1.5 py-0.5 rounded-[2px] bg-black/5 dark:bg-white/10 text-[#737373] dark:text-[#94A3B8]">
+                          Official Course
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
                       <button
                         type="button"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setEditSubject(sub);
                           setShowModal(true);
                         }}
                         className="p-1.5 text-[#737373] hover:text-[#151515] dark:hover:text-white rounded hover:bg-black/5 dark:hover:bg-white/[0.06] cursor-pointer transition-colors"
-                        title="Edit Subject"
+                        title={isReadOnlyOfficial ? "Customize Color Theme" : "Edit Subject"}
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteSubject(sub.id)}
-                        className="p-1.5 text-[#737373] hover:text-[#C94B5C] rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors"
-                        title="Delete Subject"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {!isReadOnlyOfficial && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteSubject(sub.id);
+                          }}
+                          className="p-1.5 text-[#737373] hover:text-[#C94B5C] rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors"
+                          title="Delete Subject"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -351,6 +387,7 @@ export const SubjectListView: React.FC = () => {
                         <div className="flex items-center gap-1 shrink-0">
                           <a
                             href={`mailto:${sub.facultyEmail}?subject=${encodeURIComponent(`[${sub.code || sub.name}] Inquiry`)}`}
+                            onClick={(e) => e.stopPropagation()}
                             className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10.5px] font-medium rounded-[2px] bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-[#151515] dark:text-white transition-colors cursor-pointer"
                             title="Send Email"
                           >
@@ -360,7 +397,10 @@ export const SubjectListView: React.FC = () => {
 
                           <button
                             type="button"
-                            onClick={() => handleCopyEmail(sub.facultyEmail!)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCopyEmail(sub.facultyEmail!);
+                            }}
                             className="p-1 text-[#737373] hover:text-[#151515] dark:hover:text-white rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
                             title="Copy Email"
                           >
@@ -423,6 +463,7 @@ export const SubjectListView: React.FC = () => {
                           href={sub.driveLink}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[2px] bg-white/90 dark:bg-white/[0.08] border border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30 text-[11px] font-semibold text-[#151515] dark:text-white transition-all cursor-pointer shadow-2xs"
                         >
                           <FileText className="w-3 h-3 text-[#334CC4] dark:text-[#8AA4FF]" />
@@ -436,6 +477,7 @@ export const SubjectListView: React.FC = () => {
                           href={sub.syllabusLink}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[2px] bg-white/90 dark:bg-white/[0.08] border border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30 text-[11px] font-semibold text-[#151515] dark:text-white transition-all cursor-pointer shadow-2xs"
                         >
                           <BookOpen className="w-3 h-3 text-[#18A889]" />

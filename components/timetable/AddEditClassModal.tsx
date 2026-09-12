@@ -20,7 +20,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
   sessionToEdit,
   defaultDay = 'Monday',
 }) => {
-  const { subjects, addClassSession, updateClassSession } = useApp();
+  const { subjects, addClassSession, updateClassSession, timetable, profile, isBatchCR, showToast } = useApp();
 
   const [subjectId, setSubjectId] = useState('');
   const [day, setDay] = useState<DayOfWeek>(defaultDay);
@@ -68,6 +68,45 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
     e.preventDefault();
     if (!subjectId) return;
 
+    if (sessionToEdit && !sessionToEdit.isPersonal && profile.isBatchSynced && !isBatchCR) {
+      showToast('Permission Denied', 'Official batch classes can only be modified by the Batch Pilot.', 'error');
+      return;
+    }
+
+    const toMinutes = (timeStr: string) => {
+      const [h, m] = (timeStr || '0:0').split(':').map(Number);
+      return (h || 0) * 60 + (m || 0);
+    };
+
+    const newStart = toMinutes(startTime);
+    const newEnd = toMinutes(endTime);
+
+    if (newEnd <= newStart) {
+      showToast('Invalid Timings', 'Class end time must be after start time.', 'error');
+      return;
+    }
+
+    // Normal students can only add extra classes during free slots
+    if (!isBatchCR && profile.isBatchSynced) {
+      const clashingSession = timetable.find((s) => {
+        if (sessionToEdit && s.id === sessionToEdit.id) return false;
+        if (s.day !== day) return false;
+        const sStart = toMinutes(s.startTime);
+        const sEnd = toMinutes(s.endTime);
+        return newStart < sEnd && newEnd > sStart;
+      });
+
+      if (clashingSession) {
+        const clashingSub = subjects.find((sub) => sub.id === clashingSession.subjectId);
+        showToast(
+          'Time Slot Already Occupied',
+          `Clashes with "${clashingSub?.name || 'scheduled class'}" (${clashingSession.startTime} - ${clashingSession.endTime}). Normal students can only add classes during free slots.`,
+          'error'
+        );
+        return;
+      }
+    }
+
     if (sessionToEdit) {
       updateClassSession(sessionToEdit.id, {
         subjectId,
@@ -79,6 +118,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
         isLab,
         isCustomRoom: true,
         isCustomTime: true,
+        isPersonal: sessionToEdit.isPersonal ?? (!isBatchCR && profile.isBatchSynced),
       });
     } else {
       addClassSession({
@@ -91,7 +131,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
         isLab,
         isCustomRoom: true,
         isCustomTime: true,
-        isPersonal: true,
+        isPersonal: !isBatchCR && profile.isBatchSynced ? true : false,
       });
     }
     onClose();

@@ -195,13 +195,14 @@ export function generatePastelThemeFromHex(rawColor: string, name: string = 'Cus
     const b = parseInt(hexOnly.slice(4, 6), 16);
 
     return {
-      name,
+      name: name || 'Custom Theme',
       accent: `#${hexOnly}`,
-      bg: `rgba(${r}, ${g}, ${b}, 0.12)`,
-      darkBg: `rgba(${r}, ${g}, ${b}, 0.20)`,
-      badgeBg: `rgba(${r}, ${g}, ${b}, 0.22)`,
+      darkAccent: `#${hexOnly}`,
+      bg: `rgba(${r}, ${g}, ${b}, 0.14)`,
+      darkBg: `rgba(${r}, ${g}, ${b}, 0.25)`,
+      badgeBg: `rgba(${r}, ${g}, ${b}, 0.24)`,
       badgeText: `#${hexOnly}`,
-      border: `rgba(${r}, ${g}, ${b}, 0.28)`,
+      border: `rgba(${r}, ${g}, ${b}, 0.35)`,
     };
   }
 

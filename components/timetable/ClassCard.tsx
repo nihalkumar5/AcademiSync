@@ -10,6 +10,7 @@ export interface ClassCardProps {
   onEdit: (session: ClassSession) => void;
   onDelete: (id: string) => void;
   isCurrent?: boolean;
+  canModify?: boolean;
 }
 
 export const ClassCard: React.FC<ClassCardProps> = ({
@@ -18,6 +19,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   onEdit,
   onDelete,
   isCurrent = false,
+  canModify = true,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -55,11 +57,18 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         backgroundColor: isCurrent ? '#111111' : undefined,
         borderColor: isCurrent ? '#111111' : (theme.border || 'rgba(0,0,0,0.06)'),
         borderLeft: isCurrent ? '4px solid #18A889' : `4px solid ${theme.accent}`,
+        borderTop: !isCurrent ? `2px solid ${theme.accent}50` : undefined,
       }}
     >
-      {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
+      {/* Direct Solid Pastel Backgrounds & Ambient Gradient for Light & Dark mode */}
       {!isCurrent && (
         <>
+          <div 
+            className="absolute inset-0 z-0 pointer-events-none rounded-[2px]"
+            style={{
+              background: `linear-gradient(135deg, ${theme.accent}14 0%, transparent 60%)`,
+            }}
+          />
           <div 
             className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[2px]"
             style={{ backgroundColor: theme.bg }}
@@ -126,51 +135,60 @@ export const ClassCard: React.FC<ClassCardProps> = ({
               {session.startTime} – {session.endTime}
             </span>
 
-            {/* Action Menu */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setMenuOpen((prev) => !prev)}
-                className="p-1 rounded transition-colors cursor-pointer opacity-70 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 text-[#737373] dark:text-[#CBD5E1]"
-                style={{ color: isCurrent ? '#A8A8A8' : undefined }}
-                title="Class actions"
-              >
-                <MoreHorizontal className="w-4 h-4" />
-              </button>
+            {/* Action Menu (Only for modifiable sessions) */}
+            {canModify ? (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen((prev) => !prev)}
+                  className="p-1 rounded transition-colors cursor-pointer opacity-70 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 text-[#737373] dark:text-[#CBD5E1]"
+                  style={{ color: isCurrent ? '#A8A8A8' : undefined }}
+                  title="Class actions"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
 
-              {menuOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-20"
-                    onClick={() => setMenuOpen(false)}
-                  />
-                  <div className="absolute right-0 mt-1 w-32 bg-[#FFFFFF] dark:bg-[#16171D] border border-[#D9D9D6] dark:border-white/[0.08] py-1 z-30 text-left rounded-[3px] shadow-[0_8px_30px_rgba(0,0,0,0.3)]">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        onEdit(session);
-                      }}
-                      className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] font-medium text-[#151515] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.04] text-left transition-colors cursor-pointer"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                      Edit Class
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        onDelete(session.id);
-                      }}
-                      className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] font-medium text-[#D32F2F] dark:text-rose-400 hover:bg-[#D32F2F]/5 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      Remove
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+                {menuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-20"
+                      onClick={() => setMenuOpen(false)}
+                    />
+                    <div className="absolute right-0 mt-1 w-32 bg-[#FFFFFF] dark:bg-[#16171D] border border-[#D9D9D6] dark:border-white/[0.08] py-1 z-30 text-left rounded-[3px] shadow-[0_8px_30px_rgba(0,0,0,0.3)]">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          onEdit(session);
+                        }}
+                        className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] font-medium text-[#151515] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.04] text-left transition-colors cursor-pointer"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                        Edit Class
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          onDelete(session.id);
+                        }}
+                        className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] font-medium text-[#D32F2F] dark:text-rose-400 hover:bg-[#D32F2F]/5 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Remove
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <span 
+                className="text-[9.5px] font-mono font-medium px-1.5 py-0.5 rounded-[2px] bg-black/5 dark:bg-white/10 text-[#737373] dark:text-[#94A3B8]"
+                title="Official Batch Class (Managed by Batch Pilot)"
+              >
+                Official
+              </span>
+            )}
           </div>
         </div>
 

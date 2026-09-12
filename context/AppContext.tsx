@@ -507,24 +507,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             );
             if (!local) return bSub;
 
-            // Preserve personal customizations (preferred color, personal room override, personal notes)
-            const isPersonalColor = local.isCustomColor || (local.color && local.color !== bSub.color);
-            const isPersonalRoom = local.isCustomRoom || (local.room && local.room !== bSub.room);
+            // Preserve ONLY personal color theme preference
+            const hasCustomColor = !!(local.isCustomColor && local.color);
 
             return {
               ...bSub,
               id: local.id || bSub.id,
-              color: isPersonalColor ? local.color : bSub.color,
-              isCustomColor: local.isCustomColor || isPersonalColor || false,
-              room: isPersonalRoom ? local.room : (bSub.room || local.room),
-              labRoom: isPersonalRoom ? (local.labRoom || local.room) : (bSub.labRoom || bSub.room || local.labRoom),
-              isCustomRoom: local.isCustomRoom || isPersonalRoom || false,
-              driveLink: local.driveLink || bSub.driveLink,
-              syllabusLink: local.syllabusLink || bSub.syllabusLink,
-              notes: local.notes || bSub.notes,
-              carryRequirements: (local.carryRequirements && local.carryRequirements.length > 0) 
-                ? local.carryRequirements 
-                : (bSub.carryRequirements || []),
+              color: hasCustomColor ? local.color : bSub.color,
+              isCustomColor: hasCustomColor,
+              // Official batch curriculum rules: room, lab room, and faculty always sync from batch
+              room: bSub.room || local.room || 'LT-1',
+              labRoom: bSub.labRoom || local.labRoom || undefined,
+              isCustomRoom: false,
+              driveLink: bSub.driveLink || local.driveLink,
+              syllabusLink: bSub.syllabusLink || local.syllabusLink,
+              notes: bSub.notes || local.notes,
+              carryRequirements: (bSub.carryRequirements && bSub.carryRequirements.length > 0) 
+                ? bSub.carryRequirements 
+                : (local.carryRequirements || []),
             };
           });
 
@@ -552,34 +552,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               s.id === bSess.id || 
               (s.day === bSess.day && s.startTime === bSess.startTime && s.subjectId === bSess.subjectId)
             );
-            if (!local) return bSess;
 
-            // Preserve personal session room, personal custom times, personal notes
-            const isPersonalRoom = local.isCustomRoom || (local.room && local.room !== bSess.room);
-            const isPersonalTime = local.isCustomTime;
-
+            // Official batch timetable rules: room, time, day, faculty sync from batch
             return {
               ...bSess,
-              id: local.id || bSess.id,
-              room: isPersonalRoom ? local.room : (bSess.room || local.room),
-              isCustomRoom: local.isCustomRoom || isPersonalRoom || false,
-              startTime: isPersonalTime ? local.startTime : bSess.startTime,
-              endTime: isPersonalTime ? local.endTime : bSess.endTime,
-              isCustomTime: local.isCustomTime || false,
-              faculty: (local.faculty && local.faculty !== bSess.faculty) ? local.faculty : (bSess.faculty || local.faculty),
-              notes: local.notes || bSess.notes,
-              isPersonal: local.isPersonal || false,
+              id: local?.id || bSess.id,
+              room: bSess.room,
+              startTime: bSess.startTime,
+              endTime: bSess.endTime,
+              faculty: bSess.faculty,
+              isLab: bSess.isLab,
+              day: bSess.day,
+              isCustomRoom: false,
+              isCustomTime: false,
+              notes: bSess.notes || local?.notes,
+              isPersonal: false,
             };
           });
 
-          // Also preserve personal extra sessions added by the user
-          const personalSessions = currentList.filter((s) => 
-            s.isPersonal || 
-            !data.timetable.some((b: ClassSession) => 
-              b.id === s.id || 
-              (b.day === s.day && b.startTime === s.startTime && b.subjectId === s.subjectId)
-            )
-          );
+          // Preserve ONLY genuinely personal extra sessions added by user during free slots
+          const personalSessions = currentList.filter((s) => s.isPersonal === true);
 
           const finalTt = [...merged, ...personalSessions];
           updatedTt = finalTt;
@@ -1244,9 +1236,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
 
     syncCRChangesToBatch(updatedTt, updated);
+    showToast('Subject Updated', `${partial.name || 'Subject'} details & color theme saved`, 'success');
   };
 
   const deleteSubject = (id: string) => {
+    const isOfficialBatchSub = currentBatchData?.subjects?.some((b: Subject) => b.id === id);
+    if (isOfficialBatchSub && profile.isBatchSynced && !isBatchCR) {
+      showToast('Permission Denied', 'Official batch courses cannot be removed by students.', 'error');
+      return;
+    }
+
     const updatedSubs = subjects.filter((s) => s.id !== id);
     const updatedTimetable = timetable.filter((t) => t.subjectId !== id);
     setSubjectsState(updatedSubs);
@@ -1333,6 +1332,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const updateClassSession = (id: string, partial: Partial<ClassSession>) => {
+    const target = timetable.find((s) => s.id === id);
+    if (target && !target.isPersonal && profile.isBatchSynced && !isBatchCR) {
+      showToast('Permission Denied', 'Official batch classes can only be modified by the Batch Pilot.', 'error');
+      return;
+    }
+
     const updated = timetable.map((s) => (s.id === id ? { 
       ...s, 
       ...partial, 
@@ -1360,6 +1365,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const deleteClassSession = (id: string) => {
+    const target = timetable.find((s) => s.id === id);
+    if (target && !target.isPersonal && profile.isBatchSynced && !isBatchCR) {
+      showToast('Permission Denied', 'Official batch classes can only be removed by the Batch Pilot.', 'error');
+      return;
+    }
+
     const updated = timetable.filter((s) => s.id !== id);
     setTimetableState(updated);
     storage.setTimetable(updated);
