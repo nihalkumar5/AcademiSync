@@ -1577,7 +1577,7 @@ export const SettingsView: React.FC = () => {
               <div className="p-4 border border-red-600/30 bg-red-600/10 text-red-600 flex flex-col gap-2">
                 <span className="text-[14px] font-bold">Are you sure you want to leave?</span>
                 <span className="text-[12px] opacity-90 leading-snug">
-                  You will no longer receive real-time updates for classes and tasks from this batch.
+                  All batch classes, schedule, and shared tasks will be removed. Your personal custom classes, notes, and private tasks will be preserved.
                 </span>
               </div>
               <div className="flex items-center justify-end gap-2 mt-2">

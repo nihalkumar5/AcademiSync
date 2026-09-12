@@ -2317,31 +2317,109 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const oldBatchKey = profile.batchKey;
     const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
 
-    // 1. Update React state & localStorage
+    // Step 1: Identify batch data to purge
+    let batchData = currentBatchData;
+    if (!batchData && oldBatchKey) {
+      try {
+        const snap = await getDoc(doc(db, 'shared_timetables', oldBatchKey));
+        if (snap.exists()) batchData = snap.data();
+      } catch (_) {}
+    }
+
+    const batchSessionIds = new Set((batchData?.timetable || []).map((s: any) => s.id));
+    const batchSubjectIds = new Set((batchData?.subjects || []).map((s: any) => s.id));
+    const batchEventIds = new Set((batchData?.events || []).map((e: any) => e.id));
+    const batchExamIds = new Set((batchData?.exams || []).map((e: any) => e.id));
+    const batchHomeworkIds = new Set((batchData?.homework || []).map((h: any) => h.id));
+
+    // Keep only user's personal / extra additions:
+    // - Timetable: Sessions that were NOT part of the batch or are marked extra
+    const remainingTimetable = (batchData && batchSessionIds.size > 0)
+      ? timetable.filter((s) => !batchSessionIds.has(s.id) || s.isExtra === true)
+      : [];
+
+    const activeSubjectIds = new Set(remainingTimetable.map((s) => s.subjectId));
+
+    // - Subjects: Custom subjects not from batch, or subjects still in use by user's extra classes
+    const remainingSubjects = (batchData && batchSubjectIds.size > 0)
+      ? subjects.filter((s) => !batchSubjectIds.has(s.id) || activeSubjectIds.has(s.id))
+      : [];
+
+    // - Events: Personal events only
+    const remainingEvents = (batchData && batchEventIds.size > 0)
+      ? events.filter((e) => !batchEventIds.has(e.id))
+      : [];
+
+    // - Exams: Personal exams only
+    const remainingExams = (batchData && batchExamIds.size > 0)
+      ? exams.filter((e) => !batchExamIds.has(e.id))
+      : [];
+
+    // - Homework: Personal non-batch tasks
+    const remainingHomework = homework.filter((h) => !h.isBatchShared && !h.proposalId && !batchHomeworkIds.has(h.id));
+
+    // - Extra sessions: Clean batch extra sessions
+    const remainingExtra: Record<string, ExtraClassSession> = {};
+    Object.entries(extraSessions).forEach(([k, sess]) => {
+      if (sess.role !== 'Batch Pilot' && (!batchData?.extraSessions || !batchData.extraSessions[k])) {
+        remainingExtra[k] = sess;
+      }
+    });
+
+    // 2. Update React state & localStorage
     const updatedProfile: StudentProfile = {
       ...profile,
       isBatchSynced: false,
       batchKey: undefined,
       role: profile.role === 'super_admin' ? 'super_admin' : 'student',
     };
+
     setProfileState(updatedProfile);
     storage.setProfile(updatedProfile);
 
-    // 2. Update Firestore user document
+    setTimetableState(remainingTimetable);
+    storage.setTimetable(remainingTimetable);
+
+    setSubjectsState(remainingSubjects);
+    storage.setSubjects(remainingSubjects);
+
+    setEventsState(remainingEvents);
+    storage.setEvents(remainingEvents);
+
+    setExamsState(remainingExams);
+    storage.setExams(remainingExams);
+
+    setHomeworkState(remainingHomework);
+    storage.setHomework(remainingHomework);
+
+    setExtraSessionsState(remainingExtra);
+    storage.setExtraSessions(remainingExtra);
+
+    setCurrentBatchData(null);
+    refreshCarryItems(remainingTimetable, remainingSubjects, remainingEvents, settings, remainingExtra);
+
+    // 3. Update Firestore user document
     if (user?.id) {
       try {
         const userRef = doc(db, 'users', user.id);
-        await updateDoc(userRef, {
-          'profile.isBatchSynced': false,
-          'profile.batchKey': null,
-          'profile.role': profile.role === 'super_admin' ? 'super_admin' : 'student',
+        const payloadToSave = sanitizeForFirestore({
+          profile: updatedProfile,
+          subjects: remainingSubjects,
+          timetable: remainingTimetable,
+          events: remainingEvents,
+          exams: remainingExams,
+          homework: remainingHomework,
+          extraSessions: remainingExtra,
+          lastUpdated: Date.now(),
         });
+        await setDoc(userRef, payloadToSave, { merge: true });
+        remoteStateString.current = JSON.stringify(payloadToSave);
       } catch (e) {
         console.error('Error updating user doc on leave batch:', e);
       }
     }
 
-    // 3. Decrement student count and remove from batch in Firestore
+    // 4. Decrement student count and remove from batch in Firestore (best-effort, non-blocking)
     if (oldBatchKey) {
       try {
         const batchRef = doc(db, 'shared_timetables', oldBatchKey);
@@ -2349,13 +2427,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           studentCount: increment(-1),
           crUserIds: arrayRemove(user?.id || ''),
           crEmails: arrayRemove(userEmail),
+          lastActive: Date.now(),
         });
       } catch (e) {
-        console.error('Error updating batch doc on leave batch:', e);
+        console.warn('Non-fatal: could not update batch doc on leave batch:', e);
       }
     }
 
-    showToast('Left Batch', 'You have disconnected from the batch. Your timetable is now local.', 'info');
+    showToast('Left Batch', 'Batch timetable removed. Your personal tasks and extra items are preserved.', 'info');
   };
 
   const updateMessMenu = (menu: any) => {
