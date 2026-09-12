@@ -6,7 +6,7 @@ import { useApp } from '@/context/AppContext';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
 import { getCanonicalBatchKey, formatBatchDisplayName, getShortCollegeName, isValidProperEmail } from '@/lib/timetableUtils';
 import { searchCollegesAsync, CollegeItem } from '@/lib/collegeDirectory';
-import { STANDARD_PROGRAMMES, STANDARD_BRANCHES } from '@/lib/colleges';
+import { STANDARD_PROGRAMMES, STANDARD_BRANCHES, filterProgrammes, filterBranches, getCanonicalProgramme } from '@/lib/colleges';
 import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { 
@@ -280,7 +280,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
         email: userEmail,
         rollNumber: rollNumber.trim() || 'N/A',
         college: college.trim(),
-        programme: programme.trim(),
+        programme: getCanonicalProgramme(programme.trim()),
         branch: branch.trim(),
         semester: Number(semester) || 1,
         batchKey: canonicalBatchKey,
@@ -569,6 +569,16 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                             setProgramme(e.target.value);
                             setShowProgrammeDropdown(true);
                           }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              const matches = filterProgrammes(programme);
+                              if (matches.length > 0) {
+                                e.preventDefault();
+                                setProgramme(matches[0]);
+                                setShowProgrammeDropdown(false);
+                              }
+                            }
+                          }}
                           onFocus={() => setShowProgrammeDropdown(true)}
                           onBlur={() => setTimeout(() => setShowProgrammeDropdown(false), 200)}
                           placeholder="e.g. B.Tech, M.Tech, BCA"
@@ -580,8 +590,8 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
 
                       {showProgrammeDropdown && (
                         <div className="absolute top-full left-0 w-full mt-1.5 max-h-48 overflow-y-auto bg-white dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none shadow-2xl z-50">
-                          {STANDARD_PROGRAMMES.filter(p => p.toLowerCase().includes(programme.toLowerCase())).length > 0 ? (
-                            STANDARD_PROGRAMMES.filter(p => p.toLowerCase().includes(programme.toLowerCase())).map(p => (
+                          {filterProgrammes(programme).length > 0 ? (
+                            filterProgrammes(programme).map(p => (
                               <div
                                 key={p}
                                 onMouseDown={() => { setProgramme(p); setShowProgrammeDropdown(false); }}
@@ -615,6 +625,16 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                             setBranch(e.target.value);
                             setShowBranchDropdown(true);
                           }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              const matches = filterBranches(branch);
+                              if (matches.length > 0) {
+                                e.preventDefault();
+                                setBranch(matches[0]);
+                                setShowBranchDropdown(false);
+                              }
+                            }
+                          }}
                           onFocus={() => setShowBranchDropdown(true)}
                           onBlur={() => setTimeout(() => setShowBranchDropdown(false), 200)}
                           placeholder="e.g. Computer Science (CSE)"
@@ -626,8 +646,8 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
 
                       {showBranchDropdown && (
                         <div className="absolute top-full left-0 w-full mt-1.5 max-h-48 overflow-y-auto bg-white dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none shadow-2xl z-50">
-                          {STANDARD_BRANCHES.filter(b => b.toLowerCase().includes(branch.toLowerCase())).length > 0 ? (
-                            STANDARD_BRANCHES.filter(b => b.toLowerCase().includes(branch.toLowerCase())).map(b => (
+                          {filterBranches(branch).length > 0 ? (
+                            filterBranches(branch).map(b => (
                               <div
                                 key={b}
                                 onMouseDown={() => { setBranch(b); setShowBranchDropdown(false); }}

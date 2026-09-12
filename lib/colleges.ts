@@ -145,3 +145,63 @@ export const STANDARD_BRANCHES = [
   'Architecture & Design',
   'Other / General'
 ];
+
+/**
+ * Normalizes a string by lowercasing and stripping all dots, dashes, slashes, spaces, and punctuation.
+ * e.g. "M.Tech" -> "mtech", "B.Tech" -> "btech", "DS & AI" -> "dsai"
+ */
+export function normalizeSearchString(val: string): string {
+  if (!val) return '';
+  return val.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+/**
+ * Checks if a candidate option matches a user query:
+ * 1. Direct case-insensitive substring match: candidate.toLowerCase().includes(query.toLowerCase())
+ * 2. Normalized alphanumeric match (stripping dots, spaces, symbols):
+ *    e.g. candidate "M.Tech" (norm: "mtech") matches query "mtech" (norm: "mtech")
+ *    e.g. candidate "B.Tech" matches query "btech"
+ *    e.g. candidate "Data Science & Artificial Intelligence (DS & AI)" matches query "dsai"
+ */
+export function matchesSearchOption(candidate: string, query: string): boolean {
+  if (!query || !query.trim()) return true;
+  const cleanQuery = query.trim().toLowerCase();
+  const cleanCand = (candidate || '').toLowerCase();
+  
+  if (cleanCand.includes(cleanQuery)) return true;
+
+  const normQuery = normalizeSearchString(query);
+  const normCand = normalizeSearchString(candidate);
+  
+  if (normQuery && normCand.includes(normQuery)) return true;
+
+  return false;
+}
+
+/**
+ * Returns filtered standard programmes with dot-insensitive & symbol-insensitive search.
+ */
+export function filterProgrammes(query: string): string[] {
+  if (!query || !query.trim()) return STANDARD_PROGRAMMES;
+  return STANDARD_PROGRAMMES.filter((p) => matchesSearchOption(p, query));
+}
+
+/**
+ * Returns filtered standard branches with symbol-insensitive & acronym-aware search.
+ */
+export function filterBranches(query: string): string[] {
+  if (!query || !query.trim()) return STANDARD_BRANCHES;
+  return STANDARD_BRANCHES.filter((b) => matchesSearchOption(b, query));
+}
+
+/**
+ * Auto-canonicalizes typed degree strings to official standard spelling:
+ * e.g. "mtech" -> "M.Tech", "btech" -> "B.Tech", "phd" -> "Ph.D"
+ */
+export function getCanonicalProgramme(input: string): string {
+  if (!input || !input.trim()) return input;
+  const norm = normalizeSearchString(input);
+  const matched = STANDARD_PROGRAMMES.find((p) => normalizeSearchString(p) === norm);
+  return matched || input.trim();
+}
+
