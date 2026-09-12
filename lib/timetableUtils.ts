@@ -871,10 +871,14 @@ export const extractCleanInviteCode = (input: string): string => {
     try {
       const parsedUrl = new URL(urlMatch[0]);
       const invite = parsedUrl.searchParams.get('invite') || parsedUrl.searchParams.get('key');
-      if (invite) return invite.trim().toUpperCase();
+      if (invite) {
+        const trimmed = invite.trim();
+        return trimmed.length <= 8 && !trimmed.includes('_') ? trimmed.toUpperCase() : trimmed;
+      }
       const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
       if (pathParts.includes('join') && pathParts.length > 1) {
-        return pathParts[pathParts.length - 1].trim().toUpperCase();
+        const lastPart = pathParts[pathParts.length - 1].trim();
+        return lastPart.length <= 8 && !lastPart.includes('_') ? lastPart.toUpperCase() : lastPart;
       }
     } catch (_) {}
   }
@@ -882,13 +886,15 @@ export const extractCleanInviteCode = (input: string): string => {
   // 2. If it contains "invite=XYZ"
   const paramMatch = str.match(/invite=([a-zA-Z0-9_-]+)/i);
   if (paramMatch && paramMatch[1]) {
-    return paramMatch[1].trim().toUpperCase();
+    const val = paramMatch[1].trim();
+    return val.length <= 8 && !val.includes('_') ? val.toUpperCase() : val;
   }
 
   // 3. If it contains "code: XYZ" or "key: XYZ" or "Batch Invite Code: XYZ"
   const codeMatch = str.match(/(?:code|key)\s*[:：\-]\s*([a-zA-Z0-9_-]+)/i);
   if (codeMatch && codeMatch[1]) {
-    return codeMatch[1].trim().toUpperCase();
+    const val = codeMatch[1].trim();
+    return val.length <= 8 && !val.includes('_') ? val.toUpperCase() : val;
   }
 
   // 4. If tokens contain a 5 to 8 char alphanumeric code or a canonical key
@@ -905,5 +911,8 @@ export const extractCleanInviteCode = (input: string): string => {
 
   // 5. Fallback: stripped alphanumeric
   const fallback = str.replace(/[^a-zA-Z0-9_-]/g, '');
-  return fallback ? fallback.toUpperCase() : str;
+  if (fallback.length <= 8 && !fallback.includes('_')) {
+    return fallback.toUpperCase();
+  }
+  return fallback || str;
 };

@@ -33,17 +33,11 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
       return;
     }
 
-    if (!user) {
-      showToast('Sign In Required', 'Please sign in to join a batch.', 'info');
+    setIsJoining(true);
+    try {
       try {
         localStorage.setItem('pending_join_invite', code);
       } catch (_) {}
-      router.push('/sign-in');
-      return;
-    }
-
-    setIsJoining(true);
-    try {
       await joinBatchTimetable(code);
       setInviteCodeInput('');
       onClose();

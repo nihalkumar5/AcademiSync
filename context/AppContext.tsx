@@ -2013,55 +2013,103 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const joinBatchTimetable = async (batchKeyOrCode: string, providedCode?: string) => {
     try {
       const cleanInput = extractCleanInviteCode(batchKeyOrCode);
-      let docRef = doc(db, 'shared_timetables', cleanInput);
-      let docSnap = await getDoc(docRef);
-      let batchKey = cleanInput;
-
-      // If not found directly by document ID, look up by inviteCode
-      if (!docSnap.exists()) {
-        const q = query(collection(db, 'shared_timetables'), where('inviteCode', '==', cleanInput.toUpperCase()));
-        const querySnap = await getDocs(q);
-        if (!querySnap.empty) {
-          docSnap = querySnap.docs[0];
-          batchKey = docSnap.id;
-          docRef = doc(db, 'shared_timetables', batchKey);
-        }
+      if (!cleanInput) {
+        showToast('Code Required', 'Please enter a valid batch code or invite link.', 'error');
+        throw new Error('Empty batch code');
       }
 
-      if (!docSnap.exists()) {
+      // Step 1: Resilient Multi-strategy lookup
+      let docSnap: any = null;
+      let batchKey = cleanInput;
+
+      // 1a. Direct doc ID (as-is, lowercase, uppercase)
+      const possibleIds = [cleanInput, cleanInput.toLowerCase(), cleanInput.toUpperCase()];
+      for (const idToTry of possibleIds) {
+        try {
+          const snap = await getDoc(doc(db, 'shared_timetables', idToTry));
+          if (snap.exists()) {
+            docSnap = snap;
+            batchKey = snap.id;
+            break;
+          }
+        } catch (_) {}
+      }
+
+      // 1b. Look up by inviteCode field (uppercase or as-is)
+      if (!docSnap || !docSnap.exists()) {
+        try {
+          const q = query(collection(db, 'shared_timetables'), where('inviteCode', '==', cleanInput.toUpperCase()));
+          const querySnap = await getDocs(q);
+          if (!querySnap.empty) {
+            docSnap = querySnap.docs[0];
+            batchKey = docSnap.id;
+          }
+        } catch (_) {}
+      }
+
+      // 1c. Look up by batchKey field
+      if (!docSnap || !docSnap.exists()) {
+        try {
+          const q = query(collection(db, 'shared_timetables'), where('batchKey', '==', cleanInput.toLowerCase()));
+          const querySnap = await getDocs(q);
+          if (!querySnap.empty) {
+            docSnap = querySnap.docs[0];
+            batchKey = docSnap.id;
+          }
+        } catch (_) {}
+      }
+
+      // 1d. Fallback: Search all shared_timetables docs (case-insensitive match)
+      if (!docSnap || !docSnap.exists()) {
+        try {
+          const allDocs = await getDocs(collection(db, 'shared_timetables'));
+          const normalizedInput = cleanInput.toLowerCase();
+          for (const d of allDocs.docs) {
+            const dt = d.data();
+            const docIdNorm = d.id.toLowerCase();
+            const inviteCodeNorm = (dt.inviteCode || '').toLowerCase();
+            const batchKeyNorm = (dt.batchKey || '').toLowerCase();
+
+            if (docIdNorm === normalizedInput || inviteCodeNorm === normalizedInput || batchKeyNorm === normalizedInput) {
+              docSnap = d;
+              batchKey = d.id;
+              break;
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (!docSnap || !docSnap.exists()) {
         showToast('Batch Not Found', 'Could not locate batch with that code or identifier.', 'error');
         throw new Error('Batch not found');
       }
 
+      const docRef = doc(db, 'shared_timetables', batchKey);
       const data = docSnap.data();
       const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
-      const isCRorCreator = data.creatorId === user?.id || data.crUserIds?.includes(user?.id) || data.crEmails?.includes(userEmail);
-      const isDirectCodeMatch = cleanInput.toUpperCase() === data.inviteCode?.toUpperCase() || cleanInput === docSnap.id;
 
-      // Enforce Batch Passcode / Unique Code Verification
-      if (data.inviteCode && !isCRorCreator && !isDirectCodeMatch) {
-        if (!providedCode || providedCode.trim().toUpperCase() !== data.inviteCode.toUpperCase()) {
-          showToast('Invalid Batch Code', 'Please enter the official Batch Code given by your CR to join.', 'error');
-          throw new Error('Invalid batch passcode');
-        }
-      }
+      // Step 2: Cleanly OVERWRITE old timetable, subjects, events, exams, and tasks
+      const newSubjects = Array.isArray(data.subjects) ? data.subjects : [];
+      const newTimetable = Array.isArray(data.timetable) ? data.timetable : [];
+      const newEvents = Array.isArray(data.events) ? data.events : [];
+      const newExams = Array.isArray(data.exams) ? data.exams : [];
+      const newHomework = Array.isArray(data.homework) ? data.homework : [];
 
-      // Update local storage and React state
-      if (data.subjects) {
-        setSubjectsState(data.subjects);
-        storage.setSubjects(data.subjects);
-      }
-      if (data.timetable) {
-        setTimetableState(data.timetable);
-        storage.setTimetable(data.timetable);
-      }
-      if (data.events) {
-        setEventsState(data.events);
-        storage.setEvents(data.events);
-      }
-      if (data.exams) {
-        setExamsState(data.exams);
-        storage.setExams(data.exams);
+      setSubjectsState(newSubjects);
+      storage.setSubjects(newSubjects);
+
+      setTimetableState(newTimetable);
+      storage.setTimetable(newTimetable);
+
+      setEventsState(newEvents);
+      storage.setEvents(newEvents);
+
+      setExamsState(newExams);
+      storage.setExams(newExams);
+
+      if (newHomework.length > 0) {
+        setHomeworkState(newHomework);
+        storage.setHomework(newHomework);
       }
 
       const assignedRole: AdminRole = profile.role === 'super_admin' || isUserSuperAdmin(profile, userEmail)
@@ -2125,6 +2173,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       setProfileState(updatedProfile);
       storage.setProfile(updatedProfile);
+      setCurrentBatchData(data);
 
       // Persist immediately to Firestore user record so snapshot listener never reverts
       if (user?.id) {
@@ -2132,39 +2181,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           const userRef = doc(db, 'users', user.id);
           const payloadToSave = sanitizeForFirestore({
             profile: updatedProfile,
-            subjects: data.subjects || subjects,
-            timetable: data.timetable || timetable,
-            events: data.events || events,
-            exams: data.exams || exams,
+            subjects: newSubjects,
+            timetable: newTimetable,
+            events: newEvents,
+            exams: newExams,
             lastUpdated: Date.now(),
           });
           await setDoc(userRef, payloadToSave, { merge: true });
           remoteStateString.current = JSON.stringify(payloadToSave);
-
-          // Clean up any older ghost records in Firestore for the same roll number or email
-          const currentRoll = (updatedProfile.rollNumber || '').trim().toLowerCase();
-          const currentEmail = (updatedProfile.email || userEmail).trim().toLowerCase();
-          if (currentRoll || currentEmail) {
-            const dupQuery = query(
-              collection(db, 'users'),
-              where('profile.batchKey', '==', batchKey),
-              where('profile.isBatchSynced', '==', true)
-            );
-            const dupSnap = await getDocs(dupQuery);
-            dupSnap.forEach((d) => {
-              if (d.id !== user.id) {
-                const dp = d.data().profile || {};
-                const rollMatch = currentRoll && dp.rollNumber && dp.rollNumber.trim().toLowerCase() === currentRoll;
-                const emailMatch = currentEmail && dp.email && dp.email.trim().toLowerCase() === currentEmail;
-                if (rollMatch || emailMatch) {
-                  updateDoc(doc(db, 'users', d.id), {
-                    'profile.isBatchSynced': false,
-                    'profile.batchKey': null,
-                  }).catch(() => {});
-                }
-              }
-            });
-          }
         } catch (saveErr) {
           console.warn('Error saving joined batch profile to user doc:', saveErr);
         }
@@ -2172,26 +2196,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       // Increment batch student counter in Firestore (best-effort, non-blocking)
       try {
-        const isFirstPerson = ((data.studentCount || 0) <= 0);
         const updatePayload: any = {
           studentCount: increment(1),
           lastActive: Date.now()
         };
-        if (isFirstPerson && !data.creatorId) {
-          updatePayload.creatorId = user?.id || 'anonymous';
-        }
         await updateDoc(docRef, updatePayload);
       } catch (countErr) {
         console.warn('Non-fatal: could not increment student count on batch doc:', countErr);
       }
 
+      // Clean pending invite from localStorage so it never re-triggers unexpectedly
+      try {
+        localStorage.removeItem('pending_join_invite');
+      } catch (_) {}
+
       const batchDisplay = targetCollege ? `${targetCollege} · ${targetBranch || 'Batch'} · Sem ${targetSemester}` : `Batch · Sem ${targetSemester}`;
       showToast('Synced with Batch', `Successfully joined ${batchDisplay}.`, 'success');
     } catch (e: any) {
       console.error('Error joining batch timetable:', e);
-      if (!e?.message?.includes('Invalid batch passcode')) {
-        showToast('Join Failed', 'Failed to connect to batch timetable.', 'error');
-      }
+      showToast('Join Failed', 'Could not connect to batch timetable. Please verify the code.', 'error');
       throw e;
     }
   };

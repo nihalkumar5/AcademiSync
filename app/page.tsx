@@ -545,15 +545,9 @@ export default function AppHome() {
                   <button
                     type="button"
                     onClick={async () => {
-                      if (!isSignedIn) {
-                        showToast('Login Required', 'Please log in or sign up to sync with your batch.', 'info');
-                        try {
-                          localStorage.setItem('pending_join_invite', inviteKey);
-                        } catch (_) {}
-                        setInviteModalOpen(false);
-                        router.push('/sign-in');
-                        return;
-                      }
+                      try {
+                        localStorage.setItem('pending_join_invite', inviteKey);
+                      } catch (_) {}
                       setInviteModalOpen(false);
                       await joinBatchTimetable(inviteKey);
                       if (typeof window !== 'undefined') {

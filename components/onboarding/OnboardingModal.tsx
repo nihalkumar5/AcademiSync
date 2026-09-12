@@ -92,26 +92,17 @@ export const OnboardingModal = () => {
       code = code.split('/').pop() || code;
     }
 
-    if (!isSignedIn) {
+    setIsJoiningCode(true);
+    try {
       try {
         localStorage.setItem('pending_join_invite', code);
       } catch (_) {}
-      showToast('Invite Saved', 'Please sign in to link your batch automatically.', 'info');
-      updateProfile({ onboardingCompleted: true });
-      setShowOnboarding(false);
-      return;
-    }
-
-    setIsJoiningCode(true);
-    try {
       await joinBatchTimetable(code);
       updateProfile({ onboardingCompleted: true });
-      showToast('Joined Batch!', 'You have been connected to the batch timetable.', 'success');
       setShowOnboarding(false);
     } catch (err: any) {
       console.error(err);
       setInviteError(true);
-      showToast('Invalid Code', 'Could not find a batch for this invite code.', 'error');
     } finally {
       setIsJoiningCode(false);
     }
