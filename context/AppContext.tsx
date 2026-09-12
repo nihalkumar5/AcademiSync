@@ -29,6 +29,7 @@ import {
   normalizeSection,
   extractCleanInviteCode,
   getTodayDateString,
+  normalizeIdList,
 } from '@/lib/timetableUtils';
 import { checkAndGenerateSmartNotifications } from '@/lib/notificationEngine';
 import confetti from 'canvas-confetti';
@@ -52,10 +53,26 @@ export const syncNativeStatusBar = async (isDark: boolean) => {
   }
 };
 
-// Helper to remove any undefined fields before writing to Firestore
+// Helper to remove any undefined fields before writing to Firestore while preserving FieldValue sentinels
 export function sanitizeForFirestore<T>(data: T): T {
   if (data === undefined) return null as any;
-  return JSON.parse(JSON.stringify(data));
+  if (data === null || typeof data !== 'object') return data;
+  // Preserve Firestore FieldValues (like arrayUnion, arrayRemove, increment, serverTimestamp)
+  if ('_methodName' in (data as any) || (data as any).constructor?.name === 'FieldValue') {
+    return data;
+  }
+  if (Array.isArray(data)) {
+    return data
+      .filter((item) => item !== undefined)
+      .map((item) => sanitizeForFirestore(item)) as any;
+  }
+  const clean: any = {};
+  for (const [key, value] of Object.entries(data)) {
+    if (value !== undefined) {
+      clean[key] = sanitizeForFirestore(value);
+    }
+  }
+  return clean;
 }
 
 export type ActiveView =
@@ -240,8 +257,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const isLegacyBatch = !currentBatchData?.crUserIds && !currentBatchData?.crEmails;
   const isPrimaryCreator = !!user && isLegacyBatch && (currentBatchData?.creatorId === user?.id || (currentBatchData?.creatorEmail && currentBatchData?.creatorEmail === userEmail));
   const isCoCR = !!user && (
-    (Array.isArray(currentBatchData?.crUserIds) && currentBatchData.crUserIds.includes(user?.id)) ||
-    (Array.isArray(currentBatchData?.crEmails) && currentBatchData.crEmails.includes(userEmail)) ||
+    (normalizeIdList(currentBatchData?.crUserIds).includes(user?.id)) ||
+    (normalizeIdList(currentBatchData?.crEmails).includes(userEmail)) ||
     profile.role === 'cr'
   );
   const isBatchCR = !!user && (profile.isBatchSynced ? (isSuperAdmin || isPrimaryCreator || isCoCR) : profile.role === 'cr');
@@ -2017,12 +2034,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const joinBatchTimetable = async (batchKeyOrCode: string, providedCode?: string, isSilent = false) => {
+    // Clean pending invite immediately so it never re-triggers unexpectedly on login
+    try {
+      localStorage.removeItem('pending_join_invite');
+    } catch (_) {}
+
     try {
       if (!batchKeyOrCode || typeof batchKeyOrCode !== 'string' || batchKeyOrCode.trim() === '' || batchKeyOrCode === 'null' || batchKeyOrCode === 'undefined') {
         return;
       }
 
-      const cleanInput = extractCleanInviteCode(batchKeyOrCode) || batchKeyOrCode.trim();
+      const rawInput = batchKeyOrCode.toString().trim().replace(/['"]/g, '');
+      const cleanInput = extractCleanInviteCode(rawInput) || rawInput;
       if (!cleanInput) {
         if (!isSilent) {
           showToast('Code Required', 'Please enter a valid batch code or invite link.', 'error');
@@ -2049,26 +2072,34 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       // 1b. Look up by inviteCode field (uppercase or as-is)
       if (!docSnap || !docSnap.exists()) {
-        try {
-          const q = query(collection(db, 'shared_timetables'), where('inviteCode', '==', cleanInput.toUpperCase()));
-          const querySnap = await getDocs(q);
-          if (!querySnap.empty) {
-            docSnap = querySnap.docs[0];
-            batchKey = docSnap.id;
-          }
-        } catch (_) {}
+        const inviteVariations = [cleanInput.toUpperCase(), cleanInput, cleanInput.toLowerCase()];
+        for (const codeVariant of inviteVariations) {
+          try {
+            const q = query(collection(db, 'shared_timetables'), where('inviteCode', '==', codeVariant));
+            const querySnap = await getDocs(q);
+            if (!querySnap.empty) {
+              docSnap = querySnap.docs[0];
+              batchKey = docSnap.id;
+              break;
+            }
+          } catch (_) {}
+        }
       }
 
       // 1c. Look up by batchKey field
       if (!docSnap || !docSnap.exists()) {
-        try {
-          const q = query(collection(db, 'shared_timetables'), where('batchKey', '==', cleanInput.toLowerCase()));
-          const querySnap = await getDocs(q);
-          if (!querySnap.empty) {
-            docSnap = querySnap.docs[0];
-            batchKey = docSnap.id;
-          }
-        } catch (_) {}
+        const keyVariations = [cleanInput.toLowerCase(), cleanInput, cleanInput.toUpperCase()];
+        for (const keyVariant of keyVariations) {
+          try {
+            const q = query(collection(db, 'shared_timetables'), where('batchKey', '==', keyVariant));
+            const querySnap = await getDocs(q);
+            if (!querySnap.empty) {
+              docSnap = querySnap.docs[0];
+              batchKey = docSnap.id;
+              break;
+            }
+          } catch (_) {}
+        }
       }
 
       // 1d. Fallback: Search all shared_timetables docs (case-insensitive match)
@@ -2079,10 +2110,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           for (const d of allDocs.docs) {
             const dt = d.data();
             const docIdNorm = d.id.toLowerCase();
-            const inviteCodeNorm = (dt.inviteCode || '').toLowerCase();
-            const batchKeyNorm = (dt.batchKey || '').toLowerCase();
+            const inviteCodeNorm = (dt.inviteCode || '').toString().toLowerCase();
+            const batchKeyNorm = (dt.batchKey || '').toString().toLowerCase();
 
-            if (docIdNorm === normalizedInput || inviteCodeNorm === normalizedInput || batchKeyNorm === normalizedInput || docIdNorm.includes(normalizedInput)) {
+            if (
+              docIdNorm === normalizedInput ||
+              inviteCodeNorm === normalizedInput ||
+              batchKeyNorm === normalizedInput ||
+              docIdNorm.includes(normalizedInput) ||
+              (inviteCodeNorm && inviteCodeNorm.length >= 4 && normalizedInput.includes(inviteCodeNorm))
+            ) {
               docSnap = d;
               batchKey = d.id;
               break;
@@ -2093,7 +2130,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       if (!docSnap || !docSnap.exists()) {
         if (!isSilent) {
-          showToast('Batch Not Found', 'Could not locate batch with that code or identifier.', 'error');
+          showToast('Batch Not Found', `Could not find any batch with code "${cleanInput}".`, 'error');
         }
         throw new Error('Batch not found');
       }
@@ -2108,6 +2145,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const newEvents = Array.isArray(data.events) ? data.events : [];
       const newExams = Array.isArray(data.exams) ? data.exams : [];
       const newHomework = Array.isArray(data.homework) ? data.homework : [];
+      const newCancelled = Array.isArray(data.cancelledSessions) ? data.cancelledSessions : [];
+      const newRescheduled = data.rescheduledSessions && typeof data.rescheduledSessions === 'object' ? data.rescheduledSessions : {};
+      const newExtra = data.extraSessions && typeof data.extraSessions === 'object' ? data.extraSessions : {};
 
       setSubjectsState(newSubjects);
       storage.setSubjects(newSubjects);
@@ -2121,14 +2161,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setExamsState(newExams);
       storage.setExams(newExams);
 
-      if (newHomework.length > 0) {
-        setHomeworkState(newHomework);
-        storage.setHomework(newHomework);
-      }
+      setHomeworkState(newHomework);
+      storage.setHomework(newHomework);
 
+      setCancelledSessionsState(newCancelled);
+      storage.setCancelledSessions(newCancelled);
+
+      setRescheduledSessionsState(newRescheduled);
+      storage.setRescheduledSessions(newRescheduled);
+
+      setExtraSessionsState(newExtra);
+      storage.setExtraSessions(newExtra);
+
+      // Safe CR and Admin check using normalizeIdList to prevent TypeError on object maps
+      const crUserIds = normalizeIdList(data.crUserIds);
+      const crEmails = normalizeIdList(data.crEmails);
+      const isUserCR = (!!user?.id && crUserIds.includes(user.id)) || (!!userEmail && crEmails.includes(userEmail));
       const assignedRole: AdminRole = profile.role === 'super_admin' || isUserSuperAdmin(profile, userEmail)
         ? 'super_admin' 
-        : (data.crUserIds?.includes(user?.id) || data.crEmails?.includes(userEmail) ? 'cr' : 'student');
+        : (isUserCR ? 'cr' : 'student');
 
       // Key fallback helper in case direct document fields are partial
       const extractFromKey = (k?: string) => {
@@ -2188,6 +2239,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setProfileState(updatedProfile);
       storage.setProfile(updatedProfile);
       setCurrentBatchData(data);
+      refreshCarryItems(newTimetable, newSubjects, newEvents, settings, newExtra);
 
       // Persist immediately to Firestore user record so snapshot listener never reverts
       if (user?.id) {
@@ -2199,6 +2251,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             timetable: newTimetable,
             events: newEvents,
             exams: newExams,
+            homework: newHomework,
+            cancelledSessions: newCancelled,
+            rescheduledSessions: newRescheduled,
+            extraSessions: newExtra,
             lastUpdated: Date.now(),
           });
           await setDoc(userRef, payloadToSave, { merge: true });
@@ -2219,16 +2275,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         console.warn('Non-fatal: could not increment student count on batch doc:', countErr);
       }
 
-      // Clean pending invite from localStorage so it never re-triggers unexpectedly
-      try {
-        localStorage.removeItem('pending_join_invite');
-      } catch (_) {}
-
       const batchDisplay = targetCollege ? `${targetCollege} · ${targetBranch || 'Batch'} · Sem ${targetSemester}` : `Batch · Sem ${targetSemester}`;
       showToast('Synced with Batch', `Successfully joined ${batchDisplay}.`, 'success');
     } catch (e: any) {
       console.error('Error joining batch timetable:', e);
-      if (!isSilent) {
+      if (!isSilent && e?.message !== 'Batch not found' && e?.message !== 'Empty batch code') {
         showToast('Join Failed', 'Could not connect to batch timetable. Please verify the code.', 'error');
       }
       throw e;

@@ -5,6 +5,7 @@ import { shareLink } from '@/lib/shareUtils';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
+import { normalizeIdList } from '@/lib/timetableUtils';
 import { collection, onSnapshot, doc, updateDoc, increment, query, where, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Modal } from '@/components/ui/Modal';
@@ -164,8 +165,8 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
 
   const isLegacyBatch = !batchData?.crUserIds && !batchData?.crEmails;
   const isPrimaryCreator = isLegacyBatch && (batchData?.creatorId === user?.id || (batchData?.creatorEmail && batchData?.creatorEmail === userEmail));
-  const isCoCR = (Array.isArray(batchData?.crUserIds) && batchData.crUserIds.includes(user?.id)) || 
-                 (Array.isArray(batchData?.crEmails) && batchData.crEmails.includes(userEmail)) || 
+  const isCoCR = (normalizeIdList(batchData?.crUserIds).includes(user?.id)) || 
+                 (normalizeIdList(batchData?.crEmails).includes(userEmail)) || 
                  profile.role === 'cr';
   const isAuthorizedCR = isSuperAdmin || isPrimaryCreator || isCoCR;
 
@@ -177,8 +178,8 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
       ids.includes(batchData?.creatorId) || 
       (batchData?.creatorEmail && emails.includes(batchData.creatorEmail.toLowerCase()))
     );
-    const inCRUserIds = Array.isArray(batchData?.crUserIds) && batchData.crUserIds.some((id: string) => ids.includes(id));
-    const inCREmails = Array.isArray(batchData?.crEmails) && batchData.crEmails.some((e: string) => emails.includes(String(e || '').toLowerCase()));
+    const inCRUserIds = normalizeIdList(batchData?.crUserIds).some((id: string) => ids.includes(id));
+    const inCREmails = normalizeIdList(batchData?.crEmails).some((e: string) => emails.includes(String(e || '').toLowerCase()));
 
     return isCreator || inCRUserIds || inCREmails || m.profile?.role === 'cr';
   };
@@ -211,8 +212,8 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
     try {
       const batchDocRef = doc(db, 'shared_timetables', batchKey);
       if (currentIsCR) {
-        const otherCRs = (batchData?.crUserIds || []).filter((id: string) => !ids.includes(id));
-        const otherCREmails = (batchData?.crEmails || []).filter((e: string) => !emails.includes(e));
+        const otherCRs = normalizeIdList(batchData?.crUserIds).filter((id: string) => !ids.includes(id));
+        const otherCREmails = normalizeIdList(batchData?.crEmails).filter((e: string) => !emails.includes(e));
         const primaryRemains = isLegacyBatch && batchData?.creatorId && !ids.includes(batchData?.creatorId);
         if (!primaryRemains && otherCRs.length === 0 && otherCREmails.length === 0) {
           showToast('Cannot Demote', 'Batch must have at least one Batch Pilot. Promote another student first.', 'error');
@@ -252,8 +253,8 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
 
   const handleWithdrawSelfAsCR = async () => {
     if (!batchKey) return;
-    const otherCRs = (batchData?.crUserIds || []).filter((id: string) => id !== user?.id);
-    const otherCREmails = (batchData?.crEmails || []).filter((e: string) => e !== userEmail);
+    const otherCRs = normalizeIdList(batchData?.crUserIds).filter((id: string) => id !== user?.id);
+    const otherCREmails = normalizeIdList(batchData?.crEmails).filter((e: string) => e !== userEmail);
     const primaryRemains = isLegacyBatch && batchData?.creatorId && batchData?.creatorId !== user?.id;
 
     if (!primaryRemains && otherCRs.length === 0 && otherCREmails.length === 0) {

@@ -916,3 +916,23 @@ export const extractCleanInviteCode = (input: string): string => {
   }
   return fallback || str;
 };
+
+/**
+ * Normalizes an unknown value (array, corrupted Firestore FieldValue map, or single string)
+ * into a clean string array of IDs or emails.
+ */
+export const normalizeIdList = (input: any): string[] => {
+  if (!input) return [];
+  if (Array.isArray(input)) {
+    return input.map((x) => (typeof x === 'string' ? x : (x?.stringValue || ''))).filter(Boolean);
+  }
+  if (typeof input === 'object') {
+    if (Array.isArray(input._r)) {
+      return input._r.map((x: any) => (typeof x === 'string' ? x : (x?.stringValue || ''))).filter(Boolean);
+    }
+    if (Array.isArray(input.values)) {
+      return input.values.map((x: any) => (typeof x === 'string' ? x : (x?.stringValue || ''))).filter(Boolean);
+    }
+  }
+  return [];
+};

@@ -545,9 +545,6 @@ export default function AppHome() {
                   <button
                     type="button"
                     onClick={async () => {
-                      try {
-                        localStorage.setItem('pending_join_invite', inviteKey);
-                      } catch (_) {}
                       setInviteModalOpen(false);
                       await joinBatchTimetable(inviteKey);
                       if (typeof window !== 'undefined') {

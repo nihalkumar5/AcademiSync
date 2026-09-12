@@ -65,7 +65,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
         if (pending) {
           try {
             localStorage.removeItem('pending_join_invite');
-            await joinBatchTimetable(pending);
+            await joinBatchTimetable(pending, undefined, true);
           } catch (err) {
             logServerError('AuthPage:JoinPendingInvite', err);
           }

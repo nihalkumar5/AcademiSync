@@ -45,7 +45,7 @@ export const OnboardingModal = () => {
 
       if (pendingInvite) {
         localStorage.removeItem('pending_join_invite');
-        joinBatchTimetable(pendingInvite)
+        joinBatchTimetable(pendingInvite, undefined, true)
           .then(() => updateProfile({ onboardingCompleted: true }))
           .catch((e) => console.warn('Auto invite join failed:', e));
       }

@@ -847,6 +847,13 @@ export const SettingsView: React.FC = () => {
                     >
                       Share Code
                     </button>
+                    <button 
+                      type="button"
+                      onClick={() => setShowDiscoveryModal(true)} 
+                      className="px-4 py-2 border border-[#D8D8D8] dark:border-white/[0.1] hover:border-[#111111] dark:hover:border-white text-[#111111] dark:text-[#F4F4F6] text-[11px] font-bold uppercase tracking-wider rounded-none transition-colors cursor-pointer"
+                    >
+                      Switch Batch
+                    </button>
                   </div>
                   <button 
                     onClick={() => setShowBatchSettingsModal(true)} 

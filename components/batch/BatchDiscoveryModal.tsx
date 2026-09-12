@@ -35,14 +35,11 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
 
     setIsJoining(true);
     try {
-      try {
-        localStorage.setItem('pending_join_invite', code);
-      } catch (_) {}
       await joinBatchTimetable(code);
       setInviteCodeInput('');
       onClose();
     } catch (e) {
-      console.error(e);
+      console.error('BatchDiscoveryModal join error:', e);
     } finally {
       setIsJoining(false);
     }
