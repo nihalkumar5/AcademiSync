@@ -16,7 +16,9 @@ service cloud.firestore {
         request.auth.token.email in [
           'nihalkumar@iiitnr.edu.in',
           'nihalkumar538@gmail.com',
-          'nihal88758@gmail.com'
+          'nihal88758@gmail.com',
+          'nihal26302@iiitnr.edu.in',
+          'kumarnihal829@gmail.com'
         ]
       );
     }

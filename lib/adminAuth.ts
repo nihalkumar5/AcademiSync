@@ -6,6 +6,8 @@ export const SUPER_ADMIN_EMAILS = [
   'nihal88758@gmail.com',
   'nihalkumar538@gmail.com',
   'nihalkumar@iiitnr.edu.in',
+  'nihal26302@iiitnr.edu.in',
+  'kumarnihal829@gmail.com',
   ...(process.env.NEXT_PUBLIC_ADMIN_EMAILS ? process.env.NEXT_PUBLIC_ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase()) : [])
 ];
 

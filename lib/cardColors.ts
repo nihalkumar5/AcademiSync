@@ -293,10 +293,16 @@ export function getHarmonicColorForSubject(subject: {
 /**
  * Assigns harmonic non-colliding colors across an entire array of subjects
  */
-export function autoAssignHarmonicColorsToSubjects<T extends { name: string; code?: string; isLab?: boolean; color?: string }>(subjects: T[]): T[] {
+export function autoAssignHarmonicColorsToSubjects<T extends { name: string; code?: string; isLab?: boolean; color?: string; isCustomColor?: boolean }>(subjects: T[]): T[] {
   const usedColors: string[] = [];
 
   return subjects.map((sub) => {
+    // If subject was explicitly customized by user, NEVER override it
+    if (sub.isCustomColor && sub.color && sub.color.trim()) {
+      usedColors.push(sub.color);
+      return sub;
+    }
+
     // If subject has a legacy dull default color (e.g. #000000, muddy slate #7c897a, etc.)
     const cleanCol = (sub.color || '').toLowerCase().trim();
     const isLegacyDefault = !cleanCol || ['#000000', '#7c897a', '#7a8b99', '#9c8e80', '#b88b8c', '#c79f6f', '#c08a76', '#71717a'].includes(cleanCol);

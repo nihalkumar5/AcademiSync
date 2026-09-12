@@ -131,6 +131,8 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
       syllabusLink: syllabusLink.trim() || undefined,
       notes: notes.trim() || undefined,
       carryRequirements: carryReqs,
+      isCustomColor: true,
+      isCustomRoom: true,
     };
 
     if (subjectToEdit) {

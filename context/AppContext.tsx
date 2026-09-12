@@ -252,16 +252,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const isFirstBatchSnapshot = useRef(true);
 
   // Authority & CR verification for current batch
-  const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
+  const userEmail = (user?.primaryEmailAddress?.emailAddress || profile.email || '').trim().toLowerCase();
   const isSuperAdmin = !!user && isUserSuperAdmin(profile, userEmail);
-  const isLegacyBatch = !currentBatchData?.crUserIds && !currentBatchData?.crEmails;
-  const isPrimaryCreator = !!user && isLegacyBatch && (currentBatchData?.creatorId === user?.id || (currentBatchData?.creatorEmail && currentBatchData?.creatorEmail === userEmail));
-  const isCoCR = !!user && (
+  const isPrimaryCreator = !!user && !!currentBatchData && (
+    currentBatchData?.creatorId === user?.id || 
+    (currentBatchData?.creatorEmail && currentBatchData?.creatorEmail.toLowerCase() === userEmail)
+  );
+  const isCoCR = !!user && !!currentBatchData && (
     (normalizeIdList(currentBatchData?.crUserIds).includes(user?.id)) ||
-    (normalizeIdList(currentBatchData?.crEmails).includes(userEmail)) ||
+    (normalizeIdList(currentBatchData?.crEmails).map((e: string) => e.toLowerCase()).includes(userEmail)) ||
     profile.role === 'cr'
   );
-  const isBatchCR = !!user && (profile.isBatchSynced ? (isSuperAdmin || isPrimaryCreator || isCoCR) : profile.role === 'cr');
+  const isBatchCR = !!user && (isSuperAdmin || profile.role === 'super_admin' || profile.role === 'cr' || isPrimaryCreator || isCoCR);
 
   // Handle User Logout / Switch Account Cleanup
   useEffect(() => {
@@ -384,8 +386,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             return mergedProfile;
           });
         }
-        if (data.subjects) { setSubjectsState(data.subjects); storage.setSubjects(data.subjects); }
-        if (data.timetable) { setTimetableState(data.timetable); storage.setTimetable(data.timetable); }
+        const localLastUpdated = typeof window !== 'undefined' ? Number(window.localStorage.getItem('iiitnr_last_updated') || '0') : 0;
+        const isRemoteNewerOrEqual = !localLastUpdated || !data.lastUpdated || Number(data.lastUpdated) >= localLastUpdated;
+
+        if (isRemoteNewerOrEqual) {
+          if (data.subjects) { setSubjectsState(data.subjects); storage.setSubjects(data.subjects); }
+          if (data.timetable) { setTimetableState(data.timetable); storage.setTimetable(data.timetable); }
+        }
         if (data.homework) { setHomeworkState(data.homework); storage.setHomework(data.homework); }
         if (data.carryItems) { setCarryItemsState(data.carryItems); storage.setCarryItems(data.carryItems); }
         if (data.notifications) { setNotificationsState(data.notifications); storage.setNotifications(data.notifications); }
@@ -485,19 +492,100 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       setCurrentBatchData(data);
 
-      // ── Sync timetable & related data ────────────────────────────────────────
+      // ── Sync timetable & related data with Personal-Level Override Protection ────────────────
       let updatedSubs = subjects;
       let updatedTt = timetable;
 
       if (Array.isArray(data.subjects)) {
-        updatedSubs = data.subjects;
-        setSubjectsState(data.subjects);
-        storage.setSubjects(data.subjects);
+        setSubjectsState((prevSubs) => {
+          const currentList = prevSubs && prevSubs.length > 0 ? prevSubs : storage.getSubjects();
+          const merged: Subject[] = data.subjects.map((bSub: Subject) => {
+            const local = currentList.find((s) => 
+              s.id === bSub.id || 
+              (s.code && bSub.code && s.code.trim().toUpperCase() === bSub.code.trim().toUpperCase()) ||
+              s.name.trim().toLowerCase() === bSub.name.trim().toLowerCase()
+            );
+            if (!local) return bSub;
+
+            // Preserve personal customizations (preferred color, personal room override, personal notes)
+            const isPersonalColor = local.isCustomColor || (local.color && local.color !== bSub.color);
+            const isPersonalRoom = local.isCustomRoom || (local.room && local.room !== bSub.room);
+
+            return {
+              ...bSub,
+              id: local.id || bSub.id,
+              color: isPersonalColor ? local.color : bSub.color,
+              isCustomColor: local.isCustomColor || isPersonalColor || false,
+              room: isPersonalRoom ? local.room : (bSub.room || local.room),
+              labRoom: isPersonalRoom ? (local.labRoom || local.room) : (bSub.labRoom || bSub.room || local.labRoom),
+              isCustomRoom: local.isCustomRoom || isPersonalRoom || false,
+              driveLink: local.driveLink || bSub.driveLink,
+              syllabusLink: local.syllabusLink || bSub.syllabusLink,
+              notes: local.notes || bSub.notes,
+              carryRequirements: (local.carryRequirements && local.carryRequirements.length > 0) 
+                ? local.carryRequirements 
+                : (bSub.carryRequirements || []),
+            };
+          });
+
+          // Also preserve personal subjects created by user that are not in the official batch
+          const personalSubs = currentList.filter((s) => 
+            !data.subjects.some((b: Subject) => 
+              b.id === s.id || 
+              (b.code && s.code && b.code.trim().toUpperCase() === s.code.trim().toUpperCase()) ||
+              b.name.trim().toLowerCase() === s.name.trim().toLowerCase()
+            )
+          );
+
+          const finalSubs = [...merged, ...personalSubs];
+          updatedSubs = finalSubs;
+          storage.setSubjects(finalSubs);
+          return finalSubs;
+        });
       }
+
       if (Array.isArray(data.timetable)) {
-        updatedTt = data.timetable;
-        setTimetableState(data.timetable);
-        storage.setTimetable(data.timetable);
+        setTimetableState((prevTt) => {
+          const currentList = prevTt && prevTt.length > 0 ? prevTt : storage.getTimetable();
+          const merged: ClassSession[] = data.timetable.map((bSess: ClassSession) => {
+            const local = currentList.find((s) => 
+              s.id === bSess.id || 
+              (s.day === bSess.day && s.startTime === bSess.startTime && s.subjectId === bSess.subjectId)
+            );
+            if (!local) return bSess;
+
+            // Preserve personal session room, personal custom times, personal notes
+            const isPersonalRoom = local.isCustomRoom || (local.room && local.room !== bSess.room);
+            const isPersonalTime = local.isCustomTime;
+
+            return {
+              ...bSess,
+              id: local.id || bSess.id,
+              room: isPersonalRoom ? local.room : (bSess.room || local.room),
+              isCustomRoom: local.isCustomRoom || isPersonalRoom || false,
+              startTime: isPersonalTime ? local.startTime : bSess.startTime,
+              endTime: isPersonalTime ? local.endTime : bSess.endTime,
+              isCustomTime: local.isCustomTime || false,
+              faculty: (local.faculty && local.faculty !== bSess.faculty) ? local.faculty : (bSess.faculty || local.faculty),
+              notes: local.notes || bSess.notes,
+              isPersonal: local.isPersonal || false,
+            };
+          });
+
+          // Also preserve personal extra sessions added by the user
+          const personalSessions = currentList.filter((s) => 
+            s.isPersonal || 
+            !data.timetable.some((b: ClassSession) => 
+              b.id === s.id || 
+              (b.day === s.day && b.startTime === s.startTime && b.subjectId === s.subjectId)
+            )
+          );
+
+          const finalTt = [...merged, ...personalSessions];
+          updatedTt = finalTt;
+          storage.setTimetable(finalTt);
+          return finalTt;
+        });
       }
       if (Array.isArray(data.events)) {
         setEventsState(data.events);
@@ -1081,22 +1169,83 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const newSub: Subject = {
       ...subjectData,
       color: chosenColor,
+      isCustomColor: !isLegacyDefault && !!subjectData.color,
+      isCustomRoom: true,
       id: `sub_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
     };
     const updated = [...subjects, newSub];
     setSubjectsState(updated);
     storage.setSubjects(updated);
     refreshCarryItems(timetable, updated);
+
+    // Save to user's personal cloud document immediately
+    const now = Date.now();
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('iiitnr_last_updated', now.toString());
+    }
+    if (user?.id) {
+      const userRef = doc(db, 'users', user.id);
+      setDoc(userRef, {
+        subjects: sanitizeForFirestore(updated),
+        lastUpdated: now,
+      }, { merge: true }).catch((e) => console.error('Error saving new subject to personal cloud:', e));
+    }
+
     syncCRChangesToBatch(timetable, updated);
     return newSub;
   };
 
   const updateSubject = (id: string, partial: Partial<Subject>) => {
-    const updated = subjects.map((s) => (s.id === id ? { ...s, ...partial } : s));
+    const updated = subjects.map((s) => {
+      if (s.id !== id) return s;
+      const hasNewColor = partial.color !== undefined && partial.color !== s.color;
+      const hasNewRoom = (partial.room !== undefined && partial.room !== s.room) || (partial.labRoom !== undefined && partial.labRoom !== s.labRoom);
+      return {
+        ...s,
+        ...partial,
+        isCustomColor: partial.isCustomColor !== undefined ? partial.isCustomColor : (s.isCustomColor || hasNewColor || false),
+        isCustomRoom: partial.isCustomRoom !== undefined ? partial.isCustomRoom : (s.isCustomRoom || hasNewRoom || false),
+      };
+    });
     setSubjectsState(updated);
     storage.setSubjects(updated);
-    refreshCarryItems(timetable, updated);
-    syncCRChangesToBatch(timetable, updated);
+
+    // If room, labRoom, or faculty was updated in subject, update corresponding timetable sessions too
+    let updatedTt = timetable;
+    if (partial.room !== undefined || partial.labRoom !== undefined || partial.facultyName !== undefined) {
+      updatedTt = timetable.map((sess) => {
+        if (sess.subjectId !== id) return sess;
+        const newRoom = sess.isLab 
+          ? (partial.labRoom || partial.room || sess.room)
+          : (partial.room || sess.room);
+        return {
+          ...sess,
+          room: newRoom,
+          isCustomRoom: true,
+          faculty: partial.facultyName || sess.faculty,
+        };
+      });
+      setTimetableState(updatedTt);
+      storage.setTimetable(updatedTt);
+    }
+
+    refreshCarryItems(updatedTt, updated);
+
+    // Immediately persist to user's personal cloud document
+    const now = Date.now();
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('iiitnr_last_updated', now.toString());
+    }
+    if (user?.id) {
+      const userRef = doc(db, 'users', user.id);
+      setDoc(userRef, {
+        subjects: sanitizeForFirestore(updated),
+        timetable: sanitizeForFirestore(updatedTt),
+        lastUpdated: now,
+      }, { merge: true }).catch((e) => console.error('Error saving subject edit to personal cloud:', e));
+    }
+
+    syncCRChangesToBatch(updatedTt, updated);
   };
 
   const deleteSubject = (id: string) => {
@@ -1107,6 +1256,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     storage.setSubjects(updatedSubs);
     storage.setTimetable(updatedTimetable);
     refreshCarryItems(updatedTimetable, updatedSubs);
+
+    const now = Date.now();
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('iiitnr_last_updated', now.toString());
+    }
+    if (user?.id) {
+      const userRef = doc(db, 'users', user.id);
+      setDoc(userRef, {
+        subjects: sanitizeForFirestore(updatedSubs),
+        timetable: sanitizeForFirestore(updatedTimetable),
+        lastUpdated: now,
+      }, { merge: true }).catch((e) => console.error('Error saving subject deletion to personal cloud:', e));
+    }
+
     syncCRChangesToBatch(updatedTimetable, updatedSubs);
   };
 
@@ -1147,20 +1310,53 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const newSession: ClassSession = {
       ...sessionData,
       id: `sess_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      isCustomRoom: true,
+      isPersonal: true,
     };
     const updated = [...timetable, newSession];
     setTimetableState(updated);
     storage.setTimetable(updated);
     refreshCarryItems(updated, subjects);
+
+    const now = Date.now();
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('iiitnr_last_updated', now.toString());
+    }
+    if (user?.id) {
+      const userRef = doc(db, 'users', user.id);
+      setDoc(userRef, {
+        timetable: sanitizeForFirestore(updated),
+        lastUpdated: now,
+      }, { merge: true }).catch((e) => console.error('Error saving class addition to personal cloud:', e));
+    }
+
     syncCRChangesToBatch(updated, subjects);
     showToast('Class Added', `${sessionData.startTime} - ${sessionData.endTime} scheduled`, 'success');
   };
 
   const updateClassSession = (id: string, partial: Partial<ClassSession>) => {
-    const updated = timetable.map((s) => (s.id === id ? { ...s, ...partial } : s));
+    const updated = timetable.map((s) => (s.id === id ? { 
+      ...s, 
+      ...partial, 
+      isCustomRoom: partial.room !== undefined ? true : s.isCustomRoom,
+      isCustomTime: (partial.startTime !== undefined || partial.endTime !== undefined) ? true : s.isCustomTime,
+    } : s));
     setTimetableState(updated);
     storage.setTimetable(updated);
     refreshCarryItems(updated, subjects);
+
+    const now = Date.now();
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('iiitnr_last_updated', now.toString());
+    }
+    if (user?.id) {
+      const userRef = doc(db, 'users', user.id);
+      setDoc(userRef, {
+        timetable: sanitizeForFirestore(updated),
+        lastUpdated: now,
+      }, { merge: true }).catch((e) => console.error('Error saving timetable edit to personal cloud:', e));
+    }
+
     syncCRChangesToBatch(updated, subjects);
     showToast('Class Updated', 'Session details saved', 'success');
   };
@@ -1170,6 +1366,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimetableState(updated);
     storage.setTimetable(updated);
     refreshCarryItems(updated, subjects);
+
+    const now = Date.now();
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('iiitnr_last_updated', now.toString());
+    }
+    if (user?.id) {
+      const userRef = doc(db, 'users', user.id);
+      setDoc(userRef, {
+        timetable: sanitizeForFirestore(updated),
+        lastUpdated: now,
+      }, { merge: true }).catch((e) => console.error('Error saving class removal to personal cloud:', e));
+    }
+
     syncCRChangesToBatch(updated, subjects);
     showToast('Class Removed', 'Session deleted from schedule', 'info');
   };

@@ -77,6 +77,8 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
         room,
         faculty: faculty.trim() || undefined,
         isLab,
+        isCustomRoom: true,
+        isCustomTime: true,
       });
     } else {
       addClassSession({
@@ -87,6 +89,9 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
         room,
         faculty: faculty.trim() || undefined,
         isLab,
+        isCustomRoom: true,
+        isCustomTime: true,
+        isPersonal: true,
       });
     }
     onClose();

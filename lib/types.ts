@@ -41,6 +41,8 @@ export interface Subject {
   notes?: string;
   driveLink?: string;
   syllabusLink?: string;
+  isCustomColor?: boolean;
+  isCustomRoom?: boolean;
 }
 
 export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
@@ -58,6 +60,9 @@ export interface ClassSession {
   isExtra?: boolean;
   date?: string;
   by?: string;
+  isCustomRoom?: boolean;
+  isCustomTime?: boolean;
+  isPersonal?: boolean;
 }
 
 export interface ExtraClassSession {
