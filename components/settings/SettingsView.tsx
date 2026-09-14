@@ -897,34 +897,23 @@ export const SettingsView: React.FC = () => {
 
                 {/* Class Join Passcode - INSIDE the card, visible only to CR / Admins */}
                 {isBatchCR && currentBatchData?.inviteCode && (
-                  <div className="flex items-center justify-between p-3 bg-white dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.08]">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between p-3.5 bg-white dark:bg-[#0B0C0E] border border-[#E5E5E5] dark:border-white/[0.08]">
+                    <div className="flex items-center gap-2.5">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#94A3B8]">BATCH CODE:</span>
                       <span className="text-[14px] font-mono font-bold tracking-[2px] text-[#111111] dark:text-[#F4F4F6] select-all">
                         {currentBatchData.inviteCode}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          navigator.clipboard.writeText(currentBatchData.inviteCode);
-                          showToast('Code Copied', `Batch code ${currentBatchData.inviteCode} copied to clipboard.`, 'success');
-                        }}
-                        className="px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider bg-[#111111] dark:bg-white text-white dark:text-[#090A0C] hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
-                      >
-                        Copy Code
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowRegenerateCodeModal(true)}
-                        title="Regenerate Batch Code"
-                        className="px-2 py-1 text-[10.5px] font-bold uppercase tracking-wider border border-[#D8D8D8] dark:border-white/[0.15] text-[#111111] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors cursor-pointer flex items-center gap-1"
-                      >
-                        <RefreshCw className="w-3 h-3" />
-                        <span>Regenerate</span>
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(currentBatchData.inviteCode);
+                        showToast('Code Copied', `Batch code ${currentBatchData.inviteCode} copied to clipboard.`, 'success');
+                      }}
+                      className="px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-wider bg-[#111111] dark:bg-white text-white dark:text-[#090A0C] hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                    >
+                      Copy Code
+                    </button>
                   </div>
                 )}
                 
@@ -1648,16 +1637,25 @@ export const SettingsView: React.FC = () => {
         isOpen={showBatchSettingsModal}
         onClose={() => { setShowBatchSettingsModal(false); setShowLeaveConfirm(false); }}
         title="Batch Options"
+        description="Manage your class batch settings and permissions."
+        maxWidth="md"
       >
-        <div className="p-5 flex flex-col">
+        <div className="p-5 flex flex-col font-sans">
           {!showLeaveConfirm ? (
-            <>
+            <div className="flex flex-col divide-y divide-[#E5E5E5] dark:divide-white/[0.08]">
               <button 
                 onClick={() => { setShowBatchSettingsModal(false); setShowBatchMembersModal(true); }}
-                className="flex items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333] hover:opacity-70 transition-opacity text-left"
+                className="flex items-center justify-between py-3.5 hover:opacity-75 transition-opacity text-left cursor-pointer group"
               >
-                <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">View members</span>
-                <Users className="w-4 h-4 text-[#6F6F6F]" />
+                <div className="flex flex-col">
+                  <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+                    {isBatchCR ? 'Manage batch members' : 'View batch members'}
+                  </span>
+                  <span className="text-[11.5px] text-[#6F6F6F] dark:text-[#94A3B8]">
+                    See students and pilots in your branch
+                  </span>
+                </div>
+                <Users className="w-4 h-4 text-[#888888] dark:text-[#71717A]" />
               </button>
               
               <button 
@@ -1666,14 +1664,7 @@ export const SettingsView: React.FC = () => {
                   try {
                     const code = await shareTimetableWithBatch();
                     const batchTitle = `${profile.branch || 'Class'} (Sem ${profile.semester || ''})`;
-                    const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
-
-🔑 *Batch Code:* ${code}
-
-⚡ Realtime Class Cancellation & Reschedule Alerts
-📅 Live Exam Schedule, Room Numbers & Lab Sessions
-
-👉 Open Intersemester App → Tap *Connect Batch* → Enter Code: *${code}*`;
+                    const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*\n\n🔑 *Batch Code:* ${code}\n\n⚡ Realtime Class Cancellation & Reschedule Alerts\n📅 Live Exam Schedule, Room Numbers & Lab Sessions\n\n👉 Open Intersemester App → Tap *Connect Batch* → Enter Code: *${code}*`;
 
                     const res = await shareLink({
                       title: 'Join our Class Timetable',
@@ -1683,10 +1674,17 @@ export const SettingsView: React.FC = () => {
                     if (res === 'copied') showToast('Code Copied', `Batch code copied: ${code}`, 'success');
                   } catch (err) {}
                 }}
-                className="flex items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333] hover:opacity-70 transition-opacity text-left"
+                className="flex items-center justify-between py-3.5 hover:opacity-75 transition-opacity text-left cursor-pointer group"
               >
-                <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">Copy batch code</span>
-                <Share2 className="w-4 h-4 text-[#6F6F6F]" />
+                <div className="flex flex-col">
+                  <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+                    Copy batch code
+                  </span>
+                  <span className="text-[11.5px] text-[#6F6F6F] dark:text-[#94A3B8]">
+                    Copy invite code to share with classmates
+                  </span>
+                </div>
+                <Share2 className="w-4 h-4 text-[#888888] dark:text-[#71717A]" />
               </button>
 
               {isBatchCR && (
@@ -1695,24 +1693,40 @@ export const SettingsView: React.FC = () => {
                     setShowBatchSettingsModal(false);
                     setShowRegenerateCodeModal(true);
                   }}
-                  className="flex items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333] hover:opacity-70 transition-opacity text-left cursor-pointer"
+                  className="flex items-center justify-between py-3.5 hover:opacity-75 transition-opacity text-left cursor-pointer group"
                 >
                   <div className="flex flex-col">
-                    <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">Regenerate batch code</span>
-                    <span className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8]">Creates a new code; previous code expires</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+                        Regenerate batch code
+                      </span>
+                      <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-500/20 px-1.5 py-0.5 border border-amber-500/30">
+                        Pilot Only
+                      </span>
+                    </div>
+                    <span className="text-[11.5px] text-[#6F6F6F] dark:text-[#94A3B8]">
+                      Create a new 6-character code; previous code expires
+                    </span>
                   </div>
-                  <RefreshCw className="w-4 h-4 text-[#6F6F6F]" />
+                  <RefreshCw className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 </button>
               )}
 
               <button 
                 onClick={() => setShowLeaveConfirm(true)}
-                className="flex items-center justify-between py-4 hover:opacity-70 transition-opacity text-left mt-2"
+                className="flex items-center justify-between py-3.5 hover:opacity-75 transition-opacity text-left cursor-pointer group"
               >
-                <span className="text-[14px] font-bold text-red-600">Leave batch</span>
+                <div className="flex flex-col">
+                  <span className="text-[14px] font-bold text-red-600">
+                    Leave batch
+                  </span>
+                  <span className="text-[11.5px] text-red-600/70">
+                    Disconnect and revert to personal schedule
+                  </span>
+                </div>
                 <LogOut className="w-4 h-4 text-red-600" />
               </button>
-            </>
+            </div>
           ) : (
             <div className="flex flex-col gap-4">
               <div className="p-4 border border-red-600/30 bg-red-600/10 text-red-600 flex flex-col gap-2">
@@ -1771,14 +1785,27 @@ export const SettingsView: React.FC = () => {
       <Modal
         isOpen={showRegenerateCodeModal}
         onClose={() => setShowRegenerateCodeModal(false)}
-        title="Regenerate Batch Code?"
-        description="Generate a fresh invite code for your class batch."
+        title="Regenerate Batch Code"
+        description="Create a new invite code for your class batch."
+        maxWidth="md"
       >
         <div className="flex flex-col gap-4 p-1 text-left font-sans">
-          <div className="p-3.5 border border-amber-500/30 bg-amber-500/10 dark:bg-amber-500/[0.08] flex flex-col gap-1.5">
-            <span className="text-[12px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Important Notice</span>
-            <p className="text-[12.5px] text-[#111111] dark:text-[#F4F4F6] leading-relaxed">
-              A new 6-character code will replace <strong>{currentBatchData?.inviteCode}</strong>. Students who have already joined will remain in the batch, but any unjoined students will need the new code.
+          <div className="p-3.5 bg-black/[0.02] dark:bg-white/[0.03] border border-[#E5E5E5] dark:border-white/[0.08] flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#94A3B8]">CURRENT CODE</span>
+              <span className="text-[16px] font-mono font-bold tracking-[2.5px] text-[#111111] dark:text-[#FFFFFF]">
+                {currentBatchData?.inviteCode || '------'}
+              </span>
+            </div>
+            <div className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider">
+              Will Expire
+            </div>
+          </div>
+
+          <div className="p-3.5 border border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/[0.06] flex flex-col gap-1">
+            <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">How this works</span>
+            <p className="text-[12px] text-[#6F6F6F] dark:text-[#94A3B8] leading-relaxed">
+              A new official 6-character code will be generated immediately. Existing students who already joined will stay in the batch, but any new students must use the new code.
             </p>
           </div>
 
