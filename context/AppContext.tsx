@@ -152,6 +152,7 @@ export interface AppContextType {
   fetchCollegeBatches: (college: string) => Promise<any[]>;
   joinBatchTimetable: (batchKey: string, providedCode?: string, isSilent?: boolean) => Promise<void>;
   shareTimetableWithBatch: () => Promise<string>;
+  regenerateBatchCode: () => Promise<string>;
   disconnectBatchTimetable: () => Promise<void>;
   shareCalendarWithBatch: () => Promise<string>;
   joinSharedCalendar: (calendarKey: string) => Promise<void>;
@@ -2686,6 +2687,56 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const regenerateBatchCode = async (): Promise<string> => {
+    const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
+    const userIsAdmin = isUserSuperAdmin(profile, userEmail);
+    const isAuthorizedPilot = isBatchCR || profile.role === 'cr' || profile.role === 'super_admin' || userIsAdmin;
+
+    if (!isAuthorizedPilot) {
+      showToast('Pilot Access Required', 'Only verified Batch Pilots can regenerate the batch invite code.', 'error');
+      throw new Error('Unauthorized: Only verified Batch Pilots can regenerate invite code.');
+    }
+
+    const effectiveKey = currentBatchData?.id || profile.batchKey;
+    if (!effectiveKey) {
+      showToast('No Active Batch', 'You must be connected to an active batch to regenerate its code.', 'error');
+      throw new Error('No active batch key found');
+    }
+
+    try {
+      let docRef = doc(db, 'shared_timetables', effectiveKey);
+      let snap = await getDoc(docRef);
+
+      // Fallback to profile.batchKey if effectiveKey doc wasn't found
+      if (!snap.exists() && profile.batchKey && profile.batchKey !== effectiveKey) {
+        docRef = doc(db, 'shared_timetables', profile.batchKey);
+        snap = await getDoc(docRef);
+      }
+
+      if (!snap.exists()) {
+        showToast('Batch Not Found', 'Could not locate batch record in database.', 'error');
+        throw new Error('Batch record not found');
+      }
+
+      const newCode = generateInviteCode();
+
+      await updateDoc(docRef, {
+        inviteCode: newCode,
+        updatedAt: new Date().toISOString(),
+      });
+
+      // Update state immediately
+      setCurrentBatchData((prev: any) => prev ? { ...prev, inviteCode: newCode } : prev);
+
+      showToast('Batch Code Regenerated', `New official batch code: ${newCode}`, 'success');
+      return newCode;
+    } catch (e) {
+      console.error('Error regenerating batch code:', e);
+      showToast('Regeneration Failed', 'Failed to regenerate batch code. Please check connection.', 'error');
+      throw e;
+    }
+  };
+
   const disconnectBatchTimetable = async () => {
     const oldBatchKey = profile.batchKey;
     const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
@@ -3236,6 +3287,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         fetchCollegeBatches,
         joinBatchTimetable,
         shareTimetableWithBatch,
+        regenerateBatchCode,
         disconnectBatchTimetable,
         toastMessage,
         showToast,

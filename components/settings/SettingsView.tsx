@@ -70,6 +70,7 @@ export const SettingsView: React.FC = () => {
     searchBatchTimetable,
     joinBatchTimetable,
     shareTimetableWithBatch,
+    regenerateBatchCode,
     disconnectBatchTimetable,
   } = useApp();
 
@@ -94,6 +95,8 @@ export const SettingsView: React.FC = () => {
   const [pendingBatchKey, setPendingBatchKey] = useState<string | null>(null);
   const [matchedBatchData, setMatchedBatchData] = useState<any>(null);
   const [showDiscoveryModal, setShowDiscoveryModal] = useState(false);
+  const [showRegenerateCodeModal, setShowRegenerateCodeModal] = useState(false);
+  const [isRegeneratingCode, setIsRegeneratingCode] = useState(false);
 
   // Verification status logic
   const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || email || '';
@@ -901,16 +904,27 @@ export const SettingsView: React.FC = () => {
                         {currentBatchData.inviteCode}
                       </span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(currentBatchData.inviteCode);
-                        showToast('Code Copied', `Batch code ${currentBatchData.inviteCode} copied to clipboard.`, 'success');
-                      }}
-                      className="px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider bg-[#111111] dark:bg-white text-white dark:text-[#090A0C] hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
-                    >
-                      Copy Code
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(currentBatchData.inviteCode);
+                          showToast('Code Copied', `Batch code ${currentBatchData.inviteCode} copied to clipboard.`, 'success');
+                        }}
+                        className="px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider bg-[#111111] dark:bg-white text-white dark:text-[#090A0C] hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                      >
+                        Copy Code
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowRegenerateCodeModal(true)}
+                        title="Regenerate Batch Code"
+                        className="px-2 py-1 text-[10.5px] font-bold uppercase tracking-wider border border-[#D8D8D8] dark:border-white/[0.15] text-[#111111] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors cursor-pointer flex items-center gap-1"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        <span>Regenerate</span>
+                      </button>
+                    </div>
                   </div>
                 )}
                 
@@ -1675,6 +1689,22 @@ export const SettingsView: React.FC = () => {
                 <Share2 className="w-4 h-4 text-[#6F6F6F]" />
               </button>
 
+              {isBatchCR && (
+                <button 
+                  onClick={() => {
+                    setShowBatchSettingsModal(false);
+                    setShowRegenerateCodeModal(true);
+                  }}
+                  className="flex items-center justify-between py-4 border-b border-[#D8D8D8] dark:border-[#333333] hover:opacity-70 transition-opacity text-left cursor-pointer"
+                >
+                  <div className="flex flex-col">
+                    <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">Regenerate batch code</span>
+                    <span className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8]">Creates a new code; previous code expires</span>
+                  </div>
+                  <RefreshCw className="w-4 h-4 text-[#6F6F6F]" />
+                </button>
+              )}
+
               <button 
                 onClick={() => setShowLeaveConfirm(true)}
                 className="flex items-center justify-between py-4 hover:opacity-70 transition-opacity text-left mt-2"
@@ -1736,6 +1766,62 @@ export const SettingsView: React.FC = () => {
         branch={branch}
         semester={Number(semester)}
       />
+
+      {/* REGENERATE BATCH CODE CONFIRMATION MODAL */}
+      <Modal
+        isOpen={showRegenerateCodeModal}
+        onClose={() => setShowRegenerateCodeModal(false)}
+        title="Regenerate Batch Code?"
+        description="Generate a fresh invite code for your class batch."
+      >
+        <div className="flex flex-col gap-4 p-1 text-left font-sans">
+          <div className="p-3.5 border border-amber-500/30 bg-amber-500/10 dark:bg-amber-500/[0.08] flex flex-col gap-1.5">
+            <span className="text-[12px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Important Notice</span>
+            <p className="text-[12.5px] text-[#111111] dark:text-[#F4F4F6] leading-relaxed">
+              A new 6-character code will replace <strong>{currentBatchData?.inviteCode}</strong>. Students who have already joined will remain in the batch, but any unjoined students will need the new code.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 mt-2">
+            <button
+              type="button"
+              onClick={() => setShowRegenerateCodeModal(false)}
+              disabled={isRegeneratingCode}
+              className="px-4 py-2 border border-[#D8D8D8] dark:border-[#333333] text-[12px] font-bold uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F4F4F4] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={isRegeneratingCode}
+              onClick={async () => {
+                setIsRegeneratingCode(true);
+                try {
+                  await regenerateBatchCode();
+                  setShowRegenerateCodeModal(false);
+                } catch (_) {
+                  // Handled by showToast in regenerateBatchCode
+                } finally {
+                  setIsRegeneratingCode(false);
+                }
+              }}
+              className="px-4 py-2 bg-[#111111] dark:bg-white text-white dark:text-[#090A0C] border border-[#111111] dark:border-white text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-2"
+            >
+              {isRegeneratingCode ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Regenerate Code</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
