@@ -11,7 +11,7 @@ import { Programme, Branch } from '@/lib/types';
 import { storage } from '@/lib/storage';
 import { INDIAN_COLLEGES, STANDARD_PROGRAMMES, STANDARD_BRANCHES, filterProgrammes, filterBranches, getCanonicalProgramme } from '@/lib/colleges';
 import { scheduleTestNotification } from '@/lib/localNotifications';
-import { getCanonicalBatchKey, formatBatchDisplayName, isValidProperEmail } from '@/lib/timetableUtils';
+import { getCanonicalBatchKey, formatBatchDisplayName, isValidProperEmail, getShortCollegeName, normalizeProgrammeName, normalizeBranchName } from '@/lib/timetableUtils';
 import {
   User,
   GraduationCap,
@@ -247,18 +247,66 @@ export const SettingsView: React.FC = () => {
     };
 
     if (hasAcademicChanges) {
+      const cleanCollegeKey = getShortCollegeName(cleanCollege).toLowerCase().replace(/[^a-z0-9]/g, '');
+      const cleanProgKey = normalizeProgrammeName(cleanProg);
+      const cleanBranchKey = normalizeBranchName(cleanBranch);
       const newKey = getCanonicalBatchKey(cleanCollege, cleanProg, cleanBranch, cleanSem);
-      if (newKey !== profile.batchKey) {
-        setIsLoadingColleges(true);
-        const matched = await searchBatchTimetable(cleanCollege, cleanProg, cleanBranch, cleanSem);
-        setIsLoadingColleges(false);
-        
-        if (matched) {
-          setMatchedBatchData(matched);
-          setPendingBatchKey(matched.id || matched.inviteCode || newKey);
-          return; // Pause profile saving and show modal choice
-        } else if (!profile.isBatchSynced && cleanCollege && cleanBranch) {
-          // Save profile and trigger Batch Setup / Request Onboarding Prompt
+
+      // Check if user is ALREADY synced to this exact batch (prevent false re-sync / discovery prompt!)
+      const isAlreadyInCurrentBatch = profile.isBatchSynced && (
+        profile.batchKey === newKey ||
+        (currentBatchData && (
+          currentBatchData.id === newKey ||
+          currentBatchData.id === profile.batchKey ||
+          currentBatchData.inviteCode === profile.batchKey ||
+          (
+            Number(currentBatchData.semester) === cleanSem &&
+            normalizeProgrammeName(currentBatchData.programme) === cleanProgKey &&
+            normalizeBranchName(currentBatchData.branch) === cleanBranchKey &&
+            (
+              getShortCollegeName(currentBatchData.college || '').toLowerCase().replace(/[^a-z0-9]/g, '') === cleanCollegeKey ||
+              (cleanCollegeKey.includes('iiit') && (currentBatchData.college || '').toLowerCase().includes('iiit')) ||
+              (cleanCollegeKey.includes('iit') && (currentBatchData.college || '').toLowerCase().includes('iit')) ||
+              (cleanCollegeKey.includes('nit') && (currentBatchData.college || '').toLowerCase().includes('nit'))
+            )
+          )
+        ))
+      );
+
+      if (isAlreadyInCurrentBatch) {
+        // Silently update profile metadata without disturbing active batch connection or showing sync prompt
+        updateProfile({
+          ...savedFields,
+          college: cleanCollege,
+          programme: cleanProg,
+          branch: cleanBranch,
+          semester: cleanSem,
+          section: '',
+          batchKey: currentBatchData?.id || profile.batchKey,
+          isBatchSynced: true,
+        });
+        showToast('Profile Saved', 'Academic records updated successfully', 'success');
+        setIsEditingAcademic(false);
+        return;
+      }
+
+      // If user genuinely changed batch or was not synced, search directory:
+      setIsLoadingColleges(true);
+      const matched = await searchBatchTimetable(cleanCollege, cleanProg, cleanBranch, cleanSem);
+      setIsLoadingColleges(false);
+      
+      if (matched) {
+        // Double check: if matched batch is the same as current batch, don't show modal!
+        const isSameAsCurrent = profile.isBatchSynced && (
+          matched.id === profile.batchKey ||
+          matched.inviteCode === profile.batchKey ||
+          (currentBatchData && (
+            currentBatchData.id === matched.id ||
+            currentBatchData.inviteCode === matched.inviteCode
+          ))
+        );
+
+        if (isSameAsCurrent) {
           updateProfile({
             ...savedFields,
             college: cleanCollege,
@@ -266,13 +314,33 @@ export const SettingsView: React.FC = () => {
             branch: cleanBranch,
             semester: cleanSem,
             section: '',
-            batchKey: undefined,
-            isBatchSynced: false,
+            batchKey: matched.id || profile.batchKey,
+            isBatchSynced: true,
           });
           showToast('Profile Saved', 'Academic records updated successfully', 'success');
-          setShowBatchSetupPrompt(true);
+          setIsEditingAcademic(false);
           return;
         }
+
+        setMatchedBatchData(matched);
+        setPendingBatchKey(matched.id || matched.inviteCode || newKey);
+        return; // Genuine batch switch: pause and prompt user
+      } else if (!profile.isBatchSynced && cleanCollege && cleanBranch) {
+        // Save profile and trigger Batch Setup / Request Onboarding Prompt
+        updateProfile({
+          ...savedFields,
+          college: cleanCollege,
+          programme: cleanProg,
+          branch: cleanBranch,
+          semester: cleanSem,
+          section: '',
+          batchKey: undefined,
+          isBatchSynced: false,
+        });
+        showToast('Profile Saved', 'Academic records updated successfully', 'success');
+        setShowBatchSetupPrompt(true);
+        setIsEditingAcademic(false);
+        return;
       }
     }
 
@@ -288,6 +356,7 @@ export const SettingsView: React.FC = () => {
       isBatchSynced: profile.isBatchSynced,
     });
     showToast('Profile Saved', 'Academic records updated successfully', 'success');
+    setIsEditingAcademic(false);
   };
 
   const handleSaveSettings = (e: React.FormEvent) => {

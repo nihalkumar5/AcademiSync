@@ -490,7 +490,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         });
       }
 
-      setCurrentBatchData(data);
+      setCurrentBatchData({ ...data, id: snapshot.id });
 
       // ── Sync timetable & related data with Personal-Level Override Protection ────────────────
       let updatedSubs = subjects;
@@ -2167,6 +2167,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         return { ...legacySnap.data(), id: legacyKey };
       }
 
+      // 1c. Common alias keys lookup (e.g. iiitnr vs iiitnayaraipur)
+      const aliasKeys: string[] = [];
+      if (cleanCol === 'iiitnayaraipur') {
+        aliasKeys.push(`iiitnr_${cleanProg}_${cleanBr}_sem${semester}`);
+        aliasKeys.push(`iiitnr_${cleanProg}_${cleanBr}_sem${semester}_secA`);
+      }
+      for (const alias of aliasKeys) {
+        try {
+          const aliasSnap = await getDoc(doc(db, 'shared_timetables', alias));
+          if (aliasSnap.exists()) {
+            return { ...aliasSnap.data(), id: alias };
+          }
+        } catch (_) {}
+      }
+
       // 2. Resilient Firestore search by semester & normalized matching
       const q = query(collection(db, 'shared_timetables'), where('semester', '==', Number(semester)));
       const querySnap = await getDocs(q);
@@ -2175,7 +2190,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const cleanInputCollege = cleanCol;
         const cleanInputProg = cleanProg;
         const cleanInputBranch = cleanBr;
-        const cleanInputSec = normalizeSection(section);
+
+        const candidateMatches: any[] = [];
 
         for (const d of querySnap.docs) {
           const data = d.data();
@@ -2183,7 +2199,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           const shortDocCol = getShortCollegeName(data.college || '').toLowerCase().replace(/[^a-z0-9]/g, '');
           const docProg = normalizeProgrammeName(data.programme || '');
           const docBranch = normalizeBranchName(data.branch || '');
-          const docSection = normalizeSection(data.section || 'A');
 
           const progMatch = !cleanInputProg || docProg === cleanInputProg || docProg.includes(cleanInputProg) || cleanInputProg.includes(docProg);
           const branchMatch = !cleanInputBranch || docBranch === cleanInputBranch;
@@ -2194,8 +2209,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             (cleanInputCollege.includes('iiit') && docCollege.includes('iiit') && (cleanInputCollege.includes('raipur') || cleanInputCollege.includes('nr')));
 
           if (progMatch && collegeMatch && branchMatch) {
-            return { ...data, id: d.id };
+            candidateMatches.push({ ...data, id: d.id });
           }
+        }
+
+        if (candidateMatches.length > 0) {
+          // If the user's currently synced batch is among the matches, prioritize it!
+          if (profile.batchKey) {
+            const userCurrent = candidateMatches.find(c => c.id === profile.batchKey || c.inviteCode === profile.batchKey);
+            if (userCurrent) return userCurrent;
+          }
+
+          // Otherwise, prioritize document with actual schedule content and highest studentCount
+          candidateMatches.sort((a, b) => {
+            const aHasContent = (Array.isArray(a.timetable) && a.timetable.length > 0) || (Array.isArray(a.subjects) && a.subjects.length > 0) ? 1 : 0;
+            const bHasContent = (Array.isArray(b.timetable) && b.timetable.length > 0) || (Array.isArray(b.subjects) && b.subjects.length > 0) ? 1 : 0;
+            if (bHasContent !== aHasContent) return bHasContent - aHasContent;
+            return (b.studentCount || 0) - (a.studentCount || 0);
+          });
+
+          return candidateMatches[0];
         }
       }
 
@@ -2457,7 +2490,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       setProfileState(updatedProfile);
       storage.setProfile(updatedProfile);
-      setCurrentBatchData(data);
+      setCurrentBatchData({ ...data, id: docSnap.id });
       refreshCarryItems(newTimetable, newSubjects, newEvents, settings, newExtra);
 
       // Persist immediately to Firestore user record so snapshot listener never reverts
@@ -2511,16 +2544,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       let codeToReturn = currentBatchData?.inviteCode;
       const docRef = doc(db, 'shared_timetables', profile.batchKey);
 
-      // If missing, generate and backfill immediately
+      // If missing from currentBatchData, check Firestore document first
       if (!codeToReturn) {
         try {
           const snap = await getDoc(docRef);
           if (snap.exists() && snap.data().inviteCode) {
             codeToReturn = snap.data().inviteCode;
-          } else {
-            codeToReturn = generateInviteCode();
-            await updateDoc(docRef, { inviteCode: codeToReturn });
           }
+        } catch (_) {}
+      }
+
+      // If still missing, check searchBatchTimetable before generating
+      if (!codeToReturn) {
+        try {
+          const matched = await searchBatchTimetable(profile.college, profile.programme, profile.branch, profile.semester);
+          if (matched?.inviteCode) {
+            codeToReturn = matched.inviteCode;
+          }
+        } catch (_) {}
+      }
+
+      // ONLY generate if no code exists ANYWHERE in Firestore for this batch
+      if (!codeToReturn) {
+        codeToReturn = generateInviteCode();
+        try {
+          await updateDoc(docRef, { inviteCode: codeToReturn });
         } catch (_) {}
       }
 
@@ -2555,7 +2603,40 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       const canonicalKey = getCanonicalBatchKey(profile.college, profile.programme, profile.branch, profile.semester);
       const docRef = doc(db, 'shared_timetables', canonicalKey);
-      const newInviteCode = generateInviteCode();
+
+      // CRITICAL: Look up existing batch to preserve its inviteCode, creator, and metadata!
+      let existingInviteCode = currentBatchData?.inviteCode;
+      let existingDocData: any = null;
+
+      try {
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          existingDocData = snap.data();
+          if (existingDocData.inviteCode) {
+            existingInviteCode = existingDocData.inviteCode;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not read existing docRef:', e);
+      }
+
+      // Also check fuzzy search in case batch exists under legacy key (e.g. iiitnr_...)
+      if (!existingInviteCode) {
+        try {
+          const matched = await searchBatchTimetable(profile.college, profile.programme, profile.branch, profile.semester);
+          if (matched) {
+            if (matched.inviteCode) {
+              existingInviteCode = matched.inviteCode;
+            }
+            if (!existingDocData) {
+              existingDocData = matched;
+            }
+          }
+        } catch (_) {}
+      }
+
+      // IMMUTABLE INVITE CODE: NEVER generate a new code if one already exists!
+      const finalInviteCode = existingInviteCode || generateInviteCode();
 
       const payload = sanitizeForFirestore({
         id: canonicalKey,
@@ -2564,18 +2645,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         branch: profile.branch,
         semester: profile.semester,
         section: '',
-        creatorId: user?.id || 'anonymous',
-        creatorName: profile.name || 'Student',
-        creatorEmail: userEmail,
-        crUserIds: profile.role === 'cr' ? [user?.id].filter(Boolean) : [],
-        crEmails: profile.role === 'cr' ? [userEmail].filter(Boolean) : [],
-        inviteCode: newInviteCode,
+        creatorId: existingDocData?.creatorId || user?.id || 'anonymous',
+        creatorName: existingDocData?.creatorName || profile.name || 'Student',
+        creatorEmail: existingDocData?.creatorEmail || userEmail,
+        crUserIds: Array.from(new Set([
+          ...(normalizeIdList(existingDocData?.crUserIds)),
+          ...(profile.role === 'cr' && user?.id ? [user.id] : [])
+        ])),
+        crEmails: Array.from(new Set([
+          ...(normalizeIdList(existingDocData?.crEmails)),
+          ...(profile.role === 'cr' && userEmail ? [userEmail] : [])
+        ])),
+        inviteCode: finalInviteCode,
         subjects: subjects,
         timetable: timetable,
         events: events,
         exams: exams,
-        studentCount: currentBatchData?.studentCount || 1,
-        createdAt: currentBatchData?.createdAt || new Date().toISOString(),
+        studentCount: existingDocData?.studentCount || currentBatchData?.studentCount || 1,
+        createdAt: existingDocData?.createdAt || currentBatchData?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
 
@@ -2591,7 +2678,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       storage.setProfile(updatedProfile);
 
       showToast('Timetable Shared', 'Your class schedule is now live for your batchmates!', 'success');
-      return canonicalKey;
+      return finalInviteCode;
     } catch (e) {
       console.error('Error sharing timetable:', e);
       showToast('Share Failed', 'Failed to publish timetable to batch.', 'error');
