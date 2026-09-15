@@ -39,21 +39,6 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
   const [fileName, setFileName] = useState('');
   const [extractedSessions, setExtractedSessions] = useState<ExtractedClassSession[]>([]);
 
-  // Academic Profile Context for AI Target Filtering & Slot Resolution
-  const [branch, setBranch] = useState(profile?.branch || '');
-  const [semester, setSemester] = useState(profile?.semester || 1);
-  const [section, setSection] = useState(profile?.section || '');
-  const [targetCourses, setTargetCourses] = useState('');
-
-  // Sync state with profile whenever modal opens or profile loads
-  useEffect(() => {
-    if (isOpen && profile) {
-      if (profile.branch) setBranch(profile.branch);
-      if (profile.semester) setSemester(profile.semester);
-      if (profile.section) setSection(profile.section);
-    }
-  }, [isOpen, profile]);
-
   const resetState = () => {
     setStep('upload');
     setFileName('');
@@ -70,24 +55,9 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     setFileName(isString ? filesInfo : (filesInfo.length === 1 ? filesInfo[0].name : `${filesInfo.length} files selected`));
     setStep('extracting');
 
-    const resolvedBranch = (branch || profile?.branch || '').trim();
-    const resolvedSemester = Number(semester) || profile?.semester || 1;
-    const resolvedSection = (section || profile?.section || '').trim();
-    const resolvedCourses = targetCourses.trim() || undefined;
-
-    // Persist updated academic context to user profile so user doesn't have to re-enter it
-    const cleanSec = normalizeSection(resolvedSection) || resolvedSection;
-    if (
-      (cleanSec && cleanSec !== profile?.section) ||
-      (resolvedBranch && resolvedBranch !== profile?.branch) ||
-      (resolvedSemester && resolvedSemester !== profile?.semester)
-    ) {
-      updateProfile({
-        ...(resolvedBranch ? { branch: resolvedBranch } : {}),
-        semester: resolvedSemester,
-        ...(cleanSec ? { section: cleanSec } : {}),
-      });
-    }
+    const resolvedBranch = (profile?.branch || '').trim();
+    const resolvedSemester = Number(profile?.semester) || 1;
+    const resolvedSection = (profile?.section || '').trim();
 
     try {
       const res = await fetch('/api/extract-timetable', {
@@ -105,7 +75,6 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
             year: profile?.year || Math.ceil(resolvedSemester / 2) || 1,
             semester: resolvedSemester,
             section: resolvedSection,
-            targetCourses: resolvedCourses,
           },
         }),
       });
@@ -193,6 +162,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         room: '',
         faculty: '',
         isLab: false,
+        isElective: false,
       }
     ]);
   };
@@ -203,6 +173,12 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     const newSessions: ClassSession[] = [];
 
     extractedSessions.forEach((extSession, idx) => {
+      const isExtractedElective = Boolean(
+        extSession.isElective || 
+        extSession.subjectName.toLowerCase().includes('elective') || 
+        (extSession.subjectCode && extSession.subjectCode.toLowerCase().includes('elec'))
+      );
+
       // Find if we already registered this subject in newSubjects
       let matchedSubject = newSubjects.find(
         (s) => s.name.toLowerCase() === extSession.subjectName.toLowerCase() || 
@@ -222,6 +198,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
             facultyName: extSession.faculty || existingSubject.facultyName,
             room: extSession.room || existingSubject.room,
             isLab: extSession.isLab ?? existingSubject.isLab,
+            isElective: isExtractedElective || existingSubject.isElective || false,
           };
         } else {
           const assignedColor = getHarmonicColorForSubject(
@@ -237,9 +214,10 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
             facultyName: extSession.faculty || 'TBD',
             room: extSession.room || 'TBD',
             credits: 3,
-            color: assignedColor,
+            color: isExtractedElective ? '#8067B5' : assignedColor,
             carryRequirements: extSession.isLab ? ['Laptop (Charged)', 'Lab Manual / Record'] : ['Lecture Notebook'],
             isLab: extSession.isLab,
+            isElective: isExtractedElective,
           };
         }
         newSubjects.push(matchedSubject);
@@ -257,14 +235,23 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         room: extSession.room || matchedSubject.room,
         faculty: extSession.faculty || matchedSubject.facultyName,
         isLab: extSession.isLab,
+        isElective: isExtractedElective,
       });
     });
 
     const finalHarmonizedSubjects = autoAssignHarmonicColorsToSubjects(newSubjects);
 
+    // If electives are present, ensure student has enrolledElectiveIds tracked
+    const electiveSubjectIds = finalHarmonizedSubjects.filter(s => s.isElective).map(s => s.id);
+    const existingEnrolled = profile?.enrolledElectiveIds;
+    const initialEnrolled = existingEnrolled || electiveSubjectIds;
+
     // Save subjects and timetable together atomically with matching IDs
     setFullSubjectsAndTimetable(finalHarmonizedSubjects, newSessions);
-    updateProfile({ onboardingCompleted: true });
+    updateProfile({ 
+      onboardingCompleted: true,
+      ...(electiveSubjectIds.length > 0 ? { enrolledElectiveIds: initialEnrolled } : {})
+    });
     setShowOnboarding(false);
     showToast('Timetable Sorted!', `Extracted ${finalHarmonizedSubjects.length} subjects & ${newSessions.length} weekly classes with optimal aesthetic colors!`, 'success');
     handleClose();
@@ -282,91 +269,27 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     >
       {step === 'upload' && (
         <div className="flex flex-col text-center">
-          {/* Academic Profile & Target Filter */}
-          <div className="mb-4 p-3.5 sm:p-4 rounded-none border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5]/80 dark:bg-[#121317]/80 text-left">
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-black/80 dark:text-[#F4F4F6]">
-                  Academic Filter Context
-                </span>
-              </div>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-none bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                Zero Guesswork
+          {/* Upload Guidance Banner */}
+          <div className="mb-4 p-4 rounded-none border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5]/90 dark:bg-[#121317]/90 text-left">
+            <div className="flex items-center gap-2 mb-2.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-black/80 dark:text-[#F4F4F6]">
+                Upload Guidelines
               </span>
             </div>
 
-            <p className="text-[11px] sm:text-[12px] text-black/60 dark:text-[#94A3B8] leading-relaxed mb-3">
-              Auto-filters multi-department circulars (like IIT Kanpur) and resolves slot matrix grids (like IIT Bombay) directly to your routine.
-            </p>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-              {/* Branch */}
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-black/60 dark:text-white/50">
-                  Branch / Dept
-                </label>
-                <input
-                  type="text"
-                  value={branch}
-                  onChange={(e) => setBranch(e.target.value)}
-                  placeholder="e.g. CSE, EE, ME"
-                  className="w-full px-2.5 py-1.5 h-[36px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[12px] font-medium text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/40 transition-colors"
-                />
+            <div className="flex flex-col gap-2 text-[12px] text-black/75 dark:text-[#94A3B8] leading-relaxed">
+              <div className="flex items-start gap-2.5">
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0 mt-0.5 text-[13px]">✓</span>
+                <span>
+                  <strong>Apne class / batch ka hi routine upload karein:</strong> College circulars me se sirf apne section/branch ka timetable de taaki aapka daily schedule bilkul clean aur accurate bane.
+                </span>
               </div>
-
-              {/* Semester */}
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-black/60 dark:text-white/50">
-                  Semester
-                </label>
-                <div className="relative">
-                  <select
-                    value={semester}
-                    onChange={(e) => setSemester(Number(e.target.value))}
-                    className="w-full px-2.5 py-1.5 h-[36px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[12px] font-medium text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/40 transition-colors appearance-none pr-6"
-                  >
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-                      <option key={s} value={s} className="dark:bg-[#121317]">
-                        Semester {s}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Section / Group */}
-              <div className="flex flex-col gap-1 col-span-2 sm:col-span-1">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-black/60 dark:text-white/50">
-                  Section / Group
-                </label>
-                <input
-                  type="text"
-                  value={section}
-                  onChange={(e) => setSection(e.target.value)}
-                  placeholder="e.g. Group 1, Sec A3"
-                  className="w-full px-2.5 py-1.5 h-[36px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[12px] font-medium text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/40 transition-colors"
-                />
-              </div>
-            </div>
-
-            {/* Optional Courses Filter */}
-            <div className="mt-2.5 pt-2.5 border-t border-black/5 dark:border-white/[0.04]">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-black/60 dark:text-white/50">
-                    Specific Courses (Optional)
-                  </label>
-                  <span className="text-[10px] text-black/40 dark:text-white/30">Leave blank for all</span>
-                </div>
-                <input
-                  type="text"
-                  value={targetCourses}
-                  onChange={(e) => setTargetCourses(e.target.value)}
-                  placeholder="e.g. CS 347, CS 348, CS 387 (or PHY114)"
-                  className="w-full px-2.5 py-1.5 h-[36px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[12px] font-medium text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/40 transition-colors"
-                />
+              <div className="flex items-start gap-2.5">
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0 mt-0.5 text-[13px]">✓</span>
+                <span>
+                  <strong>Multi-page allowed:</strong> Multi-page PDF documents aur photo gallery se ek saath multiple images select karna fully supported hai.
+                </span>
               </div>
             </div>
           </div>
@@ -549,6 +472,32 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                         onChange={(e) => updateExtractedRow(index, { faculty: e.target.value })}
                         className="w-full px-3 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
                       />
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-black/5 dark:border-white/[0.04]">
+                      <button
+                        type="button"
+                        onClick={() => updateExtractedRow(index, { isLab: !session.isLab })}
+                        className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider transition-colors border ${
+                          session.isLab
+                            ? 'bg-[#18A889] text-white border-[#18A889]'
+                            : 'bg-transparent text-black/60 dark:text-[#94A3B8] border-black/10 dark:border-white/[0.1] hover:border-black/30'
+                        }`}
+                      >
+                        {session.isLab ? '✓ Practical / Lab' : '+ Lab'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => updateExtractedRow(index, { isElective: !session.isElective })}
+                        className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider transition-colors border ${
+                          session.isElective
+                            ? 'bg-[#8067B5] text-white border-[#8067B5]'
+                            : 'bg-transparent text-black/60 dark:text-[#94A3B8] border-black/10 dark:border-white/[0.1] hover:border-[#8067B5]'
+                        }`}
+                      >
+                        {session.isElective ? '★ Elective Course' : '+ Mark as Elective'}
+                      </button>
                     </div>
                   </div>
                 ))}

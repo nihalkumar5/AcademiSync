@@ -39,6 +39,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
   const [credits, setCredits] = useState(4);
   const [color, setColor] = useState('#334CC4');
   const [isLab, setIsLab] = useState(false);
+  const [isElective, setIsElective] = useState(false);
   const [labRoom, setLabRoom] = useState('');
   const [driveLink, setDriveLink] = useState('');
   const [syllabusLink, setSyllabusLink] = useState('');
@@ -74,6 +75,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
       setCredits(subjectToEdit.credits);
       setColor(subjectToEdit.color || '#334CC4');
       setIsLab(subjectToEdit.isLab || false);
+      setIsElective(subjectToEdit.isElective || false);
       setLabRoom(subjectToEdit.labRoom || '');
       setDriveLink(subjectToEdit.driveLink || '');
       setSyllabusLink(subjectToEdit.syllabusLink || '');
@@ -89,6 +91,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
       setCredits(4);
       setColor('#334CC4');
       setIsLab(false);
+      setIsElective(false);
       setLabRoom('');
       setDriveLink('');
       setSyllabusLink('');
@@ -133,6 +136,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
       credits: Number(credits) || 3,
       color,
       isLab,
+      isElective,
       labRoom: isLab ? labRoom.trim() || room.trim() : undefined,
       driveLink: driveLink.trim() || undefined,
       syllabusLink: syllabusLink.trim() || undefined,
@@ -392,6 +396,26 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
               onChange={(e) => setLabRoom(e.target.value)}
             />
           )}
+        </div>
+
+        {/* Elective Course Toggle */}
+        <div className="flex flex-col gap-1.5 p-3 rounded-[3px] bg-[#8067B5]/10 border border-[#8067B5]/30">
+          <div className="flex items-center gap-2.5">
+            <input
+              type="checkbox"
+              id="subIsElective"
+              checked={isElective}
+              onChange={(e) => setIsElective(e.target.checked)}
+              className="w-4 h-4 rounded-[2px] accent-[#8067B5] cursor-pointer"
+            />
+            <label htmlFor="subIsElective" className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 cursor-pointer flex items-center gap-1.5">
+              <span>Elective Course (Department / Open / Minor)</span>
+              <span className="text-[10px] px-1.5 py-0.5 bg-[#8067B5]/20 text-[#8067B5] dark:text-[#C084FC] font-bold uppercase tracking-wider">Elective</span>
+            </label>
+          </div>
+          <p className="text-[11px] text-zinc-600 dark:text-zinc-400 pl-6">
+            Students can choose whether to enroll in this elective so it only appears in attending students&apos; routines.
+          </p>
         </div>
 
         {/* Things to Carry Requirements */}

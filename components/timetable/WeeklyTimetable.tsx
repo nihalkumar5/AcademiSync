@@ -19,15 +19,27 @@ import { BatchDiscoveryModal } from '@/components/batch/BatchDiscoveryModal';
 import { BatchSetupPromptModal } from '@/components/batch/BatchSetupPromptModal';
 
 export const WeeklyTimetable: React.FC = () => {
-  const { timetable, subjects, deleteClassSession, profile, isBatchCR, shareTimetableWithBatch, showToast, joinBatchTimetable, searchBatchTimetable, user } = useApp();
+  const { timetable, subjects, deleteClassSession, profile, isBatchCR, shareTimetableWithBatch, showToast, joinBatchTimetable, searchBatchTimetable, user, setActiveView } = useApp();
   const router = useRouter();
   const isSignedIn = !!user;
+
+  const subjectMap = new Map(subjects.map((s) => [s.id, s]));
+
+  const isSessionVisible = (session: ClassSession) => {
+    const sub = subjectMap.get(session.subjectId);
+    if (sub?.isElective && profile.enrolledElectiveIds && !profile.enrolledElectiveIds.includes(sub.id)) {
+      return false;
+    }
+    return true;
+  };
+
+  const activeTimetable = timetable.filter(isSessionVisible);
 
   const currentDay = getCurrentDayOfWeek();
   
   // Only show days that have classes scheduled; fallback to Monday-Friday if timetable is empty
   const activeDaysWithClasses = DAYS_OF_WEEK.filter(day => 
-    timetable.some(session => session.day === day)
+    activeTimetable.some(session => session.day === day)
   );
   const weekDays = activeDaysWithClasses.length > 0 ? activeDaysWithClasses : DAYS_OF_WEEK.slice(0, 5);
 
@@ -39,7 +51,7 @@ export const WeeklyTimetable: React.FC = () => {
     if (!weekDays.includes(selectedMobileDay)) {
       setSelectedMobileDay(weekDays.includes(currentDay) ? currentDay : weekDays[0] || 'Monday');
     }
-  }, [timetable, weekDays, currentDay, selectedMobileDay]);
+  }, [activeTimetable, weekDays, currentDay, selectedMobileDay]);
   const [editSession, setEditSession] = useState<ClassSession | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -67,8 +79,6 @@ export const WeeklyTimetable: React.FC = () => {
     const endMins = timeToMinutes(session.endTime);
     return currentMins > endMins;
   };
-
-  const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
   const handleAddForDay = (day: DayOfWeek) => {
     if (!isSignedIn) {
@@ -183,6 +193,16 @@ export const WeeklyTimetable: React.FC = () => {
               <Plus className="w-4 h-4 stroke-[2.5]" />
               Add Class
             </button>
+            {subjects.some((s) => s.isElective) && (
+              <button
+                type="button"
+                onClick={() => setActiveView('subjects')}
+                className="flex items-center justify-center h-10 px-3.5 border border-[#8067B5]/40 bg-[#8067B5]/10 text-[#8067B5] dark:text-[#C084FC] text-[13px] font-semibold hover:bg-[#8067B5]/20 transition-colors gap-1.5 cursor-pointer"
+                title="Manage your chosen electives in Subject Directory"
+              >
+                <span>★ My Electives</span>
+              </button>
+            )}
           </div>
 
           {profile.isBatchSynced && profile.batchKey && (
@@ -212,7 +232,7 @@ export const WeeklyTimetable: React.FC = () => {
         {weekDays.map((day) => {
           const isSelected = selectedMobileDay === day;
           const isToday = currentDay === day;
-          const classCount = timetable.filter((s) => s.day === day).length;
+          const classCount = activeTimetable.filter((s) => s.day === day).length;
 
           return (
             <button
@@ -247,7 +267,7 @@ export const WeeklyTimetable: React.FC = () => {
       {/* Mobile Schedule List (< 768px) */}
       <div className="flex md:hidden flex-col gap-3.5">
         {(() => {
-          const sessions = timetable
+          const sessions = activeTimetable
             .filter((s) => s.day === selectedMobileDay)
             .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
@@ -284,7 +304,7 @@ export const WeeklyTimetable: React.FC = () => {
       >
         {weekDays.map((day) => {
           const isToday = currentDay === day;
-          const daySessions = timetable
+          const daySessions = activeTimetable
             .filter((s) => s.day === day)
             .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 

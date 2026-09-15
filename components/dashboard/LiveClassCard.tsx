@@ -9,13 +9,20 @@ import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { getSubjectCardTheme } from '@/lib/cardColors';
 
 export const LiveClassCard: React.FC = () => {
-  const { timetable, subjects, events, isSessionCancelled, rescheduledSessions, extraSessions, cancelledSessions } = useApp();
+  const { timetable, subjects, events, isSessionCancelled, rescheduledSessions, extraSessions, cancelledSessions, profile } = useApp();
   
   const now = new Date();
   const dateTodayStr = getTodayDateString();
   const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
 
-  const getActiveTimetable = () => timetable.filter((s) => !isSessionCancelled(s.id, dateTodayStr));
+  const getActiveTimetable = () => timetable.filter((s) => {
+    if (isSessionCancelled(s.id, dateTodayStr)) return false;
+    const sub = subjects.find((subj) => subj.id === s.subjectId);
+    if (sub?.isElective && profile.enrolledElectiveIds && !profile.enrolledElectiveIds.includes(sub.id)) {
+      return false;
+    }
+    return true;
+  });
 
   const [status, setStatus] = useState(() => 
     getLiveClassStatus(getActiveTimetable(), subjects, undefined, dateTodayStr, rescheduledSessions, extraSessions, isSessionCancelled)
@@ -27,7 +34,7 @@ export const LiveClassCard: React.FC = () => {
       setStatus(getLiveClassStatus(getActiveTimetable(), subjects, undefined, dateTodayStr, rescheduledSessions, extraSessions, isSessionCancelled));
     }, 15000);
     return () => clearInterval(interval);
-  }, [timetable, subjects, isSessionCancelled, rescheduledSessions, extraSessions, cancelledSessions]);
+  }, [timetable, subjects, isSessionCancelled, rescheduledSessions, extraSessions, cancelledSessions, profile.enrolledElectiveIds]);
 
   // High-Contrast Brutalist Holiday Display (Minimal Design with Subtle Animation)
   if (todayHoliday) {
@@ -258,7 +265,14 @@ export const LiveClassCard: React.FC = () => {
   }
 
   const currentDay = getCurrentDayOfWeek();
-  const rawTodayRegular = timetable.filter((s) => s.day === currentDay);
+  const rawTodayRegular = timetable.filter((s) => {
+    if (s.day !== currentDay) return false;
+    const sub = subjects.find((subj) => subj.id === s.subjectId);
+    if (sub?.isElective && profile.enrolledElectiveIds && !profile.enrolledElectiveIds.includes(sub.id)) {
+      return false;
+    }
+    return true;
+  });
   const extraToday = Object.values(extraSessions || {}).filter((ex) => ex && ex.date === dateTodayStr);
   const rawTodaySessions = [...rawTodayRegular, ...extraToday];
   const totalToday = rawTodaySessions.length;

@@ -121,9 +121,17 @@ export const TodayTimeline: React.FC = () => {
       date: ex.date,
     }));
 
+  const isSessionVisible = (s: ClassSession) => {
+    const sub = subjects.find((subj) => subj.id === s.subjectId);
+    if (sub?.isElective && profile.enrolledElectiveIds && !profile.enrolledElectiveIds.includes(sub.id)) {
+      return false;
+    }
+    return true;
+  };
+
   const targetSessions = [
-    ...timetable.filter((s) => s.day === targetDay),
-    ...extraListForTarget,
+    ...timetable.filter((s) => s.day === targetDay && isSessionVisible(s)),
+    ...extraListForTarget.filter(isSessionVisible),
   ].sort((a, b) => {
     const aResched = rescheduledSessions[`${targetDateStr}_${a.id}`];
     const bResched = rescheduledSessions[`${targetDateStr}_${b.id}`];

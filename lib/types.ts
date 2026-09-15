@@ -23,6 +23,7 @@ export interface StudentProfile {
   role?: AdminRole;
   isPro?: boolean;
   isBanned?: boolean;
+  enrolledElectiveIds?: string[]; // IDs of electives this student has chosen/enrolled in
 }
 
 export interface Subject {
@@ -44,6 +45,8 @@ export interface Subject {
   isCustomColor?: boolean;
   isCustomRoom?: boolean;
   isPersonal?: boolean;
+  isElective?: boolean;
+  electiveSlot?: string;
 }
 
 export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
@@ -64,6 +67,7 @@ export interface ClassSession {
   isCustomRoom?: boolean;
   isCustomTime?: boolean;
   isPersonal?: boolean;
+  isElective?: boolean;
 }
 
 export interface ExtraClassSession {
@@ -182,6 +186,7 @@ export interface ExtractedClassSession {
   room?: string;
   faculty?: string;
   isLab?: boolean;
+  isElective?: boolean;
 }
 
 export interface ExtractedHomework {

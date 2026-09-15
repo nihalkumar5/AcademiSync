@@ -291,6 +291,7 @@ For every extracted class session, return:
 - "room": Room / Hall / Venue (e.g. "LA 002", "CC 105", "SL-1-2-3", "LT-1")
 - "faculty": Faculty name if visible (e.g. "Prof. Bhaskaran Raman")
 - "isLab": boolean (true for practical/lab sessions, else false)
+- "isElective": boolean (true if this subject is an Elective course, Department Elective, Open Elective, Program Elective, or elective slot; else false)
 
 Return ONLY raw valid JSON array:
 [
@@ -302,7 +303,8 @@ Return ONLY raw valid JSON array:
     "subjectCode": "CS 348",
     "room": "LA 002",
     "faculty": "Prof. Bhaskaran Raman",
-    "isLab": false
+    "isLab": false,
+    "isElective": false
   }
 ]`;
 

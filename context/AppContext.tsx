@@ -97,6 +97,7 @@ export interface AppContextType {
   isBatchPilot: boolean;
   isSuperAdmin: boolean;
   updateProfile: (profile: Partial<StudentProfile>) => void;
+  toggleElectiveEnrollment: (subjectId: string) => void;
   subjects: Subject[];
   addSubject: (subject: Omit<Subject, 'id'>) => Subject;
   updateSubject: (id: string, subject: Partial<Subject>) => void;
@@ -1164,6 +1165,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
 
+  const toggleElectiveEnrollment = (subjectId: string) => {
+    const allElectiveIds = subjects.filter((s) => s.isElective).map((s) => s.id);
+    let currentEnrolled = profile.enrolledElectiveIds;
+    if (currentEnrolled === undefined) {
+      currentEnrolled = [...allElectiveIds];
+    }
+    const isEnrolled = currentEnrolled.includes(subjectId);
+    const updated = isEnrolled
+      ? currentEnrolled.filter((id) => id !== subjectId)
+      : [...currentEnrolled, subjectId];
+
+    updateProfile({ enrolledElectiveIds: updated });
+    refreshCarryItems(timetable, subjects);
+    showToast(
+      isEnrolled ? 'Elective Removed' : 'Elective Enrolled',
+      isEnrolled ? 'Classes for this elective are now hidden from your routine.' : 'Classes for this elective are now active in your routine.',
+      'info'
+    );
+  };
+
   const addSubject = (subjectData: Omit<Subject, 'id'>): Subject => {
     const cleanCol = (subjectData.color || '').toLowerCase().trim();
     const isLegacyDefault = !cleanCol || ['#000000', '#7c897a', '#7a8b99', '#9c8e80', '#b88b8c', '#c79f6f', '#c08a76'].includes(cleanCol);
@@ -1315,8 +1336,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     currentSettings: UserSettings = settings,
     currentExtra: Record<string, ExtraClassSession> = extraSessions
   ) => {
+    // Filter out un-enrolled elective sessions so students only pack items for electives they attend
+    const activeTimetable = currentTimetable.filter((s) => {
+      const sub = currentSubjects.find((subj) => subj.id === s.subjectId);
+      if (sub?.isElective && profile.enrolledElectiveIds && !profile.enrolledElectiveIds.includes(sub.id)) {
+        return false;
+      }
+      return true;
+    });
+
     const recomputed = calculateTomorrowCarryItems(
-      currentTimetable,
+      activeTimetable,
       currentSubjects,
       carryItems,
       undefined,
@@ -3287,6 +3317,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         isBatchPilot,
         isSuperAdmin,
         updateProfile,
+        toggleElectiveEnrollment,
         subjects,
         addSubject,
         updateSubject,

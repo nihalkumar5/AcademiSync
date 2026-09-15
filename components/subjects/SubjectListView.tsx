@@ -31,7 +31,7 @@ import { getSubjectCardTheme } from '@/lib/cardColors';
 import { clsx } from 'clsx';
 
 export const SubjectListView: React.FC = () => {
-  const { subjects, deleteSubject, profile, timetable, showToast, isBatchCR, currentBatchData } = useApp();
+  const { subjects, deleteSubject, profile, timetable, showToast, isBatchCR, currentBatchData, toggleElectiveEnrollment } = useApp();
 
   const [showModal, setShowModal] = useState(false);
   const [editSubject, setEditSubject] = useState<Subject | null>(null);
@@ -39,11 +39,12 @@ export const SubjectListView: React.FC = () => {
   const [preselectedClassSession, setPreselectedClassSession] = useState<ClassSession | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'lab' | 'theory' | 'carry'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'lab' | 'theory' | 'carry' | 'electives'>('all');
   const [copiedEmail, setCopiedEmail] = useState<string | null>(null);
 
   const totalCredits = subjects.reduce((sum, s) => sum + (s.credits || 0), 0);
   const totalLabs = subjects.filter((s) => s.isLab).length;
+  const totalElectives = subjects.filter((s) => s.isElective).length;
   const totalSlots = timetable.length;
 
   // Filter and search subjects
@@ -58,6 +59,7 @@ export const SubjectListView: React.FC = () => {
 
     if (filterType === 'lab') return sub.isLab;
     if (filterType === 'theory') return !sub.isLab;
+    if (filterType === 'electives') return sub.isElective;
     if (filterType === 'carry') return sub.carryRequirements && sub.carryRequirements.length > 0;
 
     return true;
@@ -150,6 +152,62 @@ export const SubjectListView: React.FC = () => {
         </div>
       </div>
 
+      {/* Active Electives Manager Banner */}
+      {totalElectives > 0 && (
+        <div className="p-4 rounded-[3px] bg-[#8067B5]/10 border border-[#8067B5]/30 flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#8067B5] shrink-0" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#151515] dark:text-[#F4F4F6]">
+                Curriculum Electives ({totalElectives})
+              </h3>
+            </div>
+            <span className="text-[11px] text-[#737373] dark:text-[#94A3B8]">
+              Select which electives you attend so your timetable only shows your classes
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+            {subjects.filter((s) => s.isElective).map((elec) => {
+              const isEnrolled = profile.enrolledElectiveIds === undefined || profile.enrolledElectiveIds.includes(elec.id);
+              return (
+                <div
+                  key={elec.id}
+                  className={`p-3 rounded-[3px] border transition-all flex items-center justify-between gap-2.5 ${
+                    isEnrolled
+                      ? 'bg-white dark:bg-[#16171D] border-[#8067B5] shadow-xs'
+                      : 'bg-black/5 dark:bg-white/[0.03] border-dashed border-black/15 dark:border-white/10 opacity-70'
+                  }`}
+                >
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[10px] font-mono font-bold uppercase text-[#8067B5] dark:text-[#C084FC]">
+                      {elec.code && elec.code !== 'UNK' ? elec.code : 'ELECTIVE'}
+                    </span>
+                    <span className="text-xs font-bold truncate text-[#151515] dark:text-[#F4F4F6]">
+                      {elec.name}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleElectiveEnrollment(elec.id);
+                    }}
+                    className={`px-2.5 py-1 text-[10.5px] font-bold uppercase rounded-[2px] transition-colors shrink-0 cursor-pointer ${
+                      isEnrolled
+                        ? 'bg-[#8067B5] text-white'
+                        : 'bg-black/10 dark:bg-white/10 text-black dark:text-white hover:bg-[#8067B5] hover:text-white'
+                    }`}
+                  >
+                    {isEnrolled ? '✓ Attending' : '+ Opt In'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Search & Filter Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
         {/* Search Input */}
@@ -214,6 +272,20 @@ export const SubjectListView: React.FC = () => {
           >
             Has Carry Items
           </button>
+          {totalElectives > 0 && (
+            <button
+              type="button"
+              onClick={() => setFilterType('electives')}
+              className={clsx(
+                "px-3 py-1.5 text-[11.5px] font-semibold rounded-[3px] transition-all cursor-pointer border",
+                filterType === 'electives'
+                  ? "bg-[#8067B5] text-white border-[#8067B5]"
+                  : "bg-white dark:bg-[#16171D] border-[#8067B5]/40 text-[#8067B5] dark:text-[#C084FC] hover:bg-[#8067B5]/10"
+              )}
+            >
+              ★ Electives ({totalElectives})
+            </button>
+          )}
         </div>
       </div>
 
@@ -323,6 +395,27 @@ export const SubjectListView: React.FC = () => {
                         <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 uppercase rounded-[2px] bg-[#D2F1E8] text-[#18A889]">
                           LAB
                         </span>
+                      )}
+                      {sub.isElective && (
+                        <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 uppercase rounded-[2px] bg-[#8067B5]/20 border border-[#8067B5]/40 text-[#8067B5] dark:text-[#C084FC]">
+                          ★ Elective
+                        </span>
+                      )}
+                      {sub.isElective && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleElectiveEnrollment(sub.id);
+                          }}
+                          className={`text-[9.5px] font-bold tracking-wider px-2 py-0.5 uppercase rounded-[2px] transition-colors cursor-pointer ${
+                            (profile.enrolledElectiveIds === undefined || profile.enrolledElectiveIds.includes(sub.id))
+                              ? 'bg-[#8067B5] text-white'
+                              : 'bg-black/10 dark:bg-white/10 text-[#737373] dark:text-[#94A3B8] hover:bg-[#8067B5] hover:text-white'
+                          }`}
+                        >
+                          {(profile.enrolledElectiveIds === undefined || profile.enrolledElectiveIds.includes(sub.id)) ? '✓ In Routine' : '+ Add to Routine'}
+                        </button>
                       )}
                       {isReadOnlyOfficial && (
                         <span className="text-[9.5px] font-semibold tracking-wide px-1.5 py-0.5 rounded-[2px] bg-black/5 dark:bg-white/10 text-[#737373] dark:text-[#94A3B8]">
