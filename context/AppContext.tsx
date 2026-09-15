@@ -537,7 +537,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
             return {
               ...bSub,
-              id: local.id || bSub.id,
+              id: bSub.id,
               color: hasCustomColor ? local.color : bSub.color,
               isCustomColor: hasCustomColor,
               // Official batch curriculum rules: room, lab room, and faculty always sync from batch

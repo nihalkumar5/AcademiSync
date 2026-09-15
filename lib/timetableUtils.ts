@@ -266,6 +266,26 @@ export const getLiveClassStatus = (
 
   const subjectMap = new Map(safeSubjects.map((s) => [s.id, s]));
 
+  const resolveSubject = (sess: ClassSession): Subject | undefined => {
+    if (sess.subjectId && subjectMap.has(sess.subjectId)) return subjectMap.get(sess.subjectId);
+    const subName = (sess as any).subjectName?.toLowerCase();
+    const subCode = (sess as any).subjectCode?.toLowerCase();
+    if (subCode) {
+      const match = safeSubjects.find(s => s.code && s.code.toLowerCase() === subCode);
+      if (match) return match;
+    }
+    if (subName) {
+      const match = safeSubjects.find(s => s.name && s.name.toLowerCase() === subName);
+      if (match) return match;
+    }
+    if (sess.faculty) {
+      const f = sess.faculty.toLowerCase().trim();
+      const match = safeSubjects.find(s => s.facultyName && (s.facultyName.toLowerCase().includes(f) || f.includes(s.facultyName.toLowerCase())));
+      if (match) return match;
+    }
+    return undefined;
+  };
+
   let currentClass: LiveClassStatus['currentClass'] = null;
   let nextClass: LiveClassStatus['nextClass'] = null;
 
@@ -279,14 +299,14 @@ export const getLiveClassStatus = (
       const remaining = end - currentMinutes;
       currentClass = {
         session,
-        subject: subjectMap.get(session.subjectId),
+        subject: resolveSubject(session),
         remainingMinutes: remaining,
         progressPercentage: Math.min(100, Math.max(0, Math.round((elapsed / totalDuration) * 100))),
       };
     } else if (currentMinutes < start && !nextClass) {
       nextClass = {
         session,
-        subject: subjectMap.get(session.subjectId),
+        subject: resolveSubject(session),
         minutesUntilStart: start - currentMinutes,
       };
     }

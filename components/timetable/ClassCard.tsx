@@ -198,7 +198,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
           className="text-[16px] sm:text-[17px] leading-[22px] font-bold tracking-tight break-words mb-2.5 text-[#151515] dark:text-white"
           style={{ color: isCurrent ? '#FFFFFF' : undefined }}
         >
-          {subject?.name || 'Class Session'}
+          {subject?.name || (session as any).subjectName || (session as any).title || 'Class Session'}
         </h4>
 
         {/* Metadata */}

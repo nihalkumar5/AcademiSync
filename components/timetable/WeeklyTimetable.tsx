@@ -25,8 +25,36 @@ export const WeeklyTimetable: React.FC = () => {
 
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
+  const getSubjectForSession = (session: ClassSession): Subject | undefined => {
+    if (session.subjectId && subjectMap.has(session.subjectId)) {
+      return subjectMap.get(session.subjectId);
+    }
+    // 1. Match by session subjectName / subjectCode
+    const sessSubName = (session as any).subjectName?.toLowerCase();
+    const sessSubCode = (session as any).subjectCode?.toLowerCase();
+    if (sessSubCode) {
+      const match = subjects.find(s => s.code && s.code.toLowerCase() === sessSubCode);
+      if (match) return match;
+    }
+    if (sessSubName) {
+      const match = subjects.find(s => s.name && s.name.toLowerCase() === sessSubName);
+      if (match) return match;
+    }
+    // 2. Match by faculty name association if subjectId is missing/desynced
+    if (session.faculty) {
+      const sessFac = session.faculty.toLowerCase().trim();
+      const match = subjects.find(s => {
+        if (!s.facultyName) return false;
+        const subFac = s.facultyName.toLowerCase().trim();
+        return subFac.includes(sessFac) || sessFac.includes(subFac);
+      });
+      if (match) return match;
+    }
+    return undefined;
+  };
+
   const isSessionVisible = (session: ClassSession) => {
-    const sub = subjectMap.get(session.subjectId);
+    const sub = getSubjectForSession(session);
     if (sub?.isElective && profile.enrolledElectiveIds && !profile.enrolledElectiveIds.includes(sub.id)) {
       return false;
     }
@@ -287,7 +315,7 @@ export const WeeklyTimetable: React.FC = () => {
             <ClassCard
               key={session.id}
               session={session}
-              subject={subjectMap.get(session.subjectId)}
+              subject={getSubjectForSession(session)}
               onEdit={handleEditSession}
               onDelete={deleteClassSession}
               isCurrent={false}
@@ -363,7 +391,7 @@ export const WeeklyTimetable: React.FC = () => {
                     <ClassCard
                       key={session.id}
                       session={session}
-                      subject={subjectMap.get(session.subjectId)}
+                      subject={getSubjectForSession(session)}
                       onEdit={handleEditSession}
                       onDelete={deleteClassSession}
                       isCurrent={false}
