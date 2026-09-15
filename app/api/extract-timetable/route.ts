@@ -120,78 +120,11 @@ export async function POST(req: Request) {
       }
     }
 
-    // Explicit Sample run (e.g. from demo button)
-    const isSampleRun = !!(isSample || (imageList.length === 0 && (fileName?.includes('Sample') || fileName?.includes('IIITNR'))));
-
-    if (isSampleRun && imageList.length === 0) {
-      const defaultData = [
-        {
-          day: 'Monday',
-          startTime: '09:00',
-          endTime: '10:00',
-          subjectName: 'Machine Learning',
-          subjectCode: 'CS302',
-          room: 'LT-1',
-          faculty: 'Dr. Debanjan Sadhukhan',
-          isLab: false,
-        },
-        {
-          day: 'Monday',
-          startTime: '10:00',
-          endTime: '11:00',
-          subjectName: 'Data Engineering',
-          subjectCode: 'CS304',
-          room: 'LT-2',
-          faculty: 'Dr. Ruhul Amin',
-          isLab: false,
-        },
-        {
-          day: 'Monday',
-          startTime: '11:15',
-          endTime: '12:15',
-          subjectName: 'Computer Networks',
-          subjectCode: 'CS306',
-          room: 'LT-1',
-          faculty: 'Dr. Vivek Tiwari',
-          isLab: false,
-        },
-        {
-          day: 'Monday',
-          startTime: '14:00',
-          endTime: '16:00',
-          subjectName: 'Machine Learning Lab',
-          subjectCode: 'CS382',
-          room: 'AI Lab',
-          faculty: 'Dr. Debanjan Sadhukhan',
-          isLab: true,
-        },
-        {
-          day: 'Tuesday',
-          startTime: '09:00',
-          endTime: '10:00',
-          subjectName: 'Digital Signal Processing',
-          subjectCode: 'EC302',
-          room: 'Room 204',
-          faculty: 'Dr. Shrivishal Tripathi',
-          isLab: false,
-        },
-        {
-          day: 'Tuesday',
-          startTime: '14:00',
-          endTime: '16:00',
-          subjectName: 'Data Engineering Lab',
-          subjectCode: 'CS384',
-          room: 'Computing Lab 1',
-          faculty: 'Dr. Ruhul Amin',
-          isLab: true,
-        },
-      ];
-
-      return NextResponse.json({
-        success: true,
-        sessions: defaultData,
-        source: 'Sample Timetable Demo',
-      });
+    if (!imageList || imageList.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'No timetable document or image provided.' },
+        { status: 400 }
+      );
     }
 
     let lastError: any = null;

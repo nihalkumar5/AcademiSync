@@ -33,9 +33,8 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
     onClose();
   };
 
-  const runExtraction = async (filesInfo: string | { name: string; base64: string; mimeType: string }[]) => {
-    const isString = typeof filesInfo === 'string';
-    setFileName(isString ? filesInfo : (filesInfo.length === 1 ? filesInfo[0].name : `${filesInfo.length} files`));
+  const runExtraction = async (filesInfo: { name: string; base64: string; mimeType: string }[]) => {
+    setFileName(filesInfo.length === 1 ? filesInfo[0].name : `${filesInfo.length} files`);
     setStep('extracting');
 
     try {
@@ -43,9 +42,8 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fileName: isString ? filesInfo : (filesInfo.length === 1 ? filesInfo[0].name : 'Multiple Files'),
-          images: isString ? [] : filesInfo,
-          isSample: isString,
+          fileName: filesInfo.length === 1 ? filesInfo[0].name : 'Multiple Files',
+          images: filesInfo,
           userId: user?.id || (user as any)?.uid || null,
         }),
       });
@@ -68,7 +66,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
       }
 
       const data = await res.json();
-      if (data.success && Array.isArray(data.events)) {
+      if (data.success && Array.isArray(data.events) && data.events.length > 0) {
         setExtractedEvents(data.events);
         setStep('review');
       } else {
@@ -76,43 +74,12 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
       }
     } catch (error: any) {
       console.warn('Calendar OCR API error:', error);
-      if (isString) {
-        // Fallback for sample run
-        const today = new Date();
-        const curYear = today.getFullYear();
-        const curMonth = String(today.getMonth() + 1).padStart(2, '0');
-
-        setExtractedEvents([
-          {
-            title: 'Mid-Semester Examinations',
-            date: `${curYear}-${curMonth}-15`,
-            type: 'exam',
-            description: 'Mid-term theory exams',
-            location: 'LT-1 & LT-2',
-          },
-          {
-            title: 'Institute Foundation Day',
-            date: `${curYear}-${curMonth}-22`,
-            type: 'holiday',
-            description: 'Classes suspended',
-          },
-          {
-            title: 'Major Assignment Submission',
-            date: `${curYear}-${curMonth}-28`,
-            type: 'assignment',
-            description: 'Submit project report to course coordinator',
-          },
-        ]);
-        setStep('review');
-      } else {
-        // Show toast alert on user upload error and return to upload step
-        showToast(
-          'Extraction Failed',
-          error.message || 'Could not parse the academic calendar. Please ensure the file is an image or PDF under 3MB.',
-          'error'
-        );
-        setStep('upload');
-      }
+      showToast(
+        'Extraction Failed',
+        error.message || 'Could not parse the academic calendar. Please ensure the file is a clear image or PDF.',
+        'error'
+      );
+      setStep('upload');
     }
   };
 
@@ -248,24 +215,6 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
               JPG · PNG · PDF
             </div>
           </div>
-
-          <div className="flex items-center justify-center gap-4 text-[9px] font-bold text-black/40 dark:text-white/30 tracking-[2px] uppercase mb-4">
-            <span className="flex-1 h-px bg-black/10 dark:bg-white/[0.06]" />
-            OR TRY SAMPLE
-            <span className="flex-1 h-px bg-black/10 dark:bg-white/[0.06]" />
-          </div>
-
-          <button 
-            type="button"
-            onClick={() => runExtraction('Academic_Calendar_2024.pdf')}
-            className="flex items-center justify-between px-4 w-full h-[44px] rounded-none border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] hover:border-black/20 dark:hover:border-white/[0.14] transition-colors cursor-pointer"
-          >
-            <div className="flex items-center gap-2 text-[12px] font-bold text-black/70 dark:text-[#94A3B8]">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              Use sample calendar
-            </div>
-            <span className="text-black/60 dark:text-[#94A3B8] text-[14px]">→</span>
-          </button>
         </div>
       )}
 

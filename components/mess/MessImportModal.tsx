@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Modal } from '../ui/Modal';
-import { Upload, Sparkles } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
 import { processMultipleFilesForAi } from '@/lib/fileCompressor';
@@ -11,7 +11,7 @@ import { validateUploadedFile } from '@/lib/fileSafety';
 export interface MessImportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onFileSelect: (files: { name: string; base64: string; mimeType: string }[] | 'sample') => void;
+  onFileSelect: (files: { name: string; base64: string; mimeType: string }[]) => void;
 }
 
 export const MessImportModal: React.FC<MessImportModalProps> = ({ isOpen, onClose, onFileSelect }) => {
@@ -39,11 +39,6 @@ export const MessImportModal: React.FC<MessImportModalProps> = ({ isOpen, onClos
     }
   };
 
-  const handleSample = () => {
-    onFileSelect('sample');
-    onClose();
-  };
-
   return (
     <Modal
       isOpen={isOpen}
@@ -52,7 +47,7 @@ export const MessImportModal: React.FC<MessImportModalProps> = ({ isOpen, onClos
       description="Upload your mess menu photo(s) or PDF and AI will auto-extract dishes, days & timings."
     >
       <div className="flex flex-col text-center w-full mt-2">
-        <div className="relative rounded-none border-2 border-dashed border-black/15 dark:border-white/[0.1] hover:border-black/30 dark:hover:border-white/20 bg-[#F7F7F5]/50 dark:bg-white/[0.02] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-all p-8 flex flex-col items-center justify-center mb-6 cursor-pointer group">
+        <div className="relative rounded-none border-2 border-dashed border-black/15 dark:border-white/[0.1] hover:border-black/30 dark:hover:border-white/20 bg-[#F7F7F5]/50 dark:bg-white/[0.02] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-all p-8 flex flex-col items-center justify-center cursor-pointer group">
           <input
             type="file"
             multiple
@@ -76,24 +71,6 @@ export const MessImportModal: React.FC<MessImportModalProps> = ({ isOpen, onClos
             JPG · PNG · PDF (Multi-Page Supported)
           </div>
         </div>
-
-        <div className="flex items-center justify-center gap-4 text-[9px] font-bold text-black/40 dark:text-white/30 tracking-[2px] uppercase mb-4">
-          <span className="flex-1 h-px bg-black/10 dark:bg-white/[0.06]" />
-          OR TRY SAMPLE
-          <span className="flex-1 h-px bg-black/10 dark:bg-white/[0.06]" />
-        </div>
-
-        <button 
-          type="button"
-          onClick={handleSample}
-          className="flex items-center justify-between px-4 w-full h-[44px] rounded-none border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] hover:border-black/20 dark:hover:border-white/[0.14] transition-colors cursor-pointer"
-        >
-          <div className="flex items-center gap-2 text-[12px] font-bold text-black/70 dark:text-[#94A3B8]">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            Use sample Indian mess menu
-          </div>
-          <span className="text-black/60 dark:text-[#94A3B8] text-[14px]">→</span>
-        </button>
       </div>
     </Modal>
   );

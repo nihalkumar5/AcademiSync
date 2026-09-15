@@ -39,7 +39,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
   const [fileName, setFileName] = useState('');
   const [extractedSessions, setExtractedSessions] = useState<ExtractedClassSession[]>([]);
   const [extractError, setExtractError] = useState<string | null>(null);
-  const [lastUploadedFiles, setLastUploadedFiles] = useState<string | { name: string, base64: string, mimeType: string }[] | null>(null);
+  const [lastUploadedFiles, setLastUploadedFiles] = useState<{ name: string, base64: string, mimeType: string }[] | null>(null);
 
   const resetState = () => {
     setStep('upload');
@@ -71,9 +71,8 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     setStep('review');
   };
 
-  const runExtraction = async (filesInfo: string | { name: string, base64: string, mimeType: string }[]) => {
-    const isString = typeof filesInfo === 'string';
-    setFileName(isString ? filesInfo : (filesInfo.length === 1 ? filesInfo[0].name : `${filesInfo.length} files selected`));
+  const runExtraction = async (filesInfo: { name: string, base64: string, mimeType: string }[]) => {
+    setFileName(filesInfo.length === 1 ? filesInfo[0].name : `${filesInfo.length} files selected`);
     setLastUploadedFiles(filesInfo);
     setExtractError(null);
     setStep('extracting');
@@ -87,9 +86,8 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fileName: isString ? filesInfo : (filesInfo.length === 1 ? filesInfo[0].name : 'Multiple Files'),
-          images: isString ? [] : filesInfo,
-          isSample: isString,
+          fileName: filesInfo.length === 1 ? filesInfo[0].name : 'Multiple Files',
+          images: filesInfo,
           userId: user?.id || (user as any)?.uid || null,
           studentContext: {
             college: profile?.college || '',
@@ -382,25 +380,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
             </div>
           </div>
 
-          <div className="flex items-center justify-center gap-4 text-[9px] font-bold text-black/40 dark:text-white/30 tracking-[2px] uppercase mb-3">
-            <span className="flex-1 h-px bg-black/10 dark:bg-white/[0.06]" />
-            OR TRY SAMPLE
-            <span className="flex-1 h-px bg-black/10 dark:bg-white/[0.06]" />
-          </div>
-
-          <button 
-            type="button"
-            onClick={() => runExtraction('IIITNR_BTech_CSE_Sem6_Timetable.pdf')}
-            className="flex items-center justify-between px-4 w-full h-[40px] rounded-none border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] hover:border-black/20 dark:hover:border-white/[0.14] transition-colors cursor-pointer"
-          >
-            <div className="flex items-center gap-2 text-[12px] font-bold text-black/70 dark:text-[#94A3B8]">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              Use sample timetable
-            </div>
-            <span className="text-black/60 dark:text-[#94A3B8] text-[14px]">→</span>
-          </button>
-
-          <div className="mt-3 text-center">
+          <div className="mt-2 text-center">
             <button
               type="button"
               onClick={handleManualEntry}

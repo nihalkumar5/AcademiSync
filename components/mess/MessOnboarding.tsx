@@ -64,12 +64,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
     }
   };
 
-  const handleModalFileSelect = async (selected: { name: string; base64: string; mimeType: string }[] | 'sample') => {
-    if (selected === 'sample') {
-      setStep(2);
-      processMenu('sample');
-      return;
-    }
+  const handleModalFileSelect = async (selected: { name: string; base64: string; mimeType: string }[]) => {
     if (!selected || selected.length === 0) return;
     setStep(2);
     processMenu(selected);
@@ -95,7 +90,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
     }
   };
 
-  const processMenu = async (filesOrSample: { name: string; base64: string; mimeType: string }[] | 'sample') => {
+  const processMenu = async (files: { name: string; base64: string; mimeType: string }[]) => {
     setIsProcessing(true);
     setProgress(0);
 
@@ -107,38 +102,15 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
     }, 400);
 
     try {
-      let data;
-      if (filesOrSample === 'sample') {
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        data = {
-          success: true,
-          data: {
-            Monday: { Breakfast: ["Aloo Paratha", "Curd", "Tea", "Banana"], Lunch: ["Rajma", "Jeera Rice", "Roti", "Salad"], Snacks: ["Samosa", "Mint Chutney", "Tea"], Dinner: ["Paneer Butter Masala", "Dal Makhani", "Roti", "Gulab Jamun"] },
-            Tuesday: { Breakfast: ["Poha", "Sev", "Jalebi", "Milk"], Lunch: ["Chole", "Bhature", "Rice", "Pickle"], Snacks: ["Veg Patties", "Coffee"], Dinner: ["Mix Veg", "Dal Tadka", "Roti", "Kheer"] },
-            Wednesday: { Breakfast: ["Idli", "Medu Vada", "Sambar", "Chutney"], Lunch: ["Kadhi Pakora", "Khichdi", "Papad"], Snacks: ["Bread Pakora", "Tea"], Dinner: ["Egg Curry / Shahi Paneer", "Dal", "Roti"] },
-            Thursday: { Breakfast: ["Upma", "Chutney", "Tea"], Lunch: ["Dal Makhani", "Jeera Rice", "Roti", "Raita"], Snacks: ["Maggi", "Coffee"], Dinner: ["Aloo Gobi Matar", "Yellow Dal", "Roti"] },
-            Friday: { Breakfast: ["Masala Dosa", "Sambar", "Chutney"], Lunch: ["Soyabean Curry", "Rice", "Roti"], Snacks: ["Pasta", "Tea"], Dinner: ["Butter Chicken / Kadhai Paneer", "Naan", "Sweets"] },
-            Saturday: { Breakfast: ["Puri Bhaji", "Halwa", "Tea"], Lunch: ["Moong Dal Khichdi", "Aloo Chokha", "Papad"], Snacks: ["Bhel Puri", "Tea"], Dinner: ["Malai Kofta", "Dal Fry", "Roti"] },
-            Sunday: { Breakfast: ["Bread Omelette / Sandwich", "Juice"], Lunch: ["Hyderabadi Veg Biryani", "Raita"], Snacks: ["French Fries", "Cold Drink"], Dinner: ["Dal Baati Churma", "Kheer"] },
-          },
-          timings: {
-            Breakfast: '8:00 - 10:00',
-            Lunch: '12:30 - 2:30',
-            Snacks: '4:30 - 5:30',
-            Dinner: '7:30 - 9:30',
-          },
-        };
-      } else {
-        const res = await fetch('/api/extract-mess', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            images: filesOrSample,
-            userId: user?.id || (user as any)?.uid || null,
-          }),
-        });
-        data = await res.json();
-      }
+      const res = await fetch('/api/extract-mess', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          images: files,
+          userId: user?.id || (user as any)?.uid || null,
+        }),
+      });
+      const data = await res.json();
 
       clearInterval(interval);
       setProgress(100);

@@ -27,29 +27,27 @@ export async function POST(req: Request) {
     // Handle both legacy single image or new multi-image format
     const imageList = images || (imageBase64 ? [{ base64: imageBase64, mimeType }] : []);
 
-    const isSampleRun = !!(isSample || imageList.length === 0);
+    if (!imageList || imageList.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'No calendar document or image uploaded.' },
+        { status: 400 }
+      );
+    }
 
-    // File Upload Safety Validation (if not a sample run)
-    if (!isSampleRun && imageList.length > 0) {
-      const validation = validateServerUploadPayload(imageList);
-      if (!validation.valid) {
-        return NextResponse.json(
-          { success: false, error: validation.error || 'Invalid document uploaded.' },
-          { status: 400 }
-        );
-      }
+    // File Upload Safety Validation
+    const validation = validateServerUploadPayload(imageList);
+    if (!validation.valid) {
+      return NextResponse.json(
+        { success: false, error: validation.error || 'Invalid document uploaded.' },
+        { status: 400 }
+      );
     }
 
     if (apiKey) {
       const candidateModels = [
         'gemini-3.5-flash-lite',
         'gemini-flash-lite-latest',
-        'gemini-3.1-flash-lite-preview',
-        'gemini-3.1-flash-lite',
-        'gemini-3.5-flash',
-        'gemini-3.7-flash',
         'gemini-3.6-flash',
-        'gemini-flash-latest',
       ];
       const genAI = new GoogleGenerativeAI(apiKey);
 
@@ -101,33 +99,13 @@ CRITICAL INSTRUCTIONS FOR DATE PROCESSING:
 2. ACADEMIC YEAR BOUNDARY & YEAR INFERENCE: Academic calendars span across two calendar years (e.g., Academic Year 2026-27). Infer the correct year (YYYY) for each month. July to December are in the first year (e.g., 2026), and January to June are in the second year (e.g., 2027). Look closely at headers, footers, and text to confirm the correct academic year context.
 3. THOROUGH EXTRACTION: Scan the entire document page-by-page. Extract registration dates, commencement of classes, holidays, preparation leaves, mid-semester exams, end-semester exams, fests, results announcements, and vacations.`;
 
-      let contents: any[] = [prompt];
-
-      if (isSampleRun) {
-        // Pass the text representation of the IIIT-NR Academic Calendar
-        contents.push(`Here is the text version of the IIIT-NR Academic Calendar for Odd Semester 2026:
-        
-        International Institute of Information Technology, Naya Raipur
-        ACADEMIC CALENDAR FOR ODD SEMESTER (JULY - DECEMBER 2026)
-        
-        1. Registration for Semester: July 15, 2026
-        2. Commencement of Classes: July 17, 2026
-        3. Mid-Semester Examinations (LT-1 & LT-2): September 14, 2026 to September 19, 2026 (No classes during exams)
-        4. Dussehra Holidays: October 19, 2026 to October 24, 2026
-        5. Diwali Holidays: November 9, 2026 to November 14, 2026
-        6. End-Semester Examination: November 30, 2026 to December 11, 2026
-        7. Winter Vacation: December 14, 2026 to January 3, 2027
-        8. Announcement of Results: December 28, 2026`);
-      } else {
-        // Pass the uploaded files (base64)
-        const fileParts = imageList.map((img: any) => ({
-          inlineData: {
-            data: img.base64.replace(/^data:[^;]+;base64,/, ''),
-            mimeType: img.mimeType || 'image/jpeg',
-          },
-        }));
-        contents.push(...fileParts);
-      }
+      const fileParts = imageList.map((img: any) => ({
+        inlineData: {
+          data: img.base64.replace(/^data:[^;]+;base64,/, ''),
+          mimeType: img.mimeType || 'image/jpeg',
+        },
+      }));
+      const contents = [prompt, ...fileParts];
 
       let lastError: any = null;
 
@@ -140,24 +118,22 @@ CRITICAL INSTRUCTIONS FOR DATE PROCESSING:
 
           const result: any = await Promise.race([
             model.generateContent(contents),
-            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 18000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 25000))
           ]);
-          const responseText = result.response.text().trim();
-          
-          let parsed;
+
+          const responseText = result.response.text();
+          let parsed: any;
           try {
             parsed = JSON.parse(responseText);
-          } catch (jsonErr) {
-            console.warn('Direct JSON parse failed, attempting cleanup. Raw response:', responseText);
-            const cleanedJson = responseText
-              .replace(/```json/g, '')
-              .replace(/```/g, '')
-              .trim();
-            try {
-              parsed = JSON.parse(cleanedJson);
-            } catch (jsonErr2) {
-              // Regex fallback to extract array [ ... ]
-              const arrayMatch = responseText.match(/\[\s*\{[\s\S]*\}\s*\]/);
+          } catch {
+            let jsonStr = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
+            const firstBracket = jsonStr.indexOf('[');
+            const lastBracket = jsonStr.lastIndexOf(']');
+            if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+              jsonStr = jsonStr.substring(firstBracket, lastBracket + 1);
+              parsed = JSON.parse(jsonStr);
+            } else {
+              const arrayMatch = responseText.match(/\[[\s\S]*\]/);
               if (arrayMatch) {
                 parsed = JSON.parse(arrayMatch[0]);
               } else {
@@ -170,7 +146,7 @@ CRITICAL INSTRUCTIONS FOR DATE PROCESSING:
             return NextResponse.json({
               success: true,
               events: parsed,
-              source: isSampleRun ? 'IIIT-NR Sample Text via Gemini' : (fileName || `Gemini Vision OCR (${modelName})`),
+              source: fileName || `Gemini Vision OCR (${modelName})`,
             });
           }
         } catch (modelErr: any) {
@@ -179,15 +155,8 @@ CRITICAL INSTRUCTIONS FOR DATE PROCESSING:
         }
       }
 
-      if (lastError && !isSampleRun) {
+      if (lastError) {
         logServerError('ExtractCalendarAPI:AllModelsFailed', lastError);
-        return NextResponse.json(
-          { 
-            success: false, 
-            error: 'Could not extract academic calendar events. This can happen due to a weak internet connection, unreadable photo, or AI timeout. Please try again with a clearer photo or enter events manually.' 
-          },
-          { status: 422 }
-        );
       }
     }
 

@@ -24,47 +24,28 @@ export async function POST(req: Request) {
       }
     }
 
-    // Handle demo sample button directly
-    if (fileName === 'demo_ml_assignment.jpg' && !imageBase64) {
-      const defaultDeadline = new Date();
-      defaultDeadline.setDate(defaultDeadline.getDate() + 2);
-      defaultDeadline.setHours(23, 59, 0, 0);
-
-      return NextResponse.json({
-        success: true,
-        homework: {
-          subjectName: 'Machine Learning',
-          title: 'Assignment 3: Neural Networks & Backpropagation',
-          description: 'Derive the gradient update rules for a 3-layer MLP with Cross-Entropy loss. Submit handwritten derivations + Python code.',
-          deadline: defaultDeadline.toISOString(),
-          priority: 'High',
-        },
-        source: 'Sample Assignment',
-      });
+    if (!imageBase64) {
+      return NextResponse.json(
+        { success: false, error: 'No assignment image or document provided.' },
+        { status: 400 }
+      );
     }
 
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 
-    if (imageBase64) {
-      const validation = validateServerUploadPayload([{ name: fileName, base64: imageBase64, mimeType }]);
-      if (!validation.valid) {
-        return NextResponse.json(
-          { success: false, error: validation.error || 'Invalid assignment file uploaded.' },
-          { status: 400 }
-        );
-      }
+    const validation = validateServerUploadPayload([{ name: fileName, base64: imageBase64, mimeType }]);
+    if (!validation.valid) {
+      return NextResponse.json(
+        { success: false, error: validation.error || 'Invalid assignment file uploaded.' },
+        { status: 400 }
+      );
     }
 
     if (apiKey && imageBase64) {
       const candidateModels = [
         'gemini-3.5-flash-lite',
         'gemini-flash-lite-latest',
-        'gemini-3.1-flash-lite-preview',
-        'gemini-3.1-flash-lite',
-        'gemini-3.5-flash',
-        'gemini-3.7-flash',
         'gemini-3.6-flash',
-        'gemini-flash-latest',
       ];
       const genAI = new GoogleGenerativeAI(apiKey);
 

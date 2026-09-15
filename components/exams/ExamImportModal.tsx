@@ -32,34 +32,11 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
     onClose();
   };
 
-  const runExtraction = async (filesInfo: string | { name: string, base64: string, mimeType: string }[]) => {
-    const isString = typeof filesInfo === 'string';
-    setFileName(isString ? filesInfo : (filesInfo.length === 1 ? filesInfo[0].name : `${filesInfo.length} files selected`));
+  const runExtraction = async (filesInfo: { name: string, base64: string, mimeType: string }[]) => {
+    setFileName(filesInfo.length === 1 ? filesInfo[0].name : `${filesInfo.length} files selected`);
     setStep('extracting');
 
     try {
-      if (typeof filesInfo === 'string') {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        setExtractedExams([
-          {
-            subjectName: 'Data Structures and Algorithms',
-            date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            time: '10:00 AM - 1:00 PM',
-            syllabus: 'Trees, Graphs, DP, Sorting',
-            durationMinutes: 180
-          },
-          {
-            subjectName: 'Computer Networks',
-            date: new Date(Date.now() + 13 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            time: '2:00 PM - 5:00 PM',
-            syllabus: 'OSI Model, TCP/IP, Routing',
-            durationMinutes: 180
-          }
-        ]);
-        setStep('review');
-        return;
-      }
-      
       const res = await fetch('/api/extract-exam', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -77,14 +54,16 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
         return;
       }
 
-      if (data.success && Array.isArray(data.exams)) {
+      if (data.success && Array.isArray(data.exams) && data.exams.length > 0) {
         setExtractedExams(data.exams);
         setStep('review');
       } else {
-        throw new Error('No exams returned');
+        showToast('Scan Unsuccessful', data.error || 'Could not extract exams. Please upload a clearer photo or PDF.', 'error');
+        resetState();
       }
     } catch (error) {
       console.error('Failed to extract exams:', error);
+      showToast('Connection Error', 'Request failed or timed out. Please try again.', 'error');
       resetState();
     }
   };
@@ -196,24 +175,6 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
               JPG · PNG · PDF
             </div>
           </div>
-
-          <div className="flex items-center justify-center gap-4 text-[9px] font-bold text-black/40 dark:text-white/30 tracking-[2px] uppercase mb-4">
-            <span className="flex-1 h-px bg-black/10 dark:bg-white/[0.06]" />
-            OR TRY SAMPLE
-            <span className="flex-1 h-px bg-black/10 dark:bg-white/[0.06]" />
-          </div>
-
-          <button 
-            type="button"
-            onClick={() => runExtraction('Exam_Schedule_2024.pdf')}
-            className="flex items-center justify-between px-4 w-full h-[44px] rounded-none border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] hover:border-black/20 dark:hover:border-white/[0.14] transition-colors cursor-pointer"
-          >
-            <div className="flex items-center gap-2 text-[12px] font-bold text-black/70 dark:text-[#94A3B8]">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              Use sample schedule
-            </div>
-            <span className="text-black/60 dark:text-[#94A3B8] text-[14px]">→</span>
-          </button>
         </div>
       )}
 
