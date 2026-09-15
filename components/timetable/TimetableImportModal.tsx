@@ -50,6 +50,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         body: JSON.stringify({
           fileName: isString ? filesInfo : (filesInfo.length === 1 ? filesInfo[0].name : 'Multiple Files'),
           images: isString ? [] : filesInfo,
+          isSample: isString,
           userId: user?.id || (user as any)?.uid || null,
         }),
       });
@@ -61,29 +62,26 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         return;
       }
 
-      if (data.success && Array.isArray(data.sessions)) {
+      if (data.success && Array.isArray(data.sessions) && data.sessions.length > 0) {
         setExtractedSessions(mergeConsecutiveSessions(data.sessions));
+        setStep('review');
       } else {
-        // Fallback for demo
-        setExtractedSessions([
-          {
-            day: 'Monday',
-            startTime: '09:00',
-            endTime: '10:00',
-            subjectName: 'Machine Learning',
-            subjectCode: 'CS302',
-            room: 'LT-1',
-            faculty: 'Dr. Debanjan Sadhukhan',
-            isLab: false,
-          },
-        ]);
+        showToast(
+          'Scan Unsuccessful', 
+          data.error || 'Could not extract timetable. This can happen due to a weak internet connection, unreadable/blurry photo, or AI timeout. Please try again with a clearer photo or add classes manually.', 
+          'error'
+        );
+        resetState();
       }
     } catch (error) {
       console.error('Failed to extract timetable:', error);
+      showToast(
+        'Connection Error', 
+        'Request failed or timed out. Please check your internet connection and try again.', 
+        'error'
+      );
       resetState();
     }
-
-    setStep('review');
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,35 +143,50 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
   };
 
   const handleSaveConfirmed = () => {
-    // We need to fetch existing subjects, match or create them, then create ClassSessions
-    const newSubjects: Subject[] = [...subjects];
+    // Only include subjects that belong to the newly imported timetable routine
+    const newSubjects: Subject[] = [];
     const newSessions: ClassSession[] = [];
 
     extractedSessions.forEach((extSession, idx) => {
-      // Find matching subject
+      // Find if we already registered this subject in newSubjects
       let matchedSubject = newSubjects.find(
         (s) => s.name.toLowerCase() === extSession.subjectName.toLowerCase() || 
                (extSession.subjectCode && s.code && s.code.toLowerCase() === extSession.subjectCode.toLowerCase())
       );
 
       if (!matchedSubject) {
-        const assignedColor = getHarmonicColorForSubject(
-          { name: extSession.subjectName, code: extSession.subjectCode, isLab: extSession.isLab },
-          newSubjects.map((s) => s.color)
+        // Check if user previously had this subject in `subjects` to preserve custom color, notes, faculty details
+        const existingSubject = subjects.find(
+          (s) => s.name.toLowerCase() === extSession.subjectName.toLowerCase() || 
+                 (extSession.subjectCode && s.code && s.code.toLowerCase() === extSession.subjectCode.toLowerCase())
         );
 
-        matchedSubject = {
-          id: `subj_${Date.now()}_${idx}`,
-          name: extSession.subjectName,
-          code: extSession.subjectCode || '',
-          shortName: extSession.subjectName.substring(0, 4).toUpperCase(),
-          facultyName: extSession.faculty || 'TBD',
-          room: extSession.room || 'TBD',
-          credits: 3,
-          color: assignedColor,
-          carryRequirements: extSession.isLab ? ['Laptop (Charged)', 'Lab Manual / Record'] : ['Lecture Notebook'],
-          isLab: extSession.isLab,
-        };
+        if (existingSubject) {
+          matchedSubject = {
+            ...existingSubject,
+            facultyName: extSession.faculty || existingSubject.facultyName,
+            room: extSession.room || existingSubject.room,
+            isLab: extSession.isLab ?? existingSubject.isLab,
+          };
+        } else {
+          const assignedColor = getHarmonicColorForSubject(
+            { name: extSession.subjectName, code: extSession.subjectCode, isLab: extSession.isLab },
+            newSubjects.map((s) => s.color)
+          );
+
+          matchedSubject = {
+            id: `subj_${Date.now()}_${idx}`,
+            name: extSession.subjectName,
+            code: extSession.subjectCode || '',
+            shortName: extSession.subjectName.substring(0, 4).toUpperCase(),
+            facultyName: extSession.faculty || 'TBD',
+            room: extSession.room || 'TBD',
+            credits: 3,
+            color: assignedColor,
+            carryRequirements: extSession.isLab ? ['Laptop (Charged)', 'Lab Manual / Record'] : ['Lecture Notebook'],
+            isLab: extSession.isLab,
+          };
+        }
         newSubjects.push(matchedSubject);
       }
 

@@ -39,11 +39,10 @@ export async function POST(req: Request) {
     }
 
     if (apiKey && imageList.length > 0) {
-      try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
+      const candidateModels = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash'];
+      const genAI = new GoogleGenerativeAI(apiKey);
 
-        const prompt = `You are an academic exam timetable extractor.
+      const prompt = `You are an academic exam timetable extractor.
 Analyze the provided exam timetable image(s) and extract all exams across all pages into a strict single JSON array.
 Each element MUST have:
 - "subjectName": Full subject name
@@ -65,33 +64,40 @@ Return ONLY raw JSON array.
   }
 ]`;
 
-        const imageParts = imageList.map((img: any) => ({
-          inlineData: {
-            data: img.base64.replace(/^data:[^;]+;base64,/, ''),
-            mimeType: img.mimeType || 'image/jpeg',
-          },
-        }));
+      const imageParts = imageList.map((img: any) => ({
+        inlineData: {
+          data: img.base64.replace(/^data:[^;]+;base64,/, ''),
+          mimeType: img.mimeType || 'image/jpeg',
+        },
+      }));
 
-        const result = await model.generateContent([prompt, ...imageParts]);
-        const responseText = result.response.text();
-        const cleanedJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsed = JSON.parse(cleanedJson);
+      for (const modelName of candidateModels) {
+        try {
+          const model = genAI.getGenerativeModel({ model: modelName });
+          const result = await model.generateContent([prompt, ...imageParts]);
+          const responseText = result.response.text();
+          const cleanedJson = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
+          const parsed = JSON.parse(cleanedJson);
 
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return NextResponse.json({
-            success: true,
-            exams: parsed,
-            source: fileName || 'Gemini Vision AI',
-          });
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return NextResponse.json({
+              success: true,
+              exams: parsed,
+              source: fileName || `Gemini Vision AI (${modelName})`,
+            });
+          }
+        } catch (aiErr) {
+          logServerError(`ExtractExamAPI:${modelName}`, aiErr);
         }
-      } catch (aiErr) {
-        logServerError('ExtractExamAPI:Gemini', aiErr);
       }
     }
 
     return NextResponse.json(
-      { success: false, error: 'Could not extract exam timetable. Please ensure document is clear and readable.' },
-      { status: 500 }
+      { 
+        success: false, 
+        error: 'Could not extract exam timetable. This can happen due to a weak internet connection, unreadable photo, or AI timeout. Please try again with a clear photo or add exams manually.' 
+      },
+      { status: 422 }
     );
   } catch (error) {
     logServerError('ExtractExamAPI:Unhandled', error);

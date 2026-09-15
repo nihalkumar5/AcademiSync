@@ -8,7 +8,7 @@ import { checkAiRateLimit } from '@/lib/rateLimit';
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { images, imageBase64, mimeType, fileName, userId } = body;
+    const { images, imageBase64, mimeType, fileName, userId, isSample } = body;
     const clientUserId = userId || req.headers.get('x-user-id') || null;
 
     // Campus-Safe AI Rate Limiter Guard
@@ -39,13 +39,86 @@ export async function POST(req: Request) {
       }
     }
 
-    // If Gemini API Key is configured and an image was uploaded, run multimodal vision extraction
-    if (apiKey && imageList.length > 0) {
-      try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
+    // Explicit Sample run (e.g. from demo button)
+    const isSampleRun = !!(isSample || (imageList.length === 0 && (fileName?.includes('Sample') || fileName?.includes('IIITNR'))));
 
-        const prompt = `You are a specialized timetable parsing assistant for university students across India.
+    if (isSampleRun && imageList.length === 0) {
+      const defaultData = [
+        {
+          day: 'Monday',
+          startTime: '09:00',
+          endTime: '10:00',
+          subjectName: 'Machine Learning',
+          subjectCode: 'CS302',
+          room: 'LT-1',
+          faculty: 'Dr. Debanjan Sadhukhan',
+          isLab: false,
+        },
+        {
+          day: 'Monday',
+          startTime: '10:00',
+          endTime: '11:00',
+          subjectName: 'Data Engineering',
+          subjectCode: 'CS304',
+          room: 'LT-2',
+          faculty: 'Dr. Ruhul Amin',
+          isLab: false,
+        },
+        {
+          day: 'Monday',
+          startTime: '11:15',
+          endTime: '12:15',
+          subjectName: 'Computer Networks',
+          subjectCode: 'CS306',
+          room: 'LT-1',
+          faculty: 'Dr. Vivek Tiwari',
+          isLab: false,
+        },
+        {
+          day: 'Monday',
+          startTime: '14:00',
+          endTime: '16:00',
+          subjectName: 'Machine Learning Lab',
+          subjectCode: 'CS382',
+          room: 'AI Lab',
+          faculty: 'Dr. Debanjan Sadhukhan',
+          isLab: true,
+        },
+        {
+          day: 'Tuesday',
+          startTime: '09:00',
+          endTime: '10:00',
+          subjectName: 'Digital Signal Processing',
+          subjectCode: 'EC302',
+          room: 'Room 204',
+          faculty: 'Dr. Shrivishal Tripathi',
+          isLab: false,
+        },
+        {
+          day: 'Tuesday',
+          startTime: '14:00',
+          endTime: '16:00',
+          subjectName: 'Data Engineering Lab',
+          subjectCode: 'CS384',
+          room: 'Computing Lab 1',
+          faculty: 'Dr. Ruhul Amin',
+          isLab: true,
+        },
+      ];
+
+      return NextResponse.json({
+        success: true,
+        sessions: defaultData,
+        source: 'Sample Timetable Demo',
+      });
+    }
+
+    // If an image was uploaded, run multimodal vision extraction across active Gemini models
+    if (apiKey && imageList.length > 0) {
+      const candidateModels = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash'];
+      const genAI = new GoogleGenerativeAI(apiKey);
+
+      const prompt = `You are a specialized timetable parsing assistant for university students across India.
 Analyze the provided timetable image(s) and extract all class/lecture/lab slots across all pages into a strict single JSON array.
 
 CRITICAL INSTRUCTIONS FOR SUBJECTS:
@@ -77,104 +150,54 @@ Return ONLY raw valid JSON array:
   }
 ]`;
 
-        const imageParts = imageList.map((img: any) => ({
-          inlineData: {
-            data: img.base64.replace(/^data:[^;]+;base64,/, ''),
-            mimeType: img.mimeType || 'image/jpeg',
-          },
-        }));
+      const imageParts = imageList.map((img: any) => ({
+        inlineData: {
+          data: img.base64.replace(/^data:[^;]+;base64,/, ''),
+          mimeType: img.mimeType || 'image/jpeg',
+        },
+      }));
 
-        const result = await model.generateContent([prompt, ...imageParts]);
-        const responseText = result.response.text();
-        const cleanedJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsed = JSON.parse(cleanedJson);
+      let lastError: any = null;
 
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const merged = mergeConsecutiveSessions(parsed);
-          return NextResponse.json({
-            success: true,
-            sessions: merged,
-            source: fileName || 'Gemini Vision OCR',
-          });
+      for (const modelName of candidateModels) {
+        try {
+          const model = genAI.getGenerativeModel({ model: modelName });
+          const result = await model.generateContent([prompt, ...imageParts]);
+          const responseText = result.response.text();
+          const cleanedJson = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
+          const parsed = JSON.parse(cleanedJson);
+
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const merged = mergeConsecutiveSessions(parsed);
+            return NextResponse.json({
+              success: true,
+              sessions: merged,
+              source: fileName || `Gemini Vision OCR (${modelName})`,
+            });
+          }
+        } catch (modelErr: any) {
+          logServerError(`ExtractTimetableAPI:${modelName}`, modelErr);
+          lastError = modelErr;
         }
-      } catch (aiErr) {
-        logServerError('ExtractTimetableAPI:Gemini', aiErr);
+      }
+
+      if (lastError) {
+        logServerError('ExtractTimetableAPI:AllModelsFailed', lastError);
       }
     }
 
-    // Default intelligent fallback for demo/testing without API key
-    const defaultData = [
-      {
-        day: 'Monday',
-        startTime: '09:00',
-        endTime: '10:00',
-        subjectName: 'Machine Learning',
-        subjectCode: 'CS302',
-        room: 'LT-1',
-        faculty: 'Dr. Debanjan Sadhukhan',
-        isLab: false,
+    // If we reach here, extraction was unsuccessful for the uploaded file
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Could not extract timetable from this document. This can happen due to a weak internet connection, unreadable/blurry photo, or AI timeout. Please check your connection, upload a clearer photo, or add classes manually.' 
       },
-      {
-        day: 'Monday',
-        startTime: '10:00',
-        endTime: '11:00',
-        subjectName: 'Data Engineering',
-        subjectCode: 'CS304',
-        room: 'LT-2',
-        faculty: 'Dr. Ruhul Amin',
-        isLab: false,
-      },
-      {
-        day: 'Monday',
-        startTime: '11:15',
-        endTime: '12:15',
-        subjectName: 'Computer Networks',
-        subjectCode: 'CS306',
-        room: 'LT-1',
-        faculty: 'Dr. Vivek Tiwari',
-        isLab: false,
-      },
-      {
-        day: 'Monday',
-        startTime: '14:00',
-        endTime: '16:00',
-        subjectName: 'Machine Learning Lab',
-        subjectCode: 'CS382',
-        room: 'AI Lab',
-        faculty: 'Dr. Debanjan Sadhukhan',
-        isLab: true,
-      },
-      {
-        day: 'Tuesday',
-        startTime: '09:00',
-        endTime: '10:00',
-        subjectName: 'Digital Signal Processing',
-        subjectCode: 'EC302',
-        room: 'Room 204',
-        faculty: 'Dr. Shrivishal Tripathi',
-        isLab: false,
-      },
-      {
-        day: 'Tuesday',
-        startTime: '14:00',
-        endTime: '16:00',
-        subjectName: 'Data Engineering Lab',
-        subjectCode: 'CS384',
-        room: 'Computing Lab 1',
-        faculty: 'Dr. Ruhul Amin',
-        isLab: true,
-      },
-    ];
-
-    return NextResponse.json({
-      success: true,
-      sessions: defaultData,
-      source: fileName || 'Simulated OCR (Add GEMINI_API_KEY for live extraction)',
-    });
+      { status: 422 }
+    );
   } catch (error) {
     logServerError('ExtractTimetableAPI:Unhandled', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to process timetable document. Please try again.' },
+      { success: false, error: 'Failed to process timetable document. Please check your connection and try again.' },
       { status: 500 }
     );
   }

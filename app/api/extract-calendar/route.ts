@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
+import { GoogleGenerativeAI, SchemaType, GenerationConfig } from '@google/generative-ai';
 import { logServerError } from '@/lib/errorUtils';
 import { validateServerUploadPayload } from '@/lib/fileSafety';
 import { checkAiRateLimit } from '@/lib/rateLimit';
@@ -41,52 +41,50 @@ export async function POST(req: Request) {
     }
 
     if (apiKey) {
-      try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({
-          model: 'gemini-3.6-flash',
-          generationConfig: {
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: SchemaType.ARRAY,
-              description: 'List of academic events, exams, and holidays extracted from the calendar',
-              items: {
-                type: SchemaType.OBJECT,
-                properties: {
-                  title: { 
-                    type: SchemaType.STRING, 
-                    description: 'Specific name/title of the academic event, holiday, or exam. E.g., "Mid-Semester Examinations", "Diwali Break", "AI Project Presentation", "Semester Registration".' 
-                  },
-                  startDate: { 
-                    type: SchemaType.STRING, 
-                    description: 'Start date of the event or range in YYYY-MM-DD format.' 
-                  },
-                  endDate: { 
-                    type: SchemaType.STRING, 
-                    description: 'End date of the event or range in YYYY-MM-DD format. If it is a single-day event, set endDate to the same value as startDate.' 
-                  },
-                  type: { 
-                    type: SchemaType.STRING, 
-                    format: 'enum',
-                    enum: ['exam', 'holiday', 'event', 'assignment'],
-                    description: 'Type of event: "exam" for exams/tests, "holiday" for holidays/vacations, "event" for semester registrations/commencements/cultural programs, "assignment" for submission deadlines.' 
-                  },
-                  description: { 
-                    type: SchemaType.STRING, 
-                    description: 'Additional description, notes, or timings written on the calendar.' 
-                  },
-                  location: { 
-                    type: SchemaType.STRING, 
-                    description: 'Location, hall, or room if specified.' 
-                  }
-                },
-                required: ['title', 'startDate', 'endDate', 'type']
-              }
-            }
-          }
-        });
+      const candidateModels = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash'];
+      const genAI = new GoogleGenerativeAI(apiKey);
 
-        const prompt = `You are a specialized academic calendar parsing assistant for university students.
+      const generationConfig: GenerationConfig = {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: SchemaType.ARRAY,
+          description: 'List of academic events, exams, and holidays extracted from the calendar',
+          items: {
+            type: SchemaType.OBJECT,
+            properties: {
+              title: { 
+                type: SchemaType.STRING, 
+                description: 'Specific name/title of the academic event, holiday, or exam. E.g., "Mid-Semester Examinations", "Diwali Break", "AI Project Presentation", "Semester Registration".' 
+              },
+              startDate: { 
+                type: SchemaType.STRING, 
+                description: 'Start date of the event or range in YYYY-MM-DD format.' 
+              },
+              endDate: { 
+                type: SchemaType.STRING, 
+                description: 'End date of the event or range in YYYY-MM-DD format. If it is a single-day event, set endDate to the same value as startDate.' 
+              },
+              type: { 
+                type: SchemaType.STRING, 
+                format: 'enum',
+                enum: ['exam', 'holiday', 'event', 'assignment'],
+                description: 'Type of event: "exam" for exams/tests, "holiday" for holidays/vacations, "event" for semester registrations/commencements/cultural programs, "assignment" for submission deadlines.' 
+              },
+              description: { 
+                type: SchemaType.STRING, 
+                description: 'Additional description, notes, or timings written on the calendar.' 
+              },
+              location: { 
+                type: SchemaType.STRING, 
+                description: 'Location, hall, or room if specified.' 
+              }
+            },
+            required: ['title', 'startDate', 'endDate', 'type']
+          }
+        } as any
+      };
+
+      const prompt = `You are a specialized academic calendar parsing assistant for university students.
 Analyze the provided academic calendar (which may be page image(s), a PDF, or a text version) and extract all events, examinations, holidays, registrations, and deadlines.
 
 CRITICAL INSTRUCTIONS FOR DATE PROCESSING:
@@ -94,77 +92,90 @@ CRITICAL INSTRUCTIONS FOR DATE PROCESSING:
 2. ACADEMIC YEAR BOUNDARY & YEAR INFERENCE: Academic calendars span across two calendar years (e.g., Academic Year 2026-27). Infer the correct year (YYYY) for each month. July to December are in the first year (e.g., 2026), and January to June are in the second year (e.g., 2027). Look closely at headers, footers, and text to confirm the correct academic year context.
 3. THOROUGH EXTRACTION: Scan the entire document page-by-page. Extract registration dates, commencement of classes, holidays, preparation leaves, mid-semester exams, end-semester exams, fests, results announcements, and vacations.`;
 
-        let contents: any[] = [prompt];
+      let contents: any[] = [prompt];
 
-        if (isSampleRun) {
-          // Pass the text representation of the IIIT-NR Academic Calendar
-          contents.push(`Here is the text version of the IIIT-NR Academic Calendar for Odd Semester 2026:
-          
-          International Institute of Information Technology, Naya Raipur
-          ACADEMIC CALENDAR FOR ODD SEMESTER (JULY - DECEMBER 2026)
-          
-          1. Registration for Semester: July 15, 2026
-          2. Commencement of Classes: July 17, 2026
-          3. Mid-Semester Examinations (LT-1 & LT-2): September 14, 2026 to September 19, 2026 (No classes during exams)
-          4. Dussehra Holidays: October 19, 2026 to October 24, 2026
-          5. Diwali Holidays: November 9, 2026 to November 14, 2026
-          6. End-Semester Examination: November 30, 2026 to December 11, 2026
-          7. Winter Vacation: December 14, 2026 to January 3, 2027
-          8. Announcement of Results: December 28, 2026`);
-        } else {
-          // Pass the uploaded files (base64)
-          const fileParts = imageList.map((img: any) => ({
-            inlineData: {
-              data: img.base64.replace(/^data:[^;]+;base64,/, ''),
-              mimeType: img.mimeType || 'image/jpeg',
-            },
-          }));
-          contents.push(...fileParts);
-        }
-
-        const result = await model.generateContent(contents);
-        const responseText = result.response.text().trim();
+      if (isSampleRun) {
+        // Pass the text representation of the IIIT-NR Academic Calendar
+        contents.push(`Here is the text version of the IIIT-NR Academic Calendar for Odd Semester 2026:
         
-        let parsed;
+        International Institute of Information Technology, Naya Raipur
+        ACADEMIC CALENDAR FOR ODD SEMESTER (JULY - DECEMBER 2026)
+        
+        1. Registration for Semester: July 15, 2026
+        2. Commencement of Classes: July 17, 2026
+        3. Mid-Semester Examinations (LT-1 & LT-2): September 14, 2026 to September 19, 2026 (No classes during exams)
+        4. Dussehra Holidays: October 19, 2026 to October 24, 2026
+        5. Diwali Holidays: November 9, 2026 to November 14, 2026
+        6. End-Semester Examination: November 30, 2026 to December 11, 2026
+        7. Winter Vacation: December 14, 2026 to January 3, 2027
+        8. Announcement of Results: December 28, 2026`);
+      } else {
+        // Pass the uploaded files (base64)
+        const fileParts = imageList.map((img: any) => ({
+          inlineData: {
+            data: img.base64.replace(/^data:[^;]+;base64,/, ''),
+            mimeType: img.mimeType || 'image/jpeg',
+          },
+        }));
+        contents.push(...fileParts);
+      }
+
+      let lastError: any = null;
+
+      for (const modelName of candidateModels) {
         try {
-          parsed = JSON.parse(responseText);
-        } catch (jsonErr) {
-          console.warn('Direct JSON parse failed, attempting cleanup. Raw response:', responseText);
-          const cleanedJson = responseText
-            .replace(/```json/g, '')
-            .replace(/```/g, '')
-            .trim();
+          const model = genAI.getGenerativeModel({
+            model: modelName,
+            generationConfig,
+          });
+
+          const result = await model.generateContent(contents);
+          const responseText = result.response.text().trim();
+          
+          let parsed;
           try {
-            parsed = JSON.parse(cleanedJson);
-          } catch (jsonErr2) {
-            // Regex fallback to extract array [ ... ]
-            const arrayMatch = responseText.match(/\[\s*\{[\s\S]*\}\s*\]/);
-            if (arrayMatch) {
-              parsed = JSON.parse(arrayMatch[0]);
-            } else {
-              throw new Error('AI response was not in a valid JSON format: ' + responseText.substring(0, 150));
+            parsed = JSON.parse(responseText);
+          } catch (jsonErr) {
+            console.warn('Direct JSON parse failed, attempting cleanup. Raw response:', responseText);
+            const cleanedJson = responseText
+              .replace(/```json/g, '')
+              .replace(/```/g, '')
+              .trim();
+            try {
+              parsed = JSON.parse(cleanedJson);
+            } catch (jsonErr2) {
+              // Regex fallback to extract array [ ... ]
+              const arrayMatch = responseText.match(/\[\s*\{[\s\S]*\}\s*\]/);
+              if (arrayMatch) {
+                parsed = JSON.parse(arrayMatch[0]);
+              } else {
+                throw new Error('AI response was not in a valid JSON format: ' + responseText.substring(0, 150));
+              }
             }
           }
-        }
 
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return NextResponse.json({
-            success: true,
-            events: parsed,
-            source: isSampleRun ? 'IIIT-NR Sample Text via Gemini' : (fileName || 'Gemini Vision OCR'),
-          });
-        } else {
-          throw new Error('Parsed output is not a valid non-empty array of events');
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return NextResponse.json({
+              success: true,
+              events: parsed,
+              source: isSampleRun ? 'IIIT-NR Sample Text via Gemini' : (fileName || `Gemini Vision OCR (${modelName})`),
+            });
+          }
+        } catch (modelErr: any) {
+          logServerError(`ExtractCalendarAPI:${modelName}`, modelErr);
+          lastError = modelErr;
         }
-      } catch (aiErr: any) {
-        logServerError('ExtractCalendarAPI:Gemini', aiErr);
-        // If it's NOT a sample run, return a safe user-facing error message
-        if (!isSampleRun) {
-          return NextResponse.json(
-            { success: false, error: 'Could not extract academic calendar events. Please ensure the document is clear and readable.' },
-            { status: 500 }
-          );
-        }
+      }
+
+      if (lastError && !isSampleRun) {
+        logServerError('ExtractCalendarAPI:AllModelsFailed', lastError);
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Could not extract academic calendar events. This can happen due to a weak internet connection, unreadable photo, or AI timeout. Please try again with a clearer photo or enter events manually.' 
+          },
+          { status: 422 }
+        );
       }
     }
 

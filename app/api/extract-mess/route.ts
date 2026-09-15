@@ -63,7 +63,7 @@ export async function POST(req: Request) {
     }
 
     if (apiKey && imageList.length > 0) {
-      const candidateModels = ['gemini-3.6-flash', 'gemini-2.0-flash-exp', 'gemini-1.5-flash-latest'];
+      const candidateModels = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash'];
       const genAI = new GoogleGenerativeAI(apiKey);
 
       const prompt = `You are a culinary expert & OCR assistant specializing in Indian hostel and university mess menus.
@@ -155,8 +155,8 @@ Do not include any markdown backticks or explanations, return ONLY raw JSON.`;
         logServerError('ExtractMessAPI:AllModelsFailed', lastError);
         return NextResponse.json({ 
           success: false, 
-          error: 'Could not extract mess menu. Please upload a clear photo or PDF.' 
-        }, { status: 500 });
+          error: 'Could not extract mess menu. This can happen due to a weak internet connection, unreadable photo, or AI timeout. Please try again with a clear photo or enter the menu manually.' 
+        }, { status: 422 });
       }
     }
 
