@@ -1,12 +1,18 @@
 'use client';
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { useApp } from '@/context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Info, AlertTriangle } from 'lucide-react';
 
 export const Toast: React.FC = () => {
   const { toastMessage } = useApp();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isSuccess = toastMessage?.type === 'success';
   const isWarning = toastMessage?.type === 'warning';
@@ -30,17 +36,19 @@ export const Toast: React.FC = () => {
     Icon = AlertTriangle;
   }
 
-  return (
-    <div className="fixed bottom-[10vh] left-0 right-0 z-[9999] pointer-events-none flex justify-center px-4">
+  if (!mounted) return null;
+
+  const content = (
+    <div className="fixed top-5 sm:top-6 inset-x-0 z-[100000] pointer-events-none flex justify-center px-4">
       <AnimatePresence mode="wait">
         {toastMessage && (
           <motion.div
             key={toastMessage.id}
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-            className="pointer-events-auto select-none overflow-hidden bg-white dark:bg-[#1A1A1A] shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)] rounded-none"
+            className="pointer-events-auto select-none overflow-hidden bg-white dark:bg-[#1A1A1A] border border-black/10 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.18)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.6)] rounded-none max-w-sm w-full sm:w-auto"
           >
             <div className="flex flex-col">
               <div className="flex items-start gap-3 px-4 py-3.5">
@@ -72,4 +80,6 @@ export const Toast: React.FC = () => {
       </AnimatePresence>
     </div>
   );
+
+  return createPortal(content, document.body);
 };

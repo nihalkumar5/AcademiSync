@@ -194,17 +194,14 @@ export async function POST(req: Request) {
       });
     }
 
+    let lastError: any = null;
+
     // If an image was uploaded, run multimodal vision extraction across active Gemini models
     if (apiKey && imageList.length > 0) {
       const candidateModels = [
         'gemini-3.5-flash-lite',
         'gemini-flash-lite-latest',
-        'gemini-3.1-flash-lite-preview',
-        'gemini-3.1-flash-lite',
-        'gemini-3.5-flash',
-        'gemini-3.7-flash',
         'gemini-3.6-flash',
-        'gemini-flash-latest',
       ];
       const genAI = new GoogleGenerativeAI(apiKey);
 
@@ -237,6 +234,7 @@ CRITICAL INSTRUCTIONS FOR TARGET FILTERING & RESOLUTION:
     - If the student did NOT specify a section, default to Section A / Group 1 (the primary routine). DO NOT dump all sections together!
     - For parallel sub-batches in labs/tutorials (e.g. Lab Batch A1, A2, A3 scheduled at the same time), extract only ONE lab session for the student's sub-batch (default to A1 if unspecified). NEVER output 2 or more overlapping lab sessions at the exact same hour!
   * DO NOT output classes for departments or groups that do not belong to the target student.
+  * FALLBACK GUARANTEE: If the target student's branch or semester is NOT explicitly written or found in the document, DO NOT output an empty array or only one single course! Instead, extract all course routine slots visible on the uploaded routine page(s) so the student can review and adjust them.
 
 2. SLOT-PATTERN MATRIX RESOLUTION (IIT Bombay / Slot System Style):
 - If the document provides a Course Table with Slot Identifiers (e.g., Slot 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, L1, L2, L3, L4, LX) AND a separate Slot Pattern Grid/Matrix mapping slots to days & times (e.g., 1A on Mon 9:30-10:25, 1B on Tue 9:30-10:25, 1C on Thu 9:30-10:25):
@@ -315,14 +313,14 @@ Return ONLY raw valid JSON array:
         },
       }));
 
-      let lastError: any = null;
+      lastError = null;
 
       for (const modelName of candidateModels) {
         try {
           const model = genAI.getGenerativeModel({ model: modelName });
           const result: any = await Promise.race([
             model.generateContent([prompt, ...imageParts]),
-            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 18000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 22000))
           ]);
           const responseText = result.response.text();
           let jsonStr = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
@@ -337,6 +335,10 @@ Return ONLY raw valid JSON array:
             const sanitized = parsed.map((s: any) => {
               const start24 = clean24HourTime(s.startTime, '09:00');
               const end24 = clean24HourEndTime(s.endTime, s.startTime, '10:00');
+              const isElective = !!s.isElective || 
+                /elective/i.test(s.subjectName || '') || 
+                /elective/i.test(s.subjectCode || '') ||
+                /elec/i.test(s.subjectCode || '');
               return {
                 day: s.day || 'Monday',
                 startTime: start24,
@@ -346,6 +348,7 @@ Return ONLY raw valid JSON array:
                 room: (s.room || '').trim(),
                 faculty: (s.faculty || '').trim(),
                 isLab: !!s.isLab || /lab|practical|workshop/i.test(s.subjectName || '') || /lab|practical|workshop/i.test(s.subjectCode || ''),
+                isElective,
               };
             });
             const merged = mergeConsecutiveSessions(sanitized);
@@ -366,11 +369,20 @@ Return ONLY raw valid JSON array:
       }
     }
 
+    const isQuotaOrBusy = lastError?.message && (
+      lastError.message.includes('429') || 
+      lastError.message.includes('quota') || 
+      lastError.message.includes('503') ||
+      lastError.message.includes('demand')
+    );
+
     // If we reach here, extraction was unsuccessful for the uploaded file
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Could not extract timetable from this document. This can happen due to a weak internet connection, unreadable/blurry photo, or AI timeout. Please check your connection, upload a clearer photo, or add classes manually.' 
+        error: isQuotaOrBusy
+          ? 'AI vision service is experiencing high demand right now. Please wait a few moments and try again, or enter your routine manually.'
+          : 'Could not extract timetable from this document. Please ensure the image or PDF is sharp and clear, or enter routine details manually.'
       },
       { status: 422 }
     );

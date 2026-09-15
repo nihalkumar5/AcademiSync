@@ -9,7 +9,7 @@ import { autoAssignHarmonicColorsToSubjects, getHarmonicColorForSubject } from '
 import { validateUploadedFile } from '@/lib/fileSafety';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
-import { Upload, Sparkles, Check, Trash2, Plus, ShieldAlert , Bot, X, ChevronDown, Filter} from 'lucide-react';
+import { Upload, Sparkles, Check, Trash2, Plus, ShieldAlert, Bot, X, ChevronDown, Filter, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export interface TimetableImportModalProps {
@@ -38,11 +38,14 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
   const [step, setStep] = useState<'upload' | 'extracting' | 'review'>('upload');
   const [fileName, setFileName] = useState('');
   const [extractedSessions, setExtractedSessions] = useState<ExtractedClassSession[]>([]);
+  const [extractError, setExtractError] = useState<string | null>(null);
+  const [lastUploadedFiles, setLastUploadedFiles] = useState<string | { name: string, base64: string, mimeType: string }[] | null>(null);
 
   const resetState = () => {
     setStep('upload');
     setFileName('');
     setExtractedSessions([]);
+    setExtractError(null);
   };
 
   const handleClose = () => {
@@ -50,9 +53,29 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     onClose();
   };
 
+  const handleManualEntry = () => {
+    setExtractedSessions([
+      {
+        day: 'Monday',
+        startTime: '09:00',
+        endTime: '10:00',
+        subjectCode: '',
+        subjectName: '',
+        room: '',
+        faculty: '',
+        isLab: false,
+        isElective: false,
+      }
+    ]);
+    setExtractError(null);
+    setStep('review');
+  };
+
   const runExtraction = async (filesInfo: string | { name: string, base64: string, mimeType: string }[]) => {
     const isString = typeof filesInfo === 'string';
     setFileName(isString ? filesInfo : (filesInfo.length === 1 ? filesInfo[0].name : `${filesInfo.length} files selected`));
+    setLastUploadedFiles(filesInfo);
+    setExtractError(null);
     setStep('extracting');
 
     const resolvedBranch = (profile?.branch || '').trim();
@@ -81,8 +104,10 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
 
       const data = await res.json();
       if (res.status === 429) {
-        showToast('Scan Limit', data.error || 'Please wait a few minutes before scanning again.', 'error');
-        resetState();
+        const errMsg = data.error || 'Please wait a few minutes before scanning again.';
+        setExtractError(errMsg);
+        showToast('Scan Limit', errMsg, 'error');
+        setStep('upload');
         return;
       }
 
@@ -90,21 +115,17 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         setExtractedSessions(mergeConsecutiveSessions(data.sessions));
         setStep('review');
       } else {
-        showToast(
-          'Scan Unsuccessful', 
-          data.error || 'Could not extract timetable. This can happen due to a weak internet connection, unreadable/blurry photo, or AI timeout. Please try again with a clearer photo or add classes manually.', 
-          'error'
-        );
-        resetState();
+        const errMsg = data.error || 'Could not extract timetable from this document. Please ensure the routine image or PDF is sharp and clear, or enter classes manually.';
+        setExtractError(errMsg);
+        showToast('Scan Unsuccessful', errMsg, 'error');
+        setStep('upload');
       }
     } catch (error) {
       console.error('Failed to extract timetable:', error);
-      showToast(
-        'Connection Error', 
-        'Request failed or timed out. Please check your internet connection and try again.', 
-        'error'
-      );
-      resetState();
+      const errMsg = 'Extraction request timed out or connection failed. Please check your internet connection and try again, or enter your routine manually.';
+      setExtractError(errMsg);
+      showToast('Connection Error', errMsg, 'error');
+      setStep('upload');
     }
   };
 
@@ -263,12 +284,54 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
       isOpen={isOpen}
       onClose={handleClose}
       title="Import Timetable"
-      description="Just upload your routine photo or PDF & chill — Intersemester handles all your schedule tension automatically."
+      description="Upload your timetable image or PDF to automatically generate your weekly routine."
       maxWidth={step === 'review' ? '4xl' : 'lg'}
       mobileFullSheet={step === 'review'}
     >
       {step === 'upload' && (
         <div className="flex flex-col text-center">
+          {/* Error Banner if extraction failed */}
+          {extractError && (
+            <div className="mb-4 p-4 rounded-none border border-red-500/30 bg-red-500/10 text-left">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-[12px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wide mb-1">
+                    Scan Unsuccessful
+                  </h4>
+                  <p className="text-[12px] text-red-800 dark:text-red-200 leading-relaxed mb-3">
+                    {extractError}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {lastUploadedFiles && (
+                      <button
+                        type="button"
+                        onClick={() => runExtraction(lastUploadedFiles)}
+                        className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold tracking-wide uppercase transition-colors rounded-none cursor-pointer"
+                      >
+                        Retry Scan
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleManualEntry}
+                      className="px-3 py-1.5 border border-red-600/40 text-red-700 dark:text-red-300 hover:bg-red-500/10 text-[11px] font-bold tracking-wide uppercase transition-colors rounded-none cursor-pointer"
+                    >
+                      Add Classes Manually
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setExtractError(null)}
+                      className="text-[11px] text-black/50 dark:text-white/50 hover:underline ml-auto cursor-pointer"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Upload Guidance Banner */}
           <div className="mb-4 p-4 rounded-none border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5]/90 dark:bg-[#121317]/90 text-left">
             <div className="flex items-center gap-2 mb-2.5">
@@ -282,13 +345,13 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
               <div className="flex items-start gap-2.5">
                 <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0 mt-0.5 text-[13px]">✓</span>
                 <span>
-                  <strong>Apne class / batch ka hi routine upload karein:</strong> College circulars me se sirf apne section/branch ka timetable de taaki aapka daily schedule bilkul clean aur accurate bane.
+                  <strong>Upload your class or batch routine:</strong> For circulars with multiple departments, upload only your specific branch or section pages for an accurate timetable.
                 </span>
               </div>
               <div className="flex items-start gap-2.5">
                 <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0 mt-0.5 text-[13px]">✓</span>
                 <span>
-                  <strong>Multi-page allowed:</strong> Multi-page PDF documents aur photo gallery se ek saath multiple images select karna fully supported hai.
+                  <strong>Multi-page documents supported:</strong> You can upload multi-page PDFs or select multiple timetable images at once.
                 </span>
               </div>
             </div>
@@ -336,6 +399,16 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
             </div>
             <span className="text-black/60 dark:text-[#94A3B8] text-[14px]">→</span>
           </button>
+
+          <div className="mt-3 text-center">
+            <button
+              type="button"
+              onClick={handleManualEntry}
+              className="text-[12px] font-medium text-black/60 dark:text-[#94A3B8] hover:text-black dark:hover:text-white underline underline-offset-4 cursor-pointer transition-colors"
+            >
+              Or create timetable manually without a file
+            </button>
+          </div>
         </div>
       )}
 

@@ -633,6 +633,7 @@ export const mergeConsecutiveSessions = (
         if (!last.faculty && current.faculty) last.faculty = current.faculty;
         if (!last.room && current.room) last.room = current.room;
         if (current.isLab) last.isLab = true;
+        if (current.isElective) last.isElective = true;
         return;
       }
 
@@ -649,6 +650,7 @@ export const mergeConsecutiveSessions = (
         if (!last.faculty && current.faculty) last.faculty = current.faculty;
         if (!last.room && current.room) last.room = current.room;
         if (current.isLab) last.isLab = true;
+        if (current.isElective) last.isElective = true;
       } else {
         mergedDaySessions.push({ ...current });
       }
