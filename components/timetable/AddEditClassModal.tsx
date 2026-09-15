@@ -29,6 +29,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
   const [room, setRoom] = useState('');
   const [faculty, setFaculty] = useState('');
   const [isLab, setIsLab] = useState(false);
+  const [syncWithBatch, setSyncWithBatch] = useState(false);
 
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showDayModal, setShowDayModal] = useState(false);
@@ -45,6 +46,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
       setRoom(sessionToEdit.room);
       setFaculty(sessionToEdit.faculty || '');
       setIsLab(sessionToEdit.isLab || false);
+      setSyncWithBatch(!sessionToEdit.isPersonal && isBatchCR);
     } else {
       if (subjects.length > 0 && !subjectId) {
         const defaultSub = subjects[0];
@@ -53,8 +55,9 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
         setFaculty(defaultSub.facultyName || '');
       }
       setDay(defaultDay);
+      setSyncWithBatch(false);
     }
-  }, [sessionToEdit, isOpen, defaultDay, subjects]);
+  }, [sessionToEdit, isOpen, defaultDay, subjects, isBatchCR]);
 
   const handleSubjectChangeStr = (selectedSubId: string) => {
     setSubjectId(selectedSubId);
@@ -112,6 +115,8 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
     const cleanStart = sanitizeAcademicTime(startTime, '09:00', false);
     const cleanEnd = sanitizeAcademicTime(endTime, '10:00', true, cleanStart);
 
+    const targetIsPersonal = isBatchCR && profile.isBatchSynced ? !syncWithBatch : true;
+
     if (sessionToEdit) {
       updateClassSession(sessionToEdit.id, {
         subjectId,
@@ -123,7 +128,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
         isLab,
         isCustomRoom: true,
         isCustomTime: true,
-        isPersonal: sessionToEdit.isPersonal ?? (!isBatchCR && profile.isBatchSynced),
+        isPersonal: targetIsPersonal,
       });
     } else {
       addClassSession({
@@ -136,7 +141,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
         isLab,
         isCustomRoom: true,
         isCustomTime: true,
-        isPersonal: !isBatchCR && profile.isBatchSynced ? true : false,
+        isPersonal: targetIsPersonal,
       });
     }
     onClose();
@@ -263,6 +268,32 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
                 Practical / Lab session
               </label>
             </div>
+
+            {isBatchCR && profile.isBatchSynced && (
+              <div className="flex items-start gap-2.5 p-3 mt-1 bg-amber-500/10 border border-amber-500/30 rounded-none">
+                <input
+                  type="checkbox"
+                  id="syncWithBatchCheck"
+                  checked={syncWithBatch}
+                  onChange={(e) => setSyncWithBatch(e.target.checked)}
+                  className="w-4 h-4 mt-0.5 rounded-none text-amber-600 focus:ring-amber-500 border-[#D9D9D6] dark:border-white/[0.2] bg-transparent cursor-pointer"
+                />
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="syncWithBatchCheck"
+                    className="text-[13px] font-semibold text-[#111111] dark:text-[#F4F4F6] cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span>Broadcast to Entire Batch</span>
+                    <span className="text-[10px] px-1.5 py-0.5 bg-amber-500/20 text-amber-700 dark:text-amber-400 font-bold uppercase tracking-wider">Pilot Only</span>
+                  </label>
+                  <p className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8] mt-0.5">
+                    {syncWithBatch 
+                      ? '⚠️ This will update the official timetable for all students in this batch.' 
+                      : 'Unchecked: Changes stay personal to your schedule only (safe for testing).'}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Footer Actions */}

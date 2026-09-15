@@ -94,6 +94,8 @@ export interface AppContextType {
   setActiveView: (view: ActiveView) => void;
   profile: StudentProfile;
   isBatchCR: boolean;
+  isBatchPilot: boolean;
+  isSuperAdmin: boolean;
   updateProfile: (profile: Partial<StudentProfile>) => void;
   subjects: Subject[];
   addSubject: (subject: Omit<Subject, 'id'>) => Subject;
@@ -262,10 +264,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   );
   const isCoCR = !!user && !!currentBatchData && (
     (normalizeIdList(currentBatchData?.crUserIds).includes(user?.id)) ||
-    (normalizeIdList(currentBatchData?.crEmails).map((e: string) => e.toLowerCase()).includes(userEmail)) ||
-    profile.role === 'cr'
+    (normalizeIdList(currentBatchData?.crEmails).map((e: string) => e.toLowerCase()).includes(userEmail))
   );
-  const isBatchCR = !!user && (isSuperAdmin || profile.role === 'super_admin' || profile.role === 'cr' || isPrimaryCreator || isCoCR);
+  // STRICT SEPARATION: Batch Pilot rights belong ONLY to the verified creator or assigned co-pilots of THIS specific batch!
+  // Being Super Admin is a global platform role for /admin, NOT a batch pilot role.
+  // Super admin personal edits will NEVER overwrite batchmates' timetables!
+  const isBatchPilot = !!user && !!currentBatchData && (isPrimaryCreator || isCoCR);
+  const isBatchCR = isBatchPilot;
 
   // Auto-heal session timings (migrate legacy 01:00-07:00 morning representations into true 24-hour PM)
   useEffect(() => {
@@ -806,23 +811,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           remoteStateString.current = JSON.stringify(cleanState);
         })
         .catch((e) => console.error('Firebase Sync Error', e));
-
-      if (profile.isBatchSynced && profile.batchKey && isBatchCR) {
-        const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
-        const batchPayload = sanitizeForFirestore({
-          subjects: subjects,
-          timetable: timetable,
-          events: events,
-          exams: exams,
-          updatedAt: new Date().toISOString(),
-        });
-        setDoc(batchDocRef, batchPayload, { merge: true })
-          .catch((e) => console.error('Firebase Batch Sync Error', e));
-      }
     }, 100);
 
     return () => clearTimeout(timeout);
-  }, [profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions, rescheduledSessions, messMenu, user, isClerkLoaded, isHydrated, isCloudSynced, isBatchCR]);
+  }, [profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions, rescheduledSessions, messMenu, user, isClerkLoaded, isHydrated, isCloudSynced]);
 
   // Hydration effect
   useEffect(() => {
@@ -1123,20 +1115,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  // Helper to instantly broadcast Batch Pilot modifications to shared batch doc in Firestore & Push Notifications
+  // Helper to instantly broadcast verified Batch Pilot modifications to shared batch doc in Firestore & Push Notifications
   const syncCRChangesToBatch = async (
     newTimetable?: ClassSession[],
     newSubjects?: Subject[],
     newEvents?: AcademicEvent[],
     newExams?: Exam[]
   ) => {
-    if (profile.isBatchSynced && profile.batchKey && isBatchCR) {
+    // STRICT: Only the verified Batch Pilot of THIS batch can broadcast to shared batch!
+    if (profile.isBatchSynced && profile.batchKey && isBatchPilot) {
       try {
         const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
-        const email = user?.primaryEmailAddress?.emailAddress || profile.email || '';
+        // CRITICAL: NEVER sync personal classes to the shared batch! Filter them out cleanly.
+        const sourceTt = newTimetable !== undefined ? newTimetable : timetable;
+        const officialBatchTimetable = sourceTt.filter((s) => !s.isPersonal);
+
         const payload = sanitizeForFirestore({
           ...(newSubjects !== undefined ? { subjects: newSubjects } : { subjects }),
-          ...(newTimetable !== undefined ? { timetable: newTimetable } : { timetable }),
+          timetable: officialBatchTimetable,
           ...(newEvents !== undefined ? { events: newEvents } : { events }),
           ...(newExams !== undefined ? { exams: newExams } : { exams }),
           updatedAt: new Date().toISOString(),
@@ -1346,11 +1342,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const addClassSession = (sessionData: Omit<ClassSession, 'id'>) => {
+    const isPersonalClass = sessionData.isPersonal !== undefined 
+      ? sessionData.isPersonal 
+      : (!isBatchPilot || !profile.isBatchSynced);
+
     const newSession: ClassSession = {
       ...sessionData,
       id: `sess_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       isCustomRoom: true,
-      isPersonal: true,
+      isPersonal: isPersonalClass,
     };
     const updated = [...timetable, newSession];
     setTimetableState(updated);
@@ -1369,13 +1369,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }, { merge: true }).catch((e) => console.error('Error saving class addition to personal cloud:', e));
     }
 
-    syncCRChangesToBatch(updated, subjects);
+    if (!isPersonalClass && isBatchPilot) {
+      syncCRChangesToBatch(updated, subjects);
+    }
     showToast('Class Added', `${sessionData.startTime} - ${sessionData.endTime} scheduled`, 'success');
   };
 
   const updateClassSession = (id: string, partial: Partial<ClassSession>) => {
     const target = timetable.find((s) => s.id === id);
-    if (target && !target.isPersonal && profile.isBatchSynced && !isBatchCR) {
+    if (target && !target.isPersonal && profile.isBatchSynced && !isBatchPilot) {
       showToast('Permission Denied', 'Official batch classes can only be modified by the Batch Pilot.', 'error');
       return;
     }
@@ -1402,13 +1404,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }, { merge: true }).catch((e) => console.error('Error saving timetable edit to personal cloud:', e));
     }
 
-    syncCRChangesToBatch(updated, subjects);
+    const updatedSession = updated.find(s => s.id === id);
+    if (updatedSession && !updatedSession.isPersonal && isBatchPilot) {
+      syncCRChangesToBatch(updated, subjects);
+    }
     showToast('Class Updated', 'Session details saved', 'success');
   };
 
   const deleteClassSession = (id: string) => {
     const target = timetable.find((s) => s.id === id);
-    if (target && !target.isPersonal && profile.isBatchSynced && !isBatchCR) {
+    if (target && !target.isPersonal && profile.isBatchSynced && !isBatchPilot) {
       showToast('Permission Denied', 'Official batch classes can only be removed by the Batch Pilot.', 'error');
       return;
     }
@@ -1430,7 +1435,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }, { merge: true }).catch((e) => console.error('Error saving class removal to personal cloud:', e));
     }
 
-    syncCRChangesToBatch(updated, subjects);
+    if (target && !target.isPersonal && isBatchPilot) {
+      syncCRChangesToBatch(updated, subjects);
+    }
     showToast('Class Removed', 'Session deleted from schedule', 'info');
   };
 
@@ -1438,7 +1445,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimetableState(sessions);
     storage.setTimetable(sessions);
     refreshCarryItems(sessions, subjects);
-    syncCRChangesToBatch(sessions, subjects);
+    if (isBatchPilot) {
+      syncCRChangesToBatch(sessions, subjects);
+    }
     showToast('Timetable Updated', `${sessions.length} class slots loaded`, 'success');
   };
 
@@ -1448,7 +1457,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimetableState(sessions);
     storage.setTimetable(sessions);
     refreshCarryItems(sessions, newSubjects);
-    syncCRChangesToBatch(sessions, newSubjects);
+    if (isBatchPilot) {
+      syncCRChangesToBatch(sessions, newSubjects);
+    }
     showToast('Timetable Imported', `${sessions.length} class slots loaded`, 'success');
   };
 
@@ -3273,6 +3284,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setActiveView,
         profile,
         isBatchCR,
+        isBatchPilot,
+        isSuperAdmin,
         updateProfile,
         subjects,
         addSubject,
