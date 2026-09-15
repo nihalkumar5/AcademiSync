@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ClassSession, DayOfWeek } from '@/lib/types';
-import { DAYS_OF_WEEK } from '@/lib/timetableUtils';
+import { DAYS_OF_WEEK, sanitizeAcademicTime } from '@/lib/timetableUtils';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 
@@ -38,8 +38,10 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
     if (sessionToEdit) {
       setSubjectId(sessionToEdit.subjectId);
       setDay(sessionToEdit.day);
-      setStartTime(sessionToEdit.startTime);
-      setEndTime(sessionToEdit.endTime);
+      const cleanStart = sanitizeAcademicTime(sessionToEdit.startTime, '09:00', false);
+      const cleanEnd = sanitizeAcademicTime(sessionToEdit.endTime, '10:00', true, cleanStart);
+      setStartTime(cleanStart);
+      setEndTime(cleanEnd);
       setRoom(sessionToEdit.room);
       setFaculty(sessionToEdit.faculty || '');
       setIsLab(sessionToEdit.isLab || false);
@@ -107,12 +109,15 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
       }
     }
 
+    const cleanStart = sanitizeAcademicTime(startTime, '09:00', false);
+    const cleanEnd = sanitizeAcademicTime(endTime, '10:00', true, cleanStart);
+
     if (sessionToEdit) {
       updateClassSession(sessionToEdit.id, {
         subjectId,
         day,
-        startTime,
-        endTime,
+        startTime: cleanStart,
+        endTime: cleanEnd,
         room,
         faculty: faculty.trim() || undefined,
         isLab,
@@ -124,8 +129,8 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
       addClassSession({
         subjectId,
         day,
-        startTime,
-        endTime,
+        startTime: cleanStart,
+        endTime: cleanEnd,
         room,
         faculty: faculty.trim() || undefined,
         isLab,

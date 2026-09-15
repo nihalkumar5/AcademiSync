@@ -7,54 +7,82 @@ import { checkAiRateLimit } from '@/lib/rateLimit';
 
 const clean24HourTime = (str?: string, fallback = '09:00'): string => {
   if (!str) return fallback;
-  let single = str.trim();
+  const full = str.trim();
+  let single = full;
   if (single.includes('-')) {
     single = single.split('-')[0].trim();
   } else if (single.toLowerCase().includes(' to ')) {
     single = single.toLowerCase().split(' to ')[0].trim();
   }
-  const isPM = /pm/i.test(single);
-  const isAM = /am/i.test(single);
+
+  const hasPM = /pm/i.test(single) || /pm/i.test(full);
+  const hasAM = /am/i.test(single) || (/am/i.test(full) && !hasPM);
+
   const match = single.match(/(\d{1,2})[:.](\d{2})/);
   if (match) {
     let h = parseInt(match[1], 10);
     const m = parseInt(match[2], 10);
-    if (isPM && h < 12) h += 12;
-    if (isAM && h === 12) h = 0;
+
+    if (hasPM && h < 12) {
+      h += 12;
+    } else if (hasAM && h === 12) {
+      h = 0;
+    } else if (!hasAM && h >= 1 && h <= 7) {
+      // In college timetables, hours 1:00 to 7:00 are strictly afternoon/evening PM (13:00 - 19:00)
+      h += 12;
+    }
+
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   }
-  const hourOnly = single.match(/(\d{1,2})\s*(am|pm)?/i);
+
+  const hourOnly = single.match(/(\d{1,2})/);
   if (hourOnly) {
     let h = parseInt(hourOnly[1], 10);
-    const pm = hourOnly[2] && /pm/i.test(hourOnly[2]);
-    const am = hourOnly[2] && /am/i.test(hourOnly[2]);
-    if (pm && h < 12) h += 12;
-    if (am && h === 12) h = 0;
+    if (hasPM && h < 12) h += 12;
+    else if (hasAM && h === 12) h = 0;
+    else if (!hasAM && h >= 1 && h <= 7) h += 12;
     if (h >= 0 && h <= 23) {
       return `${String(h).padStart(2, '0')}:00`;
     }
   }
+
   return fallback;
 };
 
 const clean24HourEndTime = (endStr?: string, startStr?: string, fallback = '10:00'): string => {
   if (!endStr) return fallback;
-  let single = endStr.trim();
+  const full = endStr.trim();
+  let single = full;
   if (single.includes('-')) {
     single = single.split('-')[1].trim();
   } else if (single.toLowerCase().includes(' to ')) {
     single = single.toLowerCase().split(' to ')[1].trim();
   }
-  const isPM = /pm/i.test(single) || /pm/i.test(endStr);
-  const isAM = /am/i.test(single);
+
+  const hasPM = /pm/i.test(single) || /pm/i.test(full) || (startStr && /pm/i.test(startStr));
+  const hasAM = /am/i.test(single) || (/am/i.test(full) && !hasPM);
+
   const match = single.match(/(\d{1,2})[:.](\d{2})/);
   if (match) {
     let h = parseInt(match[1], 10);
     const m = parseInt(match[2], 10);
-    if (isPM && h < 12) h += 12;
-    if (isAM && h === 12) h = 0;
+
+    if (hasPM && h < 12) {
+      h += 12;
+    } else if (hasAM && h === 12) {
+      h = 0;
+    } else if (!hasAM && h >= 1 && h <= 7) {
+      h += 12;
+    } else if (startStr) {
+      const startH = parseInt(startStr.split(':')[0], 10);
+      if (startH >= 12 && h < 12) {
+        h += 12;
+      }
+    }
+
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   }
+
   return clean24HourTime(single, fallback);
 };
 
@@ -228,11 +256,36 @@ CRITICAL INSTRUCTIONS FOR TARGET FILTERING & RESOLUTION:
 - NEVER return generic placeholders like "Subject" or "Lecture". Always put the real subject title or course code.
 - If multiple courses share a slot with slashes (e.g. "CS 409 / CS 6011"), extract the specific course details.
 
-4. EXACT DATA SCHEMA:
+4. CRITICAL ACADEMIC TIME & AM/PM LOGIC (STRICT 24-HOUR FORMAT "HH:MM"):
+- In college and university timetables, classes operate ONLY between 08:00 AM and 07:00 PM (08:00 to 19:00).
+- TIMETABLES OFTEN OMIT "PM" FOR AFTERNOON PERIODS:
+  Timetable grids often label columns or slots as "02:00 - 03:00", "03:00 - 04:00", "04:00 - 05:00", or "2:00 - 3:55".
+  * CRITICAL: College students do NOT attend classes at 2:00 AM, 3:00 AM, 4:00 AM, or 5:00 AM in the middle of the night!
+  * You MUST convert all afternoon/evening hours (1, 2, 3, 4, 5, 6, 7) into 24-hour PM format:
+    - 01:00 / 1:00 PM -> "13:00"
+    - 02:00 / 2:00 PM -> "14:00"
+    - 03:00 / 3:00 PM -> "15:00"
+    - 04:00 / 4:00 PM -> "16:00"
+    - 05:00 / 5:00 PM -> "17:00"
+    - 06:00 / 6:00 PM -> "18:00"
+    - 07:00 / 7:00 PM -> "19:00"
+  * Morning hours (08:00, 09:00, 10:00, 11:00) are AM:
+    - 08:00 AM -> "08:00"
+    - 09:00 AM -> "09:00"
+    - 10:00 AM -> "10:00"
+    - 11:00 AM -> "11:00"
+  * 12:00 is 12:00 PM (Noon): "12:00".
+  * If a class is "11:00 - 01:00" or "11:00 - 1:00", the end time is 1:00 PM -> "13:00".
+  * If a class is "02:00 - 03:55", start time is "14:00" and end time is "15:55".
+  * If a class is "03:00 - 03:55", start time is "15:00" and end time is "15:55".
+  * If a class is "04:00 - 04:55", start time is "16:00" and end time is "16:55".
+  * NEVER return morning times like "02:00", "03:00", "04:00", "05:00" for daytime afternoon classes!
+
+5. EXACT DATA SCHEMA:
 For every extracted class session, return:
 - "day": "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", or "Sunday"
-- "startTime": 24-hour format "HH:MM" (e.g. "09:00", "09:30", "14:00")
-- "endTime": 24-hour format "HH:MM" (e.g. "10:00", "10:25", "16:55")
+- "startTime": 24-hour format "HH:MM" (e.g. "09:00", "14:00", "15:00", "16:00")
+- "endTime": 24-hour format "HH:MM" (e.g. "10:00", "15:55", "16:55", "17:55")
 - "subjectName": Specific subject name (e.g. "Computer Networks", "Operating Systems")
 - "subjectCode": Course code if present (e.g. "CS 348", "PHY114", "CS 347")
 - "room": Room / Hall / Venue (e.g. "LA 002", "CC 105", "SL-1-2-3", "LT-1")

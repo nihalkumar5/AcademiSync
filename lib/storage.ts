@@ -21,6 +21,7 @@ import {
   DEFAULT_NOTIFICATIONS,
 } from './initialData';
 import { autoAssignHarmonicColorsToSubjects } from './cardColors';
+import { sanitizeClassSessionTimes } from './timetableUtils';
 
 const STORAGE_KEYS = {
   PROFILE: 'iiitnr_profile_v2',
@@ -74,8 +75,14 @@ export const storage = {
   },
   setSubjects: (subjects: Subject[]) => setStoredItem(STORAGE_KEYS.SUBJECTS, subjects),
 
-  getTimetable: (): ClassSession[] => getStoredItem(STORAGE_KEYS.TIMETABLE, []),
-  setTimetable: (sessions: ClassSession[]) => setStoredItem(STORAGE_KEYS.TIMETABLE, sessions),
+  getTimetable: (): ClassSession[] => {
+    const raw = getStoredItem<ClassSession[]>(STORAGE_KEYS.TIMETABLE, []);
+    return raw.map(sanitizeClassSessionTimes);
+  },
+  setTimetable: (sessions: ClassSession[]) => {
+    const safe = (sessions || []).map(sanitizeClassSessionTimes);
+    setStoredItem(STORAGE_KEYS.TIMETABLE, safe);
+  },
 
   getHomework: (): Homework[] => getStoredItem(STORAGE_KEYS.HOMEWORK, []),
   setHomework: (hw: Homework[]) => setStoredItem(STORAGE_KEYS.HOMEWORK, hw),

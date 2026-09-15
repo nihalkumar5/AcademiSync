@@ -3,6 +3,7 @@ import { ClassSession, Subject } from '@/lib/types';
 import { MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { getSubjectCardTheme } from '@/lib/cardColors';
+import { formatTime12Hour } from '@/lib/timetableUtils';
 
 export interface ClassCardProps {
   session: ClassSession;
@@ -132,7 +133,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
               className="text-[12px] sm:text-[13px] font-bold font-mono tracking-tight text-[#151515] dark:text-[#F4F4F6]"
               style={{ color: isCurrent ? '#FFFFFF' : undefined }}
             >
-              {session.startTime} – {session.endTime}
+              {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
             </span>
 
             {/* Action Menu (Only for modifiable sessions) */}

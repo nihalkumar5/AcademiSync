@@ -57,15 +57,100 @@ export const getTodayDateString = (): string => {
   return getLocalDateString(new Date());
 };
 
-export const formatTime12Hour = (time24: string): string => {
-  if (!time24) return '';
-  const [hStr, mStr] = time24.split(':');
-  const h = parseInt(hStr, 10);
+/**
+ * Sanitizes an academic class time to strict 24-hour "HH:MM".
+ * In college timetables, classes operate ONLY between 08:00 AM and 07:00 PM.
+ * If an hour is 1 to 7 without a 24-hour offset, it is automatically converted to PM (13:00 - 19:00).
+ */
+export const sanitizeAcademicTime = (
+  timeStr?: string, 
+  fallback = '09:00', 
+  isEndTime = false, 
+  relativeStartTime?: string
+): string => {
+  if (!timeStr || typeof timeStr !== 'string') return fallback;
+  const full = timeStr.trim();
+  let single = full;
+  if (single.includes('-')) {
+    single = isEndTime ? single.split('-')[1].trim() : single.split('-')[0].trim();
+  } else if (single.toLowerCase().includes(' to ')) {
+    single = isEndTime ? single.toLowerCase().split(' to ')[1].trim() : single.toLowerCase().split(' to ')[0].trim();
+  }
+
+  const hasPM = /pm/i.test(single) || /pm/i.test(full) || (isEndTime && relativeStartTime && /pm/i.test(relativeStartTime));
+  const hasAM = /am/i.test(single) || (/am/i.test(full) && !hasPM);
+
+  const match = single.match(/(\d{1,2})[:.](\d{2})/);
+  if (match) {
+    let h = parseInt(match[1], 10);
+    const m = parseInt(match[2], 10);
+
+    if (hasPM && h < 12) {
+      h += 12;
+    } else if (hasAM && h === 12) {
+      h = 0;
+    } else if (!hasAM && h >= 1 && h <= 7) {
+      // 1:00 - 7:00 in college timetables is strictly PM (13:00 - 19:00)
+      h += 12;
+    } else if (isEndTime && relativeStartTime) {
+      const startH = parseInt(relativeStartTime.split(':')[0], 10);
+      if (startH >= 12 && h < 12) {
+        h += 12;
+      }
+    }
+
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+
+  const hourOnly = single.match(/(\d{1,2})/);
+  if (hourOnly) {
+    let h = parseInt(hourOnly[1], 10);
+    if (hasPM && h < 12) h += 12;
+    else if (hasAM && h === 12) h = 0;
+    else if (!hasAM && h >= 1 && h <= 7) h += 12;
+    if (h >= 0 && h <= 23) {
+      return `${String(h).padStart(2, '0')}:00`;
+    }
+  }
+
+  return fallback;
+};
+
+/**
+ * Auto-sanitizes a class session's startTime and endTime into proper 24-hour format.
+ */
+export const sanitizeClassSessionTimes = <T extends { startTime: string; endTime: string }>(session: T): T => {
+  const cleanStart = sanitizeAcademicTime(session.startTime, '09:00', false);
+  const cleanEnd = sanitizeAcademicTime(session.endTime, '10:00', true, cleanStart);
+  if (cleanStart === session.startTime && cleanEnd === session.endTime) {
+    return session;
+  }
+  return {
+    ...session,
+    startTime: cleanStart,
+    endTime: cleanEnd,
+  };
+};
+
+export const formatTime12Hour = (timeStr: string): string => {
+  if (!timeStr) return '';
+  const trimmed = timeStr.trim();
+  if (/am|pm/i.test(trimmed)) {
+    return trimmed.toUpperCase();
+  }
+  const [hStr, mStr] = trimmed.split(':');
+  let h = parseInt(hStr, 10);
   const m = mStr || '00';
-  if (isNaN(h)) return time24;
+  if (isNaN(h)) return timeStr;
+
+  // Auto-correct hours 1 to 7 without 24-hour offset to PM
+  if (h >= 1 && h <= 7) {
+    h += 12;
+  }
+
   const ampm = h >= 12 ? 'PM' : 'AM';
   const hour12 = h % 12 === 0 ? 12 : h % 12;
-  return `${hour12}:${m} ${ampm}`;
+  return `${String(hour12).padStart(2, '0')}:${m} ${ampm}`;
 };
 
 /**
@@ -97,8 +182,15 @@ export const formatCollegeBadge = (collegeStr?: string): string => {
 };
 
 export const timeToMinutes = (time24: string): number => {
-  const [h, m] = time24.split(':').map(Number);
-  return h * 60 + (m || 0);
+  if (!time24) return 0;
+  const [hRaw, mRaw] = time24.split(':').map(Number);
+  let h = hRaw || 0;
+  const m = mRaw || 0;
+  // If hour is 1 to 7 without 24-hour prefix in an academic timetable, it's PM
+  if (h >= 1 && h <= 7) {
+    h += 12;
+  }
+  return h * 60 + m;
 };
 
 export interface LiveClassStatus {

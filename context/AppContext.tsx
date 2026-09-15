@@ -30,6 +30,7 @@ import {
   extractCleanInviteCode,
   getTodayDateString,
   normalizeIdList,
+  sanitizeClassSessionTimes,
 } from '@/lib/timetableUtils';
 import { checkAndGenerateSmartNotifications } from '@/lib/notificationEngine';
 import confetti from 'canvas-confetti';
@@ -265,6 +266,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     profile.role === 'cr'
   );
   const isBatchCR = !!user && (isSuperAdmin || profile.role === 'super_admin' || profile.role === 'cr' || isPrimaryCreator || isCoCR);
+
+  // Auto-heal session timings (migrate legacy 01:00-07:00 morning representations into true 24-hour PM)
+  useEffect(() => {
+    if (timetable && timetable.length > 0) {
+      const needsHealing = timetable.some(s => {
+        const startH = parseInt((s.startTime || '').split(':')[0], 10);
+        const endH = parseInt((s.endTime || '').split(':')[0], 10);
+        return (!/pm|am/i.test(s.startTime || '') && startH >= 1 && startH <= 7) ||
+               (!/pm|am/i.test(s.endTime || '') && endH >= 1 && endH <= 7);
+      });
+      if (needsHealing) {
+        const healed = timetable.map(sanitizeClassSessionTimes);
+        setTimetableState(healed);
+        storage.setTimetable(healed);
+      }
+    }
+  }, [timetable]);
 
   // Handle User Logout / Switch Account Cleanup
   useEffect(() => {

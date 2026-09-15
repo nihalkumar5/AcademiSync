@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { motion } from 'framer-motion';
-import { getCurrentDayOfWeek, timeToMinutes, getTodayDateString, getTomorrowDayOfWeek, getTomorrowDateString, getSubjectThemeStyle } from '@/lib/timetableUtils';
+import { getCurrentDayOfWeek, timeToMinutes, getTodayDateString, getTomorrowDayOfWeek, getTomorrowDateString, getSubjectThemeStyle, formatTime12Hour } from '@/lib/timetableUtils';
 import { MapPin, User, Clock, FlaskConical, Ban, RotateCcw, MoreVertical, ChevronDown, Check, Calendar } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
@@ -548,21 +548,21 @@ export const TodayTimeline: React.FC = () => {
 
                     <div className="flex flex-col gap-2.5 transition-all">
                         {/* Time */}
-                        <div className="w-16 shrink-0 flex flex-col pt-0.5">
+                        <div className="w-20 shrink-0 flex flex-col pt-0.5">
                           {reschedule ? (
                             <div className="flex flex-col">
                               <span className="text-[11px] line-through text-[#9CA3AF] font-mono font-medium leading-none mb-1">
-                                {session.startTime}
+                                {formatTime12Hour(session.startTime)}
                               </span>
                               <span className="text-[13px] font-bold tracking-tighter font-mono text-[#C85F3D] leading-none">
-                                {reschedule.startTime}
+                                {formatTime12Hour(reschedule.startTime)}
                               </span>
                             </div>
                           ) : (
                             <span className={`text-[13px] font-bold tracking-tighter font-mono ${
                               isCancelled ? 'line-through text-zinc-400 dark:text-zinc-600' : 'text-[#151515] dark:text-zinc-100'
                             }`}>
-                              {session.startTime}
+                              {formatTime12Hour(session.startTime)}
                             </span>
                           )}
                         </div>

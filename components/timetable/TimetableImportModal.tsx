@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ExtractedClassSession, DayOfWeek, ClassSession, Subject } from '@/lib/types';
-import { DAYS_OF_WEEK, mergeConsecutiveSessions, normalizeSection } from '@/lib/timetableUtils';
+import { DAYS_OF_WEEK, mergeConsecutiveSessions, normalizeSection, sanitizeAcademicTime } from '@/lib/timetableUtils';
 import { autoAssignHarmonicColorsToSubjects, getHarmonicColorForSubject } from '@/lib/cardColors';
 import { validateUploadedFile } from '@/lib/fileSafety';
 import { Modal } from '../ui/Modal';
@@ -245,12 +245,15 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         newSubjects.push(matchedSubject);
       }
 
+      const cleanStart = sanitizeAcademicTime(extSession.startTime, '09:00', false);
+      const cleanEnd = sanitizeAcademicTime(extSession.endTime, '10:00', true, cleanStart);
+
       newSessions.push({
         id: `sess_${Date.now()}_${idx}`,
         subjectId: matchedSubject.id,
         day: extSession.day,
-        startTime: extSession.startTime,
-        endTime: extSession.endTime,
+        startTime: cleanStart,
+        endTime: cleanEnd,
         room: extSession.room || matchedSubject.room,
         faculty: extSession.faculty || matchedSubject.facultyName,
         isLab: extSession.isLab,
