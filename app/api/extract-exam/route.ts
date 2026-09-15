@@ -40,9 +40,10 @@ export async function POST(req: Request) {
 
     if (apiKey && imageList.length > 0) {
       const candidateModels = [
-        'gemini-3.5-flash-lite',
-        'gemini-flash-lite-latest',
         'gemini-3.6-flash',
+        'gemini-flash-latest',
+        'gemini-3.7-flash',
+        'gemini-3.8-flash',
       ];
       const genAI = new GoogleGenerativeAI(apiKey);
 
