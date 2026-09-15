@@ -10,6 +10,7 @@ import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { ExamImportModal } from './ExamImportModal';
 import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
+import { formatBatchDisplayName } from '@/lib/timetableUtils';
 
 export const ExamsView: React.FC = () => {
   const { exams, isBatchCR, shareTimetableWithBatch, shareExamsWithBatch, joinSharedExams, showToast, user, profile, currentBatchData } = useApp();
@@ -118,7 +119,7 @@ export const ExamsView: React.FC = () => {
                 try {
                   const key = await shareTimetableWithBatch();
                   const code = currentBatchData?.inviteCode || (profile?.batchKey && profile.batchKey.length <= 8 ? profile.batchKey : key);
-                  const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
+                  const batchTitle = formatBatchDisplayName(profile.branch, profile.semester, profile.section);
                   const shareText = `🔥 *Join our official ${batchTitle} Exam Schedule & Timetable on Intersemester!*
 
 🔑 *Batch Code:* ${code}

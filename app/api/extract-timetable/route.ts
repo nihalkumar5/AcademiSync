@@ -136,12 +136,16 @@ Analyze the provided timetable document(s)/image(s)/PDF and extract all weekly l
 ${contextPromptBlock}
 CRITICAL INSTRUCTIONS FOR TARGET FILTERING & RESOLUTION:
 
-1. TARGET BRANCH, GROUP & SECTION ISOLATION (IIT Kanpur / Master Circular Style):
-- When the document contains master schedules across multiple departments (e.g. AE, BSBE, CE, CHE, CHM, CSE, EE, ME, MSE, MTH, PHY, SDS), groups (Group 1 vs Group 2), or sections (A1-A10, C1-C20):
-  * Filter STRICTLY for classes applicable to the TARGET STUDENT's Branch, Semester, and Group/Section.
+1. TARGET BRANCH, GROUP & SECTION ISOLATION (ZERO-REDUNDANCY GUARANTEE):
+- When the document contains master schedules across multiple departments (e.g. AE, BSBE, CE, CHE, CHM, CSE, EE, ME, MSE, MTH, PHY, SDS), groups (Group 1 vs Group 2), or sections (A, B, C or A1-A10):
+  * Filter STRICTLY for classes applicable to the TARGET STUDENT's Branch, Semester, and Section/Group.
   * Cross-reference department course mappings (e.g. if student is in CSE, include PHY114 and exclude PHY112, PHY113, PHY115).
   * If student is in Group 1, extract Group 1 schedule and ignore Group 2 schedule.
-  * For lab/tutorial sections (e.g. Section A1-A10), match the student's Section if provided (or default to Section A / main schedule).
+  * NO OVERLAPPING SESSIONS / MULTI-SECTION REDUNDANCY:
+    - A student attends only ONE class at a time. NEVER extract simultaneous classes from multiple sections (e.g. do NOT output Sec A and Sec B and Sec C classes simultaneously).
+    - If the student specified a Section/Batch (e.g. "A", "Sec A", "A3"), match that section only and discard all other sections.
+    - If the student did NOT specify a section, default to Section A / Group 1 (the primary routine). DO NOT dump all sections together!
+    - For parallel sub-batches in labs/tutorials (e.g. Lab Batch A1, A2, A3 scheduled at the same time), extract only ONE lab session for the student's sub-batch (default to A1 if unspecified). NEVER output 2 or more overlapping lab sessions at the exact same hour!
   * DO NOT output classes for departments or groups that do not belong to the target student.
 
 2. SLOT-PATTERN MATRIX RESOLUTION (IIT Bombay / Slot System Style):

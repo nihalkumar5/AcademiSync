@@ -11,7 +11,7 @@ import { Programme, Branch } from '@/lib/types';
 import { storage } from '@/lib/storage';
 import { INDIAN_COLLEGES, STANDARD_PROGRAMMES, STANDARD_BRANCHES, filterProgrammes, filterBranches, getCanonicalProgramme } from '@/lib/colleges';
 import { scheduleTestNotification } from '@/lib/localNotifications';
-import { getCanonicalBatchKey, formatBatchDisplayName, isValidProperEmail, getShortCollegeName, normalizeProgrammeName, normalizeBranchName } from '@/lib/timetableUtils';
+import { getCanonicalBatchKey, formatBatchDisplayName, isValidProperEmail, getShortCollegeName, normalizeProgrammeName, normalizeBranchName, normalizeSection } from '@/lib/timetableUtils';
 import {
   User,
   GraduationCap,
@@ -241,12 +241,13 @@ export const SettingsView: React.FC = () => {
       cleanBranch !== profile.branch ||
       cleanSem !== profile.semester;
 
+    const cleanSec = normalizeSection(section);
     const savedFields = {
       name: name.trim(),
       rollNumber: rollNumber.trim(),
       email: cleanEmail,
       year: Number(year),
-      section: '',
+      section: cleanSec || profile.section || '',
     };
 
     if (hasAcademicChanges) {
@@ -284,7 +285,7 @@ export const SettingsView: React.FC = () => {
           programme: cleanProg,
           branch: cleanBranch,
           semester: cleanSem,
-          section: '',
+          section: cleanSec || profile.section || '',
           batchKey: currentBatchData?.id || profile.batchKey,
           isBatchSynced: true,
         });
@@ -316,7 +317,7 @@ export const SettingsView: React.FC = () => {
             programme: cleanProg,
             branch: cleanBranch,
             semester: cleanSem,
-            section: '',
+            section: cleanSec || profile.section || '',
             batchKey: matched.id || profile.batchKey,
             isBatchSynced: true,
           });
@@ -336,7 +337,7 @@ export const SettingsView: React.FC = () => {
           programme: cleanProg,
           branch: cleanBranch,
           semester: cleanSem,
-          section: '',
+          section: cleanSec || profile.section || '',
           batchKey: undefined,
           isBatchSynced: false,
         });
@@ -354,7 +355,7 @@ export const SettingsView: React.FC = () => {
       programme: cleanProg,
       branch: cleanBranch,
       semester: cleanSem,
-      section: '',
+      section: cleanSec || profile.section || '',
       batchKey: profile.batchKey,
       isBatchSynced: profile.isBatchSynced,
     });
@@ -552,8 +553,10 @@ export const SettingsView: React.FC = () => {
                   </div>
                   
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Programme</span>
-                    <span className="text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] break-words">{programme} {branch ? `· ${branch}` : ''}</span>
+                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Programme & Branch</span>
+                    <span className="text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] break-words">
+                      {programme} {branch ? `· ${branch}` : ''} {profile.section ? `· Sec ${profile.section}` : ''} {semester ? `(Sem ${semester})` : ''}
+                    </span>
                   </div>
                   
                   <div className="flex flex-col gap-1.5">
@@ -816,8 +819,8 @@ export const SettingsView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Year, Semester */}
-                  <div className="grid grid-cols-2 gap-4 items-start">
+                  {/* Year, Semester, Section */}
+                  <div className="grid grid-cols-3 gap-3 items-start">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8] h-4 flex items-center">Year</label>
                       <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[44px]">
@@ -845,6 +848,18 @@ export const SettingsView: React.FC = () => {
                           placeholder="1-14"
                           required
                           className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8] h-4 flex items-center">Section</label>
+                      <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[44px]">
+                        <input
+                          type="text"
+                          value={section}
+                          onChange={(e) => setSection(e.target.value)}
+                          placeholder="e.g. A, B"
+                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
                         />
                       </div>
                     </div>

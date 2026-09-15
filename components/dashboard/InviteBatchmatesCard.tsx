@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { BatchDiscoveryModal } from '@/components/batch/BatchDiscoveryModal';
 import { Users, Sparkles } from 'lucide-react';
+import { formatBatchDisplayName } from '@/lib/timetableUtils';
 
 export const InviteBatchmatesCard = () => {
   const { profile, showToast, currentBatchData } = useApp();
@@ -15,7 +16,7 @@ export const InviteBatchmatesCard = () => {
 
   const handleInvite = async () => {
     if (!profile?.batchKey) return;
-    const batchTitle = `${profile.branch || 'Class'} - Sec ${profile.section || 'A'} (Sem ${profile.semester || ''})`;
+    const batchTitle = formatBatchDisplayName(profile.branch, profile.semester, profile.section);
     const batchCode = sixDigitCode || profile.batchKey;
     const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 

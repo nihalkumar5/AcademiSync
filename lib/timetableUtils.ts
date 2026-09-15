@@ -496,12 +496,27 @@ export const mergeConsecutiveSessions = (
   Object.keys(sessionsByDay).forEach((day) => {
     const daySessions = sessionsByDay[day];
 
+    // Deduplicate exact or duplicate signatures (prevent redundant repeated classes from multi-section scans)
+    const seenSignatures = new Set<string>();
+    const uniqueDaySessions: ExtractedClassSession[] = [];
+
+    for (const sess of daySessions) {
+      if (!sess.startTime || !sess.endTime || !sess.subjectName) continue;
+      const cleanSubj = sess.subjectName.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      const cleanCode = (sess.subjectCode || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      const sig = `${sess.day}_${sess.startTime}_${sess.endTime}_${cleanCode || cleanSubj}`;
+      if (!seenSignatures.has(sig)) {
+        seenSignatures.add(sig);
+        uniqueDaySessions.push(sess);
+      }
+    }
+
     // Sort by start time
-    daySessions.sort((a, b) => toMins(a.startTime) - toMins(b.startTime));
+    uniqueDaySessions.sort((a, b) => toMins(a.startTime) - toMins(b.startTime));
 
     const mergedDaySessions: ExtractedClassSession[] = [];
 
-    daySessions.forEach((current) => {
+    uniqueDaySessions.forEach((current) => {
       if (mergedDaySessions.length === 0) {
         mergedDaySessions.push({ ...current });
         return;
@@ -511,14 +526,25 @@ export const mergeConsecutiveSessions = (
 
       // Check if they are the same subject
       const sameSubject =
-        last.subjectName.trim().toLowerCase() === current.subjectName.trim().toLowerCase();
+        last.subjectName.trim().toLowerCase() === current.subjectName.trim().toLowerCase() ||
+        (!!last.subjectCode && !!current.subjectCode && last.subjectCode.trim().toLowerCase() === current.subjectCode.trim().toLowerCase());
 
-      // Check if they are consecutive or overlap
+      const lastStart = toMins(last.startTime);
       const lastEnd = toMins(last.endTime);
       const currStart = toMins(current.startTime);
       const currEnd = toMins(current.endTime);
 
-      // We allow up to 15 minutes of gap or exact overlap
+      // Exact or inner overlap of same subject: merge
+      if (sameSubject && currStart >= lastStart && currStart < lastEnd) {
+        const maxEndMins = Math.max(lastEnd, currEnd);
+        last.endTime = toTimeStr(maxEndMins);
+        if (!last.faculty && current.faculty) last.faculty = current.faculty;
+        if (!last.room && current.room) last.room = current.room;
+        if (current.isLab) last.isLab = true;
+        return;
+      }
+
+      // Consecutive slots (gap <= 15 mins) or partial overlap of same subject
       const isConsecutive = currStart >= lastEnd && (currStart - lastEnd) <= 15;
       const isOverlap = currStart < lastEnd && currEnd > lastEnd;
 
@@ -810,14 +836,35 @@ export const isExplicitSection = (section?: string): boolean => {
   return true;
 };
 
-export const formatBatchDisplayName = (branch?: string, semester?: number, _section?: string): string => {
-  const b = branch || 'Course';
+export const formatBatchDisplayName = (branch?: string, semester?: number, section?: string): string => {
+  const b = branch || 'Class';
   const sem = semester ? `Sem ${semester}` : '';
-  return sem ? `${b} · ${sem}` : b;
+  const cleanSec = normalizeSection(section);
+  const secPart = cleanSec ? `Sec ${cleanSec}` : '';
+  const parts = [b, sem, secPart].filter(Boolean);
+  return parts.join(' · ');
 };
 
 export const normalizeSection = (section?: string): string => {
-  return '';
+  if (!section) return '';
+  let str = section.trim().toUpperCase();
+  // Strip common noisy prefixes: "SECTION A" -> "A", "SEC-A" -> "A", "SEC: A" -> "A", "BATCH 1" -> "1"
+  str = str.replace(/^(SECTION|SEC|BATCH)\s*[:.\-]?\s*/i, '');
+  // Clean special punctuation except alphanumeric and space/hyphen
+  str = str.replace(/[^A-Z0-9\s\-]/g, '').trim();
+  // Filter out non-section placeholders
+  if (
+    !str || 
+    str === 'NONE' || 
+    str === 'ALL' || 
+    str === 'NO SECTION' || 
+    str === 'SINGLE' || 
+    str === 'SINGLE BATCH' ||
+    str === 'GENERAL'
+  ) {
+    return '';
+  }
+  return str;
 };
 
 export const getCanonicalBatchKey = (
@@ -832,7 +879,9 @@ export const getCanonicalBatchKey = (
   const cleanProgKey = normalizeProgrammeName(programme);
   const cleanBranchKey = normalizeBranchName(branch);
 
-  // Branch acts as the primary section; remove separate section suffix to avoid redundancy and fragmentation
+  // Unified canonical batch key (Branch & Semester container).
+  // Section is preserved on student profiles, NOT appended to the batch key,
+  // preventing class fragmentation, duplicate batches, and sync isolation.
   return `${cleanCollegeKey}_${cleanProgKey}_${cleanBranchKey}_sem${semester}`;
 };
 

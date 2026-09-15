@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ExtractedClassSession, DayOfWeek, ClassSession, Subject } from '@/lib/types';
-import { DAYS_OF_WEEK, mergeConsecutiveSessions } from '@/lib/timetableUtils';
+import { DAYS_OF_WEEK, mergeConsecutiveSessions, normalizeSection } from '@/lib/timetableUtils';
 import { autoAssignHarmonicColorsToSubjects, getHarmonicColorForSubject } from '@/lib/cardColors';
 import { validateUploadedFile } from '@/lib/fileSafety';
 import { Modal } from '../ui/Modal';
@@ -76,15 +76,16 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     const resolvedCourses = targetCourses.trim() || undefined;
 
     // Persist updated academic context to user profile so user doesn't have to re-enter it
+    const cleanSec = normalizeSection(resolvedSection) || resolvedSection;
     if (
-      (resolvedSection && resolvedSection !== profile?.section) ||
+      (cleanSec && cleanSec !== profile?.section) ||
       (resolvedBranch && resolvedBranch !== profile?.branch) ||
       (resolvedSemester && resolvedSemester !== profile?.semester)
     ) {
       updateProfile({
         ...(resolvedBranch ? { branch: resolvedBranch } : {}),
         semester: resolvedSemester,
-        ...(resolvedSection ? { section: resolvedSection } : {}),
+        ...(cleanSec ? { section: cleanSec } : {}),
       });
     }
 
