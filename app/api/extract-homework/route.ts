@@ -56,7 +56,16 @@ export async function POST(req: Request) {
     }
 
     if (apiKey && imageBase64) {
-      const candidateModels = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash'];
+      const candidateModels = [
+        'gemini-3.5-flash-lite',
+        'gemini-flash-lite-latest',
+        'gemini-3.1-flash-lite-preview',
+        'gemini-3.1-flash-lite',
+        'gemini-3.5-flash',
+        'gemini-3.7-flash',
+        'gemini-3.6-flash',
+        'gemini-flash-latest',
+      ];
       const genAI = new GoogleGenerativeAI(apiKey);
 
       for (const modelName of candidateModels) {
@@ -81,16 +90,29 @@ Return ONLY valid JSON matching this exact structure:
             },
           };
 
-          const result = await model.generateContent([prompt, imagePart]);
+          const result: any = await Promise.race([
+            model.generateContent([prompt, imagePart]),
+            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 18000))
+          ]);
           const responseText = result.response.text();
           
           let parsed: any = null;
-          const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            parsed = JSON.parse(jsonMatch[0]);
-          } else {
-            const cleaned = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
-            parsed = JSON.parse(cleaned);
+          let jsonStr = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
+          const firstBrace = jsonStr.indexOf('{');
+          const lastBrace = jsonStr.lastIndexOf('}');
+          if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
+          }
+          try {
+            parsed = JSON.parse(jsonStr);
+          } catch (e) {
+            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              parsed = JSON.parse(jsonMatch[0]);
+            } else {
+              const cleaned = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
+              parsed = JSON.parse(cleaned);
+            }
           }
 
           if (parsed && (parsed.title || parsed.subjectName || parsed.description)) {

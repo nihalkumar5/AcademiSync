@@ -39,7 +39,16 @@ export async function POST(req: Request) {
     }
 
     if (apiKey && imageList.length > 0) {
-      const candidateModels = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash'];
+      const candidateModels = [
+        'gemini-3.5-flash-lite',
+        'gemini-flash-lite-latest',
+        'gemini-3.1-flash-lite-preview',
+        'gemini-3.1-flash-lite',
+        'gemini-3.5-flash',
+        'gemini-3.7-flash',
+        'gemini-3.6-flash',
+        'gemini-flash-latest',
+      ];
       const genAI = new GoogleGenerativeAI(apiKey);
 
       const prompt = `You are an academic exam timetable extractor.
@@ -74,10 +83,27 @@ Return ONLY raw JSON array.
       for (const modelName of candidateModels) {
         try {
           const model = genAI.getGenerativeModel({ model: modelName });
-          const result = await model.generateContent([prompt, ...imageParts]);
+          const result: any = await Promise.race([
+            model.generateContent([prompt, ...imageParts]),
+            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 18000))
+          ]);
           const responseText = result.response.text();
-          const cleanedJson = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
-          const parsed = JSON.parse(cleanedJson);
+          let jsonStr = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
+          const firstBracket = jsonStr.indexOf('[');
+          const lastBracket = jsonStr.lastIndexOf(']');
+          if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+            jsonStr = jsonStr.substring(firstBracket, lastBracket + 1);
+          }
+
+          let parsed: any = null;
+          try {
+            parsed = JSON.parse(jsonStr);
+          } catch (e) {
+            const arrayMatch = responseText.match(/\[\s*\{[\s\S]*\}\s*\]/);
+            if (arrayMatch) {
+              parsed = JSON.parse(arrayMatch[0]);
+            }
+          }
 
           if (Array.isArray(parsed) && parsed.length > 0) {
             return NextResponse.json({

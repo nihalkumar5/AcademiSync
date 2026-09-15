@@ -63,7 +63,16 @@ export async function POST(req: Request) {
     }
 
     if (apiKey && imageList.length > 0) {
-      const candidateModels = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash'];
+      const candidateModels = [
+        'gemini-3.5-flash-lite',
+        'gemini-flash-lite-latest',
+        'gemini-3.1-flash-lite-preview',
+        'gemini-3.1-flash-lite',
+        'gemini-3.5-flash',
+        'gemini-3.7-flash',
+        'gemini-3.6-flash',
+        'gemini-flash-latest',
+      ];
       const genAI = new GoogleGenerativeAI(apiKey);
 
       const prompt = `You are a culinary expert & OCR assistant specializing in Indian hostel and university mess menus.
@@ -126,11 +135,30 @@ Do not include any markdown backticks or explanations, return ONLY raw JSON.`;
       for (const modelName of candidateModels) {
         try {
           const model = genAI.getGenerativeModel({ model: modelName });
-          const result = await model.generateContent([prompt, ...imageParts]);
+          const result: any = await Promise.race([
+            model.generateContent([prompt, ...imageParts]),
+            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 18000))
+          ]);
           let text = result.response.text();
-          text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+          let jsonStr = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+          const firstBrace = jsonStr.indexOf('{');
+          const lastBrace = jsonStr.lastIndexOf('}');
+          if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
+          }
 
-          const parsed = JSON.parse(text);
+          let parsed: any = null;
+          try {
+            parsed = JSON.parse(jsonStr);
+          } catch (e) {
+            const objMatch = text.match(/\{[\s\S]*\}/);
+            if (objMatch) {
+              parsed = JSON.parse(objMatch[0]);
+            } else {
+              throw e;
+            }
+          }
+
           const menuObj = parsed.menu || parsed;
           const timingsObj = parsed.timings || {
             Breakfast: '8:00 - 10:00',

@@ -5,6 +5,59 @@ import { logServerError } from '@/lib/errorUtils';
 import { validateServerUploadPayload } from '@/lib/fileSafety';
 import { checkAiRateLimit } from '@/lib/rateLimit';
 
+const clean24HourTime = (str?: string, fallback = '09:00'): string => {
+  if (!str) return fallback;
+  let single = str.trim();
+  if (single.includes('-')) {
+    single = single.split('-')[0].trim();
+  } else if (single.toLowerCase().includes(' to ')) {
+    single = single.toLowerCase().split(' to ')[0].trim();
+  }
+  const isPM = /pm/i.test(single);
+  const isAM = /am/i.test(single);
+  const match = single.match(/(\d{1,2})[:.](\d{2})/);
+  if (match) {
+    let h = parseInt(match[1], 10);
+    const m = parseInt(match[2], 10);
+    if (isPM && h < 12) h += 12;
+    if (isAM && h === 12) h = 0;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+  const hourOnly = single.match(/(\d{1,2})\s*(am|pm)?/i);
+  if (hourOnly) {
+    let h = parseInt(hourOnly[1], 10);
+    const pm = hourOnly[2] && /pm/i.test(hourOnly[2]);
+    const am = hourOnly[2] && /am/i.test(hourOnly[2]);
+    if (pm && h < 12) h += 12;
+    if (am && h === 12) h = 0;
+    if (h >= 0 && h <= 23) {
+      return `${String(h).padStart(2, '0')}:00`;
+    }
+  }
+  return fallback;
+};
+
+const clean24HourEndTime = (endStr?: string, startStr?: string, fallback = '10:00'): string => {
+  if (!endStr) return fallback;
+  let single = endStr.trim();
+  if (single.includes('-')) {
+    single = single.split('-')[1].trim();
+  } else if (single.toLowerCase().includes(' to ')) {
+    single = single.toLowerCase().split(' to ')[1].trim();
+  }
+  const isPM = /pm/i.test(single) || /pm/i.test(endStr);
+  const isAM = /am/i.test(single);
+  const match = single.match(/(\d{1,2})[:.](\d{2})/);
+  if (match) {
+    let h = parseInt(match[1], 10);
+    const m = parseInt(match[2], 10);
+    if (isPM && h < 12) h += 12;
+    if (isAM && h === 12) h = 0;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+  return clean24HourTime(single, fallback);
+};
+
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -115,7 +168,16 @@ export async function POST(req: Request) {
 
     // If an image was uploaded, run multimodal vision extraction across active Gemini models
     if (apiKey && imageList.length > 0) {
-      const candidateModels = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash'];
+      const candidateModels = [
+        'gemini-3.5-flash-lite',
+        'gemini-flash-lite-latest',
+        'gemini-3.1-flash-lite-preview',
+        'gemini-3.1-flash-lite',
+        'gemini-3.5-flash',
+        'gemini-3.7-flash',
+        'gemini-3.6-flash',
+        'gemini-flash-latest',
+      ];
       const genAI = new GoogleGenerativeAI(apiKey);
 
       const contextLines: string[] = [];
@@ -203,13 +265,35 @@ Return ONLY raw valid JSON array:
       for (const modelName of candidateModels) {
         try {
           const model = genAI.getGenerativeModel({ model: modelName });
-          const result = await model.generateContent([prompt, ...imageParts]);
+          const result: any = await Promise.race([
+            model.generateContent([prompt, ...imageParts]),
+            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 18000))
+          ]);
           const responseText = result.response.text();
-          const cleanedJson = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
-          const parsed = JSON.parse(cleanedJson);
+          let jsonStr = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
+          const firstBracket = jsonStr.indexOf('[');
+          const lastBracket = jsonStr.lastIndexOf(']');
+          if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+            jsonStr = jsonStr.substring(firstBracket, lastBracket + 1);
+          }
+          const parsed = JSON.parse(jsonStr);
 
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const merged = mergeConsecutiveSessions(parsed);
+            const sanitized = parsed.map((s: any) => {
+              const start24 = clean24HourTime(s.startTime, '09:00');
+              const end24 = clean24HourEndTime(s.endTime, s.startTime, '10:00');
+              return {
+                day: s.day || 'Monday',
+                startTime: start24,
+                endTime: end24,
+                subjectName: (s.subjectName || '').trim() || 'Subject',
+                subjectCode: (s.subjectCode || '').trim(),
+                room: (s.room || '').trim(),
+                faculty: (s.faculty || '').trim(),
+                isLab: !!s.isLab || /lab|practical|workshop/i.test(s.subjectName || '') || /lab|practical|workshop/i.test(s.subjectCode || ''),
+              };
+            });
+            const merged = mergeConsecutiveSessions(sanitized);
             return NextResponse.json({
               success: true,
               sessions: merged,
