@@ -43,6 +43,7 @@ export interface Subject {
   syllabusLink?: string;
   isCustomColor?: boolean;
   isCustomRoom?: boolean;
+  isPersonal?: boolean;
 }
 
 export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';

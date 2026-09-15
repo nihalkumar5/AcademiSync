@@ -349,7 +349,9 @@ export const SubjectListView: React.FC = () => {
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            deleteSubject(sub.id);
+                            if (window.confirm(`Delete "${sub.name}"? This will also remove all its class slots from your timetable.`)) {
+                              deleteSubject(sub.id);
+                            }
                           }}
                           className="p-1.5 text-[#737373] hover:text-[#C94B5C] rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors"
                           title="Delete Subject"

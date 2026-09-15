@@ -531,6 +531,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
           // Also preserve personal subjects created by user that are not in the official batch
           const personalSubs = currentList.filter((s) => 
+            s.isPersonal === true &&
             !data.subjects.some((b: Subject) => 
               b.id === s.id || 
               (b.code && s.code && b.code.trim().toUpperCase() === s.code.trim().toUpperCase()) ||
@@ -1162,6 +1163,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       color: chosenColor,
       isCustomColor: !isLegacyDefault && !!subjectData.color,
       isCustomRoom: true,
+      isPersonal: !isBatchCR && profile.isBatchSynced ? true : false,
       id: `sub_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
     };
     const updated = [...subjects, newSub];
@@ -1247,8 +1249,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return;
     }
 
+    const subjectToDelete = subjects.find((s) => s.id === id);
+    const idMatches = (subId?: string) => {
+      if (!subId) return false;
+      if (subId === id) return true;
+      if (subjectToDelete) {
+        if (subId === subjectToDelete.id) return true;
+        if (subjectToDelete.code && subId.trim().toLowerCase() === subjectToDelete.code.trim().toLowerCase()) return true;
+        if (subjectToDelete.name && subId.trim().toLowerCase() === subjectToDelete.name.trim().toLowerCase()) return true;
+      }
+      return false;
+    };
+
     const updatedSubs = subjects.filter((s) => s.id !== id);
-    const updatedTimetable = timetable.filter((t) => t.subjectId !== id);
+    const updatedTimetable = timetable.filter((t) => !idMatches(t.subjectId));
     setSubjectsState(updatedSubs);
     setTimetableState(updatedTimetable);
     storage.setSubjects(updatedSubs);
@@ -1269,6 +1283,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
 
     syncCRChangesToBatch(updatedTimetable, updatedSubs);
+
+    const removedSlots = timetable.length - updatedTimetable.length;
+    showToast(
+      'Subject Deleted',
+      removedSlots > 0
+        ? `${subjectToDelete?.name || 'Subject'} and ${removedSlots} timetable class slot${removedSlots === 1 ? '' : 's'} removed`
+        : `${subjectToDelete?.name || 'Subject'} removed from directory`,
+      'info'
+    );
   };
 
   const refreshCarryItems = (
