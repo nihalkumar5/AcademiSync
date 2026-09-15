@@ -1,9 +1,11 @@
 import { getApps, initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
+import { getAuth } from 'firebase-admin/auth';
 
 let dbInstance: any = null;
 let messagingInstance: any = null;
+let authInstance: any = null;
 
 function initFirebaseAdmin() {
   if (!getApps().length) {
@@ -80,5 +82,26 @@ export const adminMessaging = {
   },
   sendEachForMulticast(message: any, dryRun?: boolean) {
     return this.messaging.sendEachForMulticast(message, dryRun);
+  }
+} as any;
+
+export const adminAuth = {
+  get auth() {
+    initFirebaseAdmin();
+    if (!authInstance) {
+      try {
+        authInstance = getAuth();
+      } catch (err) {
+        console.error('Failed to get Auth instance:', err);
+        throw err;
+      }
+    }
+    return authInstance;
+  },
+  verifyIdToken(token: string, checkRevoked?: boolean) {
+    return this.auth.verifyIdToken(token, checkRevoked);
+  },
+  getUser(uid: string) {
+    return this.auth.getUser(uid);
   }
 } as any;

@@ -1,7 +1,7 @@
 import { PushNotifications } from '@capacitor/push-notifications';
 import { Capacitor } from '@capacitor/core';
 import { doc, setDoc } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 
 export const registerPushNotifications = async (userId: string, batchKey?: string) => {
   // Only register if running on a native device (Android/iOS)
@@ -74,9 +74,18 @@ export const broadcastBatchPushNotification = async (payload: {
 }) => {
   if (!payload.batchKey || !payload.title) return;
   try {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (auth?.currentUser) {
+      try {
+        const idToken = await auth.currentUser.getIdToken();
+        if (idToken) headers['Authorization'] = `Bearer ${idToken}`;
+      } catch (tokenErr) {
+        console.warn('Could not attach auth token:', tokenErr);
+      }
+    }
     await fetch('/api/batch/broadcast', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(payload),
     });
   } catch (err) {
