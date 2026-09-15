@@ -8,7 +8,7 @@ import { checkAiRateLimit } from '@/lib/rateLimit';
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { images, imageBase64, mimeType, fileName, userId, isSample } = body;
+    const { images, imageBase64, mimeType, fileName, userId, isSample, studentContext } = body;
     const clientUserId = userId || req.headers.get('x-user-id') || null;
 
     // Campus-Safe AI Rate Limiter Guard
@@ -118,34 +118,71 @@ export async function POST(req: Request) {
       const candidateModels = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash'];
       const genAI = new GoogleGenerativeAI(apiKey);
 
-      const prompt = `You are a specialized timetable parsing assistant for university students across India.
-Analyze the provided timetable image(s) and extract all class/lecture/lab slots across all pages into a strict single JSON array.
+      const contextLines: string[] = [];
+      if (studentContext) {
+        if (studentContext.college) contextLines.push(`- Target College: ${studentContext.college}`);
+        if (studentContext.programme) contextLines.push(`- Target Programme: ${studentContext.programme}`);
+        if (studentContext.branch) contextLines.push(`- Target Branch/Department: ${studentContext.branch}`);
+        if (studentContext.semester) contextLines.push(`- Target Semester: ${studentContext.semester}`);
+        if (studentContext.section) contextLines.push(`- Target Section/Group/Batch: ${studentContext.section}`);
+        if (studentContext.targetCourses) contextLines.push(`- Specific Target Courses Filter: ${studentContext.targetCourses}`);
+      }
+      const contextPromptBlock = contextLines.length > 0 
+        ? `\nTARGET STUDENT PROFILE & CONTEXT:\n${contextLines.join('\n')}\n` 
+        : '';
 
-CRITICAL INSTRUCTIONS FOR SUBJECTS:
-- Look at every cell carefully. Look for course abbreviations, course names, subject titles, or codes (e.g. "ML", "CNS", "PS", "DE", "DBMS", "Operating Systems", "Mathematics").
-- Check if there is a legend / course reference table at the bottom or sides mapping short codes to full subject names.
-- If a cell only contains an abbreviation like "PS" or "NS" or "DSA", use that exact abbreviation or its expanded name (e.g. "Probability & Statistics", "Network Security", "Data Structures").
-- NEVER EVER return the generic word "Subject" or "Lecture" or "Class" as subjectName. Always put the specific subject name, abbreviation, or topic written in that slot.
-- For each element, extract:
-  * "day": "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", or "Sunday"
-  * "startTime": 24-hour format "HH:MM" (e.g. "09:00", "10:05", "14:30")
-  * "endTime": 24-hour format "HH:MM" (e.g. "10:00", "11:05", "16:30")
-  * "subjectName": Specific subject name or abbreviation (e.g. "Probability & Statistics", "Machine Learning", "OS Lab")
-  * "subjectCode": Course code if present (e.g. "CS302", "MA201")
-  * "room": Room / Hall number (e.g. "118", "LT-1", "Lab 2")
-  * "faculty": Faculty name if visible
-  * "isLab": boolean (true if practical or lab session, else false)
+      const prompt = `You are a world-class university timetable parsing assistant specializing in complex Indian engineering timetables (IITs, NITs, IIITs, Central/State Universities).
+Analyze the provided timetable document(s)/image(s)/PDF and extract all weekly lecture, tutorial, and lab class sessions into a strict single JSON array.
+${contextPromptBlock}
+CRITICAL INSTRUCTIONS FOR TARGET FILTERING & RESOLUTION:
+
+1. TARGET BRANCH, GROUP & SECTION ISOLATION (IIT Kanpur / Master Circular Style):
+- When the document contains master schedules across multiple departments (e.g. AE, BSBE, CE, CHE, CHM, CSE, EE, ME, MSE, MTH, PHY, SDS), groups (Group 1 vs Group 2), or sections (A1-A10, C1-C20):
+  * Filter STRICTLY for classes applicable to the TARGET STUDENT's Branch, Semester, and Group/Section.
+  * Cross-reference department course mappings (e.g. if student is in CSE, include PHY114 and exclude PHY112, PHY113, PHY115).
+  * If student is in Group 1, extract Group 1 schedule and ignore Group 2 schedule.
+  * For lab/tutorial sections (e.g. Section A1-A10), match the student's Section if provided (or default to Section A / main schedule).
+  * DO NOT output classes for departments or groups that do not belong to the target student.
+
+2. SLOT-PATTERN MATRIX RESOLUTION (IIT Bombay / Slot System Style):
+- If the document provides a Course Table with Slot Identifiers (e.g., Slot 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, L1, L2, L3, L4, LX) AND a separate Slot Pattern Grid/Matrix mapping slots to days & times (e.g., 1A on Mon 9:30-10:25, 1B on Tue 9:30-10:25, 1C on Thu 9:30-10:25):
+  * NEVER output "Slot 1" as the day or time!
+  * You MUST resolve each course's slot into actual Days, Start Times, and End Times by cross-referencing the Slot Pattern Grid.
+  * Example: If "CS 348" is in Slot "1", output 3 separate session entries:
+    - Monday 09:30 - 10:25
+    - Tuesday 09:30 - 10:25
+    - Thursday 09:30 - 10:25
+  * For Lab slots (e.g. L1, L2, L3, L4, LX), look up the Lab Schedule table (e.g., Monday 14:00 - 16:55 for L1) and output the session with isLab: true.
+  * If the student provided Specific Target Courses, extract only those courses. If none are specified, extract all courses for the target student's branch/semester.
+
+3. SUBJECT NAME & ABBREVIATIONS:
+- Look for course abbreviations and titles (e.g. "ML", "CNS", "PS", "Operating Systems", "CS 347").
+- Check bottom/side legends or reference tables mapping short codes to full subject names.
+- If a slot contains an abbreviation (e.g. "PS" or "DSA"), use the expanded name or standard title.
+- NEVER return generic placeholders like "Subject" or "Lecture". Always put the real subject title or course code.
+- If multiple courses share a slot with slashes (e.g. "CS 409 / CS 6011"), extract the specific course details.
+
+4. EXACT DATA SCHEMA:
+For every extracted class session, return:
+- "day": "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", or "Sunday"
+- "startTime": 24-hour format "HH:MM" (e.g. "09:00", "09:30", "14:00")
+- "endTime": 24-hour format "HH:MM" (e.g. "10:00", "10:25", "16:55")
+- "subjectName": Specific subject name (e.g. "Computer Networks", "Operating Systems")
+- "subjectCode": Course code if present (e.g. "CS 348", "PHY114", "CS 347")
+- "room": Room / Hall / Venue (e.g. "LA 002", "CC 105", "SL-1-2-3", "LT-1")
+- "faculty": Faculty name if visible (e.g. "Prof. Bhaskaran Raman")
+- "isLab": boolean (true for practical/lab sessions, else false)
 
 Return ONLY raw valid JSON array:
 [
   {
     "day": "Monday",
-    "startTime": "10:05",
-    "endTime": "11:05",
-    "subjectName": "Probability & Statistics",
-    "subjectCode": "MA201",
-    "room": "118",
-    "faculty": "Mr. Prashant Singh (VF)",
+    "startTime": "09:30",
+    "endTime": "10:25",
+    "subjectName": "Computer Networks",
+    "subjectCode": "CS 348",
+    "room": "LA 002",
+    "faculty": "Prof. Bhaskaran Raman",
     "isLab": false
   }
 ]`;
