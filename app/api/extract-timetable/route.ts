@@ -132,10 +132,10 @@ export async function POST(req: Request) {
     // If an image was uploaded, run multimodal vision extraction across active Gemini models
     if (apiKey && imageList.length > 0) {
       const candidateModels = [
+        'gemini-flash-lite-latest',
+        'gemini-3.5-flash-lite',
         'gemini-3.6-flash',
         'gemini-flash-latest',
-        'gemini-3.7-flash',
-        'gemini-3.8-flash',
       ];
       const genAI = new GoogleGenerativeAI(apiKey);
 
