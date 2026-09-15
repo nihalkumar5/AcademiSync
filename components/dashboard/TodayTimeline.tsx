@@ -512,6 +512,7 @@ export const TodayTimeline: React.FC = () => {
         <div className="relative flex flex-col gap-0 border-l-[2px] border-slate-200 dark:border-white/[0.08] ml-3">
           {displaySessions.map((session, index) => {
             const reschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
+            const effectiveSubjectId = reschedule?.subjectId || session.subjectId;
             const sub = subjectMap.get(effectiveSubjectId) || subjects.find(s => 
               (session.faculty && s.facultyName && (s.facultyName.toLowerCase().includes(session.faculty.toLowerCase()) || session.faculty.toLowerCase().includes(s.facultyName.toLowerCase()))) ||
               ((session as any).subjectCode && s.code && s.code.toLowerCase() === (session as any).subjectCode.toLowerCase()) ||

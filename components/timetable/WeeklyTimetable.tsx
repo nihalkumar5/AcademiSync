@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { DayOfWeek, ClassSession } from '@/lib/types';
+import { DayOfWeek, ClassSession, Subject } from '@/lib/types';
 import { DAYS_OF_WEEK, getCurrentDayOfWeek, timeToMinutes } from '@/lib/timetableUtils';
 import { ClassCard } from './ClassCard';
 import { AddEditClassModal } from './AddEditClassModal';
