@@ -615,8 +615,10 @@ export default function SuperAdminPage() {
             'profile.isBatchSynced': true,
             'profile.batchKey': req.batchKey,
             'profile.college': req.college,
+            'profile.programme': req.programme || 'B.Tech',
             'profile.branch': req.branch,
             'profile.semester': req.semester,
+            'profile.section': req.section || '',
             'profile.batchCode': batchCode,
             notifications: [newNotification, ...existingNotifications].slice(0, 50),
             lastUpdated: Date.now(),
@@ -2306,6 +2308,13 @@ export default function SuperAdminPage() {
                                     Share Code
                                   </button>
                                 )}
+                                <button
+                                  onClick={() => handleApproveCRRequest(req)}
+                                  className="text-[11px] text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-white hover:underline uppercase font-bold cursor-pointer"
+                                  title="Force push approved batch details to user profile"
+                                >
+                                  Re-sync
+                                </button>
                                 <button
                                   onClick={() => handleRejectCRRequest(req)}
                                   className="text-[11px] text-rose-500 hover:underline uppercase font-bold cursor-pointer"

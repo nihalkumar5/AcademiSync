@@ -395,17 +395,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         
         if (data.profile) {
           setProfileState((prev) => {
+            const remoteP = data.profile;
+            const isSynced = remoteP.isBatchSynced !== undefined ? remoteP.isBatchSynced : prev.isBatchSynced;
             const mergedProfile: StudentProfile = {
-              ...data.profile,
-              // If local state is already synced to a batch, preserve the batch sync info so a stale remote snapshot never unlinks it
-              isBatchSynced: prev.isBatchSynced || !!data.profile.isBatchSynced,
-              batchKey: prev.batchKey || data.profile.batchKey,
-              college: prev.college || data.profile.college,
-              programme: prev.programme || data.profile.programme,
-              branch: prev.branch || data.profile.branch,
-              semester: prev.semester || data.profile.semester,
-              section: prev.section || data.profile.section,
-              onboardingCompleted: prev.onboardingCompleted || data.profile.onboardingCompleted,
+              ...prev,
+              ...remoteP,
+              // Remote profile is authoritative for academic & batch sync fields
+              college: remoteP.college || prev.college || '',
+              programme: remoteP.programme || prev.programme || '',
+              branch: remoteP.branch || prev.branch || '',
+              semester: remoteP.semester !== undefined && remoteP.semester !== null ? remoteP.semester : (prev.semester || 1),
+              section: remoteP.section !== undefined && remoteP.section !== null ? remoteP.section : (prev.section || ''),
+              rollNumber: remoteP.rollNumber || prev.rollNumber || '',
+              name: remoteP.name || prev.name || '',
+              email: remoteP.email || prev.email || '',
+              role: remoteP.role || prev.role || 'student',
+              batchKey: remoteP.batchKey !== undefined ? remoteP.batchKey : prev.batchKey,
+              batchCode: remoteP.batchCode || prev.batchCode,
+              isBatchSynced: isSynced,
+              onboardingCompleted: remoteP.onboardingCompleted ?? prev.onboardingCompleted ?? true,
             };
             storage.setProfile(mergedProfile);
             return mergedProfile;
@@ -516,6 +524,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
 
       setCurrentBatchData({ ...data, id: snapshot.id });
+
+      // If user is batch synced, guarantee their local profile metadata perfectly matches the batch
+      if (data.college || data.branch || data.semester) {
+        setProfileState((prev) => {
+          if (!prev.isBatchSynced && prev.batchKey !== snapshot.id) return prev;
+          const updated: StudentProfile = {
+            ...prev,
+            college: data.college || prev.college,
+            programme: data.programme || prev.programme,
+            branch: data.branch || prev.branch,
+            semester: data.semester !== undefined && data.semester !== null ? Number(data.semester) : prev.semester,
+            isBatchSynced: true,
+            batchKey: snapshot.id,
+            batchCode: data.inviteCode || prev.batchCode,
+          };
+          storage.setProfile(updated);
+          return updated;
+        });
+      }
 
       // ── Sync timetable & related data with Personal-Level Override Protection ────────────────
       let updatedSubs = subjects;

@@ -53,7 +53,10 @@ export const BatchApprovedModal: React.FC = () => {
 
   const handleShareWhatsApp = async () => {
     if (!inviteCode) return;
-    const batchTitle = formatBatchDisplayName(profile.branch, profile.semester, profile.section) || 'Class';
+    const effectiveBranch = currentBatchData?.branch || profile.branch;
+    const effectiveSemester = currentBatchData?.semester || profile.semester;
+    const effectiveSection = currentBatchData?.section || profile.section;
+    const batchTitle = formatBatchDisplayName(effectiveBranch, effectiveSemester, effectiveSection) || 'Class';
     const message = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*
 
 🔑 *Batch Code:* ${inviteCode}
@@ -82,7 +85,12 @@ Tap *Connect Batch* → Enter Code: *${inviteCode}*`;
 
   if (!isOpen || !inviteCode) return null;
 
-  const batchTitle = formatBatchDisplayName(profile.branch, profile.semester, profile.section) || 'Your Batch';
+  const effectiveBranch = currentBatchData?.branch || profile.branch;
+  const effectiveSemester = currentBatchData?.semester || profile.semester;
+  const effectiveSection = currentBatchData?.section || profile.section;
+  const effectiveCollege = currentBatchData?.college || profile.college || 'Your Campus';
+
+  const batchTitle = formatBatchDisplayName(effectiveBranch, effectiveSemester, effectiveSection) || 'Your Batch';
 
   return (
     <Modal
@@ -108,7 +116,7 @@ Tap *Connect Batch* → Enter Code: *${inviteCode}*`;
               {batchTitle}
             </h4>
             <p className="text-[11.5px] text-black/60 dark:text-[#94A3B8] leading-tight mt-1">
-              {profile.college || 'Your Campus'} · Official Workspace
+              {effectiveCollege} · Official Workspace
             </p>
           </div>
         </div>
