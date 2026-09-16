@@ -222,6 +222,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [showHolidayAnimation, setShowHolidayAnimation] = useState(false);
   const [proposedBatchTasks, setProposedBatchTasks] = useState<BatchProposedTask[]>([]);
   const [currentBatchData, setCurrentBatchData] = useState<any>(null);
+  const currentBatchDataRef = useRef<any>(null);
 
   const [user, setUser] = useState<any>(null);
   const [isAuthLoaded, setIsAuthLoaded] = useState(false);
@@ -269,10 +270,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     (normalizeIdList(currentBatchData?.crUserIds).includes(user?.id)) ||
     (normalizeIdList(currentBatchData?.crEmails).map((e: string) => e.toLowerCase()).includes(userEmail))
   );
-  // STRICT SEPARATION: Batch Pilot rights belong ONLY to the verified creator or assigned co-pilots of THIS specific batch!
-  // Being Super Admin is a global platform role for /admin, NOT a batch pilot role.
-  // Super admin personal edits will NEVER overwrite batchmates' timetables!
-  const isBatchPilot = !!user && !!currentBatchData && (isPrimaryCreator || isCoCR);
+  // STRICT SEPARATION & AUTHORITATIVE CHECK:
+  // Batch Pilot rights belong to verified creator or assigned co-pilots of THIS specific batch,
+  // OR user profile has verified role === 'cr' with matching synced batch.
+  const isBatchPilot = !!user && profile.isBatchSynced && (
+    profile.role === 'cr' ||
+    (!!currentBatchData && (isPrimaryCreator || isCoCR))
+  );
   const isBatchCR = isBatchPilot;
 
   // Auto-heal session timings (migrate legacy 01:00-07:00 morning representations into true 24-hour PM)
@@ -314,6 +318,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setCancelledSessionsMeta({});
       setRescheduledSessionsState({});
       setExtraSessionsState({});
+      currentBatchDataRef.current = null;
       setCurrentBatchData(null);
       setProposedBatchTasks([]);
       remoteStateString.current = "";
@@ -529,7 +534,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         });
       }
 
-      setCurrentBatchData({ ...data, id: snapshot.id });
+      const fullBatchData = { ...data, id: snapshot.id };
+      currentBatchDataRef.current = fullBatchData;
+      setCurrentBatchData(fullBatchData);
 
       // If user is batch synced, guarantee their local profile metadata perfectly matches the batch
       if (data.college || data.branch || data.semester) {
@@ -708,6 +715,38 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       snapshot.forEach((docSnap) => {
         fetched.push({ id: docSnap.id, ...docSnap.data() } as BatchProposedTask);
       });
+      // Auto-healing: If a proposal was created by the Batch Pilot/CR but is stuck in 'voting' state,
+      // promote it to 'approved' both in-memory and in Firestore!
+      const bData = currentBatchDataRef.current || currentBatchData;
+      const bCrEmails: string[] = normalizeIdList(bData?.crEmails).map((e: string) => e.toLowerCase());
+      const bCrUserIds: string[] = normalizeIdList(bData?.crUserIds);
+      const bCreatorId: string = bData?.creatorId || '';
+      const bCreatorEmail: string = (bData?.creatorEmail || '').toLowerCase();
+      const currentUserEmail: string = (user?.primaryEmailAddress?.emailAddress || profile.email || '').toLowerCase();
+
+      fetched.forEach((p) => {
+        if (p.status === 'voting') {
+          const propCreatorEmail = (p.creatorEmail || '').toLowerCase();
+          const isCreatorPilot =
+            (bCreatorId && p.creatorId === bCreatorId) ||
+            (bCreatorEmail && propCreatorEmail && propCreatorEmail === bCreatorEmail) ||
+            (bCrEmails.length > 0 && propCreatorEmail && bCrEmails.includes(propCreatorEmail)) ||
+            (bCrUserIds.length > 0 && p.creatorId && bCrUserIds.includes(p.creatorId)) ||
+            (isBatchPilot && (p.creatorId === user?.id || (propCreatorEmail && propCreatorEmail === currentUserEmail)));
+
+          if (isCreatorPilot) {
+            p.status = 'approved';
+            p.approvedAt = p.approvedAt || new Date().toISOString();
+            if (profile.batchKey && (isBatchPilot || isSuperAdmin || (user?.id && p.creatorId === user.id))) {
+              updateDoc(doc(db, 'shared_timetables', profile.batchKey, 'proposed_tasks', p.id), {
+                status: 'approved',
+                approvedAt: new Date().toISOString(),
+              }).catch((err) => console.warn('Could not auto-heal batch proposal status in Firestore:', err));
+            }
+          }
+        }
+      });
+
       setProposedBatchTasks(fetched);
 
       // Check for approved proposals to auto-insert / sync into local homework
@@ -2775,7 +2814,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       setProfileState(updatedProfile);
       storage.setProfile(updatedProfile);
-      setCurrentBatchData({ ...data, id: docSnap.id });
+      const fullBatchData = { ...data, id: docSnap.id };
+      currentBatchDataRef.current = fullBatchData;
+      setCurrentBatchData(fullBatchData);
       refreshCarryItems(newTimetable, newSubjects, newEvents, settings, newExtra);
 
       // Persist immediately to Firestore user record so snapshot listener never reverts
@@ -3010,6 +3051,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
 
       // Update state immediately
+      if (currentBatchDataRef.current) {
+        currentBatchDataRef.current = { ...currentBatchDataRef.current, inviteCode: newCode };
+      }
       setCurrentBatchData((prev: any) => prev ? { ...prev, inviteCode: newCode } : prev);
 
       showToast('Batch Code Regenerated', `New official batch code: ${newCode}`, 'success');
@@ -3103,6 +3147,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setExtraSessionsState(remainingExtra);
     storage.setExtraSessions(remainingExtra);
 
+    currentBatchDataRef.current = null;
     setCurrentBatchData(null);
     refreshCarryItems(remainingTimetable, remainingSubjects, remainingEvents, settings, remainingExtra);
 
@@ -3351,12 +3396,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
 
     let memberCount = 1;
+    let isDocPilot = false;
     try {
       const batchSnap = await getDoc(doc(db, 'shared_timetables', profile.batchKey));
       if (batchSnap.exists()) {
-        memberCount = batchSnap.data().studentCount || 1;
+        const bData = batchSnap.data();
+        memberCount = bData.studentCount || 1;
+        const cId = bData.creatorId;
+        const cEmail = (bData.creatorEmail || '').toLowerCase();
+        const crEmails: string[] = normalizeIdList(bData.crEmails).map((e: string) => e.toLowerCase());
+        const crUserIds: string[] = normalizeIdList(bData.crUserIds);
+        const myEmail = (user?.primaryEmailAddress?.emailAddress || profile.email || '').toLowerCase();
+        const myId = user?.id || '';
+
+        if (
+          (myId && cId === myId) ||
+          (myEmail && cEmail && cEmail === myEmail) ||
+          (myId && crUserIds.includes(myId)) ||
+          (myEmail && crEmails.includes(myEmail))
+        ) {
+          isDocPilot = true;
+        }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Error verifying batch doc in proposeBatchTask:', e);
+    }
 
     const proposalId = `prop_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
     const proposalDocRef = doc(db, 'shared_timetables', profile.batchKey, 'proposed_tasks', proposalId);
@@ -3364,6 +3428,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const creatorId = user?.id || 'anon';
     const creatorName = profile.name || user?.fullName || 'Classmate';
     const creatorEmail = user?.primaryEmailAddress?.emailAddress || profile.email || '';
+
+    // Authoritative pilot check: combines synchronous role check, reactive state, document check, and superadmin
+    const isPilotAuthorized = isBatchCR || isBatchPilot || profile.role === 'cr' || isDocPilot || isSuperAdmin;
+    const shouldAutoApprove = isPilotAuthorized || memberCount <= 1;
+
+    // Resolve subject name reliably
+    const resolvedSubjectName = taskData.subjectName || subjects.find(s => s.id === taskData.subjectId)?.name || '';
 
     const initialVotes: Record<string, 'approve' | 'reject'> = {
       [creatorId]: 'approve',
@@ -3375,7 +3446,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       title: taskData.title,
       description: taskData.description || '',
       subjectId: taskData.subjectId,
-      subjectName: taskData.subjectName || '',
+      subjectName: resolvedSubjectName,
       deadline: taskData.deadline,
       priority: taskData.priority,
       attachmentName: taskData.attachmentName || '',
@@ -3385,9 +3456,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       votes: initialVotes,
       approvalsCount: 1,
       rejectionsCount: 0,
-      status: (memberCount <= 1 || isBatchCR) ? 'approved' : 'voting',
+      status: shouldAutoApprove ? 'approved' : 'voting',
       totalEligibleMembers: Math.max(memberCount, 1),
-      approvedAt: (memberCount <= 1 || isBatchCR) ? new Date().toISOString() : undefined,
+      approvedAt: shouldAutoApprove ? new Date().toISOString() : undefined,
       createdAt: new Date().toISOString(),
     };
 
@@ -3402,7 +3473,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       );
       if (existing) {
         const updated = prev.map((h) =>
-          h.id === existing.id ? { ...h, isBatchShared: true, proposalId } : h
+          h.id === existing.id ? { ...h, isBatchShared: true, proposalId, subjectName: resolvedSubjectName } : h
         );
         storage.setHomework(updated);
         return updated;
@@ -3410,7 +3481,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const newHw: Homework = {
         id: `hw_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
         subjectId: taskData.subjectId,
-        subjectName: taskData.subjectName,
+        subjectName: resolvedSubjectName,
         title: taskData.title,
         description: taskData.description || '',
         deadline: taskData.deadline,
@@ -3426,8 +3497,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return updated;
     });
 
-    if (memberCount <= 1 || isBatchCR) {
+    if (shouldAutoApprove) {
       showToast('Assignment Added', 'Task added and shared with batch automatically.', 'success');
+      // Real-time Push Notification broadcast to all batch members
+      broadcastBatchPushNotification({
+        batchKey: profile.batchKey,
+        title: `New Assignment: ${taskData.title}`,
+        body: `${creatorName} posted a new assignment${resolvedSubjectName ? ` for ${resolvedSubjectName}` : ''}. Due: ${new Date(taskData.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`,
+        type: 'batch_task',
+        senderId: user?.id,
+        senderName: creatorName,
+      }).catch((e) => console.warn('Could not broadcast batch task push notification:', e));
     } else {
       showToast('Proposal Submitted', 'Batchmates will now vote to add this assignment.', 'success');
     }

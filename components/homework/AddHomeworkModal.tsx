@@ -22,7 +22,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
   homeworkToEdit,
   prefilledData,
 }) => {
-  const { subjects, addHomework, updateHomework, deleteHomework, profile, proposeBatchTask, isBatchCR } = useApp();
+  const { subjects, addHomework, updateHomework, deleteHomework, profile, proposeBatchTask, isBatchCR, showToast } = useApp();
 
   const [subjectId, setSubjectId] = useState('');
   const [title, setTitle] = useState('');
@@ -42,6 +42,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
   const [subjectSearch, setSubjectSearch] = useState('');
 
   useEffect(() => {
+    const isPilot = Boolean(isBatchCR && profile.isBatchSynced && profile.batchKey);
     if (homeworkToEdit) {
       setSubjectId(homeworkToEdit.subjectId);
       setTitle(homeworkToEdit.title);
@@ -59,7 +60,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
       setPriority(prefilledData.priority || 'Medium');
       setStatus(prefilledData.status || 'Not Started');
       setAttachmentName(prefilledData.attachmentName || '');
-      setShareWithBatch(false);
+      setShareWithBatch(isPilot);
     } else {
       if (subjects.length > 0 && !subjectId) {
         setSubjectId(subjects[0].id);
@@ -73,9 +74,9 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
       setPriority('Medium');
       setStatus('Not Started');
       setAttachmentName('');
-      setShareWithBatch(false);
+      setShareWithBatch(isPilot);
     }
-  }, [homeworkToEdit, isOpen, subjects, profile.isBatchSynced, profile.batchKey]);
+  }, [homeworkToEdit, isOpen, subjects, profile.isBatchSynced, profile.batchKey, isBatchCR]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,16 +96,38 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
         status,
         attachmentName: attachmentName.trim(),
       });
-    } else if (shareWithBatch && profile.isBatchSynced && profile.batchKey) {
-      await proposeBatchTask({
-        subjectId,
-        subjectName,
-        title: title.trim(),
-        description: description.trim(),
-        deadline: new Date(deadline).toISOString(),
-        priority,
-        attachmentName: attachmentName.trim(),
-      });
+      onClose();
+    } else if (shareWithBatch) {
+      if (!profile.isBatchSynced || !profile.batchKey) {
+        showToast('Batch Disconnected', 'Could not share with batch because batch is not synced. Saved as personal task.', 'warning');
+        addHomework({
+          subjectId,
+          subjectName,
+          title: title.trim(),
+          description: description.trim(),
+          deadline: new Date(deadline).toISOString(),
+          priority,
+          status,
+          attachmentName: attachmentName.trim(),
+        });
+        onClose();
+        return;
+      }
+      try {
+        await proposeBatchTask({
+          subjectId,
+          subjectName,
+          title: title.trim(),
+          description: description.trim(),
+          deadline: new Date(deadline).toISOString(),
+          priority,
+          attachmentName: attachmentName.trim(),
+        });
+        onClose();
+      } catch (err: any) {
+        console.error('Failed to post batch task:', err);
+        showToast('Submission Failed', err?.message || 'Failed to post batch task', 'error');
+      }
     } else {
       addHomework({
         subjectId,
@@ -116,8 +139,8 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
         status,
         attachmentName: attachmentName.trim(),
       });
+      onClose();
     }
-    onClose();
   };
 
   const selectedSubject = subjects.find(s => s.id === subjectId);
