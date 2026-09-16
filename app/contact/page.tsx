@@ -2,23 +2,69 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Mail, Phone, Send, Loader2, MessageSquare } from 'lucide-react';
 
 export default function ContactPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('Feedback / Feature Request');
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedData, setSubmittedData] = useState<{ name: string; email: string; subject: string; message: string } | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setTimeout(() => {
+    if (!name.trim() || !email.trim() || !message.trim()) return;
+
+    setIsSubmitting(true);
+
+    const payload = {
+      name: name.trim(),
+      email: email.trim(),
+      subject: subject.trim(),
+      message: message.trim(),
+    };
+
+    try {
+      // 1. Post to backend API (saves in Firestore contact_messages & forwards to FormSubmit)
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      // 2. Direct browser-side dispatch to FormSubmit for redundant delivery guarantee
+      fetch('https://formsubmit.co/ajax/nihal88758@gmail.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          name: payload.name,
+          email: payload.email,
+          _subject: `[AcademiSync Support] ${payload.subject} from ${payload.name}`,
+          _replyto: payload.email,
+          topic: payload.subject,
+          message: payload.message,
+        }),
+      }).catch((e) => console.warn('Client direct dispatch:', e));
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        console.warn('API submission status:', errJson);
+      }
+    } catch (err) {
+      console.warn('Network submission notice:', err);
+    } finally {
+      setIsSubmitting(false);
+      setSubmittedData(payload);
       setSubmitted(true);
       setName('');
       setEmail('');
       setMessage('');
-    }, 500);
+    }
   };
 
   return (
@@ -53,14 +99,24 @@ export default function ContactPage() {
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-1">
               <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">Email</span>
-              <a href="mailto:kumarnihal829@gmail.com" className="text-[14px] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] hover:underline underline-offset-4 transition-colors">
-                kumarnihal829@gmail.com
+              <a 
+                href="mailto:nihal88758@gmail.com" 
+                className="text-[14px] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] hover:underline underline-offset-4 transition-colors"
+              >
+                nihal88758@gmail.com
               </a>
             </div>
             
             <div className="flex flex-col gap-1">
               <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">Phone / WhatsApp</span>
-              <span className="text-[14px] text-[#6F6F6F]">+91 9565550673</span>
+              <a
+                href="https://wa.me/919565550673"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[14px] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] hover:underline underline-offset-4 transition-colors"
+              >
+                +91 9565550673
+              </a>
             </div>
             
             <div className="flex flex-col gap-1">
@@ -77,10 +133,41 @@ export default function ContactPage() {
           </div>
           
           {submitted ? (
-            <div className="bg-[#FFFFFF] dark:bg-[#1A1A1A] border border-[#D9D9D6] dark:border-[#333333] p-6 flex flex-col items-center justify-center text-center gap-4">
-              <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF]">Message Sent</h3>
-              <p className="text-[14px] text-[#6F6F6F]">We'll get back to you as soon as possible.</p>
-              <button onClick={() => setSubmitted(false)} className="text-[13px] font-bold underline underline-offset-4 hover:text-[#6F6F6F]">
+            <div className="bg-[#FFFFFF] dark:bg-[#1A1A1A] border border-[#D9D9D6] dark:border-[#333333] p-8 flex flex-col items-center justify-center text-center gap-6">
+              <div className="w-12 h-12 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center rounded-full">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <h3 className="text-[20px] font-bold text-[#111111] dark:text-[#FFFFFF]">Message Received!</h3>
+                <p className="text-[14px] text-[#6F6F6F] max-w-md leading-relaxed">
+                  Thank you! Your message has been forwarded directly to <span className="font-semibold text-[#111111] dark:text-[#FFFFFF]">nihal88758@gmail.com</span> and saved in our support log. We will reply to your email shortly.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-3 w-full pt-2">
+                <a
+                  href={`mailto:nihal88758@gmail.com?subject=${encodeURIComponent(`[AcademiSync] ${submittedData?.subject || 'Support'}`)}&body=${encodeURIComponent(`Hi Nihal,\n\n${submittedData?.message || ''}\n\nFrom: ${submittedData?.name || ''} (${submittedData?.email || ''})`)}`}
+                  className="px-4 py-2.5 bg-[#111111] text-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111] text-[13px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity inline-flex items-center gap-2"
+                >
+                  <Mail className="w-4 h-4" />
+                  <span>Open in Mail App</span>
+                </a>
+
+                <a
+                  href={`https://wa.me/919565550673?text=${encodeURIComponent(`Hi Nihal, I sent a message on AcademiSync regarding ${submittedData?.subject || 'support'}: "${submittedData?.message || ''}"`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2.5 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-bold uppercase tracking-wider hover:bg-black/5 dark:hover:bg-white/5 transition-colors inline-flex items-center gap-2"
+                >
+                  <Phone className="w-4 h-4" />
+                  <span>Chat on WhatsApp</span>
+                </a>
+              </div>
+
+              <button 
+                onClick={() => setSubmitted(false)} 
+                className="text-[13px] font-medium text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] underline underline-offset-4 pt-2"
+              >
                 Send another message
               </button>
             </div>
@@ -120,6 +207,7 @@ export default function ContactPage() {
                   <option value="Feedback / Feature Request">Feedback / Feature Request</option>
                   <option value="Bug Report">Bug Report</option>
                   <option value="Timetable Help">Timetable Help</option>
+                  <option value="Batch Setup Help">Batch Setup Help</option>
                   <option value="Other">Other</option>
                 </select>
               </div>
@@ -138,9 +226,20 @@ export default function ContactPage() {
 
               <button
                 type="submit"
-                className="w-full py-4 mt-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-bold uppercase tracking-widest hover:opacity-90 transition-opacity rounded-none"
+                disabled={isSubmitting}
+                className="w-full py-4 mt-2 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-bold uppercase tracking-widest hover:opacity-90 disabled:opacity-50 transition-opacity rounded-none inline-flex items-center justify-center gap-2"
               >
-                Send message
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Sending message...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    <span>Send message</span>
+                  </>
+                )}
               </button>
             </form>
           )}

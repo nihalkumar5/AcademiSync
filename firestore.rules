@@ -99,6 +99,14 @@ service cloud.firestore {
       allow write: if isSuperAdmin();
     }
 
+    // 8. Contact & Support Messages:
+    // Create: Anyone (public / visitors submitting messages)
+    // Read/Write/Delete: Super Admin only
+    match /contact_messages/{messageId} {
+      allow create: if true;
+      allow read, update, delete: if isSuperAdmin();
+    }
+
     // Default catch-all: Deny all other collections
     match /{document=**} {
       allow read, write: if false;

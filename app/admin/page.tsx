@@ -57,7 +57,7 @@ import { useRouter } from 'next/navigation';
 import { Capacitor } from '@capacitor/core';
 import { motion, AnimatePresence } from 'framer-motion';
 
-type AdminTab = 'overview' | 'users' | 'batches' | 'campaigns' | 'cr_requests';
+type AdminTab = 'overview' | 'users' | 'batches' | 'campaigns' | 'cr_requests' | 'messages';
 
 export default function SuperAdminPage() {
   const router = useRouter();
@@ -69,6 +69,8 @@ export default function SuperAdminPage() {
   const [campaignsList, setCampaignsList] = useState<PromotionalCampaign[]>([]);
   const [crRequestsList, setCrRequestsList] = useState<any[]>([]);
   const [crStatusFilter, setCrStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  const [messagesList, setMessagesList] = useState<any[]>([]);
+  const [messageFilter, setMessageFilter] = useState<'all' | 'unread' | 'read'>('all');
 
   const [searchUserQuery, setSearchUserQuery] = useState('');
   const [searchBatchQuery, setSearchBatchQuery] = useState('');
@@ -279,6 +281,25 @@ export default function SuperAdminPage() {
         });
         setCrRequestsList(fetched);
       }, (err) => console.error('Error fetching CR requests:', err));
+
+      return () => unsubscribe();
+    } catch (e) {
+      console.error(e);
+    }
+  }, [isAdmin]);
+
+  // 5. Stream Support / Contact Messages from Firestore
+  useEffect(() => {
+    if (!isAdmin) return;
+    try {
+      const unsubscribe = onSnapshot(collection(db, 'contact_messages'), (snapshot) => {
+        const fetched: any[] = [];
+        snapshot.forEach((d) => {
+          fetched.push({ id: d.id, ...d.data() });
+        });
+        fetched.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+        setMessagesList(fetched);
+      }, (err) => console.error('Error fetching contact messages:', err));
 
       return () => unsubscribe();
     } catch (e) {
@@ -1195,9 +1216,11 @@ export default function SuperAdminPage() {
             <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto no-scrollbar scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {(() => {
                 const pendingCRCount = crRequestsList.filter(r => r.status === 'pending').length;
+                const unreadMsgCount = messagesList.filter(m => m.status === 'unread').length;
                 return [
                   { id: 'overview', label: 'Overview' },
                   { id: 'cr_requests', label: `👑 CR Requests ${pendingCRCount > 0 ? `(${pendingCRCount})` : ''}` },
+                  { id: 'messages', label: `💬 Messages ${unreadMsgCount > 0 ? `(${unreadMsgCount})` : ''}` },
                   { id: 'users', label: `Users ${deduplicatedUsersList.length}` },
                   { id: 'batches', label: `Batches ${batchesList.length}` },
                   { id: 'campaigns', label: `Campaigns ${campaignsList.length}` },
@@ -2331,6 +2354,165 @@ export default function SuperAdminPage() {
                               Re-approve as Batch Pilot
                             </button>
                           )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* TAB 6: SUPPORT & CONTACT MESSAGES */}
+        {activeTab === 'messages' && (
+          <div className="flex flex-col gap-6 text-left">
+            {/* Tab Header & Filter Row */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#D8D8D8] dark:border-[#333333]">
+              <div>
+                <h2 className="text-xl font-bold tracking-tight text-[#111111] dark:text-[#FFFFFF] flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-sky-500" />
+                  Support & Contact Messages 💬
+                </h2>
+                <p className="text-xs text-[#6F6F6F] mt-1">
+                  Messages and feedback submitted by users on AcademiSync. Dispatched directly to <span className="font-semibold text-[#111111] dark:text-[#FFFFFF]">nihal88758@gmail.com</span>.
+                </p>
+              </div>
+
+              {/* Status Filter Chips */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+                {(['all', 'unread', 'read'] as const).map((filter) => {
+                  const count = filter === 'all'
+                    ? messagesList.length
+                    : messagesList.filter(m => (m.status || 'unread') === filter).length;
+                  return (
+                    <button
+                      key={filter}
+                      onClick={() => setMessageFilter(filter)}
+                      className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-none transition-all cursor-pointer ${
+                        messageFilter === filter
+                          ? 'bg-[#111111] text-white dark:bg-white dark:text-black shadow-sm'
+                          : 'bg-white dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-white'
+                      }`}
+                    >
+                      {filter} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Messages Grid / List */}
+            {(() => {
+              const filteredMessages = messagesList.filter((m) => {
+                if (messageFilter === 'all') return true;
+                return (m.status || 'unread') === messageFilter;
+              });
+
+              if (filteredMessages.length === 0) {
+                return (
+                  <div className="p-12 text-center border border-dashed border-[#D8D8D8] dark:border-[#333333] rounded-none flex flex-col items-center justify-center gap-2">
+                    <MessageSquare className="w-8 h-8 text-slate-300 dark:text-zinc-700" />
+                    <span className="text-sm font-medium text-[#6F6F6F]">
+                      No {messageFilter === 'all' ? '' : messageFilter} messages found.
+                    </span>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-1 gap-4">
+                  {filteredMessages.map((m) => {
+                    const isUnread = (m.status || 'unread') === 'unread';
+                    return (
+                      <div
+                        key={m.id}
+                        className={`p-5 bg-white dark:bg-[#1A1A1A] border ${
+                          isUnread
+                            ? 'border-sky-500/50 shadow-xs ring-1 ring-sky-500/20'
+                            : 'border-[#D8D8D8] dark:border-[#333333]'
+                        } rounded-none flex flex-col gap-4 transition-all`}
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 bg-slate-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-sm text-[#111111] dark:text-[#FFFFFF]">
+                              {(m.name || 'U').charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-sm text-[#111111] dark:text-[#FFFFFF]">
+                                  {m.name || 'Anonymous User'}
+                                </span>
+                                {isUnread && (
+                                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 uppercase tracking-widest">
+                                    New
+                                  </span>
+                                )}
+                              </div>
+                              <a
+                                href={`mailto:${m.email}`}
+                                className="text-xs text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] underline"
+                              >
+                                {m.email}
+                              </a>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs px-2.5 py-1 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-medium rounded-none">
+                              {m.subject || 'General Inquiry'}
+                            </span>
+                            <span className="text-[11px] text-[#999999]">
+                              {m.createdAt ? new Date(m.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Message Content */}
+                        <div className="bg-[#F7F7F5] dark:bg-[#121317] p-4 border border-[#EBEBEB] dark:border-[#222222] text-sm text-[#222222] dark:text-[#DDDDDD] whitespace-pre-wrap leading-relaxed font-sans">
+                          {m.message}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-[#EBEBEB] dark:border-[#282828]">
+                          <a
+                            href={`mailto:${m.email}?subject=${encodeURIComponent(`Re: ${m.subject || 'AcademiSync Support'}`)}&body=${encodeURIComponent(`\n\n--- Original Message from ${m.name} ---\n${m.message}`)}`}
+                            className="px-3 py-1.5 bg-[#111111] text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity inline-flex items-center gap-1.5"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                            <span>Reply via Email</span>
+                          </a>
+
+                          <button
+                            onClick={async () => {
+                              try {
+                                const newStatus = isUnread ? 'read' : 'unread';
+                                await updateDoc(doc(db, 'contact_messages', m.id), { status: newStatus });
+                                showToast('Updated', `Marked as ${newStatus}.`, 'info');
+                              } catch (err) {
+                                console.error('Error updating status:', err);
+                              }
+                            }}
+                            className="px-3 py-1.5 border border-[#D8D8D8] dark:border-[#333333] text-xs font-bold uppercase tracking-wider text-[#6F6F6F] hover:text-[#111111] dark:hover:text-white transition-colors"
+                          >
+                            {isUnread ? 'Mark as Read' : 'Mark as Unread'}
+                          </button>
+
+                          <button
+                            onClick={async () => {
+                              if (!confirm('Are you sure you want to delete this message?')) return;
+                              try {
+                                await deleteDoc(doc(db, 'contact_messages', m.id));
+                                showToast('Deleted', 'Message deleted.', 'info');
+                              } catch (err) {
+                                console.error('Error deleting message:', err);
+                              }
+                            }}
+                            className="p-1.5 text-rose-500 hover:text-rose-700 transition-colors"
+                            title="Delete message"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
                     );
