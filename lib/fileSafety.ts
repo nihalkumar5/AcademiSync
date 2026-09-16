@@ -86,7 +86,9 @@ export function validateUploadedFile(file: {
   size?: number;
   type?: string;
   base64?: string;
-}): ValidationResult {
+}, maxSizeBytes: number = MAX_FILE_SIZE_BYTES): ValidationResult {
+  const maxMb = Math.round(maxSizeBytes / (1024 * 1024));
+
   // 1. Check filename & extension
   const fileName = (file.name || '').trim();
   if (fileName) {
@@ -110,10 +112,10 @@ export function validateUploadedFile(file: {
     if (file.size <= 0) {
       return { valid: false, error: 'The uploaded file is empty.' };
     }
-    if (file.size > MAX_FILE_SIZE_BYTES) {
+    if (file.size > maxSizeBytes) {
       return {
         valid: false,
-        error: `File size exceeds the 5MB limit. Please upload a smaller or compressed file.`,
+        error: `File size exceeds the ${maxMb}MB limit. Please upload a smaller or compressed file under ${maxMb}MB.`,
       };
     }
   }
@@ -123,10 +125,10 @@ export function validateUploadedFile(file: {
     const cleanBase64 = file.base64.replace(/^data:[^;]+;base64,/, '').trim();
     const approxSizeBytes = Math.round((cleanBase64.length * 3) / 4);
 
-    if (approxSizeBytes > MAX_FILE_SIZE_BYTES) {
+    if (approxSizeBytes > maxSizeBytes) {
       return {
         valid: false,
-        error: 'Uploaded document exceeds the 5MB size limit.',
+        error: `Uploaded document exceeds the ${maxMb}MB size limit. Please upload a file under ${maxMb}MB.`,
       };
     }
 
@@ -153,7 +155,7 @@ export function validateUploadedFile(file: {
 /**
  * Server-side API payload array validator
  */
-export function validateServerUploadPayload(images: any[]): ValidationResult {
+export function validateServerUploadPayload(images: any[], maxSizeBytes: number = MAX_FILE_SIZE_BYTES): ValidationResult {
   if (!Array.isArray(images) || images.length === 0) {
     return { valid: false, error: 'No files provided for processing.' };
   }
@@ -172,7 +174,7 @@ export function validateServerUploadPayload(images: any[]): ValidationResult {
       name: item.name,
       type: item.mimeType,
       base64: item.base64,
-    });
+    }, maxSizeBytes);
 
     if (!validation.valid) {
       return validation;

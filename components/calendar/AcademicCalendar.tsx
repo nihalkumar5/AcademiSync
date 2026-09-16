@@ -3,13 +3,13 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { CalendarImportModal } from './CalendarImportModal';
-import { ChevronLeft, ChevronRight, Plus, ArrowRight, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, ArrowRight, Sparkles, Trash2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';
-import { getTodayDateString } from '@/lib/timetableUtils';
+import { getTodayDateString, deduplicateAcademicEvents } from '@/lib/timetableUtils';
 
 export const AcademicCalendar: React.FC = () => {
-  const { homework, events, addEvent, subjects, user } = useApp();
+  const { homework, events, addEvent, deleteEvent, deleteHomework, cleanDuplicateEvents, subjects, user } = useApp();
   const router = useRouter();
   const isSignedIn = !!user;
 
@@ -23,6 +23,8 @@ export const AcademicCalendar: React.FC = () => {
   const [newTime, setNewTime] = useState('10:00');
 
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
+
+  const dupCount = deduplicateAcademicEvents(events).removedCount;
 
   const prevMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
@@ -50,7 +52,7 @@ export const AcademicCalendar: React.FC = () => {
 
   const monthName = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
 
-  const itemsByDate = new Map<string, { title: string; type: string; id: string; dateStr: string; subject?: string; location?: string; time?: string }[]>();
+  const itemsByDate = new Map<string, { title: string; type: string; id: string; dateStr: string; subject?: string; location?: string; time?: string; description?: string; itemSource: 'homework' | 'event' }[]>();
   const allItems: any[] = [];
 
   homework.forEach((hw) => {
@@ -64,6 +66,7 @@ export const AcademicCalendar: React.FC = () => {
       subject: sub?.name,
       location: '',
       time: '11:59 PM',
+      itemSource: 'homework' as const,
     };
     allItems.push(item);
     
@@ -82,6 +85,8 @@ export const AcademicCalendar: React.FC = () => {
       subject: sub?.name,
       location: ev.location,
       time: '10:00 AM', // Default fallback
+      description: ev.description,
+      itemSource: 'event' as const,
     };
     allItems.push(item);
 
@@ -159,26 +164,35 @@ export const AcademicCalendar: React.FC = () => {
         <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4 max-w-[280px]">
           Your semester deadlines, exams and important campus events.
         </p>
-        <div className="flex items-center gap-3 mt-8">
-        <button
-          onClick={() => {
-             if (!isSignedIn) { router.push('/sign-in'); return; }
-             setShowImportCalendarModal(true)
-          }}
-          className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors gap-2"
-        >
-          <Sparkles className="w-4 h-4" /> Magic Import
-        </button>
-        <button
-          onClick={() => {
-             if (!isSignedIn) { router.push('/sign-in'); return; }
-             setShowAddEventModal(true)
-          }}
-          className="flex items-center justify-center h-10 px-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold transition-colors gap-2"
-        >
-          <Plus className="w-4 h-4" /> Add event
-        </button>
-      </div>
+        <div className="flex flex-wrap items-center gap-3 mt-8">
+          <button
+            onClick={() => {
+               if (!isSignedIn) { router.push('/sign-in'); return; }
+               setShowImportCalendarModal(true)
+            }}
+            className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors gap-2 cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4" /> Magic Import
+          </button>
+          <button
+            onClick={() => {
+               if (!isSignedIn) { router.push('/sign-in'); return; }
+               setShowAddEventModal(true)
+            }}
+            className="flex items-center justify-center h-10 px-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold transition-colors gap-2 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> Add event
+          </button>
+          {dupCount > 0 && (
+            <button
+              onClick={() => cleanDuplicateEvents()}
+              className="flex items-center justify-center h-10 px-3 bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25 text-[12px] font-bold uppercase tracking-wider hover:bg-amber-500/20 transition-colors gap-1.5 cursor-pointer"
+              title="Clean duplicate spammed events"
+            >
+              <Sparkles className="w-3.5 h-3.5" /> Clean Duplicates ({dupCount})
+            </button>
+          )}
+        </div>
       </div>
 
       {/* UPCOMING CARDS */}
@@ -272,13 +286,41 @@ export const AcademicCalendar: React.FC = () => {
            ) : (
               <div className="flex flex-col border-t border-[#E5E5E5] dark:border-white/[0.08]">
                 {selectedItems.map((item, idx) => (
-                  <div key={idx} className="flex flex-col py-4 border-b border-[#E5E5E5] dark:border-white/[0.08] last:border-0">
-                    <p className="text-[15px] text-[#111111] dark:text-[#F4F4F6] font-medium leading-relaxed mb-1.5">
-                      {item.title} <span className="text-[#6F6F6F] dark:text-[#94A3B8] font-normal">{item.subject && `· ${item.subject}`}</span>
-                    </p>
-                    <p className="text-[10px] font-bold tracking-[1.5px] uppercase text-[#6F6F6F] dark:text-[#94A3B8]">
-                      {item.type.replace('-', ' ')}
-                    </p>
+                  <div key={idx} className="flex items-center justify-between py-4 border-b border-[#E5E5E5] dark:border-white/[0.08] last:border-0 group">
+                    <div className="flex flex-col pr-4">
+                      <p className="text-[15px] text-[#111111] dark:text-[#F4F4F6] font-medium leading-relaxed mb-1">
+                        {item.title} <span className="text-[#6F6F6F] dark:text-[#94A3B8] font-normal">{item.subject && `· ${item.subject}`}</span>
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[10px] font-bold tracking-[1.5px] uppercase text-[#6F6F6F] dark:text-[#94A3B8]">
+                          {item.type.replace('-', ' ')}
+                        </span>
+                        {item.location && (
+                          <span className="text-[11px] text-[#888888] dark:text-[#64748B]">
+                            · {item.location}
+                          </span>
+                        )}
+                        {item.description && (
+                          <span className="text-[11px] text-[#888888] dark:text-[#64748B] italic line-clamp-1">
+                            · {item.description}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (item.itemSource === 'homework') {
+                          deleteHomework(item.id);
+                        } else {
+                          deleteEvent(item.id);
+                        }
+                      }}
+                      title="Delete event"
+                      className="p-2 text-[#888888] hover:text-rose-600 dark:hover:text-rose-400 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 hover:!opacity-100 transition-all rounded-none cursor-pointer shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
               </div>

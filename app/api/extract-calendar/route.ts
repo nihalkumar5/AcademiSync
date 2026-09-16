@@ -34,11 +34,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // File Upload Safety Validation
-    const validation = validateServerUploadPayload(imageList);
+    // File Upload Safety Validation (under 3MB)
+    const validation = validateServerUploadPayload(imageList, 3 * 1024 * 1024);
     if (!validation.valid) {
       return NextResponse.json(
-        { success: false, error: validation.error || 'Invalid document uploaded.' },
+        { success: false, error: validation.error || 'Invalid document uploaded. Must be under 3MB.' },
         { status: 400 }
       );
     }
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
               },
               endDate: { 
                 type: SchemaType.STRING, 
-                description: 'End date of the event or range in YYYY-MM-DD format. If it is a single-day event, set endDate to the same value as startDate.' 
+                description: 'End date of the event or range in YYYY-MM-DD format. If it is a single-day event or tentative milestone, set endDate to the same value as startDate.' 
               },
               type: { 
                 type: SchemaType.STRING, 
@@ -80,7 +80,7 @@ export async function POST(req: Request) {
               },
               description: { 
                 type: SchemaType.STRING, 
-                description: 'Additional description, notes, or timings written on the calendar.' 
+                description: 'Additional description, notes, tentative status, or timings written on the calendar.' 
               },
               location: { 
                 type: SchemaType.STRING, 
@@ -97,8 +97,19 @@ Analyze the provided academic calendar (which may be page image(s), a PDF, or a 
 
 CRITICAL INSTRUCTIONS FOR DATE PROCESSING:
 1. DATE RANGES: For events that span multiple days (e.g., "September 14, 2026 to September 19, 2026", "Oct 19 - 24, 2026", or "Mid-Sem: 15-20 October"), you MUST extract the start date into "startDate" and the end date into "endDate". For single-day events, set both "startDate" and "endDate" to the same date. Do NOT split them into multiple objects yourself; output them as a single object with a date range.
-2. ACADEMIC YEAR BOUNDARY & YEAR INFERENCE: Academic calendars span across two calendar years (e.g., Academic Year 2026-27). Infer the correct year (YYYY) for each month. July to December are in the first year (e.g., 2026), and January to June are in the second year (e.g., 2027). Look closely at headers, footers, and text to confirm the correct academic year context.
-3. THOROUGH EXTRACTION: Scan the entire document page-by-page. Extract registration dates, commencement of classes, holidays, preparation leaves, mid-semester exams, end-semester exams, fests, results announcements, and vacations.`;
+2. TENTATIVE OR MONTH-ONLY DATES (CRITICAL - DO NOT SPAN ENTIRE MONTH):
+Many academic calendar rows specify only a month or have a footnote saying date will be announced later (e.g., "5th Convocation of the institute# | November, 2026", "Convocation date will be announced as per direction from Competent Authority", or "Alumni Meet: December 2026").
+- DO NOT set a date range that spans the whole month (e.g., DO NOT return 2026-11-01 to 2026-11-30)!
+- Instead, set BOTH "startDate" AND "endDate" to the 1st day of that month (e.g., "2026-11-01").
+- In "description", clearly note: "Date tentative / to be announced in November 2026".
+3. SINGLE MILESTONE VS DURATION EVENTS:
+- Single milestones (such as Convocation, Commencement of classes, Semester registration, Senate meetings, Fee payment deadline, Last day of instruction, Declaration of results, Foundation Day) are point-in-time events. NEVER assign a multi-week date range to a single milestone event.
+- Only use a multi-day range (where endDate > startDate) for genuine continuous multi-day events such as:
+  * Examination windows (e.g., Mid-Semester Examinations 15-20 October)
+  * Vacation / recess periods (e.g., Winter Vacation 18 Dec - 02 Jan, Mid-term recess)
+  * Multi-day festivals (e.g., Tech Fest, Cultural Fest)
+4. ACADEMIC YEAR BOUNDARY & YEAR INFERENCE: Academic calendars span across two calendar years (e.g., Academic Year 2026-27). Infer the correct year (YYYY) for each month. July to December are in the first year (e.g., 2026), and January to June are in the second year (e.g., 2027). Look closely at headers, footers, and text to confirm the correct academic year context.
+5. THOROUGH EXTRACTION: Scan the entire document page-by-page. Extract registration dates, commencement of classes, holidays, preparation leaves, mid-semester exams, end-semester exams, fests, results announcements, and vacations.`;
 
       const fileParts = imageList.map((img: any) => ({
         inlineData: {

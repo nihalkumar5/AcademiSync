@@ -67,7 +67,20 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
 
       const data = await res.json();
       if (data.success && Array.isArray(data.events) && data.events.length > 0) {
-        setExtractedEvents(data.events);
+        const normalized = data.events.map((ev: any) => {
+          const startStr = ev.startDate || ev.date || getTodayDateString();
+          const endStr = ev.endDate || startStr;
+          return {
+            title: ev.title || 'Event',
+            type: (ev.type || 'event') as CalendarEventType,
+            date: startStr,
+            startDate: startStr,
+            endDate: endStr,
+            description: ev.description || '',
+            location: ev.location || '',
+          };
+        });
+        setExtractedEvents(normalized);
         setStep('review');
       } else {
         throw new Error(data.error || 'No events extracted');
@@ -76,7 +89,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
       console.warn('Calendar OCR API error:', error);
       showToast(
         'Extraction Failed',
-        error.message || 'Could not parse the academic calendar. Please ensure the file is a clear image or PDF.',
+        error.message || 'Could not parse the academic calendar. Please ensure the file is a clear image or PDF under 3MB.',
         'error'
       );
       setStep('upload');
@@ -87,9 +100,9 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
       for (const file of files) {
-        const check = validateUploadedFile({ name: file.name, size: file.size, type: file.type });
+        const check = validateUploadedFile({ name: file.name, size: file.size, type: file.type }, 3 * 1024 * 1024);
         if (!check.valid) {
-          showToast('Invalid File', check.error || 'Please upload an image or PDF under 5MB.', 'error');
+          showToast('Invalid File', check.error || 'Please upload an image or PDF under 3MB.', 'error');
           e.target.value = '';
           return;
         }
@@ -133,6 +146,8 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
         title: '',
         type: 'event',
         date: todayStr,
+        startDate: todayStr,
+        endDate: todayStr,
         location: '',
       }
     ]);
@@ -140,37 +155,59 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
 
   const handleSaveConfirmed = () => {
     const expandedEvents: Omit<AcademicEvent, 'id'>[] = [];
+    const milestoneRegex = /convocation|commencement|inauguration|orientation|re-opening|foundation|declaration|result|submission|deadline|registration|fee|senate|meeting|alumni|holiday/i;
 
     extractedEvents.forEach((ev) => {
-      const dateVal = ev.startDate || ev.date;
-      const start = new Date(dateVal);
-      const endVal = ev.endDate || ev.date || dateVal;
-      const end = new Date(endVal);
+      const startStr = ev.startDate || ev.date || getTodayDateString();
+      const endStr = ev.endDate || startStr;
 
-      if (isNaN(start.getTime())) return;
+      const start = new Date(startStr);
+      const end = new Date(endStr);
 
-      if (isNaN(end.getTime()) || end.getTime() <= start.getTime()) {
+      // Single-day event or invalid range
+      if (isNaN(start.getTime()) || isNaN(end.getTime()) || end.getTime() <= start.getTime()) {
         expandedEvents.push({
           title: ev.title || 'Event',
           type: ev.type || 'event',
-          date: dateVal,
+          date: startStr,
           description: ev.description || '',
           location: ev.location || '',
         });
-      } else {
-        // Range: generate events day-by-day
-        let current = new Date(start);
-        while (current.getTime() <= end.getTime()) {
-          const dateStr = getLocalDateString(current);
-          expandedEvents.push({
-            title: ev.title || 'Event',
-            type: ev.type || 'event',
-            date: dateStr,
-            description: ev.description || '',
-            location: ev.location || '',
-          });
-          current.setDate(current.getDate() + 1);
-        }
+        return;
+      }
+
+      const diffDays = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const isMilestone = milestoneRegex.test(ev.title || '');
+      const isExamOrRecess = ev.type === 'exam' || /exam|test|viva|quiz|vacation|recess|break|fest/i.test(ev.title || '');
+
+      // Milestones, non-exam/non-vacations, or spans > 14 days must NEVER spam daily calendar entries
+      if (isMilestone || !isExamOrRecess || diffDays > 14) {
+        const rangeNote = `(Span: ${startStr} to ${endStr})`;
+        const updatedDesc = ev.description ? `${rangeNote} ${ev.description}` : rangeNote;
+        expandedEvents.push({
+          title: ev.title || 'Event',
+          type: ev.type || 'event',
+          date: startStr,
+          description: updatedDesc,
+          location: ev.location || '',
+        });
+        return;
+      }
+
+      // Genuine short multi-day exam or vacation period (<= 14 days)
+      let current = new Date(start);
+      let safetyCounter = 0;
+      while (current.getTime() <= end.getTime() && safetyCounter < 14) {
+        const dateStr = getLocalDateString(current);
+        expandedEvents.push({
+          title: ev.title || 'Event',
+          type: ev.type || 'event',
+          date: dateStr,
+          description: ev.description || '',
+          location: ev.location || '',
+        });
+        current.setDate(current.getDate() + 1);
+        safetyCounter++;
       }
     });
 
@@ -192,7 +229,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
     >
       {step === 'upload' && (
         <div className="flex flex-col text-center">
-          <div className="relative group w-full h-[220px] sm:h-[240px] flex flex-col items-center justify-center rounded-none border-2 border-dashed border-black/15 dark:border-white/[0.1] bg-[#F7F7F5]/50 dark:bg-white/[0.02] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-all cursor-pointer mb-5">
+          <div className="relative group w-full h-[230px] sm:h-[250px] flex flex-col items-center justify-center rounded-none border-2 border-dashed border-black/15 dark:border-white/[0.1] bg-[#F7F7F5]/50 dark:bg-white/[0.02] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-all cursor-pointer mb-5">
             <input
               type="file"
               accept="image/*,.pdf" multiple
@@ -203,16 +240,18 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
             <h3 className="text-[15px] font-bold text-black dark:text-[#F4F4F6] mb-1">
               Choose a calendar file
             </h3>
-            <p className="text-[13px] text-black/60 dark:text-[#94A3B8] mb-4">
-              Photo or PDF
+            <p className="text-[13px] text-black/60 dark:text-[#94A3B8] mb-2">
+              Photo or PDF document
             </p>
             
             <div className="px-6 h-[40px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto mb-3 shadow-sm">
               Choose file
             </div>
 
-            <div className="text-[11px] text-black/40 dark:text-[#64748B] font-medium tracking-[0.5px] uppercase">
-              JPG · PNG · PDF
+            <div className="flex items-center gap-2 text-[11px] text-black/50 dark:text-[#94A3B8] font-medium tracking-[0.5px]">
+              <span className="uppercase">JPG · PNG · PDF</span>
+              <span>·</span>
+              <span className="text-amber-700 dark:text-amber-400 font-semibold bg-amber-500/10 dark:bg-amber-400/10 px-2 py-0.5 border border-amber-500/20">Under 3MB</span>
             </div>
           </div>
         </div>
@@ -300,13 +339,37 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Date</label>
+                        <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Start Date</label>
                         <input
                           type="date"
-                          value={event.date}
-                          onChange={(e) => updateExtractedRow(index, { date: e.target.value })}
+                          value={event.startDate || event.date}
+                          onChange={(e) => {
+                            const newStart = e.target.value;
+                            const shouldSyncEnd = !event.endDate || event.endDate === (event.startDate || event.date);
+                            updateExtractedRow(index, {
+                              startDate: newStart,
+                              date: newStart,
+                              ...(shouldSyncEnd ? { endDate: newStart } : {}),
+                            });
+                          }}
+                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex items-center justify-between">
+                          <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">End Date</label>
+                          {event.startDate && event.endDate && event.startDate !== event.endDate && (
+                            <span className="text-[9px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                              Range
+                            </span>
+                          )}
+                        </div>
+                        <input
+                          type="date"
+                          value={event.endDate || event.startDate || event.date}
+                          onChange={(e) => updateExtractedRow(index, { endDate: e.target.value })}
                           className="w-full px-3 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
                         />
                       </div>
@@ -321,6 +384,12 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
                         />
                       </div>
                     </div>
+
+                    {event.description && (
+                      <p className="text-[11px] text-black/50 dark:text-[#94A3B8] italic line-clamp-2">
+                        {event.description}
+                      </p>
+                    )}
                   </div>
                 ))}
 

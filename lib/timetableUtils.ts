@@ -1141,3 +1141,77 @@ export const isValidProperEmail = (email?: string): boolean => {
     return false;
   }
 };
+
+/**
+ * Deduplicates and prunes calendar events:
+ * 1. Removes exact duplicates on the same date with identical title.
+ * 2. Prunes artificial multi-day spam where single milestone events (e.g., Convocation,
+ *    Commencement, Senate meeting, Registration) were improperly expanded into 20-30 days.
+ * 3. Safely preserves legitimate exam windows and short vacation breaks.
+ */
+export const deduplicateAcademicEvents = (
+  rawEvents: AcademicEvent[]
+): { cleaned: AcademicEvent[]; removedCount: number } => {
+  if (!Array.isArray(rawEvents) || rawEvents.length === 0) {
+    return { cleaned: [], removedCount: 0 };
+  }
+
+  const milestonePattern = /convocation|commencement|inauguration|orientation|re-opening|foundation|declaration|result|submission|deadline|registration|fee|senate|meeting|alumni/i;
+  const examOrBreakPattern = /exam|test|viva|quiz|vacation|recess|break|fest/i;
+
+  // Step 1: Remove exact duplicates on the exact same date
+  const exactSeen = new Set<string>();
+  const step1: AcademicEvent[] = [];
+
+  for (const ev of rawEvents) {
+    if (!ev || !ev.title || !ev.date) continue;
+    const normTitle = ev.title.trim().toLowerCase();
+    const key = `${ev.date}_${normTitle}_${ev.type || 'event'}`;
+    if (!exactSeen.has(key)) {
+      exactSeen.add(key);
+      step1.push(ev);
+    }
+  }
+
+  // Step 2: Chronological sort
+  step1.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+  // Step 3: Detect and collapse artificial range spam in each month
+  const monthTitleMap = new Map<string, AcademicEvent[]>();
+  for (const ev of step1) {
+    const monthKey = (ev.date || '').substring(0, 7); // "YYYY-MM"
+    const normTitle = ev.title.trim().toLowerCase();
+    const groupKey = `${monthKey}::${normTitle}`;
+    const list = monthTitleMap.get(groupKey) || [];
+    list.push(ev);
+    monthTitleMap.set(groupKey, list);
+  }
+
+  const cleaned: AcademicEvent[] = [];
+
+  monthTitleMap.forEach((groupEvents) => {
+    if (groupEvents.length <= 1) {
+      cleaned.push(...groupEvents);
+      return;
+    }
+
+    const firstEv = groupEvents[0];
+    const isMilestone = milestonePattern.test(firstEv.title);
+    const isExamOrBreak = examOrBreakPattern.test(firstEv.title) || firstEv.type === 'exam';
+
+    // If it is a point milestone repeating > 1 time, or non-exam repeating > 2 times, or any event repeating > 14 times:
+    if (isMilestone || (!isExamOrBreak && groupEvents.length > 2) || groupEvents.length > 14) {
+      // Keep only the earliest occurrence
+      cleaned.push(firstEv);
+    } else {
+      // Legitimate multi-day exam week or break (<= 14 days)
+      cleaned.push(...groupEvents);
+    }
+  });
+
+  // Final chronological sort
+  cleaned.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  const removedCount = rawEvents.length - cleaned.length;
+
+  return { cleaned, removedCount };
+};

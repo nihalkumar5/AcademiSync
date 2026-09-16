@@ -31,6 +31,7 @@ import {
   getTodayDateString,
   normalizeIdList,
   sanitizeClassSessionTimes,
+  deduplicateAcademicEvents,
 } from '@/lib/timetableUtils';
 import { checkAndGenerateSmartNotifications } from '@/lib/notificationEngine';
 import confetti from 'canvas-confetti';
@@ -126,6 +127,7 @@ export interface AppContextType {
   addEvent: (event: Omit<AcademicEvent, 'id'>) => void;
   addEvents: (events: Omit<AcademicEvent, 'id'>[], overwrite?: boolean) => void;
   deleteEvent: (id: string) => void;
+  cleanDuplicateEvents: () => number;
   exams: Exam[];
   addExam: (exam: Omit<Exam, 'id' | 'createdAt'>) => Exam;
   deleteExam: (id: string) => void;
@@ -429,7 +431,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (data.homework) { setHomeworkState(data.homework); storage.setHomework(data.homework); }
         if (data.carryItems) { setCarryItemsState(data.carryItems); storage.setCarryItems(data.carryItems); }
         if (data.notifications) { setNotificationsState(data.notifications); storage.setNotifications(data.notifications); }
-        if (data.events) { setEventsState(data.events); storage.setEvents(data.events); }
+        if (data.events && Array.isArray(data.events)) {
+          const { cleaned: sanitizedEvents } = deduplicateAcademicEvents(data.events);
+          setEventsState(sanitizedEvents);
+          storage.setEvents(sanitizedEvents);
+        }
         if (data.exams) { setExamsState(data.exams); storage.setExams(data.exams); }
         if (data.settings) { setSettingsState(data.settings); storage.setSettings(data.settings); }
         if (data.cancelledSessions) {
@@ -633,8 +639,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         });
       }
       if (Array.isArray(data.events)) {
-        setEventsState(data.events);
-        storage.setEvents(data.events);
+        const { cleaned: sanitizedEvents } = deduplicateAcademicEvents(data.events);
+        setEventsState(sanitizedEvents);
+        storage.setEvents(sanitizedEvents);
       }
       if (Array.isArray(data.exams)) {
         setExamsState(data.exams);
@@ -852,7 +859,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const loadedHomework = storage.getHomework();
     const storedCarry = storage.getCarryItems();
     const loadedNotifications = storage.getNotifications();
-    const loadedEvents = storage.getEvents();
+    let loadedEvents = storage.getEvents();
     const loadedSettings = storage.getSettings();
     const loadedCancelled = storage.getCancelledSessions();
     const loadedRescheduled = storage.getRescheduledSessions();
@@ -869,6 +876,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimetableState(loadedTimetable);
     setHomeworkState(loadedHomework);
     setNotificationsState(loadedNotifications);
+    const { cleaned: sanitizedEvents, removedCount: eventRemovedCount } = deduplicateAcademicEvents(loadedEvents);
+    if (eventRemovedCount > 0) {
+      loadedEvents = sanitizedEvents;
+      storage.setEvents(loadedEvents);
+    }
     setEventsState(loadedEvents);
     setExamsState(loadedExams);
     setSettingsState(loadedSettings);
@@ -1770,7 +1782,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       location: ev.location || '',
       id: `ev_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 5)}`,
     }));
-    const updated = overwrite ? newEvents : [...events, ...newEvents];
+    const rawUpdated = overwrite ? newEvents : [...events, ...newEvents];
+    const { cleaned: updated } = deduplicateAcademicEvents(rawUpdated);
     setEventsState(updated);
     storage.setEvents(updated);
     refreshCarryItems(timetable, subjects, updated);
@@ -1787,8 +1800,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
     }
 
-    if (newEvents.length > 0) {
-      showToast('Calendar Updated', `${newEvents.length} event${newEvents.length > 1 ? 's' : ''} added to academic calendar`, 'success');
+    if (updated.length > 0) {
+      showToast('Calendar Updated', `${updated.length} event${updated.length > 1 ? 's' : ''} saved to academic calendar`, 'success');
     }
   };
 
@@ -1873,6 +1886,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
     syncCRChangesToBatch(undefined, undefined, updated, undefined);
     showToast('Event Removed', target?.title || 'Calendar event deleted', 'info');
+  };
+
+  const cleanDuplicateEvents = (): number => {
+    const { cleaned, removedCount } = deduplicateAcademicEvents(events);
+    if (removedCount > 0) {
+      setEventsState(cleaned);
+      storage.setEvents(cleaned);
+      refreshCarryItems(timetable, subjects, cleaned);
+
+      if (user) {
+        const userRef = doc(db, 'users', user.id);
+        setDoc(userRef, { events: sanitizeForFirestore(cleaned), lastUpdated: Date.now() }, { merge: true })
+          .catch(err => console.error('Error saving cleaned events:', err));
+
+        if (profile.isBatchSynced && profile.batchKey && isBatchCR) {
+          const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
+          setDoc(batchDocRef, { events: sanitizeForFirestore(cleaned), updatedAt: new Date().toISOString() }, { merge: true })
+            .catch(err => console.error('Error saving cleaned events to batch:', err));
+        }
+      }
+      showToast('Calendar Cleaned', `Removed ${removedCount} duplicate event${removedCount > 1 ? 's' : ''}`, 'success');
+    } else {
+      showToast('Calendar Clean', 'No duplicate events found in calendar', 'info');
+    }
+    return removedCount;
   };
 
   const updateSettings = (partial: Partial<UserSettings>) => {
@@ -3514,6 +3552,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         addEvent,
         addEvents,
         deleteEvent,
+        cleanDuplicateEvents,
         settings,
         updateSettings,
         showOnboarding,
