@@ -23,9 +23,10 @@ service cloud.firestore {
       );
     }
 
-    // 1. Users Collection: Each user can only read and write their own data
+    // 1. Users Collection: Authenticated students can read profiles to view classmates; only owners and Super Admins can write
     match /users/{userId} {
-      allow read, write: if isOwner(userId) || isSuperAdmin();
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) || isSuperAdmin();
     }
 
     // 2. Shared Batch Timetables Collection:
@@ -41,10 +42,19 @@ service cloud.firestore {
         ('crUserIds' in resource.data && resource.data.crUserIds is list && request.auth.uid in resource.data.crUserIds) ||
         ('crEmails' in resource.data && resource.data.crEmails is list && request.auth.token.email in resource.data.crEmails) ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.profile.role in ['cr', 'super_admin']) ||
-        // Allow joining (incrementing studentCount or updating lastActive / member list / homework proposals)
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['studentCount', 'members', 'lastActive', 'homeworkProposals'])
+        // Allow joining, session status sync, cancellations, reschedules, and alert broadcasts
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'studentCount', 'members', 'lastActive', 'homeworkProposals', 
+          'cancelledSessions', 'cancelledSessionsMeta', 'rescheduledSessions', 
+          'extraSessions', 'batchAlerts', 'updatedAt'
+        ])
       );
       allow delete: if isSuperAdmin() || (isAuthenticated() && resource.data.creatorId == request.auth.uid);
+
+      // Subcollection for proposed tasks/homework
+      match /proposed_tasks/{taskId} {
+        allow read, write: if isAuthenticated();
+      }
     }
 
     // 3. Batch Pilot & CR Requests:
@@ -57,7 +67,23 @@ service cloud.firestore {
       allow read, delete: if isSuperAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
     }
 
-    // 4. Campus Spotlight (Announcements/Notices):
+    // 4. Mess Menus:
+    // Read: Public (all hostel students)
+    // Write: Authenticated hostel students / reps
+    match /messes/{messId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // 5. Academic Calendars:
+    // Read: Public (all college students)
+    // Write: Authenticated students / admins
+    match /shared_calendars/{calendarKey} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // 6. Campus Spotlight (Announcements/Notices):
     // Read: Public
     // Write: Super Admin only
     match /campus_spotlight/{adId} {
@@ -65,7 +91,7 @@ service cloud.firestore {
       allow write: if isSuperAdmin();
     }
 
-    // 5. Promotional Campaigns:
+    // 7. Promotional Campaigns:
     // Read: Public (to display target banners to students)
     // Write: Super Admin only
     match /promotional_campaigns/{campaignId} {
