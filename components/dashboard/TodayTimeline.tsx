@@ -129,12 +129,32 @@ export const TodayTimeline: React.FC = () => {
     return true;
   };
 
+  const getRescheduledForSession = (session: ClassSession, dateStr: string) => {
+    const direct = rescheduledSessions[`${dateStr}_${session.id}`];
+    if (direct) return direct;
+    for (const [k, r] of Object.entries(rescheduledSessions || {})) {
+      if (k.startsWith(`${dateStr}_`)) {
+        const candId = k.split('_').slice(1).join('_');
+        const candSess = timetable.find((cand) => cand.id === candId);
+        if (
+          candSess &&
+          candSess.day === session.day &&
+          candSess.startTime === session.startTime &&
+          (candSess.subjectId === session.subjectId || candSess.faculty === session.faculty)
+        ) {
+          return r;
+        }
+      }
+    }
+    return null;
+  };
+
   const targetSessions = [
     ...timetable.filter((s) => s.day === targetDay && isSessionVisible(s)),
     ...extraListForTarget.filter(isSessionVisible),
   ].sort((a, b) => {
-    const aResched = rescheduledSessions[`${targetDateStr}_${a.id}`];
-    const bResched = rescheduledSessions[`${targetDateStr}_${b.id}`];
+    const aResched = getRescheduledForSession(a, targetDateStr);
+    const bResched = getRescheduledForSession(b, targetDateStr);
     const aStart = timeToMinutes(aResched ? aResched.startTime : a.startTime);
     const bStart = timeToMinutes(bResched ? bResched.startTime : b.startTime);
     return aStart - bStart;
@@ -439,7 +459,7 @@ export const TodayTimeline: React.FC = () => {
   if (!isAfter8PM) {
     const liveSession = targetSessions.find(s => {
       const isCancelled = isSessionCancelled(s.id, targetDateStr);
-      const reschedule = rescheduledSessions[`${targetDateStr}_${s.id}`];
+      const reschedule = getRescheduledForSession(s, targetDateStr);
       const start = timeToMinutes(reschedule ? reschedule.startTime : s.startTime);
       const end = timeToMinutes(reschedule ? reschedule.endTime : s.endTime);
       return !isCancelled && currentMinutes >= start && currentMinutes < end;
@@ -447,7 +467,7 @@ export const TodayTimeline: React.FC = () => {
 
     const nextSession = targetSessions.find(s => {
       const isCancelled = isSessionCancelled(s.id, targetDateStr);
-      const reschedule = rescheduledSessions[`${targetDateStr}_${s.id}`];
+      const reschedule = getRescheduledForSession(s, targetDateStr);
       const start = timeToMinutes(reschedule ? reschedule.startTime : s.startTime);
       return !isCancelled && currentMinutes < start;
     });
@@ -462,7 +482,7 @@ export const TodayTimeline: React.FC = () => {
   const displaySessions = targetSessions.filter(session => {
     if (isAfter8PM) return true;
     if (session.id === promotedClassId) return false;
-    const reschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
+    const reschedule = getRescheduledForSession(session, targetDateStr);
     const end = timeToMinutes(reschedule ? reschedule.endTime : session.endTime);
     if (currentMinutes >= end) return false;
     return true;
@@ -511,7 +531,7 @@ export const TodayTimeline: React.FC = () => {
         </div>
         <div className="relative flex flex-col gap-0 border-l-[2px] border-slate-200 dark:border-white/[0.08] ml-3">
           {displaySessions.map((session, index) => {
-            const reschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
+            const reschedule = getRescheduledForSession(session, targetDateStr);
             const effectiveSubjectId = reschedule?.subjectId || session.subjectId;
             const sub = subjectMap.get(effectiveSubjectId) || subjects.find(s => 
               (session.faculty && s.facultyName && (s.facultyName.toLowerCase().includes(session.faculty.toLowerCase()) || session.faculty.toLowerCase().includes(s.facultyName.toLowerCase()))) ||
@@ -806,7 +826,7 @@ export const TodayTimeline: React.FC = () => {
                                           type="button"
                                           onClick={() => {
                                             setOpenMenuSessionId(null);
-                                            const currentReschedule = rescheduledSessions[`${targetDateStr}_${session.id}`];
+                                            const currentReschedule = getRescheduledForSession(session, targetDateStr);
                                             setRescheduleTimeStart(currentReschedule?.startTime || session.startTime.split(' ')[0]);
                                             setRescheduleTimeEnd(currentReschedule?.endTime || session.endTime.split(' ')[0]);
                                             setRescheduleRoom(currentReschedule?.room || session.room || '');

@@ -77,9 +77,29 @@ export const LiveClassCard: React.FC = () => {
     setRescheduleTarget(null);
   };
 
+  const getRescheduledForSession = (session: ClassSession, dateStr: string) => {
+    const direct = rescheduledSessions[`${dateStr}_${session.id}`];
+    if (direct) return direct;
+    for (const [k, r] of Object.entries(rescheduledSessions || {})) {
+      if (k.startsWith(`${dateStr}_`)) {
+        const candId = k.split('_').slice(1).join('_');
+        const candSess = timetable.find((cand) => cand.id === candId);
+        if (
+          candSess &&
+          candSess.day === session.day &&
+          candSess.startTime === session.startTime &&
+          (candSess.subjectId === session.subjectId || candSess.faculty === session.faculty)
+        ) {
+          return r;
+        }
+      }
+    }
+    return null;
+  };
+
   const renderOptionsMenu = (session: ClassSession, isDarkTheme: boolean) => {
     const isCancelled = isSessionCancelled(session.id, dateTodayStr);
-    const isRescheduled = !!rescheduledSessions[`${dateTodayStr}_${session.id}`];
+    const isRescheduled = !!getRescheduledForSession(session, dateTodayStr);
 
     return (
       <div className="relative shrink-0 flex items-center">
@@ -199,7 +219,7 @@ export const LiveClassCard: React.FC = () => {
                       type="button"
                       onClick={() => {
                         setOpenMenuSessionId(null);
-                        const currentReschedule = rescheduledSessions[`${dateTodayStr}_${session.id}`];
+                        const currentReschedule = getRescheduledForSession(session, dateTodayStr);
                         setRescheduleTimeStart(currentReschedule?.startTime || session.startTime.split(' ')[0]);
                         setRescheduleTimeEnd(currentReschedule?.endTime || session.endTime.split(' ')[0]);
                         setRescheduleRoom(currentReschedule?.room || session.room || '');

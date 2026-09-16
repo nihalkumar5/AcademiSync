@@ -582,7 +582,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             // Official batch timetable rules: room, time, day, faculty sync from batch
             return {
               ...bSess,
-              id: local?.id || bSess.id,
+              id: bSess.id,
               room: bSess.room,
               startTime: bSess.startTime,
               endTime: bSess.endTime,
@@ -1885,23 +1885,60 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const targetDate = dateStr || getTodayDateString();
     const key = `${targetDate}_${sessionId}`;
     const safeList = Array.isArray(cancelledSessions) ? cancelledSessions : [];
-    const isAlreadyCancelled = safeList.includes(key) || safeList.includes(sessionId);
-    const updated = isAlreadyCancelled
-      ? safeList.filter((k) => k !== key && k !== sessionId && !k.endsWith(`_${sessionId}`))
-      : [...safeList, key];
+    const isAlreadyCancelled = isSessionCancelled(sessionId, targetDate);
 
+    // Collect all related IDs for this slot across local and batch timetables
+    const allTimetables: ClassSession[] = [
+      ...(Array.isArray(timetable) ? timetable : []),
+      ...(Array.isArray(currentBatchData?.timetable) ? currentBatchData.timetable : [])
+    ];
+    const targetSession = allTimetables.find((s) => s.id === sessionId);
+    const relatedIds: string[] = [sessionId];
+    if (targetSession) {
+      allTimetables.forEach((s) => {
+        if (
+          s.day === targetSession.day &&
+          s.startTime === targetSession.startTime &&
+          (s.subjectId === targetSession.subjectId || s.faculty === targetSession.faculty)
+        ) {
+          if (!relatedIds.includes(s.id)) {
+            relatedIds.push(s.id);
+          }
+        }
+      });
+    }
+
+    let updated: string[];
     const updatedMeta = { ...(cancelledSessionsMeta || {}) };
     const crName = profile.name || (isSuperAdmin ? 'Super Admin' : 'Batch Pilot');
 
     if (isAlreadyCancelled) {
-      delete updatedMeta[key];
-      delete updatedMeta[sessionId];
+      // Un-cancel / restore: remove all related IDs and keys for this date
+      updated = safeList.filter((k) => {
+        if (typeof k !== 'string') return true;
+        for (const rId of relatedIds) {
+          if (k === `${targetDate}_${rId}` || k === rId || k.endsWith(`_${rId}`)) {
+            return false;
+          }
+        }
+        return true;
+      });
+
+      for (const rId of relatedIds) {
+        delete updatedMeta[`${targetDate}_${rId}`];
+        delete updatedMeta[rId];
+      }
     } else {
-      updatedMeta[key] = {
-        by: crName,
-        role: isSuperAdmin ? 'Super Admin' : 'Batch Pilot',
-        timestamp: new Date().toISOString(),
-      };
+      // Cancel: add all related IDs so any client device checking either ID matches directly
+      const keysToAdd = relatedIds.map((rId) => `${targetDate}_${rId}`);
+      updated = Array.from(new Set([...safeList, ...keysToAdd]));
+      for (const k of keysToAdd) {
+        updatedMeta[k] = {
+          by: crName,
+          role: isSuperAdmin ? 'Super Admin' : 'Batch Pilot',
+          timestamp: new Date().toISOString(),
+        };
+      }
     }
 
     setCancelledSessionsState(updated);
@@ -1921,7 +1958,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
 
         // Find subject name from timetable
-        const session = timetable.find((s) => s.id === sessionId);
+        const session = timetable.find((s) => s.id === sessionId) || targetSession;
         const subject = session ? subjects.find((sub) => sub.id === session.subjectId) : null;
         const subjectLabel = subject?.name || subject?.shortName || 'Class';
 
@@ -1980,11 +2017,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         ? cancelledSessions
         : (cancelledSessions && typeof cancelledSessions === 'object' ? Object.keys(cancelledSessions) : []);
 
-      if (safeList.includes(key) || safeList.includes(sessionId)) {
+      const batchList = Array.isArray(currentBatchData?.cancelledSessions)
+        ? currentBatchData.cancelledSessions
+        : [];
+
+      const allCancelled = Array.from(new Set([...safeList, ...batchList]));
+
+      // 1. Direct key or session ID check
+      if (allCancelled.includes(key) || allCancelled.includes(sessionId)) {
         return true;
       }
 
-      for (const k of safeList) {
+      for (const k of allCancelled) {
         if (k === key || k === sessionId) return true;
         if (typeof k === 'string' && k.includes('_')) {
           const parts = k.split('_');
@@ -1992,6 +2036,34 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           const kSessionId = parts.slice(1).join('_');
           if (kSessionId === sessionId && (!targetDate || kDate === targetDate)) {
             return true;
+          }
+        }
+      }
+
+      // 2. Slot-based fallback (Resilience against any ID drift or historical legacy IDs)
+      const allTimetables: ClassSession[] = [
+        ...(Array.isArray(timetable) ? timetable : []),
+        ...(Array.isArray(currentBatchData?.timetable) ? currentBatchData.timetable : [])
+      ];
+      const targetSession = allTimetables.find((s) => s.id === sessionId);
+
+      if (targetSession) {
+        for (const k of allCancelled) {
+          if (typeof k === 'string' && k.includes('_')) {
+            const parts = k.split('_');
+            const kDate = parts[0];
+            const kSessionId = parts.slice(1).join('_');
+            if (!targetDate || kDate === targetDate) {
+              const candSess = allTimetables.find((s: ClassSession) => s.id === kSessionId);
+              if (
+                candSess &&
+                candSess.day === targetSession.day &&
+                candSess.startTime === targetSession.startTime &&
+                (candSess.subjectId === targetSession.subjectId || candSess.faculty === targetSession.faculty)
+              ) {
+                return true;
+              }
+            }
           }
         }
       }
@@ -2006,16 +2078,49 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const getCancelledSessionMeta = (sessionId: string, dateStr?: string) => {
-    const targetDate = dateStr || getTodayDateString();
-    const key = `${targetDate}_${sessionId}`;
-    if (cancelledSessionsMeta[key]) return cancelledSessionsMeta[key];
-    if (cancelledSessionsMeta[sessionId]) return cancelledSessionsMeta[sessionId];
-    for (const [k, meta] of Object.entries(cancelledSessionsMeta || {})) {
-      if (k === key || k === sessionId || (k.includes('_') && k.split('_').slice(1).join('_') === sessionId && k.startsWith(targetDate))) {
-        return meta;
+    try {
+      const targetDate = dateStr || getTodayDateString();
+      const key = `${targetDate}_${sessionId}`;
+      const allMeta = {
+        ...(currentBatchData?.cancelledSessionsMeta || {}),
+        ...(cancelledSessionsMeta && typeof cancelledSessionsMeta === 'object' ? cancelledSessionsMeta : {})
+      };
+
+      if (allMeta[key]) return allMeta[key];
+      if (allMeta[sessionId]) return allMeta[sessionId];
+
+      for (const [k, meta] of Object.entries(allMeta)) {
+        if (k === key || k === sessionId || (typeof k === 'string' && k.includes('_') && k.split('_').slice(1).join('_') === sessionId && k.startsWith(targetDate))) {
+          return meta;
+        }
       }
+
+      // Slot-based fallback for meta
+      const allTimetables: ClassSession[] = [
+        ...(Array.isArray(timetable) ? timetable : []),
+        ...(Array.isArray(currentBatchData?.timetable) ? currentBatchData.timetable : [])
+      ];
+      const targetSession = allTimetables.find((s) => s.id === sessionId);
+      if (targetSession) {
+        for (const [k, meta] of Object.entries(allMeta)) {
+          if (typeof k === 'string' && k.startsWith(`${targetDate}_`)) {
+            const cId = k.split('_').slice(1).join('_');
+            const cSession = allTimetables.find((s: ClassSession) => s.id === cId);
+            if (
+              cSession &&
+              cSession.day === targetSession.day &&
+              cSession.startTime === targetSession.startTime &&
+              (cSession.subjectId === targetSession.subjectId || cSession.faculty === targetSession.faculty)
+            ) {
+              return meta;
+            }
+          }
+        }
+      }
+      return null;
+    } catch {
+      return null;
     }
-    return null;
   };
 
   const rescheduleSession = async (
@@ -2034,16 +2139,41 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const updated = { ...rescheduledSessions };
     const crName = profile.name || (isSuperAdmin ? 'Super Admin' : 'Batch Pilot');
 
+    const allTimetables: ClassSession[] = [
+      ...(Array.isArray(timetable) ? timetable : []),
+      ...(Array.isArray(currentBatchData?.timetable) ? currentBatchData.timetable : [])
+    ];
+    const targetSession = allTimetables.find((s) => s.id === sessionId);
+    const relatedIds: string[] = [sessionId];
+    if (targetSession) {
+      allTimetables.forEach((s) => {
+        if (
+          s.day === targetSession.day &&
+          s.startTime === targetSession.startTime &&
+          (s.subjectId === targetSession.subjectId || s.faculty === targetSession.faculty)
+        ) {
+          if (!relatedIds.includes(s.id)) {
+            relatedIds.push(s.id);
+          }
+        }
+      });
+    }
+
     if (details === null) {
-      delete updated[key];
+      for (const rId of relatedIds) {
+        delete updated[`${targetDate}_${rId}`];
+      }
       showToast('Reschedule Reverted', 'Class reverted to original schedule.', 'success');
     } else {
-      updated[key] = {
+      const entry = {
         ...details,
         by: crName,
         role: isSuperAdmin ? 'Super Admin' : 'Batch Pilot',
         timestamp: new Date().toISOString(),
       };
+      for (const rId of relatedIds) {
+        updated[`${targetDate}_${rId}`] = entry;
+      }
       showToast('Class Rescheduled', `Class moved to ${details.startTime}–${details.endTime} by ${crName}.`, 'success');
     }
 

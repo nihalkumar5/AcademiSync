@@ -229,7 +229,24 @@ export const getLiveClassStatus = (
     .filter((s) => s && s.day === day && (!isCancelledFn || !isCancelledFn(s.id, dateStr)))
     .map((s) => {
       const rescheduleKey = `${dateStr}_${s.id}`;
-      const reschedule = safeRescheduled[rescheduleKey];
+      let reschedule = safeRescheduled[rescheduleKey];
+      if (!reschedule) {
+        for (const [k, r] of Object.entries(safeRescheduled)) {
+          if (k.startsWith(`${dateStr}_`)) {
+            const candId = k.split('_').slice(1).join('_');
+            const candSess = safeTimetable.find((cand) => cand.id === candId);
+            if (
+              candSess &&
+              candSess.day === s.day &&
+              candSess.startTime === s.startTime &&
+              (candSess.subjectId === s.subjectId || candSess.faculty === s.faculty)
+            ) {
+              reschedule = r;
+              break;
+            }
+          }
+        }
+      }
       if (reschedule) {
         return {
           ...s,
