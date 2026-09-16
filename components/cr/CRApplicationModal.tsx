@@ -28,7 +28,9 @@ import {
   Sparkles,
   MessageCircle,
   Share2,
-  Key
+  Key,
+  Copy,
+  Check
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { shareLink } from '@/lib/shareUtils';
@@ -67,6 +69,7 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
   const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
   const [existingRequest, setExistingRequest] = useState<any | null>(null);
   
   // Existing batch check states
@@ -222,7 +225,8 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
   };
 
   const isSuperAdmin = !!user && isUserSuperAdmin(profile, userEmail);
-  const isCR = !isSuperAdmin && (profile.role === 'cr' || profile.role === 'super_admin');
+  const isCR = !isSuperAdmin && (profile.role === 'cr' || profile.role === 'super_admin' || existingRequest?.status === 'approved');
+  const activeBatchCode = profile.batchCode || existingBatch?.inviteCode || existingRequest?.inviteCode || '';
   const crUserIds = Array.isArray(existingBatch?.crUserIds) ? existingBatch.crUserIds : [];
   const crEmails = Array.isArray(existingBatch?.crEmails) ? existingBatch.crEmails : [];
   const uniquePilotIds = new Set([
@@ -375,25 +379,103 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
           </div>
         ) : isCR ? (
           /* CASE 2B: USER IS ALREADY A CR */
-          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] rounded-none">
+          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-5 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] rounded-none">
             <div className="w-14 h-14 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] rounded-none flex items-center justify-center shadow-sm">
               <Crown className="w-7 h-7 text-amber-500" />
             </div>
             <div>
-              <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+              <span className="text-[10px] font-bold font-mono tracking-widest uppercase text-emerald-600 dark:text-emerald-400">
+                VERIFIED BATCH PILOT
+              </span>
+              <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF] mt-1">
                 You are a Verified Batch Pilot! 🚀
               </h3>
               <p className="text-[13px] text-[#6F6F6F] dark:text-[#A0A0A0] mt-1.5 max-w-md leading-relaxed">
-                You have full authority to manage timetables, cancel classes, and broadcast live alerts to {formatBatchDisplayName(profile.branch, profile.semester)}.
+                You have full authority to manage timetables, cancel classes, and broadcast live alerts to {formatBatchDisplayName(profile.branch || branch, profile.semester || semester)}.
               </p>
             </div>
-            <button 
-              type="button"
-              onClick={onClose} 
-              className="mt-2 px-6 py-2.5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity rounded-none cursor-pointer"
-            >
-              Back to Dashboard
-            </button>
+
+            {/* Batch Code Box */}
+            {activeBatchCode ? (
+              <div className="w-full max-w-sm p-4 bg-white dark:bg-[#111111] border-2 border-dashed border-amber-500/40 rounded-none flex flex-col items-center text-center">
+                <span className="text-[10px] font-mono uppercase font-bold tracking-wider text-amber-700 dark:text-amber-400 mb-1">
+                  OFFICIAL 6-DIGIT BATCH CODE
+                </span>
+                <div className="flex items-center gap-3 my-1">
+                  <span className="font-mono text-3xl font-extrabold tracking-widest text-[#111111] dark:text-[#FFFFFF] select-all">
+                    {activeBatchCode}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(activeBatchCode);
+                        setCopiedCode(true);
+                        showToast('Code Copied!', `Batch code "${activeBatchCode}" copied to clipboard`, 'success');
+                        setTimeout(() => setCopiedCode(false), 2000);
+                      } catch {
+                        showToast('Error', 'Failed to copy batch code', 'error');
+                      }
+                    }}
+                    className="p-2 border border-[#D8D8D8] dark:border-[#333333] hover:bg-black/5 dark:hover:bg-white/5 transition-colors rounded-none cursor-pointer"
+                    title="Copy Code"
+                  >
+                    {copiedCode ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-slate-600 dark:text-zinc-300" />}
+                  </button>
+                </div>
+                <p className="text-[11px] text-[#6F6F6F] dark:text-[#A0A0A0] mt-1">
+                  Share this code with your classmates so they can join and view real-time updates!
+                </p>
+
+                {/* Share to WhatsApp Button */}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const courseTitle = `${branch || profile.branch || 'Class'} (Sem ${semester || profile.semester})`;
+                    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://intersemester.com';
+                    const joinUrl = `${origin}/join?code=${activeBatchCode}`;
+                    const messageText = `*Hey everyone!* 👋\n\nOfficial batch timetable is now live on Intersemester for *${getShortCollegeName(college || profile.college)}* · *${courseTitle}*!\n\n🔑 *Batch Code:* \`${activeBatchCode}\`\n\nDirect Join Link:\n${joinUrl}\n\nJoin to receive instant schedule updates, class cancellations, and room alerts! 🚀`;
+
+                    try {
+                      const res = await shareLink({
+                        title: `Join ${courseTitle} Timetable`,
+                        text: messageText,
+                        dialogTitle: 'Share Batch Code with Class'
+                      });
+                      if (res === 'copied') {
+                        showToast('Copied!', 'Invite message copied to clipboard', 'success');
+                      }
+                    } catch (e) {
+                      console.error(e);
+                    }
+                  }}
+                  className="mt-3 w-full py-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors rounded-none shadow-sm cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4 fill-white" />
+                  <span>Share Code with Class on WhatsApp</span>
+                </button>
+              </div>
+            ) : null}
+
+            <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm mt-1">
+              <button 
+                type="button"
+                onClick={() => {
+                  onClose();
+                  router.push('/timetable');
+                }} 
+                className="flex-1 px-5 py-2.5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity rounded-none cursor-pointer"
+              >
+                Manage Schedule
+              </button>
+              <button 
+                type="button"
+                onClick={onClose} 
+                className="px-5 py-2.5 border border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[12px] font-bold uppercase tracking-wider hover:bg-black/5 dark:hover:bg-white/5 transition-colors rounded-none cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
           </div>
         ) : existingRequest?.status === 'pending' ? (
           /* CASE 3: APPLICATION UNDER REVIEW */

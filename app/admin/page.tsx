@@ -48,7 +48,9 @@ import {
   Phone,
   Mail,
   Clock,
-  Copy
+  Copy,
+  Share2,
+  MessageSquare
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -82,6 +84,19 @@ export default function SuperAdminPage() {
   const [isDeletingBatch, setIsDeletingBatch] = useState(false);
   const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
   const [isDeletingCampaign, setIsDeletingCampaign] = useState(false);
+
+  // CR Approval Success Modal state
+  const [approvedSuccessData, setApprovedSuccessData] = useState<{
+    name: string;
+    phone?: string;
+    college: string;
+    branch: string;
+    semester: number | string;
+    batchCode: string;
+    batchKey: string;
+  } | null>(null);
+  const [copiedSuccessCode, setCopiedSuccessCode] = useState(false);
+  const [copiedSuccessMessage, setCopiedSuccessMessage] = useState(false);
 
   // Modal for Campaign creation/editing
   const [activeRoleDropdown, setActiveRoleDropdown] = useState<string | null>(null);
@@ -496,58 +511,72 @@ export default function SuperAdminPage() {
     }
   };
 
+  const getCRWhatsAppShareUrl = (data: {
+    name: string;
+    phone?: string;
+    college: string;
+    branch: string;
+    semester: number | string;
+    batchCode: string;
+  }) => {
+    const cleanPhone = (data.phone || '').replace(/[^0-9]/g, '');
+    const waPhone = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://intersemester.com';
+    const joinUrl = `${origin}/join?code=${data.batchCode}`;
+    
+    const msg = `Hey ${data.name}! 👋\n\nCongratulations, your Batch Pilot application for *${getShortCollegeName(data.college)}* (*${data.branch}*, Sem ${data.semester}) has been *Approved* on Intersemester! 👑\n\n🔑 *Official Batch Code:* ${data.batchCode}\n\n📲 Direct Join Link for your classmates:\n${joinUrl}\n\nYou can now log in, set up your timetable, cancel classes, and send instant alerts to your entire batch. Let's make campus life smoother! 🚀`;
+
+    return `https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`;
+  };
+
+  const getCRWhatsAppMessageText = (data: {
+    name: string;
+    phone?: string;
+    college: string;
+    branch: string;
+    semester: number | string;
+    batchCode: string;
+  }) => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://intersemester.com';
+    const joinUrl = `${origin}/join?code=${data.batchCode}`;
+    
+    return `Hey ${data.name}! 👋\n\nCongratulations, your Batch Pilot application for *${getShortCollegeName(data.college)}* (*${data.branch}*, Sem ${data.semester}) has been *Approved* on Intersemester! 👑\n\n🔑 *Official Batch Code:* ${data.batchCode}\n\n📲 Direct Join Link for your classmates:\n${joinUrl}\n\nYou can now log in, set up your timetable, cancel classes, and send instant alerts to your entire batch. Let's make campus life smoother! 🚀`;
+  };
+
   const handleApproveCRRequest = async (req: any) => {
     try {
-      // 1. Update cr_requests status
-      await updateDoc(doc(db, 'cr_requests', req.id), {
-        status: 'approved',
-        approvedAt: new Date().toISOString()
+      showToast('Approving...', `Processing approval for ${req.name}...`, 'info');
+
+      const res = await fetch('/api/admin/approve-cr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requestId: req.id,
+          adminId: user?.id,
+        }),
       });
 
-      // 2. Update user profile to CR role & bind batch
-      const userRef = doc(db, 'users', req.userId);
-      await updateDoc(userRef, {
-        'profile.role': 'cr',
-        'profile.isBatchSynced': true,
-        'profile.batchKey': req.batchKey,
-        'profile.college': req.college,
-        'profile.branch': req.branch,
-        'profile.semester': req.semester
-      }).catch(console.error);
-
-      // 3. Update or create shared_timetables doc
-      const batchRef = doc(db, 'shared_timetables', req.batchKey);
-      const batchSnap = await getDoc(batchRef);
-      if (batchSnap.exists()) {
-        await updateDoc(batchRef, {
-          crUserIds: arrayUnion(req.userId),
-          crEmails: arrayUnion(req.email || '')
-        });
-      } else {
-        await setDoc(batchRef, {
-          id: req.batchKey,
-          college: req.college,
-          programme: req.programme || 'B.Tech',
-          branch: req.branch,
-          semester: req.semester,
-          creatorId: req.userId,
-          creatorName: req.name,
-          creatorEmail: req.email,
-          crUserIds: [req.userId],
-          crEmails: [req.email],
-          inviteCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
-          subjects: [],
-          timetable: [],
-          studentCount: 1,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to approve CR request');
       }
 
-      showToast('CR Approved! 👑', `${req.name} is now verified CR for ${req.branch} (Sem ${req.semester}).`, 'success');
-    } catch (e) {
+      const generatedCode = data.batchCode;
+
+      showToast('CR Approved! 👑', `${req.name} is now verified CR for ${req.branch} (Sem ${req.semester}). Code: ${generatedCode}`, 'success');
+
+      setApprovedSuccessData({
+        name: data.name || req.name,
+        phone: data.phone || req.phone,
+        college: data.college || req.college,
+        branch: data.branch || req.branch,
+        semester: data.semester || req.semester,
+        batchCode: generatedCode,
+        batchKey: data.batchKey || req.batchKey,
+      });
+    } catch (e: any) {
       console.error('Error approving CR request:', e);
-      showToast('Approval Failed', 'Could not approve CR request.', 'error');
+      showToast('Approval Failed', e.message || 'Could not approve CR request.', 'error');
     }
   };
 
@@ -2175,17 +2204,45 @@ export default function SuperAdminPage() {
                               </button>
                             </>
                           ) : isApproved ? (
-                            <div className="flex items-center justify-between w-full">
-                              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-                                <CheckCircle2 className="w-3.5 h-3.5" />
-                                Verified Batch Pilot
-                              </span>
-                              <button
-                                onClick={() => handleRejectCRRequest(req)}
-                                className="text-[11px] text-rose-500 hover:underline uppercase font-bold cursor-pointer"
-                              >
-                                Revoke Pilot
-                              </button>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  Verified Batch Pilot
+                                </span>
+                                {req.inviteCode && (
+                                  <span className="font-mono text-[11px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 font-bold border border-emerald-500/20">
+                                    CODE: {req.inviteCode}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-3">
+                                {req.inviteCode && (
+                                  <button
+                                    onClick={() => {
+                                      setApprovedSuccessData({
+                                        name: req.name,
+                                        phone: req.phone,
+                                        college: req.college,
+                                        branch: req.branch,
+                                        semester: req.semester,
+                                        batchCode: req.inviteCode,
+                                        batchKey: req.batchKey,
+                                      });
+                                    }}
+                                    className="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline uppercase font-bold cursor-pointer flex items-center gap-1"
+                                  >
+                                    <Share2 className="w-3 h-3" />
+                                    Share Code
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => handleRejectCRRequest(req)}
+                                  className="text-[11px] text-rose-500 hover:underline uppercase font-bold cursor-pointer"
+                                >
+                                  Revoke Pilot
+                                </button>
+                              </div>
                             </div>
                           ) : (
                             <button
@@ -2205,6 +2262,148 @@ export default function SuperAdminPage() {
           </div>
         )}
       </main>
+
+      {/* CR / BATCH PILOT APPROVAL SUCCESS MODAL */}
+      <AnimatePresence>
+        {approvedSuccessData && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 font-sans">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-[#F7F7F5] dark:bg-[#111111] border border-[#111111] dark:border-[#333333] shadow-2xl max-w-md w-full p-6 relative rounded-none"
+            >
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setApprovedSuccessData(null);
+                  setCopiedSuccessCode(false);
+                  setCopiedSuccessMessage(false);
+                }}
+                className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* Header Badge & Title */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-11 h-11 bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center rounded-none shadow-sm">
+                  <Crown className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold font-mono tracking-widest uppercase text-emerald-600 dark:text-emerald-400">
+                    Verification Complete
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                    Batch Pilot Approved! 👑
+                  </h3>
+                </div>
+              </div>
+
+              {/* Student Details Card */}
+              <div className="p-3 bg-white dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 mb-4 text-xs space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-slate-500 dark:text-zinc-400">Pilot:</span>
+                  <span className="font-bold text-slate-900 dark:text-zinc-100">{approvedSuccessData.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500 dark:text-zinc-400">College:</span>
+                  <span className="font-medium text-slate-800 dark:text-zinc-200 text-right truncate max-w-[200px]">{getShortCollegeName(approvedSuccessData.college)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500 dark:text-zinc-400">Batch:</span>
+                  <span className="font-medium text-slate-800 dark:text-zinc-200">{approvedSuccessData.branch} · Sem {approvedSuccessData.semester}</span>
+                </div>
+                {approvedSuccessData.phone && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 dark:text-zinc-400">WhatsApp:</span>
+                    <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">{approvedSuccessData.phone}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* 6-digit Batch Code Highlight Box */}
+              <div className="p-4 bg-amber-500/5 dark:bg-amber-500/10 border-2 border-dashed border-amber-500/40 mb-4 flex flex-col items-center text-center">
+                <span className="text-[10px] font-mono uppercase font-bold tracking-wider text-amber-700 dark:text-amber-400 mb-1">
+                  OFFICIAL 6-DIGIT BATCH CODE
+                </span>
+                <div className="flex items-center gap-3 my-1">
+                  <span className="font-mono text-3xl font-extrabold tracking-widest text-slate-900 dark:text-white select-all">
+                    {approvedSuccessData.batchCode}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(approvedSuccessData.batchCode);
+                        setCopiedSuccessCode(true);
+                        showToast('Copied!', `Batch code "${approvedSuccessData.batchCode}" copied`, 'success');
+                        setTimeout(() => setCopiedSuccessCode(false), 2000);
+                      } catch {
+                        showToast('Error', 'Failed to copy code', 'error');
+                      }
+                    }}
+                    className="p-2 border border-slate-300 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors rounded-none cursor-pointer"
+                    title="Copy Code"
+                  >
+                    {copiedSuccessCode ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-slate-600 dark:text-zinc-300" />}
+                  </button>
+                </div>
+                <span className="text-[11px] text-slate-500 dark:text-zinc-400">
+                  Students use this code to join & view schedule updates
+                </span>
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col gap-2.5">
+                {approvedSuccessData.phone ? (
+                  <a
+                    href={getCRWhatsAppShareUrl(approvedSuccessData)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors rounded-none shadow-sm cursor-pointer"
+                  >
+                    <MessageSquare className="w-4 h-4 fill-white" />
+                    <span>Send Batch Code on WhatsApp</span>
+                  </a>
+                ) : null}
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const msg = getCRWhatsAppMessageText(approvedSuccessData);
+                      await navigator.clipboard.writeText(msg);
+                      setCopiedSuccessMessage(true);
+                      showToast('Copied!', 'WhatsApp message copied to clipboard', 'success');
+                      setTimeout(() => setCopiedSuccessMessage(false), 2000);
+                    } catch {
+                      showToast('Error', 'Failed to copy message', 'error');
+                    }
+                  }}
+                  className="w-full py-2.5 border border-slate-300 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-800 dark:text-zinc-200 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors rounded-none cursor-pointer"
+                >
+                  {copiedSuccessMessage ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                  <span>{copiedSuccessMessage ? 'Message Copied!' : 'Copy Full WhatsApp Message'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setApprovedSuccessData(null);
+                    setCopiedSuccessCode(false);
+                    setCopiedSuccessMessage(false);
+                  }}
+                  className="w-full py-2.5 bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-black font-bold text-xs uppercase tracking-wider transition-colors rounded-none cursor-pointer mt-1"
+                >
+                  Done
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* CREATE / EDIT CAMPAIGN MODAL */}
       <AnimatePresence>

@@ -19,6 +19,7 @@ export interface StudentProfile {
   avatarUrl?: string;
   createdAt: string;
   batchKey?: string;
+  batchCode?: string;
   isBatchSynced?: boolean;
   role?: AdminRole;
   isPro?: boolean;

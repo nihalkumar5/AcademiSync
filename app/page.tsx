@@ -7,6 +7,7 @@ import { MobileNav } from '@/components/layout/MobileNav';
 import { Header } from '@/components/layout/Header';
 import { CommandPalette } from '@/components/layout/CommandPalette';
 import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
+import { BatchApprovedModal } from '@/components/batch/BatchApprovedModal';
 import { Toast } from '@/components/ui/Toast';
 import { IntersemesterLogo } from '@/components/ui/IntersemesterLogo';
 import { SplashScreen } from '@capacitor/splash-screen';
@@ -405,6 +406,7 @@ export default function AppHome() {
       {/* Overlays & Modals */}
       <CommandPalette />
       <OnboardingModal />
+      <BatchApprovedModal />
       <Toast />
       {showHolidayAnimation && <HolidayBalloons />}
 
