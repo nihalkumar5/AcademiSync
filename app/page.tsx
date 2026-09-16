@@ -247,7 +247,7 @@ export default function AppHome() {
       const params = new URLSearchParams(window.location.search);
       const inviteParam = params.get('invite');
       if (inviteParam && inviteParam !== profile.batchKey) {
-        if (Capacitor.isNativePlatform() && !isSignedIn) {
+        if (!isSignedIn) {
           try {
             localStorage.setItem('pending_join_invite', inviteParam);
           } catch (_) {}

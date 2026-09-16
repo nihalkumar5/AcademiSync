@@ -211,19 +211,8 @@ export const SettingsView: React.FC = () => {
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const cleanCollege = college.trim();
-    const cleanProg = getCanonicalProgramme(programme.trim());
-    const cleanBranch = branch.trim();
-    const cleanSem = Number(semester);
-    const cleanEmail = email.trim();
 
-    if (!cleanCollege) {
-      showToast('College Required', 'Please select your verified university from the SheerID directory.', 'error');
-      setIsChangingCollege(true);
-      setShowCollegeDropdown(true);
-      return;
-    }
+    const cleanEmail = email.trim();
 
     if (!cleanEmail) {
       showToast('Email Required', 'Please enter your academic or personal email address.', 'error');
@@ -235,12 +224,6 @@ export const SettingsView: React.FC = () => {
       return;
     }
 
-    const hasAcademicChanges = 
-      cleanCollege !== profile.college ||
-      cleanProg !== profile.programme ||
-      cleanBranch !== profile.branch ||
-      cleanSem !== profile.semester;
-
     const cleanSec = normalizeSection(section);
     const savedFields = {
       name: name.trim(),
@@ -249,6 +232,35 @@ export const SettingsView: React.FC = () => {
       year: Number(year),
       section: cleanSec || profile.section || '',
     };
+
+    if (profile.isBatchSynced) {
+      updateProfile({
+        ...profile,
+        ...savedFields,
+        isBatchSynced: true,
+      });
+      showToast('Profile Saved', 'Personal & roll details updated successfully', 'success');
+      setIsEditingAcademic(false);
+      return;
+    }
+
+    const cleanCollege = college.trim();
+    const cleanProg = getCanonicalProgramme(programme.trim());
+    const cleanBranch = branch.trim();
+    const cleanSem = Number(semester);
+
+    if (!cleanCollege) {
+      showToast('College Required', 'Please select your verified university from the SheerID directory.', 'error');
+      setIsChangingCollege(true);
+      setShowCollegeDropdown(true);
+      return;
+    }
+
+    const hasAcademicChanges = 
+      cleanCollege !== profile.college ||
+      cleanProg !== profile.programme ||
+      cleanBranch !== profile.branch ||
+      cleanSem !== profile.semester;
 
     if (hasAcademicChanges) {
       const cleanCollegeKey = getShortCollegeName(cleanCollege).toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -574,296 +586,382 @@ export const SettingsView: React.FC = () => {
                   await handleSaveProfile(e); 
                   setIsEditingAcademic(false); 
                 }} className="flex flex-col gap-5">
-                  {/* Full Name */}
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Full Name</label>
-                    <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
-                      <User className="w-4 h-4 text-[#A0A0A0] shrink-0" />
-                      <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Your full name"
-                        required
-                        className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
-                      />
-                    </div>
-                  </div>
-
-                  {/* College Name (Strict Verification) */}
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">College / University</label>
-                    <div className="relative w-full">
-                      {college && !isChangingCollege ? (
-                        <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
-                          <div className="flex items-center gap-2.5 overflow-hidden">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                            <span className="text-[13px] font-bold text-[#111111] dark:text-[#F4F4F6] truncate">{college}</span>
+                  {profile.isBatchSynced ? (
+                    <>
+                      {/* Locked Batch Banner */}
+                      <div className="flex items-center justify-between p-3.5 bg-emerald-500/10 border border-emerald-500/25">
+                        <div className="flex items-center gap-2.5">
+                          <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <div className="flex flex-col">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                              Synced with Batch
+                            </span>
+                            <span className="text-[13px] font-semibold text-[#111111] dark:text-[#F4F4F6]">
+                              {profile.college || college} · {profile.branch || branch || profile.programme} (Sem {profile.semester || semester})
+                            </span>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsChangingCollege(true);
-                              setShowCollegeDropdown(true);
-                            }}
-                            className="text-[11px] font-bold text-[#111111] dark:text-[#F4F4F6] hover:underline uppercase tracking-wider shrink-0 ml-3 cursor-pointer"
-                          >
-                            Change
-                          </button>
                         </div>
-                      ) : (
-                        <div className="relative">
-                          <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#111111] dark:border-white/30">
-                            <Building2 className="w-4 h-4 text-[#888888] shrink-0" />
+                        <span className="text-[9.5px] font-mono font-bold uppercase bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 px-2 py-0.5">
+                          Locked
+                        </span>
+                      </div>
+
+                      {/* Full Name */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Full Name</label>
+                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
+                          <User className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                          <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Your full name"
+                            required
+                            className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Roll Number & Email */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Roll Number</label>
+                          <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
+                            <Hash className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
                             <input
                               type="text"
-                              value={collegeSearchInput}
-                              onChange={(e) => {
-                                setCollegeSearchInput(e.target.value);
-                                setShowCollegeDropdown(true);
-                              }}
-                              onFocus={() => setShowCollegeDropdown(true)}
-                              placeholder="Search verified college e.g. IIIT Naya Raipur, VIT, IIT..."
-                              className="w-full bg-transparent text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
-                              autoFocus
+                              value={rollNumber}
+                              onChange={(e) => setRollNumber(e.target.value)}
+                              placeholder="e.g. 23101004"
+                              required
+                              className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
                             />
-                            {college && (
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Institute Email</label>
+                          <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
+                            <Mail className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
+                            <input
+                              type="email"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              placeholder="name@college.edu.in"
+                              required
+                              className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Section (Optional) */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Section (Optional)</label>
+                        <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[44px]">
+                          <input
+                            type="text"
+                            value={section}
+                            onChange={(e) => setSection(e.target.value)}
+                            placeholder="e.g. A, B"
+                            className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
+                          />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Full Name */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Full Name</label>
+                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
+                          <User className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                          <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Your full name"
+                            required
+                            className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* College Name (Strict Verification) */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">College / University</label>
+                        <div className="relative w-full">
+                          {college && !isChangingCollege ? (
+                            <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
+                              <div className="flex items-center gap-2.5 overflow-hidden">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                                <span className="text-[13px] font-bold text-[#111111] dark:text-[#F4F4F6] truncate">{college}</span>
+                              </div>
                               <button
                                 type="button"
-                                onClick={() => setIsChangingCollege(false)}
-                                className="text-[11px] font-bold text-slate-400 hover:text-slate-600 uppercase shrink-0"
+                                onClick={() => {
+                                  setIsChangingCollege(true);
+                                  setShowCollegeDropdown(true);
+                                }}
+                                className="text-[11px] font-bold text-[#111111] dark:text-[#F4F4F6] hover:underline uppercase tracking-wider shrink-0 ml-3 cursor-pointer"
                               >
-                                Cancel
+                                Change
                               </button>
-                            )}
-                          </div>
-                          {showCollegeDropdown && (
-                            <div className="absolute top-full left-0 w-full mt-1.5 max-h-60 overflow-y-auto bg-white dark:bg-[#121317] border border-slate-200 dark:border-white/[0.1] shadow-2xl rounded-none z-50 divide-y divide-slate-100 dark:divide-white/[0.06]">
-                              <div className="p-2 bg-slate-50 dark:bg-zinc-900/80 text-[10.5px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between sticky top-0 backdrop-blur-sm">
-                                <span>{isLoadingColleges ? 'Searching verified directory...' : 'Select Your University'}</span>
-                                <span className="text-[9px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold">SheerID Verified</span>
-                              </div>
-
-                              {suggestedColleges.length > 0 ? (
-                                suggestedColleges.map((item) => (
+                            </div>
+                          ) : (
+                            <div className="relative">
+                              <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#111111] dark:border-white/30">
+                                <Building2 className="w-4 h-4 text-[#888888] shrink-0" />
+                                <input
+                                  type="text"
+                                  value={collegeSearchInput}
+                                  onChange={(e) => {
+                                    setCollegeSearchInput(e.target.value);
+                                    setShowCollegeDropdown(true);
+                                  }}
+                                  onFocus={() => setShowCollegeDropdown(true)}
+                                  placeholder="Search verified college e.g. IIIT Naya Raipur, VIT, IIT..."
+                                  className="w-full bg-transparent text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
+                                  autoFocus
+                                />
+                                {college && (
                                   <button
-                                    key={item.id}
                                     type="button"
-                                    onMouseDown={() => {
-                                      setCollege(item.name);
-                                      setIsChangingCollege(false);
-                                      setShowCollegeDropdown(false);
-                                      setCollegeSearchInput('');
-                                    }}
-                                    className="w-full px-3.5 py-2.5 hover:bg-indigo-50/70 dark:hover:bg-indigo-950/40 text-left transition-colors cursor-pointer flex flex-col"
+                                    onClick={() => setIsChangingCollege(false)}
+                                    className="text-[11px] font-bold text-slate-400 hover:text-slate-600 uppercase shrink-0"
                                   >
-                                    <span className="text-[13px] font-bold text-slate-900 dark:text-white leading-snug">
-                                      {item.name}
-                                    </span>
-                                    {item.state && (
-                                      <span className="text-[11px] text-slate-500 dark:text-zinc-400">
-                                        {item.state}
-                                      </span>
-                                    )}
+                                    Cancel
                                   </button>
-                                ))
-                              ) : (
-                                !isLoadingColleges && (
-                                  <div className="p-4 text-center text-[12px] text-slate-500 dark:text-zinc-400">
-                                    No matching institutions found. Try typing college name or acronym (e.g. &ldquo;IIIT&rdquo;, &ldquo;IIT&rdquo;, &ldquo;NIT&rdquo;).
+                                )}
+                              </div>
+                              {showCollegeDropdown && (
+                                <div className="absolute top-full left-0 w-full mt-1.5 max-h-60 overflow-y-auto bg-white dark:bg-[#121317] border border-slate-200 dark:border-white/[0.1] shadow-2xl rounded-none z-50 divide-y divide-slate-100 dark:divide-white/[0.06]">
+                                  <div className="p-2 bg-slate-50 dark:bg-zinc-900/80 text-[10.5px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between sticky top-0 backdrop-blur-sm">
+                                    <span>{isLoadingColleges ? 'Searching verified directory...' : 'Select Your University'}</span>
+                                    <span className="text-[9px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold">SheerID Verified</span>
                                   </div>
-                                )
+
+                                  {suggestedColleges.length > 0 ? (
+                                    suggestedColleges.map((item) => (
+                                      <button
+                                        key={item.id}
+                                        type="button"
+                                        onMouseDown={() => {
+                                          setCollege(item.name);
+                                          setIsChangingCollege(false);
+                                          setShowCollegeDropdown(false);
+                                          setCollegeSearchInput('');
+                                        }}
+                                        className="w-full px-3.5 py-2.5 hover:bg-indigo-50/70 dark:hover:bg-indigo-950/40 text-left transition-colors cursor-pointer flex flex-col"
+                                      >
+                                        <span className="text-[13px] font-bold text-slate-900 dark:text-white leading-snug">
+                                          {item.name}
+                                        </span>
+                                        {item.state && (
+                                          <span className="text-[11px] text-slate-500 dark:text-zinc-400">
+                                            {item.state}
+                                          </span>
+                                        )}
+                                      </button>
+                                    ))
+                                  ) : (
+                                    !isLoadingColleges && (
+                                      <div className="p-4 text-center text-[12px] text-slate-500 dark:text-zinc-400">
+                                        No matching institutions found. Try typing college name or acronym (e.g. &ldquo;IIIT&rdquo;, &ldquo;IIT&rdquo;, &ldquo;NIT&rdquo;).
+                                      </div>
+                                    )
+                                  )}
+                                </div>
                               )}
                             </div>
                           )}
                         </div>
-                      )}
-                    </div>
-                    <p className="text-[11px] text-[#A0A0A0] font-medium mt-0.5">
-                      Select your official university from the verified directory to ensure seamless batch syncing.
-                    </p>
-                  </div>
-
-                  {/* Roll Number & Email */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Roll Number</label>
-                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
-                        <Hash className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
-                        <input
-                          type="text"
-                          value={rollNumber}
-                          onChange={(e) => setRollNumber(e.target.value)}
-                          required
-                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
-                        />
+                        <p className="text-[11px] text-[#A0A0A0] font-medium mt-0.5">
+                          Select your official university from the verified directory to ensure seamless batch syncing.
+                        </p>
                       </div>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Institute Email</label>
-                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
-                        <Mail className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
-                        <input
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          required
-                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Programme & Branch */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Degree / Programme</label>
-                      <div className="relative w-full">
-                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
-                          <GraduationCap className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
-                          <input
-                            type="text"
-                            value={programme}
-                            onChange={(e) => {
-                              setProgramme(e.target.value);
-                              setShowProgrammeDropdown(true);
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                const matches = filterProgrammes(programme);
-                                if (matches.length > 0) {
-                                  e.preventDefault();
-                                  setProgramme(matches[0]);
-                                  setShowProgrammeDropdown(false);
-                                }
-                              }
-                            }}
-                            onFocus={() => setShowProgrammeDropdown(true)}
-                            onBlur={() => setTimeout(() => setShowProgrammeDropdown(false), 200)}
-                            placeholder="e.g. B.Tech, M.Tech, BCA"
-                            required
-                            className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
-                          />
+                      {/* Roll Number & Email */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Roll Number</label>
+                          <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
+                            <Hash className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
+                            <input
+                              type="text"
+                              value={rollNumber}
+                              onChange={(e) => setRollNumber(e.target.value)}
+                              required
+                              className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
+                            />
+                          </div>
                         </div>
-                        {showProgrammeDropdown && (
-                          <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-[#FFFFFF] dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] shadow-2xl z-50">
-                            {filterProgrammes(programme).length > 0 ? (
-                              filterProgrammes(programme).map(p => (
-                                <div
-                                  key={p}
-                                  onMouseDown={() => { setProgramme(p); setShowProgrammeDropdown(false); }}
-                                  className="px-4 py-2 hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] border-b border-[#D8D8D8] dark:border-white/[0.06] last:border-0"
-                                >
-                                  {p}
-                                </div>
-                              ))
-                            ) : (
-                              <div className="px-4 py-2 text-xs text-[#6F6F6F] dark:text-[#94A3B8] font-mono">
-                                Press Enter to use custom degree
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Institute Email</label>
+                          <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
+                            <Mail className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
+                            <input
+                              type="email"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              required
+                              className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Programme & Branch */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Degree / Programme</label>
+                          <div className="relative w-full">
+                            <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
+                              <GraduationCap className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
+                              <input
+                                type="text"
+                                value={programme}
+                                onChange={(e) => {
+                                  setProgramme(e.target.value);
+                                  setShowProgrammeDropdown(true);
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    const matches = filterProgrammes(programme);
+                                    if (matches.length > 0) {
+                                      e.preventDefault();
+                                      setProgramme(matches[0]);
+                                      setShowProgrammeDropdown(false);
+                                    }
+                                  }
+                                }}
+                                onFocus={() => setShowProgrammeDropdown(true)}
+                                onBlur={() => setTimeout(() => setShowProgrammeDropdown(false), 200)}
+                                placeholder="e.g. B.Tech, M.Tech, BCA"
+                                required
+                                className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
+                              />
+                            </div>
+                            {showProgrammeDropdown && (
+                              <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-[#FFFFFF] dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] shadow-2xl z-50">
+                                {filterProgrammes(programme).length > 0 ? (
+                                  filterProgrammes(programme).map(p => (
+                                    <div
+                                      key={p}
+                                      onMouseDown={() => { setProgramme(p); setShowProgrammeDropdown(false); }}
+                                      className="px-4 py-2 hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] border-b border-[#D8D8D8] dark:border-white/[0.06] last:border-0"
+                                    >
+                                      {p}
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="px-4 py-2 text-xs text-[#6F6F6F] dark:text-[#94A3B8] font-mono">
+                                    Press Enter to use custom degree
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Major / Branch</label>
-                      <div className="relative w-full">
-                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
-                          <Building2 className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
-                          <input
-                            type="text"
-                            value={branch}
-                            onChange={(e) => {
-                              setBranch(e.target.value);
-                              setShowBranchDropdown(true);
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                const matches = filterBranches(branch);
-                                if (matches.length > 0) {
-                                  e.preventDefault();
-                                  setBranch(matches[0]);
-                                  setShowBranchDropdown(false);
-                                }
-                              }
-                            }}
-                            onFocus={() => setShowBranchDropdown(true)}
-                            onBlur={() => setTimeout(() => setShowBranchDropdown(false), 200)}
-                            placeholder="e.g. Computer Science"
-                            required
-                            className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
-                          />
                         </div>
-                        {showBranchDropdown && (
-                          <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-[#FFFFFF] dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] shadow-2xl z-50">
-                            {filterBranches(branch).length > 0 ? (
-                              filterBranches(branch).map(b => (
-                                <div
-                                  key={b}
-                                  onMouseDown={() => { setBranch(b); setShowBranchDropdown(false); }}
-                                  className="px-4 py-2 hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] border-b border-[#D8D8D8] dark:border-white/[0.06] last:border-0"
-                                >
-                                  {b}
-                                </div>
-                              ))
-                            ) : (
-                              <div className="px-4 py-2 text-xs text-[#6F6F6F] dark:text-[#94A3B8] font-mono">
-                                Press Enter to use custom branch
+
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Major / Branch</label>
+                          <div className="relative w-full">
+                            <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
+                              <Building2 className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
+                              <input
+                                type="text"
+                                value={branch}
+                                onChange={(e) => {
+                                  setBranch(e.target.value);
+                                  setShowBranchDropdown(true);
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    const matches = filterBranches(branch);
+                                    if (matches.length > 0) {
+                                      e.preventDefault();
+                                      setBranch(matches[0]);
+                                      setShowBranchDropdown(false);
+                                    }
+                                  }
+                                }}
+                                onFocus={() => setShowBranchDropdown(true)}
+                                onBlur={() => setTimeout(() => setShowBranchDropdown(false), 200)}
+                                placeholder="e.g. Computer Science"
+                                required
+                                className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
+                              />
+                            </div>
+                            {showBranchDropdown && (
+                              <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-[#FFFFFF] dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] shadow-2xl z-50">
+                                {filterBranches(branch).length > 0 ? (
+                                  filterBranches(branch).map(b => (
+                                    <div
+                                      key={b}
+                                      onMouseDown={() => { setBranch(b); setShowBranchDropdown(false); }}
+                                      className="px-4 py-2 hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] border-b border-[#D8D8D8] dark:border-white/[0.06] last:border-0"
+                                    >
+                                      {b}
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="px-4 py-2 text-xs text-[#6F6F6F] dark:text-[#94A3B8] font-mono">
+                                    Press Enter to use custom branch
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
-                        )}
+                        </div>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Year, Semester, Section */}
-                  <div className="grid grid-cols-3 gap-3 items-start">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8] h-4 flex items-center">Year</label>
-                      <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[44px]">
-                        <CalendarDays className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
-                        <input
-                          type="number"
-                          min="1"
-                          max="7"
-                          value={year}
-                          onChange={(e) => setYear(Number(e.target.value))}
-                          required
-                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
-                        />
+                      {/* Year, Semester, Section */}
+                      <div className="grid grid-cols-3 gap-3 items-start">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8] h-4 flex items-center">Year</label>
+                          <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[44px]">
+                            <CalendarDays className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
+                            <input
+                              type="number"
+                              min="1"
+                              max="7"
+                              value={year}
+                              onChange={(e) => setYear(Number(e.target.value))}
+                              required
+                              className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8] h-4 flex items-center">Semester</label>
+                          <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[44px]">
+                            <input
+                              type="number"
+                              min="1"
+                              max="14"
+                              value={semester}
+                              onChange={(e) => setSemester(Number(e.target.value))}
+                              placeholder="1-14"
+                              required
+                              className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8] h-4 flex items-center">Section</label>
+                          <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[44px]">
+                            <input
+                              type="text"
+                              value={section}
+                              onChange={(e) => setSection(e.target.value)}
+                              placeholder="e.g. A, B"
+                              className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
+                            />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8] h-4 flex items-center">Semester</label>
-                      <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[44px]">
-                        <input
-                          type="number"
-                          min="1"
-                          max="14"
-                          value={semester}
-                          onChange={(e) => setSemester(Number(e.target.value))}
-                          placeholder="1-14"
-                          required
-                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8] h-4 flex items-center">Section</label>
-                      <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[44px]">
-                        <input
-                          type="text"
-                          value={section}
-                          onChange={(e) => setSection(e.target.value)}
-                          placeholder="e.g. A, B"
-                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    </>
+                  )}
 
                   <div className="flex items-center gap-3 pt-3">
                     <button type="submit" className="bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] px-5 py-2.5 text-[13px] font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-sm">

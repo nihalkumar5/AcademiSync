@@ -92,6 +92,15 @@ export const OnboardingModal = () => {
       code = code.split('/').pop() || code;
     }
 
+    if (!isSignedIn) {
+      try {
+        localStorage.setItem('pending_join_invite', code);
+      } catch (_) {}
+      showToast('Login Required', 'Please sign in or create an account to join this batch.', 'info');
+      window.location.href = '/sign-in';
+      return;
+    }
+
     setIsJoiningCode(true);
     try {
       try {

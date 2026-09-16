@@ -545,34 +545,104 @@ export default function SuperAdminPage() {
 
   const handleApproveCRRequest = async (req: any) => {
     try {
-      showToast('Approving...', `Processing approval for ${req.name}...`, 'info');
+      showToast('Approving...', `Processing Batch Pilot approval for ${req.name}...`, 'info');
 
-      const res = await fetch('/api/admin/approve-cr', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          requestId: req.id,
-          adminId: user?.id,
-        }),
-      });
+      // 1. Determine or generate 6-character Batch Code
+      const batchRef = doc(db, 'shared_timetables', req.batchKey);
+      const batchSnap = await getDoc(batchRef);
+      let batchCode = Math.random().toString(36).substring(2, 8).toUpperCase();
 
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to approve CR request');
+      if (batchSnap.exists()) {
+        const existingBatch = batchSnap.data();
+        batchCode = existingBatch.inviteCode || batchCode;
+        await updateDoc(batchRef, {
+          inviteCode: batchCode,
+          crUserIds: arrayUnion(req.userId),
+          crEmails: arrayUnion(req.email || ''),
+          updatedAt: new Date().toISOString(),
+        });
+      } else {
+        await setDoc(batchRef, {
+          id: req.batchKey,
+          college: req.college,
+          programme: req.programme || 'B.Tech',
+          branch: req.branch,
+          semester: req.semester,
+          creatorId: req.userId,
+          creatorName: req.name,
+          creatorEmail: req.email,
+          crUserIds: [req.userId],
+          crEmails: req.email ? [req.email] : [],
+          inviteCode: batchCode,
+          subjects: [],
+          timetable: [],
+          studentCount: 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
       }
 
-      const generatedCode = data.batchCode;
+      // 2. Update CR Request document
+      await updateDoc(doc(db, 'cr_requests', req.id), {
+        status: 'approved',
+        inviteCode: batchCode,
+        approvedAt: new Date().toISOString(),
+        approvedBy: user?.id || 'admin',
+      });
 
-      showToast('CR Approved! 👑', `${req.name} is now verified CR for ${req.branch} (Sem ${req.semester}). Code: ${generatedCode}`, 'success');
+      // 3. Update User document with CR role, batchKey, batchCode, and in-app notification
+      if (req.userId) {
+        try {
+          const userRef = doc(db, 'users', req.userId);
+          const userSnap = await getDoc(userRef);
+          let existingNotifications: any[] = [];
+          if (userSnap.exists()) {
+            const uData = userSnap.data();
+            existingNotifications = Array.isArray(uData.notifications) ? uData.notifications : [];
+          }
+          const newNotification = {
+            id: `approved_${Date.now()}`,
+            title: '👑 Batch Pilot Approved!',
+            body: `Your batch is approved! Official Batch Code: ${batchCode}. Tap to copy and invite your classmates!`,
+            type: 'batch_approved',
+            batchCode,
+            batchKey: req.batchKey,
+            createdAt: new Date().toISOString(),
+            read: false,
+          };
+          await updateDoc(userRef, {
+            'profile.role': 'cr',
+            'profile.isBatchSynced': true,
+            'profile.batchKey': req.batchKey,
+            'profile.college': req.college,
+            'profile.branch': req.branch,
+            'profile.semester': req.semester,
+            'profile.batchCode': batchCode,
+            notifications: [newNotification, ...existingNotifications].slice(0, 50),
+            lastUpdated: Date.now(),
+          });
+        } catch (uErr) {
+          console.warn('Could not update user profile doc directly:', uErr);
+        }
+      }
+
+      // 4. Background push notification (best-effort, non-blocking)
+      fetch('/api/admin/approve-cr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId: req.id, adminId: user?.id }),
+      }).catch(() => {});
+
+      showToast('CR Approved! 👑', `${req.name} is now verified CR for ${req.branch} (Sem ${req.semester}). Code: ${batchCode}`, 'success');
 
       setApprovedSuccessData({
-        name: data.name || req.name,
-        phone: data.phone || req.phone,
-        college: data.college || req.college,
-        branch: data.branch || req.branch,
-        semester: data.semester || req.semester,
-        batchCode: generatedCode,
-        batchKey: data.batchKey || req.batchKey,
+        name: req.name,
+        phone: req.phone,
+        college: req.college,
+        branch: req.branch,
+        semester: req.semester,
+        batchCode: batchCode,
+        batchKey: req.batchKey,
       });
     } catch (e: any) {
       console.error('Error approving CR request:', e);

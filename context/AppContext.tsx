@@ -154,7 +154,7 @@ export interface AppContextType {
   currentBatchData: any | null;
   searchBatchTimetable: (college: string, programme: string, branch: string, semester: number, section?: string) => Promise<any | null>;
   fetchCollegeBatches: (college: string) => Promise<any[]>;
-  joinBatchTimetable: (batchKey: string, providedCode?: string, isSilent?: boolean) => Promise<void>;
+  joinBatchTimetable: (batchKey: string, providedCode?: string, isSilent?: boolean, customIdentity?: { name?: string; email?: string; rollNumber?: string; section?: string }) => Promise<void>;
   shareTimetableWithBatch: () => Promise<string>;
   regenerateBatchCode: () => Promise<string>;
   disconnectBatchTimetable: () => Promise<void>;
@@ -2491,7 +2491,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  const joinBatchTimetable = async (batchKeyOrCode: string, providedCode?: string, isSilent = false) => {
+  const joinBatchTimetable = async (
+    batchKeyOrCode: string, 
+    providedCode?: string, 
+    isSilent = false,
+    customIdentity?: { name?: string; email?: string; rollNumber?: string; section?: string }
+  ) => {
     // Clean pending invite immediately so it never re-triggers unexpectedly on login
     try {
       localStorage.removeItem('pending_join_invite');
@@ -2681,20 +2686,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const targetSection = data.section || keyFallbacks.section || profile.section || 'A';
 
       // Update profile fields to show it's synced with full academic details
-      const resolvedName = (profile.name && profile.name !== 'Student')
-        ? profile.name
-        : (user?.fullName || profile.name || 'Student');
-      const resolvedEmail = profile.email || userEmail || '';
+      const resolvedName = (customIdentity?.name && customIdentity.name.trim()) ||
+        (profile.name && profile.name !== 'Student' ? profile.name : (user?.fullName || profile.name || 'Student'));
+      const resolvedEmail = (customIdentity?.email && customIdentity.email.trim()) ||
+        profile.email || userEmail || '';
+      const resolvedRollNumber = (customIdentity?.rollNumber !== undefined ? customIdentity.rollNumber.trim() : profile.rollNumber) || '';
 
       const updatedProfile: StudentProfile = {
         ...profile,
         name: resolvedName,
         email: resolvedEmail,
+        rollNumber: resolvedRollNumber,
         college: targetCollege,
         programme: targetProgramme,
         branch: targetBranch,
         semester: targetSemester,
-        section: normalizeSection(targetSection) || profile.section || '',
+        section: normalizeSection(customIdentity?.section || targetSection) || profile.section || '',
         batchKey: batchKey,
         isBatchSynced: true,
         role: assignedRole,
