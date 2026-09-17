@@ -419,14 +419,28 @@ export default function SuperAdminPage() {
         const name = (p.name || '').trim().toLowerCase();
         const college = (p.college || '').trim().toLowerCase();
 
-        // 1. Ghost / Empty Demo accounts purge
-        if (!email && !roll && (!name || name === 'student' || name === 'anonymous' || college.includes('demo'))) {
+        const hasBatch = !!(p.batchKey || p.batchCode || p.isBatchSynced || u.batchKey);
+        const hasFCM = !!u.fcmToken;
+        const isDemo = college.includes('demo');
+        const hasActiveProfile = !!p.onboardingCompleted || (!!college && !isDemo && !!p.branch);
+
+        // 1. Ghost / Empty Demo accounts purge (Only truly abandoned bounce sessions or demo entries)
+        const isGhost = isDemo || (
+          !email && 
+          !roll && 
+          (!name || name === 'student' || name === 'anonymous') && 
+          !hasBatch && 
+          !hasFCM && 
+          !hasActiveProfile
+        );
+
+        if (isGhost) {
           await deleteDoc(doc(db, 'users', u.id)).catch(console.error);
           ghostCount++;
           continue;
         }
 
-        const key = email || (roll ? `roll_${roll}` : null);
+        const key = email || (roll ? `roll_${roll}` : null) || (u.fcmToken ? `fcm_${u.fcmToken}` : null);
         if (key) {
           if (!byKey.has(key)) byKey.set(key, []);
           byKey.get(key)!.push(u);
@@ -884,12 +898,27 @@ export default function SuperAdminPage() {
       const name = (p.name || '').trim().toLowerCase();
       const college = (p.college || '').trim().toLowerCase();
 
-      // Filter out abandoned ghost / demo test accounts
-      if (!email && !roll && (!name || name === 'student' || name === 'anonymous' || college.includes('demo'))) {
+      const hasBatch = !!(p.batchKey || p.batchCode || p.isBatchSynced || u.batchKey);
+      const hasFCM = !!u.fcmToken;
+      const isDemo = college.includes('demo');
+      const hasActiveProfile = !!p.onboardingCompleted || (!!college && !isDemo && !!p.branch);
+
+      // Filter out truly abandoned ghost / empty demo test accounts.
+      // A user is a ghost ONLY if they have no identity (no email/roll/custom name) AND no activity (no batch, no fcm, no real college onboarding).
+      const isGhost = isDemo || (
+        !email && 
+        !roll && 
+        (!name || name === 'student' || name === 'anonymous') && 
+        !hasBatch && 
+        !hasFCM && 
+        !hasActiveProfile
+      );
+
+      if (isGhost) {
         continue;
       }
 
-      const key = email || (roll ? `roll_${roll}` : null);
+      const key = email || (roll ? `roll_${roll}` : null) || (u.fcmToken ? `fcm_${u.fcmToken}` : null);
       if (key) {
         if (!byKey.has(key)) byKey.set(key, []);
         byKey.get(key)!.push(u);
@@ -973,7 +1002,8 @@ export default function SuperAdminPage() {
         (p.college || '').toLowerCase().includes(q) ||
         (p.rollNumber || '').toLowerCase().includes(q) ||
         (p.branch || '').toLowerCase().includes(q) ||
-        (p.programme || '').toLowerCase().includes(q)
+        (p.programme || '').toLowerCase().includes(q) ||
+        (p.batchCode || '').toLowerCase().includes(q)
       );
     });
   }, [deduplicatedUsersList, searchUserQuery]);
@@ -1568,14 +1598,18 @@ export default function SuperAdminPage() {
                                     <tr key={u.id} className="hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors">
                                       <td className="p-3.5">
                                         <div className="flex items-center gap-2">
-                                          <div className="font-bold text-[13px] text-[#111111] dark:text-[#FFFFFF]">{p.name || 'Anonymous'}</div>
+                                          <div className="font-bold text-[13px] text-[#111111] dark:text-[#FFFFFF]">
+                                            {p.name && p.name.toLowerCase() !== 'student' ? p.name : (!p.email ? 'Student (Guest / No Name)' : (p.name || 'Anonymous'))}
+                                          </div>
                                           {currentRole === 'cr' && (
                                             <span className="px-1.5 py-0.2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[9px] font-bold uppercase tracking-wider font-mono">
                                               CR
                                             </span>
                                           )}
                                         </div>
-                                        <div className="text-[11px] font-mono text-[#6F6F6F]">{p.email || u.id}</div>
+                                        <div className="text-[11px] font-mono text-[#6F6F6F]">
+                                          {p.email || (p.batchCode ? `Batch Code: ${p.batchCode}` : u.id)}
+                                        </div>
                                       </td>
                                       <td className="p-3.5 max-w-[240px]">
                                         <div className="font-medium text-[#111111] dark:text-[#FFFFFF] truncate">
@@ -1654,14 +1688,18 @@ export default function SuperAdminPage() {
                                   <div className="flex items-start justify-between gap-2">
                                     <div className="flex flex-col">
                                       <div className="flex items-center gap-2">
-                                        <span className="font-bold text-[14px] text-[#111111] dark:text-[#FFFFFF]">{p.name || 'Anonymous'}</span>
+                                        <span className="font-bold text-[14px] text-[#111111] dark:text-[#FFFFFF]">
+                                          {p.name && p.name.toLowerCase() !== 'student' ? p.name : (!p.email ? 'Student (Guest / No Name)' : (p.name || 'Anonymous'))}
+                                        </span>
                                         {currentRole === 'cr' && (
                                           <span className="px-1.5 py-0.2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[9px] font-bold font-mono uppercase">
                                             CR
                                           </span>
                                         )}
                                       </div>
-                                      <span className="text-[11px] font-mono text-[#6F6F6F]">{p.email || u.id}</span>
+                                      <span className="text-[11px] font-mono text-[#6F6F6F]">
+                                        {p.email || (p.batchCode ? `Batch Code: ${p.batchCode}` : u.id)}
+                                      </span>
                                     </div>
                                     <div className="text-right">
                                       <span className="text-[10px] text-[#A0A0A0] font-mono block">Joined {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}</span>
