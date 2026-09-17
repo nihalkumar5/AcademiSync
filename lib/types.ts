@@ -105,6 +105,7 @@ export interface Homework {
   completedAt?: string;
   isBatchShared?: boolean;
   proposalId?: string;
+  updatedAt?: string;
 }
 
 export interface BatchProposedTask {

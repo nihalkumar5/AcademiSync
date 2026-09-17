@@ -77,6 +77,110 @@ export function sanitizeForFirestore<T>(data: T): T {
   return clean;
 }
 
+export const normalizeHomeworkTitle = (title?: string): string => (title || '').trim().toLowerCase();
+
+export const isSameHomeworkDeadline = (d1?: string, d2?: string): boolean => {
+  if (!d1 && !d2) return true;
+  if (!d1 || !d2) return false;
+  const t1 = new Date(d1).getTime();
+  const t2 = new Date(d2).getTime();
+  if (!isNaN(t1) && !isNaN(t2)) return t1 === t2;
+  return d1.trim() === d2.trim();
+};
+
+export const areHomeworksSame = (h1: Homework, h2: Homework): boolean => {
+  if (h1.id && h2.id && h1.id === h2.id) return true;
+  if (h1.proposalId && h2.proposalId && h1.proposalId === h2.proposalId) return true;
+  const t1 = normalizeHomeworkTitle(h1.title);
+  const t2 = normalizeHomeworkTitle(h2.title);
+  if (t1 && t2 && t1 === t2 && isSameHomeworkDeadline(h1.deadline, h2.deadline)) {
+    return true;
+  }
+  return false;
+};
+
+export const mergeHomeworkLists = (localList: Homework[] = [], remoteList: Homework[] = []): Homework[] => {
+  const safeLocal = Array.isArray(localList) ? [...localList] : [];
+  const safeRemote = Array.isArray(remoteList) ? remoteList : [];
+
+  const merged = [...safeLocal];
+
+  for (const remoteHw of safeRemote) {
+    if (!remoteHw || !remoteHw.title) continue;
+
+    const localIdx = merged.findIndex((l) => areHomeworksSame(l, remoteHw));
+
+    if (localIdx >= 0) {
+      const localHw = merged[localIdx];
+
+      // Smart conflict resolution between local and remote versions of the same task:
+      let finalStatus: HomeworkStatus = localHw.status;
+      let finalCompletedAt: string | undefined = localHw.completedAt;
+
+      const localDone = localHw.status === 'Completed';
+      const remoteDone = remoteHw.status === 'Completed';
+
+      if (localDone && remoteDone) {
+        finalStatus = 'Completed';
+        finalCompletedAt = localHw.completedAt || remoteHw.completedAt || new Date().toISOString();
+      } else if (localDone && !remoteDone) {
+        // Local is completed, remote is not.
+        // Check if remote has an explicit newer updatedAt that occurred AFTER local was completed.
+        const localDoneTime = localHw.completedAt ? new Date(localHw.completedAt).getTime() : (localHw.updatedAt ? new Date(localHw.updatedAt).getTime() : 0);
+        const remoteUpdateTime = remoteHw.updatedAt ? new Date(remoteHw.updatedAt).getTime() : 0;
+
+        if (remoteUpdateTime > 0 && localDoneTime > 0 && remoteUpdateTime > localDoneTime) {
+          // User explicitly reopened/reset this task on another device after local completion
+          finalStatus = remoteHw.status;
+          finalCompletedAt = undefined;
+        } else {
+          // CRITICAL: Preserve local completed status! Remote snapshot is stale or in-flight.
+          finalStatus = 'Completed';
+          finalCompletedAt = localHw.completedAt || new Date().toISOString();
+        }
+      } else if (!localDone && remoteDone) {
+        // Remote was completed on another device
+        const remoteDoneTime = remoteHw.completedAt ? new Date(remoteHw.completedAt).getTime() : (remoteHw.updatedAt ? new Date(remoteHw.updatedAt).getTime() : 0);
+        const localUpdateTime = localHw.updatedAt ? new Date(localHw.updatedAt).getTime() : 0;
+
+        if (localUpdateTime > 0 && remoteDoneTime > 0 && localUpdateTime > remoteDoneTime) {
+          // User explicitly reset it locally after remote was marked completed
+          finalStatus = localHw.status;
+          finalCompletedAt = undefined;
+        } else {
+          // Adopt remote completion
+          finalStatus = 'Completed';
+          finalCompletedAt = remoteHw.completedAt || new Date().toISOString();
+        }
+      } else {
+        // Neither is completed: newer updatedAt wins status
+        const localTime = localHw.updatedAt ? new Date(localHw.updatedAt).getTime() : 0;
+        const remoteTime = remoteHw.updatedAt ? new Date(remoteHw.updatedAt).getTime() : 0;
+        finalStatus = remoteTime > localTime ? remoteHw.status : localHw.status;
+      }
+
+      // Merge metadata (preserve proposalId, batch status, attachments, newest description)
+      merged[localIdx] = {
+        ...remoteHw,
+        ...localHw,
+        id: localHw.id || remoteHw.id,
+        status: finalStatus,
+        completedAt: finalCompletedAt,
+        proposalId: localHw.proposalId || remoteHw.proposalId,
+        isBatchShared: localHw.isBatchShared || remoteHw.isBatchShared,
+        attachmentName: localHw.attachmentName || remoteHw.attachmentName,
+        attachmentUrl: localHw.attachmentUrl || remoteHw.attachmentUrl,
+        updatedAt: [localHw.updatedAt, remoteHw.updatedAt].filter(Boolean).sort().reverse()[0] || new Date().toISOString(),
+      };
+    } else {
+      // Remote task does not exist locally. Add it cleanly.
+      merged.push(remoteHw);
+    }
+  }
+
+  return merged;
+};
+
 export type ActiveView =
   | 'home'
   | 'timetable'
@@ -433,7 +537,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           if (data.subjects) { setSubjectsState(data.subjects); storage.setSubjects(data.subjects); }
           if (data.timetable) { setTimetableState(data.timetable); storage.setTimetable(data.timetable); }
         }
-        if (data.homework) { setHomeworkState(data.homework); storage.setHomework(data.homework); }
+        if (data.homework && Array.isArray(data.homework)) {
+          setHomeworkState((prevHw) => {
+            const merged = mergeHomeworkLists(prevHw, data.homework);
+            storage.setHomework(merged);
+            return merged;
+          });
+        }
         if (data.carryItems) { setCarryItemsState(data.carryItems); storage.setCarryItems(data.carryItems); }
         if (data.notifications) { setNotificationsState(data.notifications); storage.setNotifications(data.notifications); }
         if (data.events && Array.isArray(data.events)) {
@@ -753,23 +863,44 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const dismissedProposals = new Set(storage.getDismissedProposals());
       const approvedProps = fetched.filter(p => p.status === 'approved');
       const approvedIds = new Set(approvedProps.map(p => p.id));
-      const approvedSignatures = new Set(approvedProps.map(p => `${p.title}_${p.deadline || ''}`));
 
       setHomeworkState((prevHw) => {
         let changed = false;
 
         // 1. If a batch-shared task was deleted by the Pilot/CR (no longer in approved proposals),
-        // remove it from everyone's list in real-time!
-        // NOTE: Personal tasks created by the student (!h.isBatchShared && !h.proposalId) remain completely untouched and separate!
+        // remove it from uncompleted lists in real-time.
+        // NOTE 1: Student's COMPLETED task history is personal and sacred — NEVER prune completed tasks!
+        // NOTE 2: Personal tasks created by the student (!h.isBatchShared && !h.proposalId) remain completely untouched!
         const filteredHw = prevHw.filter((h) => {
+          if (h.status === 'Completed') {
+            return true;
+          }
+
           const isShared = h.isBatchShared || !!h.proposalId;
           if (!isShared) {
             // Strictly personal task - keep it untouched
             return true;
           }
+
           // Batch task - verify it still exists in the active approved batch proposals
-          const stillApproved = (h.proposalId && approvedIds.has(h.proposalId)) ||
-                                approvedSignatures.has(`${h.title}_${h.deadline || ''}`);
+          if (h.proposalId && approvedIds.has(h.proposalId)) {
+            return true;
+          }
+
+          const stillApproved = approvedProps.some((p) =>
+            areHomeworksSame(h, {
+              id: '',
+              proposalId: p.id,
+              title: p.title,
+              deadline: p.deadline,
+              subjectId: p.subjectId,
+              description: '',
+              priority: p.priority,
+              status: 'Not Started',
+              createdAt: '',
+            })
+          );
+
           if (!stillApproved) {
             changed = true;
             return false;
@@ -780,17 +911,40 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         // 2. Add newly approved batch tasks that are not dismissed
         const newTasksToAdd: Homework[] = [];
         approvedProps.forEach((prop) => {
-          if (dismissedProposals.has(prop.id) || dismissedProposals.has(`${prop.title}_${prop.deadline || ''}`)) {
+          const isDismissed =
+            dismissedProposals.has(prop.id) ||
+            Array.from(dismissedProposals).some((dim) => {
+              if (dim.includes('_')) {
+                const [dimTitle, dimDeadline] = dim.split('_');
+                return (
+                  normalizeHomeworkTitle(dimTitle) === normalizeHomeworkTitle(prop.title) &&
+                  isSameHomeworkDeadline(dimDeadline, prop.deadline)
+                );
+              }
+              return false;
+            });
+
+          if (isDismissed) {
             return;
           }
 
-          const existingIndex = filteredHw.findIndex(
-            (h) => h.proposalId === prop.id || (h.title === prop.title && h.deadline === prop.deadline)
-          );
+          const propHwRep: Homework = {
+            id: '',
+            proposalId: prop.id,
+            title: prop.title,
+            deadline: prop.deadline,
+            subjectId: prop.subjectId,
+            description: '',
+            priority: prop.priority,
+            status: 'Not Started',
+            createdAt: '',
+          };
+
+          const existingIndex = filteredHw.findIndex((h) => areHomeworksSame(h, propHwRep));
 
           if (existingIndex >= 0) {
             const existing = filteredHw[existingIndex];
-            if (!existing.isBatchShared || !existing.proposalId) {
+            if (!existing.isBatchShared || !existing.proposalId || existing.proposalId !== prop.id) {
               filteredHw[existingIndex] = {
                 ...existing,
                 isBatchShared: true,
@@ -801,6 +955,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             return;
           }
 
+          // Also check if task already exists in prevHw (e.g. was already completed)
+          const existsInPrev = prevHw.find((h) => areHomeworksSame(h, propHwRep));
+          if (existsInPrev) {
+            if (!filteredHw.some((h) => h.id === existsInPrev.id)) {
+              filteredHw.push({
+                ...existsInPrev,
+                isBatchShared: true,
+                proposalId: prop.id,
+              });
+              changed = true;
+            }
+            return;
+          }
+
+          const nowIso = new Date().toISOString();
           const newHw: Homework = {
             id: `hw_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
             subjectId: prop.subjectId,
@@ -811,7 +980,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             priority: prop.priority,
             status: 'Not Started',
             attachmentName: prop.attachmentName || '',
-            createdAt: new Date().toISOString(),
+            createdAt: nowIso,
+            updatedAt: nowIso,
             isBatchShared: true,
             proposalId: prop.id,
           };
@@ -1572,14 +1742,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const addHomework = (hwData: Omit<Homework, 'id' | 'createdAt'>): Homework => {
+    const nowIso = new Date().toISOString();
     const newHw: Homework = {
       ...hwData,
       id: `hw_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      createdAt: new Date().toISOString(),
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      completedAt: hwData.status === 'Completed' ? nowIso : undefined,
     };
     setHomeworkState(prev => {
       const updated = [newHw, ...prev];
       storage.setHomework(updated);
+
+      const now = Date.now();
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('iiitnr_last_updated', now.toString());
+      }
+      if (user?.id) {
+        const userRef = doc(db, 'users', user.id);
+        setDoc(userRef, {
+          homework: sanitizeForFirestore(updated),
+          lastUpdated: now,
+        }, { merge: true }).catch((e) => console.error('Error saving new task to cloud:', e));
+      }
+
       return updated;
     });
     showToast('Task Created', hwData.title, 'success');
@@ -1588,8 +1774,35 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const updateHomework = (id: string, partial: Partial<Homework>) => {
     setHomeworkState(prev => {
-      const updated = prev.map((h) => (h.id === id ? { ...h, ...partial } : h));
+      const nowIso = new Date().toISOString();
+      const updated = prev.map((h) => {
+        if (h.id !== id) return h;
+        const merged: Homework = {
+          ...h,
+          ...partial,
+          updatedAt: nowIso,
+        };
+        if (partial.status === 'Completed') {
+          merged.completedAt = partial.completedAt || h.completedAt || nowIso;
+        } else if (partial.status) {
+          merged.completedAt = undefined;
+        }
+        return merged;
+      });
       storage.setHomework(updated);
+
+      const now = Date.now();
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('iiitnr_last_updated', now.toString());
+      }
+      if (user?.id) {
+        const userRef = doc(db, 'users', user.id);
+        setDoc(userRef, {
+          homework: sanitizeForFirestore(updated),
+          lastUpdated: now,
+        }, { merge: true }).catch((e) => console.error('Error updating task in cloud:', e));
+      }
+
       return updated;
     });
   };
@@ -1599,6 +1812,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const target = prev.find((h) => h.id === id);
       const updated = prev.filter((h) => h.id !== id);
       storage.setHomework(updated);
+
+      const now = Date.now();
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('iiitnr_last_updated', now.toString());
+      }
+      if (user?.id) {
+        const userRef = doc(db, 'users', user.id);
+        setDoc(userRef, {
+          homework: sanitizeForFirestore(updated),
+          lastUpdated: now,
+        }, { merge: true }).catch((e) => console.error('Error deleting task in cloud:', e));
+      }
 
       if (target) {
         // Track dismissed proposal signatures so real-time batch listeners never resurrect it
@@ -1653,17 +1878,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       // 1-Tap Toggle: If already Completed -> Reopen to Not Started. If Not Started or In Progress -> Mark Completed.
       const isCurrentlyDone = target.status === 'Completed';
       const nextStatus: HomeworkStatus = isCurrentlyDone ? 'Not Started' : 'Completed';
+      const nowIso = new Date().toISOString();
 
       const updated = prev.map((h) =>
         h.id === id
           ? {
               ...h,
               status: nextStatus,
-              completedAt: nextStatus === 'Completed' ? new Date().toISOString() : undefined,
+              completedAt: nextStatus === 'Completed' ? nowIso : undefined,
+              updatedAt: nowIso,
             }
           : h
       );
       storage.setHomework(updated);
+
+      const now = Date.now();
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('iiitnr_last_updated', now.toString());
+      }
+      if (user?.id) {
+        const userRef = doc(db, 'users', user.id);
+        setDoc(userRef, {
+          homework: sanitizeForFirestore(updated),
+          lastUpdated: now,
+        }, { merge: true }).catch((e) => console.error('Error toggling task status in cloud:', e));
+      }
 
       if (nextStatus === 'Completed') {
         triggerConfetti();
@@ -2711,7 +2950,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const newTimetable = Array.isArray(data.timetable) ? data.timetable : [];
       const newEvents = Array.isArray(data.events) ? data.events : [];
       const newExams = Array.isArray(data.exams) ? data.exams : [];
-      const newHomework = Array.isArray(data.homework) ? data.homework : [];
       const newCancelled = Array.isArray(data.cancelledSessions) ? data.cancelledSessions : [];
       const newRescheduled = data.rescheduledSessions && typeof data.rescheduledSessions === 'object' ? data.rescheduledSessions : {};
       const newExtra = data.extraSessions && typeof data.extraSessions === 'object' ? data.extraSessions : {};
@@ -2728,8 +2966,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setExamsState(newExams);
       storage.setExams(newExams);
 
-      setHomeworkState(newHomework);
-      storage.setHomework(newHomework);
+      // Preserve existing student homework and merge batch tasks safely without erasing personal or completed work
+      const currentHomework = storage.getHomework();
+      const mergedHomework = Array.isArray(data.homework) && data.homework.length > 0
+        ? mergeHomeworkLists(currentHomework, data.homework)
+        : currentHomework;
+
+      setHomeworkState(mergedHomework);
+      storage.setHomework(mergedHomework);
 
       setCancelledSessionsState(newCancelled);
       storage.setCancelledSessions(newCancelled);
@@ -2829,7 +3073,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             timetable: newTimetable,
             events: newEvents,
             exams: newExams,
-            homework: newHomework,
+            homework: mergedHomework,
             cancelledSessions: newCancelled,
             rescheduledSessions: newRescheduled,
             extraSessions: newExtra,
@@ -3466,18 +3710,34 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     // Update existing or add to creator's local tasks immediately
     setHomeworkState((prev) => {
-      const existing = prev.find(
-        (h) =>
-          (h.title === taskData.title && h.deadline === taskData.deadline) ||
-          (taskData.subjectId && h.subjectId === taskData.subjectId && h.title === taskData.title)
-      );
+      const propHwRep: Homework = {
+        id: '',
+        proposalId,
+        title: taskData.title,
+        deadline: taskData.deadline,
+        subjectId: taskData.subjectId,
+        description: taskData.description || '',
+        priority: taskData.priority,
+        status: 'Not Started',
+        createdAt: '',
+      };
+      const existing = prev.find((h) => areHomeworksSame(h, propHwRep));
       if (existing) {
         const updated = prev.map((h) =>
-          h.id === existing.id ? { ...h, isBatchShared: true, proposalId, subjectName: resolvedSubjectName } : h
+          h.id === existing.id
+            ? {
+                ...h,
+                isBatchShared: true,
+                proposalId,
+                subjectName: resolvedSubjectName,
+                updatedAt: new Date().toISOString(),
+              }
+            : h
         );
         storage.setHomework(updated);
         return updated;
       }
+      const nowIso = new Date().toISOString();
       const newHw: Homework = {
         id: `hw_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
         subjectId: taskData.subjectId,
@@ -3488,7 +3748,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         priority: taskData.priority,
         status: 'Not Started',
         attachmentName: taskData.attachmentName || '',
-        createdAt: new Date().toISOString(),
+        createdAt: nowIso,
+        updatedAt: nowIso,
         isBatchShared: true,
         proposalId: proposalId,
       };
