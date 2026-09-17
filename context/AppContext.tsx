@@ -2795,7 +2795,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     programme: string,
     branch: string,
     semester: number,
-    section: string = 'A'
+    section: string = ''
   ) => {
     try {
       // 1. Direct canonical key lookup (with section)
@@ -3126,7 +3126,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const targetProgramme = data.programme || data.degree || data.course || keyFallbacks.programme || profile.programme || '';
       const targetBranch = data.branch || data.department || data.specialization || keyFallbacks.branch || profile.branch || '';
       const targetSemester = data.semester !== undefined && data.semester !== null ? Number(data.semester) : (keyFallbacks.semester || profile.semester || 1);
-      const targetSection = data.section || keyFallbacks.section || profile.section || 'A';
+      const targetSection = data.section || keyFallbacks.section || '';
 
       // Update profile fields to show it's synced with full academic details
       const resolvedName = (customIdentity?.name && customIdentity.name.trim()) ||
@@ -3134,6 +3134,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const resolvedEmail = (customIdentity?.email && customIdentity.email.trim()) ||
         profile.email || userEmail || '';
       const resolvedRollNumber = (customIdentity?.rollNumber !== undefined ? customIdentity.rollNumber.trim() : profile.rollNumber) || '';
+
+      const resolvedSection = normalizeSection(
+        customIdentity?.section !== undefined 
+          ? customIdentity.section 
+          : (targetSection || (profile.batchKey === batchKey ? profile.section : ''))
+      );
 
       const updatedProfile: StudentProfile = {
         ...profile,
@@ -3144,7 +3150,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         programme: targetProgramme,
         branch: targetBranch,
         semester: targetSemester,
-        section: normalizeSection(customIdentity?.section || targetSection) || profile.section || '',
+        section: resolvedSection,
         batchKey: batchKey,
         isBatchSynced: true,
         role: assignedRole,

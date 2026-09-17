@@ -230,7 +230,7 @@ export const SettingsView: React.FC = () => {
       rollNumber: rollNumber.trim(),
       email: cleanEmail,
       year: Number(year),
-      section: cleanSec || profile.section || '',
+      section: cleanSec,
     };
 
     if (profile.isBatchSynced) {
@@ -297,7 +297,7 @@ export const SettingsView: React.FC = () => {
           programme: cleanProg,
           branch: cleanBranch,
           semester: cleanSem,
-          section: cleanSec || profile.section || '',
+          section: cleanSec,
           batchKey: currentBatchData?.id || profile.batchKey,
           isBatchSynced: true,
         });
@@ -329,7 +329,7 @@ export const SettingsView: React.FC = () => {
             programme: cleanProg,
             branch: cleanBranch,
             semester: cleanSem,
-            section: cleanSec || profile.section || '',
+            section: cleanSec,
             batchKey: matched.id || profile.batchKey,
             isBatchSynced: true,
           });
@@ -349,7 +349,7 @@ export const SettingsView: React.FC = () => {
           programme: cleanProg,
           branch: cleanBranch,
           semester: cleanSem,
-          section: cleanSec || profile.section || '',
+          section: cleanSec,
           batchKey: undefined,
           isBatchSynced: false,
         });
@@ -367,7 +367,7 @@ export const SettingsView: React.FC = () => {
       programme: cleanProg,
       branch: cleanBranch,
       semester: cleanSem,
-      section: cleanSec || profile.section || '',
+      section: cleanSec,
       batchKey: profile.batchKey,
       isBatchSynced: profile.isBatchSynced,
     });
