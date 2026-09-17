@@ -39,7 +39,12 @@ export const Toast: React.FC = () => {
   if (!mounted) return null;
 
   const content = (
-    <div className="fixed top-5 sm:top-6 inset-x-0 z-[100000] pointer-events-none flex justify-center px-4">
+    <div 
+      className="fixed inset-x-0 z-[100000] pointer-events-none flex justify-center px-4 transition-all"
+      style={{
+        top: 'max(calc(env(safe-area-inset-top, 0px) + 72px), 88px)',
+      }}
+    >
       <AnimatePresence mode="wait">
         {toastMessage && (
           <motion.div
