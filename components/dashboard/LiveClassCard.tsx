@@ -420,6 +420,8 @@ export const LiveClassCard: React.FC = () => {
   if (currentClass) {
     const sub = currentClass.subject;
     const session = currentClass.session;
+    const currentReschedule = getRescheduledForSession(session, dateTodayStr);
+    const origSession = timetable.find(s => s.id === session.id);
 
     const renderFaculty = (facultyStr: string) => {
       const faculties = facultyStr.split(/[,/&]/).map(f => f.trim()).filter(Boolean);
@@ -450,9 +452,23 @@ export const LiveClassCard: React.FC = () => {
           {sub?.name || 'Class Session'}
         </h3>
 
-        {/* Time */}
-        <div className="text-[13px] text-[#FFFFFF]/90 font-mono font-medium leading-none mb-3">
-          {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
+        {/* Time and Reschedule Badge */}
+        <div className="flex items-center gap-2 flex-wrap mb-3">
+          <div className="text-[13px] text-[#FFFFFF]/90 font-mono font-medium leading-none">
+            {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
+          </div>
+          {currentReschedule && (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] bg-amber-500/20 text-amber-300 text-[10.5px] font-mono font-bold uppercase tracking-wider">
+              <Clock className="w-2.5 h-2.5" />
+              Rescheduled by {currentReschedule.by || 'Pilot'}
+              {origSession && (origSession.startTime !== session.startTime || origSession.endTime !== session.endTime) ? ` (Was ${formatTime12Hour(origSession.startTime)})` : ''}
+            </span>
+          )}
+          {session.isExtra && (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] bg-blue-500/20 text-blue-300 text-[10.5px] font-mono font-bold uppercase tracking-wider">
+              Extra Class
+            </span>
+          )}
         </div>
 
         {/* Metadata */}
@@ -505,6 +521,8 @@ export const LiveClassCard: React.FC = () => {
   if (nextClass) {
     const sub = nextClass.subject;
     const session = nextClass.session;
+    const nextReschedule = getRescheduledForSession(session, dateTodayStr);
+    const nextOrigSession = timetable.find(s => s.id === session.id);
     const isLab = session.isLab || sub?.isLab;
     const isSpecial = session.isExtra || sub?.name?.toLowerCase().includes('elective') || session.notes?.toLowerCase().includes('elective');
     
@@ -582,6 +600,18 @@ export const LiveClassCard: React.FC = () => {
             <h3 className="text-[18px] sm:text-[20px] font-bold text-[#151515] dark:text-[#F4F4F6] leading-[24px] mb-2 pr-8 line-clamp-2">
               {sub?.name || (session as any).subjectName || 'Class Session'}
             </h3>
+
+            {nextReschedule && (
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10.5px] font-mono font-medium mb-3">
+                <Clock className="w-3 h-3 shrink-0" />
+                <span>
+                  Rescheduled by {nextReschedule.by || 'Pilot'}
+                  {nextOrigSession && (nextOrigSession.startTime !== session.startTime || nextOrigSession.endTime !== session.endTime)
+                    ? ` (Was ${formatTime12Hour(nextOrigSession.startTime)})`
+                    : ''}
+                </span>
+              </div>
+            )}
 
             <div className="flex items-center gap-2 text-[12px] text-[#6F737C] dark:text-[#94A3B8] leading-none mb-4">
               <span className="flex items-center gap-1.5 shrink-0">

@@ -661,6 +661,12 @@ export const TodayTimeline: React.FC = () => {
                                     Extra Class
                                   </span>
                                 ) : null}
+                                
+                                {reschedule && (
+                                  <div className="text-[11px] font-mono font-medium text-[#C85F3D] dark:text-[#E07A5F] mt-0.5">
+                                    Moved from {formatTime12Hour(session.startTime)}–{formatTime12Hour(session.endTime)} by {reschedule.by || 'Batch Pilot'}
+                                  </div>
+                                )}
                               </div>
                               
                               <div 
