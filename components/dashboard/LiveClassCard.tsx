@@ -26,6 +26,7 @@ export const LiveClassCard: React.FC = () => {
     cancelledSessions, 
     profile,
     isBatchCR,
+    currentBatchData,
   } = useApp();
   
   const now = new Date();
@@ -51,7 +52,7 @@ export const LiveClassCard: React.FC = () => {
       setStatus(getLiveClassStatus(getActiveTimetable(), subjects, undefined, dateTodayStr, rescheduledSessions, extraSessions, isSessionCancelled));
     }, 15000);
     return () => clearInterval(interval);
-  }, [timetable, subjects, isSessionCancelled, rescheduledSessions, extraSessions, cancelledSessions, profile.enrolledElectiveIds]);
+  }, [timetable, subjects, isSessionCancelled, rescheduledSessions, extraSessions, cancelledSessions, currentBatchData, profile.enrolledElectiveIds]);
 
   const [openMenuSessionId, setOpenMenuSessionId] = useState<string | null>(null);
   const [rescheduleTarget, setRescheduleTarget] = useState<ClassSession | null>(null);

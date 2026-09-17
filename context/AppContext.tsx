@@ -553,12 +553,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
         if (data.exams) { setExamsState(data.exams); storage.setExams(data.exams); }
         if (data.settings) { setSettingsState(data.settings); storage.setSettings(data.settings); }
-        if (data.cancelledSessions) {
-          const safeCancelled = Array.isArray(data.cancelledSessions) ? data.cancelledSessions : (typeof data.cancelledSessions === 'object' ? Object.keys(data.cancelledSessions) : []);
-          setCancelledSessionsState(safeCancelled);
-          storage.setCancelledSessions(safeCancelled);
+        const isUserBatchSynced = !!((data.profile && data.profile.isBatchSynced && data.profile.batchKey) || (profile.isBatchSynced && profile.batchKey));
+        if (!isUserBatchSynced) {
+          if (data.cancelledSessions) {
+            const safeCancelled = Array.isArray(data.cancelledSessions) ? data.cancelledSessions : (typeof data.cancelledSessions === 'object' ? Object.keys(data.cancelledSessions) : []);
+            setCancelledSessionsState(safeCancelled);
+            storage.setCancelledSessions(safeCancelled);
+          }
+          if (data.rescheduledSessions) { setRescheduledSessionsState(data.rescheduledSessions); storage.setRescheduledSessions(data.rescheduledSessions); }
         }
-        if (data.rescheduledSessions) { setRescheduledSessionsState(data.rescheduledSessions); storage.setRescheduledSessions(data.rescheduledSessions); }
         if (data.messMenu !== undefined) { setMessMenu(data.messMenu); if(data.messMenu) { window.localStorage.setItem("intersemester_mess_menu_v1", JSON.stringify(data.messMenu)); } else { window.localStorage.removeItem("intersemester_mess_menu_v1"); } }
 
         if (typeof window !== 'undefined' && data.lastUpdated) {
@@ -764,7 +767,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setExamsState(data.exams);
         storage.setExams(data.exams);
       }
-      if (data.cancelledSessions) {
+      if (data.cancelledSessions !== undefined) {
         const safeCancelled = Array.isArray(data.cancelledSessions)
           ? data.cancelledSessions
           : (typeof data.cancelledSessions === 'object'
@@ -773,17 +776,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setCancelledSessionsState(safeCancelled);
         storage.setCancelledSessions(safeCancelled);
       }
-      if (data.cancelledSessionsMeta && typeof data.cancelledSessionsMeta === 'object') {
-        setCancelledSessionsMeta(data.cancelledSessionsMeta);
-        storage.setCancelledSessionsMeta(data.cancelledSessionsMeta);
+      if (data.cancelledSessionsMeta !== undefined && typeof data.cancelledSessionsMeta === 'object') {
+        const safeMeta = data.cancelledSessionsMeta || {};
+        setCancelledSessionsMeta(safeMeta);
+        storage.setCancelledSessionsMeta(safeMeta);
       }
-      if (data.rescheduledSessions && typeof data.rescheduledSessions === 'object') {
-        setRescheduledSessionsState(data.rescheduledSessions);
-        storage.setRescheduledSessions(data.rescheduledSessions);
+      if (data.rescheduledSessions !== undefined && typeof data.rescheduledSessions === 'object') {
+        const safeResched = data.rescheduledSessions || {};
+        setRescheduledSessionsState(safeResched);
+        storage.setRescheduledSessions(safeResched);
       }
-      if (data.extraSessions && typeof data.extraSessions === 'object') {
-        setExtraSessionsState(data.extraSessions);
-        storage.setExtraSessions(data.extraSessions);
+      if (data.extraSessions !== undefined && typeof data.extraSessions === 'object') {
+        const safeExtra = data.extraSessions || {};
+        setExtraSessionsState(safeExtra);
+        storage.setExtraSessions(safeExtra);
       }
 
       // Recompute carry items immediately when timetable/subjects update from batch CR
@@ -2227,7 +2233,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     const targetDate = dateStr || getTodayDateString();
     const key = `${targetDate}_${sessionId}`;
-    const safeList = Array.isArray(cancelledSessions) ? cancelledSessions : [];
+    
+    // Combine local and batch cancelled sessions as base so no stale omissions occur
+    const baseList = Array.from(new Set([
+      ...(Array.isArray(cancelledSessions) ? cancelledSessions : []),
+      ...(Array.isArray(currentBatchData?.cancelledSessions) ? currentBatchData.cancelledSessions : [])
+    ]));
+
     const isAlreadyCancelled = isSessionCancelled(sessionId, targetDate);
 
     // Collect all related IDs for this slot across local and batch timetables
@@ -2252,15 +2264,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
 
     let updated: string[];
-    const updatedMeta = { ...(cancelledSessionsMeta || {}) };
+    const updatedMeta = {
+      ...(currentBatchData?.cancelledSessionsMeta || {}),
+      ...(cancelledSessionsMeta && typeof cancelledSessionsMeta === 'object' ? cancelledSessionsMeta : {})
+    };
     const crName = profile.name || (isSuperAdmin ? 'Super Admin' : 'Batch Pilot');
 
     if (isAlreadyCancelled) {
-      // Un-cancel / restore: remove all related IDs and keys for this date
-      updated = safeList.filter((k) => {
+      // Un-cancel / restore: remove all related IDs and slot-based keys for this date
+      updated = baseList.filter((k) => {
         if (typeof k !== 'string') return true;
         for (const rId of relatedIds) {
-          if (k === `${targetDate}_${rId}` || k === rId || k.endsWith(`_${rId}`)) {
+          if (k === `${targetDate}_${rId}` || k === rId || (k.startsWith(`${targetDate}_`) && k.endsWith(`_${rId}`))) {
+            return false;
+          }
+        }
+        // Slot-based fallback removal: if a key for targetDate matches the slot, remove it
+        if (targetSession && k.startsWith(`${targetDate}_`)) {
+          const kSessionId = k.split('_').slice(1).join('_');
+          const candSess = allTimetables.find((s: ClassSession) => s.id === kSessionId);
+          if (
+            candSess &&
+            candSess.day === targetSession.day &&
+            candSess.startTime === targetSession.startTime &&
+            (candSess.subjectId === targetSession.subjectId || candSess.faculty === targetSession.faculty)
+          ) {
             return false;
           }
         }
@@ -2271,10 +2299,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         delete updatedMeta[`${targetDate}_${rId}`];
         delete updatedMeta[rId];
       }
+      if (targetSession) {
+        for (const k of Object.keys(updatedMeta)) {
+          if (k.startsWith(`${targetDate}_`)) {
+            const kSessionId = k.split('_').slice(1).join('_');
+            const candSess = allTimetables.find((s: ClassSession) => s.id === kSessionId);
+            if (
+              candSess &&
+              candSess.day === targetSession.day &&
+              candSess.startTime === targetSession.startTime &&
+              (candSess.subjectId === targetSession.subjectId || candSess.faculty === targetSession.faculty)
+            ) {
+              delete updatedMeta[k];
+            }
+          }
+        }
+      }
     } else {
       // Cancel: add all related IDs so any client device checking either ID matches directly
       const keysToAdd = relatedIds.map((rId) => `${targetDate}_${rId}`);
-      updated = Array.from(new Set([...safeList, ...keysToAdd]));
+      updated = Array.from(new Set([...baseList, ...keysToAdd]));
       for (const k of keysToAdd) {
         updatedMeta[k] = {
           by: crName,
@@ -2288,6 +2332,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setCancelledSessionsMeta(updatedMeta);
     storage.setCancelledSessions(updated);
     storage.setCancelledSessionsMeta(updatedMeta);
+
+    // Immediately update currentBatchData in React state so isSessionCancelled reflects it synchronously
+    if (profile.isBatchSynced && profile.batchKey) {
+      if (currentBatchDataRef.current) {
+        currentBatchDataRef.current = {
+          ...currentBatchDataRef.current,
+          cancelledSessions: updated,
+          cancelledSessionsMeta: updatedMeta,
+        };
+      }
+      setCurrentBatchData((prev: any) => prev ? {
+        ...prev,
+        cancelledSessions: updated,
+        cancelledSessionsMeta: updatedMeta,
+      } : prev);
+    }
 
     if (!isAlreadyCancelled) {
       showToast('Class Cancelled', `Session marked as cancelled by ${crName}.`, 'info');
@@ -2328,7 +2388,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         // Keep only last 20 alerts to prevent unbounded growth
         const existingAlerts: any[] = currentBatchData?.batchAlerts || [];
         const trimmedAlerts = [...existingAlerts.slice(-19), alertPayload];
-        const email = user?.primaryEmailAddress?.emailAddress || profile.email || '';
 
         await setDoc(batchDocRef, {
           cancelledSessions: updated,
@@ -2364,7 +2423,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         ? currentBatchData.cancelledSessions
         : [];
 
-      const allCancelled = Array.from(new Set([...safeList, ...batchList]));
+      // For batch-synced users with active batch data, the batch cancellation list is authoritative
+      const allCancelled = (profile.isBatchSynced && profile.batchKey && currentBatchData)
+        ? batchList
+        : Array.from(new Set([...safeList, ...batchList]));
 
       // 1. Direct key or session ID check
       if (allCancelled.includes(key) || allCancelled.includes(sessionId)) {
@@ -2411,7 +2473,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
       }
 
-      if (cancelledSessions && typeof cancelledSessions === 'object') {
+      if (!profile.isBatchSynced && cancelledSessions && typeof cancelledSessions === 'object') {
         return (cancelledSessions as any)[key] === true || (cancelledSessions as any)[sessionId] === true;
       }
       return false;
@@ -2479,7 +2541,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     const targetDate = dateStr || getTodayDateString();
     const key = `${targetDate}_${sessionId}`;
-    const updated = { ...rescheduledSessions };
+    const baseRescheduled = {
+      ...(currentBatchData?.rescheduledSessions || {}),
+      ...(rescheduledSessions || {}),
+    };
+    const updated = { ...baseRescheduled };
     const crName = profile.name || (isSuperAdmin ? 'Super Admin' : 'Batch Pilot');
 
     const allTimetables: ClassSession[] = [
@@ -2506,6 +2572,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       for (const rId of relatedIds) {
         delete updated[`${targetDate}_${rId}`];
       }
+      if (targetSession) {
+        for (const k of Object.keys(updated)) {
+          if (k.startsWith(`${targetDate}_`)) {
+            const candId = k.split('_').slice(1).join('_');
+            const candSess = allTimetables.find((s: ClassSession) => s.id === candId);
+            if (
+              candSess &&
+              candSess.day === targetSession.day &&
+              candSess.startTime === targetSession.startTime &&
+              (candSess.subjectId === targetSession.subjectId || candSess.faculty === targetSession.faculty)
+            ) {
+              delete updated[k];
+            }
+          }
+        }
+      }
       showToast('Reschedule Reverted', 'Class reverted to original schedule.', 'success');
     } else {
       const entry = {
@@ -2522,6 +2604,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     setRescheduledSessionsState(updated);
     storage.setRescheduledSessions(updated);
+
+    if (profile.isBatchSynced && profile.batchKey) {
+      if (currentBatchDataRef.current) {
+        currentBatchDataRef.current = {
+          ...currentBatchDataRef.current,
+          rescheduledSessions: updated,
+        };
+      }
+      setCurrentBatchData((prev: any) => prev ? {
+        ...prev,
+        rescheduledSessions: updated,
+      } : prev);
+    }
 
     // Sync to Firestore + push batch alert if in a batch
     if (profile.isBatchSynced && profile.batchKey) {

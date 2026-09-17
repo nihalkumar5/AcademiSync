@@ -32,6 +32,8 @@ export const TodayTimeline: React.FC = () => {
     deleteExtraSession,
     profile,
     isBatchCR,
+    cancelledSessions,
+    currentBatchData,
   } = useApp();
 
   const [openMenuSessionId, setOpenMenuSessionId] = useState<string | null>(null);
