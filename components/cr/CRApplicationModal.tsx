@@ -33,7 +33,7 @@ import {
   Check
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { shareLink } from '@/lib/shareUtils';
+import { shareLink, PLAY_STORE_URL } from '@/lib/shareUtils';
 
 interface CRApplicationModalProps {
   isOpen: boolean;
@@ -207,6 +207,9 @@ export const CRApplicationModal: React.FC<CRApplicationModalProps> = ({
 Could you please share the official *Intersemester Batch Code* for our class:
 🏛️ *${getShortCollegeName(college)}*
 📚 *${courseTitle}*
+
+📲 *Download App on Play Store:*
+${PLAY_STORE_URL}
 
 Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
 
@@ -432,9 +435,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                   type="button"
                   onClick={async () => {
                     const courseTitle = `${branch || profile.branch || 'Class'} (Sem ${semester || profile.semester})`;
-                    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://intersemester.com';
-                    const joinUrl = `${origin}/join?code=${activeBatchCode}`;
-                    const messageText = `*Hey everyone!* 👋\n\nOfficial batch timetable is now live on Intersemester for *${getShortCollegeName(college || profile.college)}* · *${courseTitle}*!\n\n🔑 *Batch Code:* \`${activeBatchCode}\`\n\nDirect Join Link:\n${joinUrl}\n\nJoin to receive instant schedule updates, class cancellations, and room alerts! 🚀`;
+                    const messageText = `*Hey everyone!* 👋\n\nOfficial batch timetable is now live on Intersemester for *${getShortCollegeName(college || profile.college)}* · *${courseTitle}*!\n\n🔑 *Batch Code:* \`${activeBatchCode}\`\n\n📲 *Download App on Play Store:*\n${PLAY_STORE_URL}\n\n👉 Open Intersemester App → Tap *Connect Batch* → Enter Code: *${activeBatchCode}*\n\nJoin to receive instant schedule updates, class cancellations, and room alerts! 🚀`;
 
                     try {
                       const res = await shareLink({

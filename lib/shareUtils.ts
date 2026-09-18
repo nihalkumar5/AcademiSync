@@ -1,6 +1,8 @@
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 
+export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.intersemester.app';
+
 export interface ShareOptions {
   title: string;
   text?: string;
@@ -9,6 +11,8 @@ export interface ShareOptions {
 }
 
 export async function shareLink({ title, text, url, dialogTitle = 'Share via' }: ShareOptions): Promise<'shared' | 'copied' | 'error'> {
+  const resolvedUrl = url?.trim() || (!text?.includes(PLAY_STORE_URL) ? PLAY_STORE_URL : undefined);
+
   // 1. Capacitor Native Share Sheet
   try {
     const isCap = typeof window !== 'undefined' && (Capacitor.isNativePlatform() || (window as any).Capacitor?.isNativePlatform?.());
@@ -16,7 +20,7 @@ export async function shareLink({ title, text, url, dialogTitle = 'Share via' }:
       await Share.share({
         title,
         text: text ? text.trim() : undefined,
-        url: url?.trim() || undefined,
+        url: resolvedUrl,
         dialogTitle,
       });
       return 'shared';
@@ -35,8 +39,8 @@ export async function shareLink({ title, text, url, dialogTitle = 'Share via' }:
         title,
         text: text ? text.trim() : undefined,
       };
-      if (url?.trim()) {
-        sharePayload.url = url.trim();
+      if (resolvedUrl) {
+        sharePayload.url = resolvedUrl;
       }
       await navigator.share(sharePayload);
       return 'shared';
@@ -51,7 +55,12 @@ export async function shareLink({ title, text, url, dialogTitle = 'Share via' }:
   // 3. Fallback: Copy to Clipboard
   if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
     try {
-      const copyContent = [text?.trim(), url?.trim()].filter(Boolean).join('\n\n') || '';
+      const cleanText = text?.trim() || '';
+      const parts = [cleanText];
+      if (resolvedUrl && !cleanText.includes(resolvedUrl)) {
+        parts.push(resolvedUrl);
+      }
+      const copyContent = parts.filter(Boolean).join('\n\n');
       await navigator.clipboard.writeText(copyContent);
       return 'copied';
     } catch (err) {

@@ -5,7 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { Modal } from '@/components/ui/Modal';
 import { Crown, Copy, Check, Share2, Calendar, ArrowRight } from 'lucide-react';
 import { formatBatchDisplayName } from '@/lib/timetableUtils';
-import { shareLink } from '@/lib/shareUtils';
+import { shareLink, PLAY_STORE_URL } from '@/lib/shareUtils';
 
 export const BatchApprovedModal: React.FC = () => {
   const { profile, currentBatchData, setActiveView, showToast } = useApp();
@@ -64,8 +64,10 @@ export const BatchApprovedModal: React.FC = () => {
 ⚡ Realtime Class Cancellation & Reschedule Alerts
 📅 Live Exam Schedule, Room Numbers & Lab Sessions
 
-👉 Open App: https://intersemester.com
-Tap *Connect Batch* → Enter Code: *${inviteCode}*`;
+📲 *Download App on Play Store:*
+${PLAY_STORE_URL}
+
+👉 Open Intersemester App → Tap *Connect Batch* → Enter Code: *${inviteCode}*`;
 
     const res = await shareLink({
       title: `Join ${batchTitle} on Intersemester`,

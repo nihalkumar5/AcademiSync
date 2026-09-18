@@ -8,6 +8,7 @@ import { db } from '@/lib/firebase';
 import { PromotionalCampaign, CampaignCategory, AdminRole } from '@/lib/types';
 import { searchCollegesAsync, CollegeItem, POPULAR_INDIAN_COLLEGES } from '@/lib/collegeDirectory';
 import { getShortCollegeName } from '@/lib/timetableUtils';
+import { PLAY_STORE_URL } from '@/lib/shareUtils';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import {
   Shield,
@@ -556,10 +557,8 @@ export default function SuperAdminPage() {
   }) => {
     const cleanPhone = (data.phone || '').replace(/[^0-9]/g, '');
     const waPhone = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://intersemester.com';
-    const joinUrl = `${origin}/join?code=${data.batchCode}`;
     
-    const msg = `Hey ${data.name}! 👋\n\nCongratulations, your Batch Pilot application for *${getShortCollegeName(data.college)}* (*${data.branch}*, Sem ${data.semester}) has been *Approved* on Intersemester! 👑\n\n🔑 *Official Batch Code:* ${data.batchCode}\n\n📲 Direct Join Link for your classmates:\n${joinUrl}\n\nYou can now log in, set up your timetable, cancel classes, and send instant alerts to your entire batch. Let's make campus life smoother! 🚀`;
+    const msg = `Hey ${data.name}! 👋\n\nCongratulations, your Batch Pilot application for *${getShortCollegeName(data.college)}* (*${data.branch}*, Sem ${data.semester}) has been *Approved* on Intersemester! 👑\n\n🔑 *Official Batch Code:* ${data.batchCode}\n\n📲 *Download App on Play Store:*\n${PLAY_STORE_URL}\n\n👉 Open Intersemester App → Tap *Connect Batch* → Enter Code: *${data.batchCode}*\n\nYou can now log in, set up your timetable, cancel classes, and send instant alerts to your entire batch. Let's make campus life smoother! 🚀`;
 
     return `https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`;
   };
@@ -572,10 +571,7 @@ export default function SuperAdminPage() {
     semester: number | string;
     batchCode: string;
   }) => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://intersemester.com';
-    const joinUrl = `${origin}/join?code=${data.batchCode}`;
-    
-    return `Hey ${data.name}! 👋\n\nCongratulations, your Batch Pilot application for *${getShortCollegeName(data.college)}* (*${data.branch}*, Sem ${data.semester}) has been *Approved* on Intersemester! 👑\n\n🔑 *Official Batch Code:* ${data.batchCode}\n\n📲 Direct Join Link for your classmates:\n${joinUrl}\n\nYou can now log in, set up your timetable, cancel classes, and send instant alerts to your entire batch. Let's make campus life smoother! 🚀`;
+    return `Hey ${data.name}! 👋\n\nCongratulations, your Batch Pilot application for *${getShortCollegeName(data.college)}* (*${data.branch}*, Sem ${data.semester}) has been *Approved* on Intersemester! 👑\n\n🔑 *Official Batch Code:* ${data.batchCode}\n\n📲 *Download App on Play Store:*\n${PLAY_STORE_URL}\n\n👉 Open Intersemester App → Tap *Connect Batch* → Enter Code: *${data.batchCode}*\n\nYou can now log in, set up your timetable, cancel classes, and send instant alerts to your entire batch. Let's make campus life smoother! 🚀`;
   };
 
   const handleApproveCRRequest = async (req: any) => {

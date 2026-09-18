@@ -13,6 +13,7 @@ import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
+import { PLAY_STORE_URL } from '@/lib/shareUtils';
 
 export const HomeworkView: React.FC = () => {
   const {
@@ -139,7 +140,7 @@ export const HomeworkView: React.FC = () => {
       const b64 = btoa(encodeURIComponent(JSON.stringify(shareData)));
       const shareUrl = `${window.location.origin}/?task=${b64}`;
       const shareTitle = `Task: ${hw.title}`;
-      const shareText = `Here is a task I shared with you from Intersemester.`;
+      const shareText = `Here is a task I shared with you from Intersemester.\n\n📲 Download App on Play Store: ${PLAY_STORE_URL}`;
       
       if (Capacitor.isNativePlatform()) {
         await Share.share({

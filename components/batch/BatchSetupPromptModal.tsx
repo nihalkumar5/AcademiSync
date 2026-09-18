@@ -16,7 +16,7 @@ import {
   MessageCircle, 
   Share2 
 } from 'lucide-react';
-import { shareLink } from '@/lib/shareUtils';
+import { shareLink, PLAY_STORE_URL } from '@/lib/shareUtils';
 
 interface BatchSetupPromptModalProps {
   isOpen: boolean;
@@ -55,6 +55,9 @@ export const BatchSetupPromptModal: React.FC<BatchSetupPromptModalProps> = ({
 Nobody has created the official timetable for our batch yet on Intersemester:
 🏛️ *${shortCollege}*
 📚 *${courseTitle}*
+
+📲 *Download App on Play Store:*
+${PLAY_STORE_URL}
 
 If you are our Batch Pilot or want to setup the synced batch timetable for all of us, open the *Intersemester* app and setup our batch schedule! 🚀`;
 

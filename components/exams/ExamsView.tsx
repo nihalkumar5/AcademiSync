@@ -1,6 +1,6 @@
 'use client';
 
-import { shareLink } from '@/lib/shareUtils';
+import { shareLink, PLAY_STORE_URL } from '@/lib/shareUtils';
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/Button';
@@ -126,6 +126,9 @@ export const ExamsView: React.FC = () => {
 
 ⚡ Realtime Class Cancellation & Reschedule Alerts
 📅 Live Exam Schedule, Room Numbers & Lab Sessions
+
+📲 *Download App on Play Store:*
+${PLAY_STORE_URL}
 
 👉 Open Intersemester App → Tap *Connect Batch* → Enter Code: *${code}*`;
 

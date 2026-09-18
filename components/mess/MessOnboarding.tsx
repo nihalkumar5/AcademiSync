@@ -1,6 +1,6 @@
 'use client';
 
-import { shareLink } from '@/lib/shareUtils';
+import { shareLink, PLAY_STORE_URL } from '@/lib/shareUtils';
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, Sparkles, X, ArrowRight, CheckCircle2, Image as ImageIcon, Check } from 'lucide-react';
@@ -170,6 +170,9 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
 🔑 *Mess Code:* ${code}
 
 🍽️ Live Meal Countdowns, Daily Dishes & Serving Hours
+
+📲 *Download App on Play Store:*
+${PLAY_STORE_URL}
 
 👉 Open Intersemester App → Go to Mess tab → Enter Code: *${code}*`;
 

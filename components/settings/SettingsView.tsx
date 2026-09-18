@@ -1,6 +1,6 @@
 'use client';
 
-import { shareLink } from '@/lib/shareUtils';
+import { shareLink, PLAY_STORE_URL } from '@/lib/shareUtils';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { signOut } from 'firebase/auth';
@@ -1050,6 +1050,9 @@ export const SettingsView: React.FC = () => {
 ⚡ Realtime Class Cancellation & Reschedule Alerts
 📅 Live Exam Schedule, Room Numbers & Lab Sessions
 
+📲 *Download App on Play Store:*
+${PLAY_STORE_URL}
+
 👉 Open Intersemester App → Tap *Connect Batch* → Enter Code: *${code}*`;
 
                           const res = await shareLink({
@@ -1777,7 +1780,7 @@ export const SettingsView: React.FC = () => {
                   try {
                     const code = await shareTimetableWithBatch();
                     const batchTitle = `${profile.branch || 'Class'} (Sem ${profile.semester || ''})`;
-                    const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*\n\n🔑 *Batch Code:* ${code}\n\n⚡ Realtime Class Cancellation & Reschedule Alerts\n📅 Live Exam Schedule, Room Numbers & Lab Sessions\n\n👉 Open Intersemester App → Tap *Connect Batch* → Enter Code: *${code}*`;
+                    const shareText = `🔥 *Join our official ${batchTitle} Timetable on Intersemester!*\n\n🔑 *Batch Code:* ${code}\n\n⚡ Realtime Class Cancellation & Reschedule Alerts\n📅 Live Exam Schedule, Room Numbers & Lab Sessions\n\n📲 *Download App on Play Store:*\n${PLAY_STORE_URL}\n\n👉 Open Intersemester App → Tap *Connect Batch* → Enter Code: *${code}*`;
 
                     const res = await shareLink({
                       title: 'Join our Class Timetable',

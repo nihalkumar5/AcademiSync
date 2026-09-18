@@ -1,6 +1,6 @@
 'use client';
 
-import { shareLink } from '@/lib/shareUtils';
+import { shareLink, PLAY_STORE_URL } from '@/lib/shareUtils';
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { MessOnboarding } from './MessOnboarding';
@@ -224,6 +224,9 @@ export const MessView: React.FC = () => {
 🔑 *Mess Code:* ${code}
 
 🍽️ Live Meal Countdowns, Daily Dishes & Serving Hours
+
+📲 *Download App on Play Store:*
+${PLAY_STORE_URL}
 
 👉 Open Intersemester App → Go to Mess tab → Enter Code: *${code}*`;
 
