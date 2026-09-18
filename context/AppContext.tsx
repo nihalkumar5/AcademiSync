@@ -234,6 +234,7 @@ export interface AppContextType {
   cleanDuplicateEvents: () => number;
   exams: Exam[];
   addExam: (exam: Omit<Exam, 'id' | 'createdAt'>) => Exam;
+  updateExam: (exam: Exam) => void;
   deleteExam: (id: string) => void;
   setFullExams: (exams: Exam[]) => void;
   settings: UserSettings;
@@ -2107,10 +2108,37 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const userRef = doc(db, 'users', user.id);
       setDoc(userRef, { exams: sanitizeForFirestore(updated), lastUpdated: Date.now() }, { merge: true })
         .catch(err => console.error('Error saving exams:', err));
+
+      if (profile.isBatchSynced && profile.batchKey && isBatchCR) {
+        const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
+        setDoc(batchDocRef, { exams: sanitizeForFirestore(updated), updatedAt: new Date().toISOString() }, { merge: true })
+          .catch(err => console.error('Error saving exams to batch on add:', err));
+      }
     }
     syncCRChangesToBatch(undefined, undefined, undefined, updated);
     showToast('Exam Added', examData.subjectName, 'success');
     return newExam;
+  };
+
+  const updateExam = (updatedExam: Exam) => {
+    const updated = exams.map((e) => (e.id === updatedExam.id ? updatedExam : e))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    setExamsState(updated);
+    storage.setExams(updated);
+
+    if (user) {
+      const userRef = doc(db, 'users', user.id);
+      setDoc(userRef, { exams: sanitizeForFirestore(updated), lastUpdated: Date.now() }, { merge: true })
+        .catch(err => console.error('Error saving exams on update:', err));
+
+      if (profile.isBatchSynced && profile.batchKey && isBatchCR) {
+        const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
+        setDoc(batchDocRef, { exams: sanitizeForFirestore(updated), updatedAt: new Date().toISOString() }, { merge: true })
+          .catch(err => console.error('Error saving exams to batch on update:', err));
+      }
+    }
+    syncCRChangesToBatch(undefined, undefined, undefined, updated);
+    showToast('Exam Updated', updatedExam.subjectName, 'success');
   };
 
   const deleteExam = (id: string) => {
@@ -2122,6 +2150,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const userRef = doc(db, 'users', user.id);
       setDoc(userRef, { exams: sanitizeForFirestore(updated), lastUpdated: Date.now() }, { merge: true })
         .catch(err => console.error('Error saving exams on delete:', err));
+
+      if (profile.isBatchSynced && profile.batchKey && isBatchCR) {
+        const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
+        setDoc(batchDocRef, { exams: sanitizeForFirestore(updated), updatedAt: new Date().toISOString() }, { merge: true })
+          .catch(err => console.error('Error saving exams to batch on delete:', err));
+      }
     }
     syncCRChangesToBatch(undefined, undefined, undefined, updated);
     showToast('Exam Deleted', 'Exam removed', 'info');
@@ -3988,6 +4022,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         triggerSimulatedAlert,
         exams,
         addExam,
+        updateExam,
         deleteExam,
         setFullExams,
         events,

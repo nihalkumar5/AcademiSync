@@ -15,7 +15,7 @@ interface ExamImportModalProps {
 }
 
 export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClose }) => {
-  const { exams, setFullExams, showToast, user } = useApp();
+  const { exams, setFullExams, showToast, user, profile, subjects } = useApp();
 
   const [step, setStep] = useState<'upload' | 'extracting' | 'review'>('upload');
   const [extractedExams, setExtractedExams] = useState<ExtractedExam[]>([]);
@@ -32,11 +32,19 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
     onClose();
   };
 
+  const getBranchCode = (branchStr?: string): string => {
+    if (!branchStr) return '';
+    const match = branchStr.match(/\(([^)]+)\)/);
+    if (match && match[1]) return match[1].trim();
+    return branchStr.trim();
+  };
+
   const runExtraction = async (filesInfo: { name: string, base64: string, mimeType: string }[]) => {
     setFileName(filesInfo.length === 1 ? filesInfo[0].name : `${filesInfo.length} files selected`);
     setStep('extracting');
 
     try {
+      const branchCode = getBranchCode(profile?.branch);
       const res = await fetch('/api/extract-exam', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -44,6 +52,15 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
           fileName: filesInfo.length === 1 ? filesInfo[0].name : 'Multiple Files',
           images: filesInfo,
           userId: user?.id || (user as any)?.uid || null,
+          studentContext: {
+            college: profile?.college || '',
+            programme: profile?.programme || '',
+            branch: profile?.branch || '',
+            branchCode: branchCode,
+            semester: profile?.semester || '',
+            section: profile?.section || '',
+            subjects: (subjects || []).map((s) => s.name + (s.code ? ` (${s.code})` : '')),
+          },
         }),
       });
 
@@ -151,6 +168,12 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
     >
       {step === 'upload' && (
         <div className="flex flex-col text-center">
+          {profile?.branch && (
+            <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 bg-[#F7F7F5] dark:bg-white/[0.04] border border-[#E5E5E5] dark:border-white/[0.08] text-[12px] text-[#6F6F6F] dark:text-[#A1A1AA] self-center">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Target: <strong className="text-[#111111] dark:text-[#F4F4F6]">{profile.branch}</strong>{profile.semester ? ` • Sem ${profile.semester}` : ''}</span>
+            </div>
+          )}
           <div className="relative group w-full h-[220px] sm:h-[240px] flex flex-col items-center justify-center rounded-none border-2 border-dashed border-black/15 dark:border-white/[0.1] bg-[#F7F7F5]/50 dark:bg-white/[0.02] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-all cursor-pointer mb-5">
             <input
               type="file"

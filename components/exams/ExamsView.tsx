@@ -5,19 +5,23 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Sparkles, Calendar, CalendarDays, BookOpen, Clock, AlertCircle, Plus, Share2, UserPlus } from 'lucide-react';
+import { Sparkles, Calendar, CalendarDays, BookOpen, Clock, AlertCircle, Plus, Share2, UserPlus, Edit2, Trash2 } from 'lucide-react';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { ExamImportModal } from './ExamImportModal';
+import { AddEditExamModal } from './AddEditExamModal';
 import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
 import { formatBatchDisplayName } from '@/lib/timetableUtils';
+import { Exam } from '@/lib/types';
 
 export const ExamsView: React.FC = () => {
-  const { exams, isBatchCR, shareTimetableWithBatch, shareExamsWithBatch, joinSharedExams, showToast, user, profile, currentBatchData } = useApp();
+  const { exams, deleteExam, isBatchCR, shareTimetableWithBatch, shareExamsWithBatch, joinSharedExams, showToast, user, profile, currentBatchData } = useApp();
   const router = useRouter();
   const isSignedIn = !!user;
   const [showImportModal, setShowImportModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showAddEditModal, setShowAddEditModal] = useState(false);
+  const [selectedExamToEdit, setSelectedExamToEdit] = useState<Exam | null>(null);
   const [inviteInput, setInviteInput] = useState('');
   const [isJoining, setIsJoining] = useState(false);
   const [now, setNow] = useState(new Date());
@@ -33,6 +37,26 @@ export const ExamsView: React.FC = () => {
       return;
     }
     setShowImportModal(true);
+  };
+
+  const handleAddNewExam = () => {
+    if (!isSignedIn) {
+      router.push('/sign-in');
+      return;
+    }
+    setSelectedExamToEdit(null);
+    setShowAddEditModal(true);
+  };
+
+  const handleEditExam = (exam: Exam) => {
+    setSelectedExamToEdit(exam);
+    setShowAddEditModal(true);
+  };
+
+  const handleDeleteExam = (id: string, name: string) => {
+    if (window.confirm(`Are you sure you want to delete the exam for "${name}"?`)) {
+      deleteExam(id);
+    }
   };
 
   const handleJoinSubmit = async (e: React.FormEvent) => {
@@ -112,6 +136,12 @@ export const ExamsView: React.FC = () => {
           >
             <Sparkles className="w-4 h-4" /> Magic Import
           </button>
+          <button
+            onClick={handleAddNewExam}
+            className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-white/[0.08] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors gap-1.5 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> Add Exam
+          </button>
           {exams.length > 0 && isBatchCR && (
             <button
               onClick={async () => {
@@ -160,18 +190,39 @@ ${PLAY_STORE_URL}
                 NEXT EXAM
               </span>
             </div>
-            <span className="text-[11.5px] font-mono font-bold text-[#78350F] dark:text-amber-200 bg-amber-200/70 dark:bg-amber-950/50 border border-amber-300/80 dark:border-amber-800/50 px-2.5 py-1 rounded-none uppercase tracking-wider">
-              {getCountdown(nextExam.date)}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11.5px] font-mono font-bold text-[#78350F] dark:text-amber-200 bg-amber-200/70 dark:bg-amber-950/50 border border-amber-300/80 dark:border-amber-800/50 px-2.5 py-1 rounded-none uppercase tracking-wider">
+                {getCountdown(nextExam.date)}
+              </span>
+              <button
+                onClick={() => handleEditExam(nextExam)}
+                className="p-1 text-[#78350F] hover:text-[#B45309] dark:text-amber-300 dark:hover:text-amber-100 hover:bg-amber-200/60 dark:hover:bg-amber-900/30 transition-colors cursor-pointer"
+                title="Edit Exam"
+              >
+                <Edit2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
           <h3 className="text-[19px] sm:text-[21px] font-bold text-[#111111] dark:text-[#F4F4F6] tracking-tight mb-2">
             {nextExam.subjectName}
           </h3>
-          <p className="text-[13px] font-mono text-[#92400E] dark:text-[#FDE68A]/80 leading-relaxed font-medium">
-            {new Date(nextExam.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-            {' • '}
-            {new Date(nextExam.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-          </p>
+          <div className="flex flex-wrap items-center gap-3 text-[13px] font-mono text-[#92400E] dark:text-[#FDE68A]/80 leading-relaxed font-medium">
+            <span>
+              {new Date(nextExam.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+              {' • '}
+              {new Date(nextExam.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+            </span>
+            {nextExam.room && (
+              <span className="bg-amber-200/50 dark:bg-amber-900/40 px-2 py-0.5 text-[12px] font-medium text-[#78350F] dark:text-amber-200">
+                Room: {nextExam.room}
+              </span>
+            )}
+            {nextExam.durationMinutes && (
+              <span className="text-[12px] text-[#92400E]/80 dark:text-[#FDE68A]/70">
+                ({nextExam.durationMinutes} mins)
+              </span>
+            )}
+          </div>
           {nextExam.syllabus && (
             <div className="mt-3 pt-3 border-t border-amber-200/80 dark:border-amber-900/50">
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-800/70 dark:text-amber-400/70 block mb-0.5">
@@ -194,9 +245,23 @@ ${PLAY_STORE_URL}
           <div className="py-12 border border-dashed border-[#D9D9D6] dark:border-white/[0.08] flex flex-col items-center justify-center text-center p-6">
             <Calendar className="w-8 h-8 text-[#6F6F6F] dark:text-[#A1A1AA] mb-3" />
             <h4 className="text-[16px] font-semibold text-[#111111] dark:text-[#F4F4F6]">No exams scheduled</h4>
-            <p className="text-[14px] text-[#6F6F6F] dark:text-[#94A3B8] mt-1 mb-4">
+            <p className="text-[14px] text-[#6F6F6F] dark:text-[#94A3B8] mt-1 mb-5">
               Upload your exam timetable using magic scanner or add manually.
             </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <button
+                onClick={handleAddNewExam}
+                className="flex items-center justify-center h-9 px-4 border border-[#D9D9D6] dark:border-white/[0.08] text-[#111111] dark:text-[#F4F4F6] text-[12.5px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors gap-1.5 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add Exam Manually
+              </button>
+              <button
+                onClick={handleMagicImport}
+                className="flex items-center justify-center h-9 px-4 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] text-[12.5px] font-semibold transition-colors gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Sparkles className="w-3.5 h-3.5" /> Magic Import
+              </button>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-0">
@@ -214,12 +279,51 @@ ${PLAY_STORE_URL}
                       <span className="text-[10px] font-bold tracking-[1px] uppercase text-[#111111] dark:text-[#A1A1AA] mt-1">{dateMonth}</span>
                     </div>
                     <div className="flex flex-col flex-1">
-                      <p className="text-[15px] text-[#111111] dark:text-[#F4F4F6] font-medium leading-relaxed">
-                        {exam.subjectName}
-                      </p>
-                      <p className="text-[10px] font-bold tracking-[1.5px] uppercase text-[#6F6F6F] dark:text-[#94A3B8] mt-1 mb-2">
-                        {isPast ? 'COMPLETED' : getCountdown(exam.date)}
-                      </p>
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[15px] text-[#111111] dark:text-[#F4F4F6] font-medium leading-relaxed">
+                            {exam.subjectName}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-2.5 mt-1 mb-2">
+                            <span className="text-[10px] font-bold tracking-[1.5px] uppercase text-[#6F6F6F] dark:text-[#94A3B8]">
+                              {isPast ? 'COMPLETED' : getCountdown(exam.date)}
+                            </span>
+                            <span className="text-[#D9D9D6] dark:text-white/[0.1]">•</span>
+                            <span className="text-[11.5px] font-mono text-[#6F6F6F] dark:text-[#94A3B8] flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-[#A1A1AA]" />
+                              {new Date(exam.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                              {exam.durationMinutes ? ` (${exam.durationMinutes}m)` : ''}
+                            </span>
+                            {exam.room && (
+                              <>
+                                <span className="text-[#D9D9D6] dark:text-white/[0.1]">•</span>
+                                <span className="text-[11.5px] font-medium text-[#111111] dark:text-[#F4F4F6] bg-[#F7F7F5] dark:bg-white/[0.04] px-1.5 py-0.5 border border-[#E5E5E5] dark:border-white/[0.08]">
+                                  Room {exam.room}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Edit & Delete Action Buttons */}
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={() => handleEditExam(exam)}
+                            className="p-1.5 text-[#6F6F6F] hover:text-[#111111] dark:text-[#A1A1AA] dark:hover:text-white hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] border border-transparent hover:border-[#E5E5E5] dark:hover:border-white/[0.1] transition-all flex items-center gap-1 text-[12px] font-medium cursor-pointer"
+                            title="Edit Exam"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteExam(exam.id, exam.subjectName)}
+                            className="p-1.5 text-[#6F6F6F] hover:text-red-600 dark:text-[#A1A1AA] dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 border border-transparent hover:border-red-200 dark:hover:border-red-900/30 transition-all cursor-pointer"
+                            title="Delete Exam"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
                       
                       {(exam.syllabus) && (
                         <div className="mt-2 pt-3 border-t border-[#E5E5E5] dark:border-white/[0.08] w-full">
@@ -236,6 +340,14 @@ ${PLAY_STORE_URL}
       </div>
 
       <ExamImportModal isOpen={showImportModal} onClose={() => setShowImportModal(false)} />
+      <AddEditExamModal
+        isOpen={showAddEditModal}
+        onClose={() => {
+          setShowAddEditModal(false);
+          setSelectedExamToEdit(null);
+        }}
+        examToEdit={selectedExamToEdit}
+      />
 
       <Modal isOpen={showJoinModal} onClose={() => setShowJoinModal(false)} title="Join Shared Exams">
         <form onSubmit={handleJoinSubmit} className="flex flex-col gap-4">
