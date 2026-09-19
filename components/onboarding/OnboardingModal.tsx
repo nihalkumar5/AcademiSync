@@ -9,10 +9,12 @@ import {
   Users, 
   ArrowLeft, 
   Upload,
-  ArrowUpRight
+  ArrowUpRight,
+  GraduationCap
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { TimetableImportModal } from '@/components/timetable/TimetableImportModal';
+import { SelectBatchModal } from '@/components/batch/SelectBatchModal';
 
 export const OnboardingModal = () => {
   const { 
@@ -34,6 +36,9 @@ export const OnboardingModal = () => {
   const [inviteCode, setInviteCode] = useState('');
   const [inviteError, setInviteError] = useState(false);
   const [isJoiningCode, setIsJoiningCode] = useState(false);
+
+  // Select Batch Modal State
+  const [isSelectBatchModalOpen, setIsSelectBatchModalOpen] = useState(false);
 
   // Full AI Timetable Import Modal State
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -372,25 +377,30 @@ export const OnboardingModal = () => {
                   <div className="flex items-center gap-3 my-1 mb-4">
                     <div className="flex-1 h-[1px] bg-[#E5E5E5] dark:bg-white/[0.08]" />
                     <span className="text-[10px] font-mono font-bold tracking-[1.5px] text-[#888888] dark:text-[#64748B] uppercase">
-                      OR SCAN TIMETABLE
+                      OR FIND YOUR BATCH
                     </span>
                     <div className="flex-1 h-[1px] bg-[#E5E5E5] dark:bg-white/[0.08]" />
                   </div>
 
                   <div 
-                    onClick={() => setIsImportModalOpen(true)}
-                    className="relative group w-full py-6 px-4 flex flex-col items-center justify-center rounded-none border-2 border-dashed border-[#D8D8D8] dark:border-white/[0.1] hover:border-[#111111]/40 dark:hover:border-white/30 bg-[#F9F9F8]/60 dark:bg-[#121317] hover:bg-[#F9F9F8] transition-all cursor-pointer text-center shadow-xs"
+                    onClick={() => setIsSelectBatchModalOpen(true)}
+                    className="relative group w-full p-5 sm:p-6 flex flex-col items-center justify-center rounded-none border border-[#D8D8D8] dark:border-white/[0.1] hover:border-[#111111]/40 dark:hover:border-white/30 bg-[#FAFAF8] dark:bg-[#121317] hover:bg-[#F4F4F2] dark:hover:bg-[#16181E] transition-all cursor-pointer text-center shadow-xs"
                   >
-                    <Upload className="w-5 h-5 mb-2 text-[#111111] dark:text-[#F4F4F6] group-hover:-translate-y-0.5 transition-transform" />
-                    <h3 className="text-[15px] font-semibold text-[#111111] dark:text-[#F4F4F6] mb-1">Just Upload & Chill</h3>
-                    <p className="text-[13px] font-normal text-[#6B6B6B] dark:text-[#94A3B8] max-w-[280px] leading-snug mb-3">
-                      Drop your routine photo or PDF. Intersemester builds your weekly schedule automatically.
-                    </p>
-                    <div className="px-6 h-[40px] flex items-center justify-center bg-[#111111] text-white dark:bg-white dark:text-[#111111] font-bold text-[12px] pointer-events-none rounded-none w-fit mx-auto mb-2 shadow-xs uppercase tracking-wider">
-                      Choose file
+                    <div className="w-10 h-10 border border-[#E5E5E5] dark:border-white/[0.1] bg-white dark:bg-[#1A1C23] flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform shadow-xs">
+                      <GraduationCap className="w-5 h-5 text-black dark:text-[#F4F4F6]" />
                     </div>
-                    <div className="text-[10.5px] text-[#888888] dark:text-[#64748B] font-bold tracking-[0.5px] uppercase font-mono">
-                      JPG · PNG · PDF (Multi-Page)
+                    <span className="text-[10px] font-mono font-bold tracking-[1.5px] uppercase text-[#888888] dark:text-[#94A3B8] mb-1">
+                      CLASS DIRECTORY
+                    </span>
+                    <h3 className="text-[16px] font-bold text-black dark:text-[#F4F4F6] mb-1">
+                      Select Your College & Batch
+                    </h3>
+                    <p className="text-[12.5px] text-black/60 dark:text-[#94A3B8] max-w-[280px] leading-relaxed mb-3.5">
+                      Select your college, branch, and semester to connect with your classmates and sync your schedule.
+                    </p>
+                    <div className="px-6 h-[38px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[12px] pointer-events-none rounded-none w-fit mx-auto shadow-xs uppercase tracking-wider gap-1.5 group-hover:opacity-90 transition-opacity">
+                      <span>Select Batch</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </div>
                   </div>
 
@@ -588,25 +598,30 @@ export const OnboardingModal = () => {
                   <div className="flex items-center gap-3 my-1 mb-5">
                     <div className="flex-1 h-[1px] bg-black/10 dark:bg-white/[0.08]" />
                     <span className="text-[10.5px] font-bold tracking-[1.5px] text-black/40 dark:text-white/40 uppercase font-mono">
-                      OR SCAN TIMETABLE
+                      OR FIND YOUR BATCH
                     </span>
                     <div className="flex-1 h-[1px] bg-black/10 dark:bg-white/[0.08]" />
                   </div>
 
                   <div 
-                    onClick={() => setIsImportModalOpen(true)}
-                    className="relative group w-full py-7 px-5 flex flex-col items-center justify-center rounded-none border-2 border-dashed border-black/15 dark:border-white/[0.1] hover:border-black/30 dark:hover:border-white/20 bg-white dark:bg-[#121317] hover:bg-black/[0.02] dark:hover:bg-[#181A20] transition-all cursor-pointer text-center shadow-sm"
+                    onClick={() => setIsSelectBatchModalOpen(true)}
+                    className="relative group w-full p-7 flex flex-col items-center justify-center rounded-none border border-black/15 dark:border-white/[0.1] hover:border-black/30 dark:hover:border-white/20 bg-[#FAFAF8] dark:bg-[#121317] hover:bg-[#F5F5F2] dark:hover:bg-[#16181E] transition-all cursor-pointer text-center shadow-sm"
                   >
-                    <Upload className="w-5 h-5 mb-2.5 text-black dark:text-[#F4F4F6] group-hover:-translate-y-0.5 transition-transform" />
-                    <h3 className="text-[16px] font-bold text-black dark:text-[#F4F4F6] mb-1">Just Upload & Chill</h3>
-                    <p className="text-[13px] text-black/60 dark:text-[#94A3B8] max-w-[300px] leading-snug mb-3.5">
-                      Drop your routine photo or PDF. Intersemester builds your weekly schedule automatically.
-                    </p>
-                    <div className="px-7 h-[42px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto mb-2.5 shadow-sm uppercase tracking-wider">
-                      Choose file
+                    <div className="w-11 h-11 border border-black/10 dark:border-white/[0.1] bg-white dark:bg-[#1A1C23] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform shadow-xs">
+                      <GraduationCap className="w-5 h-5 text-black dark:text-[#F4F4F6]" />
                     </div>
-                    <div className="text-[10.5px] text-black/40 dark:text-[#64748B] font-bold tracking-[0.5px] uppercase font-mono">
-                      JPG · PNG · PDF (Multi-Page)
+                    <span className="text-[10.5px] font-mono font-bold tracking-[1.5px] uppercase text-black/50 dark:text-[#94A3B8] mb-1">
+                      CLASS DIRECTORY
+                    </span>
+                    <h3 className="text-[17px] font-bold text-black dark:text-[#F4F4F6] mb-1.5">
+                      Select Your College & Batch
+                    </h3>
+                    <p className="text-[13px] text-black/60 dark:text-[#94A3B8] max-w-[320px] leading-relaxed mb-4">
+                      Select your college, branch, and semester to connect with your classmates and sync your schedule.
+                    </p>
+                    <div className="px-7 h-[42px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[12.5px] pointer-events-none rounded-none w-fit mx-auto shadow-sm uppercase tracking-wider gap-2 group-hover:opacity-90 transition-opacity">
+                      <span>Select Batch</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </div>
                   </div>
 
@@ -656,6 +671,12 @@ export const OnboardingModal = () => {
       <TimetableImportModal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
+      />
+
+      {/* Full Size Select Batch & Class Discovery Modal */}
+      <SelectBatchModal
+        isOpen={isSelectBatchModalOpen}
+        onClose={() => setIsSelectBatchModalOpen(false)}
       />
     </div>
   );
