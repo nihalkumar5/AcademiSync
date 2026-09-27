@@ -6,9 +6,11 @@ const config: CapacitorConfig = {
   webDir: 'out',
   overrideUserAgent: 'Mozilla/5.0 (Linux; Android 13; Pixel 7 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36',
   server: {
-    url: 'https://academi-sync-chi.vercel.app/',
+    url: 'https://app.intersemester.com/',
     cleartext: true,
     allowNavigation: [
+      'app.intersemester.com',
+      'intersemester.com',
       'academi-sync-chi.vercel.app',
       'academisync-c1a37.firebaseapp.com',
       '*.firebaseapp.com',

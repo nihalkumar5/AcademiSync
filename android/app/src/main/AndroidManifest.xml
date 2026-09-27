@@ -27,6 +27,10 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="app.intersemester.com" />
+                <data android:scheme="http" android:host="app.intersemester.com" />
+                <data android:scheme="https" android:host="intersemester.com" />
+                <data android:scheme="http" android:host="intersemester.com" />
                 <data android:scheme="https" android:host="academi-sync-chi.vercel.app" />
                 <data android:scheme="http" android:host="academi-sync-chi.vercel.app" />
             </intent-filter>

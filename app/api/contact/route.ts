@@ -45,8 +45,8 @@ export async function POST(req: Request) {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Origin': 'https://academi-sync-chi.vercel.app',
-          'Referer': 'https://academi-sync-chi.vercel.app/contact',
+          'Origin': 'https://app.intersemester.com',
+          'Referer': 'https://app.intersemester.com/contact',
         },
         body: JSON.stringify({
           name: docData.name,

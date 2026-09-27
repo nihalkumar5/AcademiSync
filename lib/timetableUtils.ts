@@ -1019,7 +1019,7 @@ export const getCanonicalBatchKey = (
 /**
  * Robustly extracts the clean batch invite code or canonical key from any input string:
  * - Direct 6-character code: "65SQ9K" or "65sq9k"
- * - Full URL: "https://academi-sync-chi.vercel.app/?invite=65SQ9K"
+ * - Full URL: "https://app.intersemester.com/?invite=65SQ9K"
  * - URL with multiple params: "https://...?invite=65SQ9K&from=whatsapp"
  * - Whole WhatsApp share message with text and code
  * - Canonical batch key: "iiitnr_btech_cse_sem4_secA"
