@@ -170,25 +170,38 @@ CRITICAL INSTRUCTIONS FOR TARGET FILTERING & RESOLUTION:
   * DO NOT output classes for departments or groups that do not belong to the target student.
   * FALLBACK GUARANTEE: If the target student's branch or semester is NOT explicitly written or found in the document, DO NOT output an empty array or only one single course! Instead, extract all course routine slots visible on the uploaded routine page(s) so the student can review and adjust them.
 
-2. SLOT-PATTERN MATRIX RESOLUTION (IIT Bombay / Slot System Style):
-- If the document provides a Course Table with Slot Identifiers (e.g., Slot 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, L1, L2, L3, L4, LX) AND a separate Slot Pattern Grid/Matrix mapping slots to days & times (e.g., 1A on Mon 9:30-10:25, 1B on Tue 9:30-10:25, 1C on Thu 9:30-10:25):
-  * NEVER output "Slot 1" as the day or time!
-  * You MUST resolve each course's slot into actual Days, Start Times, and End Times by cross-referencing the Slot Pattern Grid.
-  * Example: If "CS 348" is in Slot "1", output 3 separate session entries:
-    - Monday 09:30 - 10:25
-    - Tuesday 09:30 - 10:25
-    - Thursday 09:30 - 10:25
-  * For Lab slots (e.g. L1, L2, L3, L4, LX), look up the Lab Schedule table (e.g., Monday 14:00 - 16:55 for L1) and output the session with isLab: true.
-  * If the student provided Specific Target Courses, extract only those courses. If none are specified, extract all courses for the target student's branch/semester.
+2. CRITICAL LUNCH BREAK & VERTICAL TEXT COLUMNS (ZERO-CLASH DIRECTIVE):
+- Timetable grids frequently feature an interval or lunch column (such as '1 - 2', '12 - 1', 'Lunch', 'Break') where words like 'LUNCH', 'L-U-N-C-H', 'RECESS', 'BREAK', 'INTERVAL', 'TEA' are written vertically across rows (Monday 'L', Tuesday 'U', Wednesday 'N', Thursday 'C', Friday 'H').
+- NEVER interpret these vertical letters as classes or course slots!
+- In particular, on Monday, the letter 'L' in the '1 - 2' column is the letter 'L' of L-U-N-C-H break; it is NOT Slot 'L' (Digital Electronics)! NEVER output any class session for the 1 - 2 lunch break!
+- A class only exists if it is in the regular academic class period columns (e.g. 9:00-9:55, 10:00-10:55, 11:00-11:55, 12:00-12:55, 02:00-02:55, 03:00-03:55, 04:00-04:55, 05:00-05:55).
+- On Monday, at 02:00 PM, only the class scheduled in the 02:00-02:55 period (e.g. ILC) exists. NEVER create a ghost class from the lunch column!
 
-3. SUBJECT NAME & ABBREVIATIONS:
-- Look for course abbreviations and titles (e.g. "ML", "CNS", "PS", "Operating Systems", "CS 347").
-- Check bottom/side legends or reference tables mapping short codes to full subject names.
-- If a slot contains an abbreviation (e.g. "PS" or "DSA"), use the expanded name or standard title.
-- NEVER return generic placeholders like "Subject" or "Lecture". Always put the real subject title or course code.
-- If multiple courses share a slot with slashes (e.g. "CS 409 / CS 6011"), extract the specific course details.
+3. PRESERVE SLASH / OBLIQUE NOTATION VERBATIM:
+- When a timetable cell contains a slash/oblique (e.g. "ILC/Yoga" or "CourseA / CourseB" or "Lab / Tut"):
+  * Keep it EXACTLY as written with the oblique / slash: "ILC/Yoga".
+  * DO NOT drop either side and DO NOT split into overlapping classes!
+  * Both "subjectName" and "subjectCode" must keep the oblique notation (e.g. "ILC/Yoga").
+  * For faculty: if mapped in the legend for both subjects, combine them with slash (e.g. "Dr. Aruna / GF").
 
-4. CRITICAL ACADEMIC TIME & AM/PM LOGIC (STRICT 24-HOUR FORMAT "HH:MM"):
+4. SLOT-PATTERN MATRIX & LEGEND RESOLUTION:
+- If the document provides a Course Table / Legend with Slot Identifiers (e.g., Slot A, B, Z, L, P, F, E, 1, 2, 3) AND a separate schedule grid:
+  * Look up each slot code in the mapping table to extract the FULL Subject Name and Faculty:
+    - Example: Slot L -> "Digital Electronics using Verilog", Faculty: "Dr. Manoj"
+    - Example: Slot Z -> "Calculus", Faculty: "Dr. Jaya Rahod"
+    - Example: Slot B -> "Programming with C", Faculty: "Dr. Ruhul"
+    - Example: Slot A -> "Linear Algebra & Matrix Analysis", Faculty: "Dr. Mithilesh"
+    - Example: Slot F -> "Internet of Things", Faculty: "Dr. Abhishek"
+    - Example: Slot P -> "IT Workshop", Faculty: "Prof. Srinivasa"
+    - Example: Slot E -> "Entrepreneurship", Faculty: "Dr. Amit"
+  * CLEAN SUBJECT CODES (NO SINGLE-LETTER SLOTS):
+    - The single slot letters 'L', 'B', 'Z', 'A', 'P', 'F', 'E' are SLOTS, NOT course codes!
+    - DO NOT output single-letter slot names like "L", "B", "Z" as subjectCode!
+    - Instead, output a clean 2-4 letter course abbreviation (e.g. "DEV" for Digital Electronics, "PWC" for Programming with C, "CALC" for Calculus, "LAMA" for Linear Algebra, "IOT" for Internet of Things, "ITW" for IT Workshop, "ILC/Yoga" for ILC/Yoga) or leave subjectCode as empty string "".
+  * HEADER ROOM EXTRACTION:
+    - If the header or title specifies a room (e.g. "Room No 138" or "Room 138"), populate "room": "138" for all sessions.
+
+5. CRITICAL ACADEMIC TIME & AM/PM LOGIC (STRICT 24-HOUR FORMAT "HH:MM"):
 - In college and university timetables, classes operate ONLY between 08:00 AM and 07:00 PM (08:00 to 19:00).
 - TIMETABLES OFTEN OMIT "PM" FOR AFTERNOON PERIODS:
   Timetable grids often label columns or slots as "02:00 - 03:00", "03:00 - 04:00", "04:00 - 05:00", or "2:00 - 3:55".
