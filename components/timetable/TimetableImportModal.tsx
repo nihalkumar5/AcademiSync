@@ -196,41 +196,38 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
       );
 
       if (!matchedSubject) {
-        // Check if user previously had this subject in `subjects` to preserve custom color, notes, faculty details
+        // Check if user previously had this subject in `subjects` to preserve custom color, notes
         const existingSubject = subjects.find(
           (s) => s.name.toLowerCase() === extSession.subjectName.toLowerCase() || 
                  (extSession.subjectCode && s.code && s.code.toLowerCase() === extSession.subjectCode.toLowerCase())
         );
 
-        if (existingSubject) {
-          matchedSubject = {
-            ...existingSubject,
-            facultyName: extSession.faculty || existingSubject.facultyName,
-            room: extSession.room || existingSubject.room,
-            isLab: extSession.isLab ?? existingSubject.isLab,
-            isElective: isExtractedElective || existingSubject.isElective || false,
-          };
-        } else {
-          const assignedColor = getHarmonicColorForSubject(
-            { name: extSession.subjectName, code: extSession.subjectCode, isLab: extSession.isLab },
-            newSubjects.map((s) => s.color)
-          );
+        const assignedColor = existingSubject?.color || getHarmonicColorForSubject(
+          { name: extSession.subjectName, code: extSession.subjectCode, isLab: extSession.isLab },
+          newSubjects.map((s) => s.color)
+        );
 
-          matchedSubject = {
-            id: `subj_${Date.now()}_${idx}`,
-            name: extSession.subjectName,
-            code: extSession.subjectCode || '',
-            shortName: extSession.subjectName.substring(0, 4).toUpperCase(),
-            facultyName: extSession.faculty || 'TBD',
-            room: extSession.room || 'TBD',
-            credits: 3,
-            color: isExtractedElective ? '#8067B5' : assignedColor,
-            carryRequirements: extSession.isLab ? ['Laptop (Charged)', 'Lab Manual / Record'] : ['Lecture Notebook'],
-            isLab: extSession.isLab,
-            isElective: isExtractedElective,
-          };
-        }
+        matchedSubject = {
+          id: existingSubject?.id || `subj_${Date.now()}_${idx}`,
+          name: extSession.subjectName,
+          code: extSession.subjectCode || existingSubject?.code || '',
+          shortName: extSession.subjectName.substring(0, 4).toUpperCase(),
+          facultyName: extSession.faculty || existingSubject?.facultyName || 'TBD',
+          room: extSession.room || existingSubject?.room || 'TBD',
+          credits: existingSubject?.credits || 3,
+          color: isExtractedElective ? '#8067B5' : assignedColor,
+          carryRequirements: extSession.isLab ? ['Laptop (Charged)', 'Lab Manual / Record'] : (existingSubject?.carryRequirements || ['Lecture Notebook']),
+          isLab: extSession.isLab,
+          isElective: isExtractedElective,
+        };
         newSubjects.push(matchedSubject);
+      } else {
+        if (extSession.faculty && (!matchedSubject.facultyName || matchedSubject.facultyName === 'TBD')) {
+          matchedSubject.facultyName = extSession.faculty;
+        }
+        if (extSession.room && (!matchedSubject.room || matchedSubject.room === 'TBD')) {
+          matchedSubject.room = extSession.room;
+        }
       }
 
       const cleanStart = sanitizeAcademicTime(extSession.startTime, '09:00', false);
