@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { HomeworkPriority } from '@/lib/types';
 import { validateUploadedFile } from '@/lib/fileSafety';
+import { processFileForAi } from '@/lib/fileCompressor';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input, Textarea, Select } from '../ui/Input';
@@ -111,7 +112,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
     setStep('review');
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const check = validateUploadedFile({ name: file.name, size: file.size, type: file.type });
@@ -121,12 +122,13 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64 = event.target?.result as string;
-        runScan(file.name, base64, file.type || 'image/jpeg');
-      };
-      reader.readAsDataURL(file);
+      try {
+        const processed = await processFileForAi(file);
+        runScan(processed.name, processed.base64, processed.mimeType);
+      } catch (err) {
+        console.error('File compression/processing failed:', err);
+        showToast('Processing Error', 'Failed to process uploaded file.', 'error');
+      }
     }
   };
 

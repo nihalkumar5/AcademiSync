@@ -40,10 +40,10 @@ export async function POST(req: Request) {
 
     if (apiKey && imageList.length > 0) {
       const candidateModels = [
-        'gemini-flash-lite-latest',
-        'gemini-3.5-flash-lite',
-        'gemini-3.6-flash',
         'gemini-flash-latest',
+        'gemini-3.8-flash',
+        'gemini-3.5-flash-lite',
+        'gemini-flash-lite-latest',
       ];
       const genAI = new GoogleGenerativeAI(apiKey);
 
@@ -117,10 +117,16 @@ Return ONLY a raw JSON array:
 
       for (const modelName of candidateModels) {
         try {
-          const model = genAI.getGenerativeModel({ model: modelName });
+          const model = genAI.getGenerativeModel({
+            model: modelName,
+            generationConfig: {
+              responseMimeType: 'application/json',
+              temperature: 0.1,
+            },
+          });
           const result: any = await Promise.race([
             model.generateContent([prompt, ...imageParts]),
-            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 18000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 14000))
           ]);
           const responseText = result.response.text();
           let jsonStr = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
