@@ -153,20 +153,20 @@ const LiveMealCard = ({
 
       <div className="relative z-10 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between mb-3.5">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2.5 w-2.5">
+        <div className="flex items-center justify-between mb-3.5 gap-2 flex-wrap">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="relative flex h-2.5 w-2.5 shrink-0">
               {timeState.status === 'SERVING NOW' && (
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               )}
               <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${timeState.status === 'SERVING NOW' ? 'bg-emerald-400' : 'bg-white'}`}></span>
             </span>
-            <span className="text-[11px] font-bold tracking-[1.6px] uppercase text-[#FFFFFF] leading-none">
+            <span className="text-[11px] font-bold tracking-[1.4px] uppercase text-[#FFFFFF] leading-none truncate">
               {timeState.status}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[12px] font-mono font-semibold text-[#FFFFFF] bg-white/10 px-2.5 py-1 border border-white/20">
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-[12px] font-mono font-semibold text-[#FFFFFF] bg-white/10 px-2.5 py-1 border border-white/20 whitespace-nowrap">
               {timeState.timeLeft}
             </span>
           </div>

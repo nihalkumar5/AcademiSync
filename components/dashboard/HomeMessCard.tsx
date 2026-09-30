@@ -209,41 +209,41 @@ export const HomeMessCard: React.FC = () => {
         </div>
 
         {/* Row 1: Header Status + Countdown Box */}
-        <div className="flex items-center justify-between gap-3 relative z-10">
-          <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center justify-between gap-2 sm:gap-3 relative z-10 w-full flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             {isLive ? (
-              <div className="flex items-center gap-2">
-                <span className="relative flex h-2 w-2">
+              <div className="flex items-center gap-1.5 font-mono text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#18A889] min-w-0">
+                <span className="relative flex h-2 w-2 shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#18A889] opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#18A889]"></span>
                 </span>
-                <span className="font-mono text-[11px] font-bold uppercase tracking-[1.4px] text-[#18A889]">
-                  SERVING NOW · {mealInfo.mealName.toUpperCase()}
+                <span className="truncate">
+                  SERVING NOW · <strong className="text-white font-extrabold">{mealInfo.mealName.toUpperCase()}</strong>
                 </span>
               </div>
             ) : (
-              <div className="flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[1.4px] text-[#A0A0A0]">
-                <span className="text-[#C99A32] text-[9px]">●</span>
-                <span>{mealInfo.status === 'TOMORROW' ? 'TOMORROW' : 'UPCOMING'}</span>
-                <span>·</span>
-                <span className="text-white font-extrabold">{mealInfo.mealName.toUpperCase()}</span>
+              <div className="flex items-center gap-1.5 font-mono text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#A0A0A0] min-w-0">
+                <span className="text-[#C99A32] text-[8px] shrink-0">●</span>
+                <span className="shrink-0">{mealInfo.status === 'TOMORROW' ? 'TOMORROW' : 'UPCOMING'}</span>
+                <span className="opacity-40 select-none">·</span>
+                <span className="text-white font-extrabold truncate">{mealInfo.mealName.toUpperCase()}</span>
               </div>
             )}
             {mealInfo.timingStr && (
-              <span className="hidden sm:inline font-mono text-[10.5px] text-[#737373] tracking-normal">
+              <span className="hidden md:inline font-mono text-[10.5px] text-[#737373] tracking-normal shrink-0">
                 ({mealInfo.timingStr})
               </span>
             )}
           </div>
 
           {/* Right Time Badge */}
-          <div className={`px-2.5 py-1 uppercase tracking-wider font-mono font-bold text-[10.5px] sm:text-[11px] shrink-0 rounded-[3px] border flex items-center gap-1.5 ${
+          <div className={`px-2 py-0.5 sm:px-2.5 sm:py-1 uppercase tracking-wider font-mono font-bold text-[10px] sm:text-[11px] shrink-0 rounded-[3px] border flex items-center gap-1 sm:gap-1.5 ${
             isLive
               ? 'bg-[#18A889]/15 text-[#2DD4BF] border-[#18A889]/30'
               : 'bg-white/[0.08] text-white/90 border-white/10'
           }`}>
-            <Clock className="w-3 h-3 opacity-70" />
-            <span>{mealInfo.timeLeft}</span>
+            <Clock className="w-3 h-3 opacity-70 shrink-0" />
+            <span className="whitespace-nowrap">{mealInfo.timeLeft}</span>
           </div>
         </div>
 
