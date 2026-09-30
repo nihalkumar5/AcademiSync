@@ -48,30 +48,52 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   return (
     <div
       className={clsx(
-        "group relative flex flex-col p-4 sm:p-[18px] text-left transition-all rounded-[3px] text-white",
+        "group relative flex flex-col p-4 sm:p-[18px] text-left transition-all rounded-[6px] overflow-hidden",
         menuOpen ? 'z-40' : 'z-0',
         isCurrent
-          ? "bg-[#111111] dark:bg-[#111111] border-2 border-[#18A889] shadow-lg ring-2 ring-[#18A889]/30"
-          : "shadow-xs hover:shadow-md hover:brightness-105"
+          ? "bg-[#161822] dark:bg-[#151722] border-2 border-[#18A889] shadow-[0_0_24px_-4px_rgba(24,168,137,0.3)] ring-1 ring-[#18A889]/30"
+          : "bg-white dark:bg-[#161822] hover:bg-slate-50/80 dark:hover:bg-[#1A1D2B] shadow-xs hover:shadow-md transition-all"
       )}
       style={{
-        backgroundColor: isCurrent ? '#111111' : theme.accent,
-        borderColor: isCurrent ? '#18A889' : 'rgba(0,0,0,0.08)',
+        borderColor: isCurrent 
+          ? '#18A889' 
+          : `${theme.accent}45`,
+        borderWidth: '1px',
+        borderStyle: 'solid',
       }}
     >
+      {/* Ambient delicate corner glow */}
+      {!isCurrent && (
+        <div 
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={{
+            background: `radial-gradient(ellipse 90% 70% at 0% 0%, ${theme.accent}14 0%, transparent 70%)`,
+          }}
+        />
+      )}
+
       <div className="relative z-10 flex flex-col">
         {/* Top Bar: Category Label, Time, & Menu */}
         <div className="flex items-center justify-between gap-2 mb-2.5">
           <div className="flex items-center gap-2 flex-wrap">
             <span 
-              className="text-[11px] font-bold uppercase tracking-[1.4px] leading-none text-white/90"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider font-mono"
+              style={{
+                backgroundColor: `${theme.accent}18`,
+                color: theme.darkAccent || theme.accent,
+                border: `1px solid ${theme.accent}35`,
+              }}
             >
-              {categoryLabel}
+              <span 
+                className="w-1.5 h-1.5 rounded-full shrink-0" 
+                style={{ backgroundColor: theme.accent }}
+              />
+              <span>{categoryLabel}</span>
             </span>
 
             {isLab && (
               <span 
-                className="text-[9.5px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[2px] bg-white/20 text-white"
+                className="text-[9px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[4px] bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
               >
                 LAB
               </span>
@@ -79,14 +101,14 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 
             {isSpecial && !isLab && (
               <span 
-                className="text-[9.5px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[2px] bg-white/20 text-white"
+                className="text-[9px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[4px] bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30"
               >
                 ELECTIVE
               </span>
             )}
 
             {isCurrent && (
-              <span className="inline-flex items-center gap-1 text-[9.5px] font-bold tracking-widest px-1.5 py-0.5 text-[#18A889] bg-[#18A889]/15 border border-[#18A889]/30 uppercase rounded-[2px]">
+              <span className="inline-flex items-center gap-1 text-[9px] font-bold tracking-widest px-1.5 py-0.5 text-[#18A889] bg-[#18A889]/15 border border-[#18A889]/30 uppercase rounded-[4px]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#18A889] animate-pulse" />
                 LIVE
               </span>
@@ -95,7 +117,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 
           <div className="flex items-center gap-2">
             <span 
-              className="text-[12px] sm:text-[13px] font-bold font-mono tracking-tight text-white whitespace-nowrap"
+              className="text-[12px] font-bold font-mono tracking-tight text-slate-500 dark:text-[#94A3B8] whitespace-nowrap"
             >
               {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
             </span>
@@ -106,7 +128,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
                 <button
                   type="button"
                   onClick={() => setMenuOpen((prev) => !prev)}
-                  className="p-1 rounded transition-colors cursor-pointer text-white/80 hover:text-white hover:bg-white/20"
+                  className="p-1 rounded transition-colors cursor-pointer text-slate-400 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
                   title="Class actions"
                 >
                   <MoreHorizontal className="w-4 h-4" />
@@ -151,17 +173,17 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 
         {/* Title */}
         <h4 
-          className="text-[16px] sm:text-[17px] leading-[22px] font-bold tracking-tight break-words mb-2.5 text-white"
+          className="text-[15px] sm:text-[16px] leading-[22px] font-bold tracking-tight break-words mb-2.5 text-[#111111] dark:text-[#F8FAFC]"
         >
           {subject?.name || (session as any).subjectName || (session as any).title || 'Class Session'}
         </h4>
 
         {/* Metadata */}
         <div 
-          className="flex items-center gap-1.5 text-[12px] font-medium truncate text-white/85"
+          className="flex items-center gap-1.5 text-[12px] font-medium truncate text-[#6F737C] dark:text-[#94A3B8]"
         >
           <span className="shrink-0 flex items-center gap-1">
-            <span className="text-[10px] leading-none opacity-80 text-white/70">◉</span> {roomStr}
+            <span className="text-[10px] leading-none opacity-80" style={{ color: theme.darkAccent || theme.accent }}>◉</span> {roomStr}
           </span>
           {displayFaculty && (
             <>

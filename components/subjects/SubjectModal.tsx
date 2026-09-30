@@ -327,40 +327,52 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
             });
             return (
               <div
-                className="p-3.5 rounded-[3px] border transition-all flex flex-col gap-2 mt-1 relative overflow-hidden text-white"
+                className="p-3.5 rounded-[6px] border transition-all flex flex-col gap-2 mt-1 relative overflow-hidden bg-white dark:bg-[#161822]"
                 style={{
-                  backgroundColor: previewTheme.accent,
-                  borderColor: 'rgba(0,0,0,0.1)',
+                  borderColor: `${previewTheme.accent}45`,
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
                 }}
               >
-                <div className="flex items-center justify-between gap-2">
+                <div 
+                  className="absolute inset-0 z-0 pointer-events-none"
+                  style={{
+                    background: `radial-gradient(ellipse 90% 70% at 0% 0%, ${previewTheme.accent}14 0%, transparent 70%)`,
+                  }}
+                />
+                <div className="relative z-10 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span
-                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] text-[10.5px] font-bold tracking-wide bg-white/20 text-white"
+                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] text-[10px] font-bold tracking-wider uppercase font-mono"
+                      style={{
+                        backgroundColor: `${previewTheme.accent}18`,
+                        color: previewTheme.darkAccent || previewTheme.accent,
+                        border: `1px solid ${previewTheme.accent}35`,
+                      }}
                     >
-                      <span className="w-2 h-2 rounded-full shrink-0 bg-white" />
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: previewTheme.accent }} />
                       <span>{previewTheme.name}</span>
-                      {code && <span className="opacity-80 font-mono">· {code}</span>}
+                      {code && <span className="opacity-70 font-mono">· {code}</span>}
                     </span>
-                    <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-[2px] bg-white/20 text-white">
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-[4px] bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-zinc-300">
                       {credits || 3} Credits
                     </span>
                     {isLab && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-[2px] bg-white/25 text-white">
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
                         LAB
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-white/80">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-zinc-400">
                     Live Theme Preview
                   </span>
                 </div>
-                <div>
-                  <h5 className="text-[14px] font-bold text-white">
+                <div className="relative z-10">
+                  <h5 className="text-[14px] font-bold text-slate-900 dark:text-[#F8FAFC]">
                     {name.trim() || 'Subject Name'}
                   </h5>
-                  <p className="text-[11px] text-white/85 mt-0.5">
-                    Room: <strong className="text-white">{room.trim() || 'LT-1'}</strong> · Faculty: <strong className="text-white">{facultyName.trim() || 'Faculty Member'}</strong>
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5">
+                    Room: <strong className="text-slate-800 dark:text-zinc-200">{room.trim() || 'LT-1'}</strong> · Faculty: <strong className="text-slate-800 dark:text-zinc-200">{facultyName.trim() || 'Faculty Member'}</strong>
                   </p>
                 </div>
               </div>
