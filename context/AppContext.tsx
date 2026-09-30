@@ -1662,12 +1662,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const updateClassSession = (id: string, partial: Partial<ClassSession>) => {
     const target = timetable.find((s) => s.id === id);
-    const makePersonal = target && !target.isPersonal && profile.isBatchSynced && !isBatchPilot;
+    if (target && !target.isPersonal && profile.isBatchSynced && !isBatchPilot) {
+      showToast('Permission Denied', 'Official batch classes can only be modified by the Batch Pilot.', 'error');
+      return;
+    }
 
     const updated = timetable.map((s) => (s.id === id ? { 
       ...s, 
       ...partial, 
-      isPersonal: makePersonal ? true : s.isPersonal, 
       isCustomRoom: partial.room !== undefined ? true : s.isCustomRoom,
       isCustomTime: (partial.startTime !== undefined || partial.endTime !== undefined) ? true : s.isCustomTime,
     } : s));
@@ -1696,6 +1698,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const deleteClassSession = (id: string) => {
     const target = timetable.find((s) => s.id === id);
+    if (target && !target.isPersonal && profile.isBatchSynced && !isBatchPilot) {
+      showToast('Permission Denied', 'Official batch classes can only be removed by the Batch Pilot.', 'error');
+      return;
+    }
 
     const updated = timetable.filter((s) => s.id !== id);
     setTimetableState(updated);

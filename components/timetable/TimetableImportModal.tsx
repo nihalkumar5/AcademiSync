@@ -246,7 +246,6 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         faculty: extSession.faculty || matchedSubject.facultyName,
         isLab: extSession.isLab,
         isElective: isExtractedElective,
-        isPersonal: true,
       });
     });
 

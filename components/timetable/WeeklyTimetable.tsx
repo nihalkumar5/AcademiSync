@@ -162,13 +162,19 @@ export const WeeklyTimetable: React.FC = () => {
     }
   };
 
-  const canModifySession = (_session: ClassSession) => {
-    return true;
+  const canModifySession = (session: ClassSession) => {
+    if (session.isPersonal) return true;
+    if (!profile.isBatchSynced) return true;
+    return isBatchCR;
   };
 
   const handleEditSession = (session: ClassSession) => {
     if (!isSignedIn) {
       router.push('/sign-in');
+      return;
+    }
+    if (!canModifySession(session)) {
+      showToast('Official Batch Class', 'Official batch classes can only be modified by the Batch Pilot.', 'info');
       return;
     }
     setEditSession(session);
