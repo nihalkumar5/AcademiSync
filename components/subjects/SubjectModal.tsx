@@ -327,46 +327,40 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
             });
             return (
               <div
-                className="p-3.5 rounded-[3px] border transition-all flex flex-col gap-2 mt-1 relative overflow-hidden"
+                className="p-3.5 rounded-[3px] border transition-all flex flex-col gap-2 mt-1 relative overflow-hidden text-white"
                 style={{
-                  backgroundColor: previewTheme.bg,
-                  borderColor: previewTheme.border || 'rgba(0,0,0,0.1)',
-                  borderLeft: `4px solid ${previewTheme.accent}`,
-                  borderTop: `2px solid ${previewTheme.accent}40`,
+                  backgroundColor: previewTheme.accent,
+                  borderColor: 'rgba(0,0,0,0.1)',
                 }}
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span
-                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] text-[10.5px] font-bold tracking-wide"
-                      style={{
-                        backgroundColor: previewTheme.badgeBg,
-                        color: previewTheme.badgeText,
-                      }}
+                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] text-[10.5px] font-bold tracking-wide bg-white/20 text-white"
                     >
-                      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: previewTheme.accent }} />
+                      <span className="w-2 h-2 rounded-full shrink-0 bg-white" />
                       <span>{previewTheme.name}</span>
-                      {code && <span className="opacity-70 font-mono">· {code}</span>}
+                      {code && <span className="opacity-80 font-mono">· {code}</span>}
                     </span>
-                    <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-[2px] bg-white/80 dark:bg-black/30 text-zinc-700 dark:text-zinc-300">
+                    <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-[2px] bg-white/20 text-white">
                       {credits || 3} Credits
                     </span>
                     {isLab && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-[2px] bg-[#18A889]/20 text-[#18A889]">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-[2px] bg-white/25 text-white">
                         LAB
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-white/80">
                     Live Theme Preview
                   </span>
                 </div>
                 <div>
-                  <h5 className="text-[14px] font-bold text-zinc-900 dark:text-zinc-100">
+                  <h5 className="text-[14px] font-bold text-white">
                     {name.trim() || 'Subject Name'}
                   </h5>
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                    Room: <strong className="text-zinc-800 dark:text-zinc-200">{room.trim() || 'LT-1'}</strong> · Faculty: <strong className="text-zinc-800 dark:text-zinc-200">{facultyName.trim() || 'Faculty Member'}</strong>
+                  <p className="text-[11px] text-white/85 mt-0.5">
+                    Room: <strong className="text-white">{room.trim() || 'LT-1'}</strong> · Faculty: <strong className="text-white">{facultyName.trim() || 'Faculty Member'}</strong>
                   </p>
                 </div>
               </div>
