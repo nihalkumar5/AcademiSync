@@ -304,7 +304,18 @@ CRITICAL INSTRUCTIONS FOR TARGET FILTERING & RESOLUTION:
 - ONLY mark "isElective": true if the timetable explicitly uses words like "Elective", "Open Elective", "Department Elective", "Program Elective", or "OE"/"DE".
 - Regular subjects like Entrepreneurship, Calculus, Digital Electronics, IoT, Music, Yoga are NOT electives: mark "isElective": false!
 
-9. EXACT DATA SCHEMA:
+9. ACADEMIC COMMON SENSE & AUTO-INFERENCE ("USE YOUR BRAIN"):
+- DEFAULT CLASSROOM INFERENCE:
+  * Look at the header of the timetable (e.g. "Room No 138", "LT-1", "Hall 2").
+  * If individual slots do not write a separate room number, AUTO-FILL "room" with the default classroom from the header (e.g. "138"). Do NOT leave room blank!
+- TYPO CORRECTION:
+  * Auto-correct obvious clerical errors in course titles (e.g. "Calculas" -> "Calculus", "Entrepreneruship" -> "Entrepreneurship", "Mathemetics" -> "Mathematics").
+- FULL NAME RESOLUTION:
+  * Never leave single letters (Z, B, L, F, P, E, A) as the subject name! Always resolve them to their full course titles from the legend table.
+- FACULTY MAPPING:
+  * If a subject has an instructor listed anywhere in the timetable legend (e.g. Dr. Amit for Entrepreneurship, Dr. Manoj for Verilog, Dr. Jaya Rahod for Calculus), ensure that faculty is filled for all sessions of that subject!
+
+10. EXACT DATA SCHEMA:
 For every extracted class session, return:
 - "day": "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", or "Sunday"
 - "startTime": 24-hour format "HH:MM" (e.g. "09:00", "14:00", "15:00", "16:00")
@@ -420,6 +431,46 @@ For every extracted class session, return:
           isLab: !!s.isLab || /lab|practical|workshop/i.test(subjectName) || /lab|practical|workshop/i.test(s.subjectCode || ''),
           isElective,
         };
+      });
+
+      // Smart Academic Auto-Inference ("AI Dimag Lagaye")
+      // 1. Dominant Classroom Auto-Fill across sessions
+      const roomCounts: Record<string, number> = {};
+      sanitized.forEach(s => {
+        if (s.room) {
+          const cleanRoom = s.room.replace(/^room\s*(no\.?)?\s*/i, '').trim();
+          roomCounts[cleanRoom] = (roomCounts[cleanRoom] || 0) + 1;
+        }
+      });
+      let dominantRoom = '';
+      let maxCount = 0;
+      Object.entries(roomCounts).forEach(([r, count]) => {
+        if (count > maxCount) {
+          maxCount = count;
+          dominantRoom = r;
+        }
+      });
+      if (dominantRoom && maxCount >= 2) {
+        sanitized.forEach(s => {
+          if (!s.room) s.room = dominantRoom;
+          else s.room = s.room.replace(/^room\s*(no\.?)?\s*/i, '').trim();
+        });
+      }
+
+      // 2. Cross-fill faculty across sessions of the same subject
+      const subjectToFaculty: Record<string, string> = {};
+      sanitized.forEach(s => {
+        if (s.faculty && s.subjectName) {
+          const key = s.subjectName.toLowerCase();
+          if (!subjectToFaculty[key] || s.faculty.length > subjectToFaculty[key].length) {
+            subjectToFaculty[key] = s.faculty;
+          }
+        }
+      });
+      sanitized.forEach(s => {
+        if (!s.faculty && s.subjectName && subjectToFaculty[s.subjectName.toLowerCase()]) {
+          s.faculty = subjectToFaculty[s.subjectName.toLowerCase()];
+        }
       });
 
       const merged = mergeConsecutiveSessions(sanitized);
