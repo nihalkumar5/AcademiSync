@@ -231,7 +231,7 @@ export const SubjectListView: React.FC = () => {
               "px-3 py-1.5 text-[11.5px] font-semibold rounded-[3px] transition-all cursor-pointer border",
               filterType === 'all'
                 ? "bg-[#111111] text-white border-[#111111]"
-                : "bg-white dark:bg-[#16171D] border-[#E5E5E0] dark:border-white/[0.08] text-[#737373] dark:text-[#94A3B8] hover:bg-[#F8F8F5]"
+                : "bg-white dark:bg-[#16171D] border-[#E5E5E0] dark:border-white/[0.08] text-[#737373] dark:text-[#94A3B8] hover:bg-neutral-100"
             )}
           >
             All ({subjects.length})
@@ -243,7 +243,7 @@ export const SubjectListView: React.FC = () => {
               "px-3 py-1.5 text-[11.5px] font-semibold rounded-[3px] transition-all cursor-pointer border",
               filterType === 'lab'
                 ? "bg-[#111111] text-white border-[#111111]"
-                : "bg-white dark:bg-[#16171D] border-[#E5E5E0] dark:border-white/[0.08] text-[#737373] dark:text-[#94A3B8] hover:bg-[#F8F8F5]"
+                : "bg-white dark:bg-[#16171D] border-[#E5E5E0] dark:border-white/[0.08] text-[#737373] dark:text-[#94A3B8] hover:bg-neutral-100"
             )}
           >
             Labs ({totalLabs})
@@ -255,7 +255,7 @@ export const SubjectListView: React.FC = () => {
               "px-3 py-1.5 text-[11.5px] font-semibold rounded-[3px] transition-all cursor-pointer border",
               filterType === 'theory'
                 ? "bg-[#111111] text-white border-[#111111]"
-                : "bg-white dark:bg-[#16171D] border-[#E5E5E0] dark:border-white/[0.08] text-[#737373] dark:text-[#94A3B8] hover:bg-[#F8F8F5]"
+                : "bg-white dark:bg-[#16171D] border-[#E5E5E0] dark:border-white/[0.08] text-[#737373] dark:text-[#94A3B8] hover:bg-neutral-100"
             )}
           >
             Lectures ({subjects.length - totalLabs})
@@ -267,7 +267,7 @@ export const SubjectListView: React.FC = () => {
               "px-3 py-1.5 text-[11.5px] font-semibold rounded-[3px] transition-all cursor-pointer border",
               filterType === 'carry'
                 ? "bg-[#111111] text-white border-[#111111]"
-                : "bg-white dark:bg-[#16171D] border-[#E5E5E0] dark:border-white/[0.08] text-[#737373] dark:text-[#94A3B8] hover:bg-[#F8F8F5]"
+                : "bg-white dark:bg-[#16171D] border-[#E5E5E0] dark:border-white/[0.08] text-[#737373] dark:text-[#94A3B8] hover:bg-neutral-100"
             )}
           >
             Has Carry Items
@@ -343,11 +343,9 @@ export const SubjectListView: React.FC = () => {
                   setEditSubject(sub);
                   setShowModal(true);
                 }}
-                className="group relative p-5 rounded-[3px] border shadow-none flex flex-col justify-between transition-all overflow-hidden cursor-pointer hover:border-black/20 dark:hover:border-white/20"
+                className="group relative p-5 rounded-[12px] border border-black/[0.05] dark:border-[color:var(--card-accent-border)] shadow-xs flex flex-col justify-between transition-all overflow-hidden cursor-pointer hover:border-black/20 dark:hover:border-white/20"
                 style={{
-                  borderColor: theme.border || 'rgba(0,0,0,0.08)',
-                  borderLeft: `5px solid ${theme.accent}`,
-                  borderTop: `2px solid ${theme.accent}60`,
+                  ['--card-accent-border' as any]: `${theme.accent}45`,
                 }}
               >
                 {/* Ambient Pastel Gradient Tint */}

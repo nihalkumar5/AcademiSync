@@ -17,8 +17,8 @@
 }
 
 :root {
-  /* Warm, premium neutral base background */
-  --background: #F8F8F5; 
+  /* Crisp clean white background */
+  --background: #FFFFFF; 
   /* Stark charcoal/black text */
   --foreground: #111111; 
 }
@@ -45,7 +45,10 @@ body {
   -webkit-overflow-scrolling: touch;
   -webkit-tap-highlight-color: transparent;
   color: var(--foreground);
-  background-color: var(--background);
+  background-color: #FFFFFF;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.065) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-attachment: fixed;
   font-feature-settings: "rlig" 1, "calt" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -54,8 +57,10 @@ body {
 .dark body, body.dark {
   background-color: #090A0C;
   background-image: 
+    radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
     radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.05), transparent 70%),
     radial-gradient(ellipse 60% 40% at 100% 100%, rgba(56, 189, 248, 0.025), transparent 60%);
+  background-size: 24px 24px, auto, auto;
   background-attachment: fixed;
 }
 

@@ -97,7 +97,7 @@ export const Header: React.FC = () => {
   return (
     <>
       <header
-        className="sticky top-0 z-40 w-full flex items-center justify-center px-4 sm:px-8 bg-[#FAFAF8]/75 dark:bg-[#090A0C]/75 backdrop-blur-xl border-b border-[#D8D8D8]/40 dark:border-white/[0.07] shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-colors"
+        className="sticky top-0 z-40 w-full flex items-center justify-center px-4 sm:px-8 bg-white/80 dark:bg-[#090A0C]/80 backdrop-blur-xl border-b border-[#D8D8D8]/40 dark:border-white/[0.07] shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-colors"
         style={{
           paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 12px), 28px)',
           paddingBottom: '12px',
@@ -167,7 +167,7 @@ export const Header: React.FC = () => {
           >
             <Bell className="w-4 h-4 md:w-3.5 md:h-3.5 text-[#111111] dark:text-[#F4F4F6]" />
             {unreadNotifs > 0 && (
-              <span className="absolute top-1.5 right-1.5 md:-top-1 md:-right-1 min-w-[14px] h-[14px] md:min-w-[15px] md:h-[15px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[9px] font-bold flex items-center justify-center border border-[#FAFAF8] dark:border-[#090A0C] leading-none rounded-full">
+              <span className="absolute top-1.5 right-1.5 md:-top-1 md:-right-1 min-w-[14px] h-[14px] md:min-w-[15px] md:h-[15px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[9px] font-bold flex items-center justify-center border border-white dark:border-[#090A0C] leading-none rounded-full">
                 {unreadNotifs > 99 ? '99+' : unreadNotifs}
               </span>
             )}
@@ -193,7 +193,7 @@ export const Header: React.FC = () => {
                       setAddMenuOpen(false);
                       setShowAddHwModal(true);
                     }}
-                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
+                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-neutral-100 dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
                   >
                     <CheckSquare className="w-5 h-5" />
                     New Homework
@@ -204,7 +204,7 @@ export const Header: React.FC = () => {
                       setAddMenuOpen(false);
                       setShowHwScanModal(true);
                     }}
-                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
+                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-neutral-100 dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
                   >
                     <Sparkles className="w-5 h-5" />
                     Scan Homework
@@ -215,7 +215,7 @@ export const Header: React.FC = () => {
                       setAddMenuOpen(false);
                       setShowAddCarryModal(true);
                     }}
-                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
+                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-neutral-100 dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
                   >
                     <Backpack className="w-5 h-5" />
                     Add Bag Item
@@ -228,7 +228,7 @@ export const Header: React.FC = () => {
                       setAddMenuOpen(false);
                       setShowTimetableImportModal(true);
                     }}
-                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
+                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-neutral-100 dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
                   >
                     <Upload className="w-5 h-5" />
                     Import Timetable
@@ -239,7 +239,7 @@ export const Header: React.FC = () => {
                       setAddMenuOpen(false);
                       setShowCalendarImportModal(true);
                     }}
-                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
+                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-neutral-100 dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
                   >
                     <Calendar className="w-5 h-5" />
                     Import Academic Calendar

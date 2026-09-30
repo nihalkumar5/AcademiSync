@@ -193,14 +193,14 @@ export const WeeklyTimetable: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowJoinModal(true)}
-              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-neutral-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
             >
               Join Batch
             </button>
             <button
               type="button"
               onClick={handleImportTimetable}
-              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] transition-colors gap-2 cursor-pointer"
+              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-neutral-100 dark:hover:bg-white/[0.06] transition-colors gap-2 cursor-pointer"
             >
               <Sparkles className="w-4 h-4" /> Magic Import
             </button>
@@ -261,7 +261,7 @@ export const WeeklyTimetable: React.FC = () => {
                 'flex flex-col items-center justify-center min-w-[76px] py-2.5 px-3 rounded-[3px] transition-all border cursor-pointer',
                 isSelected
                   ? 'bg-[#111111] text-white border-[#111111] shadow-xs'
-                  : 'bg-white dark:bg-[#16171D] border-[#E5E5E0] dark:border-white/[0.08] text-[#151515] dark:text-[#F4F4F6] hover:bg-[#F8F8F5] dark:hover:bg-white/[0.04]'
+                  : 'bg-white dark:bg-[#16171D] border-[#E5E5E0] dark:border-white/[0.08] text-[#151515] dark:text-[#F4F4F6] hover:bg-neutral-100 dark:hover:bg-white/[0.04]'
               )}
             >
               <div className="flex items-center justify-center gap-1">
@@ -333,8 +333,8 @@ export const WeeklyTimetable: React.FC = () => {
               className={clsx(
                 "flex flex-col gap-4 p-4 border transition-all rounded-none",
                 isToday
-                  ? "bg-[#F7F7F5] dark:bg-[#13151D] border-[#111111] dark:border-emerald-500/40 dark:shadow-[0_0_25px_-5px_rgba(16,185,129,0.12)]"
-                  : "bg-[#FFFFFF] dark:bg-[#121317] border-[#D9D9D6] dark:border-white/[0.08]"
+                  ? "bg-white dark:bg-[#13151D] border-[#111111] dark:border-emerald-500/40 dark:shadow-[0_0_25px_-5px_rgba(16,185,129,0.12)] shadow-xs"
+                  : "bg-white dark:bg-[#121317] border-[#D9D9D6] dark:border-white/[0.08]"
               )}
             >
               {/* Day Header */}

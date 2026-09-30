@@ -140,23 +140,24 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
   return (
     <div 
       className={clsx(
-        "relative flex flex-col p-4 sm:p-[18px] rounded-[5px] border transition-all w-full",
+        "relative flex flex-col p-4 sm:p-[18px] rounded-[12px] border border-black/[0.05] dark:border-[color:var(--card-accent-border)] transition-all w-full overflow-hidden shadow-xs",
         showMenu ? 'z-40' : 'z-0',
         isDone ? 'opacity-65' : 'opacity-100'
       )}
       style={{
-        borderLeft: `4px solid ${theme.accent}`,
-        borderColor: theme.border,
+        ['--card-accent-border' as any]: `${theme.accent}45`,
       }}
     >
       {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
       <div 
-        className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[4px]"
+        className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[11px]"
         style={{ backgroundColor: theme.bg }}
       />
       <div 
-        className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[4px]"
-        style={{ backgroundColor: theme.darkBg }}
+        className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[11px]"
+        style={{ 
+          background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
+        }}
       />
 
       <div className="relative z-10 flex flex-col">

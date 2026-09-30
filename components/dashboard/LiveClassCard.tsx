@@ -553,20 +553,21 @@ export const LiveClassCard: React.FC = () => {
     return (
       <>
         <div 
-          className="w-full border shadow-none rounded-[3px] p-4 sm:p-5 flex flex-col relative group transition-all"
+          className="w-full border border-black/[0.05] dark:border-[color:var(--card-accent-border)] shadow-xs rounded-[12px] p-4 sm:p-5 flex flex-col relative group transition-all overflow-hidden"
           style={{
-            borderColor: theme.border || 'rgba(0,0,0,0.06)',
-            borderLeft: `4px solid ${theme.accent}`,
+            ['--card-accent-border' as any]: `${theme.accent}45`,
           }}
         >
           {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
           <div 
-            className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[2px]"
+            className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[11px]"
             style={{ backgroundColor: theme.bg }}
           />
           <div 
-            className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[2px]"
-            style={{ backgroundColor: theme.darkBg }}
+            className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[11px]"
+            style={{ 
+              background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
+            }}
           />
 
           <div className="relative z-10 flex flex-col">

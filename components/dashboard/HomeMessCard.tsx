@@ -197,14 +197,11 @@ export const HomeMessCard: React.FC = () => {
       {/* Card */}
       <div 
         onClick={() => setActiveView('mess')}
-        className={`w-full p-4 sm:p-5 rounded-[4px] cursor-pointer transition-all text-left flex flex-col gap-3 group relative overflow-hidden shadow-sm border ${
+        className={`w-full p-4 sm:p-5 rounded-[12px] cursor-pointer transition-all text-left flex flex-col gap-3 group relative overflow-hidden shadow-sm border ${
           isLive
             ? 'bg-[#111111] dark:bg-[#111111] text-[#FFFFFF] border-[#111111] dark:border-emerald-500/30'
             : 'bg-[#111111] dark:bg-[#111111] text-[#FFFFFF] border-[#111111] dark:border-white/[0.08] hover:border-black/40 dark:hover:border-white/20'
         }`}
-        style={{
-          borderLeft: isLive ? '4px solid #18A889' : '4px solid #C99A32',
-        }}
       >
         {/* Row 1: Header Status + Countdown Box */}
         <div className="flex items-center justify-between gap-3">

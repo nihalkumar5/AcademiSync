@@ -603,30 +603,32 @@ export const TodayTimeline: React.FC = () => {
                         {/* Class Info Box */}
                         <div 
                           className={clsx(
-                            "relative flex-1 rounded-[4px] p-4 sm:p-[18px] border transition-all",
+                            "relative flex-1 rounded-[12px] p-4 sm:p-[18px] border transition-all overflow-hidden",
                             openMenuSessionId === session.id ? "z-30" : "z-0",
                             isNow
-                              ? "bg-[#111111] border-[#111111] shadow-md"
+                              ? "bg-[#111111] dark:bg-[#111111] border-2 border-[#18A889] shadow-[0_0_24px_-4px_rgba(24,168,137,0.3)] ring-1 ring-[#18A889]/30"
                               : isRescheduled
                               ? "border-[#F5D8CC] dark:border-[#C85F3D]/25 shadow-none"
-                              : "shadow-none"
+                              : "border-black/[0.05] dark:border-[color:var(--card-accent-border)] shadow-[0_1px_3px_rgba(0,0,0,0.03)]"
                           )}
                           style={{
+                            ['--card-accent-border' as any]: isNow ? '#18A889' : `${theme.accent}45`,
                             backgroundColor: isNow ? '#111111' : undefined,
-                            borderColor: isNow ? '#111111' : isRescheduled ? undefined : (theme.border || 'rgba(0,0,0,0.06)'),
-                            borderLeft: isNow ? '4px solid #18A889' : `4px solid ${theme.accent}`,
+                            borderColor: isNow ? '#18A889' : isRescheduled ? undefined : undefined,
                           }}
                         >
                           {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
                           {!isNow && (
                             <>
                               <div 
-                                className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[3px]"
+                                className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[11px]"
                                 style={{ backgroundColor: theme.bg }}
                               />
                               <div 
-                                className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[3px]"
-                                style={{ backgroundColor: theme.darkBg }}
+                                className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[11px]"
+                                style={{ 
+                                  background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
+                                }}
                               />
                             </>
                           )}
