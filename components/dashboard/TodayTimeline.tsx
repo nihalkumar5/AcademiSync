@@ -603,8 +603,8 @@ export const TodayTimeline: React.FC = () => {
                         {/* Class Info Box */}
                         <div 
                           className={clsx(
-                            "relative flex-1 rounded-[12px] p-4 sm:p-[18px] border transition-all overflow-hidden",
-                            openMenuSessionId === session.id ? "z-30" : "z-0",
+                            "relative flex-1 rounded-[12px] p-4 sm:p-[18px] border transition-all",
+                            openMenuSessionId === session.id ? "overflow-visible z-40" : "overflow-hidden z-0",
                             isNow
                               ? "bg-[#111111] dark:bg-[#111111] border-2 border-[#18A889] shadow-[0_0_24px_-4px_rgba(24,168,137,0.3)] ring-1 ring-[#18A889]/30"
                               : isRescheduled
@@ -735,8 +735,11 @@ export const TodayTimeline: React.FC = () => {
                           <div className="shrink-0 flex items-center gap-1.5 self-start relative">
                             <button
                               type="button"
-                              onClick={() => setOpenMenuSessionId(openMenuSessionId === session.id ? null : session.id)}
-                              className="p-1 text-[#A0A0A0] hover:text-[#151515] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer rounded-[2px]"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenMenuSessionId(openMenuSessionId === session.id ? null : session.id);
+                              }}
+                              className="p-1.5 text-[#A0A0A0] hover:text-[#151515] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer rounded-[4px]"
                               title="More Options"
                             >
                               <MoreVertical className="w-4 h-4" />
@@ -745,15 +748,22 @@ export const TodayTimeline: React.FC = () => {
                             {openMenuSessionId === session.id && (
                               <>
                                 <div
-                                  className="fixed inset-0 z-20"
-                                  onClick={() => setOpenMenuSessionId(null)}
+                                  className="fixed inset-0 z-40 bg-black/5 dark:bg-black/20"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenMenuSessionId(null);
+                                  }}
                                 />
-                                <div className="absolute right-0 mt-6 w-52 rounded-none bg-white dark:bg-[#121317] border border-black/10 dark:border-white/[0.08] shadow-[0_8px_30px_rgba(0,0,0,0.4)] py-1 z-30 text-left overflow-hidden">
+                                <div 
+                                  className="absolute right-0 top-full mt-1.5 w-52 rounded-[10px] bg-white dark:bg-[#18191E] border border-black/10 dark:border-white/[0.1] shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 text-left overflow-hidden"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   {session.isExtra ? (
                                     <>
                                       {profile.isBatchSynced && (
-                                        <div className="px-3 py-1 bg-black/5 dark:bg-white/[0.04] border-b border-black/10 dark:border-white/[0.08] text-[9px] font-mono font-bold uppercase text-black/60 dark:text-[#A1A1AA]">
-                                          👑 BP Extra Slot
+                                        <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[9.5px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
+                                          <span>👑</span>
+                                          <span>BP Extra Slot</span>
                                         </div>
                                       )}
                                       <button
@@ -762,16 +772,16 @@ export const TodayTimeline: React.FC = () => {
                                           setOpenMenuSessionId(null);
                                           deleteExtraSession(session.id);
                                         }}
-                                        className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
+                                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
                                       >
-                                        <Ban className="w-3.5 h-3.5" />
+                                        <Ban className="w-3.5 h-3.5 shrink-0" />
                                         <span>Delete Extra Class</span>
                                       </button>
                                     </>
                                   ) : profile.isBatchSynced && !isBatchCR ? (
                                     <div className="p-3 text-[11px] text-black/70 dark:text-[#A1A1AA] flex flex-col gap-1">
                                       <div className="font-bold text-black dark:text-white flex items-center gap-1.5 uppercase text-[10px]">
-                                        <Ban className="w-3.5 h-3.5 text-amber-500" />
+                                        <Ban className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                                         <span>Pilot Managed Schedule</span>
                                       </div>
                                       <p className="text-[10px] text-black/60 dark:text-[#71717A] leading-tight mt-0.5">
@@ -781,8 +791,9 @@ export const TodayTimeline: React.FC = () => {
                                   ) : isCancelled ? (
                                     <>
                                       {profile.isBatchSynced && (
-                                        <div className="px-3 py-1 bg-black/5 dark:bg-white/[0.04] border-b border-black/10 dark:border-white/[0.08] text-[9px] font-mono font-bold uppercase text-black/60 dark:text-[#A1A1AA]">
-                                          🚀 Pilot Live Action
+                                        <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[9.5px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
+                                          <span>🚀</span>
+                                          <span>Pilot Live Action</span>
                                         </div>
                                       )}
                                       <button
@@ -791,17 +802,18 @@ export const TodayTimeline: React.FC = () => {
                                           setOpenMenuSessionId(null);
                                           toggleSessionCancelled(session.id, targetDateStr);
                                         }}
-                                        className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-bold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-left transition-colors cursor-pointer"
+                                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-left transition-colors cursor-pointer"
                                       >
-                                        <RotateCcw className="w-3.5 h-3.5" />
+                                        <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                                         <span>Restore Class for Batch</span>
                                       </button>
                                     </>
                                   ) : (
                                     <>
                                       {profile.isBatchSynced && (
-                                        <div className="px-3 py-1 bg-black/5 dark:bg-white/[0.04] border-b border-black/10 dark:border-white/[0.08] text-[9px] font-mono font-bold uppercase text-black/60 dark:text-[#A1A1AA]">
-                                          👑 BP Live Controls
+                                        <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[9.5px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
+                                          <span>👑</span>
+                                          <span>BP Live Controls</span>
                                         </div>
                                       )}
                                       <button
@@ -810,13 +822,13 @@ export const TodayTimeline: React.FC = () => {
                                           setOpenMenuSessionId(null);
                                           toggleSessionCancelled(session.id, targetDateStr);
                                         }}
-                                        className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
+                                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
                                       >
-                                        <Ban className="w-3.5 h-3.5" />
+                                        <Ban className="w-3.5 h-3.5 shrink-0" />
                                         <span>Cancel Class for Batch</span>
                                       </button>
                                       
-                                      <div className="h-px bg-black/10 dark:border-white/[0.08] my-0.5"></div>
+                                      <div className="h-px bg-black/[0.06] dark:bg-white/[0.08] my-1" />
                                       
                                       {reschedule ? (
                                         <button
@@ -825,9 +837,9 @@ export const TodayTimeline: React.FC = () => {
                                             setOpenMenuSessionId(null);
                                             rescheduleSession(session.id, null, targetDateStr);
                                           }}
-                                          className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-bold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
+                                          className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
                                         >
-                                          <RotateCcw className="w-3.5 h-3.5" />
+                                          <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                                           <span>Revert Reschedule</span>
                                         </button>
                                       ) : (
@@ -842,9 +854,9 @@ export const TodayTimeline: React.FC = () => {
                                             setRescheduleSubjectId(currentReschedule?.subjectId || session.subjectId);
                                             setRescheduleTarget(session);
                                           }}
-                                          className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-bold text-black dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                                          className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
                                         >
-                                          <Clock className="w-3.5 h-3.5 opacity-60" />
+                                          <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
                                           <span>Reschedule Class</span>
                                         </button>
                                       )}

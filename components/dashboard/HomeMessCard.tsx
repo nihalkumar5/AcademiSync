@@ -203,8 +203,13 @@ export const HomeMessCard: React.FC = () => {
             : 'bg-[#111111] dark:bg-[#111111] text-[#FFFFFF] border-[#111111] dark:border-white/[0.08] hover:border-black/40 dark:hover:border-white/20'
         }`}
       >
+        {/* Premium Cutlery (Fork & Spoon) Watermark */}
+        <div className="absolute -right-3 -bottom-5 pointer-events-none select-none z-0 text-white/[0.05] group-hover:text-white/[0.08] rotate-[-15deg] group-hover:scale-105 group-hover:rotate-[-10deg] transition-all duration-300">
+          <UtensilsCrossed className="w-24 h-24 sm:w-28 sm:h-28 stroke-[1.2]" />
+        </div>
+
         {/* Row 1: Header Status + Countdown Box */}
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 relative z-10">
           <div className="flex items-center gap-2 min-w-0">
             {isLive ? (
               <div className="flex items-center gap-2">
@@ -243,7 +248,7 @@ export const HomeMessCard: React.FC = () => {
         </div>
 
         {/* Row 2: Food Items Inline Text + Full Menu Link */}
-        <div className="flex items-center justify-between gap-4 pt-0.5">
+        <div className="flex items-center justify-between gap-4 pt-0.5 relative z-10">
           <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 min-w-0 flex-1">
             {displayItems.length > 0 ? (
               displayItems.map((item, idx) => (

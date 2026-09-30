@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { MessOnboarding } from './MessOnboarding';
 import { format } from 'date-fns';
-import { Share, Sparkles, Clock, Edit3, X, Check, ArrowRight } from 'lucide-react';
+import { Share, Sparkles, Clock, Edit3, X, Check, ArrowRight, UtensilsCrossed } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -145,38 +145,45 @@ const LiveMealCard = ({
   if (!timeState) return null;
 
   return (
-    <div className="w-full bg-[#111111] dark:bg-gradient-to-br dark:from-[#13151D] dark:to-[#0C0E12] border border-[#111111] dark:border-white/[0.08] rounded-none p-5 sm:p-6 flex flex-col relative text-left text-white shadow-lg dark:shadow-[0_8px_30px_-6px_rgba(0,0,0,0.5)] mb-2">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3.5">
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-2.5 w-2.5">
-            {timeState.status === 'SERVING NOW' && (
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            )}
-            <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${timeState.status === 'SERVING NOW' ? 'bg-emerald-400' : 'bg-white'}`}></span>
-          </span>
-          <span className="text-[11px] font-bold tracking-[1.6px] uppercase text-[#FFFFFF] leading-none">
-            {timeState.status}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[12px] font-mono font-semibold text-[#FFFFFF] bg-white/10 px-2.5 py-1 border border-white/20">
-            {timeState.timeLeft}
-          </span>
-        </div>
+    <div className="w-full bg-[#111111] dark:bg-gradient-to-br dark:from-[#13151D] dark:to-[#0C0E12] border border-[#111111] dark:border-white/[0.08] rounded-none p-5 sm:p-6 flex flex-col relative overflow-hidden text-left text-white shadow-lg dark:shadow-[0_8px_30px_-6px_rgba(0,0,0,0.5)] mb-2 group">
+      {/* Premium Cutlery Watermark */}
+      <div className="absolute -right-4 -bottom-6 pointer-events-none select-none z-0 text-white/[0.05] group-hover:text-white/[0.08] rotate-[-15deg] group-hover:scale-105 group-hover:rotate-[-10deg] transition-all duration-300">
+        <UtensilsCrossed className="w-32 h-32 sm:w-36 sm:h-36 stroke-[1.2]" />
       </div>
 
-      {/* Meal Name */}
-      <h3 className="text-[26px] sm:text-[28px] font-bold text-[#FFFFFF] leading-tight tracking-tight mb-2">
-        {timeState.meal}
-      </h3>
+      <div className="relative z-10 flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3.5">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2.5 w-2.5">
+              {timeState.status === 'SERVING NOW' && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              )}
+              <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${timeState.status === 'SERVING NOW' ? 'bg-emerald-400' : 'bg-white'}`}></span>
+            </span>
+            <span className="text-[11px] font-bold tracking-[1.6px] uppercase text-[#FFFFFF] leading-none">
+              {timeState.status}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[12px] font-mono font-semibold text-[#FFFFFF] bg-white/10 px-2.5 py-1 border border-white/20">
+              {timeState.timeLeft}
+            </span>
+          </div>
+        </div>
 
-      {/* Dishes */}
-      {timeState.items.length > 0 && (
-        <p className="text-[14.5px] font-normal text-[#D1D1D1] dark:text-[#CBD5E1] leading-relaxed">
-          {timeState.items.join(' · ')}
-        </p>
-      )}
+        {/* Meal Name */}
+        <h3 className="text-[26px] sm:text-[28px] font-bold text-[#FFFFFF] leading-tight tracking-tight mb-2">
+          {timeState.meal}
+        </h3>
+
+        {/* Dishes */}
+        {timeState.items.length > 0 && (
+          <p className="text-[14.5px] font-normal text-[#D1D1D1] dark:text-[#CBD5E1] leading-relaxed">
+            {timeState.items.join(' · ')}
+          </p>
+        )}
+      </div>
     </div>
   );
 };
@@ -425,39 +432,46 @@ ${PLAY_STORE_URL}
           const displayTiming = resolveMealTimingForDay(rawTiming, selectedDay);
 
           return (
-            <div key={meal} className="flex flex-col p-5 border border-[#D9D9D6] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] hover:bg-[#F7F7F5] dark:hover:bg-[#161820] transition-colors dark:shadow-md">
-              <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-[#EAEAEA] dark:border-white/[0.08]">
-                <h4 className="text-[13px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#F4F4F6]">
-                  {meal}
-                </h4>
-                <div className="flex items-center gap-2.5">
-                  <span className="text-[12px] text-[#777777] dark:text-[#94A3B8] font-mono font-medium">
-                    {displayTiming}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setQuickEditMeal({
-                        day: selectedDay,
-                        meal,
-                        dishes: Array.isArray(items) ? items.join(', ') : items,
-                        timing: rawTiming,
-                      });
-                    }}
-                    className="text-[10px] font-bold tracking-wider uppercase text-[#666666] hover:text-black dark:text-[#94A3B8] dark:hover:text-white px-2 py-0.5 border border-[#D9D9D6] dark:border-white/[0.1] hover:bg-[#F0F0ED] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
-                  >
-                    Edit
-                  </button>
-                </div>
+            <div key={meal} className="flex flex-col p-5 border border-[#D9D9D6] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] hover:bg-[#F7F7F5] dark:hover:bg-[#161820] transition-colors dark:shadow-md relative overflow-hidden group">
+              {/* Premium Fork & Spoon Cutlery Watermark */}
+              <div className="absolute -right-3 -bottom-4 pointer-events-none select-none z-0 text-black/[0.035] dark:text-white/[0.04] group-hover:scale-105 group-hover:rotate-[-8deg] rotate-[-12deg] transition-all duration-300">
+                <UtensilsCrossed className="w-20 h-20 stroke-[1.2]" />
               </div>
-              <ul className="flex flex-col gap-2">
-                {items.map((item: string, idx: number) => (
-                  <li key={idx} className="flex items-center gap-2 text-[14px] text-[#444444] dark:text-[#E2E8F0] font-normal">
-                    <span className="w-1.5 h-1.5 bg-[#111111] dark:bg-emerald-400 shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
+
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-[#EAEAEA] dark:border-white/[0.08]">
+                  <h4 className="text-[13px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#F4F4F6]">
+                    {meal}
+                  </h4>
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-[12px] text-[#777777] dark:text-[#94A3B8] font-mono font-medium">
+                      {displayTiming}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuickEditMeal({
+                          day: selectedDay,
+                          meal,
+                          dishes: Array.isArray(items) ? items.join(', ') : items,
+                          timing: rawTiming,
+                        });
+                      }}
+                      className="text-[10px] font-bold tracking-wider uppercase text-[#666666] hover:text-black dark:text-[#94A3B8] dark:hover:text-white px-2 py-0.5 border border-[#D9D9D6] dark:border-white/[0.1] hover:bg-[#F0F0ED] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+                <ul className="flex flex-col gap-2">
+                  {items.map((item: string, idx: number) => (
+                    <li key={idx} className="flex items-center gap-2 text-[14px] text-[#444444] dark:text-[#E2E8F0] font-normal">
+                      <span className="w-1.5 h-1.5 bg-[#111111] dark:bg-emerald-400 shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           );
         })}
