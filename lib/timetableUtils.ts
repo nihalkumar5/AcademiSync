@@ -1225,3 +1225,77 @@ export const deduplicateAcademicEvents = (
 
   return { cleaned, removedCount };
 };
+
+/**
+ * Deduplicates class sessions:
+ * 1. Removes exact duplicates (same ID, or same day + same start time + same subject).
+ * 2. Prunes duplicate imported sessions that collide with official batch classes on the same day/time.
+ * 3. Safely preserves parallel electives (distinct elective subjects running at the same slot).
+ */
+export const deduplicateTimetableSessions = (
+  rawSessions: ClassSession[]
+): { cleaned: ClassSession[]; removedCount: number } => {
+  if (!Array.isArray(rawSessions) || rawSessions.length === 0) {
+    return { cleaned: [], removedCount: 0 };
+  }
+
+  // Official batch classes (!isPersonal) take precedence over personal classes
+  const sorted = [...rawSessions].sort((a, b) => {
+    if (Boolean(a.isPersonal) === Boolean(b.isPersonal)) return 0;
+    return a.isPersonal ? 1 : -1;
+  });
+
+  const seenIds = new Set<string>();
+  const seenSubjectSlots = new Set<string>();
+  const seenTimeSlots = new Map<string, ClassSession>();
+  const cleaned: ClassSession[] = [];
+  let removedCount = 0;
+
+  for (const sess of sorted) {
+    if (!sess || !sess.day || !sess.startTime) continue;
+
+    // Check 1: Exact ID collision
+    if (seenIds.has(sess.id)) {
+      removedCount++;
+      continue;
+    }
+
+    const normDay = sess.day.trim().toLowerCase();
+    const normStart = sess.startTime.trim().replace(/^0/, ''); // "09:00" -> "9:00"
+    const normSubName = (sess.subjectName || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const normSubCode = (sess.subjectCode || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const subIdentifier = normSubCode || normSubName || (sess.subjectId || '').trim();
+
+    // Check 2: Same day + start time + same subject
+    const subjectSlotKey = `${normDay}__${normStart}__${subIdentifier}`;
+    if (seenSubjectSlots.has(subjectSlotKey)) {
+      removedCount++;
+      continue;
+    }
+
+    // Check 3: Collision on the exact same day and start time
+    const timeSlotKey = `${normDay}__${normStart}`;
+    const existingAtSlot = seenTimeSlots.get(timeSlotKey);
+
+    if (existingAtSlot) {
+      // If existing is an official batch class and current is a personal duplicate (or vice versa):
+      const isRedundantPersonal = Boolean(sess.isPersonal) && !Boolean(existingAtSlot.isPersonal);
+      const isBothSameElectiveStatus = !sess.isElective && !existingAtSlot.isElective;
+      
+      // If one is personal duplicate, or neither is elective (2 mandatory classes at same minute is impossible):
+      if (isRedundantPersonal || isBothSameElectiveStatus) {
+        removedCount++;
+        continue;
+      }
+    }
+
+    seenIds.add(sess.id);
+    seenSubjectSlots.add(subjectSlotKey);
+    if (!seenTimeSlots.has(timeSlotKey) || !sess.isElective) {
+      seenTimeSlots.set(timeSlotKey, sess);
+    }
+    cleaned.push(sess);
+  }
+
+  return { cleaned, removedCount };
+};

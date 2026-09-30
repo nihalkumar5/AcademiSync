@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { DayOfWeek, ClassSession, Subject } from '@/lib/types';
-import { DAYS_OF_WEEK, getCurrentDayOfWeek, timeToMinutes } from '@/lib/timetableUtils';
+import { DAYS_OF_WEEK, getCurrentDayOfWeek, timeToMinutes, deduplicateTimetableSessions } from '@/lib/timetableUtils';
 import { ClassCard } from './ClassCard';
 import { AddEditClassModal } from './AddEditClassModal';
 import { TimetableImportModal } from './TimetableImportModal';
@@ -52,7 +52,7 @@ export const WeeklyTimetable: React.FC = () => {
     return true;
   };
 
-  const activeTimetable = timetable.filter(isSessionVisible);
+  const activeTimetable = deduplicateTimetableSessions(timetable.filter(isSessionVisible)).cleaned;
 
   const currentDay = getCurrentDayOfWeek();
   

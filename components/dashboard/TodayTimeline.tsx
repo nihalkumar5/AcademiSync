@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { motion } from 'framer-motion';
-import { getCurrentDayOfWeek, timeToMinutes, getTodayDateString, getTomorrowDayOfWeek, getTomorrowDateString, getSubjectThemeStyle, formatTime12Hour } from '@/lib/timetableUtils';
+import { getCurrentDayOfWeek, timeToMinutes, getTodayDateString, getTomorrowDayOfWeek, getTomorrowDateString, getSubjectThemeStyle, formatTime12Hour, deduplicateTimetableSessions } from '@/lib/timetableUtils';
 import { MapPin, User, Clock, FlaskConical, Ban, RotateCcw, MoreVertical, ChevronDown, Check, Calendar } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
@@ -151,10 +151,10 @@ export const TodayTimeline: React.FC = () => {
     return null;
   };
 
-  const targetSessions = [
+  const targetSessions = deduplicateTimetableSessions([
     ...timetable.filter((s) => s.day === targetDay && isSessionVisible(s)),
     ...extraListForTarget.filter(isSessionVisible),
-  ].sort((a, b) => {
+  ]).cleaned.sort((a, b) => {
     const aResched = getRescheduledForSession(a, targetDateStr);
     const bResched = getRescheduledForSession(b, targetDateStr);
     const aStart = timeToMinutes(aResched ? aResched.startTime : a.startTime);

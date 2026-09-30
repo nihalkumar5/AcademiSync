@@ -32,6 +32,7 @@ import {
   normalizeIdList,
   sanitizeClassSessionTimes,
   deduplicateAcademicEvents,
+  deduplicateTimetableSessions,
 } from '@/lib/timetableUtils';
 import { checkAndGenerateSmartNotifications } from '@/lib/notificationEngine';
 import confetti from 'canvas-confetti';
@@ -452,6 +453,41 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [subjects, timetable]);
 
+  // Auto-heal duplicate timetable sessions (guarantees 0 duplicate classes across all devices)
+  useEffect(() => {
+    if (timetable && timetable.length > 0) {
+      const { cleaned, removedCount } = deduplicateTimetableSessions(timetable);
+      if (removedCount > 0) {
+        console.warn(`🧹 Auto-healed timetable: pruned ${removedCount} duplicate class session(s)!`);
+        setTimetableState(cleaned);
+        storage.setTimetable(cleaned);
+        refreshCarryItems(cleaned, subjects);
+
+        const now = Date.now();
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem('iiitnr_last_updated', now.toString());
+        }
+
+        if (user?.id) {
+          const userRef = doc(db, 'users', user.id);
+          setDoc(userRef, {
+            timetable: sanitizeForFirestore(cleaned),
+            lastUpdated: now,
+          }, { merge: true }).catch((e) => console.error('Error saving cleaned timetable to cloud:', e));
+        }
+
+        if (isBatchPilot && profile.batchKey && profile.isBatchSynced) {
+          const batchDocRef = doc(db, 'shared_timetables', profile.batchKey);
+          const officialOnly = cleaned.filter((s) => !s.isPersonal);
+          setDoc(batchDocRef, {
+            timetable: sanitizeForFirestore(officialOnly),
+            updatedAt: new Date().toISOString(),
+          }, { merge: true }).catch((e) => console.error('Error saving cleaned batch timetable:', e));
+        }
+      }
+    }
+  }, [timetable]);
+
   // Handle User Logout / Switch Account Cleanup
   useEffect(() => {
     if (!isClerkLoaded) return;
@@ -803,10 +839,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             };
           });
 
-          // Preserve ONLY genuinely personal extra sessions added by user during free slots
-          const personalSessions = currentList.filter((s) => s.isPersonal === true);
+          // Preserve ONLY genuinely personal extra sessions added by user during free slots (never duplicate official batch slots)
+          const personalSessions = currentList.filter((s) => {
+            if (s.isPersonal !== true) return false;
+            const isDup = merged.some((bSess) => {
+              if (bSess.day !== s.day) return false;
+              if (bSess.startTime === s.startTime) return true;
+              const bSub = (bSess.subjectName || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+              const sSub = (s.subjectName || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+              return bSub && sSub && (bSub === sSub || bSub.includes(sSub) || sSub.includes(bSub));
+            });
+            return !isDup;
+          });
 
-          const finalTt = [...merged, ...personalSessions];
+          const finalTt = deduplicateTimetableSessions([...merged, ...personalSessions]).cleaned;
           updatedTt = finalTt;
           storage.setTimetable(finalTt);
           return finalTt;
@@ -1124,7 +1170,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     const loadedProfile = storage.getProfile();
     const loadedSubjects = storage.getSubjects();
-    const loadedTimetable = storage.getTimetable();
+    let loadedTimetable = storage.getTimetable();
     const loadedHomework = storage.getHomework();
     const storedCarry = storage.getCarryItems();
     const loadedNotifications = storage.getNotifications();
@@ -1138,6 +1184,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       if (loadedMessMenuStr) loadedMessMenu = JSON.parse(loadedMessMenuStr);
     } catch(e) {}
+
+    const { cleaned: sanitizedTimetable, removedCount: ttRemovedCount } = deduplicateTimetableSessions(loadedTimetable);
+    if (ttRemovedCount > 0) {
+      loadedTimetable = sanitizedTimetable;
+      storage.setTimetable(loadedTimetable);
+    }
 
     setMessMenu(loadedMessMenu);
     setProfileState(loadedProfile);

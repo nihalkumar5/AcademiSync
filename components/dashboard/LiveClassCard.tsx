@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
-import { getLiveClassStatus, formatTime12Hour, getTodayDateString, getCurrentDayOfWeek } from '@/lib/timetableUtils';
+import { getLiveClassStatus, formatTime12Hour, getTodayDateString, getCurrentDayOfWeek, deduplicateTimetableSessions } from '@/lib/timetableUtils';
 import { Clock, MapPin, User, CheckCircle2, ChevronRight, ArrowRight, MoreVertical, Ban, RotateCcw, ChevronDown, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
@@ -33,14 +33,14 @@ export const LiveClassCard: React.FC = () => {
   const dateTodayStr = getTodayDateString();
   const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
 
-  const getActiveTimetable = () => timetable.filter((s) => {
+  const getActiveTimetable = () => deduplicateTimetableSessions(timetable.filter((s) => {
     if (isSessionCancelled(s.id, dateTodayStr)) return false;
     const sub = subjects.find((subj) => subj.id === s.subjectId);
     if (sub?.isElective && profile.enrolledElectiveIds && !profile.enrolledElectiveIds.includes(sub.id)) {
       return false;
     }
     return true;
-  });
+  })).cleaned;
 
   const [status, setStatus] = useState(() => 
     getLiveClassStatus(getActiveTimetable(), subjects, undefined, dateTodayStr, rescheduledSessions, extraSessions, isSessionCancelled)

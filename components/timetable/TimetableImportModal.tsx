@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ExtractedClassSession, DayOfWeek, ClassSession, Subject } from '@/lib/types';
-import { DAYS_OF_WEEK, mergeConsecutiveSessions, normalizeSection, sanitizeAcademicTime } from '@/lib/timetableUtils';
+import { DAYS_OF_WEEK, mergeConsecutiveSessions, normalizeSection, sanitizeAcademicTime, deduplicateTimetableSessions } from '@/lib/timetableUtils';
 import { autoAssignHarmonicColorsToSubjects, getHarmonicColorForSubject } from '@/lib/cardColors';
 import { validateUploadedFile } from '@/lib/fileSafety';
 import { Modal } from '../ui/Modal';
@@ -263,11 +263,12 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         faculty: extSession.faculty || matchedSubject.facultyName,
         isLab: Boolean(extSession.isLab),
         isElective: isExtractedElective,
-        isPersonal: !isBatchPilot && profile.isBatchSynced ? true : false,
+        isPersonal: false,
       });
     });
 
     const finalHarmonizedSubjects = autoAssignHarmonicColorsToSubjects(newSubjects);
+    const cleanSessions = deduplicateTimetableSessions(newSessions).cleaned;
 
     // If electives are present, ensure student has enrolledElectiveIds tracked
     const electiveSubjectIds = finalHarmonizedSubjects.filter(s => s.isElective).map(s => s.id);
@@ -275,14 +276,14 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     const mergedEnrolled = Array.from(new Set([...existingEnrolled, ...electiveSubjectIds]));
 
     // Save subjects and timetable together atomically with matching IDs
-    setFullSubjectsAndTimetable(finalHarmonizedSubjects, newSessions);
+    setFullSubjectsAndTimetable(finalHarmonizedSubjects, cleanSessions);
     updateProfile({ 
       onboardingCompleted: true,
-      ...(!isBatchPilot && profile.isBatchSynced ? { isBatchSynced: false } : {}),
+      ...(!isBatchPilot && profile.isBatchSynced ? { isBatchSynced: false, batchKey: '' } : {}),
       ...(electiveSubjectIds.length > 0 ? { enrolledElectiveIds: mergedEnrolled } : {})
     });
     setShowOnboarding(false);
-    showToast('Timetable Sorted!', `Extracted ${finalHarmonizedSubjects.length} subjects & ${newSessions.length} weekly classes with optimal aesthetic colors!`, 'success');
+    showToast('Timetable Sorted!', `Extracted ${finalHarmonizedSubjects.length} subjects & ${cleanSessions.length} weekly classes with optimal aesthetic colors!`, 'success');
     handleClose();
   };
 
