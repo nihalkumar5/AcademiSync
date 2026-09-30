@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import OpenAI from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { mergeConsecutiveSessions } from '@/lib/timetableUtils';
 import { logServerError } from '@/lib/errorUtils';
@@ -86,6 +87,57 @@ const clean24HourEndTime = (endStr?: string, startStr?: string, fallback = '10:0
   return clean24HourTime(single, fallback);
 };
 
+/**
+ * Extracts timetable sessions using OpenAI Vision models (gpt-4o / gpt-4o-mini)
+ */
+async function extractTimetableWithOpenAI(
+  apiKey: string,
+  modelName: string,
+  prompt: string,
+  imageList: Array<{ base64: string; mimeType?: string }>
+): Promise<any[]> {
+  const openai = new OpenAI({ apiKey });
+
+  const content: OpenAI.Chat.Completions.ChatCompletionContentPart[] = [
+    {
+      type: 'text',
+      text: `${prompt}\n\nCRITICAL JSON SCHEMA REQUIREMENT:\nYou MUST return a JSON object with a "sessions" key containing an array of timetable sessions:\n{\n  "sessions": [\n    {\n      "day": "Monday",\n      "startTime": "09:00",\n      "endTime": "09:55",\n      "subjectName": "Computer Networks",\n      "subjectCode": "CS301",\n      "room": "LA 101",\n      "faculty": "Prof. Sharma",\n      "isLab": false,\n      "isElective": false\n    }\n  ]\n}`,
+    },
+    ...imageList.map((img) => {
+      const mime = img.mimeType || 'image/jpeg';
+      const cleanData = img.base64.replace(/^data:[^;]+;base64,/, '');
+      return {
+        type: 'image_url' as const,
+        image_url: {
+          url: `data:${mime};base64,${cleanData}`,
+          detail: 'high' as const,
+        },
+      };
+    }),
+  ];
+
+  const completion = await openai.chat.completions.create({
+    model: modelName,
+    messages: [
+      {
+        role: 'user',
+        content,
+      },
+    ],
+    response_format: { type: 'json_object' },
+    temperature: 0.1,
+  });
+
+  const responseText = completion.choices[0]?.message?.content || '{}';
+  const parsed = JSON.parse(responseText);
+
+  if (Array.isArray(parsed)) return parsed;
+  if (Array.isArray(parsed.sessions)) return parsed.sessions;
+  if (Array.isArray(parsed.classes)) return parsed.classes;
+  if (Array.isArray(parsed.timetable)) return parsed.timetable;
+  return [];
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -104,7 +156,31 @@ export async function POST(req: Request) {
       );
     }
 
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    let openAiApiKey = process.env.OPENAI_API_KEY;
+    if (!openAiApiKey || openAiApiKey.startsWith('sk-xxxx') || openAiApiKey.length < 30) {
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const envPath = path.join(process.cwd(), '.env.local');
+        if (fs.existsSync(envPath)) {
+          const content = fs.readFileSync(envPath, 'utf8');
+          const match = content.match(/^OPENAI_API_KEY=(.+)$/m);
+          if (match && match[1]?.trim()) {
+            openAiApiKey = match[1].trim();
+          }
+        }
+      } catch {
+        // ignore fallback error
+      }
+    }
+    const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+
+    if (!openAiApiKey && !geminiApiKey) {
+      return NextResponse.json(
+        { success: false, error: 'No AI API key configured on the server. Please add OPENAI_API_KEY in .env.local.' },
+        { status: 500 }
+      );
+    }
 
     // Handle both legacy single image or new multi-image format
     const imageList = images || (imageBase64 ? [{ base64: imageBase64, mimeType }] : []);
@@ -127,32 +203,20 @@ export async function POST(req: Request) {
       );
     }
 
-    let lastError: any = null;
+    const contextLines: string[] = [];
+    if (studentContext) {
+      if (studentContext.college) contextLines.push(`- Target College: ${studentContext.college}`);
+      if (studentContext.programme) contextLines.push(`- Target Programme: ${studentContext.programme}`);
+      if (studentContext.branch) contextLines.push(`- Target Branch/Department: ${studentContext.branch}`);
+      if (studentContext.semester) contextLines.push(`- Target Semester: ${studentContext.semester}`);
+      if (studentContext.section) contextLines.push(`- Target Section/Group/Batch: ${studentContext.section}`);
+      if (studentContext.targetCourses) contextLines.push(`- Specific Target Courses Filter: ${studentContext.targetCourses}`);
+    }
+    const contextPromptBlock = contextLines.length > 0 
+      ? `\nTARGET STUDENT PROFILE & CONTEXT:\n${contextLines.join('\n')}\n` 
+      : '';
 
-    // If an image was uploaded, run multimodal vision extraction across active Gemini models
-    if (apiKey && imageList.length > 0) {
-      const candidateModels = [
-        'gemini-flash-lite-latest',
-        'gemini-3.5-flash-lite',
-        'gemini-3.6-flash',
-        'gemini-flash-latest',
-      ];
-      const genAI = new GoogleGenerativeAI(apiKey);
-
-      const contextLines: string[] = [];
-      if (studentContext) {
-        if (studentContext.college) contextLines.push(`- Target College: ${studentContext.college}`);
-        if (studentContext.programme) contextLines.push(`- Target Programme: ${studentContext.programme}`);
-        if (studentContext.branch) contextLines.push(`- Target Branch/Department: ${studentContext.branch}`);
-        if (studentContext.semester) contextLines.push(`- Target Semester: ${studentContext.semester}`);
-        if (studentContext.section) contextLines.push(`- Target Section/Group/Batch: ${studentContext.section}`);
-        if (studentContext.targetCourses) contextLines.push(`- Specific Target Courses Filter: ${studentContext.targetCourses}`);
-      }
-      const contextPromptBlock = contextLines.length > 0 
-        ? `\nTARGET STUDENT PROFILE & CONTEXT:\n${contextLines.join('\n')}\n` 
-        : '';
-
-      const prompt = `You are a world-class university timetable parsing assistant specializing in complex Indian engineering timetables (IITs, NITs, IIITs, Central/State Universities).
+    const prompt = `You are a world-class university timetable parsing assistant specializing in complex Indian engineering timetables (IITs, NITs, IIITs, Central/State Universities).
 Analyze the provided timetable document(s)/image(s)/PDF and extract all weekly lecture, tutorial, and lab class sessions into a strict single JSON array.
 ${contextPromptBlock}
 CRITICAL INSTRUCTIONS FOR TARGET FILTERING & RESOLUTION:
@@ -213,7 +277,16 @@ CRITICAL INSTRUCTIONS FOR TARGET FILTERING & RESOLUTION:
   * If a class is "04:00 - 04:55", start time is "16:00" and end time is "16:55".
   * NEVER return morning times like "02:00", "03:00", "04:00", "05:00" for daytime afternoon classes!
 
-5. EXACT DATA SCHEMA:
+5. STRICT PERIOD GRANULARITY (DO NOT MERGE CONSECUTIVE LECTURES):
+- Extract each class session exactly as scheduled in the timetable grid with its distinct start time and end time.
+- If there are two consecutive 50-minute or 1-hour lectures of the same subject (e.g. 09:00 - 09:55 and 10:00 - 10:55), output BOTH as separate entries. DO NOT merge them into one long 2-hour lecture block!
+- Multi-hour duration is ONLY for practical lab sessions (e.g. 14:00 to 16:55 with isLab: true).
+
+6. ACCURATE FACULTY & INSTRUCTOR MAPPING:
+- Read the faculty name or initials written in THAT EXACT session cell, or match the subject code from the faculty reference legend table at the bottom/side.
+- NEVER mix, swap, or associate faculty from other departments or neighboring periods. If no faculty is stated for that period, leave "faculty" as "".
+
+7. EXACT DATA SCHEMA:
 For every extracted class session, return:
 - "day": "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", or "Sunday"
 - "startTime": 24-hour format "HH:MM" (e.g. "09:00", "14:00", "15:00", "16:00")
@@ -224,21 +297,42 @@ For every extracted class session, return:
 - "faculty": Faculty name if visible (e.g. "Prof. Bhaskaran Raman")
 - "isLab": boolean (true for practical/lab sessions, else false)
 - "isElective": boolean (true if this subject is an Elective course, Department Elective, Open Elective, Program Elective, or elective slot; else false)
+`;
 
-Return ONLY raw valid JSON array:
-[
-  {
-    "day": "Monday",
-    "startTime": "09:30",
-    "endTime": "10:25",
-    "subjectName": "Computer Networks",
-    "subjectCode": "CS 348",
-    "room": "LA 002",
-    "faculty": "Prof. Bhaskaran Raman",
-    "isLab": false,
-    "isElective": false
-  }
-]`;
+    let extractedRawSessions: any[] = [];
+    let successfulSource = '';
+    let lastError: any = null;
+
+    // 1. Primary Engine: OpenAI Vision if OPENAI_API_KEY is configured
+    if (openAiApiKey && imageList.length > 0) {
+      const openAiModels = ['gpt-4o', 'gpt-4o-mini'];
+      for (const modelName of openAiModels) {
+        try {
+          const raw = await Promise.race([
+            extractTimetableWithOpenAI(openAiApiKey, modelName, prompt, imageList),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`OpenAI ${modelName} timeout`)), 30000))
+          ]);
+          if (Array.isArray(raw) && raw.length > 0) {
+            extractedRawSessions = raw;
+            successfulSource = fileName || `OpenAI Vision (${modelName})`;
+            break;
+          }
+        } catch (openAiErr: any) {
+          logServerError(`ExtractTimetableAPI:OpenAI:${modelName}`, openAiErr);
+          lastError = openAiErr;
+        }
+      }
+    }
+
+    // 2. Fallback Engine: Gemini Vision across active Gemini models
+    if (extractedRawSessions.length === 0 && geminiApiKey && imageList.length > 0) {
+      const candidateModels = [
+        'gemini-flash-lite-latest',
+        'gemini-3.5-flash-lite',
+        'gemini-3.6-flash',
+        'gemini-flash-latest',
+      ];
+      const genAI = new GoogleGenerativeAI(geminiApiKey);
 
       const imageParts = imageList.map((img: any) => ({
         inlineData: {
@@ -246,8 +340,6 @@ Return ONLY raw valid JSON array:
           mimeType: img.mimeType || 'image/jpeg',
         },
       }));
-
-      lastError = null;
 
       for (const modelName of candidateModels) {
         try {
@@ -266,41 +358,49 @@ Return ONLY raw valid JSON array:
           const parsed = JSON.parse(jsonStr);
 
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const sanitized = parsed.map((s: any) => {
-              const start24 = clean24HourTime(s.startTime, '09:00');
-              const end24 = clean24HourEndTime(s.endTime, s.startTime, '10:00');
-              const isElective = !!s.isElective || 
-                /elective/i.test(s.subjectName || '') || 
-                /elective/i.test(s.subjectCode || '') ||
-                /elec/i.test(s.subjectCode || '');
-              return {
-                day: s.day || 'Monday',
-                startTime: start24,
-                endTime: end24,
-                subjectName: (s.subjectName || '').trim() || 'Subject',
-                subjectCode: (s.subjectCode || '').trim(),
-                room: (s.room || '').trim(),
-                faculty: (s.faculty || '').trim(),
-                isLab: !!s.isLab || /lab|practical|workshop/i.test(s.subjectName || '') || /lab|practical|workshop/i.test(s.subjectCode || ''),
-                isElective,
-              };
-            });
-            const merged = mergeConsecutiveSessions(sanitized);
-            return NextResponse.json({
-              success: true,
-              sessions: merged,
-              source: fileName || `Gemini Vision OCR (${modelName})`,
-            });
+            extractedRawSessions = parsed;
+            successfulSource = fileName || `Gemini Vision OCR (${modelName})`;
+            break;
           }
         } catch (modelErr: any) {
-          logServerError(`ExtractTimetableAPI:${modelName}`, modelErr);
+          logServerError(`ExtractTimetableAPI:Gemini:${modelName}`, modelErr);
           lastError = modelErr;
         }
       }
+    }
 
-      if (lastError) {
-        logServerError('ExtractTimetableAPI:AllModelsFailed', lastError);
-      }
+    // 3. Process and Sanitize Extracted Sessions
+    if (extractedRawSessions.length > 0) {
+      const sanitized = extractedRawSessions.map((s: any) => {
+        const start24 = clean24HourTime(s.startTime, '09:00');
+        const end24 = clean24HourEndTime(s.endTime, s.startTime, '10:00');
+        const isElective = !!s.isElective || 
+          /elective/i.test(s.subjectName || '') || 
+          /elective/i.test(s.subjectCode || '') ||
+          /elec/i.test(s.subjectCode || '');
+        return {
+          day: s.day || 'Monday',
+          startTime: start24,
+          endTime: end24,
+          subjectName: (s.subjectName || '').trim() || 'Subject',
+          subjectCode: (s.subjectCode || '').trim(),
+          room: (s.room || '').trim(),
+          faculty: (s.faculty || '').trim(),
+          isLab: !!s.isLab || /lab|practical|workshop/i.test(s.subjectName || '') || /lab|practical|workshop/i.test(s.subjectCode || ''),
+          isElective,
+        };
+      });
+
+      const merged = mergeConsecutiveSessions(sanitized);
+      return NextResponse.json({
+        success: true,
+        sessions: merged,
+        source: successfulSource,
+      });
+    }
+
+    if (lastError) {
+      logServerError('ExtractTimetableAPI:AllEnginesFailed', lastError);
     }
 
     const isQuotaOrBusy = lastError?.message && (

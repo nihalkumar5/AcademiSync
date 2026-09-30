@@ -674,11 +674,11 @@ export const mergeConsecutiveSessions = (
         return;
       }
 
-      // Consecutive slots (gap <= 15 mins) or partial overlap of same subject
-      const isConsecutive = currStart >= lastEnd && (currStart - lastEnd) <= 15;
+      // Only merge if it's an actual time overlap, or consecutive slots of a multi-hour practical/lab
       const isOverlap = currStart < lastEnd && currEnd > lastEnd;
+      const isConsecutiveLab = (last.isLab && current.isLab) && currStart >= lastEnd && (currStart - lastEnd) <= 15;
 
-      if (sameSubject && (isConsecutive || isOverlap)) {
+      if (sameSubject && (isOverlap || isConsecutiveLab)) {
         // Merge them!
         const maxEndMins = Math.max(lastEnd, currEnd);
         last.endTime = toTimeStr(maxEndMins);
