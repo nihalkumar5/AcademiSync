@@ -8,7 +8,6 @@ import {
   getTodayDateString,
   getTomorrowDateString,
   timeToMinutes,
-  formatTime12Hour,
 } from '@/lib/timetableUtils';
 import { getSubjectCardTheme } from '@/lib/cardColors';
 import { CarryItemRow } from './CarryItemRow';
@@ -16,7 +15,7 @@ import { AddCustomItemModal } from './AddCustomItemModal';
 import { SubjectDetailModal } from './SubjectDetailModal';
 import { ClassSession } from '@/lib/types';
 import { EmptyState } from '../ui/EmptyState';
-import { Backpack, Plus, CalendarDays, Clock, ChevronRight, MapPin, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Backpack, Plus, CalendarDays, Clock, ChevronRight } from 'lucide-react';
 import { Subject } from '@/lib/types';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 
@@ -255,15 +254,15 @@ export const TomorrowCarryView: React.FC = () => {
                     />
 
                     <div className="relative z-10 flex flex-col gap-2.5">
-                      {/* Top Header: Time + Lab Badge + Chevron */}
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-[12px] sm:text-[12.5px] font-bold text-[#151515] dark:text-[#F4F4F6] tracking-tight">
-                            {formatTime12Hour(sess.startTime)} – {formatTime12Hour(sess.endTime)}
-                          </span>
+                      {/* Top Row: Subject Name + Lab Badge + Chevron */}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <h4 className="text-[16px] sm:text-[17px] font-bold text-[#151515] dark:text-[#FFFFFF] leading-snug tracking-tight truncate">
+                            {subject?.name || 'Class Session'}
+                          </h4>
                           {isLab && (
                             <span 
-                              className="text-[9.5px] font-bold tracking-wider px-2 py-0.5 rounded-[3px] uppercase font-mono"
+                              className="text-[9.5px] font-bold tracking-wider px-2 py-0.5 rounded-[3px] uppercase font-mono shrink-0"
                               style={{
                                 color: theme.badgeText,
                                 backgroundColor: theme.badgeBg,
@@ -274,41 +273,19 @@ export const TomorrowCarryView: React.FC = () => {
                           )}
                         </div>
 
-                        <div className="flex items-center gap-1 text-[11px] font-mono font-bold text-[#808080] dark:text-[#A1A1AA] group-hover:text-black dark:group-hover:text-white transition-colors">
-                          <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                        </div>
-                      </div>
-
-                      {/* Subject Name */}
-                      <h4 className="text-[16px] sm:text-[17px] font-bold text-[#151515] dark:text-[#FFFFFF] leading-snug tracking-tight line-clamp-2">
-                        {subject?.name || 'Class Session'}
-                      </h4>
-
-                      {/* Room & Faculty */}
-                      <div className="flex items-center gap-2 text-[12px] font-medium text-[#6F6F6F] dark:text-[#CBD5E1] flex-wrap">
-                        {sess.room && (
-                          <span className="flex items-center gap-1">
-                            <span className="text-[10px] opacity-70">◉</span>
-                            <span>{sess.room}</span>
-                          </span>
-                        )}
-                        {sess.faculty && (
-                          <>
-                            <span className="opacity-40">·</span>
-                            <span>{sess.faculty}</span>
-                          </>
-                        )}
+                        <ChevronRight className="w-4 h-4 text-[#808080] dark:text-[#A1A1AA] group-hover:text-black dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
                       </div>
 
                       {/* Carry Requirements Highlight Badge */}
                       {reqs.length > 0 ? (
-                        <div className="mt-1 flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-white/80 dark:bg-white/[0.08] border border-black/5 dark:border-white/10 backdrop-blur-xs text-[12px] font-semibold text-[#18181B] dark:text-[#F4F4F6]">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-white/80 dark:bg-white/[0.08] border border-black/5 dark:border-white/10 backdrop-blur-xs text-[12.5px] font-semibold text-[#18181B] dark:text-[#F4F4F6]">
                           <Backpack className="w-3.5 h-3.5 text-[#18A889] shrink-0 stroke-[2.2]" />
-                          <span className="truncate">Bring: {reqs.join(' · ')}</span>
+                          <span className="truncate">Bring: {reqs.join(', ')}</span>
                         </div>
                       ) : (
-                        <div className="mt-0.5 text-[11px] font-mono text-[#8C8C8C] dark:text-[#71717A]">
-                          Standard bag items
+                        <div className="flex items-center gap-1.5 text-[12px] text-[#71717A] dark:text-[#A1A1AA]">
+                          <span>No specific items required</span>
+                          <span className="text-[11px] opacity-60">· Tap to add</span>
                         </div>
                       )}
                     </div>
