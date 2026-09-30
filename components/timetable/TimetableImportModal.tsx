@@ -23,6 +23,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     subjects, 
     addSubject, 
     timetable, 
+    isBatchPilot,
     setFullTimetable, 
     setFullSubjectsAndTimetable, 
     showToast, 
@@ -214,10 +215,13 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         if (existingSubject) {
           matchedSubject = {
             ...existingSubject,
-            facultyName: extSession.faculty || existingSubject.facultyName,
-            room: extSession.room || existingSubject.room,
-            isLab: extSession.isLab ?? existingSubject.isLab,
-            isElective: isExtractedElective || existingSubject.isElective || false,
+            name: extSession.subjectName,
+            code: extSession.subjectCode || existingSubject.code || '',
+            shortName: extSession.subjectName.substring(0, 4).toUpperCase(),
+            facultyName: extSession.faculty || (existingSubject.facultyName && existingSubject.facultyName !== 'TBD' ? existingSubject.facultyName : 'TBD'),
+            room: extSession.room || (existingSubject.room && existingSubject.room !== 'TBD' ? existingSubject.room : 'TBD'),
+            isLab: Boolean(extSession.isLab),
+            isElective: isExtractedElective,
           };
         } else {
           const assignedColor = getHarmonicColorForSubject(
@@ -253,8 +257,9 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         endTime: cleanEnd,
         room: extSession.room || matchedSubject.room,
         faculty: extSession.faculty || matchedSubject.facultyName,
-        isLab: extSession.isLab,
+        isLab: Boolean(extSession.isLab),
         isElective: isExtractedElective,
+        isPersonal: !isBatchPilot && profile.isBatchSynced ? true : false,
       });
     });
 
@@ -262,14 +267,15 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
 
     // If electives are present, ensure student has enrolledElectiveIds tracked
     const electiveSubjectIds = finalHarmonizedSubjects.filter(s => s.isElective).map(s => s.id);
-    const existingEnrolled = profile?.enrolledElectiveIds;
-    const initialEnrolled = existingEnrolled || electiveSubjectIds;
+    const existingEnrolled = profile?.enrolledElectiveIds || [];
+    const mergedEnrolled = Array.from(new Set([...existingEnrolled, ...electiveSubjectIds]));
 
     // Save subjects and timetable together atomically with matching IDs
     setFullSubjectsAndTimetable(finalHarmonizedSubjects, newSessions);
     updateProfile({ 
       onboardingCompleted: true,
-      ...(electiveSubjectIds.length > 0 ? { enrolledElectiveIds: initialEnrolled } : {})
+      ...(!isBatchPilot && profile.isBatchSynced ? { isBatchSynced: false } : {}),
+      ...(electiveSubjectIds.length > 0 ? { enrolledElectiveIds: mergedEnrolled } : {})
     });
     setShowOnboarding(false);
     showToast('Timetable Sorted!', `Extracted ${finalHarmonizedSubjects.length} subjects & ${newSessions.length} weekly classes with optimal aesthetic colors!`, 'success');

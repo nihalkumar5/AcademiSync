@@ -532,9 +532,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           });
         }
         const localLastUpdated = typeof window !== 'undefined' ? Number(window.localStorage.getItem('iiitnr_last_updated') || '0') : 0;
-        const isRemoteNewerOrEqual = !localLastUpdated || !data.lastUpdated || Number(data.lastUpdated) >= localLastUpdated;
+        const isRemoteStrictlyNewer = Boolean(data.lastUpdated && localLastUpdated && Number(data.lastUpdated) > localLastUpdated);
+        const isInitialLoad = !localLastUpdated || !remoteStateString.current;
+        const shouldApplyRemote = isRemoteStrictlyNewer || isInitialLoad;
 
-        if (isRemoteNewerOrEqual) {
+        if (shouldApplyRemote) {
           if (data.subjects) { setSubjectsState(data.subjects); storage.setSubjects(data.subjects); }
           if (data.timetable) { setTimetableState(data.timetable); storage.setTimetable(data.timetable); }
         }
@@ -565,7 +567,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
         if (data.messMenu !== undefined) { setMessMenu(data.messMenu); if(data.messMenu) { window.localStorage.setItem("intersemester_mess_menu_v1", JSON.stringify(data.messMenu)); } else { window.localStorage.removeItem("intersemester_mess_menu_v1"); } }
 
-        if (typeof window !== 'undefined' && data.lastUpdated) {
+        if (typeof window !== 'undefined' && data.lastUpdated && shouldApplyRemote) {
           window.localStorage.setItem('iiitnr_last_updated', data.lastUpdated.toString());
         }
 
@@ -1730,6 +1732,32 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimetableState(sessions);
     storage.setTimetable(sessions);
     refreshCarryItems(sessions, subjects);
+
+    const now = Date.now();
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('iiitnr_last_updated', now.toString());
+    }
+
+    if (user?.id) {
+      const userRef = doc(db, 'users', user.id);
+      const cleanTimetable = sanitizeForFirestore(sessions);
+      setDoc(userRef, {
+        timetable: cleanTimetable,
+        lastUpdated: now,
+      }, { merge: true }).catch((e) => console.error('Error saving full timetable to cloud:', e));
+
+      if (remoteStateString.current) {
+        try {
+          const parsed = JSON.parse(remoteStateString.current);
+          remoteStateString.current = JSON.stringify({
+            ...parsed,
+            timetable: cleanTimetable,
+            lastUpdated: now,
+          });
+        } catch (e) {}
+      }
+    }
+
     if (isBatchPilot) {
       syncCRChangesToBatch(sessions, subjects);
     }
@@ -1742,6 +1770,35 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimetableState(sessions);
     storage.setTimetable(sessions);
     refreshCarryItems(sessions, newSubjects);
+
+    const now = Date.now();
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('iiitnr_last_updated', now.toString());
+    }
+
+    if (user?.id) {
+      const userRef = doc(db, 'users', user.id);
+      const cleanSubjects = sanitizeForFirestore(newSubjects);
+      const cleanTimetable = sanitizeForFirestore(sessions);
+      setDoc(userRef, {
+        subjects: cleanSubjects,
+        timetable: cleanTimetable,
+        lastUpdated: now,
+      }, { merge: true }).catch((e) => console.error('Error saving full subjects & timetable to cloud:', e));
+
+      if (remoteStateString.current) {
+        try {
+          const parsed = JSON.parse(remoteStateString.current);
+          remoteStateString.current = JSON.stringify({
+            ...parsed,
+            subjects: cleanSubjects,
+            timetable: cleanTimetable,
+            lastUpdated: now,
+          });
+        } catch (e) {}
+      }
+    }
+
     if (isBatchPilot) {
       syncCRChangesToBatch(sessions, newSubjects);
     }
