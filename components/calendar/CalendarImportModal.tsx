@@ -6,7 +6,6 @@ import { useApp } from '@/context/AppContext';
 import { AcademicEvent, CalendarEventType } from '@/lib/types';
 import { getLocalDateString, getTodayDateString } from '@/lib/timetableUtils';
 import { validateUploadedFile } from '@/lib/fileSafety';
-import { processMultipleFilesForAi } from '@/lib/fileCompressor';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import {  Upload, Sparkles, Check, Trash2, CalendarDays , Bot, Plus , X, ChevronDown} from 'lucide-react';
@@ -97,7 +96,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
       for (const file of files) {
@@ -109,13 +108,23 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
         }
       }
 
-      try {
-        const processed = await processMultipleFilesForAi(files);
-        runExtraction(processed);
-      } catch (err) {
-        console.error('File compression/processing failed:', err);
-        showToast('Processing Error', 'Failed to process the uploaded file. Please try again.', 'error');
-      }
+      const readers = files.map((file) => {
+        return new Promise<{ name: string; base64: string; mimeType: string }>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            resolve({
+              name: file.name,
+              base64: event.target?.result as string,
+              mimeType: file.type || 'application/pdf',
+            });
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      Promise.all(readers).then((results) => {
+        runExtraction(results);
+      });
     }
   };
 

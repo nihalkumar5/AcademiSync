@@ -132,10 +132,10 @@ export async function POST(req: Request) {
     // If an image was uploaded, run multimodal vision extraction across active Gemini models
     if (apiKey && imageList.length > 0) {
       const candidateModels = [
-        'gemini-flash-latest',
-        'gemini-3.8-flash',
-        'gemini-3.5-flash-lite',
         'gemini-flash-lite-latest',
+        'gemini-3.5-flash-lite',
+        'gemini-3.6-flash',
+        'gemini-flash-latest',
       ];
       const genAI = new GoogleGenerativeAI(apiKey);
 
@@ -251,16 +251,10 @@ Return ONLY raw valid JSON array:
 
       for (const modelName of candidateModels) {
         try {
-          const model = genAI.getGenerativeModel({
-            model: modelName,
-            generationConfig: {
-              responseMimeType: 'application/json',
-              temperature: 0.1,
-            },
-          });
+          const model = genAI.getGenerativeModel({ model: modelName });
           const result: any = await Promise.race([
             model.generateContent([prompt, ...imageParts]),
-            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 14000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 22000))
           ]);
           const responseText = result.response.text();
           let jsonStr = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();

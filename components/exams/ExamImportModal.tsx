@@ -8,7 +8,6 @@ import { Upload, Bot, X, Sparkles, Check, Trash2, Plus } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { ExtractedExam } from '@/lib/types';
 import { validateUploadedFile } from '@/lib/fileSafety';
-import { processMultipleFilesForAi } from '@/lib/fileCompressor';
 
 interface ExamImportModalProps {
   isOpen: boolean;
@@ -86,7 +85,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
       for (const file of files) {
@@ -98,13 +97,23 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
         }
       }
 
-      try {
-        const processed = await processMultipleFilesForAi(files);
-        runExtraction(processed);
-      } catch (err) {
-        console.error('File compression/processing failed:', err);
-        showToast('Processing Error', 'Failed to process the uploaded file. Please try again.', 'error');
-      }
+      const readers = files.map((file) => {
+        return new Promise<{ name: string, base64: string, mimeType: string }>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            resolve({
+              name: file.name,
+              base64: event.target?.result as string,
+              mimeType: file.type || 'image/jpeg',
+            });
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      Promise.all(readers).then((results) => {
+        runExtraction(results);
+      });
     }
   };
 

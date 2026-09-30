@@ -43,22 +43,16 @@ export async function POST(req: Request) {
 
     if (apiKey && imageBase64) {
       const candidateModels = [
-        'gemini-flash-latest',
-        'gemini-3.8-flash',
-        'gemini-3.5-flash-lite',
         'gemini-flash-lite-latest',
+        'gemini-3.5-flash-lite',
+        'gemini-3.6-flash',
+        'gemini-flash-latest',
       ];
       const genAI = new GoogleGenerativeAI(apiKey);
 
       for (const modelName of candidateModels) {
         try {
-          const model = genAI.getGenerativeModel({
-            model: modelName,
-            generationConfig: {
-              responseMimeType: 'application/json',
-              temperature: 0.1,
-            },
-          });
+          const model = genAI.getGenerativeModel({ model: modelName });
 
           const prompt = `You are an academic homework and assignment extractor for college students.
 Analyze this uploaded assignment handout, worksheet, notice, or problem sheet and extract the task details.
@@ -80,7 +74,7 @@ Return ONLY valid JSON matching this exact structure:
 
           const result: any = await Promise.race([
             model.generateContent([prompt, imagePart]),
-            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 14000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 18000))
           ]);
           const responseText = result.response.text();
           

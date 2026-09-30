@@ -7,7 +7,6 @@ import { ExtractedClassSession, DayOfWeek, ClassSession, Subject } from '@/lib/t
 import { DAYS_OF_WEEK, mergeConsecutiveSessions, normalizeSection, sanitizeAcademicTime } from '@/lib/timetableUtils';
 import { autoAssignHarmonicColorsToSubjects, getHarmonicColorForSubject } from '@/lib/cardColors';
 import { validateUploadedFile } from '@/lib/fileSafety';
-import { processMultipleFilesForAi } from '@/lib/fileCompressor';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Upload, Sparkles, Check, Trash2, Plus, ShieldAlert, Bot, X, ChevronDown, Filter, AlertTriangle } from 'lucide-react';
@@ -128,7 +127,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
       for (const file of files) {
@@ -140,13 +139,23 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         }
       }
 
-      try {
-        const processed = await processMultipleFilesForAi(files);
-        runExtraction(processed);
-      } catch (err) {
-        console.error('File compression/processing failed:', err);
-        showToast('Processing Error', 'Failed to process the uploaded file. Please try again.', 'error');
-      }
+      const readers = files.map((file) => {
+        return new Promise<{ name: string, base64: string, mimeType: string }>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            resolve({
+              name: file.name,
+              base64: event.target?.result as string,
+              mimeType: file.type || 'image/jpeg',
+            });
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      Promise.all(readers).then((results) => {
+        runExtraction(results);
+      });
     }
   };
 
