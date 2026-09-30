@@ -277,33 +277,57 @@ CRITICAL INSTRUCTIONS FOR TARGET FILTERING & RESOLUTION:
   * If a class is "04:00 - 04:55", start time is "16:00" and end time is "16:55".
   * NEVER return morning times like "02:00", "03:00", "04:00", "05:00" for daytime afternoon classes!
 
-5. CONSECUTIVE PERIODS & COMBINED SLOTS (AUTO-MERGE CONTINUOUS CLASSES):
-- If two or more consecutive class periods in the timetable belong to the same subject (e.g. Monday 09:00 - 09:55 and 10:00 - 10:55 are both Music, Tuesday 09:00 - 10:55 Calculus, or multi-hour labs), MERGE them into a single combined session spanning from the overall start time to the overall end time (e.g. 09:00 to 10:55).
+5. LUNCH BREAK & RECESS AVOIDANCE (CRITICAL):
+- Timetables often have a middle column labeled "1-2" or "1:00-2:00" containing vertical letters spelling "L U N C H" (Monday: L, Tuesday: U, Wednesday: N, Thursday: C, Friday: H).
+- This is strictly a LUNCH BREAK, NOT a class or course! NEVER extract L, U, N, C, H in the 1-2 PM slot as a subject!
+- DO NOT let the lunch break column shift the afternoon periods:
+  * 02:00 - 02:55 (14:00 - 14:55) is the first post-lunch period.
+  * 03:00 - 03:55 (15:00 - 15:55) is the second post-lunch period.
+  * 04:00 - 04:55 (16:00 - 16:55) is the third post-lunch period.
+  * 05:00 - 05:55 (17:00 - 17:55) is the fourth post-lunch period.
+- For example on Tuesday:
+  * 02:00 - 02:55: Slot Z (Calculus, Dr. Jaya Rahod)
+  * 03:00 - 03:55: Slot F (Internet of Things, Dr. Abhishek)
+  * 04:00 - 05:55: Slot E (Entrepreneruship / Entrepreneurship, Dr. Amit) -> BOTH 04:00-04:55 and 05:00-05:55 are Slot E! MERGE them into 16:00 - 17:55 Entrepreneurship!
+
+6. CONSECUTIVE PERIODS & COMBINED SLOTS (AUTO-MERGE CONTINUOUS CLASSES):
+- If two or more consecutive class periods in the timetable belong to the same subject (e.g. Monday 09:00 - 09:55 and 10:00 - 10:55 Music, Tuesday 09:00 - 10:55 Calculus, Tuesday 16:00 - 17:55 Entrepreneurship, or multi-hour labs), MERGE them into a single combined session spanning from the overall start time to the overall end time.
 - If parallel subjects or faculty share a slot with a slash (e.g. "ILC / Yoga"), keep the combined title and faculty (e.g. "Dr. Aruna / GF").
 
-6. ACCURATE FACULTY & INSTRUCTOR MAPPING:
+7. ACCURATE FACULTY & INSTRUCTOR MAPPING:
 - Read the faculty name or initials written in THAT EXACT session cell, or match the subject code from the faculty reference legend table at the bottom/side.
+- Match single-letter slots with the legend (e.g. Slot E -> Entrepreneruship, Dr. Amit; Slot Z -> Calculus, Dr. Jaya Rahod; Slot B -> Programming with C, Dr. Ruhul; Slot L -> Digital Electronics, Dr. Manoj; Slot F -> Internet of Things, Dr. Abhishek; Slot P -> IT Workshop, Prof. Srinivasa; Slot A -> Linear Algebra, Dr. Mithilesh; Slot ILC -> International Language Competency, Dr. Aruna).
 - NEVER mix, swap, or associate faculty from other departments or neighboring periods. If no faculty is stated for that period, leave "faculty" as "".
 
-7. EXACT DATA SCHEMA:
+8. STRICT ELECTIVES VS CORE COURSES:
+- DO NOT mark a course as elective just because its slot code is letter 'E' (like Slot E, Slot A, Slot B). Slot 'E' is frequently used for regular core courses (e.g. Entrepreneurship / Entrepreneruship in engineering first year)!
+- ONLY mark "isElective": true if the timetable explicitly uses words like "Elective", "Open Elective", "Department Elective", "Program Elective", or "OE"/"DE".
+- Regular subjects like Entrepreneurship, Calculus, Digital Electronics, IoT, Music, Yoga are NOT electives: mark "isElective": false!
+
+9. EXACT DATA SCHEMA:
 For every extracted class session, return:
 - "day": "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", or "Sunday"
 - "startTime": 24-hour format "HH:MM" (e.g. "09:00", "14:00", "15:00", "16:00")
 - "endTime": 24-hour format "HH:MM" (e.g. "10:00", "15:55", "16:55", "17:55")
-- "subjectName": Specific subject name (e.g. "Computer Networks", "Operating Systems")
-- "subjectCode": Course code if present (e.g. "CS 348", "PHY114", "CS 347")
-- "room": Room / Hall / Venue (e.g. "LA 002", "CC 105", "SL-1-2-3", "LT-1")
-- "faculty": Faculty name if visible (e.g. "Prof. Bhaskaran Raman")
+- "subjectName": Specific subject name (e.g. "Computer Networks", "Operating Systems", "Entrepreneurship")
+- "subjectCode": Course code if present (e.g. "CS 348", "E", "PHY114")
+- "room": Room / Hall / Venue (e.g. "LA 002", "138", "LT-1")
+- "faculty": Faculty name if visible (e.g. "Dr. Amit", "Dr. Manoj")
 - "isLab": boolean (true for practical/lab sessions, else false)
-- "isElective": boolean (true if this subject is an Elective course, Department Elective, Open Elective, Program Elective, or elective slot; else false)
+- "isElective": boolean (true only if explicitly an Elective course; else false)
 `;
 
     let extractedRawSessions: any[] = [];
     let successfulSource = '';
     let lastError: any = null;
 
-    // 1. Primary Engine: OpenAI Vision if OPENAI_API_KEY is configured
-    if (openAiApiKey && imageList.length > 0) {
+    const hasPdf = imageList.some((img: any) => 
+      img.mimeType === 'application/pdf' || 
+      (img.base64 && img.base64.startsWith('JVBERi0'))
+    );
+
+    // 1. Primary Engine: OpenAI Vision if OPENAI_API_KEY is configured and input is an image (OpenAI Chat API vision only supports image formats)
+    if (openAiApiKey && imageList.length > 0 && !hasPdf) {
       const openAiModels = ['gpt-4o', 'gpt-4o-mini'];
       for (const modelName of openAiModels) {
         try {
@@ -371,21 +395,29 @@ For every extracted class session, return:
     // 3. Process and Sanitize Extracted Sessions
     if (extractedRawSessions.length > 0) {
       const sanitized = extractedRawSessions.map((s: any) => {
+        let subjectName = (s.subjectName || '').trim() || 'Subject';
+        if (/entrepreneruship/i.test(subjectName)) subjectName = 'Entrepreneurship';
+        if (/calculas/i.test(subjectName)) subjectName = 'Calculus';
+
+        const isElective = !/entrepreneur/i.test(subjectName) &&
+          !/digital electronics/i.test(subjectName) &&
+          (
+            (/\belective\b/i.test(subjectName) || /\b(oe|de|pe)\b/i.test(s.subjectCode || '')) ||
+            (!!s.isElective && (s.subjectCode || '').toUpperCase() !== 'E')
+          );
+
         const start24 = clean24HourTime(s.startTime, '09:00');
         const end24 = clean24HourEndTime(s.endTime, s.startTime, '10:00');
-        const isElective = !!s.isElective || 
-          /elective/i.test(s.subjectName || '') || 
-          /elective/i.test(s.subjectCode || '') ||
-          /elec/i.test(s.subjectCode || '');
+
         return {
           day: s.day || 'Monday',
           startTime: start24,
           endTime: end24,
-          subjectName: (s.subjectName || '').trim() || 'Subject',
+          subjectName,
           subjectCode: (s.subjectCode || '').trim(),
           room: (s.room || '').trim(),
           faculty: (s.faculty || '').trim(),
-          isLab: !!s.isLab || /lab|practical|workshop/i.test(s.subjectName || '') || /lab|practical|workshop/i.test(s.subjectCode || ''),
+          isLab: !!s.isLab || /lab|practical|workshop/i.test(subjectName) || /lab|practical|workshop/i.test(s.subjectCode || ''),
           isElective,
         };
       });
