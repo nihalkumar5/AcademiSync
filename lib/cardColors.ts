@@ -12,7 +12,7 @@ export interface CardTheme {
 export const PASTEL_THEMES: Record<string, CardTheme> = {
   mint: {
     name: 'Mint',
-    bg: '#E5F4EF',
+    bg: '#E8F7EC',
     darkBg: '#0F241E',
     accent: '#18A889',
     darkAccent: '#34D399',
@@ -22,7 +22,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
   },
   blue: {
     name: 'Periwinkle Blue',
-    bg: '#E8EDFF',
+    bg: '#E4EFFB',
     darkBg: '#12182B',
     accent: '#334CC4',
     darkAccent: '#93C5FD',
@@ -32,7 +32,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
   },
   peach: {
     name: 'Warm Peach',
-    bg: '#FFF3EE',
+    bg: '#FDEEE9',
     darkBg: '#241612',
     accent: '#C85F3D',
     darkAccent: '#FB923C',
@@ -42,7 +42,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
   },
   lavender: {
     name: 'Lavender',
-    bg: '#F0EAFB',
+    bg: '#F3EBF9',
     darkBg: '#1E172B',
     accent: '#8067B5',
     darkAccent: '#C084FC',
@@ -52,7 +52,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
   },
   yellow: {
     name: 'Amber Yellow',
-    bg: '#F8F0D8',
+    bg: '#FEF7E6',
     darkBg: '#262112',
     accent: '#C99A32',
     darkAccent: '#FBBF24',
@@ -62,7 +62,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
   },
   rose: {
     name: 'Rose Pink',
-    bg: '#FCEBED',
+    bg: '#FDECEF',
     darkBg: '#261216',
     accent: '#C94B5C',
     darkAccent: '#F472B6',
@@ -72,7 +72,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
   },
   emerald: {
     name: 'Emerald Green',
-    bg: '#E7F7ED',
+    bg: '#EAF7EE',
     darkBg: '#0D2115',
     accent: '#15803D',
     darkAccent: '#4ADE80',
@@ -82,7 +82,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
   },
   cyan: {
     name: 'Ocean Cyan',
-    bg: '#E0F2FE',
+    bg: '#E5F5FD',
     darkBg: '#0B1E2E',
     accent: '#0284C7',
     darkAccent: '#38BDF8',
@@ -92,7 +92,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
   },
   indigo: {
     name: 'Electric Indigo',
-    bg: '#EEF2FF',
+    bg: '#ECEFFE',
     darkBg: '#16172E',
     accent: '#4F46E5',
     darkAccent: '#A5B4FC',
@@ -102,7 +102,7 @@ export const PASTEL_THEMES: Record<string, CardTheme> = {
   },
   slate: {
     name: 'Slate Charcoal',
-    bg: '#F1F5F9',
+    bg: '#F1F4F9',
     darkBg: '#191E24',
     accent: '#475569',
     darkAccent: '#94A3B8',
@@ -194,15 +194,21 @@ export function generatePastelThemeFromHex(rawColor: string, name: string = 'Cus
     const g = parseInt(hexOnly.slice(2, 4), 16);
     const b = parseInt(hexOnly.slice(4, 6), 16);
 
+    // Creamy macaron tint for light mode
+    const mixR = Math.round(r * 0.12 + 255 * 0.88);
+    const mixG = Math.round(g * 0.12 + 255 * 0.88);
+    const mixB = Math.round(b * 0.12 + 255 * 0.88);
+    const macaronBg = `#${mixR.toString(16).padStart(2, '0')}${mixG.toString(16).padStart(2, '0')}${mixB.toString(16).padStart(2, '0')}`;
+
     return {
       name: name || 'Custom Theme',
       accent: `#${hexOnly}`,
       darkAccent: `#${hexOnly}`,
-      bg: `rgba(${r}, ${g}, ${b}, 0.14)`,
+      bg: macaronBg,
       darkBg: `rgba(${r}, ${g}, ${b}, 0.25)`,
-      badgeBg: `rgba(${r}, ${g}, ${b}, 0.24)`,
+      badgeBg: `rgba(${r}, ${g}, ${b}, 0.18)`,
       badgeText: `#${hexOnly}`,
-      border: `rgba(${r}, ${g}, ${b}, 0.35)`,
+      border: `rgba(${r}, ${g}, ${b}, 0.20)`,
     };
   }
 
