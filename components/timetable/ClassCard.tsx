@@ -51,8 +51,8 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         "group relative flex flex-col p-4 sm:p-[18px] text-left transition-all rounded-[6px] overflow-hidden",
         menuOpen ? 'z-40' : 'z-0',
         isCurrent
-          ? "bg-[#161822] dark:bg-[#151722] border-2 border-[#18A889] shadow-[0_0_24px_-4px_rgba(24,168,137,0.3)] ring-1 ring-[#18A889]/30"
-          : "bg-white dark:bg-[#161822] hover:bg-slate-50/80 dark:hover:bg-[#1A1D2B] shadow-xs hover:shadow-md transition-all"
+          ? "bg-[#111111] dark:bg-[#111111] border-2 border-[#18A889] shadow-[0_0_24px_-4px_rgba(24,168,137,0.3)] ring-1 ring-[#18A889]/30"
+          : "border shadow-none hover:shadow-xs transition-all"
       )}
       style={{
         borderColor: isCurrent 
@@ -62,14 +62,20 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         borderStyle: 'solid',
       }}
     >
-      {/* Ambient delicate corner glow */}
+      {/* Subtle Muted Tint Backgrounds for Light & Dark mode */}
       {!isCurrent && (
-        <div 
-          className="absolute inset-0 z-0 pointer-events-none"
-          style={{
-            background: `radial-gradient(ellipse 90% 70% at 0% 0%, ${theme.accent}14 0%, transparent 70%)`,
-          }}
-        />
+        <>
+          <div 
+            className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[5px]"
+            style={{ backgroundColor: theme.bg }}
+          />
+          <div 
+            className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[5px]"
+            style={{ 
+              background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
+            }}
+          />
+        </>
       )}
 
       <div className="relative z-10 flex flex-col">
@@ -77,23 +83,23 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         <div className="flex items-center justify-between gap-2 mb-2.5">
           <div className="flex items-center gap-2 flex-wrap">
             <span 
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider font-mono"
-              style={{
-                backgroundColor: `${theme.accent}18`,
-                color: theme.darkAccent || theme.accent,
-                border: `1px solid ${theme.accent}35`,
-              }}
+              className="text-[11px] font-bold uppercase tracking-[1.4px] leading-none"
             >
-              <span 
-                className="w-1.5 h-1.5 rounded-full shrink-0" 
-                style={{ backgroundColor: theme.accent }}
-              />
-              <span>{categoryLabel}</span>
+              <span className="dark:hidden" style={{ color: theme.accent }}>
+                {categoryLabel}
+              </span>
+              <span className="hidden dark:inline" style={{ color: theme.darkAccent || theme.accent }}>
+                {categoryLabel}
+              </span>
             </span>
 
             {isLab && (
               <span 
-                className="text-[9px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[4px] bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                className="text-[9.5px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[3px]"
+                style={{
+                  color: isCurrent ? '#18A889' : theme.badgeText,
+                  backgroundColor: isCurrent ? 'rgba(24,168,137,0.18)' : theme.badgeBg,
+                }}
               >
                 LAB
               </span>
@@ -101,14 +107,18 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 
             {isSpecial && !isLab && (
               <span 
-                className="text-[9px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[4px] bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30"
+                className="text-[9.5px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[3px]"
+                style={{
+                  color: isCurrent ? '#8067B5' : theme.badgeText,
+                  backgroundColor: isCurrent ? 'rgba(128,103,181,0.18)' : theme.badgeBg,
+                }}
               >
                 ELECTIVE
               </span>
             )}
 
             {isCurrent && (
-              <span className="inline-flex items-center gap-1 text-[9px] font-bold tracking-widest px-1.5 py-0.5 text-[#18A889] bg-[#18A889]/15 border border-[#18A889]/30 uppercase rounded-[4px]">
+              <span className="inline-flex items-center gap-1 text-[9.5px] font-bold tracking-widest px-1.5 py-0.5 text-[#18A889] bg-[#18A889]/15 border border-[#18A889]/30 uppercase rounded-[3px]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#18A889] animate-pulse" />
                 LIVE
               </span>
@@ -117,7 +127,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 
           <div className="flex items-center gap-2">
             <span 
-              className="text-[12px] font-bold font-mono tracking-tight text-slate-500 dark:text-[#94A3B8] whitespace-nowrap"
+              className="text-[12px] sm:text-[13px] font-bold font-mono tracking-tight text-[#151515] dark:text-[#F4F4F6] whitespace-nowrap"
             >
               {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
             </span>
@@ -128,7 +138,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
                 <button
                   type="button"
                   onClick={() => setMenuOpen((prev) => !prev)}
-                  className="p-1 rounded transition-colors cursor-pointer text-slate-400 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
+                  className="p-1 rounded transition-colors cursor-pointer text-[#737373] dark:text-[#CBD5E1] hover:text-[#111111] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
                   title="Class actions"
                 >
                   <MoreHorizontal className="w-4 h-4" />
@@ -173,17 +183,17 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 
         {/* Title */}
         <h4 
-          className="text-[15px] sm:text-[16px] leading-[22px] font-bold tracking-tight break-words mb-2.5 text-[#111111] dark:text-[#F8FAFC]"
+          className="text-[16px] sm:text-[17px] leading-[22px] font-bold tracking-tight break-words mb-2.5 text-[#151515] dark:text-white"
         >
           {subject?.name || (session as any).subjectName || (session as any).title || 'Class Session'}
         </h4>
 
         {/* Metadata */}
         <div 
-          className="flex items-center gap-1.5 text-[12px] font-medium truncate text-[#6F737C] dark:text-[#94A3B8]"
+          className="flex items-center gap-1.5 text-[12px] font-medium truncate text-[#6F737C] dark:text-[#CBD5E1]"
         >
           <span className="shrink-0 flex items-center gap-1">
-            <span className="text-[10px] leading-none opacity-80" style={{ color: theme.darkAccent || theme.accent }}>◉</span> {roomStr}
+            <span className="text-[10px] leading-none opacity-80 text-[#8E929C] dark:text-[#CBD5E1]">◉</span> {roomStr}
           </span>
           {displayFaculty && (
             <>

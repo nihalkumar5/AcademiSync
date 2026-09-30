@@ -327,7 +327,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
             });
             return (
               <div
-                className="p-3.5 rounded-[6px] border transition-all flex flex-col gap-2 mt-1 relative overflow-hidden bg-white dark:bg-[#161822]"
+                className="p-3.5 rounded-[6px] border transition-all flex flex-col gap-2 mt-1 relative overflow-hidden"
                 style={{
                   borderColor: `${previewTheme.accent}45`,
                   borderWidth: '1px',
@@ -335,40 +335,44 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
                 }}
               >
                 <div 
-                  className="absolute inset-0 z-0 pointer-events-none"
-                  style={{
-                    background: `radial-gradient(ellipse 90% 70% at 0% 0%, ${previewTheme.accent}14 0%, transparent 70%)`,
+                  className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[5px]"
+                  style={{ backgroundColor: previewTheme.bg }}
+                />
+                <div 
+                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[5px]"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${previewTheme.accent}2A 0%, ${previewTheme.accent}14 100%), #13151D`,
                   }}
                 />
                 <div className="relative z-10 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span
-                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] text-[10px] font-bold tracking-wider uppercase font-mono"
-                      style={{
-                        backgroundColor: `${previewTheme.accent}18`,
-                        color: previewTheme.darkAccent || previewTheme.accent,
-                        border: `1px solid ${previewTheme.accent}35`,
-                      }}
+                    <span 
+                      className="text-[10px] font-bold uppercase tracking-wider font-mono"
+                      style={{ color: previewTheme.darkAccent || previewTheme.accent }}
                     >
-                      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: previewTheme.accent }} />
-                      <span>{previewTheme.name}</span>
-                      {code && <span className="opacity-70 font-mono">· {code}</span>}
+                      {previewTheme.name}
                     </span>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-[4px] bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-zinc-300">
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-[3px] bg-black/5 dark:bg-white/10 text-slate-700 dark:text-zinc-300">
                       {credits || 3} Credits
                     </span>
                     {isLab && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                      <span 
+                        className="text-[9px] font-bold px-1.5 py-0.5 rounded-[3px]"
+                        style={{
+                          backgroundColor: previewTheme.badgeBg,
+                          color: previewTheme.badgeText,
+                        }}
+                      >
                         LAB
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-zinc-400">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-zinc-500">
                     Live Theme Preview
                   </span>
                 </div>
                 <div className="relative z-10">
-                  <h5 className="text-[14px] font-bold text-slate-900 dark:text-[#F8FAFC]">
+                  <h5 className="text-[14px] font-bold text-slate-900 dark:text-white">
                     {name.trim() || 'Subject Name'}
                   </h5>
                   <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5">
