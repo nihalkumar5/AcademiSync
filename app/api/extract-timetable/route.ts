@@ -277,10 +277,9 @@ CRITICAL INSTRUCTIONS FOR TARGET FILTERING & RESOLUTION:
   * If a class is "04:00 - 04:55", start time is "16:00" and end time is "16:55".
   * NEVER return morning times like "02:00", "03:00", "04:00", "05:00" for daytime afternoon classes!
 
-5. STRICT PERIOD GRANULARITY (DO NOT MERGE CONSECUTIVE LECTURES):
-- Extract each class session exactly as scheduled in the timetable grid with its distinct start time and end time.
-- If there are two consecutive 50-minute or 1-hour lectures of the same subject (e.g. 09:00 - 09:55 and 10:00 - 10:55), output BOTH as separate entries. DO NOT merge them into one long 2-hour lecture block!
-- Multi-hour duration is ONLY for practical lab sessions (e.g. 14:00 to 16:55 with isLab: true).
+5. CONSECUTIVE PERIODS & COMBINED SLOTS (AUTO-MERGE CONTINUOUS CLASSES):
+- If two or more consecutive class periods in the timetable belong to the same subject (e.g. Monday 09:00 - 09:55 and 10:00 - 10:55 are both Music, Tuesday 09:00 - 10:55 Calculus, or multi-hour labs), MERGE them into a single combined session spanning from the overall start time to the overall end time (e.g. 09:00 to 10:55).
+- If parallel subjects or faculty share a slot with a slash (e.g. "ILC / Yoga"), keep the combined title and faculty (e.g. "Dr. Aruna / GF").
 
 6. ACCURATE FACULTY & INSTRUCTOR MAPPING:
 - Read the faculty name or initials written in THAT EXACT session cell, or match the subject code from the faculty reference legend table at the bottom/side.

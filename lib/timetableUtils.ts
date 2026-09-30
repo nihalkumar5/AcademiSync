@@ -674,18 +674,28 @@ export const mergeConsecutiveSessions = (
         return;
       }
 
-      // Only merge if it's an actual time overlap, or consecutive slots of a multi-hour practical/lab
+      // Consecutive slots (gap <= 15 mins) or partial overlap of same subject
+      const isConsecutive = currStart >= lastEnd && (currStart - lastEnd) <= 15;
       const isOverlap = currStart < lastEnd && currEnd > lastEnd;
-      const isConsecutiveLab = (last.isLab && current.isLab) && currStart >= lastEnd && (currStart - lastEnd) <= 15;
 
-      if (sameSubject && (isOverlap || isConsecutiveLab)) {
+      if (sameSubject && (isConsecutive || isOverlap)) {
         // Merge them!
         const maxEndMins = Math.max(lastEnd, currEnd);
         last.endTime = toTimeStr(maxEndMins);
 
-        // Merge faculty and room if one is missing
-        if (!last.faculty && current.faculty) last.faculty = current.faculty;
-        if (!last.room && current.room) last.room = current.room;
+        // Merge faculty and room if one is missing or distinct
+        if (!last.faculty && current.faculty) {
+          last.faculty = current.faculty;
+        } else if (last.faculty && current.faculty && !last.faculty.toLowerCase().includes(current.faculty.toLowerCase())) {
+          last.faculty = `${last.faculty} / ${current.faculty}`;
+        }
+
+        if (!last.room && current.room) {
+          last.room = current.room;
+        } else if (last.room && current.room && !last.room.toLowerCase().includes(current.room.toLowerCase())) {
+          last.room = `${last.room} / ${current.room}`;
+        }
+
         if (current.isLab) last.isLab = true;
         if (current.isElective) last.isElective = true;
       } else {
