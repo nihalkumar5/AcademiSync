@@ -55,6 +55,8 @@ export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Frida
 export interface ClassSession {
   id: string;
   subjectId: string;
+  subjectName?: string;
+  subjectCode?: string;
   day: DayOfWeek;
   startTime: string; // "09:00"
   endTime: string;   // "10:00"

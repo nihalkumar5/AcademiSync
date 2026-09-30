@@ -199,50 +199,52 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         (extSession.subjectCode && extSession.subjectCode.toLowerCase().includes('elec'))
       );
 
-      // Find if we already registered this subject in newSubjects
-      let matchedSubject = newSubjects.find(
-        (s) => s.name.toLowerCase() === extSession.subjectName.toLowerCase() || 
-               (extSession.subjectCode && s.code && s.code.toLowerCase() === extSession.subjectCode.toLowerCase())
-      );
+      const cleanName = (extSession.subjectName || '').trim();
+      const cleanCode = (extSession.subjectCode || '').trim();
+      // Only treat code as course identifier if it's a real course code like CS101, NOT a 1-2 char slot letter like A, B, C, F
+      const isRealCourseCode = cleanCode.length > 2 && !/^[A-Z]\d?$/i.test(cleanCode);
+
+      // Find if we already registered this subject in newSubjects (strictly by subject name or real course code)
+      let matchedSubject = newSubjects.find((s) => {
+        if (s.name.trim().toLowerCase() === cleanName.toLowerCase()) return true;
+        if (isRealCourseCode && s.code && s.code.trim().toLowerCase() === cleanCode.toLowerCase()) return true;
+        return false;
+      });
 
       if (!matchedSubject) {
-        // Check if user previously had this subject in `subjects` to preserve custom color, notes, faculty details
+        // Match existing subject strictly by NAME to preserve user custom color/notes
         const existingSubject = subjects.find(
-          (s) => s.name.toLowerCase() === extSession.subjectName.toLowerCase() || 
-                 (extSession.subjectCode && s.code && s.code.toLowerCase() === extSession.subjectCode.toLowerCase())
+          (s) => s.name.trim().toLowerCase() === cleanName.toLowerCase()
         );
 
-        if (existingSubject) {
-          matchedSubject = {
-            ...existingSubject,
-            name: extSession.subjectName,
-            code: extSession.subjectCode || existingSubject.code || '',
-            shortName: extSession.subjectName.substring(0, 4).toUpperCase(),
-            facultyName: extSession.faculty || (existingSubject.facultyName && existingSubject.facultyName !== 'TBD' ? existingSubject.facultyName : 'TBD'),
-            room: extSession.room || (existingSubject.room && existingSubject.room !== 'TBD' ? existingSubject.room : 'TBD'),
-            isLab: Boolean(extSession.isLab),
-            isElective: isExtractedElective,
-          };
-        } else {
-          const assignedColor = getHarmonicColorForSubject(
-            { name: extSession.subjectName, code: extSession.subjectCode, isLab: extSession.isLab },
-            newSubjects.map((s) => s.color)
-          );
+        // Guarantee that EVERY subject gets a UNIQUE id (never collide or reuse an ID already in newSubjects)
+        const isIdAvailable = existingSubject?.id && !newSubjects.some((s) => s.id === existingSubject.id);
+        const subjectId = isIdAvailable
+          ? existingSubject.id
+          : `subj_${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${idx}`;
 
-          matchedSubject = {
-            id: `subj_${Date.now()}_${idx}`,
-            name: extSession.subjectName,
-            code: extSession.subjectCode || '',
-            shortName: extSession.subjectName.substring(0, 4).toUpperCase(),
-            facultyName: extSession.faculty || 'TBD',
-            room: extSession.room || 'TBD',
-            credits: 3,
-            color: isExtractedElective ? '#8067B5' : assignedColor,
-            carryRequirements: extSession.isLab ? ['Laptop (Charged)', 'Lab Manual / Record'] : ['Lecture Notebook'],
-            isLab: extSession.isLab,
-            isElective: isExtractedElective,
-          };
-        }
+        const assignedColor = getHarmonicColorForSubject(
+          { name: cleanName, code: cleanCode, isLab: extSession.isLab },
+          newSubjects.map((s) => s.color)
+        );
+
+        matchedSubject = {
+          id: subjectId,
+          name: cleanName,
+          code: cleanCode,
+          shortName: cleanName.substring(0, 4).toUpperCase(),
+          facultyName: extSession.faculty || (existingSubject?.facultyName && existingSubject.facultyName !== 'TBD' ? existingSubject.facultyName : 'TBD'),
+          room: extSession.room || (existingSubject?.room && existingSubject.room !== 'TBD' ? existingSubject.room : 'TBD'),
+          credits: existingSubject?.credits || 3,
+          color: (existingSubject?.isCustomColor && existingSubject.color) ? existingSubject.color : (isExtractedElective ? '#8067B5' : assignedColor),
+          isCustomColor: Boolean(existingSubject?.isCustomColor),
+          carryRequirements: extSession.isLab 
+            ? ['Laptop (Charged)', 'Lab Manual / Record'] 
+            : (existingSubject?.carryRequirements || ['Lecture Notebook']),
+          isLab: Boolean(extSession.isLab),
+          isElective: isExtractedElective,
+        };
+
         newSubjects.push(matchedSubject);
       }
 
@@ -250,8 +252,10 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
       const cleanEnd = sanitizeAcademicTime(extSession.endTime, '10:00', true, cleanStart);
 
       newSessions.push({
-        id: `sess_${Date.now()}_${idx}`,
+        id: `sess_${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${idx}`,
         subjectId: matchedSubject.id,
+        subjectName: matchedSubject.name,
+        subjectCode: matchedSubject.code,
         day: extSession.day,
         startTime: cleanStart,
         endTime: cleanEnd,

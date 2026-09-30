@@ -401,6 +401,57 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [timetable]);
 
+  // Auto-heal duplicate subject IDs (guarantees 100% ID uniqueness for live production users)
+  useEffect(() => {
+    if (subjects && subjects.length > 0) {
+      const seenIds = new Set<string>();
+      let hasDuplicates = false;
+      for (const s of subjects) {
+        if (seenIds.has(s.id)) {
+          hasDuplicates = true;
+          break;
+        }
+        seenIds.add(s.id);
+      }
+
+      if (hasDuplicates) {
+        console.warn('⚠️ Detected duplicate subject IDs in state! Auto-healing subject IDs for production stability...');
+        const uniqueIdMap = new Map<string, string>();
+        const usedIds = new Set<string>();
+
+        const healedSubjects = subjects.map((sub, idx) => {
+          const key = `${sub.id}__${sub.name.trim().toLowerCase()}`;
+          if (usedIds.has(sub.id)) {
+            const newId = `subj_${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${idx}`;
+            uniqueIdMap.set(key, newId);
+            usedIds.add(newId);
+            return { ...sub, id: newId };
+          } else {
+            usedIds.add(sub.id);
+            uniqueIdMap.set(key, sub.id);
+            return sub;
+          }
+        });
+
+        const healedTimetable = timetable.map((sess) => {
+          const sessName = sess.subjectName?.trim().toLowerCase();
+          if (sessName && sess.subjectId) {
+            const key = `${sess.subjectId}__${sessName}`;
+            if (uniqueIdMap.has(key)) {
+              return { ...sess, subjectId: uniqueIdMap.get(key)! };
+            }
+          }
+          return sess;
+        });
+
+        setSubjectsState(healedSubjects);
+        storage.setSubjects(healedSubjects);
+        setTimetableState(healedTimetable);
+        storage.setTimetable(healedTimetable);
+      }
+    }
+  }, [subjects, timetable]);
+
   // Handle User Logout / Switch Account Cleanup
   useEffect(() => {
     if (!isClerkLoaded) return;

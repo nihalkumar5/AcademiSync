@@ -29,25 +29,16 @@ export const WeeklyTimetable: React.FC = () => {
     if (session.subjectId && subjectMap.has(session.subjectId)) {
       return subjectMap.get(session.subjectId);
     }
-    // 1. Match by session subjectName / subjectCode
-    const sessSubName = (session as any).subjectName?.toLowerCase();
-    const sessSubCode = (session as any).subjectCode?.toLowerCase();
-    if (sessSubCode) {
-      const match = subjects.find(s => s.code && s.code.toLowerCase() === sessSubCode);
-      if (match) return match;
-    }
+    // 1. Fallback: match strictly by subjectName
+    const sessSubName = (session as any).subjectName?.trim().toLowerCase();
     if (sessSubName) {
-      const match = subjects.find(s => s.name && s.name.toLowerCase() === sessSubName);
+      const match = subjects.find(s => s.name && s.name.trim().toLowerCase() === sessSubName);
       if (match) return match;
     }
-    // 2. Match by faculty name association if subjectId is missing/desynced
-    if (session.faculty) {
-      const sessFac = session.faculty.toLowerCase().trim();
-      const match = subjects.find(s => {
-        if (!s.facultyName) return false;
-        const subFac = s.facultyName.toLowerCase().trim();
-        return subFac.includes(sessFac) || sessFac.includes(subFac);
-      });
+    // 2. Fallback: match by multi-character course code (e.g. CS101, not single-letter slot codes like C, F)
+    const sessSubCode = (session as any).subjectCode?.trim().toLowerCase();
+    if (sessSubCode && sessSubCode.length > 2) {
+      const match = subjects.find(s => s.code && s.code.trim().toLowerCase() === sessSubCode);
       if (match) return match;
     }
     return undefined;

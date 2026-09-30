@@ -536,9 +536,8 @@ export const TodayTimeline: React.FC = () => {
             const reschedule = getRescheduledForSession(session, targetDateStr);
             const effectiveSubjectId = reschedule?.subjectId || session.subjectId;
             const sub = subjectMap.get(effectiveSubjectId) || subjects.find(s => 
-              (session.faculty && s.facultyName && (s.facultyName.toLowerCase().includes(session.faculty.toLowerCase()) || session.faculty.toLowerCase().includes(s.facultyName.toLowerCase()))) ||
-              ((session as any).subjectCode && s.code && s.code.toLowerCase() === (session as any).subjectCode.toLowerCase()) ||
-              ((session as any).subjectName && s.name && s.name.toLowerCase() === (session as any).subjectName.toLowerCase())
+              ((session as any).subjectName && s.name && s.name.trim().toLowerCase() === (session as any).subjectName.trim().toLowerCase()) ||
+              ((session as any).subjectCode && (session as any).subjectCode.length > 2 && s.code && s.code.toLowerCase() === (session as any).subjectCode.toLowerCase())
             );
             const start = timeToMinutes(reschedule ? reschedule.startTime : session.startTime);
             const end = timeToMinutes(reschedule ? reschedule.endTime : session.endTime);
