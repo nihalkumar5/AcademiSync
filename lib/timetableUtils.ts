@@ -663,12 +663,23 @@ export const mergeConsecutiveSessions = (
       const currStart = toMins(current.startTime);
       const currEnd = toMins(current.endTime);
 
-      // Consecutive slots of same subject (e.g. 09:00-09:55 followed by 10:00-10:55, gap <= 15 mins) or overlap -> MERGE THEM!
+      // Exact or inner overlap of same subject: merge
+      if (sameSubject && currStart >= lastStart && currStart < lastEnd) {
+        const maxEndMins = Math.max(lastEnd, currEnd);
+        last.endTime = toTimeStr(maxEndMins);
+        if (!last.faculty && current.faculty) last.faculty = current.faculty;
+        if (!last.room && current.room) last.room = current.room;
+        if (current.isLab) last.isLab = true;
+        if (current.isElective) last.isElective = true;
+        return;
+      }
+
+      // Consecutive slots (gap <= 15 mins) or partial overlap of same subject
       const isConsecutive = currStart >= lastEnd && (currStart - lastEnd) <= 15;
       const isOverlap = currStart < lastEnd && currEnd > lastEnd;
 
       if (sameSubject && (isConsecutive || isOverlap)) {
-        // Merge into a continuous class block
+        // Merge them!
         const maxEndMins = Math.max(lastEnd, currEnd);
         last.endTime = toTimeStr(maxEndMins);
 

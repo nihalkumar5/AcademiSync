@@ -1735,18 +1735,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     storage.setSubjects(newSubjects);
     setTimetableState(sessions);
     storage.setTimetable(sessions);
-    const now = Date.now();
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('iiitnr_last_updated', now.toString());
-    }
-    if (user?.id) {
-      const userRef = doc(db, 'users', user.id);
-      setDoc(userRef, {
-        timetable: sanitizeForFirestore(sessions),
-        subjects: sanitizeForFirestore(newSubjects),
-        lastUpdated: now,
-      }, { merge: true }).catch((e) => console.error('Error saving imported timetable to cloud:', e));
-    }
     refreshCarryItems(sessions, newSubjects);
     if (isBatchPilot) {
       syncCRChangesToBatch(sessions, newSubjects);

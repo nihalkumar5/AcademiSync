@@ -7,15 +7,14 @@ export interface ProcessedFile {
 export async function processFileForAi(file: File): Promise<ProcessedFile> {
   const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 
-  // For PDFs or images under 4.5MB, preserve original resolution, lossless text & camera orientation
-  if (isPdf || file.size <= 4.5 * 1024 * 1024) {
+  if (isPdf) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         resolve({
           name: file.name,
           base64: (e.target?.result as string) || '',
-          mimeType: file.type || (isPdf ? 'application/pdf' : 'image/jpeg'),
+          mimeType: 'application/pdf',
         });
       };
       reader.onerror = reject;
@@ -23,7 +22,7 @@ export async function processFileForAi(file: File): Promise<ProcessedFile> {
     });
   }
 
-  // Fallback: Scale down exceptionally large photos (> 4.5MB) via Canvas to prevent payload limit overflow
+  // Compress and resize images via Canvas for fast upload and vision OCR
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {

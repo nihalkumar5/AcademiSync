@@ -131,11 +131,11 @@ export async function POST(req: Request) {
 
     // If an image was uploaded, run multimodal vision extraction across active Gemini models
     if (apiKey && imageList.length > 0) {
-      const candidateConfigs = [
-        { name: 'gemini-flash-lite-latest', timeoutMs: 16000 },
-        { name: 'gemini-3.5-flash-lite', timeoutMs: 16000 },
-        { name: 'gemini-flash-latest', timeoutMs: 25000 },
-        { name: 'gemini-3.8-flash', timeoutMs: 25000 },
+      const candidateModels = [
+        'gemini-flash-latest',
+        'gemini-3.8-flash',
+        'gemini-3.5-flash-lite',
+        'gemini-flash-lite-latest',
       ];
       const genAI = new GoogleGenerativeAI(apiKey);
 
@@ -152,83 +152,102 @@ export async function POST(req: Request) {
         ? `\nTARGET STUDENT PROFILE & CONTEXT:\n${contextLines.join('\n')}\n` 
         : '';
 
-      const prompt = `You are a universal, world-class university timetable parser specializing in ALL styles of Indian college and university timetables (IITs, NITs, IIITs, Central/State Universities, AKTU, VTU, Anna Univ, MAKAUT, Mumbai Univ, and private institutes like BITS, VIT, SRM, Amity, etc.).
+      const prompt = `You are a world-class university timetable parsing assistant specializing in complex Indian engineering timetables (IITs, NITs, IIITs, Central/State Universities).
 Analyze the provided timetable document(s)/image(s)/PDF and extract all weekly lecture, tutorial, and lab class sessions into a strict single JSON array.
 ${contextPromptBlock}
-UNIVERSAL FORMAT HANDLING DIRECTIVES:
+CRITICAL INSTRUCTIONS FOR TARGET FILTERING & RESOLUTION:
 
-1. SUPPORT FOR ALL TIMETABLE LAYOUTS & STYLES:
-- STYLE A: SLOT-BASED ROUTINES WITH MAPPING LEGEND (IITs, NITs, IIITs):
-  * Grid contains slot codes (e.g. 'A', 'B', 'Z', 'L', 'P', 'F', 'E', '1', '2') or subject names ('Music', 'Yoga', 'ILC').
-  * Look up each slot/name in the Faculty / Subject reference table (at bottom or side) to resolve:
-    - Full Subject Name (e.g. Slot L -> "Digital Electronics using Verilog")
-    - Faculty Name (e.g. Slot L -> "Dr. Manoj", Slot Z -> "Dr. Jaya Rahod", "Music" -> "Dr. Darash", "Yoga" -> "GF")
-    - Clean Course Code abbreviation (e.g. "DEV", "CALC", "PWC", "LAMA", "IOT", "ITW", "ENT", "ILC/Yoga"). Never output single-letter slots like "L" or "Z" as subjectCode.
+1. TARGET BRANCH, GROUP & SECTION ISOLATION (ZERO-REDUNDANCY GUARANTEE):
+- When the document contains master schedules across multiple departments (e.g. AE, BSBE, CE, CHE, CHM, CSE, EE, ME, MSE, MTH, PHY, SDS), groups (Group 1 vs Group 2), or sections (A, B, C or A1-A10):
+  * Filter STRICTLY for classes applicable to the TARGET STUDENT's Branch, Semester, and Section/Group.
+  * Cross-reference department course mappings (e.g. if student is in CSE, include PHY114 and exclude PHY112, PHY113, PHY115).
+  * If student is in Group 1, extract Group 1 schedule and ignore Group 2 schedule.
+  * NO OVERLAPPING SESSIONS / MULTI-SECTION REDUNDANCY:
+    - A student attends only ONE class at a time. NEVER extract simultaneous classes from multiple sections (e.g. do NOT output Sec A and Sec B and Sec C classes simultaneously).
+    - If the student specified a Section/Batch (e.g. "A", "Sec A", "A3"), match that section only and discard all other sections.
+    - If the student did NOT specify a section, default to Section A / Group 1 (the primary routine). DO NOT dump all sections together!
+    - For parallel sub-batches in labs/tutorials (e.g. Lab Batch A1, A2, A3 scheduled at the same time), extract only ONE lab session for the student's sub-batch (default to A1 if unspecified). NEVER output 2 or more overlapping lab sessions at the exact same hour!
+  * DO NOT output classes for departments or groups that do not belong to the target student.
+  * FALLBACK GUARANTEE: If the target student's branch or semester is NOT explicitly written or found in the document, DO NOT output an empty array or only one single course! Instead, extract all course routine slots visible on the uploaded routine page(s) so the student can review and adjust them.
 
-- STYLE B: DIRECT IN-CELL ROUTINES (AKTU, VTU, State Colleges, Private Univs):
-  * Grid cells directly contain 2-4 lines of text:
-    Line 1: Subject Name / Code (e.g. "Operating Systems" or "KCS-501")
-    Line 2: Faculty Name or Initials (e.g. "Dr. P. Roy", "Prof. Verma", "AKS")
-    Line 3: Room / Hall (e.g. "CR-201", "LT-3", "Lab-2")
-  * Extract subject, faculty, and room directly from inside the cell!
-  * If the cell contains Faculty Initials (e.g. "AKS") and a Faculty Initials expansion table exists on the sheet (e.g. "AKS: Dr. Ashok Kumar Sharma"), expand it to the full name. Otherwise, keep the teacher's name/initials as written.
+2. CRITICAL LUNCH BREAK & VERTICAL TEXT COLUMNS (ZERO-CLASH DIRECTIVE):
+- Timetable grids frequently feature an interval or lunch column (such as '1 - 2', '12 - 1', 'Lunch', 'Break') where words like 'LUNCH', 'L-U-N-C-H', 'RECESS', 'BREAK', 'INTERVAL', 'TEA' are written vertically across rows (Monday 'L', Tuesday 'U', Wednesday 'N', Thursday 'C', Friday 'H').
+- NEVER interpret these vertical letters as classes or course slots!
+- In particular, on Monday, the letter 'L' in the '1 - 2' column is the letter 'L' of L-U-N-C-H break; it is NOT Slot 'L' (Digital Electronics)! NEVER output any class session for the 1 - 2 lunch break!
+- A class only exists if it is in the regular academic class period columns (e.g. 9:00-9:55, 10:00-10:55, 11:00-11:55, 12:00-12:55, 02:00-02:55, 03:00-03:55, 04:00-04:55, 05:00-05:55).
+- On Monday, at 02:00 PM, only the class scheduled in the 02:00-02:55 period (e.g. ILC) exists. NEVER create a ghost class from the lunch column!
 
-- STYLE C: MULTI-SECTION / MASTER DEPARTMENT SHEETS (DTU, NSUT, NITs, Univ Campuses):
-  * Timetable displays routines for multiple sections (Sec A, B, C) or branches (CSE, ECE, ME).
-  * Filter STRICTLY for classes applicable to the target student's branch and section.
-  * If the student specified Section A, extract Section A and ignore other sections. If unspecified, default to Section A / Group 1. Never dump multiple sections together into overlapping time clashes!
+3. PRESERVE SLASH / OBLIQUE NOTATION VERBATIM:
+- When a timetable cell contains a slash/oblique (e.g. "ILC/Yoga" or "CourseA / CourseB" or "Lab / Tut"):
+  * Keep it EXACTLY as written with the oblique / slash: "ILC/Yoga".
+  * DO NOT drop either side and DO NOT split into overlapping classes!
+  * Both "subjectName" and "subjectCode" must keep the oblique notation (e.g. "ILC/Yoga").
+  * For faculty: if mapped in the legend for both subjects, combine them with slash (e.g. "Dr. Aruna / GF").
 
-- STYLE D: INVERTED GRIDS & TABULAR LISTS:
-  * Inverted grids: Days on columns (X-axis: Mon-Fri), Times on rows (Y-axis).
-  * Standard grids: Days on rows (Y-axis: Mon-Fri), Times on columns (X-axis).
-  * Tabular lists: Row-by-row table (Day | Period | Time | Subject | Faculty | Room).
-  * Read coordinate headers carefully so every class is placed on the exact correct Day and Time!
+4. SLOT-PATTERN MATRIX & LEGEND RESOLUTION:
+- If the document provides a Course Table / Legend with Slot Identifiers (e.g., Slot A, B, Z, L, P, F, E, 1, 2, 3) AND a separate schedule grid:
+  * Look up each slot code in the mapping table to extract the FULL Subject Name and Faculty:
+    - Example: Slot L -> "Digital Electronics using Verilog", Faculty: "Dr. Manoj"
+    - Example: Slot Z -> "Calculus", Faculty: "Dr. Jaya Rahod"
+    - Example: Slot B -> "Programming with C", Faculty: "Dr. Ruhul"
+    - Example: Slot A -> "Linear Algebra & Matrix Analysis", Faculty: "Dr. Mithilesh"
+    - Example: Slot F -> "Internet of Things", Faculty: "Dr. Abhishek"
+    - Example: Slot P -> "IT Workshop", Faculty: "Prof. Srinivasa"
+    - Example: Slot E -> "Entrepreneurship", Faculty: "Dr. Amit"
+  * CLEAN SUBJECT CODES (NO SINGLE-LETTER SLOTS):
+    - The single slot letters 'L', 'B', 'Z', 'A', 'P', 'F', 'E' are SLOTS, NOT course codes!
+    - DO NOT output single-letter slot names like "L", "B", "Z" as subjectCode!
+    - Instead, output a clean 2-4 letter course abbreviation (e.g. "DEV" for Digital Electronics, "PWC" for Programming with C, "CALC" for Calculus, "LAMA" for Linear Algebra, "IOT" for Internet of Things, "ITW" for IT Workshop, "ILC/Yoga" for ILC/Yoga) or leave subjectCode as empty string "".
+  * HEADER ROOM EXTRACTION:
+    - If the header or title specifies a room (e.g. "Room No 138" or "Room 138"), populate "room": "138" for all sessions.
 
-2. ACCURATE PERIOD TIMINGS & AM/PM LOGIC (STRICT 24-HOUR FORMAT "HH:MM"):
-- Read the exact start and end times from the period header columns/rows (e.g. 09:00-09:55, 10:00-10:55, 11:00-12:00, 14:00-14:55).
-- In college schedules, classes run strictly between 08:00 AM and 07:00 PM (08:00 to 19:00).
-- Convert afternoon/evening hours (1, 2, 3, 4, 5, 6, 7) into 24-hour PM format:
-  * 01:00 PM -> "13:00" | 02:00 PM -> "14:00" | 03:00 PM -> "15:00" | 04:00 PM -> "16:00" | 05:00 PM -> "17:00"
-- Morning hours (08:00, 09:00, 10:00, 11:00) are AM ("08:00", "09:00", "10:00", "11:00").
-- 12:00 is 12:00 PM Noon ("12:00").
-- If a class/lab spans a multi-hour block (e.g. "02:00 - 05:00" or "11:00 - 01:00"), extract startTime as "14:00" and endTime as "17:00" (or "11:00" to "13:00").
+5. CRITICAL ACADEMIC TIME & AM/PM LOGIC (STRICT 24-HOUR FORMAT "HH:MM"):
+- In college and university timetables, classes operate ONLY between 08:00 AM and 07:00 PM (08:00 to 19:00).
+- TIMETABLES OFTEN OMIT "PM" FOR AFTERNOON PERIODS:
+  Timetable grids often label columns or slots as "02:00 - 03:00", "03:00 - 04:00", "04:00 - 05:00", or "2:00 - 3:55".
+  * CRITICAL: College students do NOT attend classes at 2:00 AM, 3:00 AM, 4:00 AM, or 5:00 AM in the middle of the night!
+  * You MUST convert all afternoon/evening hours (1, 2, 3, 4, 5, 6, 7) into 24-hour PM format:
+    - 01:00 / 1:00 PM -> "13:00"
+    - 02:00 / 2:00 PM -> "14:00"
+    - 03:00 / 3:00 PM -> "15:00"
+    - 04:00 / 4:00 PM -> "16:00"
+    - 05:00 / 5:00 PM -> "17:00"
+    - 06:00 / 6:00 PM -> "18:00"
+    - 07:00 / 7:00 PM -> "19:00"
+  * Morning hours (08:00, 09:00, 10:00, 11:00) are AM:
+    - 08:00 AM -> "08:00"
+    - 09:00 AM -> "09:00"
+    - 10:00 AM -> "10:00"
+    - 11:00 AM -> "11:00"
+  * 12:00 is 12:00 PM (Noon): "12:00".
+  * If a class is "11:00 - 01:00" or "11:00 - 1:00", the end time is 1:00 PM -> "13:00".
+  * If a class is "02:00 - 03:55", start time is "14:00" and end time is "15:55".
+  * If a class is "03:00 - 03:55", start time is "15:00" and end time is "15:55".
+  * If a class is "04:00 - 04:55", start time is "16:00" and end time is "16:55".
+  * NEVER return morning times like "02:00", "03:00", "04:00", "05:00" for daytime afternoon classes!
 
-3. UNIVERSAL BREAK / LUNCH RECOGNITION (ZERO-CLASH DIRECTIVE):
-- In ANY timetable, columns or rows marked Lunch, Break, Recess, Interval, Tea, T-E-A, or vertical letters like 'L-U-N-C-H' or 'R-E-C-E-S-S' are rest periods.
-- NEVER interpret lunch/recess letters or columns as classes!
-- For instance, the letter 'L' in an interval/lunch column (e.g. '1 - 2') is the 'L' of LUNCH, NOT a class! Never output a class for the lunch hour.
-
-4. PRESERVE SLASH / OBLIQUE NOTATION VERBATIM:
-- When a cell contains a slash/oblique (e.g. "ILC/Yoga" or "Lab A / Lab B" or "Course 1 / Course 2"):
-  * Keep it EXACTLY as written: "ILC/Yoga".
-  * Both "subjectName" and "subjectCode" must keep the slash.
-  * If faculty are listed for both, combine with slash: "Dr. Aruna / GF".
-
-5. ROOM EXTRACTION:
-- Extract room from the sheet header (e.g. "Room No 138" -> "138"), from inside each cell (e.g. "LT-2", "Lab 4"), or from the legend table.
-
-6. EXACT DATA SCHEMA:
+5. EXACT DATA SCHEMA:
 For every extracted class session, return:
 - "day": "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", or "Sunday"
-- "startTime": 24-hour format "HH:MM" (e.g. "09:00", "10:00", "11:00", "14:00", "15:00", "16:00")
-- "endTime": 24-hour format "HH:MM" (e.g. "09:55", "10:55", "11:55", "14:55", "15:55", "16:55")
-- "subjectName": Full subject name (e.g. "Digital Electronics using Verilog", "Operating Systems", "Music", "ILC/Yoga")
-- "subjectCode": Course code or clean abbreviation (e.g. "CS301", "DEV", "CALC", "Music", "ILC/Yoga")
-- "room": Room / Hall / Lab number (e.g. "138", "LT-1", "Lab 2")
-- "faculty": Faculty name (e.g. "Dr. Manoj", "Dr. Jaya Rahod", "Prof. R. Gupta", "Dr. Aruna / GF")
+- "startTime": 24-hour format "HH:MM" (e.g. "09:00", "14:00", "15:00", "16:00")
+- "endTime": 24-hour format "HH:MM" (e.g. "10:00", "15:55", "16:55", "17:55")
+- "subjectName": Specific subject name (e.g. "Computer Networks", "Operating Systems")
+- "subjectCode": Course code if present (e.g. "CS 348", "PHY114", "CS 347")
+- "room": Room / Hall / Venue (e.g. "LA 002", "CC 105", "SL-1-2-3", "LT-1")
+- "faculty": Faculty name if visible (e.g. "Prof. Bhaskaran Raman")
 - "isLab": boolean (true for practical/lab sessions, else false)
-- "isElective": boolean (true if elective, else false)
+- "isElective": boolean (true if this subject is an Elective course, Department Elective, Open Elective, Program Elective, or elective slot; else false)
 
 Return ONLY raw valid JSON array:
 [
   {
     "day": "Monday",
-    "startTime": "09:00",
-    "endTime": "09:55",
-    "subjectName": "Music",
-    "subjectCode": "Music",
-    "room": "138",
-    "faculty": "Dr. Darash",
+    "startTime": "09:30",
+    "endTime": "10:25",
+    "subjectName": "Computer Networks",
+    "subjectCode": "CS 348",
+    "room": "LA 002",
+    "faculty": "Prof. Bhaskaran Raman",
     "isLab": false,
     "isElective": false
   }
@@ -243,10 +262,10 @@ Return ONLY raw valid JSON array:
 
       lastError = null;
 
-      for (const config of candidateConfigs) {
+      for (const modelName of candidateModels) {
         try {
           const model = genAI.getGenerativeModel({
-            model: config.name,
+            model: modelName,
             generationConfig: {
               responseMimeType: 'application/json',
               temperature: 0.1,
@@ -254,7 +273,7 @@ Return ONLY raw valid JSON array:
           });
           const result: any = await Promise.race([
             model.generateContent([prompt, ...imageParts]),
-            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${config.name} timeout`)), config.timeoutMs))
+            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 14000))
           ]);
           const responseText = result.response.text();
           let jsonStr = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
@@ -289,11 +308,11 @@ Return ONLY raw valid JSON array:
             return NextResponse.json({
               success: true,
               sessions: merged,
-              source: fileName || `Gemini Vision OCR (${config.name})`,
+              source: fileName || `Gemini Vision OCR (${modelName})`,
             });
           }
         } catch (modelErr: any) {
-          logServerError(`ExtractTimetableAPI:${config.name}`, modelErr);
+          logServerError(`ExtractTimetableAPI:${modelName}`, modelErr);
           lastError = modelErr;
         }
       }
