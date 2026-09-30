@@ -8,39 +8,17 @@ import {
   getTodayDateString,
   getTomorrowDateString,
   timeToMinutes,
-  getSubjectThemeStyle,
+  formatTime12Hour,
 } from '@/lib/timetableUtils';
+import { getSubjectCardTheme } from '@/lib/cardColors';
 import { CarryItemRow } from './CarryItemRow';
 import { AddCustomItemModal } from './AddCustomItemModal';
 import { SubjectDetailModal } from './SubjectDetailModal';
 import { ClassSession } from '@/lib/types';
 import { EmptyState } from '../ui/EmptyState';
-import { Backpack, Plus, CalendarDays, Clock, ChevronRight, MapPin } from 'lucide-react';
+import { Backpack, Plus, CalendarDays, Clock, ChevronRight, MapPin, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Subject } from '@/lib/types';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
-
-// Signature pastel paper palette
-const ELEGANT_PASTEL_PALETTE = [
-  'bg-[#FEF9C3]/80 dark:bg-[#78350F]/25 border-[#FDE047]/60 dark:border-[#FACC15]/30', 
-  'bg-[#E0F2FE]/80 dark:bg-[#0C4A6E]/25 border-[#7DD3FC]/60 dark:border-[#38BDF8]/30', 
-  'bg-[#FCE7F3]/80 dark:bg-[#831843]/25 border-[#F9A8D4]/60 dark:border-[#F472B6]/30', 
-  'bg-[#DCFCE7]/80 dark:bg-[#064E3B]/25 border-[#86EFAC]/60 dark:border-[#4ADE80]/30', 
-  'bg-[#FFEDD5]/80 dark:bg-[#7C2D12]/25 border-[#FDBA74]/60 dark:border-[#FB923C]/30', 
-  'bg-[#F3E8FF]/80 dark:bg-[#3B0764]/25 border-[#D8B4FE]/60 dark:border-[#C084FC]/30', 
-  'bg-[#CCFBF1]/80 dark:bg-[#134E4A]/25 border-[#5EEAD4]/60 dark:border-[#2DD4BF]/30', 
-  'bg-[#FFE4E6]/80 dark:bg-[#881337]/25 border-[#FDA4AF]/60 dark:border-[#FB7185]/30', 
-  'bg-[#FEF3C7]/80 dark:bg-[#78350F]/25 border-[#FCD34D]/60 dark:border-[#F59E0B]/30', 
-  'bg-[#ECFCCB]/80 dark:bg-[#365314]/25 border-[#BEF264]/60 dark:border-[#A3E635]/30', 
-];
-
-const getSubjectPastelStyle = (sub?: Subject, fallbackId: string = '') => {
-  const key = sub?.name || sub?.id || fallbackId;
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    hash = (hash * 31 + key.charCodeAt(i)) % ELEGANT_PASTEL_PALETTE.length;
-  }
-  return ELEGANT_PASTEL_PALETTE[Math.abs(hash)];
-};
 
 export const TomorrowCarryView: React.FC = () => {
   const {
@@ -109,66 +87,83 @@ export const TomorrowCarryView: React.FC = () => {
   if (!mounted) return null;
 
   return (
-    <div className="flex flex-col gap-8 text-left max-w-5xl mx-auto w-full pb-16 font-sans">
-      <div className="flex flex-col gap-4 pt-2 sm:pt-6">
+    <div className="flex flex-col gap-6 text-left max-w-5xl mx-auto w-full pb-16 font-sans">
+      {/* Header */}
+      <div className="flex flex-col gap-3 pt-2 sm:pt-6">
         <div>
-          <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
+          <h2 className="text-[36px] sm:text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[40px] sm:leading-[44px]">
             Bag,<br />Carry,<br />Pack
           </h2>
-          <div className="flex items-center gap-3 mt-5 flex-wrap">
-            <span className="text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-none border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] text-black dark:text-white uppercase tracking-wider">
+          <div className="flex items-center gap-2.5 mt-4 flex-wrap">
+            <span className="text-[11px] font-bold font-mono px-2.5 py-1 rounded-[6px] border border-black/10 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.04] text-black dark:text-white uppercase tracking-wider">
               {targetDay}
             </span>
             {targetHoliday ? (
-              <span className="text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-none border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] text-black dark:text-white uppercase tracking-wider">
+              <span className="text-[11px] font-bold font-mono px-2.5 py-1 rounded-[6px] border border-rose-500/20 bg-rose-500/10 text-rose-600 dark:text-rose-400 uppercase tracking-wider">
                 Holiday: {targetHoliday.title}
               </span>
             ) : (
-              <span className="text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-none border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] text-black dark:text-white uppercase tracking-wider">
-                {packedCount}/{totalCount} packed
+              <span className="text-[11px] font-bold font-mono px-2.5 py-1 rounded-[6px] border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+                {packedCount}/{totalCount} PACKED
               </span>
             )}
           </div>
-          <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4 flex items-center gap-1.5">
+          <p className="text-[13.5px] font-normal text-[#6B6B6B] dark:text-[#94A3B8] leading-[20px] mt-3 flex items-center gap-1.5">
             <CalendarDays className="w-4 h-4 shrink-0 text-black/60 dark:text-white/60" />
             <span>Packing list for {isAfterReminderTime ? 'tomorrow' : 'today'} · {targetFormatted}</span>
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* Right Column: Things to Carry List */}
+        {/* Left Column: Things to Carry List */}
         <div className="lg:col-span-7 flex flex-col gap-4">
           {totalCount === 0 && !targetHoliday ? (
-            <div className="border border-[#D8D8D8] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] p-5 flex flex-col items-start rounded-none dark:shadow-md">
-              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#F4F4F6]">
-                <Backpack className="w-[18px] h-[18px] stroke-[1.5]" />
+            <div className="border border-black/[0.06] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] p-6 flex flex-col items-start rounded-[16px] shadow-xs dark:shadow-md">
+              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.4px] font-bold text-[#111111] dark:text-[#F4F4F6]">
+                <Backpack className="w-[18px] h-[18px] stroke-[1.8] text-[#18A889]" />
                 <span>Things to Carry</span>
               </div>
-              <div className="flex flex-col mt-4 mb-5">
-                <span className="text-[14px] text-[#6F6F6F] dark:text-[#94A3B8]">Nothing packed yet.</span>
-                <span className="text-[14px] text-[#6F6F6F] dark:text-[#94A3B8]">Add what you need for {isAfterReminderTime ? 'tomorrow' : 'today'}.</span>
+              <div className="flex flex-col mt-4 mb-5 gap-1">
+                <span className="text-[15px] font-semibold text-[#111111] dark:text-[#FFFFFF]">Nothing packed yet.</span>
+                <span className="text-[13.5px] text-[#6F6F6F] dark:text-[#94A3B8]">Add what you need for {isAfterReminderTime ? 'tomorrow' : 'today'}.</span>
               </div>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="h-[44px] px-6 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] flex items-center justify-center gap-2 font-semibold text-[13px] hover:opacity-90 transition-opacity rounded-none cursor-pointer shadow-sm"
+                className="h-[42px] px-5 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] flex items-center justify-center gap-2 font-semibold text-[13px] hover:opacity-90 transition-opacity rounded-[10px] cursor-pointer shadow-sm"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add item</span>
               </button>
             </div>
           ) : (
-            <div className="border border-[#D8D8D8] dark:border-white/[0.08] rounded-none flex flex-col p-5 sm:p-6 bg-[#FFFFFF] dark:bg-[#121317] dark:shadow-md">
-              <div className="flex items-center justify-between pb-[14px] border-b border-[#D8D8D8] dark:border-white/[0.08] mb-[16px]">
-                <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#F4F4F6]">
-                  <Backpack className="w-[18px] h-[18px] stroke-[1.5]" />
+            <div className="border border-black/[0.06] dark:border-white/[0.08] rounded-[16px] flex flex-col p-5 sm:p-6 bg-[#FFFFFF] dark:bg-[#121317] shadow-xs dark:shadow-md">
+              <div className="flex items-center justify-between pb-3.5 border-b border-black/[0.06] dark:border-white/[0.08] mb-4">
+                <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.4px] font-bold text-[#111111] dark:text-[#F4F4F6]">
+                  <Backpack className="w-[18px] h-[18px] stroke-[1.8] text-[#18A889]" />
                   <span>Things to Carry</span>
                 </div>
-                <div className="text-[12px] font-bold font-mono tracking-widest text-[#111111] dark:text-[#F4F4F6]">
+                <div className="text-[11.5px] font-bold font-mono tracking-wider text-[#111111] dark:text-[#F4F4F6] bg-black/[0.04] dark:bg-white/[0.06] px-2.5 py-0.5 rounded-full">
                   {packedCount} / {totalCount}
                 </div>
               </div>
+
+              {/* Progress bar */}
+              {totalCount > 0 && (
+                <div className="mb-4">
+                  <div className="w-full h-1.5 bg-black/[0.04] dark:bg-white/[0.06] rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-[#18A889] transition-all duration-300 rounded-full"
+                      style={{ width: `${(packedCount / totalCount) * 100}%` }}
+                    />
+                  </div>
+                  <div className="text-[11px] font-mono text-[#71717A] mt-1.5 flex justify-between">
+                    <span>{packedCount === totalCount ? 'All items packed! 🎒' : `${totalCount - packedCount} items remaining`}</span>
+                    <span>{Math.round((packedCount / totalCount) * 100)}%</span>
+                  </div>
+                </div>
+              )}
 
               {visibleCarryItems.length === 0 && targetHoliday ? (
                 <EmptyState
@@ -177,7 +172,7 @@ export const TomorrowCarryView: React.FC = () => {
                   description={`${targetFormatted} is an official campus holiday (${targetHoliday.title}). Enjoy your break!`}
                 />
               ) : (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-2.5">
                   {visibleCarryItems.map((item) => (
                     <CarryItemRow
                       key={item.id}
@@ -192,7 +187,7 @@ export const TomorrowCarryView: React.FC = () => {
               {visibleCarryItems.length > 0 && (
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="flex items-center gap-2 text-[14px] font-bold text-[#6F6F6F] hover:text-[#111111] dark:text-[#94A3B8] dark:hover:text-white transition-all w-fit cursor-pointer mt-[18px]"
+                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-[12px] border border-dashed border-black/15 dark:border-white/15 text-[13px] font-semibold text-[#52525B] dark:text-[#A1A1AA] hover:text-black dark:hover:text-white hover:border-black/30 dark:hover:border-white/30 hover:bg-black/[0.02] dark:hover:bg-white/[0.04] transition-all cursor-pointer mt-4"
                 >
                   <Plus className="w-4 h-4 stroke-[2]" />
                   <span>Add another item</span>
@@ -202,66 +197,118 @@ export const TomorrowCarryView: React.FC = () => {
           )}
         </div>
 
-        {/* Left Column: Schedule Preview */}
-        <div className="lg:col-span-5 flex flex-col mt-4 lg:mt-0">
-          <div className="flex items-center justify-between pb-[14px] border-b border-[#D8D8D8] dark:border-white/[0.08]">
-            <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#F4F4F6]">
-              <Clock className="w-[18px] h-[18px] stroke-[1.5]" />
+        {/* Right Column: Schedule Preview with Color Cards */}
+        <div className="lg:col-span-5 flex flex-col gap-3.5 mt-2 lg:mt-0">
+          <div className="flex items-center justify-between pb-3.5 border-b border-black/[0.06] dark:border-white/[0.08]">
+            <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.4px] font-bold text-[#111111] dark:text-[#F4F4F6]">
+              <Clock className="w-4 h-4 stroke-[1.8] text-[#18A889]" />
               <span>{isAfterReminderTime ? "Tomorrow's Schedule" : "Today's Schedule"}</span>
             </div>
-            <div className="text-[12px] font-bold font-mono tracking-widest text-[#111111] dark:text-[#F4F4F6]">
-              {targetHoliday ? '0' : targetClasses.length}
+            <div className="text-[11px] font-bold font-mono tracking-wider text-[#111111] dark:text-[#F4F4F6] bg-black/[0.04] dark:bg-white/[0.06] px-2.5 py-0.5 rounded-full">
+              {targetHoliday ? '0' : targetClasses.length} {targetClasses.length === 1 ? 'CLASS' : 'CLASSES'}
             </div>
           </div>
 
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-3">
             {targetHoliday ? (
-              <div className="py-6 text-center text-[#6F6F6F] dark:text-[#94A3B8] text-[14px]">
+              <div className="py-8 text-center text-[#6F6F6F] dark:text-[#94A3B8] text-[14px] bg-black/[0.02] dark:bg-white/[0.02] rounded-[14px] border border-black/[0.06] dark:border-white/[0.06] p-6">
                 No classes today. Enjoy your holiday!
               </div>
             ) : targetClasses.length === 0 ? (
-              <div className="py-6 text-center text-[#6F6F6F] dark:text-[#94A3B8] text-[14px]">
+              <div className="py-8 text-center text-[#6F6F6F] dark:text-[#94A3B8] text-[14px] bg-black/[0.02] dark:bg-white/[0.02] rounded-[14px] border border-black/[0.06] dark:border-white/[0.06] p-6">
                 No classes scheduled for {isAfterReminderTime ? 'tomorrow' : 'today'}.
               </div>
             ) : (
               targetClasses.map((sess) => {
                 const subject = subjectMap.get(sess.subjectId);
                 const reqs = subject?.carryRequirements || [];
+                const isLab = sess.isLab || subject?.isLab;
+                const isSpecial = sess.isExtra || subject?.name?.toLowerCase().includes('elective') || sess.notes?.toLowerCase().includes('elective');
+
+                const theme = getSubjectCardTheme({
+                  subjectName: subject?.name,
+                  subjectCode: subject?.code,
+                  subjectColor: subject?.color,
+                  isLab,
+                  isSpecial,
+                });
+
                 return (
                   <button
                     key={sess.id}
-                    onClick={() => {
-                      setDetailSession(sess);
+                    onClick={() => setDetailSession(sess)}
+                    className="relative w-full rounded-[14px] p-4 sm:p-[18px] border transition-all text-left group overflow-hidden shadow-xs hover:shadow-md cursor-pointer border-black/[0.06] dark:border-[color:var(--card-accent-border)] hover:scale-[1.008] duration-200"
+                    style={{
+                      ['--card-accent-border' as any]: `${theme.accent}45`,
                     }}
-                    className="flex items-start gap-4 py-[16px] border-b border-[#D8D8D8] dark:border-white/[0.08] last:border-b-0 group text-left transition-colors cursor-pointer"
                   >
-                    <div className="w-[52px] shrink-0 pt-[1px]">
-                      <span className="text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] font-mono">
-                        {sess.startTime}
-                      </span>
-                    </div>
-                    
-                    <div className="flex-1 flex flex-col min-w-0">
-                      <div className="flex items-start justify-between gap-4">
-                        <span className="text-[14px] font-[600] text-[#111111] dark:text-[#F4F4F6] leading-[18px] line-clamp-2">
-                          {subject?.name || 'Unknown Subject'}
-                        </span>
-                        <span className="text-[#A0A0A0] dark:text-[#64748B] group-hover:text-[#111111] dark:group-hover:text-white transition-colors shrink-0 mt-0.5">
-                          <ChevronRight className="w-4 h-4 stroke-[2]" />
-                        </span>
+                    {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
+                    <div 
+                      className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[13px]"
+                      style={{ backgroundColor: theme.bg }}
+                    />
+                    <div 
+                      className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[13px]"
+                      style={{ 
+                        background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
+                      }}
+                    />
+
+                    <div className="relative z-10 flex flex-col gap-2.5">
+                      {/* Top Header: Time + Lab Badge + Chevron */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[12px] sm:text-[12.5px] font-bold text-[#151515] dark:text-[#F4F4F6] tracking-tight">
+                            {formatTime12Hour(sess.startTime)} – {formatTime12Hour(sess.endTime)}
+                          </span>
+                          {isLab && (
+                            <span 
+                              className="text-[9.5px] font-bold tracking-wider px-2 py-0.5 rounded-[3px] uppercase font-mono"
+                              style={{
+                                color: theme.badgeText,
+                                backgroundColor: theme.badgeBg,
+                              }}
+                            >
+                              LAB
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1 text-[11px] font-mono font-bold text-[#808080] dark:text-[#A1A1AA] group-hover:text-black dark:group-hover:text-white transition-colors">
+                          <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                        </div>
                       </div>
-                      
-                      {sess.room && (
-                        <span className="text-[12px] text-[#6F6F6F] dark:text-[#94A3B8] flex items-center gap-1.5 mt-1 font-medium">
-                          <MapPin className="w-3.5 h-3.5 shrink-0 text-black/60 dark:text-[#94A3B8]" />
-                          <span>{sess.room}</span>
-                        </span>
-                      )}
-                      
-                      {reqs.length > 0 && (
-                        <div className="mt-2 text-[12px] text-[#8C6B5D] dark:text-sky-300 flex items-center gap-1.5 truncate font-medium">
-                          <Backpack className="w-[11px] h-[11px] shrink-0 stroke-[2.5]" />
-                          <span className="truncate">{reqs.join(' · ')}</span>
+
+                      {/* Subject Name */}
+                      <h4 className="text-[16px] sm:text-[17px] font-bold text-[#151515] dark:text-[#FFFFFF] leading-snug tracking-tight line-clamp-2">
+                        {subject?.name || 'Class Session'}
+                      </h4>
+
+                      {/* Room & Faculty */}
+                      <div className="flex items-center gap-2 text-[12px] font-medium text-[#6F6F6F] dark:text-[#CBD5E1] flex-wrap">
+                        {sess.room && (
+                          <span className="flex items-center gap-1">
+                            <span className="text-[10px] opacity-70">◉</span>
+                            <span>{sess.room}</span>
+                          </span>
+                        )}
+                        {sess.faculty && (
+                          <>
+                            <span className="opacity-40">·</span>
+                            <span>{sess.faculty}</span>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Carry Requirements Highlight Badge */}
+                      {reqs.length > 0 ? (
+                        <div className="mt-1 flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-white/80 dark:bg-white/[0.08] border border-black/5 dark:border-white/10 backdrop-blur-xs text-[12px] font-semibold text-[#18181B] dark:text-[#F4F4F6]">
+                          <Backpack className="w-3.5 h-3.5 text-[#18A889] shrink-0 stroke-[2.2]" />
+                          <span className="truncate">Bring: {reqs.join(' · ')}</span>
+                        </div>
+                      ) : (
+                        <div className="mt-0.5 text-[11px] font-mono text-[#8C8C8C] dark:text-[#71717A]">
+                          Standard bag items
                         </div>
                       )}
                     </div>

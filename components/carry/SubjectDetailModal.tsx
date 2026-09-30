@@ -63,7 +63,7 @@ export const SubjectDetailModal: React.FC<SubjectDetailModalProps> = ({
               No items specified for this class.
             </div>
           ) : (
-            <div className="flex flex-col gap-1 mt-2">
+            <div className="flex flex-col gap-2.5 mt-2">
               {visibleCarryItems.map(item => (
                 <CarryItemRow
                   key={item.id}
@@ -79,7 +79,7 @@ export const SubjectDetailModal: React.FC<SubjectDetailModalProps> = ({
             onClick={() => {
               onOpenAdd();
             }}
-            className="flex items-center gap-2 text-[14px] font-bold text-[#6F6F6F] dark:text-[#94A3B8] hover:text-[#111111] dark:hover:text-[#F4F4F6] transition-all w-fit cursor-pointer mt-4"
+            className="flex items-center gap-2 text-[13px] font-semibold text-[#52525B] dark:text-[#A1A1AA] hover:text-black dark:hover:text-white transition-all w-fit cursor-pointer mt-2 px-3.5 py-1.5 rounded-[8px] border border-dashed border-black/15 dark:border-white/15 hover:border-black/30 dark:hover:border-white/30"
           >
             <Plus className="w-4 h-4 stroke-[2]" />
             <span>Add item</span>
