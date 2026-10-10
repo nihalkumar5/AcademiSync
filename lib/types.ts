@@ -2,7 +2,29 @@ export type Programme = string;
 
 export type Branch = string;
 
-export type AdminRole = 'super_admin' | 'cr' | 'student';
+export type AdminRole = 'super_admin' | 'cr' | 'student' | 'faculty';
+
+export interface FacultyLinkedBatch {
+  id: string; // unique link id (e.g. batch_CSE_4A)
+  batchKey: string;
+  batchCode: string;
+  batchName: string; // e.g. "Bennett University · B.Tech CSE (Sem 4, Sec A)"
+  college: string;
+  programme: string;
+  branch: string;
+  semester: number;
+  section?: string;
+  selectedSubjectIds: string[]; // Subject IDs taught in this batch by this faculty
+  selectedSubjectNames: string[]; // Names/codes for quick display
+  linkedAt: string;
+}
+
+export interface AssignmentReadReceipt {
+  studentId: string;
+  studentName: string;
+  rollNumber?: string;
+  readAt: string;
+}
 
 export interface StudentProfile {
   id: string;
@@ -25,6 +47,12 @@ export interface StudentProfile {
   isPro?: boolean;
   isBanned?: boolean;
   enrolledElectiveIds?: string[]; // IDs of electives this student has chosen/enrolled in
+  // Faculty specific fields:
+  facultyTitle?: string; // e.g. "Dr." | "Prof." | "Asst. Prof."
+  facultyDepartment?: string;
+  facultyOfficeRoom?: string;
+  facultyEmployeeId?: string;
+  facultyLinkedBatches?: FacultyLinkedBatch[];
 }
 
 export interface Subject {
@@ -108,6 +136,12 @@ export interface Homework {
   isBatchShared?: boolean;
   proposalId?: string;
   updatedAt?: string;
+  isFacultyAssignment?: boolean;
+  facultyId?: string;
+  facultyName?: string;
+  facultyTitle?: string;
+  batchKey?: string;
+  readReceipts?: Record<string, AssignmentReadReceipt>;
 }
 
 export interface BatchProposedTask {
@@ -120,9 +154,13 @@ export interface BatchProposedTask {
   deadline: string; // ISO string
   priority: HomeworkPriority;
   attachmentName?: string;
+  attachmentUrl?: string;
   creatorId: string;
   creatorName: string;
   creatorEmail?: string;
+  creatorRole?: AdminRole;
+  isFacultyAssignment?: boolean;
+  facultyTitle?: string;
   votes: Record<string, 'approve' | 'reject'>; // userId -> 'approve' | 'reject'
   approvalsCount: number;
   rejectionsCount: number;
@@ -130,6 +168,7 @@ export interface BatchProposedTask {
   totalEligibleMembers: number;
   approvedAt?: string;
   createdAt: string;
+  readReceipts?: Record<string, AssignmentReadReceipt>;
 }
 
 export interface CarryItem {

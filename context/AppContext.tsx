@@ -1050,14 +1050,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
           if (existingIndex >= 0) {
             const existing = filteredHw[existingIndex];
-            if (!existing.isBatchShared || !existing.proposalId || existing.proposalId !== prop.id) {
-              filteredHw[existingIndex] = {
-                ...existing,
-                isBatchShared: true,
-                proposalId: prop.id,
-              };
-              changed = true;
-            }
+            filteredHw[existingIndex] = {
+              ...existing,
+              isBatchShared: true,
+              proposalId: prop.id,
+              isFacultyAssignment: prop.isFacultyAssignment,
+              facultyName: prop.creatorName,
+              facultyTitle: prop.facultyTitle,
+              batchKey: prop.batchKey || profile.batchKey,
+              readReceipts: prop.readReceipts,
+            };
+            changed = true;
             return;
           }
 
@@ -1069,6 +1072,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 ...existsInPrev,
                 isBatchShared: true,
                 proposalId: prop.id,
+                isFacultyAssignment: prop.isFacultyAssignment,
+                facultyName: prop.creatorName,
+                facultyTitle: prop.facultyTitle,
+                batchKey: prop.batchKey || profile.batchKey,
+                readReceipts: prop.readReceipts,
               });
               changed = true;
             }
@@ -1090,6 +1098,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             updatedAt: nowIso,
             isBatchShared: true,
             proposalId: prop.id,
+            isFacultyAssignment: prop.isFacultyAssignment,
+            facultyName: prop.creatorName,
+            facultyTitle: prop.facultyTitle,
+            batchKey: prop.batchKey || profile.batchKey,
+            readReceipts: prop.readReceipts,
           };
           newTasksToAdd.push(newHw);
           changed = true;

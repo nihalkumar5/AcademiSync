@@ -39,6 +39,7 @@ import { CampusSpotlightCard } from '@/components/ads/CampusSpotlightCard';
 import { ProposedBatchTasksVoting } from '@/components/homework/ProposedBatchTasksVoting';
 import { IOSAppGate } from '@/components/pwa/IOSAppGate';
 import { AndroidAppGate } from '@/components/pwa/AndroidAppGate';
+import { FacultyHomeView } from '@/components/faculty/FacultyHomeView';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -372,19 +373,23 @@ export default function AppHome() {
           )}
           <div className="w-full max-w-full min-w-0" key={activeView}>
             {activeView === 'home' && (
-              <div className="flex flex-col gap-6">
-                <OverviewHeader />
-                <LiveClassCard />
-                <ProposedBatchTasksVoting />
-                <CampusSpotlightCard placement="home" />
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mt-2 sm:mt-3">
-                  <TodayTimeline />
-                  <SmartFocusList />
+              profile?.role === 'faculty' ? (
+                <FacultyHomeView />
+              ) : (
+                <div className="flex flex-col gap-6">
+                  <OverviewHeader />
+                  <LiveClassCard />
+                  <ProposedBatchTasksVoting />
+                  <CampusSpotlightCard placement="home" />
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mt-2 sm:mt-3">
+                    <TodayTimeline />
+                    <SmartFocusList />
+                  </div>
+                  <div className="mt-1"><InviteBatchmatesCard /></div>
+                  {/* Thin Live & Upcoming Mess Card */}
+                  <HomeMessCard />
                 </div>
-                <div className="mt-1"><InviteBatchmatesCard /></div>
-                {/* Thin Live & Upcoming Mess Card */}
-                <HomeMessCard />
-              </div>
+              )
             )}
 
             {activeView === 'timetable' && <WeeklyTimetable />}

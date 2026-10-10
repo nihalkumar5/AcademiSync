@@ -45,12 +45,14 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '@/components/ui/Modal';
-import { isUserSuperAdmin } from '@/lib/adminAuth';
+import { isUserSuperAdmin, isUserFaculty } from '@/lib/adminAuth';
 import { BatchMembersModal } from '@/components/batch/BatchMembersModal';
 import { BatchDiscoveryModal } from '@/components/batch/BatchDiscoveryModal';
 import { ApplyForCRCard } from '@/components/cr/ApplyForCRCard';
 import { BatchSetupPromptModal } from '@/components/batch/BatchSetupPromptModal';
 import { searchCollegesAsync, CollegeItem } from '@/lib/collegeDirectory';
+import { ConnectBatchModal } from '@/components/faculty/ConnectBatchModal';
+import { FacultyBatchesCard } from '@/components/faculty/FacultyBatchesCard';
 
 export const SettingsView: React.FC = () => {
   const { user, isClerkLoaded } = useApp();
@@ -98,6 +100,14 @@ export const SettingsView: React.FC = () => {
   const [showRegenerateCodeModal, setShowRegenerateCodeModal] = useState(false);
   const [isRegeneratingCode, setIsRegeneratingCode] = useState(false);
 
+  // Faculty state logic
+  const isFaculty = isUserFaculty(profile);
+  const [facultyTitle, setFacultyTitle] = useState(profile.facultyTitle || 'Prof.');
+  const [facultyDepartment, setFacultyDepartment] = useState(profile.facultyDepartment || '');
+  const [facultyOfficeRoom, setFacultyOfficeRoom] = useState(profile.facultyOfficeRoom || '');
+  const [facultyEmployeeId, setFacultyEmployeeId] = useState(profile.facultyEmployeeId || '');
+  const [showConnectBatchModal, setShowConnectBatchModal] = useState(false);
+
   // Verification status logic
   const userEmail = user?.primaryEmailAddress?.emailAddress || profile.email || email || '';
   const isSuperAdmin = !!user && isUserSuperAdmin(profile, userEmail);
@@ -123,7 +133,11 @@ export const SettingsView: React.FC = () => {
     setYear(profile.year || 1);
     setSemester(profile.semester || 1);
     setSection(profile.section || '');
-  }, [profile.college, profile.programme, profile.branch, profile.semester, profile.section, profile.name, profile.rollNumber, profile.email, profile.year]);
+    setFacultyTitle(profile.facultyTitle || 'Prof.');
+    setFacultyDepartment(profile.facultyDepartment || '');
+    setFacultyOfficeRoom(profile.facultyOfficeRoom || '');
+    setFacultyEmployeeId(profile.facultyEmployeeId || '');
+  }, [profile.college, profile.programme, profile.branch, profile.semester, profile.section, profile.name, profile.rollNumber, profile.email, profile.year, profile.facultyTitle, profile.facultyDepartment, profile.facultyOfficeRoom, profile.facultyEmployeeId]);
 
   // Debounced SheerID + popular campus search lookup
   useEffect(() => {
@@ -232,6 +246,21 @@ export const SettingsView: React.FC = () => {
       year: Number(year),
       section: cleanSec,
     };
+
+    if (isFaculty) {
+      updateProfile({
+        name: name.trim(),
+        college: (college || '').trim(),
+        email: cleanEmail,
+        facultyTitle: facultyTitle.trim(),
+        facultyDepartment: facultyDepartment.trim(),
+        facultyOfficeRoom: facultyOfficeRoom.trim(),
+        facultyEmployeeId: facultyEmployeeId.trim(),
+      });
+      showToast('Profile Saved', 'Faculty details updated successfully', 'success');
+      setIsEditingAcademic(false);
+      return;
+    }
 
     if (profile.isBatchSynced) {
       updateProfile({
@@ -467,7 +496,7 @@ export const SettingsView: React.FC = () => {
           <div className="flex flex-col mt-0.5 min-w-0 flex-1">
             <div className="flex items-center gap-2.5 flex-wrap w-full">
               <h2 className="text-[22px] sm:text-[24px] font-medium text-[#111111] dark:text-[#FFFFFF] leading-none break-words">
-                {name || user?.fullName || 'Student'}
+                {isFaculty ? `${facultyTitle} ${name || 'Faculty'}` : (name || user?.fullName || 'Student')}
               </h2>
               {isSuperAdmin ? (
                 <span 
@@ -477,6 +506,15 @@ export const SettingsView: React.FC = () => {
                   <Crown className="w-3 h-3" />
                   <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
                     ADMIN
+                  </span>
+                </span>
+              ) : isFaculty ? (
+                <span 
+                  title="Official Faculty Member"
+                  className="inline-flex items-center gap-1.5 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] px-2.5 py-0.5 shrink-0 h-[22px]"
+                >
+                  <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
+                    FACULTY
                   </span>
                 </span>
               ) : isBatchPilotUser ? (
@@ -506,7 +544,9 @@ export const SettingsView: React.FC = () => {
             </div>
             
             <p className="text-[13px] text-[#6F6F6F] mt-2.5 leading-snug max-w-md truncate">
-              {programme || branch ? (
+              {isFaculty ? (
+                `${facultyDepartment || 'Faculty Member'}${college ? ` · ${getShortCollegeName(college)}` : ''}`
+              ) : programme || branch ? (
                 `${programme}${branch ? ` · ${branch}` : ''}`
               ) : college ? (
                 college
@@ -516,13 +556,35 @@ export const SettingsView: React.FC = () => {
             </p>
             
             <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[1px] text-[#A0A0A0] mt-3 flex-wrap">
-              <span>Sem {semester || 1}</span>
-              <span>·</span>
-              <span>Year {year || 1}</span>
-              {rollNumber && (
+              {isFaculty ? (
                 <>
+                  <span>{facultyTitle}</span>
+                  {facultyEmployeeId && (
+                    <>
+                      <span>·</span>
+                      <span>ID #{facultyEmployeeId}</span>
+                    </>
+                  )}
+                  {facultyOfficeRoom && (
+                    <>
+                      <span>·</span>
+                      <span>Cabin: {facultyOfficeRoom}</span>
+                    </>
+                  )}
                   <span>·</span>
-                  <span>Roll #{rollNumber}</span>
+                  <span>{profile.facultyLinkedBatches?.length || 0} Batches Linked</span>
+                </>
+              ) : (
+                <>
+                  <span>Sem {semester || 1}</span>
+                  <span>·</span>
+                  <span>Year {year || 1}</span>
+                  {rollNumber && (
+                    <>
+                      <span>·</span>
+                      <span>Roll #{rollNumber}</span>
+                    </>
+                  )}
                 </>
               )}
             </div>
@@ -553,34 +615,177 @@ export const SettingsView: React.FC = () => {
 
             <div className="p-5 sm:p-6">
               {!isEditingAcademic ? (
-                <div className="flex flex-col gap-6">
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Full Name</span>
-                    <span className="text-[15px] font-[600] text-[#111111] dark:text-[#F4F4F6] leading-snug break-words">{name || 'Not specified'}</span>
+                isFaculty ? (
+                  <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Full Name &amp; Title</span>
+                      <span className="text-[15px] font-[600] text-[#111111] dark:text-[#F4F4F6] leading-snug break-words">
+                        {facultyTitle} {name || 'Not specified'}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">College / University</span>
+                      <span className="text-[15px] font-[600] text-[#111111] dark:text-[#F4F4F6] leading-snug break-words">{college || 'Not specified'}</span>
+                    </div>
+                    
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Department</span>
+                      <span className="text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] break-words">
+                        {facultyDepartment || 'Not specified'}
+                      </span>
+                    </div>
+                    
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Office / Cabin Room</span>
+                      <span className="text-[14px] font-mono font-medium text-[#111111] dark:text-[#F4F4F6]">
+                        {facultyOfficeRoom || 'Not specified'}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Employee ID</span>
+                      <span className="text-[14px] font-mono font-medium text-[#111111] dark:text-[#F4F4F6]">
+                        {facultyEmployeeId || 'Not specified'}
+                      </span>
+                    </div>
+                    
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Official Email</span>
+                      <a href={`mailto:${email}`} className="text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:underline underline-offset-2 break-all">{email || 'Not specified'}</a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Full Name</span>
+                      <span className="text-[15px] font-[600] text-[#111111] dark:text-[#F4F4F6] leading-snug break-words">{name || 'Not specified'}</span>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">College / University</span>
+                      <span className="text-[15px] font-[600] text-[#111111] dark:text-[#F4F4F6] leading-snug break-words">{college || 'Not specified'}</span>
+                    </div>
+                    
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Programme &amp; Branch</span>
+                      <span className="text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] break-words">
+                        {programme} {branch ? `· ${branch}` : ''} {profile.section ? `· Sec ${profile.section}` : ''} {semester ? `(Sem ${semester})` : ''}
+                      </span>
+                    </div>
+                    
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Roll Number</span>
+                      <span className="text-[14px] font-mono font-medium text-[#111111] dark:text-[#F4F4F6] break-all">{rollNumber || 'Not specified'}</span>
+                    </div>
+                    
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Institute Email</span>
+                      <a href={`mailto:${email}`} className="text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:underline underline-offset-2 break-all">{email || 'Not specified'}</a>
+                    </div>
+                  </div>
+                )
+              ) : isFaculty ? (
+                <form onSubmit={async (e) => { 
+                  await handleSaveProfile(e); 
+                  setIsEditingAcademic(false); 
+                }} className="flex flex-col gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <div className="flex flex-col gap-1.5 sm:col-span-1">
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Title</label>
+                      <select
+                        value={facultyTitle}
+                        onChange={(e) => setFacultyTitle(e.target.value)}
+                        className="px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] text-sm font-semibold text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
+                      >
+                        {['Prof.', 'Dr.', 'Asst. Prof.', 'Assoc. Prof.', 'Lecturer'].map(t => (
+                          <option key={t} value={t}>{t}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5 sm:col-span-3">
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Full Name</label>
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Your full name"
+                        required
+                        className="px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] text-sm font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
+                      />
+                    </div>
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">College / University</span>
-                    <span className="text-[15px] font-[600] text-[#111111] dark:text-[#F4F4F6] leading-snug break-words">{college || 'Not specified'}</span>
+                    <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">College / University</label>
+                    <input
+                      type="text"
+                      value={college}
+                      onChange={(e) => setCollege(e.target.value)}
+                      placeholder="e.g. Bennett University"
+                      required
+                      className="px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] text-sm font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
+                    />
                   </div>
-                  
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Programme & Branch</span>
-                    <span className="text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] break-words">
-                      {programme} {branch ? `· ${branch}` : ''} {profile.section ? `· Sec ${profile.section}` : ''} {semester ? `(Sem ${semester})` : ''}
-                    </span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Department</label>
+                      <input
+                        type="text"
+                        value={facultyDepartment}
+                        onChange={(e) => setFacultyDepartment(e.target.value)}
+                        placeholder="e.g. Computer Science &amp; Engineering"
+                        className="px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] text-sm font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Cabin / Office Room</label>
+                      <input
+                        type="text"
+                        value={facultyOfficeRoom}
+                        onChange={(e) => setFacultyOfficeRoom(e.target.value)}
+                        placeholder="e.g. Block C, Room 304"
+                        className="px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] text-sm font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
+                      />
+                    </div>
                   </div>
-                  
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Roll Number</span>
-                    <span className="text-[14px] font-mono font-medium text-[#111111] dark:text-[#F4F4F6] break-all">{rollNumber || 'Not specified'}</span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Employee ID</label>
+                      <input
+                        type="text"
+                        value={facultyEmployeeId}
+                        onChange={(e) => setFacultyEmployeeId(e.target.value)}
+                        placeholder="e.g. FAC-204"
+                        className="px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] text-sm font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Official Email</label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="faculty@college.edu.in"
+                        className="px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] text-sm font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
+                      />
+                    </div>
                   </div>
-                  
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Institute Email</span>
-                    <a href={`mailto:${email}`} className="text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:underline underline-offset-2 break-all">{email || 'Not specified'}</a>
+
+                  <div className="flex items-center gap-3 pt-3">
+                    <button type="submit" className="bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] px-5 py-2.5 text-[13px] font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-sm">
+                      Save Faculty Profile
+                    </button>
+                    <button type="button" onClick={() => setIsEditingAcademic(false)} className="px-4 py-2.5 text-[13px] font-bold text-[#6F6F6F] hover:text-[#111111] dark:text-[#94A3B8] dark:hover:text-white transition-colors cursor-pointer">
+                      Cancel
+                    </button>
                   </div>
-                </div>
+                </form>
               ) : (
                 <form onSubmit={async (e) => { 
                   await handleSaveProfile(e); 
@@ -978,14 +1183,19 @@ export const SettingsView: React.FC = () => {
             </div>
           </div>
           
-          {/* YOUR BATCH */}
-          <div className="flex flex-col gap-0 mt-6">
-            <div className="flex items-center justify-between pb-3 border-b border-[#D8D8D8] dark:border-white/[0.08]">
-              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#F4F4F6]">
-                <Users className="w-[18px] h-[18px] stroke-[1.5]" />
-                <span>Your Batch</span>
-              </div>
+          {/* YOUR BATCH OR FACULTY BATCHES */}
+          {isFaculty ? (
+            <div className="flex flex-col gap-0 mt-6">
+              <FacultyBatchesCard onOpenConnectModal={() => setShowConnectBatchModal(true)} />
             </div>
+          ) : (
+            <div className="flex flex-col gap-0 mt-6">
+              <div className="flex items-center justify-between pb-3 border-b border-[#D8D8D8] dark:border-white/[0.08]">
+                <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#F4F4F6]">
+                  <Users className="w-[18px] h-[18px] stroke-[1.5]" />
+                  <span>Your Batch</span>
+                </div>
+              </div>
 
             {profile.isBatchSynced ? (
               <div className="flex flex-col p-4 sm:p-5 bg-[#F9F9F8] dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.08] mt-3 gap-4 dark:shadow-md">
@@ -1114,6 +1324,7 @@ ${PLAY_STORE_URL}
               </div>
             )}
           </div>
+          )}
         </div>
 
         {/* Right Column */}
@@ -1965,6 +2176,12 @@ ${PLAY_STORE_URL}
           </div>
         </div>
       </Modal>
+
+      {/* Faculty Connect Batch Modal */}
+      <ConnectBatchModal
+        isOpen={showConnectBatchModal}
+        onClose={() => setShowConnectBatchModal(false)}
+      />
     </div>
   );
 };

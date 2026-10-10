@@ -24,3 +24,8 @@ export function isUserClassRepresentative(profile?: Partial<StudentProfile> | nu
   if (profile?.role === 'super_admin' || profile?.role === 'cr') return true;
   return false;
 }
+
+export function isUserFaculty(profile?: Partial<StudentProfile> | null): boolean {
+  return profile?.role === 'faculty';
+}
+

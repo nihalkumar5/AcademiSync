@@ -79,7 +79,7 @@ export default function SuperAdminPage() {
 
   // College-wise arrangement and filter states
   const [selectedCollegeFilter, setSelectedCollegeFilter] = useState<string>('ALL');
-  const [selectedRoleFilter, setSelectedRoleFilter] = useState<'ALL' | 'cr' | 'pro' | 'student'>('ALL');
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState<'ALL' | 'cr' | 'faculty' | 'pro' | 'student'>('ALL');
   const [collapsedColleges, setCollapsedColleges] = useState<Record<string, boolean>>({});
 
   // Custom in-theme delete confirmation states
@@ -1051,6 +1051,10 @@ export default function SuperAdminPage() {
     return deduplicatedUsersList.filter(u => u.profile?.role === 'cr' || u.profile?.role === 'super_admin').length;
   }, [deduplicatedUsersList]);
 
+  const totalFacultyCount = useMemo(() => {
+    return deduplicatedUsersList.filter(u => u.profile?.role === 'faculty').length;
+  }, [deduplicatedUsersList]);
+
   const totalProCount = useMemo(() => {
     return deduplicatedUsersList.filter(u => !!u.profile?.isPro).length;
   }, [deduplicatedUsersList]);
@@ -1072,8 +1076,9 @@ export default function SuperAdminPage() {
       const isPro = !!p.isPro;
 
       if (selectedRoleFilter === 'cr' && role !== 'cr' && role !== 'super_admin') continue;
+      if (selectedRoleFilter === 'faculty' && role !== 'faculty') continue;
       if (selectedRoleFilter === 'pro' && !isPro) continue;
-      if (selectedRoleFilter === 'student' && (role === 'cr' || role === 'super_admin')) continue;
+      if (selectedRoleFilter === 'student' && (role === 'cr' || role === 'super_admin' || role === 'faculty')) continue;
 
       const { key, displayName, shortName } = normalizeCollegeGroup(p.college);
 
@@ -1425,6 +1430,7 @@ export default function SuperAdminPage() {
                 </span>
                 {[
                   { id: 'ALL', label: `All (${filteredUsers.length})` },
+                  { id: 'faculty', label: `Faculty (${totalFacultyCount})` },
                   { id: 'cr', label: `CRs (${totalCRsCount})` },
                   { id: 'pro', label: `Pro (${totalProCount})` },
                   { id: 'student', label: 'Students' },
@@ -1627,13 +1633,13 @@ export default function SuperAdminPage() {
                                             }}
                                             className="w-full h-full flex items-center justify-between px-3 py-1.5 border border-[#D8D8D8] dark:border-[#333333] bg-transparent text-[11px] font-bold uppercase cursor-pointer rounded-none focus:outline-none"
                                           >
-                                            <span>{currentRole === 'super_admin' ? 'Super Admin' : currentRole === 'cr' ? 'CR (Class Rep)' : 'Student'}</span>
+                                            <span>{currentRole === 'super_admin' ? 'Super Admin' : currentRole === 'faculty' ? 'Faculty (Prof)' : currentRole === 'cr' ? 'CR (Class Rep)' : 'Student'}</span>
                                             <ChevronDown className="w-3.5 h-3.5 opacity-50" />
                                           </button>
                                           
                                           {activeRoleDropdown === u.id && (
                                             <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] z-50 shadow-[0_20px_40px_rgba(0,0,0,0.1)] flex flex-col rounded-none">
-                                              {['student', 'cr', 'super_admin'].map(role => (
+                                              {['student', 'cr', 'faculty', 'super_admin'].map(role => (
                                                 <button
                                                   key={role}
                                                   onClick={(e) => {
@@ -1643,7 +1649,7 @@ export default function SuperAdminPage() {
                                                   }}
                                                   className="px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-[1px] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
                                                 >
-                                                  {role === 'super_admin' ? 'Super Admin' : role === 'cr' ? 'CR (Class Rep)' : 'Student'}
+                                                  {role === 'super_admin' ? 'Super Admin' : role === 'faculty' ? 'Faculty (Prof)' : role === 'cr' ? 'CR (Class Rep)' : 'Student'}
                                                 </button>
                                               ))}
                                             </div>
@@ -1720,13 +1726,13 @@ export default function SuperAdminPage() {
                                         }}
                                         className="w-full h-full flex items-center justify-between px-2.5 py-1.5 border border-[#D8D8D8] dark:border-[#333333] bg-transparent text-[10px] font-bold uppercase cursor-pointer rounded-none focus:outline-none"
                                       >
-                                        <span>{currentRole === 'super_admin' ? 'Super Admin' : currentRole === 'cr' ? 'CR' : 'Student'}</span>
+                                        <span>{currentRole === 'super_admin' ? 'Super Admin' : currentRole === 'faculty' ? 'Faculty' : currentRole === 'cr' ? 'CR' : 'Student'}</span>
                                         <ChevronDown className="w-3 h-3 opacity-50" />
                                       </button>
                                       
                                       {activeRoleDropdown === u.id && (
                                         <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] z-50 shadow-lg flex flex-col rounded-none">
-                                          {['student', 'cr', 'super_admin'].map(role => (
+                                          {['student', 'cr', 'faculty', 'super_admin'].map(role => (
                                             <button
                                               key={role}
                                               onClick={(e) => {
@@ -1736,7 +1742,7 @@ export default function SuperAdminPage() {
                                               }}
                                               className="px-3 py-2 text-left text-[10px] font-bold uppercase hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
                                             >
-                                              {role === 'super_admin' ? 'Super Admin' : role === 'cr' ? 'CR (Class Rep)' : 'Student'}
+                                              {role === 'super_admin' ? 'Super Admin' : role === 'faculty' ? 'Faculty' : role === 'cr' ? 'CR (Class Rep)' : 'Student'}
                                             </button>
                                           ))}
                                         </div>

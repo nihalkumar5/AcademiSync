@@ -22,6 +22,8 @@ import { useApp } from '@/context/AppContext';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Capacitor } from '@capacitor/core';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 import { getTaskCardTheme } from '@/lib/cardColors';
 
@@ -44,12 +46,33 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
   onDelete,
   onShare,
 }) => {
-  const { profile, proposeBatchTask, updateHomework, isBatchCR, showToast, triggerConfetti } = useApp();
+  const { profile, user, proposeBatchTask, updateHomework, isBatchCR, showToast, triggerConfetti } = useApp();
   const [showMenu, setShowMenu] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [showCompleteConfirmModal, setShowCompleteConfirmModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Real-time student read-receipt logging for faculty assignments
+  useEffect(() => {
+    const propId = homework.proposalId;
+    const targetBatchKey = homework.batchKey || profile.batchKey;
+    if (homework.isFacultyAssignment && propId && targetBatchKey && user?.id) {
+      const alreadyRead = homework.readReceipts && !!homework.readReceipts[user.id];
+      if (!alreadyRead) {
+        updateDoc(doc(db, 'shared_timetables', targetBatchKey, 'proposed_tasks', propId), {
+          [`readReceipts.${user.id}`]: {
+            studentId: user.id,
+            studentName: profile.name || 'Student',
+            rollNumber: profile.rollNumber || '',
+            readAt: new Date().toISOString(),
+          },
+        }).catch((e) => {
+          console.warn('Could not record assignment read receipt:', e);
+        });
+      }
+    }
+  }, [homework.isFacultyAssignment, homework.proposalId, homework.batchKey, homework.readReceipts, profile.batchKey, profile.name, profile.rollNumber, user?.id]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -375,10 +398,17 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
           </div>
         </div>
 
-        {/* Course Name */}
-        <span className="text-[10.5px] font-bold uppercase tracking-[1.3px] text-[#737373] dark:text-[#94A3B8] break-words pr-2 mt-3.5">
-          {subject?.name || homework.subjectName || 'GENERAL'}
-        </span>
+        {/* Course Name & Faculty Badge */}
+        <div className="flex items-center gap-2 flex-wrap pr-2 mt-3.5">
+          <span className="text-[10.5px] font-bold uppercase tracking-[1.3px] text-[#737373] dark:text-[#94A3B8] break-words">
+            {subject?.name || homework.subjectName || 'GENERAL'}
+          </span>
+          {homework.isFacultyAssignment && (
+            <span className="px-1.5 py-0.5 bg-blue-500/10 dark:bg-blue-400/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-[9.5px] font-bold uppercase tracking-wider rounded-none">
+              🎓 FACULTY: {homework.facultyName || 'Professor'}
+            </span>
+          )}
+        </div>
 
         {/* Title Row with Checkbox */}
         <div className="flex items-start gap-3 mt-2.5">
