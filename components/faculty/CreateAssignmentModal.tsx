@@ -179,7 +179,7 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
             <select
               value={selectedBatchId}
               onChange={(e) => handleBatchChange(e.target.value)}
-              className="px-3 py-2 bg-white dark:bg-[#090A0C] border border-black/20 dark:border-white/20 text-xs font-semibold text-black dark:text-white focus:outline-none"
+              className="px-3 py-2.5 rounded-[8px] bg-white dark:bg-[#090A0C] border border-black/15 dark:border-white/15 text-xs font-semibold text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white"
             >
               {linkedBatches.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -197,7 +197,7 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
             <select
               value={selectedSubjectId}
               onChange={(e) => setSelectedSubjectId(e.target.value)}
-              className="px-3 py-2 bg-white dark:bg-[#090A0C] border border-black/20 dark:border-white/20 text-xs font-semibold text-black dark:text-white focus:outline-none"
+              className="px-3 py-2.5 rounded-[8px] bg-white dark:bg-[#090A0C] border border-black/15 dark:border-white/15 text-xs font-semibold text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white"
             >
               {activeBatch?.selectedSubjectIds.map((subId, idx) => (
                 <option key={subId} value={subId}>
@@ -218,7 +218,7 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Lab Assignment 3: Red-Black Tree Implementation"
-            className="px-3.5 py-2.5 bg-white dark:bg-[#090A0C] border border-black/20 dark:border-white/20 text-sm font-semibold text-black dark:text-white focus:outline-none placeholder:text-black/30 dark:placeholder:text-white/30"
+            className="px-3.5 py-2.5 rounded-[8px] bg-white dark:bg-[#090A0C] border border-black/15 dark:border-white/15 text-sm font-semibold text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white placeholder:text-black/30 dark:placeholder:text-white/30"
             required
           />
         </div>
@@ -233,7 +233,7 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
             placeholder="Provide instructions, question numbers, or submission guidelines..."
-            className="px-3.5 py-2 bg-white dark:bg-[#090A0C] border border-black/20 dark:border-white/20 text-xs text-black dark:text-white focus:outline-none resize-none placeholder:text-black/30 dark:placeholder:text-white/30"
+            className="px-3.5 py-2.5 rounded-[8px] bg-white dark:bg-[#090A0C] border border-black/15 dark:border-white/15 text-xs text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white resize-none placeholder:text-black/30 dark:placeholder:text-white/30"
           />
         </div>
 
@@ -248,7 +248,7 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
               type="datetime-local"
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
-              className="px-3 py-2 bg-white dark:bg-[#090A0C] border border-black/20 dark:border-white/20 text-xs font-mono text-black dark:text-white focus:outline-none"
+              className="px-3 py-2.5 rounded-[8px] bg-white dark:bg-[#090A0C] border border-black/15 dark:border-white/15 text-xs font-mono text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white"
               required
             />
           </div>
@@ -263,10 +263,10 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
                   key={p}
                   type="button"
                   onClick={() => setPriority(p)}
-                  className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider border transition-colors cursor-pointer ${
+                  className={`flex-1 py-2 rounded-[8px] text-xs font-bold uppercase tracking-wider border transition-colors cursor-pointer ${
                     priority === p
-                      ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
-                      : 'bg-transparent text-black/60 dark:text-white/60 border-black/15 dark:border-white/15'
+                      ? 'bg-[#111111] text-white dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-2xs'
+                      : 'bg-transparent text-black/60 dark:text-white/60 border-black/15 dark:border-white/15 hover:border-black/30 dark:hover:border-white/30'
                   }`}
                 >
                   {p}
@@ -287,30 +287,30 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
             value={attachmentUrl}
             onChange={(e) => setAttachmentUrl(e.target.value)}
             placeholder="https://drive.google.com/... or assignment PDF link"
-            className="px-3.5 py-2 bg-white dark:bg-[#090A0C] border border-black/20 dark:border-white/20 text-xs font-mono text-black dark:text-white focus:outline-none placeholder:text-black/30 dark:placeholder:text-white/30"
+            className="px-3.5 py-2.5 rounded-[8px] bg-white dark:bg-[#090A0C] border border-black/15 dark:border-white/15 text-xs font-mono text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white placeholder:text-black/30 dark:placeholder:text-white/30"
           />
         </div>
 
         {formError && (
-          <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
+          <div className="p-3 rounded-[8px] bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{formError}</span>
           </div>
         )}
 
         {/* Buttons */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-black/10 dark:border-white/10 mt-1">
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-black/[0.06] dark:border-white/[0.08] mt-1">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 border border-black/20 dark:border-white/20 text-xs font-bold uppercase tracking-wider text-black/70 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-[8px] border border-black/15 dark:border-white/15 text-xs font-bold uppercase tracking-wider text-black/70 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-5 py-2 bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity disabled:opacity-40 flex items-center gap-1.5 cursor-pointer"
+            className="px-5 py-2 rounded-[8px] bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity disabled:opacity-40 flex items-center gap-1.5 cursor-pointer shadow-2xs"
           >
             {isSubmitting ? (
               <>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
+import { Modal } from '@/components/ui/Modal';
 import { AggregatedFacultySession, rescheduleFacultyClass } from '@/lib/facultyUtils';
 import { getTodayDateString } from '@/lib/timetableUtils';
 import { Clock, MapPin, Users, AlertCircle, Sparkles } from 'lucide-react';
@@ -36,7 +37,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
     }
   }, [aggregatedSession]);
 
-  if (!isOpen || !aggregatedSession) return null;
+  if (!aggregatedSession) return null;
 
   const { session, batch, subjectName, subjectCode } = aggregatedSession;
   const todayStr = getTodayDateString();
@@ -82,23 +83,15 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-[#121317] border border-black dark:border-white max-w-md w-full p-6 flex flex-col gap-5 text-left shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-black/10 dark:border-white/10">
-          <div className="flex items-center gap-2">
-            <Clock className="w-5 h-5 text-black dark:text-white" />
-            <h3 className="text-base font-black uppercase tracking-tight text-black dark:text-white">
-              Reschedule Lecture
-            </h3>
-          </div>
-          <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-black/5 dark:bg-white/5 text-black/60 dark:text-white/60">
-            TODAY ONLY
-          </span>
-        </div>
-
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Reschedule Lecture"
+      description="Update lecture time and room for today's batch schedule"
+    >
+      <div className="flex flex-col gap-4 text-left font-sans mt-2">
         {/* Current Details Banner */}
-        <div className="p-3 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex flex-col gap-1.5">
+        <div className="p-3.5 rounded-[12px] bg-black/5 dark:bg-white/5 border border-black/[0.06] dark:border-white/[0.08] flex flex-col gap-1.5">
           <div className="flex items-center justify-between gap-2">
             <span className="text-sm font-bold text-black dark:text-white">
               {subjectName}
@@ -141,7 +134,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 required
-                className="px-3 py-2 border border-black/20 dark:border-white/20 bg-transparent text-sm font-mono text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white"
+                className="px-3 py-2 rounded-[8px] border border-black/15 dark:border-white/15 bg-white dark:bg-[#090A0C] text-sm font-mono text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white"
               />
             </div>
 
@@ -154,7 +147,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 required
-                className="px-3 py-2 border border-black/20 dark:border-white/20 bg-transparent text-sm font-mono text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white"
+                className="px-3 py-2 rounded-[8px] border border-black/15 dark:border-white/15 bg-white dark:bg-[#090A0C] text-sm font-mono text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white"
               />
             </div>
           </div>
@@ -168,7 +161,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
               value={room}
               onChange={(e) => setRoom(e.target.value)}
               placeholder="e.g. LT-102, Lab-3"
-              className="px-3 py-2 border border-black/20 dark:border-white/20 bg-transparent text-sm font-mono text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white"
+              className="px-3.5 py-2.5 rounded-[8px] border border-black/15 dark:border-white/15 bg-white dark:bg-[#090A0C] text-sm font-mono text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white placeholder:text-black/30 dark:placeholder:text-white/30"
             />
           </div>
 
@@ -181,23 +174,23 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="e.g. Moved slot due to lab conflict"
-              className="px-3 py-2 border border-black/20 dark:border-white/20 bg-transparent text-xs font-mono text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white"
+              className="px-3.5 py-2.5 rounded-[8px] border border-black/15 dark:border-white/15 bg-white dark:bg-[#090A0C] text-xs font-mono text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white placeholder:text-black/30 dark:placeholder:text-white/30"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-black/10 dark:border-white/10">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-black/[0.06] dark:border-white/[0.08]">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 border border-black/20 dark:border-white/20 text-xs font-bold uppercase text-black/70 dark:text-white/70 hover:border-black dark:hover:border-white cursor-pointer"
+              className="px-4 py-2 rounded-[8px] border border-black/15 dark:border-white/15 text-xs font-bold uppercase text-black/70 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2 bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity cursor-pointer flex items-center gap-1.5"
+              className="px-5 py-2 rounded-[8px] bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity cursor-pointer flex items-center gap-1.5 shadow-2xs"
             >
               <Clock className="w-3.5 h-3.5" />
               <span>{isSubmitting ? 'Rescheduling...' : 'Save & Broadcast'}</span>
@@ -205,6 +198,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
           </div>
         </form>
       </div>
-    </div>
+    </Modal>
   );
 };
+

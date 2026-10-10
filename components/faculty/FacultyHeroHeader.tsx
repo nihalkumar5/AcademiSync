@@ -28,7 +28,7 @@ export const FacultyHeroHeader: React.FC<FacultyHeroHeaderProps> = ({
   todayLecturesCount,
   activeAssignmentsCount,
 }) => {
-  const { profile } = useApp();
+  const { profile, setActiveView } = useApp();
   const [time, setTime] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -65,24 +65,24 @@ export const FacultyHeroHeader: React.FC<FacultyHeroHeaderProps> = ({
   const linkedBatchesCount = profile.facultyLinkedBatches?.length || 0;
 
   return (
-    <div className="flex flex-col gap-6 mt-6 mb-3 text-left">
-      {/* Top Greeting & Badges */}
+    <div className="flex flex-col gap-6 mt-8 mb-4 text-left">
+      {/* Top Greeting & Header Actions */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] px-2.5 py-0.5 text-[9.5px] font-bold tracking-[1.3px] uppercase">
+            <span className="inline-flex items-center gap-1.5 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] px-2.5 py-0.5 text-[9.5px] font-bold tracking-[1.3px] uppercase rounded-[4px]">
               <Award className="w-3 h-3" />
               FACULTY PORTAL
             </span>
 
             {profile.facultyEmployeeId && (
-              <span className="inline-flex items-center gap-1 bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 px-2 py-0.5 text-[10px] font-mono uppercase">
+              <span className="inline-flex items-center gap-1 bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 px-2.5 py-0.5 text-[10px] font-mono uppercase rounded-[4px]">
                 ID: {profile.facultyEmployeeId}
               </span>
             )}
           </div>
 
-          <h2 className="text-[34px] sm:text-[40px] text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[38px] sm:leading-[44px]">
+          <h2 className="text-[36px] sm:text-[40px] text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[40px] sm:leading-[44px]">
             <span className="font-normal">{greeting},</span>
             <br />
             <span className="font-medium inline-flex items-baseline gap-2">
@@ -102,21 +102,21 @@ export const FacultyHeroHeader: React.FC<FacultyHeroHeaderProps> = ({
                 {profile.college ? ` · ${getShortCollegeName(profile.college)}` : ''}
               </span>
               {profile.facultyOfficeRoom && (
-                <span className="text-[#6F6F6F] dark:text-[#A1A1AA] flex items-center gap-1 text-[12px] mt-0.5">
-                  <MapPin className="w-3 h-3 text-[#111111] dark:text-[#FFFFFF]" />
-                  {profile.facultyOfficeRoom}
+                <span className="text-[#6F6F6F] dark:text-[#A1A1AA] flex items-center gap-1.5 text-[12px] mt-0.5">
+                  <MapPin className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF]" />
+                  Cabin {profile.facultyOfficeRoom}
                 </span>
               )}
             </div>
           </div>
         </div>
 
-        {/* Quick Header Actions */}
-        <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+        {/* Quick Actions (styled like student buttons) */}
+        <div className="flex items-center gap-2.5 self-start sm:self-auto flex-wrap">
           <button
             type="button"
             onClick={onOpenConnectBatch}
-            className="px-3.5 py-2 border border-black dark:border-white text-xs font-bold uppercase tracking-wider text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-2 border border-black/15 dark:border-white/15 bg-white dark:bg-[#18191E] text-xs font-bold uppercase tracking-wider text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex items-center gap-1.5 cursor-pointer rounded-[8px] shadow-2xs"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Connect Batch</span>
@@ -124,48 +124,60 @@ export const FacultyHeroHeader: React.FC<FacultyHeroHeaderProps> = ({
           <button
             type="button"
             onClick={onOpenCreateAssignment}
-            className="px-3.5 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-2 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity flex items-center gap-1.5 cursor-pointer rounded-[8px] shadow-2xs"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>New Assignment</span>
+            <span>New Task</span>
           </button>
         </div>
       </div>
 
-      {/* Brutalist Stats Grid */}
-      <div className="grid grid-cols-3 gap-0 py-4 mt-2 border-y border-black/10 dark:border-white/[0.08] relative">
+      {/* Student-Identical 3-Column Stats Grid */}
+      <div className="grid grid-cols-3 gap-0 py-4 mt-4 border-y border-black/10 dark:border-white/[0.08] relative">
         <div className="absolute left-1/3 top-[15%] bottom-[15%] w-px bg-black/10 dark:bg-white/[0.08]" />
-        <div className="absolute left-[66.666%] top-[15%] bottom-[15%] w-px bg-black/10 dark:bg-white/[0.08]" />
+        <div className="absolute left-[66.666%] top-[15%] bottom-[15%] w-px bg-black/10 dark:border-white/[0.08]" />
 
         {/* Lectures Today */}
-        <div className="flex flex-col items-center justify-center text-center">
+        <button
+          type="button"
+          onClick={() => setActiveView('timetable')}
+          className="flex flex-col items-center justify-center group hover:opacity-75 transition-opacity text-center cursor-pointer"
+        >
           <span className="text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1 font-mono">
             {todayLecturesCount}
           </span>
-          <span className="text-[13px] font-medium text-black/60 dark:text-[#A1A1AA] leading-tight">
+          <span className="text-[14px] font-medium text-black/60 dark:text-[#A1A1AA] leading-tight">
             Today&apos;s Lectures
           </span>
-        </div>
+        </button>
 
-        {/* Connected Batches */}
-        <div className="flex flex-col items-center justify-center text-center">
+        {/* Batches Linked */}
+        <button
+          type="button"
+          onClick={onOpenConnectBatch}
+          className="flex flex-col items-center justify-center group hover:opacity-75 transition-opacity text-center cursor-pointer"
+        >
           <span className="text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1 font-mono">
             {linkedBatchesCount}
           </span>
-          <span className="text-[13px] font-medium text-black/60 dark:text-[#A1A1AA] leading-tight">
+          <span className="text-[14px] font-medium text-black/60 dark:text-[#A1A1AA] leading-tight">
             Batches Linked
           </span>
-        </div>
+        </button>
 
         {/* Active Assignments */}
-        <div className="flex flex-col items-center justify-center text-center">
+        <button
+          type="button"
+          onClick={onOpenCreateAssignment}
+          className="flex flex-col items-center justify-center group hover:opacity-75 transition-opacity text-center cursor-pointer"
+        >
           <span className="text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1 font-mono">
             {activeAssignmentsCount}
           </span>
-          <span className="text-[13px] font-medium text-black/60 dark:text-[#A1A1AA] leading-tight">
-            Active Tasks
+          <span className="text-[14px] font-medium text-black/60 dark:text-[#A1A1AA] leading-tight">
+            Tasks Posted
           </span>
-        </div>
+        </button>
       </div>
     </div>
   );

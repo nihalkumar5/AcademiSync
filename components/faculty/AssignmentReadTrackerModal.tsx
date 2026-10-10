@@ -79,7 +79,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
     >
       <div className="flex flex-col gap-4 text-left font-sans mt-2">
         {/* Progress & Stat Header */}
-        <div className="p-4 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex flex-col gap-3">
+        <div className="p-4 rounded-[12px] bg-black/5 dark:bg-white/5 border border-black/[0.06] dark:border-white/[0.08] flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
               Read Percentage
@@ -104,7 +104,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex border-b border-black/10 dark:border-white/10">
+        <div className="flex border-b border-black/[0.06] dark:border-white/[0.08]">
           <button
             type="button"
             onClick={() => setActiveTab('opened')}
@@ -141,7 +141,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
               openedList.map((st, i) => (
                 <div
                   key={`${st.studentId}_${i}`}
-                  className="p-2.5 bg-white dark:bg-[#121317] border border-black/10 dark:border-white/10 flex items-center justify-between gap-2"
+                  className="p-2.5 rounded-[8px] bg-white dark:bg-[#121317] border border-black/[0.06] dark:border-white/[0.08] flex items-center justify-between gap-2 shadow-2xs"
                 >
                   <div className="flex flex-col min-w-0">
                     <span className="text-xs font-bold text-black dark:text-white truncate">
@@ -171,7 +171,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
               unopenedMembers.map((m, i) => (
                 <div
                   key={`${m.id || i}`}
-                  className="p-2.5 bg-white dark:bg-[#121317] border border-black/10 dark:border-white/10 flex items-center justify-between gap-2 opacity-75"
+                  className="p-2.5 rounded-[8px] bg-white dark:bg-[#121317] border border-black/[0.06] dark:border-white/[0.08] flex items-center justify-between gap-2 opacity-75 shadow-2xs"
                 >
                   <div className="flex flex-col min-w-0">
                     <span className="text-xs font-medium text-black dark:text-white truncate">
@@ -194,7 +194,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
         </div>
 
         {/* Footer actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-black/10 dark:border-white/10 mt-1">
+        <div className="flex items-center justify-between pt-3 border-t border-black/[0.06] dark:border-white/[0.08] mt-1">
           {activeTab === 'unopened' && unopenedMembers.length > 0 && (
             <button
               type="button"
@@ -209,7 +209,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-1.5 bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity cursor-pointer"
+              className="px-4 py-1.5 rounded-[8px] bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity cursor-pointer shadow-2xs"
             >
               Close
             </button>

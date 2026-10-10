@@ -209,13 +209,13 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
                   onChange={(e) => setBatchCodeInput(e.target.value.toUpperCase())}
                   placeholder="e.g. 849201 or CSE4A"
                   maxLength={20}
-                  className="flex-1 px-3.5 py-2.5 bg-white dark:bg-[#090A0C] border border-black/20 dark:border-white/20 text-black dark:text-white font-mono text-sm tracking-widest uppercase focus:outline-none focus:border-black dark:focus:border-white"
+                  className="flex-1 px-3.5 py-2.5 rounded-[8px] bg-white dark:bg-[#090A0C] border border-black/15 dark:border-white/15 text-black dark:text-white font-mono text-sm tracking-widest uppercase focus:outline-none focus:border-black dark:focus:border-white"
                   autoFocus
                 />
                 <button
                   type="submit"
                   disabled={isSearching || !batchCodeInput.trim()}
-                  className="px-5 py-2.5 bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity disabled:opacity-40 flex items-center gap-1.5 cursor-pointer"
+                  className="px-5 py-2.5 rounded-[8px] bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity disabled:opacity-40 flex items-center gap-1.5 cursor-pointer shadow-2xs"
                 >
                   {isSearching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
                   <span>Find</span>
@@ -227,7 +227,7 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
             </div>
 
             {searchError && (
-              <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
+              <div className="p-3 rounded-[8px] bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{searchError}</span>
               </div>
@@ -237,13 +237,13 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
           /* Step 2: Batch Found -> Select Subjects */
           <div className="flex flex-col gap-5">
             {/* Batch Info Card */}
-            <div className="p-3.5 bg-black/5 dark:bg-white/5 border border-black/15 dark:border-white/15 flex flex-col gap-1.5">
+            <div className="p-3.5 rounded-[12px] bg-black/5 dark:bg-white/5 border border-black/[0.06] dark:border-white/[0.08] flex flex-col gap-1.5">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                   <Building2 className="w-3.5 h-3.5 text-black/60 dark:text-white/60" />
                   {getShortCollegeName(foundBatchData.college || '')}
                 </span>
-                <span className="px-2 py-0.5 bg-black/10 dark:bg-white/10 text-[10px] font-mono font-bold uppercase text-black dark:text-white">
+                <span className="px-2 py-0.5 rounded-[4px] bg-black/10 dark:bg-white/10 text-[10px] font-mono font-bold uppercase text-black dark:text-white">
                   CODE: {foundBatchData.inviteCode || foundBatchData.id}
                 </span>
               </div>
@@ -265,7 +265,7 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
                 </span>
               </div>
 
-              <div className="max-h-60 overflow-y-auto flex flex-col gap-1.5 pr-1 border border-black/10 dark:border-white/10 p-2 bg-[#F9F9F7] dark:bg-[#0A0A0C]">
+              <div className="max-h-60 overflow-y-auto flex flex-col gap-1.5 pr-1 border border-black/[0.06] dark:border-white/[0.08] rounded-[10px] p-2 bg-[#F9F9F7] dark:bg-[#0A0A0C]">
                 {Array.isArray(foundBatchData.subjects) && foundBatchData.subjects.length > 0 ? (
                   foundBatchData.subjects.map((sub: Subject) => {
                     const isChecked = selectedSubjectIds.includes(sub.id);
@@ -274,9 +274,9 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
                         key={sub.id}
                         type="button"
                         onClick={() => toggleSubject(sub.id)}
-                        className={`flex items-center justify-between p-2.5 text-left border transition-all cursor-pointer ${
+                        className={`flex items-center justify-between p-2.5 rounded-[8px] text-left border transition-all cursor-pointer ${
                           isChecked
-                            ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
+                            ? 'bg-[#111111] text-white dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-2xs'
                             : 'bg-white dark:bg-[#121317] text-black dark:text-white border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30'
                         }`}
                       >
@@ -289,7 +289,7 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
                           </span>
                         </div>
                         <div
-                          className={`w-4 h-4 border flex items-center justify-center shrink-0 ${
+                          className={`w-4 h-4 rounded-[4px] border flex items-center justify-center shrink-0 ${
                             isChecked
                               ? 'bg-white text-black dark:bg-black dark:text-white border-white dark:border-black'
                               : 'border-black/30 dark:border-white/30'
@@ -309,7 +309,7 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between pt-2 border-t border-black/10 dark:border-white/10">
+            <div className="flex items-center justify-between pt-2 border-t border-black/[0.06] dark:border-white/[0.08]">
               <button
                 type="button"
                 onClick={() => setFoundBatchData(null)}
@@ -321,7 +321,7 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
                 type="button"
                 onClick={handleSaveConnection}
                 disabled={selectedSubjectIds.length === 0}
-                className="px-5 py-2.5 bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity disabled:opacity-40 cursor-pointer"
+                className="px-5 py-2.5 rounded-[8px] bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity disabled:opacity-40 cursor-pointer shadow-2xs"
               >
                 Connect &amp; Sync
               </button>
