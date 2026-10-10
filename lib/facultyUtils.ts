@@ -1,5 +1,21 @@
 import { ClassSession, FacultyLinkedBatch, Subject, DayOfWeek } from './types';
 import { timeToMinutes, getCurrentDayOfWeek, getTodayDateString } from './timetableUtils';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from './firebase';
+import { broadcastBatchPushNotification } from './pushNotifications';
+
+export interface RescheduleMeta {
+  startTime: string;
+  endTime: string;
+  room?: string;
+  by?: string;
+  role?: string;
+  reason?: string;
+  timestamp?: string;
+  originalStartTime: string;
+  originalEndTime: string;
+  originalRoom?: string;
+}
 
 export interface AggregatedFacultySession {
   session: ClassSession;
@@ -7,6 +23,8 @@ export interface AggregatedFacultySession {
   subjectName: string;
   subjectCode: string;
   isCancelled: boolean;
+  isRescheduled: boolean;
+  rescheduleMeta?: RescheduleMeta;
   isLive: boolean;
   isUpcoming: boolean;
   minutesUntilStart: number;
@@ -14,10 +32,6 @@ export interface AggregatedFacultySession {
 
 /**
  * Checks whether a given class session belongs to the subjects selected by this faculty in this batch.
- * Strictly checks:
- * 1. session.subjectId matches batch.selectedSubjectIds
- * 2. OR matching subject object in subjectsList has its ID in batch.selectedSubjectIds
- * 3. OR session.subjectName / subjectCode matches batch.selectedSubjectNames
  */
 export const isFacultySession = (
   session: ClassSession,
@@ -94,7 +108,8 @@ export const getFacultySessionDetails = (
 };
 
 /**
- * Aggregates all week sessions across linked batches, filtered strictly to faculty's selected subjects.
+ * Aggregates all week sessions across linked batches, filtered strictly to faculty's selected subjects,
+ * applying active cancellations and reschedules in real time.
  */
 export const aggregateFacultyWeeklyTimetable = (
   linkedBatches: FacultyLinkedBatch[],
@@ -124,6 +139,10 @@ export const aggregateFacultyWeeklyTimetable = (
     const timetable: ClassSession[] = Array.isArray(bData.timetable) ? bData.timetable : [];
     const subjectsList: Subject[] = Array.isArray(bData.subjects) ? bData.subjects : [];
     const cancelledList: string[] = Array.isArray(bData.cancelledSessions) ? bData.cancelledSessions : [];
+    const rescheduledMap: Record<string, any> =
+      bData.rescheduledSessions && typeof bData.rescheduledSessions === 'object'
+        ? bData.rescheduledSessions
+        : {};
 
     timetable.forEach((session) => {
       // STRICT FILTER: Only include if this faculty selected this subject in this batch
@@ -136,8 +155,39 @@ export const aggregateFacultyWeeklyTimetable = (
       const cancelKey = `${todayStr}_${session.id}`;
       const isCancelled = cancelledList.includes(cancelKey);
 
-      const startMin = timeToMinutes(session.startTime);
-      const endMin = timeToMinutes(session.endTime);
+      // Check if rescheduled for today
+      const reschedKey = `${todayStr}_${session.id}`;
+      const resched = session.day === currentDay ? rescheduledMap[reschedKey] : undefined;
+      const isRescheduled = Boolean(resched && resched.startTime && resched.endTime);
+
+      const effectiveStartTime = isRescheduled ? resched.startTime : session.startTime;
+      const effectiveEndTime = isRescheduled ? resched.endTime : session.endTime;
+      const effectiveRoom = isRescheduled && resched.room ? resched.room : session.room;
+
+      const effectiveSession: ClassSession = {
+        ...session,
+        startTime: effectiveStartTime,
+        endTime: effectiveEndTime,
+        room: effectiveRoom,
+      };
+
+      const rescheduleMeta: RescheduleMeta | undefined = isRescheduled
+        ? {
+            startTime: resched.startTime,
+            endTime: resched.endTime,
+            room: resched.room,
+            by: resched.by,
+            role: resched.role,
+            reason: resched.reason,
+            timestamp: resched.timestamp,
+            originalStartTime: session.startTime,
+            originalEndTime: session.endTime,
+            originalRoom: session.room,
+          }
+        : undefined;
+
+      const startMin = timeToMinutes(effectiveStartTime);
+      const endMin = timeToMinutes(effectiveEndTime);
 
       const isLive =
         session.day === currentDay && currentMinutes >= startMin && currentMinutes < endMin && !isCancelled;
@@ -145,11 +195,13 @@ export const aggregateFacultyWeeklyTimetable = (
       const minutesUntilStart = startMin - currentMinutes;
 
       const agg: AggregatedFacultySession = {
-        session,
+        session: effectiveSession,
         batch,
         subjectName,
         subjectCode,
         isCancelled,
+        isRescheduled,
+        rescheduleMeta,
         isLive,
         isUpcoming,
         minutesUntilStart,
@@ -167,4 +219,260 @@ export const aggregateFacultyWeeklyTimetable = (
   });
 
   return allWeekSessions;
+};
+
+/**
+ * Reschedule a faculty lecture for a given batch and notify students.
+ */
+export const rescheduleFacultyClass = async (params: {
+  batchKey: string;
+  sessionId: string;
+  subjectName: string;
+  batchName: string;
+  facultyName: string;
+  facultyTitle?: string;
+  userId?: string;
+  dateStr: string;
+  newStartTime: string;
+  newEndTime: string;
+  newRoom?: string;
+  reason?: string;
+}) => {
+  const {
+    batchKey,
+    sessionId,
+    subjectName,
+    batchName,
+    facultyName,
+    facultyTitle = 'Prof.',
+    userId,
+    dateStr,
+    newStartTime,
+    newEndTime,
+    newRoom,
+    reason,
+  } = params;
+
+  const bRef = doc(db, 'shared_timetables', batchKey);
+  const snap = await getDoc(bRef);
+  if (!snap.exists()) throw new Error('Batch timetable not found.');
+
+  const bData = snap.data();
+  const currentRescheduled = bData.rescheduledSessions || {};
+  const currentAlerts = Array.isArray(bData.batchAlerts) ? bData.batchAlerts : [];
+
+  const reschedKey = `${dateStr}_${sessionId}`;
+  const teacherLabel = `${facultyTitle} ${facultyName}`.trim();
+
+  const entry: RescheduleMeta = {
+    startTime: newStartTime,
+    endTime: newEndTime,
+    room: newRoom?.trim() || undefined,
+    by: teacherLabel,
+    role: 'faculty',
+    reason: reason?.trim() || undefined,
+    timestamp: new Date().toISOString(),
+    originalStartTime: '',
+    originalEndTime: '',
+  };
+
+  const updatedRescheduled = {
+    ...currentRescheduled,
+    [reschedKey]: entry,
+  };
+
+  const alertPayload = {
+    id: `fac_reschedule_${sessionId}_${dateStr}_${Date.now()}`,
+    title: `⏰ Lecture Rescheduled: ${subjectName}`,
+    body: `${subjectName} (${batchName}) moved to ${newStartTime}–${newEndTime}${newRoom ? ` in ${newRoom}` : ''} by ${teacherLabel}.${reason ? ` (${reason})` : ''}`,
+    type: 'reschedule',
+    sessionId,
+    date: dateStr,
+    by: teacherLabel,
+    createdAt: new Date().toISOString(),
+  };
+
+  const trimmedAlerts = [...currentAlerts.slice(-19), alertPayload];
+
+  await setDoc(
+    bRef,
+    {
+      rescheduledSessions: updatedRescheduled,
+      batchAlerts: trimmedAlerts,
+      updatedAt: new Date().toISOString(),
+    },
+    { merge: true }
+  );
+
+  // Broadcast push notification
+  try {
+    await broadcastBatchPushNotification({
+      batchKey,
+      title: alertPayload.title,
+      body: alertPayload.body,
+      type: 'reschedule',
+      senderId: userId,
+      senderName: teacherLabel,
+    });
+  } catch (pushErr) {
+    console.warn('Push notification error:', pushErr);
+  }
+};
+
+/**
+ * Revert a rescheduled lecture back to its original slot.
+ */
+export const revertFacultyReschedule = async (params: {
+  batchKey: string;
+  sessionId: string;
+  subjectName: string;
+  batchName: string;
+  facultyName: string;
+  facultyTitle?: string;
+  userId?: string;
+  dateStr: string;
+}) => {
+  const { batchKey, sessionId, subjectName, batchName, facultyName, facultyTitle = 'Prof.', userId, dateStr } = params;
+
+  const bRef = doc(db, 'shared_timetables', batchKey);
+  const snap = await getDoc(bRef);
+  if (!snap.exists()) throw new Error('Batch timetable not found.');
+
+  const bData = snap.data();
+  const currentRescheduled = { ...(bData.rescheduledSessions || {}) };
+  const currentAlerts = Array.isArray(bData.batchAlerts) ? bData.batchAlerts : [];
+
+  const reschedKey = `${dateStr}_${sessionId}`;
+  delete currentRescheduled[reschedKey];
+
+  const teacherLabel = `${facultyTitle} ${facultyName}`.trim();
+  const alertPayload = {
+    id: `fac_revert_${sessionId}_${dateStr}_${Date.now()}`,
+    title: `🔄 Lecture Reverted: ${subjectName}`,
+    body: `${subjectName} (${batchName}) schedule restored to original time by ${teacherLabel}.`,
+    type: 'reschedule_reverted',
+    sessionId,
+    date: dateStr,
+    by: teacherLabel,
+    createdAt: new Date().toISOString(),
+  };
+
+  const trimmedAlerts = [...currentAlerts.slice(-19), alertPayload];
+
+  await setDoc(
+    bRef,
+    {
+      rescheduledSessions: currentRescheduled,
+      batchAlerts: trimmedAlerts,
+      updatedAt: new Date().toISOString(),
+    },
+    { merge: true }
+  );
+
+  try {
+    await broadcastBatchPushNotification({
+      batchKey,
+      title: alertPayload.title,
+      body: alertPayload.body,
+      type: 'reschedule_reverted',
+      senderId: userId,
+      senderName: teacherLabel,
+    });
+  } catch (pushErr) {
+    console.warn('Push notification error:', pushErr);
+  }
+};
+
+/**
+ * Cancel or restore a lecture.
+ */
+export const cancelOrRestoreFacultyClass = async (params: {
+  batchKey: string;
+  sessionId: string;
+  subjectName: string;
+  batchName: string;
+  facultyName: string;
+  facultyTitle?: string;
+  userId?: string;
+  dateStr: string;
+  action: 'cancel' | 'restore';
+  reason?: string;
+}) => {
+  const {
+    batchKey,
+    sessionId,
+    subjectName,
+    batchName,
+    facultyName,
+    facultyTitle = 'Prof.',
+    userId,
+    dateStr,
+    action,
+    reason,
+  } = params;
+
+  const bRef = doc(db, 'shared_timetables', batchKey);
+  const snap = await getDoc(bRef);
+  if (!snap.exists()) throw new Error('Batch timetable not found.');
+
+  const bData = snap.data();
+  const currentCancelled: string[] = Array.isArray(bData.cancelledSessions) ? bData.cancelledSessions : [];
+  const currentMeta: Record<string, any> = bData.cancelledSessionsMeta || {};
+  const currentAlerts = Array.isArray(bData.batchAlerts) ? bData.batchAlerts : [];
+
+  const cancelKey = `${dateStr}_${sessionId}`;
+  const teacherLabel = `${facultyTitle} ${facultyName}`.trim();
+
+  let updatedCancelled: string[];
+  let updatedMeta = { ...currentMeta };
+
+  if (action === 'cancel') {
+    updatedCancelled = Array.from(new Set([...currentCancelled, cancelKey]));
+    updatedMeta[cancelKey] = {
+      by: teacherLabel,
+      role: 'faculty',
+      reason: reason?.trim() || 'Class cancelled by Faculty',
+      timestamp: new Date().toISOString(),
+    };
+  } else {
+    updatedCancelled = currentCancelled.filter((k) => k !== cancelKey);
+    delete updatedMeta[cancelKey];
+  }
+
+  const alertPayload = {
+    id: `fac_${action}_${sessionId}_${dateStr}_${Date.now()}`,
+    title: action === 'cancel' ? `🚫 Lecture Cancelled: ${subjectName}` : `✅ Lecture Restored: ${subjectName}`,
+    body: `${subjectName} (${batchName}) is ${action === 'cancel' ? 'CANCELLED' : 'BACK ON SCHEDULE'} today by ${teacherLabel}.${reason ? ` (${reason})` : ''}`,
+    type: action,
+    sessionId,
+    date: dateStr,
+    by: teacherLabel,
+    createdAt: new Date().toISOString(),
+  };
+
+  const trimmedAlerts = [...currentAlerts.slice(-19), alertPayload];
+
+  await setDoc(
+    bRef,
+    {
+      cancelledSessions: updatedCancelled,
+      cancelledSessionsMeta: updatedMeta,
+      batchAlerts: trimmedAlerts,
+      updatedAt: new Date().toISOString(),
+    },
+    { merge: true }
+  );
+
+  try {
+    await broadcastBatchPushNotification({
+      batchKey,
+      title: alertPayload.title,
+      body: alertPayload.body,
+      type: action,
+      senderId: userId,
+      senderName: teacherLabel,
+    });
+  } catch (pushErr) {
+    console.warn('Push notification error:', pushErr);
+  }
 };

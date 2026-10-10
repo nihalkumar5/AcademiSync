@@ -4,10 +4,12 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ClassSession, FacultyLinkedBatch, Subject } from '@/lib/types';
 import { getCurrentDayOfWeek, getTodayDateString } from '@/lib/timetableUtils';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { broadcastBatchPushNotification } from '@/lib/pushNotifications';
-import { shareLink } from '@/lib/shareUtils';
+import {
+  AggregatedFacultySession,
+  revertFacultyReschedule,
+  cancelOrRestoreFacultyClass,
+} from '@/lib/facultyUtils';
+import { FacultyRescheduleModal } from './FacultyRescheduleModal';
 import {
   Clock,
   MapPin,
@@ -16,21 +18,12 @@ import {
   CheckCircle,
   Share2,
   XCircle,
-  ArrowRight,
+  RotateCcw,
   BookOpen,
   Calendar,
 } from 'lucide-react';
 
-export interface AggregatedFacultySession {
-  session: ClassSession;
-  batch: FacultyLinkedBatch;
-  subjectName: string;
-  subjectCode: string;
-  isCancelled: boolean;
-  isLive: boolean;
-  isUpcoming: boolean;
-  minutesUntilStart: number;
-}
+export type { AggregatedFacultySession };
 
 interface FacultyLiveLectureCardProps {
   aggregatedSessions: AggregatedFacultySession[];
@@ -43,6 +36,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
 }) => {
   const { profile, user, showToast } = useApp();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
 
   const todayStr = getTodayDateString();
 
@@ -74,98 +68,94 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
     );
   }
 
-  const { session, batch, subjectName, subjectCode, isCancelled, isLive, minutesUntilStart } = activeSession;
+  const {
+    session,
+    batch,
+    subjectName,
+    subjectCode,
+    isCancelled,
+    isRescheduled,
+    rescheduleMeta,
+    isLive,
+    minutesUntilStart,
+  } = activeSession;
   const facultyName = `${profile.facultyTitle || 'Prof.'} ${profile.name || 'Faculty'}`;
 
   const handleToggleCancel = async () => {
     setIsProcessing(true);
     try {
-      const batchRef = doc(db, 'shared_timetables', batch.batchKey);
-      const batchSnap = await getDoc(batchRef);
-      if (!batchSnap.exists()) {
-        showToast('Error', 'Batch document not found in database.', 'error');
-        setIsProcessing(false);
-        return;
-      }
-
-      const bData = batchSnap.data();
-      const existingCancelled: string[] = Array.isArray(bData.cancelledSessions) ? bData.cancelledSessions : [];
-      const cancelKey = `${todayStr}_${session.id}`;
-
-      let updatedCancelled: string[];
-      let actionType: 'cancel' | 'restore';
-
-      if (existingCancelled.includes(cancelKey)) {
-        updatedCancelled = existingCancelled.filter((k) => k !== cancelKey);
-        actionType = 'restore';
-      } else {
-        updatedCancelled = [...existingCancelled, cancelKey];
-        actionType = 'cancel';
-      }
-
-      const alertPayload = {
-        id: `fac_${actionType}_${session.id}_${Date.now()}`,
-        title: actionType === 'cancel' ? '🚫 Lecture Cancelled by Faculty' : '✅ Lecture Restored by Faculty',
-        body: `${subjectName} (${batch.batchName}) is ${actionType === 'cancel' ? 'CANCELLED' : 'BACK ON SCHEDULE'} today by ${facultyName}`,
-        type: actionType,
-        sessionId: session.id,
-        date: todayStr,
-        by: facultyName,
-        createdAt: new Date().toISOString(),
-      };
-
-      const existingAlerts = Array.isArray(bData.batchAlerts) ? bData.batchAlerts : [];
-      const trimmedAlerts = [...existingAlerts.slice(-19), alertPayload];
-
-      await setDoc(
-        batchRef,
-        {
-          cancelledSessions: updatedCancelled,
-          batchAlerts: trimmedAlerts,
-          updatedAt: new Date().toISOString(),
-        },
-        { merge: true }
-      );
-
-      // Trigger push notification to batch students
-      broadcastBatchPushNotification({
+      const action = isCancelled ? 'restore' : 'cancel';
+      await cancelOrRestoreFacultyClass({
         batchKey: batch.batchKey,
-        title: alertPayload.title,
-        body: alertPayload.body,
-        type: alertPayload.type,
-        senderId: user?.id,
-        senderName: facultyName,
+        sessionId: session.id,
+        subjectName,
+        batchName: batch.batchName,
+        facultyName: profile.name || 'Faculty',
+        facultyTitle: profile.facultyTitle || 'Prof.',
+        userId: user?.id,
+        dateStr: todayStr,
+        action,
       });
 
       showToast(
-        actionType === 'cancel' ? 'Lecture Cancelled' : 'Lecture Restored',
+        action === 'cancel' ? 'Lecture Cancelled' : 'Lecture Restored',
         `${subjectName} updated for ${batch.batchName}. Notification broadcast to batch.`,
-        actionType === 'cancel' ? 'info' : 'success'
+        action === 'cancel' ? 'info' : 'success'
       );
 
       if (onRefresh) onRefresh();
     } catch (err: any) {
       console.error('Error updating lecture status:', err);
-      showToast('Update Failed', 'Could not update lecture status on server.', 'error');
+      showToast('Update Failed', err.message || 'Could not update lecture status on server.', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleRevertReschedule = async () => {
+    setIsProcessing(true);
+    try {
+      await revertFacultyReschedule({
+        batchKey: batch.batchKey,
+        sessionId: session.id,
+        subjectName,
+        batchName: batch.batchName,
+        facultyName: profile.name || 'Faculty',
+        facultyTitle: profile.facultyTitle || 'Prof.',
+        userId: user?.id,
+        dateStr: todayStr,
+      });
+
+      showToast('Reschedule Reverted', 'Lecture reverted to original schedule.', 'success');
+      if (onRefresh) onRefresh();
+    } catch (err: any) {
+      console.error('Error reverting reschedule:', err);
+      showToast('Revert Failed', err.message || 'Could not revert reschedule.', 'error');
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleShareWhatsAppNotice = () => {
-    const statusText = isCancelled ? '🚫 CANCELLED FOR TODAY' : '🕒 REGULAR CLASS ON SCHEDULE';
+    let statusText = '🕒 REGULAR CLASS ON SCHEDULE';
+    if (isCancelled) statusText = '🚫 CANCELLED FOR TODAY';
+    else if (isRescheduled) statusText = `⏰ RESCHEDULED: ${session.startTime} - ${session.endTime}`;
+
     const message = [
       `📢 *Official Class Announcement*`,
       `━━━━━━━━━━━━━━━━━━`,
       `*Subject:* ${subjectName} (${subjectCode || 'Class'})`,
       `*Batch:* ${batch.batchName}`,
-      `*Time:* ${session.startTime} - ${session.endTime}`,
+      `*Faculty:* ${facultyName}`,
+      `*Time:* ${session.startTime} - ${session.endTime}${isRescheduled && rescheduleMeta ? ` (Original: ${rescheduleMeta.originalStartTime} - ${rescheduleMeta.originalEndTime})` : ''}`,
       `*Room:* ${session.room || 'TBA'}`,
       `*Status:* ${statusText}`,
+      rescheduleMeta?.reason ? `*Note:* ${rescheduleMeta.reason}` : '',
       `━━━━━━━━━━━━━━━━━━`,
-      `— *${facultyName}*`,
-      `_Updated via AcademiSync_`,
-    ].join('\n');
+      `Synced via AcademiSync.`,
+    ]
+      .filter(Boolean)
+      .join('\n');
 
     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
     if (typeof window !== 'undefined') {
@@ -175,26 +165,23 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
 
   return (
     <div
-      className={`border text-left p-5 flex flex-col gap-4 relative transition-colors ${
+      className={`border transition-all p-5 sm:p-6 text-left flex flex-col gap-4 ${
         isCancelled
           ? 'bg-red-50/50 dark:bg-red-950/20 border-red-300 dark:border-red-900/50'
+          : isRescheduled
+          ? 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800/60 shadow-xs'
           : isLive
-          ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-500/40 dark:border-emerald-500/30'
-          : 'bg-white dark:bg-[#121317] border-black/15 dark:border-white/[0.08]'
+          ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-400 dark:border-emerald-700/60 shadow-xs'
+          : 'bg-white dark:bg-[#121317] border-black/10 dark:border-white/[0.08]'
       }`}
     >
-      {/* Top Banner: Status + Batch Pill */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-2">
-          {isCancelled ? (
-            <span className="px-2 py-0.5 bg-red-600 text-white text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
-              <XCircle className="w-3 h-3" />
-              CANCELLED TODAY
-            </span>
-          ) : isLive ? (
-            <span className="px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 animate-pulse">
+      {/* Top Status Bar */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
+          {isLive ? (
+            <span className="px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 animate-pulse">
               <span className="w-1.5 h-1.5 rounded-full bg-white" />
-              LIVE NOW
+              LIVE RIGHT NOW
             </span>
           ) : (
             <span className="px-2 py-0.5 bg-black/10 dark:bg-white/10 text-black dark:text-white text-[10px] font-bold uppercase tracking-wider">
@@ -202,8 +189,26 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
             </span>
           )}
 
+          {isRescheduled && (
+            <span className="px-2 py-0.5 bg-amber-500 text-black text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              RESCHEDULED TODAY
+            </span>
+          )}
+
+          {isCancelled && (
+            <span className="px-2 py-0.5 bg-red-600 text-white text-[10px] font-mono font-bold uppercase tracking-wider">
+              CANCELLED
+            </span>
+          )}
+
           <span className="text-[11px] font-mono text-black/60 dark:text-white/60">
             {session.startTime} - {session.endTime}
+            {isRescheduled && rescheduleMeta?.originalStartTime && (
+              <span className="line-through opacity-60 ml-1.5">
+                ({rescheduleMeta.originalStartTime} - {rescheduleMeta.originalEndTime})
+              </span>
+            )}
           </span>
         </div>
 
@@ -232,12 +237,43 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
               <span className="font-bold text-blue-600 dark:text-blue-400">LAB SESSION</span>
             </>
           )}
+          {rescheduleMeta?.reason && (
+            <>
+              <span>·</span>
+              <span className="text-amber-700 dark:text-amber-300">Note: {rescheduleMeta.reason}</span>
+            </>
+          )}
         </div>
       </div>
 
       {/* Bottom Action Bar */}
       <div className="flex items-center justify-between gap-3 pt-3 border-t border-black/10 dark:border-white/10 flex-wrap">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Reschedule / Revert Reschedule */}
+          {isRescheduled ? (
+            <button
+              type="button"
+              disabled={isProcessing}
+              onClick={handleRevertReschedule}
+              className="px-3 py-1.5 border border-amber-600 bg-amber-500 text-black hover:bg-amber-600 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Revert Schedule</span>
+            </button>
+          ) : (
+            !isCancelled && (
+              <button
+                type="button"
+                disabled={isProcessing}
+                onClick={() => setIsRescheduleModalOpen(true)}
+                className="px-3 py-1.5 border border-black dark:border-white text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <Clock className="w-3.5 h-3.5" />
+                <span>Reschedule Class</span>
+              </button>
+            )
+          )}
+
           {/* 1-Click Cancel / Restore Button */}
           <button
             type="button"
@@ -267,6 +303,14 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
           Syncs real-time to {batch.batchName}
         </span>
       </div>
+
+      {/* Reschedule Modal */}
+      <FacultyRescheduleModal
+        isOpen={isRescheduleModalOpen}
+        onClose={() => setIsRescheduleModalOpen(false)}
+        aggregatedSession={activeSession}
+        onSuccess={onRefresh}
+      />
     </div>
   );
 };

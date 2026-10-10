@@ -4,12 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { DayOfWeek, FacultyLinkedBatch } from '@/lib/types';
 import { getCurrentDayOfWeek, getTodayDateString } from '@/lib/timetableUtils';
-import { aggregateFacultyWeeklyTimetable, AggregatedFacultySession } from '@/lib/facultyUtils';
-import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
+import {
+  aggregateFacultyWeeklyTimetable,
+  AggregatedFacultySession,
+  cancelOrRestoreFacultyClass,
+  revertFacultyReschedule,
+} from '@/lib/facultyUtils';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { broadcastBatchPushNotification } from '@/lib/pushNotifications';
-import { shareLink } from '@/lib/shareUtils';
 import { ConnectBatchModal } from './ConnectBatchModal';
+import { FacultyRescheduleModal } from './FacultyRescheduleModal';
 import {
   CalendarDays,
   Clock,
@@ -20,8 +24,8 @@ import {
   Share2,
   XCircle,
   AlertTriangle,
+  RotateCcw,
   CheckCircle,
-  Sparkles,
 } from 'lucide-react';
 
 const DAYS: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -39,6 +43,9 @@ export const FacultyWeeklyTimetable: React.FC = () => {
   const [sessionToCancel, setSessionToCancel] = useState<AggregatedFacultySession | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   const [isCancelling, setIsCancelling] = useState(false);
+
+  // Reschedule class modal state
+  const [sessionToReschedule, setSessionToReschedule] = useState<AggregatedFacultySession | null>(null);
 
   // Real-time listener for each connected batch's shared timetable doc
   useEffect(() => {
@@ -76,7 +83,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
   const currentDay = getCurrentDayOfWeek();
   const todayStr = getTodayDateString();
 
-  // Aggregate strictly filtered to faculty's selected subjects
+  // Aggregate strictly filtered to faculty's selected subjects (including live cancellations & reschedules)
   const allWeekSessions = aggregateFacultyWeeklyTimetable(linkedBatches, batchesTimetableData);
 
   // Filter for chosen batch
@@ -91,47 +98,19 @@ export const FacultyWeeklyTimetable: React.FC = () => {
 
     try {
       const { session, batch, subjectName } = sessionToCancel;
-      const bRef = doc(db, 'shared_timetables', batch.batchKey);
-      const cancelKey = `${todayStr}_${session.id}`;
 
-      const snap = await getDoc(bRef);
-      const currentCancelled: string[] = snap.exists() ? snap.data().cancelledSessions || [] : [];
-      const currentMeta: Record<string, any> = snap.exists() ? snap.data().cancelledSessionsMeta || {} : {};
-
-      const updatedCancelled = Array.from(new Set([...currentCancelled, cancelKey]));
-      const updatedMeta = {
-        ...currentMeta,
-        [cancelKey]: {
-          by: profile.name ? `${profile.facultyTitle || 'Prof.'} ${profile.name}` : 'Faculty',
-          role: 'faculty',
-          reason: cancelReason.trim() || 'Class cancelled by Faculty',
-          timestamp: new Date().toISOString(),
-        },
-      };
-
-      await setDoc(
-        bRef,
-        {
-          cancelledSessions: updatedCancelled,
-          cancelledSessionsMeta: updatedMeta,
-          updatedAt: new Date().toISOString(),
-        },
-        { merge: true }
-      );
-
-      // Instant push notification to enrolled batch students
-      try {
-        await broadcastBatchPushNotification({
-          batchKey: batch.batchKey,
-          title: `Class Cancelled: ${subjectName}`,
-          body: `${profile.facultyTitle || 'Prof.'} ${profile.name || 'Faculty'} has cancelled ${subjectName} class scheduled today (${session.startTime} - ${session.endTime}).`,
-          type: 'class_cancelled',
-          senderId: user?.id,
-          senderName: profile.name || 'Faculty',
-        });
-      } catch (pushErr) {
-        console.warn('Push broadcast error:', pushErr);
-      }
+      await cancelOrRestoreFacultyClass({
+        batchKey: batch.batchKey,
+        sessionId: session.id,
+        subjectName,
+        batchName: batch.batchName,
+        facultyName: profile.name || 'Faculty',
+        facultyTitle: profile.facultyTitle || 'Prof.',
+        userId: user?.id,
+        dateStr: todayStr,
+        action: 'cancel',
+        reason: cancelReason.trim() || undefined,
+      });
 
       showToast(
         'Class Cancelled',
@@ -149,8 +128,51 @@ export const FacultyWeeklyTimetable: React.FC = () => {
     }
   };
 
+  const handleRestoreClass = async (agg: AggregatedFacultySession) => {
+    try {
+      const { session, batch, subjectName } = agg;
+      await cancelOrRestoreFacultyClass({
+        batchKey: batch.batchKey,
+        sessionId: session.id,
+        subjectName,
+        batchName: batch.batchName,
+        facultyName: profile.name || 'Faculty',
+        facultyTitle: profile.facultyTitle || 'Prof.',
+        userId: user?.id,
+        dateStr: todayStr,
+        action: 'restore',
+      });
+
+      showToast('Class Restored', `${subjectName} restored on schedule.`, 'success');
+    } catch (err: any) {
+      console.error('Failed to restore class:', err);
+      showToast('Error', err.message || 'Failed to restore class.', 'error');
+    }
+  };
+
+  const handleRevertReschedule = async (agg: AggregatedFacultySession) => {
+    try {
+      const { session, batch, subjectName } = agg;
+      await revertFacultyReschedule({
+        batchKey: batch.batchKey,
+        sessionId: session.id,
+        subjectName,
+        batchName: batch.batchName,
+        facultyName: profile.name || 'Faculty',
+        facultyTitle: profile.facultyTitle || 'Prof.',
+        userId: user?.id,
+        dateStr: todayStr,
+      });
+
+      showToast('Schedule Reverted', `${subjectName} reverted to original time.`, 'success');
+    } catch (err: any) {
+      console.error('Failed to revert reschedule:', err);
+      showToast('Error', err.message || 'Failed to revert reschedule.', 'error');
+    }
+  };
+
   const handleShareWhatsAppNotice = (agg: AggregatedFacultySession) => {
-    const { session, batch, subjectName, isCancelled } = agg;
+    const { session, batch, subjectName, isCancelled, isRescheduled, rescheduleMeta } = agg;
     const teacherName = profile.name ? `${profile.facultyTitle || 'Prof.'} ${profile.name}` : 'Faculty';
 
     let text = '';
@@ -162,6 +184,15 @@ export const FacultyWeeklyTimetable: React.FC = () => {
         `Status: *CANCELLED TODAY*\n` +
         `Faculty: *${teacherName}*\n\n` +
         `Please check updated schedule on AcademiSync.`;
+    } else if (isRescheduled) {
+      text = `⏰ *NOTICE: CLASS RESCHEDULED*\n\n` +
+        `Batch: *${batch.batchName}*\n` +
+        `Subject: *${subjectName}* (${session.subjectCode || ''})\n` +
+        `New Time: *${session.startTime} - ${session.endTime}* (Original: ${rescheduleMeta?.originalStartTime} - ${rescheduleMeta?.originalEndTime})\n` +
+        `Room: *${session.room || 'TBA'}*\n` +
+        `Faculty: *${teacherName}*\n` +
+        (rescheduleMeta?.reason ? `Note: *${rescheduleMeta.reason}*\n` : '') +
+        `\nUpdated on AcademiSync.`;
     } else {
       text = `📌 *CLASS UPDATE*\n\n` +
         `Batch: *${batch.batchName}*\n` +
@@ -196,7 +227,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
               Teaching Timetable
             </h2>
             <p className="text-xs text-black/60 dark:text-white/60">
-              Filtered exclusively to the subjects and sections you teach.
+              Real-time schedule with instant cancel, reschedule, and notification broadcast.
             </p>
           </div>
 
@@ -322,7 +353,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
               </div>
             ) : (
               sessionsForDay.map((agg) => {
-                const { session, batch, subjectName, subjectCode, isCancelled, isLive, isUpcoming } = agg;
+                const { session, batch, subjectName, subjectCode, isCancelled, isRescheduled, rescheduleMeta, isLive } = agg;
 
                 return (
                   <div
@@ -330,6 +361,8 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                     className={`p-4 border transition-all flex flex-col md:flex-row md:items-center md:justify-between gap-4 ${
                       isCancelled
                         ? 'bg-red-50/40 dark:bg-red-950/20 border-red-200 dark:border-red-900/40'
+                        : isRescheduled
+                        ? 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800/60 shadow-xs'
                         : isLive
                         ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-400 dark:border-emerald-700/60 shadow-sm'
                         : 'bg-black/[0.02] dark:bg-white/[0.02] border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20'
@@ -358,6 +391,11 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                               LIVE NOW
                             </span>
                           )}
+                          {isRescheduled && (
+                            <span className="px-2 py-0.5 bg-amber-500 text-black text-[9.5px] font-mono font-bold uppercase tracking-wider">
+                              RESCHEDULED
+                            </span>
+                          )}
                           {isCancelled && (
                             <span className="px-2 py-0.5 bg-red-600 text-white text-[9.5px] font-mono font-bold uppercase tracking-wider">
                               CANCELLED TODAY
@@ -383,12 +421,28 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                               </span>
                             </>
                           )}
+                          {isRescheduled && rescheduleMeta?.originalStartTime && (
+                            <>
+                              <span>·</span>
+                              <span className="text-amber-700 dark:text-amber-300 font-bold">
+                                (Original: {rescheduleMeta.originalStartTime} - {rescheduleMeta.originalEndTime})
+                              </span>
+                            </>
+                          )}
+                          {rescheduleMeta?.reason && (
+                            <>
+                              <span>·</span>
+                              <span className="text-amber-700/80 dark:text-amber-300/80">
+                                Note: {rescheduleMeta.reason}
+                              </span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
 
                     {/* Right Actions */}
-                    <div className="flex items-center gap-2 self-start md:self-center shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-black/5 dark:border-white/5 w-full md:w-auto justify-end">
+                    <div className="flex items-center gap-2 self-start md:self-center shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-black/5 dark:border-white/5 w-full md:w-auto justify-end flex-wrap">
                       {/* Share WhatsApp Notice */}
                       <button
                         type="button"
@@ -400,8 +454,40 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                         <span className="hidden sm:inline">WhatsApp</span>
                       </button>
 
-                      {/* Cancel Class Action */}
-                      {!isCancelled && (
+                      {/* Reschedule / Revert Actions */}
+                      {isRescheduled ? (
+                        <button
+                          type="button"
+                          onClick={() => handleRevertReschedule(agg)}
+                          className="px-3 py-1.5 border border-amber-600 bg-amber-500 text-black hover:bg-amber-600 text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Revert Schedule</span>
+                        </button>
+                      ) : (
+                        !isCancelled && (
+                          <button
+                            type="button"
+                            onClick={() => setSessionToReschedule(agg)}
+                            className="px-3 py-1.5 border border-black/20 dark:border-white/20 text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>Reschedule</span>
+                          </button>
+                        )
+                      )}
+
+                      {/* Cancel / Restore Actions */}
+                      {isCancelled ? (
+                        <button
+                          type="button"
+                          onClick={() => handleRestoreClass(agg)}
+                          className="px-3 py-1.5 border border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          <span>Restore Class</span>
+                        </button>
+                      ) : (
                         <button
                           type="button"
                           onClick={() => setSessionToCancel(agg)}
@@ -472,6 +558,13 @@ export const FacultyWeeklyTimetable: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Reschedule Modal */}
+      <FacultyRescheduleModal
+        isOpen={sessionToReschedule !== null}
+        onClose={() => setSessionToReschedule(null)}
+        aggregatedSession={sessionToReschedule}
+      />
 
       {/* Connect Batch Modal */}
       <ConnectBatchModal
