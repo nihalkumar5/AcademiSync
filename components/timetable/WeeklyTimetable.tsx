@@ -17,9 +17,15 @@ import { Modal } from '@/components/ui/Modal';
 import { BatchMembersModal } from '@/components/batch/BatchMembersModal';
 import { BatchDiscoveryModal } from '@/components/batch/BatchDiscoveryModal';
 import { BatchSetupPromptModal } from '@/components/batch/BatchSetupPromptModal';
+import { FacultyWeeklyTimetable } from '@/components/faculty/FacultyWeeklyTimetable';
 
 export const WeeklyTimetable: React.FC = () => {
   const { timetable, subjects, deleteClassSession, profile, isBatchCR, shareTimetableWithBatch, showToast, joinBatchTimetable, searchBatchTimetable, user, setActiveView } = useApp();
+
+  // If user is faculty, strictly render FacultyWeeklyTimetable (only their selected subjects across connected batches)
+  if (profile?.role === 'faculty') {
+    return <FacultyWeeklyTimetable />;
+  }
   const router = useRouter();
   const isSignedIn = !!user;
 

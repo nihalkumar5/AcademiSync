@@ -40,6 +40,7 @@ import { ProposedBatchTasksVoting } from '@/components/homework/ProposedBatchTas
 import { IOSAppGate } from '@/components/pwa/IOSAppGate';
 import { AndroidAppGate } from '@/components/pwa/AndroidAppGate';
 import { FacultyHomeView } from '@/components/faculty/FacultyHomeView';
+import { FacultyWeeklyTimetable } from '@/components/faculty/FacultyWeeklyTimetable';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -392,7 +393,9 @@ export default function AppHome() {
               )
             )}
 
-            {activeView === 'timetable' && <WeeklyTimetable />}
+            {activeView === 'timetable' && (
+              profile?.role === 'faculty' ? <FacultyWeeklyTimetable /> : <WeeklyTimetable />
+            )}
             {activeView === 'homework' && <HomeworkView />}
             {activeView === 'exams' && <ExamsView />}
             {activeView === 'carry' && <TomorrowCarryView />}

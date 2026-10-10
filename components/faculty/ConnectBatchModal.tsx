@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Modal } from '@/components/ui/Modal';
 import { FacultyLinkedBatch, Subject } from '@/lib/types';
@@ -26,6 +26,16 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
   const [foundBatchData, setFoundBatchData] = useState<any | null>(null);
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<string[]>([]);
   const [searchError, setSearchError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen && !batchCodeInput && (!profile.facultyLinkedBatches || profile.facultyLinkedBatches.length === 0)) {
+      if (profile.batchCode) {
+        setBatchCodeInput(profile.batchCode);
+      } else if (profile.batchKey) {
+        setBatchCodeInput(profile.batchKey);
+      }
+    }
+  }, [isOpen, profile.batchCode, profile.batchKey, profile.facultyLinkedBatches]);
 
   const resetState = () => {
     setBatchCodeInput('');

@@ -20,11 +20,27 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
 }) => {
   const currentDay = getCurrentDayOfWeek();
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>(currentDay || 'Monday');
+  const [selectedBatchKey, setSelectedBatchKey] = useState<string>('ALL');
 
-  const sessionsForDay = allWeekSessions[selectedDay] || [];
+  const uniqueBatches = React.useMemo(() => {
+    const map = new Map<string, FacultyLinkedBatch>();
+    Object.values(allWeekSessions).forEach((daySessions) => {
+      daySessions.forEach((s) => {
+        if (!map.has(s.batch.batchKey)) {
+          map.set(s.batch.batchKey, s.batch);
+        }
+      });
+    });
+    return Array.from(map.values());
+  }, [allWeekSessions]);
+
+  const rawSessionsForDay = allWeekSessions[selectedDay] || [];
+  const sessionsForDay = rawSessionsForDay.filter(
+    (s) => selectedBatchKey === 'ALL' || s.batch.batchKey === selectedBatchKey
+  );
 
   return (
-    <div className="border border-black/10 dark:border-white/[0.08] bg-white dark:bg-[#121317] p-5 text-left flex flex-col gap-5">
+    <div className="border border-black/10 dark:border-white/[0.08] bg-white dark:bg-[#121317] p-5 text-left flex flex-col gap-4">
       {/* Header & Day Selector */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-black/10 dark:border-white/10">
         <div className="flex items-center gap-2">
@@ -42,7 +58,10 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
           {DAYS.map((day) => {
             const isSelected = selectedDay === day;
             const isToday = currentDay === day;
-            const count = allWeekSessions[day]?.length || 0;
+            const daySessions = (allWeekSessions[day] || []).filter(
+              (s) => selectedBatchKey === 'ALL' || s.batch.batchKey === selectedBatchKey
+            );
+            const count = daySessions.length;
             return (
               <button
                 key={day}
@@ -68,6 +87,40 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
           })}
         </div>
       </div>
+
+      {/* Batch Filter Pills (if multiple batches connected) */}
+      {uniqueBatches.length > 1 && (
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-black/50 dark:text-white/50 mr-1 shrink-0">
+            Batch:
+          </span>
+          <button
+            type="button"
+            onClick={() => setSelectedBatchKey('ALL')}
+            className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer border shrink-0 ${
+              selectedBatchKey === 'ALL'
+                ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
+                : 'bg-transparent text-black/60 dark:text-white/60 border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30'
+            }`}
+          >
+            All Batches
+          </button>
+          {uniqueBatches.map((b) => (
+            <button
+              key={b.batchKey}
+              type="button"
+              onClick={() => setSelectedBatchKey(b.batchKey)}
+              className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer border shrink-0 truncate max-w-[200px] ${
+                selectedBatchKey === b.batchKey
+                  ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
+                  : 'bg-transparent text-black/60 dark:text-white/60 border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30'
+              }`}
+            >
+              {b.batchName.split('·').pop()?.trim() || b.batchName}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Sessions List */}
       <div className="flex flex-col gap-2.5">

@@ -4,10 +4,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ClassSession, DayOfWeek, FacultyLinkedBatch, Subject } from '@/lib/types';
 import { getCurrentDayOfWeek, getTodayDateString, timeToMinutes } from '@/lib/timetableUtils';
+import { aggregateFacultyWeeklyTimetable, AggregatedFacultySession } from '@/lib/facultyUtils';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { FacultyHeroHeader } from './FacultyHeroHeader';
-import { FacultyLiveLectureCard, AggregatedFacultySession } from './FacultyLiveLectureCard';
+import { FacultyLiveLectureCard } from './FacultyLiveLectureCard';
 import { FacultyScheduleTimeline } from './FacultyScheduleTimeline';
 import { FacultyAssignmentsCard } from './FacultyAssignmentsCard';
 import { FacultyBatchesCard } from './FacultyBatchesCard';
@@ -54,74 +55,9 @@ export const FacultyHomeView: React.FC = () => {
     };
   }, [linkedBatches]);
 
-  // Aggregate sessions across all linked batches
+  // Aggregate sessions across all linked batches (strictly filtered to faculty's selected subjects)
   const currentDay = getCurrentDayOfWeek();
-  const todayStr = getTodayDateString();
-
-  const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-  // Group all sessions across week
-  const allWeekSessions: Record<DayOfWeek, AggregatedFacultySession[]> = {
-    Monday: [],
-    Tuesday: [],
-    Wednesday: [],
-    Thursday: [],
-    Friday: [],
-    Saturday: [],
-    Sunday: [],
-  };
-
-  linkedBatches.forEach((batch) => {
-    const bData = batchesTimetableData[batch.batchKey];
-    if (!bData) return;
-
-    const timetable: ClassSession[] = Array.isArray(bData.timetable) ? bData.timetable : [];
-    const subjectsList: Subject[] = Array.isArray(bData.subjects) ? bData.subjects : [];
-    const cancelledList: string[] = Array.isArray(bData.cancelledSessions) ? bData.cancelledSessions : [];
-
-    timetable.forEach((session) => {
-      // Check if this faculty teaches this subject in this batch
-      if (batch.selectedSubjectIds.includes(session.subjectId)) {
-        const sub = subjectsList.find((s) => s.id === session.subjectId);
-        const subjectName = sub?.name || sub?.shortName || session.subjectName || 'Subject';
-        const subjectCode = sub?.code || session.subjectCode || '';
-
-        const cancelKey = `${todayStr}_${session.id}`;
-        const isCancelled = cancelledList.includes(cancelKey);
-
-        const startMin = timeToMinutes(session.startTime);
-        const endMin = timeToMinutes(session.endTime);
-
-        const isLive = session.day === currentDay && currentMinutes >= startMin && currentMinutes < endMin && !isCancelled;
-        const isUpcoming = session.day === currentDay && currentMinutes < startMin && !isCancelled;
-        const minutesUntilStart = startMin - currentMinutes;
-
-        const agg: AggregatedFacultySession = {
-          session,
-          batch,
-          subjectName,
-          subjectCode,
-          isCancelled,
-          isLive,
-          isUpcoming,
-          minutesUntilStart,
-        };
-
-        if (allWeekSessions[session.day]) {
-          allWeekSessions[session.day].push(agg);
-        }
-      }
-    });
-  });
-
-  // Sort each day's sessions by start time
-  ALL_DAYS.forEach((day) => {
-    allWeekSessions[day].sort(
-      (a, b) => timeToMinutes(a.session.startTime) - timeToMinutes(b.session.startTime)
-    );
-  });
-
+  const allWeekSessions = aggregateFacultyWeeklyTimetable(linkedBatches, batchesTimetableData);
   const todaySessions = allWeekSessions[currentDay] || [];
   const todayLecturesCount = todaySessions.filter((s) => !s.isCancelled).length;
 
