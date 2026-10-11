@@ -33,7 +33,6 @@ export const FacultyWeeklyTimetable: React.FC = () => {
   const [isConnectBatchOpen, setIsConnectBatchOpen] = useState(false);
   const [batchesTimetableData, setBatchesTimetableData] = useState<Record<string, any>>({});
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>(getCurrentDayOfWeek() || 'Monday');
-  const [selectedBatchKey, setSelectedBatchKey] = useState<string>('ALL');
 
   // Real-time listener for each connected batch's shared timetable doc
   useEffect(() => {
@@ -73,14 +72,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
   // Aggregate strictly filtered to faculty's selected subjects
   const allWeekSessions = aggregateFacultyWeeklyTimetable(linkedBatches, batchesTimetableData);
 
-  // Filter for chosen batch
-  const rawSessionsForDay = allWeekSessions[selectedDay] || [];
-  const sessionsForDay = rawSessionsForDay.filter(
-    (s) =>
-      selectedBatchKey === 'ALL' ||
-      s.batch.batchKey === selectedBatchKey ||
-      (s.linkedBatches && s.linkedBatches.some((b) => b.batchKey === selectedBatchKey))
-  );
+  const sessionsForDay = allWeekSessions[selectedDay] || [];
 
   return (
     <div className="flex flex-col gap-6 text-left w-full max-w-full">
@@ -113,43 +105,6 @@ export const FacultyWeeklyTimetable: React.FC = () => {
             <span>Connect Another Batch</span>
           </button>
         </div>
-
-        {/* Batch Filter Pills */}
-        {linkedBatches.length > 1 && (
-          <div className="flex items-center gap-2 overflow-x-auto pt-4 mt-4 border-t border-black/[0.06] dark:border-white/[0.08] scrollbar-none">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#6F6F6F] dark:text-[#A1A1AA] shrink-0">
-              Filter Batch:
-            </span>
-            <button
-              type="button"
-              onClick={() => setSelectedBatchKey('ALL')}
-              className={`px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer rounded-full border shrink-0 ${
-                selectedBatchKey === 'ALL'
-                  ? 'bg-[#111111] text-white dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-xs'
-                  : 'bg-transparent text-black/60 dark:text-white/60 border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30'
-              }`}
-            >
-              All Batches
-            </button>
-            {linkedBatches.map((b) => {
-              const { degreeAndBranch, semText } = formatFacultyBatchDegreeAndBranch(b);
-              return (
-                <button
-                  key={b.batchKey}
-                  type="button"
-                  onClick={() => setSelectedBatchKey(b.batchKey)}
-                  className={`px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer rounded-full border shrink-0 truncate max-w-[240px] ${
-                    selectedBatchKey === b.batchKey
-                      ? 'bg-[#111111] text-white dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-xs'
-                      : 'bg-transparent text-black/60 dark:text-white/60 border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30'
-                  }`}
-                >
-                  {degreeAndBranch} {semText ? `(${semText})` : ''}
-                </button>
-              );
-            })}
-          </div>
-        )}
       </div>
 
       {/* Main Schedule Container */}
@@ -189,13 +144,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
               {DAYS.map((day) => {
                 const isSelected = selectedDay === day;
                 const isToday = currentDay === day;
-                const daySessions = (allWeekSessions[day] || []).filter(
-                  (s) =>
-                    selectedBatchKey === 'ALL' ||
-                    s.batch.batchKey === selectedBatchKey ||
-                    (s.linkedBatches && s.linkedBatches.some((b) => b.batchKey === selectedBatchKey))
-                );
-                const count = daySessions.length;
+                const count = (allWeekSessions[day] || []).length;
 
                 return (
                   <button

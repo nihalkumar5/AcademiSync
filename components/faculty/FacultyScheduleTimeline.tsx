@@ -41,31 +41,10 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
   const currentDay = getCurrentDayOfWeek();
   const todayStr = getTodayDateString();
 
-  const [selectedBatchKey, setSelectedBatchKey] = useState<string>('ALL');
   const [sessionToReschedule, setSessionToReschedule] = useState<AggregatedFacultySession | null>(null);
   const [openMenuSessionId, setOpenMenuSessionId] = useState<string | null>(null);
 
-  const rawSessionsForToday = allWeekSessions[currentDay] || [];
-
-  const uniqueBatches = React.useMemo(() => {
-    const map = new Map<string, FacultyLinkedBatch>();
-    rawSessionsForToday.forEach((s) => {
-      const bList = s.linkedBatches && s.linkedBatches.length > 0 ? s.linkedBatches : [s.batch];
-      bList.forEach((b) => {
-        if (!map.has(b.batchKey)) {
-          map.set(b.batchKey, b);
-        }
-      });
-    });
-    return Array.from(map.values());
-  }, [rawSessionsForToday]);
-
-  const sessionsForToday = rawSessionsForToday.filter(
-    (s) =>
-      selectedBatchKey === 'ALL' ||
-      s.batch.batchKey === selectedBatchKey ||
-      (s.linkedBatches && s.linkedBatches.some((b) => b.batchKey === selectedBatchKey))
-  );
+  const sessionsForToday = allWeekSessions[currentDay] || [];
 
   const handleToggleCancel = async (agg: AggregatedFacultySession) => {
     try {
@@ -196,40 +175,6 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
           <span>Full Week →</span>
         </button>
       </div>
-
-      {/* Batch Filter Pills (if multiple batches connected) */}
-      {uniqueBatches.length > 1 && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#6F6F6F] dark:text-[#A1A1AA] mr-1 shrink-0">
-            Batch:
-          </span>
-          <button
-            type="button"
-            onClick={() => setSelectedBatchKey('ALL')}
-            className={`px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer rounded-full border shrink-0 ${
-              selectedBatchKey === 'ALL'
-                ? 'bg-[#111111] text-white dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-xs'
-                : 'bg-transparent text-black/60 dark:text-white/60 border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30'
-            }`}
-          >
-            All Batches
-          </button>
-          {uniqueBatches.map((b) => (
-            <button
-              key={b.batchKey}
-              type="button"
-              onClick={() => setSelectedBatchKey(b.batchKey)}
-              className={`px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer rounded-full border shrink-0 truncate max-w-[200px] ${
-                selectedBatchKey === b.batchKey
-                  ? 'bg-[#111111] text-white dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-xs'
-                  : 'bg-transparent text-black/60 dark:text-white/60 border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30'
-              }`}
-            >
-              {formatFacultyBatchDegreeAndBranch(b).degreeAndBranch}
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* Sessions List */}
       <div className="flex flex-col gap-3">
