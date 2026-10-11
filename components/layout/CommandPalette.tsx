@@ -18,6 +18,7 @@ import {
   Sparkles,
   Command,
   GraduationCap,
+  Users,
 } from 'lucide-react';
 import { useApp, ActiveView } from '@/context/AppContext';
 
@@ -28,6 +29,7 @@ export const CommandPalette: React.FC = () => {
     setActiveView,
     settings,
     updateSettings,
+    profile,
   } = useApp();
 
   const [query, setQuery] = useState('');
@@ -79,9 +81,13 @@ export const CommandPalette: React.FC = () => {
     },
     {
       id: 'nav_carry',
-      title: "Tomorrow's Carry Bag",
+      title: profile?.role === 'faculty' ? 'My Batches & Classes' : "Tomorrow's Carry Bag",
       category: 'Navigation',
-      icon: <Backpack className="w-[18px] h-[18px]" strokeWidth={1.5} />,
+      icon: profile?.role === 'faculty' ? (
+        <Users className="w-[18px] h-[18px]" strokeWidth={1.5} />
+      ) : (
+        <Backpack className="w-[18px] h-[18px]" strokeWidth={1.5} />
+      ),
       action: () => {
         setActiveView('carry');
         setCommandPaletteOpen(false);

@@ -15,6 +15,7 @@ import {
   Moon,
   Command,
   GraduationCap,
+  Users,
 } from 'lucide-react';
 import { useApp, ActiveView } from '@/context/AppContext';
 import { clsx } from 'clsx';
@@ -51,7 +52,11 @@ export const Sidebar: React.FC = () => {
       icon: <CheckSquare className="w-4 h-4" />,
       badge: pendingHomeworkCount > 0 ? pendingHomeworkCount : undefined,
     },
-    { id: 'carry', label: 'Bag Carry', icon: <Backpack className="w-4 h-4" /> },
+    {
+      id: 'carry',
+      label: profile?.role === 'faculty' ? 'My Batches' : 'Bag Carry',
+      icon: profile?.role === 'faculty' ? <Users className="w-4 h-4" /> : <Backpack className="w-4 h-4" />,
+    },
     { id: 'calendar', label: 'Academic Calendar', icon: <Calendar className="w-4 h-4" /> },
   ];
 

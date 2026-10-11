@@ -42,6 +42,7 @@ import { AndroidAppGate } from '@/components/pwa/AndroidAppGate';
 import { FacultyHomeView } from '@/components/faculty/FacultyHomeView';
 import { FacultyWeeklyTimetable } from '@/components/faculty/FacultyWeeklyTimetable';
 import { FacultyTasksView } from '@/components/faculty/FacultyTasksView';
+import { FacultyBatchesView } from '@/components/faculty/FacultyBatchesView';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -401,7 +402,9 @@ export default function AppHome() {
               profile?.role === 'faculty' ? <FacultyTasksView /> : <HomeworkView />
             )}
             {activeView === 'exams' && <ExamsView />}
-            {activeView === 'carry' && <TomorrowCarryView />}
+            {activeView === 'carry' && (
+              profile?.role === 'faculty' ? <FacultyBatchesView /> : <TomorrowCarryView />
+            )}
             {activeView === 'subjects' && <SubjectListView />}
             {activeView === 'calendar' && <AcademicCalendar />}
             {activeView === 'notifications' && <NotificationCenter />}

@@ -678,19 +678,19 @@ export function getShortProgrammeName(progStr: string): string {
   if (!progStr) return '';
   let str = progStr.trim();
   const lower = str.toLowerCase();
-  if (lower.includes('master of technology') || lower.includes('m.tech') || lower === 'mtech') return 'M.Tech';
-  if (lower.includes('bachelor of technology') || lower.includes('b.tech') || lower === 'btech') return 'B.Tech';
+  if (lower.includes('master of technology') || lower.includes('m.tech') || lower === 'mtech') return 'M.TECH';
+  if (lower.includes('bachelor of technology') || lower.includes('b.tech') || lower === 'btech') return 'B.TECH';
   if (lower.includes('master of computer') || lower.includes('mca')) return 'MCA';
   if (lower.includes('bachelor of computer') || lower.includes('bca')) return 'BCA';
   if (lower.includes('master of business') || lower.includes('mba')) return 'MBA';
   if (lower.includes('bachelor of business') || lower.includes('bba')) return 'BBA';
-  if (lower.includes('b.sc') || lower.includes('bachelor of science')) return 'B.Sc';
-  if (lower.includes('m.sc') || lower.includes('master of science')) return 'M.Sc';
-  return str;
+  if (lower.includes('b.sc') || lower.includes('bachelor of science')) return 'B.SC';
+  if (lower.includes('m.sc') || lower.includes('master of science')) return 'M.SC';
+  return str.toUpperCase();
 }
 
 export function getShortBranchName(branchStr: string): string {
-  if (!branchStr) return 'Batch';
+  if (!branchStr) return 'BATCH';
   let str = branchStr.trim();
 
   // 1. Check parenthesized acronym, e.g. "Computer Science & Engineering (CSE)" -> "CSE"
@@ -698,7 +698,7 @@ export function getShortBranchName(branchStr: string): string {
   if (parenMatch && parenMatch[1].trim()) {
     const candidate = parenMatch[1].trim();
     if (!/^(Sem|Sec)/i.test(candidate)) {
-      return candidate;
+      return candidate.toUpperCase();
     }
   }
 
@@ -732,10 +732,10 @@ export function getShortBranchName(branchStr: string): string {
     return 'CE';
   }
   if (lower.includes('cyber')) {
-    return 'Cyber Sec';
+    return 'CYBER SEC';
   }
 
-  return str;
+  return str.toUpperCase();
 }
 
 export function formatFacultyBatchDegreeAndBranch(batch: {
@@ -746,51 +746,56 @@ export function formatFacultyBatchDegreeAndBranch(batch: {
   batchName?: string;
   college?: string;
 }): { degreeAndBranch: string; semText: string; fullLabel: string } {
-  let prog = (batch.programme || '').trim();
-  let br = (batch.branch || '').trim();
-  let bName = (batch.batchName || '').trim();
+  // Aggregate all string sources to reliably extract short degree and branch
+  const combinedRaw = [batch.programme, batch.branch, batch.batchName].filter(Boolean).join(' ');
+  const lower = combinedRaw.toLowerCase();
 
-  // Helper to strip any college reference or prefix
-  const cleanCollegeNoise = (str: string) => {
-    let s = str;
-    if (batch.college) {
-      s = s.replace(new RegExp(`^${batch.college}\\s*·?\\s*`, 'i'), '');
-    }
-    // Remove known college prefix patterns
-    s = s.replace(/^(IIT|IIIT|NIT|BITS|BU|UNIVERSITY|COLLEGE|INSTITUTE)[^·]*·\s*/i, '');
-    s = s.replace(/^(IIT|IIIT|NIT|BITS|BU|UNIVERSITY|COLLEGE|INSTITUTE)[^·]*$/i, '');
-    return s.trim();
-  };
-
-  prog = cleanCollegeNoise(prog);
-  br = cleanCollegeNoise(br);
-  bName = cleanCollegeNoise(bName);
-
-  // If br and prog are empty or invalid, extract from bName
-  if (!br && !prog && bName) {
-    const parts = bName.split('·').map((p) => p.trim());
-    br = parts[0] || 'Batch';
-  } else if (!br && bName) {
-    const parts = bName.split('·').map((p) => p.trim());
-    br = parts.find((p) => !/^(Sem|Sec)/i.test(p)) || parts[0] || 'Batch';
+  // Extract Degree
+  let prog = '';
+  if (lower.includes('m.tech') || lower.includes('mtech') || lower.includes('master of technology')) {
+    prog = 'M.TECH';
+  } else if (lower.includes('b.tech') || lower.includes('btech') || lower.includes('bachelor of technology')) {
+    prog = 'B.TECH';
+  } else if (lower.includes('mca')) {
+    prog = 'MCA';
+  } else if (lower.includes('bca')) {
+    prog = 'BCA';
+  } else if (lower.includes('mba')) {
+    prog = 'MBA';
+  } else if (lower.includes('bba')) {
+    prog = 'BBA';
+  } else if (batch.programme) {
+    prog = getShortProgrammeName(batch.programme);
   }
 
-  // Strip accidental semester text from branch if present (e.g. "DS & AI · Sem 1" -> "DS & AI")
-  br = br.replace(/·?\s*Sem(ester)?\s*\d+/i, '').trim();
-  prog = prog.replace(/·?\s*Sem(ester)?\s*\d+/i, '').trim();
-
-  const shortProg = getShortProgrammeName(prog);
-  const shortBr = getShortBranchName(br);
+  // Extract Branch
+  let br = '';
+  if (lower.includes('data science') || lower.includes('ds & ai') || lower.includes('ds and ai')) {
+    br = 'DS & AI';
+  } else if (lower.includes('ai & ml') || lower.includes('ai and ml') || lower.includes('artificial intelligence')) {
+    br = 'AI & ML';
+  } else if (lower.includes('computer science') || lower.includes('cse')) {
+    br = 'CSE';
+  } else if (lower.includes('information tech') || lower.includes(' it ')) {
+    br = 'IT';
+  } else if (lower.includes('electronics') || lower.includes('ece')) {
+    br = 'ECE';
+  } else if (lower.includes('electrical') || lower.includes(' ee ')) {
+    br = 'EE';
+  } else if (lower.includes('mechanical') || lower.includes(' me ')) {
+    br = 'ME';
+  } else if (lower.includes('civil') || lower.includes(' ce ')) {
+    br = 'CE';
+  } else if (batch.branch) {
+    br = getShortBranchName(batch.branch);
+  }
 
   let degreeAndBranch = '';
-  if (shortProg && shortBr && !shortProg.toLowerCase().includes(shortBr.toLowerCase()) && !shortBr.toLowerCase().includes(shortProg.toLowerCase())) {
-    degreeAndBranch = `${shortProg} · ${shortBr}`;
+  if (prog && br && prog !== br) {
+    degreeAndBranch = `${prog} · ${br}`;
   } else {
-    degreeAndBranch = shortBr || shortProg || 'Batch';
+    degreeAndBranch = prog || br || 'BATCH';
   }
-
-  // Remove any redundant college noise one more time
-  degreeAndBranch = cleanCollegeNoise(degreeAndBranch);
 
   const sem = batch.semester ? `Sem ${batch.semester}` : '';
   const sec = batch.section ? `Sec ${batch.section}` : '';

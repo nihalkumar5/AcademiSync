@@ -7,6 +7,7 @@ import {
   CheckSquare,
   Backpack,
   User,
+  Users,
 } from 'lucide-react';
 import { useApp, ActiveView } from '@/context/AppContext';
 import { clsx } from 'clsx';
@@ -29,9 +30,9 @@ export const MobileNav: React.FC = () => {
     },
     {
       id: 'carry',
-      label: 'Bag Carry',
-      icon: <Backpack className="w-[18px] h-[18px]" />,
-      badge: unpackedCarry > 0 ? unpackedCarry : undefined,
+      label: profile?.role === 'faculty' ? 'Batches' : 'Bag Carry',
+      icon: profile?.role === 'faculty' ? <Users className="w-[18px] h-[18px]" /> : <Backpack className="w-[18px] h-[18px]" />,
+      badge: profile?.role === 'faculty' ? undefined : (unpackedCarry > 0 ? unpackedCarry : undefined),
     },
     { id: 'settings', label: 'Profile', icon: <User className="w-[18px] h-[18px]" /> },
   ];
