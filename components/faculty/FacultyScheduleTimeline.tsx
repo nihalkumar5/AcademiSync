@@ -37,7 +37,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
   allWeekSessions,
   onRefresh,
 }) => {
-  const { profile, user, showToast, setActiveView } = useApp();
+  const { profile, user, showToast } = useApp();
   const currentDay = getCurrentDayOfWeek();
   const todayStr = getTodayDateString();
 
@@ -179,17 +179,9 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
             Today&apos;s Schedule
           </h3>
           <span className="text-xs font-mono text-[#6F6F6F] dark:text-[#A1A1AA]">
-            ({currentDay} · {sessionsForToday.length} {sessionsForToday.length === 1 ? 'lecture' : 'lectures'})
+            ({sessionsForToday.length} {sessionsForToday.length === 1 ? 'lecture' : 'lectures'})
           </span>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setActiveView('timetable')}
-          className="text-xs font-bold uppercase tracking-wider text-[#6F6F6F] hover:text-[#111111] dark:text-[#A1A1AA] dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1 shrink-0"
-        >
-          <span>Full Week →</span>
-        </button>
       </div>
 
       {/* Sessions List */}
@@ -197,14 +189,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
         {sessionsForToday.length === 0 ? (
           <div className="py-8 text-center text-xs text-[#6F6F6F] dark:text-[#A1A1AA] flex flex-col items-center justify-center gap-2.5">
             <BookOpen className="w-7 h-7 opacity-30" />
-            <span>No lectures scheduled for today ({currentDay}).</span>
-            <button
-              type="button"
-              onClick={() => setActiveView('timetable')}
-              className="mt-1 px-3.5 py-1.5 rounded-[8px] border border-black/15 dark:border-white/15 text-xs font-bold uppercase tracking-wider text-[#111111] dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer shadow-2xs"
-            >
-              View Full Week Timetable
-            </button>
+            <span>No lectures scheduled for today.</span>
           </div>
         ) : (
           sessionsForToday.map((agg) => {
