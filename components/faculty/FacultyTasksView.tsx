@@ -37,7 +37,6 @@ export const FacultyTasksView: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBatchFilter, setSelectedBatchFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'due_soon' | 'overdue'>('all');
   const [isLoading, setIsLoading] = useState(true);
 
   // Real-time listener for proposed_tasks across all connected batches
@@ -93,16 +92,7 @@ export const FacultyTasksView: React.FC = () => {
     };
   }, [linkedBatches, user?.id]);
 
-  // Compute status metrics
-  const now = new Date().getTime();
-  const activeCount = assignments.filter((a) => new Date(a.deadline).getTime() >= now).length;
-  const overdueCount = assignments.filter((a) => new Date(a.deadline).getTime() < now).length;
-  const dueSoonCount = assignments.filter((a) => {
-    const diff = (new Date(a.deadline).getTime() - now) / (1000 * 3600 * 24);
-    return diff >= 0 && diff <= 2;
-  }).length;
-
-  // Filter assignments
+  // Filter assignments by search query and batch
   const filteredAssignments = useMemo(() => {
     return assignments.filter((task) => {
       // 1. Search Query
@@ -119,17 +109,9 @@ export const FacultyTasksView: React.FC = () => {
         return false;
       }
 
-      // 3. Status Filter
-      const taskTime = new Date(task.deadline).getTime();
-      const diffDays = (taskTime - now) / (1000 * 3600 * 24);
-
-      if (statusFilter === 'active' && taskTime < now) return false;
-      if (statusFilter === 'overdue' && taskTime >= now) return false;
-      if (statusFilter === 'due_soon' && (diffDays < 0 || diffDays > 2)) return false;
-
       return true;
     });
-  }, [assignments, searchQuery, selectedBatchFilter, statusFilter, now]);
+  }, [assignments, searchQuery, selectedBatchFilter]);
 
   const handleDeleteAssignment = async (task: BatchProposedTask) => {
     const confirmed = window.confirm(`Delete assignment "${task.title}"?`);
@@ -235,67 +217,40 @@ export const FacultyTasksView: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center w-full mt-1 mb-1 h-[44px] border-b border-[#D9D9D6] dark:border-white/[0.08]">
-        {[
-          { id: 'all', label: 'All', count: assignments.length },
-          { id: 'active', label: 'Active', count: activeCount },
-          { id: 'due_soon', label: 'Due Soon', count: dueSoonCount },
-          { id: 'overdue', label: 'Past Due', count: overdueCount },
-        ].map((tab) => {
-          const isSelected = statusFilter === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setStatusFilter(tab.id as any)}
-              className={`relative flex-1 flex items-center justify-center gap-1.5 h-full text-[11px] font-semibold tracking-[1px] uppercase transition-colors whitespace-nowrap cursor-pointer ${
-                isSelected
-                  ? 'text-[#111111] dark:text-[#F4F4F6]'
-                  : 'text-[#6F6F6F] dark:text-[#94A3B8] hover:text-[#111111] dark:hover:text-white'
-              }`}
-            >
-              <span>{tab.label}</span>
-              <span className="font-mono text-[11px] font-bold">({tab.count})</span>
-              {isSelected && (
-                <span className="absolute bottom-[-1px] left-1/2 -translate-x-1/2 w-[38px] h-[2px] bg-[#111111] dark:bg-[#F4F4F6]" />
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Batch Filter Pills */}
-      {linkedBatches.length > 1 && (
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+      {/* Batch Tabs */}
+      {linkedBatches.length > 0 && (
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
           <button
             type="button"
             onClick={() => setSelectedBatchFilter('all')}
             className={clsx(
-              'px-3 py-1.5 rounded-[3px] text-xs font-mono font-semibold uppercase tracking-wider transition-colors cursor-pointer whitespace-nowrap border',
+              'px-3.5 py-1.5 rounded-[3px] text-xs font-mono font-semibold uppercase tracking-wider transition-colors cursor-pointer whitespace-nowrap border',
               selectedBatchFilter === 'all'
                 ? 'bg-[#111111] text-white dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-xs'
                 : 'bg-transparent text-black/60 dark:text-white/60 border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30'
             )}
           >
-            All Batches
+            <span>All Batches</span>
+            <span className="ml-1 opacity-60 font-mono">({assignments.length})</span>
           </button>
           {linkedBatches.map((batch) => {
             const bLabel = formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch;
             const isSel = selectedBatchFilter === batch.batchKey;
+            const batchCount = assignments.filter((a) => a.batchKey === batch.batchKey).length;
             return (
               <button
                 key={batch.batchKey}
                 type="button"
                 onClick={() => setSelectedBatchFilter(batch.batchKey)}
                 className={clsx(
-                  'px-3 py-1.5 rounded-[3px] text-xs font-mono font-semibold uppercase tracking-wider transition-colors cursor-pointer whitespace-nowrap border',
+                  'px-3.5 py-1.5 rounded-[3px] text-xs font-mono font-semibold uppercase tracking-wider transition-colors cursor-pointer whitespace-nowrap border',
                   isSel
                     ? 'bg-[#111111] text-white dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-xs'
                     : 'bg-transparent text-black/60 dark:text-white/60 border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30'
                 )}
               >
-                {bLabel}
+                <span>{bLabel}</span>
+                <span className="ml-1 opacity-60 font-mono">({batchCount})</span>
               </button>
             );
           })}
@@ -312,20 +267,19 @@ export const FacultyTasksView: React.FC = () => {
           <div className="py-8 px-4">
             <EmptyState
               icon={<MonochromeIllustration type="no-homework" size={48} />}
-              title={assignments.length === 0 ? "No assignments published" : "No matching assignments"}
+              title={assignments.length === 0 ? "No assignments published" : "No assignments for this batch"}
               description={
                 assignments.length === 0
                   ? "Create an assignment to broadcast submission deadlines to students."
-                  : "Try clearing your search query or filter."
+                  : "No assignments published for the selected batch."
               }
-              actionLabel={assignments.length === 0 ? "Create Assignment" : "Clear Filters"}
+              actionLabel={assignments.length === 0 ? "Create Assignment" : "Show All Batches"}
               onAction={() => {
                 if (assignments.length === 0) {
                   setIsCreateModalOpen(true);
                 } else {
                   setSearchQuery('');
                   setSelectedBatchFilter('all');
-                  setStatusFilter('all');
                 }
               }}
             />
@@ -339,10 +293,7 @@ export const FacultyTasksView: React.FC = () => {
               : 'Batch';
 
             const deadlineDate = new Date(task.deadline);
-            const diffDays = Math.ceil(
-              (deadlineDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24)
-            );
-            const isOverdue = diffDays < 0;
+            const isOverdue = deadlineDate.getTime() < new Date().getTime();
 
             const theme = getTaskCardTheme({
               isOverdue,
@@ -353,10 +304,7 @@ export const FacultyTasksView: React.FC = () => {
             return (
               <div
                 key={task.id}
-                className={clsx(
-                  "relative flex flex-col p-4 sm:p-[18px] rounded-[12px] border border-black/[0.05] dark:border-[color:var(--card-accent-border)] transition-all w-full overflow-hidden shadow-xs hover:shadow-md",
-                  isOverdue ? "border-rose-300 dark:border-rose-900/50" : ""
-                )}
+                className="relative flex flex-col p-4 sm:p-[18px] rounded-[12px] border border-black/[0.05] dark:border-[color:var(--card-accent-border)] transition-all w-full overflow-hidden shadow-xs hover:shadow-md"
                 style={{
                   ['--card-accent-border' as any]: `${theme.accent}45`,
                 }}
@@ -406,13 +354,7 @@ export const FacultyTasksView: React.FC = () => {
                       {/* Deadline */}
                       <span className="text-[11px] font-mono text-black/60 dark:text-white/60 flex items-center gap-1">
                         <Clock className="w-3 h-3 opacity-60" />
-                        <span>Due {deadlineDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                        {diffDays <= 2 && diffDays >= 0 && (
-                          <span className="text-amber-600 dark:text-amber-400 font-bold">({diffDays}d)</span>
-                        )}
-                        {isOverdue && (
-                          <span className="text-rose-600 dark:text-rose-400 font-bold">(Past Due)</span>
-                        )}
+                        <span>Deadline: {deadlineDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                       </span>
 
                       <button
