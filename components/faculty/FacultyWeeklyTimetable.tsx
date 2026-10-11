@@ -216,40 +216,42 @@ export const FacultyWeeklyTimetable: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6 text-left w-full max-w-full">
-      {/* Header Banner */}
-      <div className="bg-white dark:bg-[#13151D] border border-black/[0.06] dark:border-white/[0.08] rounded-[12px] p-6 sm:p-8 flex flex-col justify-between shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-[4px] bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-[10px] font-mono font-bold uppercase tracking-wider">
-                Faculty Schedule
+      {/* Editorial Header */}
+      <div className="flex flex-col gap-4 mt-6 sm:mt-8 mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 rounded-[3px]">
+                FACULTY SCHEDULE
               </span>
-              <span className="text-xs font-mono text-[#6F6F6F] dark:text-[#A1A1AA]">
+              <span className="text-[12px] font-mono text-[#6F6F6F] dark:text-[#A1A1AA]">
                 {linkedBatches.length} {linkedBatches.length === 1 ? 'batch' : 'batches'} connected
               </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111111] dark:text-[#FFFFFF]">
+            <h2 className="text-[32px] sm:text-[36px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[38px] sm:leading-[42px]">
               Teaching Timetable
             </h2>
-            <p className="text-xs text-[#6F6F6F] dark:text-[#A1A1AA]">
+            <p className="text-[14px] font-normal text-[#6B6B6B] dark:text-[#A1A1AA] leading-[20px] mt-1.5">
               View your synchronized teaching slots across all connected batches.
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsConnectBatchOpen(true)}
-            className="px-4 py-2.5 bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity flex items-center justify-center gap-1.5 cursor-pointer rounded-[8px] shadow-2xs shrink-0 self-start sm:self-auto"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Connect Another Batch</span>
-          </button>
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            <button
+              type="button"
+              onClick={() => setIsConnectBatchOpen(true)}
+              className="flex items-center justify-center gap-1.5 h-9 px-3.5 bg-[#111111] text-white dark:bg-white dark:text-[#111111] hover:opacity-90 transition-opacity text-[13px] font-semibold cursor-pointer shadow-xs rounded-[3px]"
+            >
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Connect Batch</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Main Schedule Container */}
       {linkedBatches.length === 0 ? (
-        <div className="w-full bg-white dark:bg-[#13151D] border border-black/[0.06] dark:border-white/[0.08] rounded-[12px] p-8 text-center flex flex-col items-center justify-center gap-3 shadow-xs">
+        <div className="w-full bg-[#FFFFFF] dark:bg-[#121317] border border-black/10 dark:border-white/10 rounded-[4px] p-8 text-center flex flex-col items-center justify-center gap-3">
           <BookOpen className="w-10 h-10 opacity-30 text-black dark:text-white" />
           <h3 className="text-base font-bold text-[#111111] dark:text-[#FFFFFF]">
             No Batches Connected Yet
@@ -260,7 +262,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsConnectBatchOpen(true)}
-            className="mt-2 px-5 py-2.5 bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity cursor-pointer rounded-[8px]"
+            className="mt-2 h-9 px-4 bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-[13px] font-semibold hover:opacity-90 transition-opacity cursor-pointer rounded-[3px]"
           >
             Enter Batch Code
           </button>
@@ -291,7 +293,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                     key={day}
                     type="button"
                     onClick={() => setSelectedDay(day)}
-                    className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer rounded-full border ${
+                    className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer rounded-[4px] border ${
                       isSelected
                         ? 'bg-[#111111] text-white dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-xs'
                         : 'bg-transparent text-black/60 dark:text-white/60 border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30'

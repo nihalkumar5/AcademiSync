@@ -181,48 +181,53 @@ export const WeeklyTimetable: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-8 text-left">
-      <div className="flex flex-col gap-6 mt-8 mb-4">
+      <div className="flex flex-col gap-5 mt-6 sm:mt-8 mb-4">
         <div>
-          <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
-            Weekly,<br />
-            Schedule,<br />
-            Timetable,<br />
-            Classes
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 rounded-[3px]">
+              WEEKLY SCHEDULE
+            </span>
+            <span className="text-[12px] font-mono text-[#6F6F6F] dark:text-[#A1A1AA]">
+              {activeTimetable.length} {activeTimetable.length === 1 ? 'class' : 'classes'}
+            </span>
+          </div>
+          <h2 className="text-[32px] sm:text-[36px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[38px] sm:leading-[42px]">
+            Timetable & Classes
           </h2>
-          <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4">
+          <p className="text-[14px] font-normal text-[#6B6B6B] dark:text-[#A1A1AA] leading-[20px] mt-1.5">
             Manage your lectures, lab slots, and classroom locations.
           </p>
         </div>
 
-        <div className="flex flex-col mt-4">
-          <div className="flex flex-wrap items-center gap-3 mb-[24px]">
+        <div className="flex flex-col mt-2">
+          <div className="flex flex-wrap items-center gap-2.5 mb-[20px]">
             <button
               type="button"
               onClick={() => setShowJoinModal(true)}
-              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-neutral-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+              className="flex items-center justify-center h-9 px-3.5 border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-neutral-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer rounded-[3px]"
             >
               Join Batch
             </button>
             <button
               type="button"
               onClick={handleImportTimetable}
-              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-neutral-100 dark:hover:bg-white/[0.06] transition-colors gap-2 cursor-pointer"
+              className="flex items-center justify-center h-9 px-3.5 border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-neutral-100 dark:hover:bg-white/[0.06] transition-colors gap-1.5 cursor-pointer rounded-[3px]"
             >
-              <Sparkles className="w-4 h-4" /> Magic Import
+              <Sparkles className="w-3.5 h-3.5" /> Magic Import
             </button>
             <button
               type="button"
               onClick={() => handleAddForDay(selectedMobileDay)}
-              className="flex items-center justify-center gap-1.5 h-10 px-4 rounded-none bg-[#111111] text-[#FFFFFF] dark:bg-white dark:text-[#090A0C] hover:opacity-90 transition-opacity text-[13px] font-semibold cursor-pointer w-auto shadow-sm"
+              className="flex items-center justify-center gap-1.5 h-9 px-3.5 bg-[#111111] text-[#FFFFFF] dark:bg-white dark:text-[#090A0C] hover:opacity-90 transition-opacity text-[13px] font-semibold cursor-pointer w-auto shadow-xs rounded-[3px]"
             >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
               Add Class
             </button>
             {subjects.some((s) => s.isElective) && (
               <button
                 type="button"
                 onClick={() => setActiveView('subjects')}
-                className="flex items-center justify-center h-10 px-3.5 border border-[#8067B5]/40 bg-[#8067B5]/10 text-[#8067B5] dark:text-[#C084FC] text-[13px] font-semibold hover:bg-[#8067B5]/20 transition-colors gap-1.5 cursor-pointer"
+                className="flex items-center justify-center h-9 px-3.5 border border-[#8067B5]/40 bg-[#8067B5]/10 text-[#8067B5] dark:text-[#C084FC] text-[13px] font-semibold hover:bg-[#8067B5]/20 transition-colors gap-1.5 cursor-pointer rounded-[3px]"
                 title="Manage your chosen electives in Subject Directory"
               >
                 <span>★ My Electives</span>
@@ -235,13 +240,13 @@ export const WeeklyTimetable: React.FC = () => {
               <span className="text-[10px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] uppercase mb-1.5">BATCH</span>
               <button
                 onClick={() => setShowBatchMembersModal(true)}
-                className="flex items-center justify-between p-4 bg-[#FFFFFF] dark:bg-[#121317] border border-[#D9D9D6] dark:border-white/[0.08] hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors text-left cursor-pointer dark:shadow-md"
+                className="flex items-center justify-between p-3.5 bg-[#FFFFFF] dark:bg-[#121317] border border-[#D9D9D6] dark:border-white/[0.08] hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors text-left cursor-pointer rounded-[3px]"
               >
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-0.5">
                   <span className="text-[13px] font-bold text-[#111111] dark:text-[#F4F4F6] uppercase tracking-wide">
                     {profile.programme} · {profile.branch?.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')}
                   </span>
-                  <span className="text-[12px] font-medium text-[#6F6F6F] dark:text-[#94A3B8] uppercase">
+                  <span className="text-[11px] font-medium text-[#6F6F6F] dark:text-[#94A3B8] uppercase font-mono">
                     YEAR {profile.year || 1} · MEMBERS
                   </span>
                 </div>
