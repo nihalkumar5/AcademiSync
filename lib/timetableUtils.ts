@@ -57,6 +57,32 @@ export const getTodayDateString = (): string => {
   return getLocalDateString(new Date());
 };
 
+export const getDateStringForDayOfWeek = (day: DayOfWeek): string => {
+  const currentDay = getCurrentDayOfWeek();
+  if (day === currentDay) {
+    return getTodayDateString();
+  }
+  const dayIndexMap: Record<DayOfWeek, number> = {
+    Sunday: 0,
+    Monday: 1,
+    Tuesday: 2,
+    Wednesday: 3,
+    Thursday: 4,
+    Friday: 5,
+    Saturday: 6,
+  };
+  const today = new Date();
+  const currentIdx = today.getDay();
+  const targetIdx = dayIndexMap[day] ?? currentIdx;
+  let diff = targetIdx - currentIdx;
+  if (diff < 0) {
+    diff += 7;
+  }
+  const targetDate = new Date(today);
+  targetDate.setDate(today.getDate() + diff);
+  return getLocalDateString(targetDate);
+};
+
 /**
  * Sanitizes an academic class time to strict 24-hour "HH:MM".
  * In college timetables, classes operate ONLY between 08:00 AM and 07:00 PM.

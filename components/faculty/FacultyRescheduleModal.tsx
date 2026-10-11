@@ -9,7 +9,7 @@ import {
   formatFacultyBatchDegreeAndBranch,
   formatFacultyCombinedBatchLabel,
 } from '@/lib/facultyUtils';
-import { getTodayDateString } from '@/lib/timetableUtils';
+import { getTodayDateString, getDateStringForDayOfWeek } from '@/lib/timetableUtils';
 import { Clock, MapPin, Users, AlertCircle, Sparkles } from 'lucide-react';
 
 interface FacultyRescheduleModalProps {
@@ -49,7 +49,9 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
     aggregatedSession.linkedBatches,
     aggregatedSession.batch
   );
-  const todayStr = getTodayDateString();
+  const targetDateStr = session.day
+    ? getDateStringForDayOfWeek(session.day)
+    : getTodayDateString();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,9 +62,14 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      const targets = aggregatedSession.batchSessions && aggregatedSession.batchSessions.length > 0
-        ? aggregatedSession.batchSessions
-        : [{ batch: aggregatedSession.batch, session: aggregatedSession.session }];
+      const batchMap = new Map<string, { batch: any; session: any }>();
+      (aggregatedSession.linkedBatches || [aggregatedSession.batch]).forEach((b) => {
+        batchMap.set(b.batchKey, { batch: b, session: aggregatedSession.session });
+      });
+      (aggregatedSession.batchSessions || []).forEach((bs) => {
+        batchMap.set(bs.batch.batchKey, bs);
+      });
+      const targets = Array.from(batchMap.values());
 
       await Promise.all(
         targets.map((t) =>
@@ -74,11 +81,13 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
             facultyName: profile.name || 'Faculty',
             facultyTitle: profile.facultyTitle || 'Prof.',
             userId: user?.id,
-            dateStr: todayStr,
+            dateStr: targetDateStr,
             newStartTime: startTime,
             newEndTime: endTime,
             newRoom: room.trim() || undefined,
             reason: reason.trim() || undefined,
+            sessionDay: session.day,
+            originalStartTime: session.startTime,
           })
         )
       );

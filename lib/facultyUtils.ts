@@ -1,5 +1,5 @@
 import { ClassSession, FacultyLinkedBatch, Subject, DayOfWeek } from './types';
-import { timeToMinutes, getCurrentDayOfWeek, getTodayDateString } from './timetableUtils';
+import { timeToMinutes, getCurrentDayOfWeek, getTodayDateString, getDateStringForDayOfWeek } from './timetableUtils';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { broadcastBatchPushNotification } from './pushNotifications';
@@ -159,12 +159,15 @@ export const aggregateFacultyWeeklyTimetable = (
 
       const { subjectName, subjectCode } = getFacultySessionDetails(session, subjectsList);
 
-      const cancelKey = `${todayStr}_${session.id}`;
-      const isCancelled = cancelledList.includes(cancelKey);
+      const sessionDateStr = getDateStringForDayOfWeek(session.day);
+      const isCancelled =
+        cancelledList.includes(`${sessionDateStr}_${session.id}`) ||
+        cancelledList.includes(`${todayStr}_${session.id}`);
 
-      // Check if rescheduled for today
-      const reschedKey = `${todayStr}_${session.id}`;
-      const resched = session.day === currentDay ? rescheduledMap[reschedKey] : undefined;
+      // Check if rescheduled for this session's upcoming date or today
+      const resched =
+        rescheduledMap[`${sessionDateStr}_${session.id}`] ||
+        (session.day === currentDay ? rescheduledMap[`${todayStr}_${session.id}`] : undefined);
       const isRescheduled = Boolean(resched && resched.startTime && resched.endTime);
 
       const effectiveStartTime = isRescheduled ? resched.startTime : session.startTime;
@@ -323,6 +326,8 @@ export const rescheduleFacultyClass = async (params: {
   newEndTime: string;
   newRoom?: string;
   reason?: string;
+  sessionDay?: DayOfWeek;
+  originalStartTime?: string;
 }) => {
   const {
     batchKey,
@@ -337,6 +342,8 @@ export const rescheduleFacultyClass = async (params: {
     newEndTime,
     newRoom,
     reason,
+    sessionDay,
+    originalStartTime,
   } = params;
 
   const bRef = doc(db, 'shared_timetables', batchKey);
@@ -346,8 +353,32 @@ export const rescheduleFacultyClass = async (params: {
   const bData = snap.data();
   const currentRescheduled = bData.rescheduledSessions || {};
   const currentAlerts = Array.isArray(bData.batchAlerts) ? bData.batchAlerts : [];
+  const bTimetable: ClassSession[] = Array.isArray(bData.timetable) ? bData.timetable : [];
 
-  const reschedKey = `${dateStr}_${sessionId}`;
+  const targetSession = bTimetable.find((s) => s.id === sessionId);
+  const targetDay = sessionDay || targetSession?.day;
+  const targetStartTime = originalStartTime || targetSession?.startTime;
+
+  const matchingSessions = bTimetable.filter((s) => {
+    if (s.id === sessionId) return true;
+    if (targetDay && s.day !== targetDay) return false;
+    if (subjectName && (
+      (s.subjectName && isCommonSubject(s.subjectName, [subjectName])) ||
+      (s.subjectCode && subjectName.toLowerCase().includes(s.subjectCode.toLowerCase()))
+    )) {
+      if (targetStartTime && s.startTime && Math.abs(timeToMinutes(s.startTime) - timeToMinutes(targetStartTime)) > 20) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  });
+
+  const idsToReschedule = Array.from(new Set([
+    sessionId,
+    ...matchingSessions.map((s) => s.id)
+  ])).filter(Boolean);
+
   const teacherLabel = `${facultyTitle} ${facultyName}`.trim();
 
   const entry: RescheduleMeta = {
@@ -358,14 +389,16 @@ export const rescheduleFacultyClass = async (params: {
     role: 'faculty',
     reason: reason?.trim() || undefined,
     timestamp: new Date().toISOString(),
-    originalStartTime: '',
-    originalEndTime: '',
+    originalStartTime: targetStartTime || '',
+    originalEndTime: targetSession?.endTime || '',
   };
 
   const updatedRescheduled = {
     ...currentRescheduled,
-    [reschedKey]: entry,
   };
+  idsToReschedule.forEach((id) => {
+    updatedRescheduled[`${dateStr}_${id}`] = entry;
+  });
 
   const alertPayload = {
     id: `fac_reschedule_${sessionId}_${dateStr}_${Date.now()}`,
@@ -417,8 +450,21 @@ export const revertFacultyReschedule = async (params: {
   facultyTitle?: string;
   userId?: string;
   dateStr: string;
+  sessionDay?: DayOfWeek;
+  originalStartTime?: string;
 }) => {
-  const { batchKey, sessionId, subjectName, batchName, facultyName, facultyTitle = 'Prof.', userId, dateStr } = params;
+  const {
+    batchKey,
+    sessionId,
+    subjectName,
+    batchName,
+    facultyName,
+    facultyTitle = 'Prof.',
+    userId,
+    dateStr,
+    sessionDay,
+    originalStartTime,
+  } = params;
 
   const bRef = doc(db, 'shared_timetables', batchKey);
   const snap = await getDoc(bRef);
@@ -427,9 +473,35 @@ export const revertFacultyReschedule = async (params: {
   const bData = snap.data();
   const currentRescheduled = { ...(bData.rescheduledSessions || {}) };
   const currentAlerts = Array.isArray(bData.batchAlerts) ? bData.batchAlerts : [];
+  const bTimetable: ClassSession[] = Array.isArray(bData.timetable) ? bData.timetable : [];
 
-  const reschedKey = `${dateStr}_${sessionId}`;
-  delete currentRescheduled[reschedKey];
+  const targetSession = bTimetable.find((s) => s.id === sessionId);
+  const targetDay = sessionDay || targetSession?.day;
+  const targetStartTime = originalStartTime || targetSession?.startTime;
+
+  const matchingSessions = bTimetable.filter((s) => {
+    if (s.id === sessionId) return true;
+    if (targetDay && s.day !== targetDay) return false;
+    if (subjectName && (
+      (s.subjectName && isCommonSubject(s.subjectName, [subjectName])) ||
+      (s.subjectCode && subjectName.toLowerCase().includes(s.subjectCode.toLowerCase()))
+    )) {
+      if (targetStartTime && s.startTime && Math.abs(timeToMinutes(s.startTime) - timeToMinutes(targetStartTime)) > 20) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  });
+
+  const idsToRevert = Array.from(new Set([
+    sessionId,
+    ...matchingSessions.map((s) => s.id)
+  ])).filter(Boolean);
+
+  idsToRevert.forEach((id) => {
+    delete currentRescheduled[`${dateStr}_${id}`];
+  });
 
   const teacherLabel = `${facultyTitle} ${facultyName}`.trim();
   const alertPayload = {
@@ -483,6 +555,8 @@ export const cancelOrRestoreFacultyClass = async (params: {
   dateStr: string;
   action: 'cancel' | 'restore';
   reason?: string;
+  sessionDay?: DayOfWeek;
+  originalStartTime?: string;
 }) => {
   const {
     batchKey,
@@ -495,6 +569,8 @@ export const cancelOrRestoreFacultyClass = async (params: {
     dateStr,
     action,
     reason,
+    sessionDay,
+    originalStartTime,
   } = params;
 
   const bRef = doc(db, 'shared_timetables', batchKey);
@@ -505,24 +581,56 @@ export const cancelOrRestoreFacultyClass = async (params: {
   const currentCancelled: string[] = Array.isArray(bData.cancelledSessions) ? bData.cancelledSessions : [];
   const currentMeta: Record<string, any> = bData.cancelledSessionsMeta || {};
   const currentAlerts = Array.isArray(bData.batchAlerts) ? bData.batchAlerts : [];
+  const bTimetable: ClassSession[] = Array.isArray(bData.timetable) ? bData.timetable : [];
 
-  const cancelKey = `${dateStr}_${sessionId}`;
+  const targetSession = bTimetable.find((s) => s.id === sessionId);
+  const targetDay = sessionDay || targetSession?.day;
+  const targetStartTime = originalStartTime || targetSession?.startTime;
+
+  const matchingSessions = bTimetable.filter((s) => {
+    if (s.id === sessionId) return true;
+    if (targetDay && s.day !== targetDay) return false;
+    if (subjectName && (
+      (s.subjectName && isCommonSubject(s.subjectName, [subjectName])) ||
+      (s.subjectCode && subjectName.toLowerCase().includes(s.subjectCode.toLowerCase()))
+    )) {
+      if (targetStartTime && s.startTime && Math.abs(timeToMinutes(s.startTime) - timeToMinutes(targetStartTime)) > 20) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  });
+
+  const idsToModify = Array.from(new Set([
+    sessionId,
+    ...matchingSessions.map((s) => s.id)
+  ])).filter(Boolean);
+
   const teacherLabel = `${facultyTitle} ${facultyName}`.trim();
 
-  let updatedCancelled: string[];
+  let updatedCancelled: string[] = [...currentCancelled];
   let updatedMeta = { ...currentMeta };
 
   if (action === 'cancel') {
-    updatedCancelled = Array.from(new Set([...currentCancelled, cancelKey]));
-    updatedMeta[cancelKey] = {
-      by: teacherLabel,
-      role: 'faculty',
-      reason: reason?.trim() || 'Class cancelled by Faculty',
-      timestamp: new Date().toISOString(),
-    };
+    idsToModify.forEach((id) => {
+      const cancelKey = `${dateStr}_${id}`;
+      if (!updatedCancelled.includes(cancelKey)) {
+        updatedCancelled.push(cancelKey);
+      }
+      updatedMeta[cancelKey] = {
+        by: teacherLabel,
+        role: 'faculty',
+        reason: reason?.trim() || 'Class cancelled by Faculty',
+        timestamp: new Date().toISOString(),
+      };
+    });
   } else {
-    updatedCancelled = currentCancelled.filter((k) => k !== cancelKey);
-    delete updatedMeta[cancelKey];
+    const keysToRemove = idsToModify.map((id) => `${dateStr}_${id}`);
+    updatedCancelled = updatedCancelled.filter((k) => !keysToRemove.includes(k));
+    keysToRemove.forEach((k) => {
+      delete updatedMeta[k];
+    });
   }
 
   const alertPayload = {

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ClassSession, DayOfWeek, FacultyLinkedBatch } from '@/lib/types';
-import { getCurrentDayOfWeek, getTodayDateString, formatTime12Hour } from '@/lib/timetableUtils';
+import { getCurrentDayOfWeek, getTodayDateString, getDateStringForDayOfWeek, formatTime12Hour } from '@/lib/timetableUtils';
 import {
   AggregatedFacultySession,
   cancelOrRestoreFacultyClass,
@@ -49,10 +49,16 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
   const handleToggleCancel = async (agg: AggregatedFacultySession) => {
     try {
       const { subjectName, isCancelled } = agg;
-      const targets = agg.batchSessions && agg.batchSessions.length > 0
-        ? agg.batchSessions
-        : [{ batch: agg.batch, session: agg.session }];
+      const batchMap = new Map<string, { batch: FacultyLinkedBatch; session: ClassSession }>();
+      (agg.linkedBatches || [agg.batch]).forEach((b) => {
+        batchMap.set(b.batchKey, { batch: b, session: agg.session });
+      });
+      (agg.batchSessions || []).forEach((bs) => {
+        batchMap.set(bs.batch.batchKey, bs);
+      });
+      const targets = Array.from(batchMap.values());
       const action = isCancelled ? 'restore' : 'cancel';
+      const targetDate = agg.session.day ? getDateStringForDayOfWeek(agg.session.day) : todayStr;
 
       await Promise.all(
         targets.map((t) =>
@@ -64,8 +70,10 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
             facultyName: profile.name || 'Faculty',
             facultyTitle: profile.facultyTitle || 'Prof.',
             userId: user?.id,
-            dateStr: todayStr,
+            dateStr: targetDate,
             action,
+            sessionDay: agg.session.day,
+            originalStartTime: agg.session.startTime,
           })
         )
       );
@@ -86,9 +94,15 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
   const handleRevertReschedule = async (agg: AggregatedFacultySession) => {
     try {
       const { subjectName } = agg;
-      const targets = agg.batchSessions && agg.batchSessions.length > 0
-        ? agg.batchSessions
-        : [{ batch: agg.batch, session: agg.session }];
+      const batchMap = new Map<string, { batch: FacultyLinkedBatch; session: ClassSession }>();
+      (agg.linkedBatches || [agg.batch]).forEach((b) => {
+        batchMap.set(b.batchKey, { batch: b, session: agg.session });
+      });
+      (agg.batchSessions || []).forEach((bs) => {
+        batchMap.set(bs.batch.batchKey, bs);
+      });
+      const targets = Array.from(batchMap.values());
+      const targetDate = agg.session.day ? getDateStringForDayOfWeek(agg.session.day) : todayStr;
 
       await Promise.all(
         targets.map((t) =>
@@ -100,7 +114,9 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
             facultyName: profile.name || 'Faculty',
             facultyTitle: profile.facultyTitle || 'Prof.',
             userId: user?.id,
-            dateStr: todayStr,
+            dateStr: targetDate,
+            sessionDay: agg.session.day,
+            originalStartTime: agg.session.startTime,
           })
         )
       );
@@ -271,11 +287,6 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                         <span className="flex items-center gap-1 font-medium">
                           <MapPin className="w-3 h-3 opacity-70" />
                           {session.room || 'Room TBA'}
-                        </span>
-                        <span>·</span>
-                        <span className="flex items-center gap-1">
-                          <Users className="w-3 h-3 opacity-60" />
-                          {detailLabel}
                         </span>
                         {subjectCode && !subjectName.toLowerCase().includes(subjectCode.toLowerCase()) && (
                           <>

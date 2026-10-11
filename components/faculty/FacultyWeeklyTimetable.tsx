@@ -283,16 +283,11 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                         </div>
                       )}
 
-                      {/* Room & Batch Meta */}
+                      {/* Room */}
                       <div className={`flex items-center gap-3 text-[12px] font-mono flex-wrap ${isLive ? 'text-white/70' : 'text-black/60 dark:text-[#A1A1AA]'}`}>
                         <span className="flex items-center gap-1.5 font-medium">
                           <MapPin className="w-3.5 h-3.5 opacity-70" />
                           {session.room || 'Room TBA'}
-                        </span>
-                        <span>·</span>
-                        <span className="flex items-center gap-1">
-                          <Users className="w-3.5 h-3.5 opacity-60" />
-                          {detailLabel}
                         </span>
                       </div>
                     </div>

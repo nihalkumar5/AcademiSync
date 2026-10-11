@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ClassSession, FacultyLinkedBatch, Subject } from '@/lib/types';
-import { getCurrentDayOfWeek, getTodayDateString, formatTime12Hour } from '@/lib/timetableUtils';
+import { getCurrentDayOfWeek, getTodayDateString, getDateStringForDayOfWeek, formatTime12Hour } from '@/lib/timetableUtils';
 import {
   AggregatedFacultySession,
   revertFacultyReschedule,
@@ -103,9 +103,15 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
     setIsProcessing(true);
     try {
       const action = isCancelled ? 'restore' : 'cancel';
-      const targets = activeSession.batchSessions && activeSession.batchSessions.length > 0
-        ? activeSession.batchSessions
-        : [{ batch: activeSession.batch, session: activeSession.session }];
+      const batchMap = new Map<string, { batch: FacultyLinkedBatch; session: ClassSession }>();
+      (activeSession.linkedBatches || [activeSession.batch]).forEach((b) => {
+        batchMap.set(b.batchKey, { batch: b, session: activeSession.session });
+      });
+      (activeSession.batchSessions || []).forEach((bs) => {
+        batchMap.set(bs.batch.batchKey, bs);
+      });
+      const targets = Array.from(batchMap.values());
+      const targetDate = activeSession.session.day ? getDateStringForDayOfWeek(activeSession.session.day) : todayStr;
 
       await Promise.all(
         targets.map((t) =>
@@ -117,8 +123,10 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
             facultyName: profile.name || 'Faculty',
             facultyTitle: profile.facultyTitle || 'Prof.',
             userId: user?.id,
-            dateStr: todayStr,
+            dateStr: targetDate,
             action,
+            sessionDay: activeSession.session.day,
+            originalStartTime: activeSession.session.startTime,
           })
         )
       );
@@ -141,9 +149,15 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
   const handleRevertReschedule = async () => {
     setIsProcessing(true);
     try {
-      const targets = activeSession.batchSessions && activeSession.batchSessions.length > 0
-        ? activeSession.batchSessions
-        : [{ batch: activeSession.batch, session: activeSession.session }];
+      const batchMap = new Map<string, { batch: FacultyLinkedBatch; session: ClassSession }>();
+      (activeSession.linkedBatches || [activeSession.batch]).forEach((b) => {
+        batchMap.set(b.batchKey, { batch: b, session: activeSession.session });
+      });
+      (activeSession.batchSessions || []).forEach((bs) => {
+        batchMap.set(bs.batch.batchKey, bs);
+      });
+      const targets = Array.from(batchMap.values());
+      const targetDate = activeSession.session.day ? getDateStringForDayOfWeek(activeSession.session.day) : todayStr;
 
       await Promise.all(
         targets.map((t) =>
@@ -155,7 +169,9 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
             facultyName: profile.name || 'Faculty',
             facultyTitle: profile.facultyTitle || 'Prof.',
             userId: user?.id,
-            dateStr: todayStr,
+            dateStr: targetDate,
+            sessionDay: activeSession.session.day,
+            originalStartTime: activeSession.session.startTime,
           })
         )
       );
@@ -237,11 +253,6 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
             <span className="flex items-center gap-1.5 text-white/90 font-medium">
               <MapPin className="w-3.5 h-3.5 text-[#18A889]" />
               {session.room || 'Room TBA'}
-            </span>
-            <span>·</span>
-            <span className="flex items-center gap-1 text-white/80">
-              <Users className="w-3.5 h-3.5 opacity-70" />
-              {detailLabel}
             </span>
             {subjectCode && (
               <>
@@ -385,11 +396,6 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
             <span className="flex items-center gap-1.5 text-black/80 dark:text-white/90 font-medium">
               <MapPin className="w-3.5 h-3.5 opacity-70" />
               {session.room || 'Room TBA'}
-            </span>
-            <span>·</span>
-            <span className="flex items-center gap-1">
-              <Users className="w-3.5 h-3.5 opacity-60" />
-              {detailLabel}
             </span>
             {subjectCode && (
               <>
