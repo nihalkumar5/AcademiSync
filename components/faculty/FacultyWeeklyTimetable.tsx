@@ -2,18 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
-import { DayOfWeek, FacultyLinkedBatch } from '@/lib/types';
-import { getCurrentDayOfWeek, formatTime12Hour } from '@/lib/timetableUtils';
+import { ClassSession, DayOfWeek, FacultyLinkedBatch } from '@/lib/types';
+import { getCurrentDayOfWeek, formatTime12Hour, getDateStringForDayOfWeek, getTodayDateString } from '@/lib/timetableUtils';
 import {
   aggregateFacultyWeeklyTimetable,
   AggregatedFacultySession,
   formatFacultyBatchDegreeAndBranch,
   formatFacultyCombinedBatchLabel,
+  cancelOrRestoreFacultyClass,
+  revertFacultyReschedule,
 } from '@/lib/facultyUtils';
 import { getSubjectCardTheme } from '@/lib/cardColors';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ConnectBatchModal } from './ConnectBatchModal';
+import { FacultyRescheduleModal } from './FacultyRescheduleModal';
 import {
   CalendarDays,
   Clock,
@@ -21,18 +24,145 @@ import {
   Users,
   Plus,
   BookOpen,
+  MoreVertical,
+  RotateCcw,
+  Ban,
+  Share2,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
 const DAYS: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export const FacultyWeeklyTimetable: React.FC = () => {
-  const { profile } = useApp();
+  const { profile, user, showToast } = useApp();
   const linkedBatches = profile.facultyLinkedBatches || [];
 
   const [isConnectBatchOpen, setIsConnectBatchOpen] = useState(false);
   const [batchesTimetableData, setBatchesTimetableData] = useState<Record<string, any>>({});
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>(getCurrentDayOfWeek() || 'Monday');
+
+  const [sessionToReschedule, setSessionToReschedule] = useState<AggregatedFacultySession | null>(null);
+  const [openMenuSessionId, setOpenMenuSessionId] = useState<string | null>(null);
+
+  const handleToggleCancel = async (agg: AggregatedFacultySession) => {
+    try {
+      const { subjectName, isCancelled } = agg;
+      const batchMap = new Map<string, { batch: FacultyLinkedBatch; session: ClassSession }>();
+      (agg.linkedBatches || [agg.batch]).forEach((b) => {
+        batchMap.set(b.batchKey, { batch: b, session: agg.session });
+      });
+      (agg.batchSessions || []).forEach((bs) => {
+        batchMap.set(bs.batch.batchKey, bs);
+      });
+      const targets = Array.from(batchMap.values());
+      const action = isCancelled ? 'restore' : 'cancel';
+      const targetDate = agg.session.day ? getDateStringForDayOfWeek(agg.session.day) : getTodayDateString();
+
+      await Promise.all(
+        targets.map((t) =>
+          cancelOrRestoreFacultyClass({
+            batchKey: t.batch.batchKey,
+            sessionId: t.session.id,
+            subjectName,
+            batchName: t.batch.batchName,
+            facultyName: profile.name || 'Faculty',
+            facultyTitle: profile.facultyTitle || 'Prof.',
+            userId: user?.id,
+            dateStr: targetDate,
+            action,
+            sessionDay: agg.session.day,
+            originalStartTime: agg.session.startTime,
+          })
+        )
+      );
+
+      showToast(
+        action === 'cancel' ? 'Class Cancelled' : 'Class Restored',
+        `${subjectName} updated across ${targets.length > 1 ? `${targets.length} batches` : 'batch'}.`,
+        action === 'cancel' ? 'info' : 'success'
+      );
+    } catch (err: any) {
+      console.error('Error toggling cancel:', err);
+      showToast('Error', err.message || 'Failed to update class status.', 'error');
+    }
+  };
+
+  const handleRevertReschedule = async (agg: AggregatedFacultySession) => {
+    try {
+      const { subjectName } = agg;
+      const batchMap = new Map<string, { batch: FacultyLinkedBatch; session: ClassSession }>();
+      (agg.linkedBatches || [agg.batch]).forEach((b) => {
+        batchMap.set(b.batchKey, { batch: b, session: agg.session });
+      });
+      (agg.batchSessions || []).forEach((bs) => {
+        batchMap.set(bs.batch.batchKey, bs);
+      });
+      const targets = Array.from(batchMap.values());
+      const targetDate = agg.session.day ? getDateStringForDayOfWeek(agg.session.day) : getTodayDateString();
+
+      await Promise.all(
+        targets.map((t) =>
+          revertFacultyReschedule({
+            batchKey: t.batch.batchKey,
+            sessionId: t.session.id,
+            subjectName,
+            batchName: t.batch.batchName,
+            facultyName: profile.name || 'Faculty',
+            facultyTitle: profile.facultyTitle || 'Prof.',
+            userId: user?.id,
+            dateStr: targetDate,
+            sessionDay: agg.session.day,
+            originalStartTime: agg.session.startTime,
+          })
+        )
+      );
+
+      showToast('Schedule Reverted', `${subjectName} reverted to original time.`, 'success');
+    } catch (err: any) {
+      console.error('Error reverting reschedule:', err);
+      showToast('Error', err.message || 'Failed to revert reschedule.', 'error');
+    }
+  };
+
+  const handleShareWhatsAppNotice = (agg: AggregatedFacultySession) => {
+    const { session, subjectName, isCancelled, isRescheduled, rescheduleMeta } = agg;
+    const { detailLabel } = formatFacultyCombinedBatchLabel(agg.linkedBatches, agg.batch);
+    const teacherName = profile.name ? `${profile.facultyTitle || 'Prof.'} ${profile.name}` : 'Faculty';
+    const batchLabel = detailLabel;
+
+    let text = '';
+    if (isCancelled) {
+      text = `📢 *NOTICE: CLASS CANCELLED*\n\n` +
+        `Batch: *${batchLabel}*\n` +
+        `Subject: *${subjectName}* (${session.subjectCode || ''})\n` +
+        `Day & Time: *${session.day}, ${session.startTime} - ${session.endTime}*\n` +
+        `Status: *CANCELLED*\n` +
+        `Faculty: *${teacherName}*\n\n` +
+        `Synced via AcademiSync.`;
+    } else if (isRescheduled) {
+      text = `⏰ *NOTICE: CLASS RESCHEDULED*\n\n` +
+        `Batch: *${batchLabel}*\n` +
+        `Subject: *${subjectName}* (${session.subjectCode || ''})\n` +
+        `Day & Time: *${session.day}, ${session.startTime} - ${session.endTime}* (Original: ${rescheduleMeta?.originalStartTime} - ${rescheduleMeta?.originalEndTime})\n` +
+        `Room: *${session.room || 'TBA'}*\n` +
+        `Faculty: *${teacherName}*\n` +
+        (rescheduleMeta?.reason ? `Note: *${rescheduleMeta.reason}*\n` : '') +
+        `\nUpdated on AcademiSync.`;
+    } else {
+      text = `📌 *CLASS UPDATE*\n\n` +
+        `Batch: *${batchLabel}*\n` +
+        `Subject: *${subjectName}* (${session.subjectCode || ''})\n` +
+        `Day & Time: *${session.day}, ${session.startTime} - ${session.endTime}*\n` +
+        `Room: *${session.room || 'TBA'}*\n` +
+        `Faculty: *${teacherName}*\n\n` +
+        `Synced via AcademiSync.`;
+    }
+
+    const shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    if (typeof window !== 'undefined') {
+      window.open(shareUrl, '_blank');
+    }
+  };
 
   // Real-time listener for each connected batch's shared timetable doc
   useEffect(() => {
@@ -201,13 +331,14 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                 });
 
                 const { pillLabel, detailLabel } = formatFacultyCombinedBatchLabel(agg.linkedBatches, agg.batch);
-                const cardKey = `${session.id}_${agg.linkedBatches?.map((b) => b.batchKey).join('_') || batch.batchKey}`;
+                const cardKey = `${session.id}_${selectedDay}_${agg.linkedBatches?.map((b) => b.batchKey).join('_') || batch.batchKey}`;
 
                 return (
                   <div
                     key={cardKey}
                     className={clsx(
-                      "group relative flex flex-col p-4 sm:p-[18px] text-left transition-all rounded-[12px] overflow-hidden shadow-xs hover:shadow-md",
+                      "group relative flex flex-col p-4 sm:p-[18px] text-left transition-all rounded-[12px] shadow-xs hover:shadow-md",
+                      openMenuSessionId === cardKey ? "overflow-visible z-40" : "overflow-hidden z-0",
                       isLive
                         ? "bg-[#111111] dark:bg-[#111111] border-2 border-[#18A889] shadow-[0_0_24px_-4px_rgba(24,168,137,0.3)] ring-1 ring-[#18A889]/30"
                         : isCancelled
@@ -238,7 +369,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                     )}
 
                     <div className="relative z-10 flex flex-col">
-                      {/* Top Bar: Badge, Timing, Batch */}
+                      {/* Top Bar: Badge, Timing, 3-dot Menu */}
                       <div className="flex items-center justify-between mb-2.5 flex-wrap gap-2">
                         <div className="flex items-center gap-2">
                           <span
@@ -261,9 +392,106 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                           <span className={`text-[12px] font-bold font-mono leading-none ${isLive ? 'text-white' : 'text-[#151515] dark:text-[#F4F4F6]'}`}>
                             {formatTime12Hour(session.startTime)} - {formatTime12Hour(session.endTime)}
                           </span>
-                          <span className="px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[10px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
-                            {pillLabel}
-                          </span>
+
+                          {/* 3-Dot Action Dropdown Menu */}
+                          <div className="relative shrink-0">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setOpenMenuSessionId(openMenuSessionId === cardKey ? null : cardKey)
+                              }
+                              className="p-1 rounded-[6px] text-[#6F6F6F] hover:text-[#111111] dark:text-[#A1A1AA] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                              title="Class Options"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+
+                            {openMenuSessionId === cardKey && (
+                              <>
+                                <div
+                                  className="fixed inset-0 z-30"
+                                  onClick={() => setOpenMenuSessionId(null)}
+                                />
+                                <div className="absolute right-0 top-full mt-1.5 w-52 bg-white dark:bg-[#16171D] border border-black/10 dark:border-white/10 rounded-[8px] shadow-xl py-1.5 z-40 text-left font-sans flex flex-col">
+                                  <div className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-black/50 dark:text-white/50 border-b border-black/5 dark:border-white/5 mb-1 flex items-center gap-1.5">
+                                    <span>🎓</span>
+                                    <span>Faculty Actions</span>
+                                  </div>
+
+                                  {/* Reschedule / Edit Timing Action */}
+                                  {isRescheduled ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenMenuSessionId(null);
+                                        handleRevertReschedule(agg);
+                                      }}
+                                      className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
+                                    >
+                                      <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                                      <span>Revert Reschedule</span>
+                                    </button>
+                                  ) : (
+                                    !isCancelled && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setOpenMenuSessionId(null);
+                                          setSessionToReschedule(agg);
+                                        }}
+                                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                                      >
+                                        <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
+                                        <span>Reschedule / Edit</span>
+                                      </button>
+                                    )
+                                  )}
+
+                                  {/* Cancel / Restore Action */}
+                                  {isCancelled ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenMenuSessionId(null);
+                                        handleToggleCancel(agg);
+                                      }}
+                                      className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-left transition-colors cursor-pointer"
+                                    >
+                                      <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                                      <span>Restore Class for Batch</span>
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenMenuSessionId(null);
+                                        handleToggleCancel(agg);
+                                      }}
+                                      className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
+                                    >
+                                      <Ban className="w-3.5 h-3.5 shrink-0" />
+                                      <span>Cancel Class for Batch</span>
+                                    </button>
+                                  )}
+
+                                  <div className="h-px bg-black/[0.06] dark:bg-white/[0.08] my-1" />
+
+                                  {/* Share Notice via WhatsApp */}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setOpenMenuSessionId(null);
+                                      handleShareWhatsAppNotice(agg);
+                                    }}
+                                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                                  >
+                                    <Share2 className="w-3.5 h-3.5 opacity-60 shrink-0" />
+                                    <span>Share Notice via WhatsApp</span>
+                                  </button>
+                                </div>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
 
@@ -284,10 +512,15 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                       )}
 
                       {/* Room */}
-                      <div className={`flex items-center gap-3 text-[12px] font-mono flex-wrap ${isLive ? 'text-white/70' : 'text-black/60 dark:text-[#A1A1AA]'}`}>
-                        <span className="flex items-center gap-1.5 font-medium">
-                          <MapPin className="w-3.5 h-3.5 opacity-70" />
-                          {session.room || 'Room TBA'}
+                      <div className={`flex items-center gap-1.5 text-[12px] font-mono font-medium ${isLive ? 'text-white/70' : 'text-black/60 dark:text-[#A1A1AA]'}`}>
+                        <MapPin className="w-3.5 h-3.5 opacity-70" />
+                        <span>{session.room || 'Room TBA'}</span>
+                      </div>
+
+                      {/* Connected Batch Pill below Room */}
+                      <div className="mt-2.5 flex items-center">
+                        <span className="px-2.5 py-0.5 rounded-[4px] bg-black/5 dark:bg-white/10 text-[10px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70 inline-flex items-center font-mono border border-black/5 dark:border-white/5">
+                          {pillLabel}
                         </span>
                       </div>
                     </div>
@@ -298,6 +531,13 @@ export const FacultyWeeklyTimetable: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Reschedule Modal */}
+      <FacultyRescheduleModal
+        isOpen={sessionToReschedule !== null}
+        onClose={() => setSessionToReschedule(null)}
+        aggregatedSession={sessionToReschedule}
+      />
 
       {/* Connect Batch Modal */}
       <ConnectBatchModal

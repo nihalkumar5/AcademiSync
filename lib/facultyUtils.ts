@@ -672,8 +672,72 @@ export const cancelOrRestoreFacultyClass = async (params: {
 };
 
 /**
- * Returns clean Degree & Branch representation for a faculty batch without redundant college name.
+ * Returns short representation of degree/programme.
  */
+export function getShortProgrammeName(progStr: string): string {
+  if (!progStr) return '';
+  let str = progStr.trim();
+  const lower = str.toLowerCase();
+  if (lower.includes('master of technology') || lower.includes('m.tech') || lower === 'mtech') return 'M.Tech';
+  if (lower.includes('bachelor of technology') || lower.includes('b.tech') || lower === 'btech') return 'B.Tech';
+  if (lower.includes('master of computer') || lower.includes('mca')) return 'MCA';
+  if (lower.includes('bachelor of computer') || lower.includes('bca')) return 'BCA';
+  if (lower.includes('master of business') || lower.includes('mba')) return 'MBA';
+  if (lower.includes('bachelor of business') || lower.includes('bba')) return 'BBA';
+  if (lower.includes('b.sc') || lower.includes('bachelor of science')) return 'B.Sc';
+  if (lower.includes('m.sc') || lower.includes('master of science')) return 'M.Sc';
+  return str;
+}
+
+export function getShortBranchName(branchStr: string): string {
+  if (!branchStr) return 'Batch';
+  let str = branchStr.trim();
+
+  // 1. Check parenthesized acronym, e.g. "Computer Science & Engineering (CSE)" -> "CSE"
+  const parenMatch = str.match(/\(([^)]+)\)/);
+  if (parenMatch && parenMatch[1].trim()) {
+    const candidate = parenMatch[1].trim();
+    if (!/^(Sem|Sec)/i.test(candidate)) {
+      return candidate;
+    }
+  }
+
+  // 2. Remove parenthesized text
+  str = str.replace(/\([^)]*\)/g, '').trim();
+
+  // 3. Known phrase matches to standard short acronyms
+  const lower = str.toLowerCase();
+  if (lower.includes('data science') || lower.includes('ds & ai') || lower.includes('ds and ai')) {
+    return 'DS & AI';
+  }
+  if (lower.includes('artificial intelligence') || lower.includes('ai & ml') || lower.includes('ai and ml')) {
+    return 'AI & ML';
+  }
+  if (lower.includes('computer science') || lower.includes('cse')) {
+    return 'CSE';
+  }
+  if (lower.includes('information tech') || lower === 'it') {
+    return 'IT';
+  }
+  if (lower.includes('electronics') && (lower.includes('comm') || lower.includes('telecom') || lower.includes('ece'))) {
+    return 'ECE';
+  }
+  if (lower.includes('electrical') || lower === 'ee') {
+    return 'EE';
+  }
+  if (lower.includes('mechanical') || lower === 'me') {
+    return 'ME';
+  }
+  if (lower.includes('civil') || lower === 'ce') {
+    return 'CE';
+  }
+  if (lower.includes('cyber')) {
+    return 'Cyber Sec';
+  }
+
+  return str;
+}
+
 export function formatFacultyBatchDegreeAndBranch(batch: {
   programme?: string;
   branch?: string;
@@ -715,11 +779,14 @@ export function formatFacultyBatchDegreeAndBranch(batch: {
   br = br.replace(/·?\s*Sem(ester)?\s*\d+/i, '').trim();
   prog = prog.replace(/·?\s*Sem(ester)?\s*\d+/i, '').trim();
 
+  const shortProg = getShortProgrammeName(prog);
+  const shortBr = getShortBranchName(br);
+
   let degreeAndBranch = '';
-  if (prog && br && !prog.toLowerCase().includes(br.toLowerCase()) && !br.toLowerCase().includes(prog.toLowerCase())) {
-    degreeAndBranch = `${prog} · ${br}`;
+  if (shortProg && shortBr && !shortProg.toLowerCase().includes(shortBr.toLowerCase()) && !shortBr.toLowerCase().includes(shortProg.toLowerCase())) {
+    degreeAndBranch = `${shortProg} · ${shortBr}`;
   } else {
-    degreeAndBranch = br || prog || 'Batch';
+    degreeAndBranch = shortBr || shortProg || 'Batch';
   }
 
   // Remove any redundant college noise one more time
@@ -799,22 +866,12 @@ export function formatFacultyCombinedBatchLabel(
     };
   }
 
-  // Extract short branch name or acronym
-  const getShortBranch = (batch: FacultyLinkedBatch) => {
-    const raw = (batch.branch || '').trim();
-    const parenMatch = raw.match(/\(([^)]+)\)/);
-    if (parenMatch) return parenMatch[1].trim();
-
-    // Fallback to formatted degreeAndBranch
-    const { degreeAndBranch } = formatFacultyBatchDegreeAndBranch(batch);
-    const subParts = degreeAndBranch.split(' · ');
-    const brPart = subParts.length > 1 ? subParts[1] : subParts[0];
-    const brParen = brPart.match(/\(([^)]+)\)/);
-    return brParen ? brParen[1].trim() : brPart;
-  };
-
-  const programmes = Array.from(new Set(list.map((b) => (b.programme || '').trim()).filter(Boolean)));
-  const shortBranches = Array.from(new Set(list.map(getShortBranch).filter(Boolean)));
+  const programmes = Array.from(
+    new Set(list.map((b) => getShortProgrammeName(b.programme || '')).filter(Boolean))
+  );
+  const shortBranches = Array.from(
+    new Set(list.map((b) => getShortBranchName(b.branch || b.batchName || '')).filter(Boolean))
+  );
 
   let pillLabel = '';
   if (programmes.length === 1 && shortBranches.length > 0) {
@@ -826,7 +883,7 @@ export function formatFacultyCombinedBatchLabel(
   }
 
   const detailParts = list.map((b) => {
-    const brShort = getShortBranch(b);
+    const brShort = getShortBranchName(b.branch || b.batchName || '');
     const sem = b.semester ? `Sem ${b.semester}` : '';
     const sec = b.section ? `Sec ${b.section}` : '';
     const semSec = [sem, sec].filter(Boolean).join(' · ');
