@@ -47,7 +47,7 @@ export const Sidebar: React.FC = () => {
       id: 'exams', label: 'Exam Timetable', icon: <CalendarDays className="w-4 h-4" /> },
     {
       id: 'homework',
-      label: 'Homework & Tasks',
+      label: profile?.role === 'faculty' ? 'Assignments' : 'Homework & Tasks',
       icon: <CheckSquare className="w-4 h-4" />,
       badge: pendingHomeworkCount > 0 ? pendingHomeworkCount : undefined,
     },
@@ -78,7 +78,7 @@ export const Sidebar: React.FC = () => {
         {/* Workspace Brand / Header */}
         <div className="flex items-center justify-between px-2 pt-1 pb-3 border-b border-black/10 dark:border-white/[0.07]">
           <div className="flex items-center gap-2">
-            <IntersemesterLogo size="md" showTagline={true} taglineText="Student Edition" />
+            <IntersemesterLogo size="md" showTagline={true} taglineText={profile?.role === 'faculty' ? 'Faculty Edition' : 'Student Edition'} />
           </div>
         </div>
 

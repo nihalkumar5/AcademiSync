@@ -41,6 +41,7 @@ import { IOSAppGate } from '@/components/pwa/IOSAppGate';
 import { AndroidAppGate } from '@/components/pwa/AndroidAppGate';
 import { FacultyHomeView } from '@/components/faculty/FacultyHomeView';
 import { FacultyWeeklyTimetable } from '@/components/faculty/FacultyWeeklyTimetable';
+import { FacultyTasksView } from '@/components/faculty/FacultyTasksView';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -396,7 +397,9 @@ export default function AppHome() {
             {activeView === 'timetable' && (
               profile?.role === 'faculty' ? <FacultyWeeklyTimetable /> : <WeeklyTimetable />
             )}
-            {activeView === 'homework' && <HomeworkView />}
+            {activeView === 'homework' && (
+              profile?.role === 'faculty' ? <FacultyTasksView /> : <HomeworkView />
+            )}
             {activeView === 'exams' && <ExamsView />}
             {activeView === 'carry' && <TomorrowCarryView />}
             {activeView === 'subjects' && <SubjectListView />}

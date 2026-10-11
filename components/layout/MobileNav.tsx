@@ -13,7 +13,7 @@ import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
 
 export const MobileNav: React.FC = () => {
-  const { activeView, setActiveView, homework, carryItems } = useApp();
+  const { activeView, setActiveView, homework, carryItems, profile } = useApp();
 
   const pendingHomework = homework.filter((h) => h.status !== 'Completed').length;
   const unpackedCarry = carryItems.filter((i) => !i.isPacked).length;
@@ -23,7 +23,7 @@ export const MobileNav: React.FC = () => {
     { id: 'timetable', label: 'Timetable', icon: <CalendarDays className="w-[18px] h-[18px]" /> },
     {
       id: 'homework',
-      label: 'Tasks',
+      label: profile?.role === 'faculty' ? 'Assignments' : 'Tasks',
       icon: <CheckSquare className="w-[18px] h-[18px]" />,
       badge: pendingHomework > 0 ? pendingHomework : undefined,
     },
