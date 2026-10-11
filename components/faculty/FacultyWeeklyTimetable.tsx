@@ -8,6 +8,7 @@ import {
   aggregateFacultyWeeklyTimetable,
   AggregatedFacultySession,
   formatFacultyBatchDegreeAndBranch,
+  formatFacultyCombinedBatchLabel,
 } from '@/lib/facultyUtils';
 import { getSubjectCardTheme } from '@/lib/cardColors';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -75,7 +76,10 @@ export const FacultyWeeklyTimetable: React.FC = () => {
   // Filter for chosen batch
   const rawSessionsForDay = allWeekSessions[selectedDay] || [];
   const sessionsForDay = rawSessionsForDay.filter(
-    (s) => selectedBatchKey === 'ALL' || s.batch.batchKey === selectedBatchKey
+    (s) =>
+      selectedBatchKey === 'ALL' ||
+      s.batch.batchKey === selectedBatchKey ||
+      (s.linkedBatches && s.linkedBatches.some((b) => b.batchKey === selectedBatchKey))
   );
 
   return (
@@ -186,7 +190,10 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                 const isSelected = selectedDay === day;
                 const isToday = currentDay === day;
                 const daySessions = (allWeekSessions[day] || []).filter(
-                  (s) => selectedBatchKey === 'ALL' || s.batch.batchKey === selectedBatchKey
+                  (s) =>
+                    selectedBatchKey === 'ALL' ||
+                    s.batch.batchKey === selectedBatchKey ||
+                    (s.linkedBatches && s.linkedBatches.some((b) => b.batchKey === selectedBatchKey))
                 );
                 const count = daySessions.length;
 
@@ -244,11 +251,12 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                   isRescheduled,
                 });
 
-                const { degreeAndBranch, semText } = formatFacultyBatchDegreeAndBranch(batch);
+                const { pillLabel, detailLabel } = formatFacultyCombinedBatchLabel(agg.linkedBatches, agg.batch);
+                const cardKey = `${session.id}_${agg.linkedBatches?.map((b) => b.batchKey).join('_') || batch.batchKey}`;
 
                 return (
                   <div
-                    key={`${session.id}_${batch.id}`}
+                    key={cardKey}
                     className={clsx(
                       "group relative flex flex-col p-4 sm:p-[18px] text-left transition-all rounded-[12px] overflow-hidden shadow-xs hover:shadow-md",
                       isLive
@@ -305,7 +313,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                             {formatTime12Hour(session.startTime)} - {formatTime12Hour(session.endTime)}
                           </span>
                           <span className="px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[10px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
-                            {degreeAndBranch}
+                            {pillLabel}
                           </span>
                         </div>
                       </div>
@@ -335,8 +343,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                         <span>·</span>
                         <span className="flex items-center gap-1">
                           <Users className="w-3.5 h-3.5 opacity-60" />
-                          {degreeAndBranch}
-                          {semText ? ` (${semText})` : ''}
+                          {detailLabel}
                         </span>
                       </div>
                     </div>

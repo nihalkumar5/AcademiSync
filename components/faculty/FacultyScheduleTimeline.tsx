@@ -9,6 +9,7 @@ import {
   cancelOrRestoreFacultyClass,
   revertFacultyReschedule,
   formatFacultyBatchDegreeAndBranch,
+  formatFacultyCombinedBatchLabel,
 } from '@/lib/facultyUtils';
 import { getSubjectCardTheme } from '@/lib/cardColors';
 import { FacultyRescheduleModal } from './FacultyRescheduleModal';
@@ -49,37 +50,50 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
   const uniqueBatches = React.useMemo(() => {
     const map = new Map<string, FacultyLinkedBatch>();
     rawSessionsForToday.forEach((s) => {
-      if (!map.has(s.batch.batchKey)) {
-        map.set(s.batch.batchKey, s.batch);
-      }
+      const bList = s.linkedBatches && s.linkedBatches.length > 0 ? s.linkedBatches : [s.batch];
+      bList.forEach((b) => {
+        if (!map.has(b.batchKey)) {
+          map.set(b.batchKey, b);
+        }
+      });
     });
     return Array.from(map.values());
   }, [rawSessionsForToday]);
 
   const sessionsForToday = rawSessionsForToday.filter(
-    (s) => selectedBatchKey === 'ALL' || s.batch.batchKey === selectedBatchKey
+    (s) =>
+      selectedBatchKey === 'ALL' ||
+      s.batch.batchKey === selectedBatchKey ||
+      (s.linkedBatches && s.linkedBatches.some((b) => b.batchKey === selectedBatchKey))
   );
 
   const handleToggleCancel = async (agg: AggregatedFacultySession) => {
     try {
-      const { session, batch, subjectName, isCancelled } = agg;
+      const { subjectName, isCancelled } = agg;
+      const targets = agg.batchSessions && agg.batchSessions.length > 0
+        ? agg.batchSessions
+        : [{ batch: agg.batch, session: agg.session }];
       const action = isCancelled ? 'restore' : 'cancel';
 
-      await cancelOrRestoreFacultyClass({
-        batchKey: batch.batchKey,
-        sessionId: session.id,
-        subjectName,
-        batchName: batch.batchName,
-        facultyName: profile.name || 'Faculty',
-        facultyTitle: profile.facultyTitle || 'Prof.',
-        userId: user?.id,
-        dateStr: todayStr,
-        action,
-      });
+      await Promise.all(
+        targets.map((t) =>
+          cancelOrRestoreFacultyClass({
+            batchKey: t.batch.batchKey,
+            sessionId: t.session.id,
+            subjectName,
+            batchName: t.batch.batchName,
+            facultyName: profile.name || 'Faculty',
+            facultyTitle: profile.facultyTitle || 'Prof.',
+            userId: user?.id,
+            dateStr: todayStr,
+            action,
+          })
+        )
+      );
 
       showToast(
         action === 'cancel' ? 'Class Cancelled' : 'Class Restored',
-        `${subjectName} updated. Notification sent to batch.`,
+        `${subjectName} updated. Notification sent to ${targets.length > 1 ? `${targets.length} batches` : 'batch'}.`,
         action === 'cancel' ? 'info' : 'success'
       );
 
@@ -92,17 +106,25 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
 
   const handleRevertReschedule = async (agg: AggregatedFacultySession) => {
     try {
-      const { session, batch, subjectName } = agg;
-      await revertFacultyReschedule({
-        batchKey: batch.batchKey,
-        sessionId: session.id,
-        subjectName,
-        batchName: batch.batchName,
-        facultyName: profile.name || 'Faculty',
-        facultyTitle: profile.facultyTitle || 'Prof.',
-        userId: user?.id,
-        dateStr: todayStr,
-      });
+      const { subjectName } = agg;
+      const targets = agg.batchSessions && agg.batchSessions.length > 0
+        ? agg.batchSessions
+        : [{ batch: agg.batch, session: agg.session }];
+
+      await Promise.all(
+        targets.map((t) =>
+          revertFacultyReschedule({
+            batchKey: t.batch.batchKey,
+            sessionId: t.session.id,
+            subjectName,
+            batchName: t.batch.batchName,
+            facultyName: profile.name || 'Faculty',
+            facultyTitle: profile.facultyTitle || 'Prof.',
+            userId: user?.id,
+            dateStr: todayStr,
+          })
+        )
+      );
 
       showToast('Schedule Reverted', `${subjectName} reverted to original time.`, 'success');
       if (onRefresh) onRefresh();
@@ -113,9 +135,10 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
   };
 
   const handleShareWhatsAppNotice = (agg: AggregatedFacultySession) => {
-    const { session, batch, subjectName, isCancelled, isRescheduled, rescheduleMeta } = agg;
+    const { session, subjectName, isCancelled, isRescheduled, rescheduleMeta } = agg;
+    const { detailLabel } = formatFacultyCombinedBatchLabel(agg.linkedBatches, agg.batch);
     const teacherName = profile.name ? `${profile.facultyTitle || 'Prof.'} ${profile.name}` : 'Faculty';
-    const batchLabel = formatFacultyBatchDegreeAndBranch(batch).fullLabel;
+    const batchLabel = detailLabel;
 
     let text = '';
     if (isCancelled) {
@@ -234,7 +257,8 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
               isRescheduled,
             });
 
-            const cardKey = `${session.id}_${batch.batchKey}`;
+            const { pillLabel, detailLabel } = formatFacultyCombinedBatchLabel(agg.linkedBatches, agg.batch);
+            const cardKey = `${session.id}_${agg.linkedBatches?.map((b) => b.batchKey).join('_') || batch.batchKey}`;
 
             return (
               <div
@@ -281,6 +305,11 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                         <span className={clsx("text-sm font-bold text-[#111111] dark:text-[#FFFFFF] truncate", isCancelled && "line-through opacity-70")}>
                           {subjectName}
                         </span>
+                        {agg.linkedBatches && agg.linkedBatches.length > 1 && (
+                          <span className="px-1.5 py-0.5 bg-black/5 dark:bg-white/10 text-[9.5px] font-bold uppercase rounded-[3px] font-mono text-black/70 dark:text-white/70">
+                            {pillLabel}
+                          </span>
+                        )}
                         {isRescheduled && (
                           <span className="px-1.5 py-0.5 bg-amber-500 text-black text-[9px] font-mono font-bold uppercase tracking-wider rounded-[3px]">
                             RESCHEDULED
@@ -301,8 +330,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                         <span>·</span>
                         <span className="flex items-center gap-1">
                           <Users className="w-3 h-3 opacity-60" />
-                          {formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch}
-                          {formatFacultyBatchDegreeAndBranch(batch).semText ? ` · ${formatFacultyBatchDegreeAndBranch(batch).semText}` : ''}
+                          {detailLabel}
                         </span>
                         {subjectCode && !subjectName.toLowerCase().includes(subjectCode.toLowerCase()) && (
                           <>

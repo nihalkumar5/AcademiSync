@@ -9,6 +9,7 @@ import {
   revertFacultyReschedule,
   cancelOrRestoreFacultyClass,
   formatFacultyBatchDegreeAndBranch,
+  formatFacultyCombinedBatchLabel,
 } from '@/lib/facultyUtils';
 import { getSubjectCardTheme } from '@/lib/cardColors';
 import { FacultyRescheduleModal } from './FacultyRescheduleModal';
@@ -88,6 +89,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
     minutesUntilStart,
   } = activeSession;
   const facultyName = `${profile.facultyTitle || 'Prof.'} ${profile.name || 'Faculty'}`;
+  const { pillLabel, detailLabel } = formatFacultyCombinedBatchLabel(activeSession.linkedBatches, activeSession.batch);
 
   const theme = getSubjectCardTheme({
     subjectName,
@@ -101,21 +103,29 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
     setIsProcessing(true);
     try {
       const action = isCancelled ? 'restore' : 'cancel';
-      await cancelOrRestoreFacultyClass({
-        batchKey: batch.batchKey,
-        sessionId: session.id,
-        subjectName,
-        batchName: batch.batchName,
-        facultyName: profile.name || 'Faculty',
-        facultyTitle: profile.facultyTitle || 'Prof.',
-        userId: user?.id,
-        dateStr: todayStr,
-        action,
-      });
+      const targets = activeSession.batchSessions && activeSession.batchSessions.length > 0
+        ? activeSession.batchSessions
+        : [{ batch: activeSession.batch, session: activeSession.session }];
+
+      await Promise.all(
+        targets.map((t) =>
+          cancelOrRestoreFacultyClass({
+            batchKey: t.batch.batchKey,
+            sessionId: t.session.id,
+            subjectName,
+            batchName: t.batch.batchName,
+            facultyName: profile.name || 'Faculty',
+            facultyTitle: profile.facultyTitle || 'Prof.',
+            userId: user?.id,
+            dateStr: todayStr,
+            action,
+          })
+        )
+      );
 
       showToast(
         action === 'cancel' ? 'Lecture Cancelled' : 'Lecture Restored',
-        `${subjectName} updated for ${batch.batchName}. Notification broadcast to batch.`,
+        `${subjectName} updated for ${targets.length > 1 ? `${targets.length} batches` : batch.batchName}. Notification broadcast to batch.`,
         action === 'cancel' ? 'info' : 'success'
       );
 
@@ -131,16 +141,24 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
   const handleRevertReschedule = async () => {
     setIsProcessing(true);
     try {
-      await revertFacultyReschedule({
-        batchKey: batch.batchKey,
-        sessionId: session.id,
-        subjectName,
-        batchName: batch.batchName,
-        facultyName: profile.name || 'Faculty',
-        facultyTitle: profile.facultyTitle || 'Prof.',
-        userId: user?.id,
-        dateStr: todayStr,
-      });
+      const targets = activeSession.batchSessions && activeSession.batchSessions.length > 0
+        ? activeSession.batchSessions
+        : [{ batch: activeSession.batch, session: activeSession.session }];
+
+      await Promise.all(
+        targets.map((t) =>
+          revertFacultyReschedule({
+            batchKey: t.batch.batchKey,
+            sessionId: t.session.id,
+            subjectName,
+            batchName: t.batch.batchName,
+            facultyName: profile.name || 'Faculty',
+            facultyTitle: profile.facultyTitle || 'Prof.',
+            userId: user?.id,
+            dateStr: todayStr,
+          })
+        )
+      );
 
       showToast('Reschedule Reverted', 'Lecture reverted to original schedule.', 'success');
       if (onRefresh) onRefresh();
@@ -157,7 +175,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
     if (isCancelled) statusText = '🚫 CANCELLED FOR TODAY';
     else if (isRescheduled) statusText = `⏰ RESCHEDULED: ${session.startTime} - ${session.endTime}`;
 
-    const batchLabel = formatFacultyBatchDegreeAndBranch(batch).fullLabel;
+    const batchLabel = detailLabel;
     const message = [
       `📢 *Official Class Announcement*`,
       `━━━━━━━━━━━━━━━━━━`,
@@ -204,7 +222,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                 {formatTime12Hour(session.startTime)} - {formatTime12Hour(session.endTime)}
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-[10.5px] font-bold text-white/80 uppercase tracking-wider">
-                {formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch}
+                {pillLabel}
               </span>
             </div>
           </div>
@@ -223,8 +241,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
             <span>·</span>
             <span className="flex items-center gap-1 text-white/80">
               <Users className="w-3.5 h-3.5 opacity-70" />
-              {formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch}
-              {formatFacultyBatchDegreeAndBranch(batch).semText ? ` · ${formatFacultyBatchDegreeAndBranch(batch).semText}` : ''}
+              {detailLabel}
             </span>
             {subjectCode && (
               <>
@@ -342,7 +359,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                 {formatTime12Hour(session.startTime)} - {formatTime12Hour(session.endTime)}
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[10px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
-                {formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch}
+                {pillLabel}
               </span>
             </div>
           </div>
@@ -372,8 +389,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
             <span>·</span>
             <span className="flex items-center gap-1">
               <Users className="w-3.5 h-3.5 opacity-60" />
-              {formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch}
-              {formatFacultyBatchDegreeAndBranch(batch).semText ? ` · ${formatFacultyBatchDegreeAndBranch(batch).semText}` : ''}
+              {detailLabel}
             </span>
             {subjectCode && (
               <>

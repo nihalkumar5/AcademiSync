@@ -7,6 +7,7 @@ import {
   AggregatedFacultySession,
   rescheduleFacultyClass,
   formatFacultyBatchDegreeAndBranch,
+  formatFacultyCombinedBatchLabel,
 } from '@/lib/facultyUtils';
 import { getTodayDateString } from '@/lib/timetableUtils';
 import { Clock, MapPin, Users, AlertCircle, Sparkles } from 'lucide-react';
@@ -44,6 +45,10 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
   if (!aggregatedSession) return null;
 
   const { session, batch, subjectName, subjectCode } = aggregatedSession;
+  const { pillLabel, detailLabel } = formatFacultyCombinedBatchLabel(
+    aggregatedSession.linkedBatches,
+    aggregatedSession.batch
+  );
   const todayStr = getTodayDateString();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,20 +60,28 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      await rescheduleFacultyClass({
-        batchKey: batch.batchKey,
-        sessionId: session.id,
-        subjectName,
-        batchName: formatFacultyBatchDegreeAndBranch(batch).fullLabel || batch.batchName,
-        facultyName: profile.name || 'Faculty',
-        facultyTitle: profile.facultyTitle || 'Prof.',
-        userId: user?.id,
-        dateStr: todayStr,
-        newStartTime: startTime,
-        newEndTime: endTime,
-        newRoom: room.trim() || undefined,
-        reason: reason.trim() || undefined,
-      });
+      const targets = aggregatedSession.batchSessions && aggregatedSession.batchSessions.length > 0
+        ? aggregatedSession.batchSessions
+        : [{ batch: aggregatedSession.batch, session: aggregatedSession.session }];
+
+      await Promise.all(
+        targets.map((t) =>
+          rescheduleFacultyClass({
+            batchKey: t.batch.batchKey,
+            sessionId: t.session.id,
+            subjectName,
+            batchName: formatFacultyBatchDegreeAndBranch(t.batch).fullLabel || t.batch.batchName,
+            facultyName: profile.name || 'Faculty',
+            facultyTitle: profile.facultyTitle || 'Prof.',
+            userId: user?.id,
+            dateStr: todayStr,
+            newStartTime: startTime,
+            newEndTime: endTime,
+            newRoom: room.trim() || undefined,
+            reason: reason.trim() || undefined,
+          })
+        )
+      );
 
       showToast(
         'Lecture Rescheduled',
@@ -108,8 +121,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
           <div className="flex items-center gap-2 text-xs text-black/60 dark:text-white/60 font-mono flex-wrap">
             <span className="flex items-center gap-1 font-bold text-black/80 dark:text-white/80">
               <Users className="w-3 h-3 opacity-60" />
-              {formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch}
-              {formatFacultyBatchDegreeAndBranch(batch).semText ? ` · ${formatFacultyBatchDegreeAndBranch(batch).semText}` : ''}
+              {detailLabel}
             </span>
             <span>·</span>
             <span className="flex items-center gap-1">

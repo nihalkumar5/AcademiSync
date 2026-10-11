@@ -17,9 +17,16 @@ export interface RescheduleMeta {
   originalRoom?: string;
 }
 
+export interface BatchSessionRef {
+  batch: FacultyLinkedBatch;
+  session: ClassSession;
+}
+
 export interface AggregatedFacultySession {
   session: ClassSession;
   batch: FacultyLinkedBatch;
+  linkedBatches?: FacultyLinkedBatch[];
+  batchSessions?: BatchSessionRef[];
   subjectName: string;
   subjectCode: string;
   isCancelled: boolean;
@@ -213,9 +220,88 @@ export const aggregateFacultyWeeklyTimetable = (
     });
   });
 
-  // Sort each day chronologically by start time
+  // Deduplicate concurrent sessions of the same subject across linked batches
   ALL_DAYS.forEach((day) => {
-    allWeekSessions[day].sort((a, b) => timeToMinutes(a.session.startTime) - timeToMinutes(b.session.startTime));
+    const rawDaySessions = allWeekSessions[day];
+    const deduplicatedDaySessions: AggregatedFacultySession[] = [];
+
+    rawDaySessions.forEach((item) => {
+      const matchIndex = deduplicatedDaySessions.findIndex((existing) => {
+        // 1. Time overlap check: start times within 15 minutes and end times within 15 minutes
+        const exStart = timeToMinutes(existing.session.startTime);
+        const itStart = timeToMinutes(item.session.startTime);
+        const exEnd = timeToMinutes(existing.session.endTime);
+        const itEnd = timeToMinutes(item.session.endTime);
+
+        const isSameTime = Math.abs(exStart - itStart) <= 15 && Math.abs(exEnd - itEnd) <= 15;
+        if (!isSameTime) return false;
+
+        // 2. Same session type (both lab or both lecture)
+        if (Boolean(existing.session.isLab) !== Boolean(item.session.isLab)) return false;
+
+        // 3. Subject match:
+        // Fuzzy normalized subject name match or subject code match
+        const nameMatch = isCommonSubject(existing.subjectName, [item.subjectName]);
+        const codeMatch = Boolean(
+          existing.subjectCode &&
+          item.subjectCode &&
+          existing.subjectCode.trim().toLowerCase() === item.subjectCode.trim().toLowerCase()
+        );
+
+        return nameMatch || codeMatch;
+      });
+
+      if (matchIndex === -1) {
+        deduplicatedDaySessions.push({
+          ...item,
+          linkedBatches: [item.batch],
+          batchSessions: [{ batch: item.batch, session: item.session }],
+        });
+      } else {
+        const existing = deduplicatedDaySessions[matchIndex];
+        const alreadyHasBatch = (existing.linkedBatches || []).some(
+          (b) => b.batchKey === item.batch.batchKey
+        );
+        const updatedBatches = alreadyHasBatch
+          ? (existing.linkedBatches || [existing.batch])
+          : [...(existing.linkedBatches || [existing.batch]), item.batch];
+
+        const updatedBatchSessions = [
+          ...(existing.batchSessions || [{ batch: existing.batch, session: existing.session }]),
+          { batch: item.batch, session: item.session },
+        ];
+
+        // Combine rooms cleanly (e.g. "Room No 319" + "308" -> "Room 319 / 308")
+        let mergedRoom = existing.session.room || item.session.room;
+        if (existing.session.room && item.session.room) {
+          const cleanR = (r: string) => r.replace(/Room\s*(No\.?)?\s*/i, '').trim();
+          const r1 = cleanR(existing.session.room);
+          const r2 = cleanR(item.session.room);
+          if (r1.toLowerCase() === r2.toLowerCase()) {
+            mergedRoom = existing.session.room;
+          } else {
+            mergedRoom = `Room ${r1} / ${r2}`;
+          }
+        }
+
+        deduplicatedDaySessions[matchIndex] = {
+          ...existing,
+          session: {
+            ...existing.session,
+            room: mergedRoom,
+          },
+          linkedBatches: updatedBatches,
+          batchSessions: updatedBatchSessions,
+          isCancelled: existing.isCancelled || item.isCancelled,
+          isRescheduled: existing.isRescheduled || item.isRescheduled,
+          rescheduleMeta: existing.rescheduleMeta || item.rescheduleMeta,
+        };
+      }
+    });
+
+    // Sort chronologically by start time
+    deduplicatedDaySessions.sort((a, b) => timeToMinutes(a.session.startTime) - timeToMinutes(b.session.startTime));
+    allWeekSessions[day] = deduplicatedDaySessions;
   });
 
   return allWeekSessions;
@@ -580,5 +666,68 @@ export function isCommonSubject(
 
     return targetNorm.includes(knownNorm) || knownNorm.includes(targetNorm);
   });
+}
+
+/**
+ * Formats a single batch or multiple combined batches into clean labels for pills and details.
+ */
+export function formatFacultyCombinedBatchLabel(
+  batches?: FacultyLinkedBatch[],
+  fallbackBatch?: FacultyLinkedBatch
+): {
+  pillLabel: string;
+  detailLabel: string;
+} {
+  const list = batches && batches.length > 0 ? batches : (fallbackBatch ? [fallbackBatch] : []);
+  if (list.length === 0) {
+    return { pillLabel: 'Batch', detailLabel: 'Batch' };
+  }
+
+  if (list.length === 1) {
+    const { degreeAndBranch, semText } = formatFacultyBatchDegreeAndBranch(list[0]);
+    return {
+      pillLabel: degreeAndBranch,
+      detailLabel: semText ? `${degreeAndBranch} (${semText})` : degreeAndBranch,
+    };
+  }
+
+  // Extract short branch name or acronym
+  const getShortBranch = (batch: FacultyLinkedBatch) => {
+    const raw = (batch.branch || '').trim();
+    const parenMatch = raw.match(/\(([^)]+)\)/);
+    if (parenMatch) return parenMatch[1].trim();
+
+    // Fallback to formatted degreeAndBranch
+    const { degreeAndBranch } = formatFacultyBatchDegreeAndBranch(batch);
+    const subParts = degreeAndBranch.split(' · ');
+    const brPart = subParts.length > 1 ? subParts[1] : subParts[0];
+    const brParen = brPart.match(/\(([^)]+)\)/);
+    return brParen ? brParen[1].trim() : brPart;
+  };
+
+  const programmes = Array.from(new Set(list.map((b) => (b.programme || '').trim()).filter(Boolean)));
+  const shortBranches = Array.from(new Set(list.map(getShortBranch).filter(Boolean)));
+
+  let pillLabel = '';
+  if (programmes.length === 1 && shortBranches.length > 0) {
+    pillLabel = `${programmes[0]} · ${shortBranches.join(' + ')}`;
+  } else if (shortBranches.length > 0) {
+    pillLabel = shortBranches.join(' + ');
+  } else {
+    pillLabel = `${list.length} Batches`;
+  }
+
+  const detailParts = list.map((b) => {
+    const brShort = getShortBranch(b);
+    const sem = b.semester ? `Sem ${b.semester}` : '';
+    const sec = b.section ? `Sec ${b.section}` : '';
+    const semSec = [sem, sec].filter(Boolean).join(' · ');
+    return semSec ? `${brShort} (${semSec})` : brShort;
+  });
+
+  const progPrefix = programmes.length === 1 ? `${programmes[0]} · ` : '';
+  const detailLabel = `${progPrefix}${detailParts.join(' + ')}`;
+
+  return { pillLabel, detailLabel };
 }
 
