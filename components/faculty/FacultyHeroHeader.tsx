@@ -127,17 +127,17 @@ export const FacultyHeroHeader: React.FC<FacultyHeroHeaderProps> = ({
         <div className="absolute left-1/3 top-[15%] bottom-[15%] w-px bg-black/10 dark:bg-white/[0.08]" />
         <div className="absolute left-[66.666%] top-[15%] bottom-[15%] w-px bg-black/10 dark:border-white/[0.08]" />
 
-        {/* Lectures Today / Tomorrow */}
+        {/* Lectures / Classes */}
         <button
           type="button"
           onClick={() => setActiveView('timetable')}
           className="flex flex-col items-center justify-center group hover:opacity-75 transition-opacity text-center cursor-pointer"
         >
-          <span className="text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1 font-mono">
+          <span className="text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
             {isAfter8PM ? tomorrowLecturesCount : todayLecturesCount}
           </span>
           <span className="text-[14px] font-medium text-black/60 dark:text-[#A1A1AA] leading-tight">
-            {isAfter8PM ? "Tomorrow's Lectures" : "Today's Lectures"}
+            Classes
           </span>
         </button>
 
@@ -147,25 +147,25 @@ export const FacultyHeroHeader: React.FC<FacultyHeroHeaderProps> = ({
           onClick={onOpenConnectBatch}
           className="flex flex-col items-center justify-center group hover:opacity-75 transition-opacity text-center cursor-pointer"
         >
-          <span className="text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1 font-mono">
+          <span className="text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
             {linkedBatchesCount}
           </span>
           <span className="text-[14px] font-medium text-black/60 dark:text-[#A1A1AA] leading-tight">
-            Batches Linked
+            Batches
           </span>
         </button>
 
-        {/* Active Assignments */}
+        {/* Active Assignments / Tasks */}
         <button
           type="button"
           onClick={onOpenCreateAssignment}
           className="flex flex-col items-center justify-center group hover:opacity-75 transition-opacity text-center cursor-pointer"
         >
-          <span className="text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1 font-mono">
+          <span className="text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
             {activeAssignmentsCount}
           </span>
           <span className="text-[14px] font-medium text-black/60 dark:text-[#A1A1AA] leading-tight">
-            Tasks Posted
+            Tasks
           </span>
         </button>
       </div>

@@ -62,31 +62,22 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
     const tomorrowCount = tomorrowSessions.filter((s) => !s.isCancelled).length;
 
     return (
-      <div className="w-full border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#13151D] rounded-[12px] p-5 text-left shadow-xs">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center">
-              <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
-                {isAfter8PM ? "Done for Today · Tomorrow's Preview" : 'No More Lectures Today'}
-              </span>
-              <span className="text-[12px] text-[#6F6F6F] dark:text-[#A1A1AA]">
-                {isAfter8PM
-                  ? tomorrowCount > 0
-                    ? `You have ${tomorrowCount} ${tomorrowCount === 1 ? 'lecture' : 'lectures'} scheduled for tomorrow (${tomorrowDay || 'Tomorrow'}).`
-                    : `No lectures scheduled for tomorrow (${tomorrowDay || 'Tomorrow'}). Enjoy your evening!`
-                  : 'All scheduled lectures completed or free day.'}
-              </span>
-            </div>
-          </div>
-          <span className="text-[11px] font-mono text-[#8A8A8A] dark:text-[#71717A] px-2.5 py-1 bg-black/5 dark:bg-white/5 rounded-full">
-            {isAfter8PM
-              ? `${tomorrowCount} tomorrow`
-              : `${aggregatedSessions.length} total classes today`}
-          </span>
-        </div>
+      <div className="w-full bg-[#FAFAFA] dark:bg-[#121317] border border-[#E0E0E0] dark:border-white/[0.08] rounded-none p-5 flex flex-col text-left">
+        <span className="text-[11px] font-semibold text-[#808080] dark:text-[#94A3B8] uppercase tracking-[1.4px] leading-none mb-3">
+          SCHEDULE COMPLETE
+        </span>
+        <h3 className="text-[16px] font-semibold text-[#111111] dark:text-[#F4F4F6] leading-snug mb-2">
+          You&apos;re done for today.
+        </h3>
+        <span className="text-[13px] text-[#6B6B6B] dark:text-[#94A3B8] leading-none">
+          {isAfter8PM
+            ? (tomorrowCount === 0
+                ? 'No classes scheduled for tomorrow.'
+                : `${tomorrowCount} ${tomorrowCount === 1 ? 'lecture' : 'lectures'} scheduled for tomorrow.`)
+            : (aggregatedSessions.length === 0
+                ? 'No classes scheduled for today.'
+                : `${aggregatedSessions.length} ${aggregatedSessions.length === 1 ? 'lecture' : 'lectures'} scheduled for today.`)}
+        </span>
       </div>
     );
   }
