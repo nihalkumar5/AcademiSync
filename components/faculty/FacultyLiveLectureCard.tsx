@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { ClassSession, FacultyLinkedBatch, Subject } from '@/lib/types';
+import { ClassSession, DayOfWeek, FacultyLinkedBatch, Subject } from '@/lib/types';
 import { getCurrentDayOfWeek, getTodayDateString, getDateStringForDayOfWeek, formatTime12Hour } from '@/lib/timetableUtils';
 import {
   AggregatedFacultySession,
@@ -30,11 +30,17 @@ export type { AggregatedFacultySession };
 
 interface FacultyLiveLectureCardProps {
   aggregatedSessions: AggregatedFacultySession[];
+  tomorrowSessions?: AggregatedFacultySession[];
+  isAfter8PM?: boolean;
+  tomorrowDay?: DayOfWeek;
   onRefresh?: () => void;
 }
 
 export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
   aggregatedSessions,
+  tomorrowSessions = [],
+  isAfter8PM = false,
+  tomorrowDay,
   onRefresh,
 }) => {
   const { profile, user, showToast } = useApp();
@@ -53,6 +59,8 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
   }
 
   if (!activeSession) {
+    const tomorrowCount = tomorrowSessions.filter((s) => !s.isCancelled).length;
+
     return (
       <div className="w-full border border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#13151D] rounded-[12px] p-5 text-left shadow-xs">
         <div className="flex items-center justify-between">
@@ -62,15 +70,21 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
             </div>
             <div className="flex flex-col">
               <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
-                No More Lectures Today
+                {isAfter8PM ? "Done for Today · Tomorrow's Preview" : 'No More Lectures Today'}
               </span>
               <span className="text-[12px] text-[#6F6F6F] dark:text-[#A1A1AA]">
-                All scheduled lectures completed or free day.
+                {isAfter8PM
+                  ? tomorrowCount > 0
+                    ? `You have ${tomorrowCount} ${tomorrowCount === 1 ? 'lecture' : 'lectures'} scheduled for tomorrow (${tomorrowDay || 'Tomorrow'}).`
+                    : `No lectures scheduled for tomorrow (${tomorrowDay || 'Tomorrow'}). Enjoy your evening!`
+                  : 'All scheduled lectures completed or free day.'}
               </span>
             </div>
           </div>
           <span className="text-[11px] font-mono text-[#8A8A8A] dark:text-[#71717A] px-2.5 py-1 bg-black/5 dark:bg-white/5 rounded-full">
-            {aggregatedSessions.length} total classes today
+            {isAfter8PM
+              ? `${tomorrowCount} tomorrow`
+              : `${aggregatedSessions.length} total classes today`}
           </span>
         </div>
       </div>

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ClassSession, DayOfWeek, FacultyLinkedBatch, Subject } from '@/lib/types';
-import { getCurrentDayOfWeek, getTodayDateString, timeToMinutes } from '@/lib/timetableUtils';
+import { getCurrentDayOfWeek, getTomorrowDayOfWeek, getTodayDateString, timeToMinutes } from '@/lib/timetableUtils';
 import { aggregateFacultyWeeklyTimetable, AggregatedFacultySession } from '@/lib/facultyUtils';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -55,11 +55,21 @@ export const FacultyHomeView: React.FC = () => {
     };
   }, [linkedBatches]);
 
-  // Aggregate sessions across all linked batches (strictly filtered to faculty's selected subjects)
+  // 8:00 PM (20:00) switch: preview tomorrow's schedule like student dashboard
+  const currentHour = new Date().getHours();
+  const isAfter8PM = currentHour >= 20;
+
   const currentDay = getCurrentDayOfWeek();
+  const tomorrowDay = getTomorrowDayOfWeek();
+  const targetDay = isAfter8PM ? tomorrowDay : currentDay;
+
+  // Aggregate sessions across all linked batches (strictly filtered to faculty's selected subjects)
   const allWeekSessions = aggregateFacultyWeeklyTimetable(linkedBatches, batchesTimetableData);
   const todaySessions = allWeekSessions[currentDay] || [];
+  const tomorrowSessions = allWeekSessions[tomorrowDay] || [];
+
   const todayLecturesCount = todaySessions.filter((s) => !s.isCancelled).length;
+  const tomorrowLecturesCount = tomorrowSessions.filter((s) => !s.isCancelled).length;
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full overflow-x-hidden">
@@ -68,14 +78,25 @@ export const FacultyHomeView: React.FC = () => {
         onOpenConnectBatch={() => setIsConnectBatchOpen(true)}
         onOpenCreateAssignment={() => setIsCreateAssignmentOpen(true)}
         todayLecturesCount={todayLecturesCount}
+        tomorrowLecturesCount={tomorrowLecturesCount}
+        isAfter8PM={isAfter8PM}
         activeAssignmentsCount={activeAssignmentsCount}
       />
 
       {/* Live / Next Lecture Today Card */}
-      <FacultyLiveLectureCard aggregatedSessions={todaySessions} />
+      <FacultyLiveLectureCard
+        aggregatedSessions={todaySessions}
+        tomorrowSessions={tomorrowSessions}
+        isAfter8PM={isAfter8PM}
+        tomorrowDay={tomorrowDay}
+      />
 
-      {/* Teaching Timetable across Batches */}
-      <FacultyScheduleTimeline allWeekSessions={allWeekSessions} />
+      {/* Teaching Timetable across Batches (Switches to Tomorrow's Schedule at 8:00 PM) */}
+      <FacultyScheduleTimeline
+        allWeekSessions={allWeekSessions}
+        isAfter8PM={isAfter8PM}
+        targetDay={targetDay}
+      />
 
       {/* Assignments & Real-time Read-Tracking Hub */}
       <FacultyAssignmentsCard

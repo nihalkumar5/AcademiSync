@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ClassSession, DayOfWeek, FacultyLinkedBatch } from '@/lib/types';
-import { getCurrentDayOfWeek, formatTime12Hour, getDateStringForDayOfWeek, getTodayDateString } from '@/lib/timetableUtils';
+import { getCurrentDayOfWeek, getTomorrowDayOfWeek, formatTime12Hour, getDateStringForDayOfWeek, getTodayDateString } from '@/lib/timetableUtils';
 import {
   aggregateFacultyWeeklyTimetable,
   AggregatedFacultySession,
@@ -39,7 +39,17 @@ export const FacultyWeeklyTimetable: React.FC = () => {
 
   const [isConnectBatchOpen, setIsConnectBatchOpen] = useState(false);
   const [batchesTimetableData, setBatchesTimetableData] = useState<Record<string, any>>({});
-  const [selectedDay, setSelectedDay] = useState<DayOfWeek>(getCurrentDayOfWeek() || 'Monday');
+  const [selectedDay, setSelectedDay] = useState<DayOfWeek>(() => {
+    const now = new Date();
+    if (now.getHours() >= 20) {
+      const tomorrow = getTomorrowDayOfWeek();
+      if (DAYS.includes(tomorrow)) return tomorrow;
+      return 'Monday';
+    }
+    const curr = getCurrentDayOfWeek();
+    if (DAYS.includes(curr)) return curr;
+    return 'Monday';
+  });
 
   const [sessionToReschedule, setSessionToReschedule] = useState<AggregatedFacultySession | null>(null);
   const [openMenuSessionId, setOpenMenuSessionId] = useState<string | null>(null);

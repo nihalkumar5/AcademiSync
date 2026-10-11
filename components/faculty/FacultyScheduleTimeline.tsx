@@ -3,7 +3,14 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ClassSession, DayOfWeek, FacultyLinkedBatch } from '@/lib/types';
-import { getCurrentDayOfWeek, getTodayDateString, getDateStringForDayOfWeek, formatTime12Hour } from '@/lib/timetableUtils';
+import {
+  getCurrentDayOfWeek,
+  getTomorrowDayOfWeek,
+  getTodayDateString,
+  getTomorrowDateString,
+  getDateStringForDayOfWeek,
+  formatTime12Hour,
+} from '@/lib/timetableUtils';
 import {
   AggregatedFacultySession,
   cancelOrRestoreFacultyClass,
@@ -30,21 +37,30 @@ import { clsx } from 'clsx';
 
 interface FacultyScheduleTimelineProps {
   allWeekSessions: Record<DayOfWeek, AggregatedFacultySession[]>;
+  isAfter8PM?: boolean;
+  targetDay?: DayOfWeek;
   onRefresh?: () => void;
 }
 
 export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = ({
   allWeekSessions,
+  isAfter8PM: propIsAfter8PM,
+  targetDay: propTargetDay,
   onRefresh,
 }) => {
   const { profile, user, showToast } = useApp();
+
+  const now = new Date();
+  const isAfter8PM = propIsAfter8PM ?? (now.getHours() >= 20);
   const currentDay = getCurrentDayOfWeek();
-  const todayStr = getTodayDateString();
+  const tomorrowDay = getTomorrowDayOfWeek();
+  const targetDay = propTargetDay ?? (isAfter8PM ? tomorrowDay : currentDay);
+  const targetDateStr = isAfter8PM ? getTomorrowDateString() : getTodayDateString();
 
   const [sessionToReschedule, setSessionToReschedule] = useState<AggregatedFacultySession | null>(null);
   const [openMenuSessionId, setOpenMenuSessionId] = useState<string | null>(null);
 
-  const sessionsForToday = allWeekSessions[currentDay] || [];
+  const sessionsForTarget = allWeekSessions[targetDay] || [];
 
   const handleToggleCancel = async (agg: AggregatedFacultySession) => {
     try {
@@ -58,7 +74,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
       });
       const targets = Array.from(batchMap.values());
       const action = isCancelled ? 'restore' : 'cancel';
-      const targetDate = agg.session.day ? getDateStringForDayOfWeek(agg.session.day) : todayStr;
+      const targetDate = agg.session.day ? getDateStringForDayOfWeek(agg.session.day) : targetDateStr;
 
       await Promise.all(
         targets.map((t) =>
@@ -102,7 +118,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
         batchMap.set(bs.batch.batchKey, bs);
       });
       const targets = Array.from(batchMap.values());
-      const targetDate = agg.session.day ? getDateStringForDayOfWeek(agg.session.day) : todayStr;
+      const targetDate = agg.session.day ? getDateStringForDayOfWeek(agg.session.day) : targetDateStr;
 
       await Promise.all(
         targets.map((t) =>
@@ -134,20 +150,23 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
     const { detailLabel } = formatFacultyCombinedBatchLabel(agg.linkedBatches, agg.batch);
     const teacherName = profile.name ? `${profile.facultyTitle || 'Prof.'} ${profile.name}` : 'Faculty';
     const batchLabel = detailLabel;
+    const dayLabel = isAfter8PM ? `Tomorrow (${targetDay})` : `Today (${targetDay})`;
 
     let text = '';
     if (isCancelled) {
       text = `📢 *NOTICE: CLASS CANCELLED*\n\n` +
         `Batch: *${batchLabel}*\n` +
         `Subject: *${subjectName}* (${session.subjectCode || ''})\n` +
+        `Day: *${dayLabel}*\n` +
         `Time: *${session.startTime} - ${session.endTime}*\n` +
-        `Status: *CANCELLED TODAY*\n` +
+        `Status: *CANCELLED*\n` +
         `Faculty: *${teacherName}*\n\n` +
         `Synced via AcademiSync.`;
     } else if (isRescheduled) {
       text = `⏰ *NOTICE: CLASS RESCHEDULED*\n\n` +
         `Batch: *${batchLabel}*\n` +
         `Subject: *${subjectName}* (${session.subjectCode || ''})\n` +
+        `Day: *${dayLabel}*\n` +
         `New Time: *${session.startTime} - ${session.endTime}* (Original: ${rescheduleMeta?.originalStartTime} - ${rescheduleMeta?.originalEndTime})\n` +
         `Room: *${session.room || 'TBA'}*\n` +
         `Faculty: *${teacherName}*\n` +
@@ -157,6 +176,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
       text = `📌 *CLASS UPDATE*\n\n` +
         `Batch: *${batchLabel}*\n` +
         `Subject: *${subjectName}* (${session.subjectCode || ''})\n` +
+        `Day: *${dayLabel}*\n` +
         `Time: *${session.startTime} - ${session.endTime}*\n` +
         `Room: *${session.room || 'TBA'}*\n` +
         `Faculty: *${teacherName}*\n\n` +
@@ -176,23 +196,30 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-[#111111] dark:text-white" />
           <h3 className="text-sm font-bold uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF]">
-            Today&apos;s Schedule
+            {isAfter8PM ? "Tomorrow's Schedule" : "Today's Schedule"}
           </h3>
           <span className="text-xs font-mono text-[#6F6F6F] dark:text-[#A1A1AA]">
-            ({sessionsForToday.length} {sessionsForToday.length === 1 ? 'lecture' : 'lectures'})
+            ({sessionsForTarget.length} {sessionsForTarget.length === 1 ? 'lecture' : 'lectures'})
           </span>
         </div>
+        <span className="text-[11px] font-mono uppercase tracking-wider text-[#111111]/70 dark:text-white/70 px-2 py-0.5 bg-black/5 dark:bg-white/10 rounded-[4px]">
+          {targetDay}
+        </span>
       </div>
 
       {/* Sessions List */}
       <div className="flex flex-col gap-3">
-        {sessionsForToday.length === 0 ? (
+        {sessionsForTarget.length === 0 ? (
           <div className="py-8 text-center text-xs text-[#6F6F6F] dark:text-[#A1A1AA] flex flex-col items-center justify-center gap-2.5">
             <BookOpen className="w-7 h-7 opacity-30" />
-            <span>No lectures scheduled for today.</span>
+            <span>
+              {isAfter8PM
+                ? `No lectures scheduled for tomorrow (${targetDay}).`
+                : 'No lectures scheduled for today.'}
+            </span>
           </div>
         ) : (
-          sessionsForToday.map((agg) => {
+          sessionsForTarget.map((agg) => {
             const { session, batch, subjectName, subjectCode, isCancelled, isRescheduled, rescheduleMeta } = agg;
 
             const theme = getSubjectCardTheme({
