@@ -12,11 +12,10 @@ import {
   Plus,
   MapPin,
   Sparkles,
-  Award,
 } from 'lucide-react';
 
 interface FacultyHeroHeaderProps {
-  onOpenConnectBatch: () => void;
+  onOpenConnectBatch?: () => void;
   onOpenCreateAssignment: () => void;
   todayLecturesCount: number;
   activeAssignmentsCount: number;
@@ -69,18 +68,13 @@ export const FacultyHeroHeader: React.FC<FacultyHeroHeaderProps> = ({
       {/* Top Greeting & Header Actions */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] px-2.5 py-0.5 text-[9.5px] font-bold tracking-[1.3px] uppercase rounded-[4px]">
-              <Award className="w-3 h-3" />
-              FACULTY PORTAL
-            </span>
-
-            {profile.facultyEmployeeId && (
+          {profile.facultyEmployeeId && (
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               <span className="inline-flex items-center gap-1 bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 px-2.5 py-0.5 text-[10px] font-mono uppercase rounded-[4px]">
                 ID: {profile.facultyEmployeeId}
               </span>
-            )}
-          </div>
+            </div>
+          )}
 
           <h2 className="text-[36px] sm:text-[40px] text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[40px] sm:leading-[44px]">
             <span className="font-normal">{greeting},</span>
@@ -111,16 +105,8 @@ export const FacultyHeroHeader: React.FC<FacultyHeroHeaderProps> = ({
           </div>
         </div>
 
-        {/* Quick Actions (styled like student buttons) */}
+        {/* Quick Actions */}
         <div className="flex items-center gap-2.5 self-start sm:self-auto flex-wrap">
-          <button
-            type="button"
-            onClick={onOpenConnectBatch}
-            className="px-3.5 py-2 border border-black/15 dark:border-white/15 bg-white dark:bg-[#18191E] text-xs font-bold uppercase tracking-wider text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex items-center gap-1.5 cursor-pointer rounded-[8px] shadow-2xs"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Connect Batch</span>
-          </button>
           <button
             type="button"
             onClick={onOpenCreateAssignment}

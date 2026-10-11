@@ -29,34 +29,30 @@ interface FacultyScheduleTimelineProps {
   onRefresh?: () => void;
 }
 
-const DAYS: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
 export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = ({
   allWeekSessions,
   onRefresh,
 }) => {
-  const { profile, user, showToast } = useApp();
+  const { profile, user, showToast, setActiveView } = useApp();
   const currentDay = getCurrentDayOfWeek();
   const todayStr = getTodayDateString();
 
-  const [selectedDay, setSelectedDay] = useState<DayOfWeek>(currentDay || 'Monday');
   const [selectedBatchKey, setSelectedBatchKey] = useState<string>('ALL');
   const [sessionToReschedule, setSessionToReschedule] = useState<AggregatedFacultySession | null>(null);
 
+  const rawSessionsForToday = allWeekSessions[currentDay] || [];
+
   const uniqueBatches = React.useMemo(() => {
     const map = new Map<string, FacultyLinkedBatch>();
-    Object.values(allWeekSessions).forEach((daySessions) => {
-      daySessions.forEach((s) => {
-        if (!map.has(s.batch.batchKey)) {
-          map.set(s.batch.batchKey, s.batch);
-        }
-      });
+    rawSessionsForToday.forEach((s) => {
+      if (!map.has(s.batch.batchKey)) {
+        map.set(s.batch.batchKey, s.batch);
+      }
     });
     return Array.from(map.values());
-  }, [allWeekSessions]);
+  }, [rawSessionsForToday]);
 
-  const rawSessionsForDay = allWeekSessions[selectedDay] || [];
-  const sessionsForDay = rawSessionsForDay.filter(
+  const sessionsForToday = rawSessionsForToday.filter(
     (s) => selectedBatchKey === 'ALL' || s.batch.batchKey === selectedBatchKey
   );
 
@@ -152,51 +148,25 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
 
   return (
     <div className="w-full bg-white dark:bg-[#13151D] border border-black/[0.06] dark:border-white/[0.08] rounded-[12px] p-5 sm:p-6 text-left flex flex-col gap-5 shadow-xs">
-      {/* Header & Day Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-black/[0.06] dark:border-white/[0.08]">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-3 border-b border-black/[0.06] dark:border-white/[0.08]">
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-[#111111] dark:text-white" />
           <h3 className="text-sm font-bold uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF]">
-            Teaching Schedule
+            Today&apos;s Schedule
           </h3>
           <span className="text-xs font-mono text-[#6F6F6F] dark:text-[#A1A1AA]">
-            ({sessionsForDay.length} lectures)
+            ({currentDay} · {sessionsForToday.length} {sessionsForToday.length === 1 ? 'lecture' : 'lectures'})
           </span>
         </div>
 
-        {/* Day Pills (matching student timetable rounded-full pills) */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-          {DAYS.map((day) => {
-            const isSelected = selectedDay === day;
-            const isToday = currentDay === day;
-            const daySessions = (allWeekSessions[day] || []).filter(
-              (s) => selectedBatchKey === 'ALL' || s.batch.batchKey === selectedBatchKey
-            );
-            const count = daySessions.length;
-            return (
-              <button
-                key={day}
-                type="button"
-                onClick={() => setSelectedDay(day)}
-                className={`px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer rounded-full border ${
-                  isSelected
-                    ? 'bg-[#111111] text-white dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-xs'
-                    : 'bg-transparent text-black/60 dark:text-white/60 border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30'
-                }`}
-              >
-                <span>{day.substring(0, 3)}</span>
-                {count > 0 && (
-                  <span className={`ml-1 text-[9.5px] font-mono ${isSelected ? 'opacity-85' : 'opacity-50'}`}>
-                    {count}
-                  </span>
-                )}
-                {isToday && !isSelected && (
-                  <span className="ml-1 w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block align-middle" />
-                )}
-              </button>
-            );
-          })}
-        </div>
+        <button
+          type="button"
+          onClick={() => setActiveView('timetable')}
+          className="text-xs font-bold uppercase tracking-wider text-[#6F6F6F] hover:text-[#111111] dark:text-[#A1A1AA] dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1 shrink-0"
+        >
+          <span>Full Week →</span>
+        </button>
       </div>
 
       {/* Batch Filter Pills (if multiple batches connected) */}
@@ -235,13 +205,20 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
 
       {/* Sessions List */}
       <div className="flex flex-col gap-3">
-        {sessionsForDay.length === 0 ? (
-          <div className="py-8 text-center text-xs text-[#6F6F6F] dark:text-[#A1A1AA] flex flex-col items-center justify-center gap-2">
-            <BookOpen className="w-6 h-6 opacity-30" />
-            <span>No lectures scheduled for {selectedDay}.</span>
+        {sessionsForToday.length === 0 ? (
+          <div className="py-8 text-center text-xs text-[#6F6F6F] dark:text-[#A1A1AA] flex flex-col items-center justify-center gap-2.5">
+            <BookOpen className="w-7 h-7 opacity-30" />
+            <span>No lectures scheduled for today ({currentDay}).</span>
+            <button
+              type="button"
+              onClick={() => setActiveView('timetable')}
+              className="mt-1 px-3.5 py-1.5 rounded-[8px] border border-black/15 dark:border-white/15 text-xs font-bold uppercase tracking-wider text-[#111111] dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer shadow-2xs"
+            >
+              View Full Week Timetable
+            </button>
           </div>
         ) : (
-          sessionsForDay.map((agg) => {
+          sessionsForToday.map((agg) => {
             const { session, batch, subjectName, subjectCode, isCancelled, isRescheduled, rescheduleMeta } = agg;
 
             const theme = getSubjectCardTheme({
