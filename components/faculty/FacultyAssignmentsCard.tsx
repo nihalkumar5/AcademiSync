@@ -91,15 +91,12 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
             <h3 className="text-sm font-bold uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF]">
               Assignments &amp; Tasks
             </h3>
-            <span className="text-xs font-mono text-[#6F6F6F] dark:text-[#A1A1AA]">
-              ({assignments.length} active)
-            </span>
           </div>
 
           <button
             type="button"
             onClick={onOpenCreateModal}
-            className="px-3.5 py-1.5 rounded-[8px] bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            className="px-3.5 py-1.5 rounded-[8px] bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Post Assignment</span>
