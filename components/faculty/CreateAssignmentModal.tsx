@@ -7,6 +7,7 @@ import { FacultyLinkedBatch, HomeworkPriority } from '@/lib/types';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { broadcastBatchPushNotification } from '@/lib/pushNotifications';
+import { formatFacultyBatchDegreeAndBranch, isCommonSubject } from '@/lib/facultyUtils';
 import { CheckSquare, Calendar, Link2, Users, BookOpen, AlertCircle, Loader2, Check } from 'lucide-react';
 
 interface CreateAssignmentModalProps {
@@ -23,25 +24,24 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
   const { profile, user, showToast } = useApp();
   const linkedBatches = profile.facultyLinkedBatches || [];
 
-  // Aggregate all unique subjects taught across connected batches
+  // Aggregate all unique subjects taught across connected batches (grouping common subjects)
   const uniqueSubjects = useMemo(() => {
-    const map = new Map<string, { name: string; batches: FacultyLinkedBatch[] }>();
+    const list: { name: string; batches: FacultyLinkedBatch[] }[] = [];
     linkedBatches.forEach((batch) => {
       (batch.selectedSubjectNames || []).forEach((sName) => {
         const cleanName = sName.trim();
         if (!cleanName) return;
-        const key = cleanName.toLowerCase();
-        if (!map.has(key)) {
-          map.set(key, { name: cleanName, batches: [batch] });
+        const existing = list.find((item) => isCommonSubject(cleanName, [item.name]));
+        if (!existing) {
+          list.push({ name: cleanName, batches: [batch] });
         } else {
-          const entry = map.get(key)!;
-          if (!entry.batches.some((b) => b.id === batch.id)) {
-            entry.batches.push(batch);
+          if (!existing.batches.some((b) => b.id === batch.id)) {
+            existing.batches.push(batch);
           }
         }
       });
     });
-    return Array.from(map.values());
+    return list;
   }, [linkedBatches]);
 
   const [selectedSubjectName, setSelectedSubjectName] = useState<string>('');
@@ -79,10 +79,10 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
 
   const handleSubjectChange = (newSubName: string) => {
     setSelectedSubjectName(newSubName);
-    // Find all batches teaching this subject and auto-check them
+    // Find all batches teaching this common subject and auto-check them
     const matchingBatches = linkedBatches.filter((b) =>
-      (b.selectedSubjectNames || []).some(
-        (name) => name.trim().toLowerCase() === newSubName.trim().toLowerCase()
+      (b.selectedSubjectNames || []).some((name) =>
+        isCommonSubject(name, [newSubName])
       )
     );
     if (matchingBatches.length > 0) {
@@ -102,8 +102,8 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
     if (selectedBatchIds.length === linkedBatches.length) {
       // Revert to only batches matching the selected subject
       const matching = linkedBatches.filter((b) =>
-        (b.selectedSubjectNames || []).some(
-          (name) => name.trim().toLowerCase() === selectedSubjectName.trim().toLowerCase()
+        (b.selectedSubjectNames || []).some((name) =>
+          isCommonSubject(name, [selectedSubjectName])
         )
       );
       setSelectedBatchIds(matching.length > 0 ? matching.map((b) => b.id) : []);
@@ -299,8 +299,9 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
               {linkedBatches.map((batch) => {
                 const isSelected = selectedBatchIds.includes(batch.id);
                 const teachesThisSubject = (batch.selectedSubjectNames || []).some(
-                  (name) => name.trim().toLowerCase() === selectedSubjectName.trim().toLowerCase()
+                  (name) => isCommonSubject(name, [selectedSubjectName])
                 );
+                const { degreeAndBranch, semText } = formatFacultyBatchDegreeAndBranch(batch);
                 return (
                   <button
                     key={batch.id}
@@ -323,14 +324,14 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
                     </span>
                     <div className="flex flex-col min-w-0 pr-1">
                       <span className="truncate max-w-[220px] font-bold">
-                        {batch.batchName}
+                        {degreeAndBranch}
                       </span>
                       <span
                         className={`text-[9.5px] font-mono ${
                           isSelected ? 'text-white/70 dark:text-black/70' : 'text-black/40 dark:text-white/40'
                         }`}
                       >
-                        Code: {batch.batchCode}
+                        {semText || `Code: ${batch.batchCode}`}
                       </span>
                     </div>
                     {teachesThisSubject && (
@@ -338,10 +339,10 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
                         className={`text-[9.5px] font-mono uppercase px-1.5 py-0.5 rounded-[3px] shrink-0 font-bold ${
                           isSelected
                             ? 'bg-white/20 text-white dark:bg-black/20 dark:text-black'
-                            : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
                         }`}
                       >
-                        Matched
+                        ★ Matched
                       </span>
                     )}
                   </button>

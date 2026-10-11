@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { FacultyLinkedBatch } from '@/lib/types';
-import { Users, Plus, Trash2, Building2, BookOpen, AlertCircle } from 'lucide-react';
-import { getShortCollegeName } from '@/lib/timetableUtils';
+import { Users, Plus, Trash2, BookOpen, AlertCircle } from 'lucide-react';
+import { formatFacultyBatchDegreeAndBranch, isCommonSubject } from '@/lib/facultyUtils';
 
 interface FacultyBatchesCardProps {
   onOpenConnectModal: () => void;
@@ -64,36 +64,39 @@ export const FacultyBatchesCard: React.FC<FacultyBatchesCardProps> = ({
             </button>
           </div>
         ) : (
-          linkedBatches.map((batch) => (
-            <div
-              key={batch.id}
-              className="p-4 rounded-[12px] border border-black/[0.06] dark:border-white/[0.08] bg-[#F9F9FB] dark:bg-[#181A22] flex flex-col gap-3 transition-all hover:border-black/20 dark:hover:border-white/20 shadow-2xs"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex flex-col min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-bold text-black dark:text-white">
-                      {batch.batchName}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-[4px] bg-black/5 dark:bg-white/10 text-[10px] font-mono font-bold uppercase text-black/70 dark:text-white/70">
-                      CODE: {batch.batchCode}
-                    </span>
+          linkedBatches.map((batch) => {
+            const { degreeAndBranch, semText } = formatFacultyBatchDegreeAndBranch(batch);
+            return (
+              <div
+                key={batch.id}
+                className="p-4 rounded-[12px] border border-black/[0.06] dark:border-white/[0.08] bg-[#F9F9FB] dark:bg-[#181A22] flex flex-col gap-3 transition-all hover:border-black/20 dark:hover:border-white/20 shadow-2xs"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-bold text-black dark:text-white">
+                        {degreeAndBranch}
+                      </span>
+                      {semText && (
+                        <span className="px-2 py-0.5 rounded-[4px] bg-black/5 dark:bg-white/10 text-[10px] font-mono font-bold uppercase text-black/70 dark:text-white/70">
+                          {semText}
+                        </span>
+                      )}
+                      <span className="px-2 py-0.5 rounded-[4px] bg-black/5 dark:bg-white/10 text-[10px] font-mono font-bold uppercase text-black/70 dark:text-white/70">
+                        CODE: {batch.batchCode}
+                      </span>
+                    </div>
                   </div>
 
-                  <span className="text-xs text-[#6F6F6F] dark:text-[#A1A1AA] mt-0.5">
-                    {getShortCollegeName(batch.college)} · {batch.programme} ({batch.branch})
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setBatchToUnlink(batch)}
+                    className="p-1.5 rounded-[6px] text-black/40 hover:text-red-500 hover:bg-red-500/10 dark:text-white/40 dark:hover:text-red-400 transition-colors cursor-pointer shrink-0"
+                    title="Disconnect Batch"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() => setBatchToUnlink(batch)}
-                  className="p-1.5 rounded-[6px] text-black/40 hover:text-red-500 hover:bg-red-500/10 dark:text-white/40 dark:hover:text-red-400 transition-colors cursor-pointer shrink-0"
-                  title="Disconnect Batch"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
 
               {/* Taught Subjects Pills */}
               <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-black/[0.06] dark:border-white/[0.08]">
@@ -101,18 +104,37 @@ export const FacultyBatchesCard: React.FC<FacultyBatchesCardProps> = ({
                   <BookOpen className="w-3 h-3" />
                   Teaching:
                 </span>
-                {batch.selectedSubjectNames.map((name, idx) => (
-                  <span
-                    key={`${name}_${idx}`}
-                    className="px-2.5 py-0.5 rounded-full bg-white dark:bg-white/10 border border-black/[0.06] dark:border-white/[0.08] text-[11px] font-medium text-black dark:text-white shadow-2xs"
-                  >
-                    {name}
-                  </span>
-                ))}
+                {batch.selectedSubjectNames.map((name, idx) => {
+                  const isMultiBatch = linkedBatches.filter((b) =>
+                    (b.selectedSubjectNames || []).some((s) => isCommonSubject(s, [name]))
+                  ).length > 1;
+
+                  return (
+                    <span
+                      key={`${name}_${idx}`}
+                      className={`px-2.5 py-0.5 rounded-full border text-[11px] font-medium shadow-2xs flex items-center gap-1 ${
+                        isMultiBatch
+                          ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25'
+                          : 'bg-white dark:bg-white/10 border-black/[0.06] dark:border-white/[0.08] text-black dark:text-white'
+                      }`}
+                    >
+                      {isMultiBatch && (
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">★</span>
+                      )}
+                      <span>{name}</span>
+                      {isMultiBatch && (
+                        <span className="text-[9.5px] font-mono opacity-65">
+                          (Common)
+                        </span>
+                      )}
+                    </span>
+                  );
+                })}
               </div>
             </div>
-          ))
-        )}
+          );
+        })
+      )}
       </div>
 
       {/* Disconnect Confirmation Alert */}
@@ -120,7 +142,7 @@ export const FacultyBatchesCard: React.FC<FacultyBatchesCardProps> = ({
         <div className="p-4 rounded-[12px] bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 flex flex-col gap-2.5 mt-2">
           <div className="flex items-center gap-2 text-red-600 dark:text-red-400 text-xs font-bold">
             <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>Disconnect from {batchToUnlink.batchName}?</span>
+            <span>Disconnect from {formatFacultyBatchDegreeAndBranch(batchToUnlink).degreeAndBranch}?</span>
           </div>
           <p className="text-[11px] text-red-700/80 dark:text-red-300/80">
             This will remove this batch from your schedule. Students&apos; timetables will not be deleted.

@@ -476,3 +476,95 @@ export const cancelOrRestoreFacultyClass = async (params: {
     console.warn('Push notification error:', pushErr);
   }
 };
+
+/**
+ * Returns clean Degree & Branch representation for a faculty batch without redundant college name.
+ */
+export function formatFacultyBatchDegreeAndBranch(batch: {
+  programme?: string;
+  branch?: string;
+  semester?: number;
+  section?: string;
+  batchName?: string;
+  college?: string;
+}): { degreeAndBranch: string; semText: string; fullLabel: string } {
+  let prog = (batch.programme || '').trim();
+  let br = (batch.branch || '').trim();
+
+  // If programme and branch are missing, parse from batchName
+  if (!prog && !br && batch.batchName) {
+    let clean = batch.batchName;
+    if (batch.college) {
+      clean = clean.replace(new RegExp(`^${batch.college}\\s*·\\s*`, 'i'), '');
+    }
+    clean = clean.replace(/^(IIT|IIIT|NIT|BITS|BU|UNIVERSITY|COLLEGE)[^·]*·\s*/i, '');
+    const parts = clean.split('·').map((p) => p.trim());
+    br = parts[0] || 'Batch';
+  }
+
+  // Strip college prefix from branch/programme if accidentally stored there
+  if (batch.college) {
+    prog = prog.replace(new RegExp(`^${batch.college}\\s*·\\s*`, 'i'), '');
+    br = br.replace(new RegExp(`^${batch.college}\\s*·\\s*`, 'i'), '');
+  }
+  prog = prog.replace(/^(IIT|IIIT|NIT|BITS|BU|UNIVERSITY|COLLEGE)[^·]*·\s*/i, '').trim();
+  br = br.replace(/^(IIT|IIIT|NIT|BITS|BU|UNIVERSITY|COLLEGE)[^·]*·\s*/i, '').trim();
+
+  let degreeAndBranch = '';
+  if (prog && br && !prog.toLowerCase().includes(br.toLowerCase()) && !br.toLowerCase().includes(prog.toLowerCase())) {
+    degreeAndBranch = `${prog} · ${br}`;
+  } else {
+    degreeAndBranch = br || prog || 'Batch';
+  }
+
+  const sem = batch.semester ? `Sem ${batch.semester}` : '';
+  const sec = batch.section ? `Sec ${batch.section}` : '';
+  const semText = [sem, sec].filter(Boolean).join(' · ');
+
+  const fullLabel = semText ? `${degreeAndBranch} (${semText})` : degreeAndBranch;
+
+  return { degreeAndBranch, semText, fullLabel };
+}
+
+/**
+ * Checks whether a subject name matches any of the teacher's known taught subjects (fuzzy normalized)
+ */
+export function isCommonSubject(
+  targetSubjectName: string,
+  knownTaughtSubjectNames: string[]
+): boolean {
+  if (!targetSubjectName || !knownTaughtSubjectNames || knownTaughtSubjectNames.length === 0) {
+    return false;
+  }
+
+  const normalize = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/&/g, 'and')
+      .replace(/\s*\([^)]*\)/g, '') // remove (theory), (lab), etc.
+      .replace(/[^a-z0-9]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const targetNorm = normalize(targetSubjectName);
+  if (!targetNorm) return false;
+  const targetWords = targetNorm.split(' ').filter(Boolean);
+
+  return knownTaughtSubjectNames.some((known) => {
+    const knownNorm = normalize(known);
+    if (!knownNorm) return false;
+    if (targetNorm === knownNorm) return true;
+
+    // Guard against accidental short substring matches (e.g. "it", "os", "ai")
+    if (targetNorm.length < 4 || knownNorm.length < 4) {
+      const knownWords = knownNorm.split(' ').filter(Boolean);
+      return (
+        targetWords.some((w) => w === knownNorm) ||
+        knownWords.some((w) => w === targetNorm)
+      );
+    }
+
+    return targetNorm.includes(knownNorm) || knownNorm.includes(targetNorm);
+  });
+}
+

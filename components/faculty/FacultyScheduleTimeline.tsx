@@ -8,6 +8,7 @@ import {
   AggregatedFacultySession,
   cancelOrRestoreFacultyClass,
   revertFacultyReschedule,
+  formatFacultyBatchDegreeAndBranch,
 } from '@/lib/facultyUtils';
 import { getSubjectCardTheme } from '@/lib/cardColors';
 import { FacultyRescheduleModal } from './FacultyRescheduleModal';
@@ -111,11 +112,12 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
   const handleShareWhatsAppNotice = (agg: AggregatedFacultySession) => {
     const { session, batch, subjectName, isCancelled, isRescheduled, rescheduleMeta } = agg;
     const teacherName = profile.name ? `${profile.facultyTitle || 'Prof.'} ${profile.name}` : 'Faculty';
+    const batchLabel = formatFacultyBatchDegreeAndBranch(batch).fullLabel;
 
     let text = '';
     if (isCancelled) {
       text = `📢 *NOTICE: CLASS CANCELLED*\n\n` +
-        `Batch: *${batch.batchName}*\n` +
+        `Batch: *${batchLabel}*\n` +
         `Subject: *${subjectName}* (${session.subjectCode || ''})\n` +
         `Time: *${session.startTime} - ${session.endTime}*\n` +
         `Status: *CANCELLED TODAY*\n` +
@@ -123,7 +125,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
         `Synced via AcademiSync.`;
     } else if (isRescheduled) {
       text = `⏰ *NOTICE: CLASS RESCHEDULED*\n\n` +
-        `Batch: *${batch.batchName}*\n` +
+        `Batch: *${batchLabel}*\n` +
         `Subject: *${subjectName}* (${session.subjectCode || ''})\n` +
         `New Time: *${session.startTime} - ${session.endTime}* (Original: ${rescheduleMeta?.originalStartTime} - ${rescheduleMeta?.originalEndTime})\n` +
         `Room: *${session.room || 'TBA'}*\n` +
@@ -132,7 +134,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
         `\nUpdated on AcademiSync.`;
     } else {
       text = `📌 *CLASS UPDATE*\n\n` +
-        `Batch: *${batch.batchName}*\n` +
+        `Batch: *${batchLabel}*\n` +
         `Subject: *${subjectName}* (${session.subjectCode || ''})\n` +
         `Time: *${session.startTime} - ${session.endTime}*\n` +
         `Room: *${session.room || 'TBA'}*\n` +
@@ -197,7 +199,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                   : 'bg-transparent text-black/60 dark:text-white/60 border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30'
               }`}
             >
-              {b.batchName.split('·').pop()?.trim() || b.batchName}
+              {formatFacultyBatchDegreeAndBranch(b).degreeAndBranch}
             </button>
           ))}
         </div>
@@ -293,7 +295,8 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                         <span>·</span>
                         <span className="flex items-center gap-1">
                           <Users className="w-3 h-3 opacity-60" />
-                          {batch.batchName}
+                          {formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch}
+                          {formatFacultyBatchDegreeAndBranch(batch).semText ? ` · ${formatFacultyBatchDegreeAndBranch(batch).semText}` : ''}
                         </span>
                         {subjectCode && (
                           <>

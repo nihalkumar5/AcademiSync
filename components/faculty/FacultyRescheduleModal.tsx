@@ -3,7 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Modal } from '@/components/ui/Modal';
-import { AggregatedFacultySession, rescheduleFacultyClass } from '@/lib/facultyUtils';
+import {
+  AggregatedFacultySession,
+  rescheduleFacultyClass,
+  formatFacultyBatchDegreeAndBranch,
+} from '@/lib/facultyUtils';
 import { getTodayDateString } from '@/lib/timetableUtils';
 import { Clock, MapPin, Users, AlertCircle, Sparkles } from 'lucide-react';
 
@@ -55,7 +59,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
         batchKey: batch.batchKey,
         sessionId: session.id,
         subjectName,
-        batchName: batch.batchName,
+        batchName: formatFacultyBatchDegreeAndBranch(batch).fullLabel || batch.batchName,
         facultyName: profile.name || 'Faculty',
         facultyTitle: profile.facultyTitle || 'Prof.',
         userId: user?.id,
@@ -104,7 +108,8 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
           <div className="flex items-center gap-2 text-xs text-black/60 dark:text-white/60 font-mono flex-wrap">
             <span className="flex items-center gap-1 font-bold text-black/80 dark:text-white/80">
               <Users className="w-3 h-3 opacity-60" />
-              {batch.batchName}
+              {formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch}
+              {formatFacultyBatchDegreeAndBranch(batch).semText ? ` · ${formatFacultyBatchDegreeAndBranch(batch).semText}` : ''}
             </span>
             <span>·</span>
             <span className="flex items-center gap-1">

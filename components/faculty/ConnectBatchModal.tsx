@@ -4,10 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Modal } from '@/components/ui/Modal';
 import { FacultyLinkedBatch, Subject } from '@/lib/types';
-import { extractCleanInviteCode, formatBatchDisplayName, getShortCollegeName } from '@/lib/timetableUtils';
+import { extractCleanInviteCode } from '@/lib/timetableUtils';
+import { formatFacultyBatchDegreeAndBranch, isCommonSubject } from '@/lib/facultyUtils';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Check, Search, Plus, BookOpen, Building2, Users, AlertCircle, Loader2 } from 'lucide-react';
+import { Check, Search, Plus, BookOpen, Users, AlertCircle, Loader2 } from 'lucide-react';
 
 interface ConnectBatchModalProps {
   isOpen: boolean;
@@ -113,16 +114,21 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
       }
 
       setFoundBatchData(batchObj);
-      // If facultyName matches or empty, pre-select matching subjects
+
+      // Auto pre-select subjects: match faculty name OR match common subjects already taught in connected batches
       const facultyNameLower = (profile.name || '').toLowerCase();
+      const existingTaughtSubjects = (profile.facultyLinkedBatches || []).flatMap(
+        (b) => b.selectedSubjectNames || []
+      );
       const preSelected: string[] = [];
       if (Array.isArray(batchObj.subjects)) {
         batchObj.subjects.forEach((sub: Subject) => {
-          if (
+          const facultyMatches =
             sub.facultyName &&
             facultyNameLower &&
-            sub.facultyName.toLowerCase().includes(facultyNameLower.split(' ')[0])
-          ) {
+            sub.facultyName.toLowerCase().includes(facultyNameLower.split(' ')[0]);
+          const isCommon = isCommonSubject(sub.name || sub.shortName || '', existingTaughtSubjects);
+          if (facultyMatches || isCommon) {
             preSelected.push(sub.id);
           }
         });
@@ -153,13 +159,8 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
     const selectedSubjects = subjectsList.filter((s) => selectedSubjectIds.includes(s.id));
     const selectedSubjectNames = selectedSubjects.map((s) => s.name || s.shortName || s.code);
 
-    const batchLabel = formatBatchDisplayName(
-      foundBatchData.branch || foundBatchData.programme,
-      foundBatchData.semester ? Number(foundBatchData.semester) : undefined,
-      foundBatchData.section
-    );
-    const collegeShort = getShortCollegeName(foundBatchData.college || '');
-    const displayName = collegeShort ? `${collegeShort} · ${batchLabel}` : batchLabel;
+    const { degreeAndBranch, semText, fullLabel } = formatFacultyBatchDegreeAndBranch(foundBatchData);
+    const displayName = fullLabel || degreeAndBranch || 'Batch';
 
     const newLinkedBatch: FacultyLinkedBatch = {
       id: `link_${foundBatchData.id}_${Date.now()}`,
@@ -182,7 +183,7 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
       facultyLinkedBatches: updatedBatches,
     });
 
-    showToast('Batch Connected', `Linked to ${displayName} with ${selectedSubjectIds.length} subjects.`, 'success');
+    showToast('Batch Connected', `Linked to ${degreeAndBranch} with ${selectedSubjectIds.length} subjects.`, 'success');
     if (onBatchLinked) onBatchLinked(newLinkedBatch);
     handleClose();
   };
@@ -236,22 +237,28 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
         ) : (
           /* Step 2: Batch Found -> Select Subjects */
           <div className="flex flex-col gap-5">
-            {/* Batch Info Card */}
-            <div className="p-3.5 rounded-[12px] bg-black/5 dark:bg-white/5 border border-black/[0.06] dark:border-white/[0.08] flex flex-col gap-1.5">
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-black/60 dark:text-white/60" />
-                  {getShortCollegeName(foundBatchData.college || '')}
-                </span>
-                <span className="px-2 py-0.5 rounded-[4px] bg-black/10 dark:bg-white/10 text-[10px] font-mono font-bold uppercase text-black dark:text-white">
-                  CODE: {foundBatchData.inviteCode || foundBatchData.id}
-                </span>
-              </div>
-              <p className="text-sm font-semibold text-black dark:text-white">
-                {foundBatchData.programme} · {foundBatchData.branch} (Sem {foundBatchData.semester}
-                {foundBatchData.section ? ` - Sec ${foundBatchData.section}` : ''})
-              </p>
-            </div>
+            {/* Batch Info Card: Clean Degree & Branch only */}
+            {(() => {
+              const { degreeAndBranch, semText } = formatFacultyBatchDegreeAndBranch(foundBatchData);
+              return (
+                <div className="p-3.5 rounded-[12px] bg-black/5 dark:bg-white/5 border border-black/[0.06] dark:border-white/[0.08] flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-black/60 dark:text-white/60" />
+                      {degreeAndBranch}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-[4px] bg-black/10 dark:bg-white/10 text-[10px] font-mono font-bold uppercase text-black dark:text-white">
+                      CODE: {foundBatchData.inviteCode || foundBatchData.id}
+                    </span>
+                  </div>
+                  {semText && (
+                    <p className="text-xs font-mono text-[#6F6F6F] dark:text-[#A1A1AA]">
+                      {semText}
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Subject Checkboxes */}
             <div className="flex flex-col gap-2">
@@ -269,6 +276,10 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
                 {Array.isArray(foundBatchData.subjects) && foundBatchData.subjects.length > 0 ? (
                   foundBatchData.subjects.map((sub: Subject) => {
                     const isChecked = selectedSubjectIds.includes(sub.id);
+                    const isCommon = isCommonSubject(
+                      sub.name || sub.shortName || '',
+                      (profile.facultyLinkedBatches || []).flatMap((b) => b.selectedSubjectNames || [])
+                    );
                     return (
                       <button
                         key={sub.id}
@@ -281,11 +292,29 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
                         }`}
                       >
                         <div className="flex flex-col min-w-0 pr-3">
-                          <span className="text-xs font-bold leading-tight truncate">
-                            {sub.name}
-                          </span>
-                          <span className={`text-[10.5px] font-mono mt-0.5 ${isChecked ? 'text-white/70 dark:text-black/70' : 'text-black/50 dark:text-white/50'}`}>
-                            {sub.code || sub.shortName || 'Subject'} {sub.facultyName ? `· ${sub.facultyName}` : ''}
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-xs font-bold leading-tight truncate">
+                              {sub.name}
+                            </span>
+                            {isCommon && (
+                              <span
+                                className={`px-1.5 py-0.2 rounded text-[9px] font-mono font-bold uppercase tracking-wider ${
+                                  isChecked
+                                    ? 'bg-emerald-400 text-black'
+                                    : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                                }`}
+                              >
+                                ★ Common Subject
+                              </span>
+                            )}
+                          </div>
+                          <span
+                            className={`text-[10.5px] font-mono mt-0.5 ${
+                              isChecked ? 'text-white/70 dark:text-black/70' : 'text-black/50 dark:text-white/50'
+                            }`}
+                          >
+                            {sub.code || sub.shortName || 'Subject'}{' '}
+                            {sub.facultyName ? `· ${sub.facultyName}` : ''}
                           </span>
                         </div>
                         <div

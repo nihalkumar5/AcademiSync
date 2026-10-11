@@ -8,6 +8,7 @@ import {
   AggregatedFacultySession,
   revertFacultyReschedule,
   cancelOrRestoreFacultyClass,
+  formatFacultyBatchDegreeAndBranch,
 } from '@/lib/facultyUtils';
 import { getSubjectCardTheme } from '@/lib/cardColors';
 import { FacultyRescheduleModal } from './FacultyRescheduleModal';
@@ -156,11 +157,12 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
     if (isCancelled) statusText = '🚫 CANCELLED FOR TODAY';
     else if (isRescheduled) statusText = `⏰ RESCHEDULED: ${session.startTime} - ${session.endTime}`;
 
+    const batchLabel = formatFacultyBatchDegreeAndBranch(batch).fullLabel;
     const message = [
       `📢 *Official Class Announcement*`,
       `━━━━━━━━━━━━━━━━━━`,
       `*Subject:* ${subjectName} (${subjectCode || 'Class'})`,
-      `*Batch:* ${batch.batchName}`,
+      `*Batch:* ${batchLabel}`,
       `*Faculty:* ${facultyName}`,
       `*Time:* ${session.startTime} - ${session.endTime}${isRescheduled && rescheduleMeta ? ` (Original: ${rescheduleMeta.originalStartTime} - ${rescheduleMeta.originalEndTime})` : ''}`,
       `*Room:* ${session.room || 'TBA'}`,
@@ -202,7 +204,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                 {formatTime12Hour(session.startTime)} - {formatTime12Hour(session.endTime)}
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-[10.5px] font-bold text-white/80 uppercase tracking-wider">
-                {batch.batchName.split('·').pop()?.trim() || batch.batchName}
+                {formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch}
               </span>
             </div>
           </div>
@@ -221,7 +223,8 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
             <span>·</span>
             <span className="flex items-center gap-1 text-white/80">
               <Users className="w-3.5 h-3.5 opacity-70" />
-              {batch.batchName}
+              {formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch}
+              {formatFacultyBatchDegreeAndBranch(batch).semText ? ` · ${formatFacultyBatchDegreeAndBranch(batch).semText}` : ''}
             </span>
             {subjectCode && (
               <>
@@ -339,7 +342,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                 {formatTime12Hour(session.startTime)} - {formatTime12Hour(session.endTime)}
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[10px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
-                {batch.batchName.split('·').pop()?.trim() || batch.batchName}
+                {formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch}
               </span>
             </div>
           </div>
@@ -369,7 +372,8 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
             <span>·</span>
             <span className="flex items-center gap-1">
               <Users className="w-3.5 h-3.5 opacity-60" />
-              {batch.batchName}
+              {formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch}
+              {formatFacultyBatchDegreeAndBranch(batch).semText ? ` · ${formatFacultyBatchDegreeAndBranch(batch).semText}` : ''}
             </span>
             {subjectCode && (
               <>

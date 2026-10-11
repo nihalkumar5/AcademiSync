@@ -7,6 +7,7 @@ import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { CheckSquare, Plus, Eye, Calendar, Users, FileText, ExternalLink, Link2 } from 'lucide-react';
 import { getTaskCardTheme } from '@/lib/cardColors';
+import { formatFacultyBatchDegreeAndBranch } from '@/lib/facultyUtils';
 import { AssignmentReadTrackerModal } from './AssignmentReadTrackerModal';
 import { clsx } from 'clsx';
 
@@ -116,7 +117,7 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
             assignments.map((task, idx) => {
               const readCount = task.readReceipts ? Object.keys(task.readReceipts).length : 0;
               const matchedBatch = linkedBatches.find((b) => b.batchKey === task.batchKey);
-              const batchName = matchedBatch?.batchName || 'Batch';
+              const batchName = matchedBatch ? formatFacultyBatchDegreeAndBranch(matchedBatch).degreeAndBranch : 'Batch';
 
               const deadlineDate = new Date(task.deadline);
               const diffDays = Math.ceil(

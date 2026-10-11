@@ -9,6 +9,7 @@ import {
   AggregatedFacultySession,
   cancelOrRestoreFacultyClass,
   revertFacultyReschedule,
+  formatFacultyBatchDegreeAndBranch,
 } from '@/lib/facultyUtils';
 import { getSubjectCardTheme } from '@/lib/cardColors';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -176,11 +177,12 @@ export const FacultyWeeklyTimetable: React.FC = () => {
   const handleShareWhatsAppNotice = (agg: AggregatedFacultySession) => {
     const { session, batch, subjectName, isCancelled, isRescheduled, rescheduleMeta } = agg;
     const teacherName = profile.name ? `${profile.facultyTitle || 'Prof.'} ${profile.name}` : 'Faculty';
+    const batchLabel = formatFacultyBatchDegreeAndBranch(batch).fullLabel;
 
     let text = '';
     if (isCancelled) {
       text = `📢 *NOTICE: CLASS CANCELLED*\n\n` +
-        `Batch: *${batch.batchName}*\n` +
+        `Batch: *${batchLabel}*\n` +
         `Subject: *${subjectName}* (${session.subjectCode || ''})\n` +
         `Time: *${session.startTime} - ${session.endTime}*\n` +
         `Status: *CANCELLED TODAY*\n` +
@@ -188,7 +190,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
         `Please check updated schedule on AcademiSync.`;
     } else if (isRescheduled) {
       text = `⏰ *NOTICE: CLASS RESCHEDULED*\n\n` +
-        `Batch: *${batch.batchName}*\n` +
+        `Batch: *${batchLabel}*\n` +
         `Subject: *${subjectName}* (${session.subjectCode || ''})\n` +
         `New Time: *${session.startTime} - ${session.endTime}* (Original: ${rescheduleMeta?.originalStartTime} - ${rescheduleMeta?.originalEndTime})\n` +
         `Room: *${session.room || 'TBA'}*\n` +
@@ -197,7 +199,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
         `\nUpdated on AcademiSync.`;
     } else {
       text = `📌 *CLASS UPDATE*\n\n` +
-        `Batch: *${batch.batchName}*\n` +
+        `Batch: *${batchLabel}*\n` +
         `Subject: *${subjectName}* (${session.subjectCode || ''})\n` +
         `Time: *${session.startTime} - ${session.endTime}*\n` +
         `Room: *${session.room || 'TBA'}*\n` +
@@ -271,7 +273,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                     : 'bg-transparent text-black/60 dark:text-white/60 border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30'
                 }`}
               >
-                {b.batchName.split('·').pop()?.trim() || b.batchName}
+                {formatFacultyBatchDegreeAndBranch(b).degreeAndBranch}
               </button>
             ))}
           </div>
@@ -419,7 +421,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                             {formatTime12Hour(session.startTime)} - {formatTime12Hour(session.endTime)}
                           </span>
                           <span className="px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[10px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
-                            {batch.batchName.split('·').pop()?.trim() || batch.batchName}
+                            {formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch}
                           </span>
                         </div>
                       </div>
@@ -449,7 +451,8 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                         <span>·</span>
                         <span className="flex items-center gap-1">
                           <Users className="w-3.5 h-3.5 opacity-60" />
-                          {batch.batchName}
+                          {formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch}
+                          {formatFacultyBatchDegreeAndBranch(batch).semText ? ` · ${formatFacultyBatchDegreeAndBranch(batch).semText}` : ''}
                         </span>
                         {subjectCode && (
                           <>
