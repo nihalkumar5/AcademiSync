@@ -24,6 +24,8 @@ import { getTaskCardTheme } from '@/lib/cardColors';
 import { formatFacultyBatchDegreeAndBranch } from '@/lib/facultyUtils';
 import { AssignmentReadTrackerModal } from './AssignmentReadTrackerModal';
 import { CreateAssignmentModal } from './CreateAssignmentModal';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { MonochromeIllustration } from '@/components/ui/MonochromeIllustration';
 import { clsx } from 'clsx';
 
 export const FacultyTasksView: React.FC = () => {
@@ -177,133 +179,128 @@ export const FacultyTasksView: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-5 text-left max-w-4xl mx-auto w-full pb-32 sm:pb-24">
-      {/* Minimal Header */}
-      <div className="flex items-center justify-between gap-3 pt-2 sm:pt-4 flex-wrap">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
-              Faculty Hub · {linkedBatches.length} {linkedBatches.length === 1 ? 'Batch' : 'Batches'}
-            </span>
+      {/* Editorial Header */}
+      <div className="flex flex-col gap-4 pt-2 sm:pt-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 rounded-[3px]">
+                FACULTY ASSIGNMENTS
+              </span>
+              <span className="text-[12px] font-mono text-[#6F6F6F] dark:text-[#A1A1AA]">
+                {linkedBatches.length} {linkedBatches.length === 1 ? 'batch' : 'batches'} connected
+              </span>
+            </div>
+            <h2 className="text-[32px] sm:text-[36px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[38px] sm:leading-[42px]">
+              Assignments & Tasks
+            </h2>
+            <p className="text-[14px] font-normal text-[#6B6B6B] dark:text-[#A1A1AA] leading-[20px] mt-1.5">
+              Publish assignments, track student submission deadlines & read receipts.
+            </p>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-black dark:text-white tracking-tight mt-0.5">
-            Assignments
-          </h1>
+
+          <div className="flex items-center gap-2.5 self-start sm:self-auto flex-wrap">
+            <button
+              type="button"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="flex items-center justify-center gap-1.5 h-9 px-3.5 bg-[#111111] text-white dark:bg-white dark:text-[#111111] hover:opacity-90 transition-opacity text-[13px] font-semibold cursor-pointer shadow-xs rounded-[3px]"
+            >
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>New Task</span>
+            </button>
+          </div>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setIsCreateModalOpen(true)}
-          className="px-3.5 py-2 rounded-lg bg-black text-white dark:bg-white dark:text-black font-semibold text-xs sm:text-sm flex items-center gap-1.5 hover:opacity-85 active:scale-95 transition-all shadow-2xs cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Task</span>
-        </button>
       </div>
 
-      {/* Micro-metrics Row */}
-      <div className="flex items-center gap-2 text-xs font-mono text-black/60 dark:text-white/60">
-        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold">
-          {activeCount} Active
-        </span>
-        <span>·</span>
-        <span>{assignments.length} Total</span>
-        {dueSoonCount > 0 && (
-          <>
-            <span>·</span>
-            <span className="text-amber-600 dark:text-amber-400 font-bold">{dueSoonCount} Due Soon</span>
-          </>
-        )}
-      </div>
-
-      {/* Unified Search & Segmented Filter Bar */}
-      <div className="flex flex-col gap-2.5">
-        {/* Search Bar */}
-        <div className="relative w-full">
-          <Search className="w-4 h-4 text-black/40 dark:text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+      {/* Search Bar */}
+      <div className="relative w-full">
+        <div className="flex items-center gap-3 px-4 py-2.5 h-[44px] rounded-[3px] bg-white dark:bg-[#121317] border border-[#D9D9D6] dark:border-white/[0.08] shadow-xs">
+          <Search className="w-4 h-4 text-[#6F6F6F] dark:text-[#94A3B8] shrink-0" />
           <input
             type="text"
             placeholder="Search assignments, topics, or subjects..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-8 py-2 text-xs sm:text-sm rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#111215] text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all shadow-2xs"
+            className="w-full bg-transparent text-[14px] text-[#111111] dark:text-[#F4F4F6] placeholder:text-[#6F6F6F] dark:placeholder:text-[#64748B] focus:outline-none font-medium"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white"
+              className="p-1 rounded-none text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
+      </div>
 
-        {/* Segmented Status Pill Bar */}
-        <div className="flex items-center gap-1 p-1 rounded-xl bg-black/[0.03] dark:bg-white/[0.04] border border-black/5 dark:border-white/5 overflow-x-auto no-scrollbar">
-          {[
-            { id: 'all', label: 'All', count: assignments.length },
-            { id: 'active', label: 'Active', count: activeCount },
-            { id: 'due_soon', label: 'Due Soon', count: dueSoonCount },
-            { id: 'overdue', label: 'Past Due', count: overdueCount },
-          ].map((tab) => {
-            const isActive = statusFilter === tab.id;
+      {/* Filter Tabs */}
+      <div className="flex items-center w-full mt-1 mb-1 h-[44px] border-b border-[#D9D9D6] dark:border-white/[0.08]">
+        {[
+          { id: 'all', label: 'All', count: assignments.length },
+          { id: 'active', label: 'Active', count: activeCount },
+          { id: 'due_soon', label: 'Due Soon', count: dueSoonCount },
+          { id: 'overdue', label: 'Past Due', count: overdueCount },
+        ].map((tab) => {
+          const isSelected = statusFilter === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setStatusFilter(tab.id as any)}
+              className={`relative flex-1 flex items-center justify-center gap-1.5 h-full text-[11px] font-semibold tracking-[1px] uppercase transition-colors whitespace-nowrap cursor-pointer ${
+                isSelected
+                  ? 'text-[#111111] dark:text-[#F4F4F6]'
+                  : 'text-[#6F6F6F] dark:text-[#94A3B8] hover:text-[#111111] dark:hover:text-white'
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span className="font-mono text-[11px] font-bold">({tab.count})</span>
+              {isSelected && (
+                <span className="absolute bottom-[-1px] left-1/2 -translate-x-1/2 w-[38px] h-[2px] bg-[#111111] dark:bg-[#F4F4F6]" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Batch Filter Pills */}
+      {linkedBatches.length > 1 && (
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+          <button
+            type="button"
+            onClick={() => setSelectedBatchFilter('all')}
+            className={clsx(
+              'px-3 py-1.5 rounded-[3px] text-xs font-mono font-semibold uppercase tracking-wider transition-colors cursor-pointer whitespace-nowrap border',
+              selectedBatchFilter === 'all'
+                ? 'bg-[#111111] text-white dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-xs'
+                : 'bg-transparent text-black/60 dark:text-white/60 border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30'
+            )}
+          >
+            All Batches
+          </button>
+          {linkedBatches.map((batch) => {
+            const bLabel = formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch;
+            const isSel = selectedBatchFilter === batch.batchKey;
             return (
               <button
-                key={tab.id}
+                key={batch.batchKey}
                 type="button"
-                onClick={() => setStatusFilter(tab.id as any)}
+                onClick={() => setSelectedBatchFilter(batch.batchKey)}
                 className={clsx(
-                  'px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5',
-                  isActive
-                    ? 'bg-white text-black dark:bg-[#1C1E24] dark:text-white shadow-2xs'
-                    : 'text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white'
+                  'px-3 py-1.5 rounded-[3px] text-xs font-mono font-semibold uppercase tracking-wider transition-colors cursor-pointer whitespace-nowrap border',
+                  isSel
+                    ? 'bg-[#111111] text-white dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-xs'
+                    : 'bg-transparent text-black/60 dark:text-white/60 border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30'
                 )}
               >
-                <span>{tab.label}</span>
-                <span className="text-[10px] font-mono opacity-60">({tab.count})</span>
+                {bLabel}
               </button>
             );
           })}
         </div>
-
-        {/* Batch Pills (if multiple batches connected) */}
-        {linkedBatches.length > 1 && (
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-            <button
-              type="button"
-              onClick={() => setSelectedBatchFilter('all')}
-              className={clsx(
-                'px-2.5 py-1 rounded-lg text-xs font-mono font-semibold transition-colors cursor-pointer whitespace-nowrap',
-                selectedBatchFilter === 'all'
-                  ? 'bg-black text-white dark:bg-white dark:text-black'
-                  : 'bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10'
-              )}
-            >
-              All Batches
-            </button>
-            {linkedBatches.map((batch) => {
-              const bLabel = formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch;
-              const isSel = selectedBatchFilter === batch.batchKey;
-              return (
-                <button
-                  key={batch.batchKey}
-                  type="button"
-                  onClick={() => setSelectedBatchFilter(batch.batchKey)}
-                  className={clsx(
-                    'px-2.5 py-1 rounded-lg text-xs font-mono font-semibold transition-colors cursor-pointer whitespace-nowrap',
-                    isSel
-                      ? 'bg-black text-white dark:bg-white dark:text-black'
-                      : 'bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10'
-                  )}
-                >
-                  {bLabel}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Assignment Cards List */}
       <div className="flex flex-col gap-3">
@@ -312,42 +309,29 @@ export const FacultyTasksView: React.FC = () => {
             Loading assignments...
           </div>
         ) : filteredAssignments.length === 0 ? (
-          <div className="py-12 text-center rounded-2xl border border-black/10 dark:border-white/10 bg-black/[0.01] dark:bg-white/[0.01] flex flex-col items-center justify-center p-6 gap-2">
-            <div className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40">
-              <CheckSquare className="w-5 h-5" />
-            </div>
-            <span className="text-sm font-bold text-black dark:text-white">
-              {assignments.length === 0 ? 'No Assignments Published' : 'No Matching Assignments'}
-            </span>
-            <p className="text-xs text-black/50 dark:text-white/50 max-w-xs">
-              {assignments.length === 0
-                ? 'Create an assignment to broadcast submission deadlines to students.'
-                : 'Try clearing your search query or filter.'}
-            </p>
-            {assignments.length === 0 ? (
-              <button
-                type="button"
-                onClick={() => setIsCreateModalOpen(true)}
-                className="mt-2 px-3.5 py-1.5 rounded-lg bg-black text-white dark:bg-white dark:text-black text-xs font-semibold hover:opacity-85 transition-opacity cursor-pointer shadow-2xs"
-              >
-                + New Assignment
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
+          <div className="py-8 px-4">
+            <EmptyState
+              icon={<MonochromeIllustration type="no-homework" size={48} />}
+              title={assignments.length === 0 ? "No assignments published" : "No matching assignments"}
+              description={
+                assignments.length === 0
+                  ? "Create an assignment to broadcast submission deadlines to students."
+                  : "Try clearing your search query or filter."
+              }
+              actionLabel={assignments.length === 0 ? "Create Assignment" : "Clear Filters"}
+              onAction={() => {
+                if (assignments.length === 0) {
+                  setIsCreateModalOpen(true);
+                } else {
                   setSearchQuery('');
                   setSelectedBatchFilter('all');
                   setStatusFilter('all');
-                }}
-                className="mt-1 text-xs font-semibold text-black dark:text-white underline cursor-pointer"
-              >
-                Clear Filters
-              </button>
-            )}
+                }
+              }}
+            />
           </div>
         ) : (
-          filteredAssignments.map((task) => {
+          filteredAssignments.map((task, idx) => {
             const readCount = task.readReceipts ? Object.keys(task.readReceipts).length : 0;
             const matchedBatch = linkedBatches.find((b) => b.batchKey === task.batchKey);
             const batchLabel = matchedBatch
@@ -364,117 +348,147 @@ export const FacultyTasksView: React.FC = () => {
               isOverdue,
               priority: task.priority || 'Medium',
             });
+            const formattedIndex = String(idx + 1).padStart(2, '0');
 
             return (
               <div
                 key={task.id}
-                className="p-4 sm:p-5 rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#111215] flex flex-col gap-3 transition-all hover:border-black/20 dark:hover:border-white/20 shadow-2xs"
+                className={clsx(
+                  "relative flex flex-col p-4 sm:p-[18px] rounded-[12px] border border-black/[0.05] dark:border-[color:var(--card-accent-border)] transition-all w-full overflow-hidden shadow-xs hover:shadow-md",
+                  isOverdue ? "border-rose-300 dark:border-rose-900/50" : ""
+                )}
+                style={{
+                  ['--card-accent-border' as any]: `${theme.accent}45`,
+                }}
               >
-                {/* Header: Batch Tag, Subject, Deadline, Priority, Delete */}
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {/* Batch Pill */}
-                    <span className="px-2 py-0.5 rounded-[5px] text-xs font-mono font-bold uppercase bg-black text-white dark:bg-white dark:text-black">
-                      {batchLabel}
-                    </span>
+                {/* Pastel backgrounds (exact match to HomeworkCard) */}
+                <div
+                  className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[11px]"
+                  style={{ backgroundColor: theme.bg }}
+                />
+                <div
+                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[11px]"
+                  style={{
+                    background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
+                  }}
+                />
 
-                    {/* Subject */}
-                    <span className="px-2 py-0.5 rounded-[5px] text-xs font-semibold bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70">
-                      {task.subjectName || 'Coursework'}
-                    </span>
-
-                    {/* Priority if High */}
-                    {task.priority === 'High' && (
-                      <span className="px-2 py-0.5 rounded-[5px] text-[10px] font-mono font-bold bg-rose-500/15 text-rose-700 dark:text-rose-400 uppercase">
-                        High Priority
-                      </span>
-                    )}
-
-                    {/* Deadline */}
-                    <span className="text-[11px] font-mono text-black/50 dark:text-white/50 flex items-center gap-1">
-                      <Calendar className="w-3 h-3 opacity-60" />
-                      <span>Due {deadlineDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                      {diffDays <= 2 && diffDays >= 0 && (
-                        <span className="text-amber-600 dark:text-amber-400 font-bold">({diffDays}d left)</span>
-                      )}
-                      {isOverdue && (
-                        <span className="text-rose-600 dark:text-rose-400 font-bold">(Past Due)</span>
-                      )}
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteAssignment(task)}
-                    className="p-1 rounded-md text-black/30 dark:text-white/30 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer shrink-0"
-                    title="Delete Assignment"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                {/* Assignment Title & Description */}
-                <div>
-                  <h3 className="text-sm sm:text-base font-bold text-black dark:text-white leading-snug">
-                    {task.title}
-                  </h3>
-                  {task.description && (
-                    <p className="text-xs sm:text-sm text-black/60 dark:text-white/60 mt-1 leading-relaxed break-words">
-                      {task.description}
-                    </p>
-                  )}
-                </div>
-
-                {/* Action Bar */}
-                <div className="flex items-center justify-between pt-2.5 border-t border-black/5 dark:border-white/5 flex-wrap gap-2 text-xs">
-                  <div className="flex items-center gap-2">
-                    {/* Read Tracker Button */}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedTaskForTracking(task)}
-                      className="px-2.5 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-mono font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-xs"
-                      title="View student reads"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>{readCount} Opened</span>
-                    </button>
-
-                    {/* Attachment Link */}
-                    {task.attachmentUrl && (
-                      <a
-                        href={task.attachmentUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-2.5 py-1 rounded-md bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 flex items-center gap-1 transition-colors text-[11px] font-medium"
+                <div className="relative z-10 flex flex-col gap-3">
+                  {/* Top Bar */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span
+                        className="text-[28px] sm:text-[32px] font-bold leading-none tracking-tighter font-mono select-none"
+                        style={{ color: theme.numberColor }}
                       >
-                        <Link2 className="w-3 h-3" />
-                        <span>Attachment</span>
-                        <ExternalLink className="w-2.5 h-2.5 opacity-50" />
-                      </a>
+                        {formattedIndex}
+                      </span>
+
+                      {/* Batch Pill */}
+                      <span className="px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold uppercase bg-black text-white dark:bg-white dark:text-black">
+                        {batchLabel}
+                      </span>
+
+                      {/* Subject */}
+                      <span className="px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold uppercase bg-black/5 dark:bg-white/10 text-black/80 dark:text-white/80 border border-black/5 dark:border-white/5">
+                        {task.subjectName || 'Coursework'}
+                      </span>
+
+                      {/* Priority if High */}
+                      {task.priority === 'High' && (
+                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8] text-[#C96B45] text-[9.5px] font-bold uppercase tracking-wider font-mono">
+                          HIGH PRIORITY
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {/* Deadline */}
+                      <span className="text-[11px] font-mono text-black/60 dark:text-white/60 flex items-center gap-1">
+                        <Clock className="w-3 h-3 opacity-60" />
+                        <span>Due {deadlineDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                        {diffDays <= 2 && diffDays >= 0 && (
+                          <span className="text-amber-600 dark:text-amber-400 font-bold">({diffDays}d)</span>
+                        )}
+                        {isOverdue && (
+                          <span className="text-rose-600 dark:text-rose-400 font-bold">(Past Due)</span>
+                        )}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteAssignment(task)}
+                        className="p-1 rounded text-black/30 dark:text-white/30 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                        title="Delete Assignment"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Assignment Title & Description */}
+                  <div>
+                    <h3 className="text-base sm:text-[17px] font-bold text-black dark:text-white leading-snug">
+                      {task.title}
+                    </h3>
+                    {task.description && (
+                      <p className="text-xs sm:text-sm text-black/65 dark:text-white/65 mt-1 leading-relaxed break-words">
+                        {task.description}
+                      </p>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    {/* WhatsApp Notice Share */}
-                    <button
-                      type="button"
-                      onClick={() => handleShareWhatsApp(task)}
-                      className="px-2.5 py-1 rounded-md border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 text-black/70 dark:text-white/70 transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
-                      title="Share to WhatsApp"
-                    >
-                      <Share2 className="w-3 h-3" />
-                      <span>Share</span>
-                    </button>
+                  {/* Action Bar */}
+                  <div className="flex items-center justify-between pt-2.5 border-t border-black/5 dark:border-white/5 flex-wrap gap-2 text-xs">
+                    <div className="flex items-center gap-2">
+                      {/* Read Tracker Button */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedTaskForTracking(task)}
+                        className="h-7 px-2.5 rounded-[3px] bg-emerald-500/10 hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-mono font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-xs"
+                        title="View student reads"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>{readCount} Opened</span>
+                      </button>
 
-                    {/* Track Reads Modal Trigger */}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedTaskForTracking(task)}
-                      className="px-2.5 py-1 rounded-md bg-black text-white dark:bg-white dark:text-black font-semibold text-xs hover:opacity-85 transition-opacity cursor-pointer flex items-center gap-1"
-                    >
-                      <span>Track</span>
-                      <ExternalLink className="w-3 h-3 opacity-60" />
-                    </button>
+                      {/* Attachment Link */}
+                      {task.attachmentUrl && (
+                        <a
+                          href={task.attachmentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="h-7 px-2.5 rounded-[3px] bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 flex items-center gap-1 transition-colors text-[11px] font-medium"
+                        >
+                          <Link2 className="w-3 h-3" />
+                          <span>Attachment</span>
+                          <ExternalLink className="w-2.5 h-2.5 opacity-50" />
+                        </a>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      {/* WhatsApp Notice Share */}
+                      <button
+                        type="button"
+                        onClick={() => handleShareWhatsApp(task)}
+                        className="h-7 px-2.5 rounded-[3px] border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 text-black/70 dark:text-white/70 transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
+                        title="Share to WhatsApp"
+                      >
+                        <Share2 className="w-3 h-3" />
+                        <span>Share</span>
+                      </button>
+
+                      {/* Track Reads Modal Trigger */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedTaskForTracking(task)}
+                        className="h-7 px-2.5 rounded-[3px] bg-[#111111] text-white dark:bg-white dark:text-[#111111] font-semibold text-xs hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-1 shadow-xs"
+                      >
+                        <span>Track</span>
+                        <ExternalLink className="w-3 h-3 opacity-60" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
