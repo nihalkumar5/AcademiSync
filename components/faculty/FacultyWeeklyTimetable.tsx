@@ -17,6 +17,8 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ConnectBatchModal } from './ConnectBatchModal';
 import { FacultyRescheduleModal } from './FacultyRescheduleModal';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { MonochromeIllustration } from '@/components/ui/MonochromeIllustration';
 import {
   CalendarDays,
   Clock,
@@ -25,6 +27,7 @@ import {
   Plus,
   BookOpen,
   MoreVertical,
+  MoreHorizontal,
   RotateCcw,
   Ban,
   Share2,
@@ -269,58 +272,54 @@ export const FacultyWeeklyTimetable: React.FC = () => {
         </div>
       ) : (
         <div className="flex flex-col gap-5">
-          {/* Day Pills Bar */}
-          <div className="flex items-center justify-between pb-1 flex-wrap gap-2">
-            <div className="flex items-center gap-2">
-              <CalendarDays className="w-4 h-4 text-[#111111] dark:text-white" />
-              <span className="text-xs font-bold uppercase tracking-wider text-[#111111] dark:text-white">
-                {selectedDay}
-              </span>
-              <span className="text-xs font-mono text-[#6F6F6F] dark:text-[#A1A1AA]">
-                ({sessionsForDay.length} {sessionsForDay.length === 1 ? 'lecture' : 'lectures'})
-              </span>
-            </div>
+          {/* Mobile Day Tabs (< 768px) - Exact match to student theme */}
+          <div className="flex md:hidden items-center gap-2.5 overflow-x-auto pb-2 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+            {DAYS.map((day) => {
+              const isSelected = selectedDay === day;
+              const isToday = currentDay === day;
+              const count = (allWeekSessions[day] || []).length;
 
-            {/* Day Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-              {DAYS.map((day) => {
-                const isSelected = selectedDay === day;
-                const isToday = currentDay === day;
-                const count = (allWeekSessions[day] || []).length;
-
-                return (
-                  <button
-                    key={day}
-                    type="button"
-                    onClick={() => setSelectedDay(day)}
-                    className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer rounded-[4px] border ${
-                      isSelected
-                        ? 'bg-[#111111] text-white dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-xs'
-                        : 'bg-transparent text-black/60 dark:text-white/60 border-black/10 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30'
-                    }`}
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => setSelectedDay(day)}
+                  className={clsx(
+                    'flex flex-col items-center justify-center min-w-[76px] py-2.5 px-3 rounded-[3px] transition-all border cursor-pointer shrink-0',
+                    isSelected
+                      ? 'bg-[#111111] text-white border-[#111111] shadow-xs'
+                      : 'bg-white dark:bg-[#16171D] border-[#E5E5E0] dark:border-white/[0.08] text-[#151515] dark:text-[#F4F4F6] hover:bg-neutral-100 dark:hover:bg-white/[0.04]'
+                  )}
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span className="text-[13px] font-bold tracking-tight">{day.slice(0, 3)}</span>
+                    {isToday && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#18A889] shrink-0" />
+                    )}
+                  </div>
+                  <span
+                    className={clsx(
+                      'text-[10.5px] font-normal mt-0.5 tracking-tight',
+                      isSelected ? 'text-white/70' : 'text-[#737373] dark:text-[#94A3B8]'
+                    )}
                   >
-                    <span>{day.substring(0, 3)}</span>
-                    {count > 0 && (
-                      <span className={`ml-1 text-[10px] font-mono ${isSelected ? 'opacity-85' : 'opacity-50'}`}>
-                        {count}
-                      </span>
-                    )}
-                    {isToday && !isSelected && (
-                      <span className="ml-1 w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block align-middle" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+                    {count} {count === 1 ? 'class' : 'classes'}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Sessions List */}
-          <div className="flex flex-col gap-3.5">
+          {/* Mobile Schedule List (< 768px) */}
+          <div className="flex md:hidden flex-col gap-3.5">
             {sessionsForDay.length === 0 ? (
-              <div className="py-12 bg-white dark:bg-[#13151D] border border-black/[0.06] dark:border-white/[0.08] rounded-[12px] text-center text-xs text-[#6F6F6F] dark:text-[#A1A1AA] flex flex-col items-center justify-center gap-2 shadow-xs">
-                <BookOpen className="w-8 h-8 opacity-30" />
-                <span>No lectures scheduled for {selectedDay}.</span>
-              </div>
+              <EmptyState
+                icon={<MonochromeIllustration type="no-classes" size={48} />}
+                title={`NO LECTURES ON ${selectedDay.toUpperCase()}`}
+                description="No teaching sessions scheduled for this day."
+                actionLabel="Connect Another Batch"
+                onAction={() => setIsConnectBatchOpen(true)}
+              />
             ) : (
               sessionsForDay.map((agg) => {
                 const {
@@ -342,8 +341,17 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                   isRescheduled,
                 });
 
-                const { pillLabel, detailLabel } = formatFacultyCombinedBatchLabel(agg.linkedBatches, agg.batch);
+                const { pillLabel } = formatFacultyCombinedBatchLabel(agg.linkedBatches, agg.batch);
                 const cardKey = `${session.id}_${selectedDay}_${agg.linkedBatches?.map((b) => b.batchKey).join('_') || batch.batchKey}`;
+                const categoryLabel = isLive
+                  ? 'LIVE NOW'
+                  : isCancelled
+                  ? 'CANCELLED'
+                  : isRescheduled
+                  ? 'RESCHEDULED'
+                  : session.isLab
+                  ? 'LAB SESSION'
+                  : (subjectCode || 'LECTURE');
 
                 return (
                   <div
@@ -364,7 +372,6 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                       borderColor: isLive ? '#18A889' : undefined,
                     }}
                   >
-                    {/* Pastel backgrounds (exact student ClassCard) */}
                     {!isLive && (
                       <>
                         <div
@@ -381,41 +388,40 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                     )}
 
                     <div className="relative z-10 flex flex-col">
-                      {/* Top Bar: Badge, Timing, 3-dot Menu */}
-                      <div className="flex items-center justify-between mb-2.5 flex-wrap gap-2">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="text-[11px] font-bold uppercase tracking-[1.4px] leading-none font-mono"
-                            style={{ color: isLive ? '#18A889' : theme.accent }}
-                          >
-                            {isLive
-                              ? 'LIVE NOW'
-                              : isCancelled
-                              ? 'CANCELLED'
-                              : isRescheduled
-                              ? 'RESCHEDULED'
-                              : session.isLab
-                              ? 'LAB SESSION'
-                              : (subjectCode || 'LECTURE')}
+                      <div className="flex items-center justify-between gap-2 mb-2.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[11px] font-bold uppercase tracking-[1.4px] leading-none">
+                            <span className="dark:hidden inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] bg-white/80 text-slate-800 text-[10px] font-bold tracking-wider font-mono border border-black/[0.05] shadow-xs">
+                              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isLive ? '#18A889' : theme.accent }} />
+                              {categoryLabel}
+                            </span>
+                            <span className="hidden dark:inline font-mono" style={{ color: isLive ? '#18A889' : (theme.darkAccent || theme.accent) }}>
+                              {categoryLabel}
+                            </span>
                           </span>
+
+                          {session.isLab && (
+                            <span className="text-[9.5px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[4px] bg-white/80 dark:bg-[rgba(24,168,137,0.18)] text-emerald-800 dark:text-[#18A889] border border-emerald-600/20 dark:border-transparent shadow-xs dark:shadow-none">
+                              LAB
+                            </span>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <span className={`text-[12px] font-bold font-mono leading-none ${isLive ? 'text-white' : 'text-[#151515] dark:text-[#F4F4F6]'}`}>
-                            {formatTime12Hour(session.startTime)} - {formatTime12Hour(session.endTime)}
+                          <span className={`text-[12px] sm:text-[13px] font-bold font-mono tracking-tight whitespace-nowrap ${isLive ? 'text-white' : 'text-slate-600 dark:text-[#F4F4F6]'}`}>
+                            {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
                           </span>
 
-                          {/* 3-Dot Action Dropdown Menu */}
                           <div className="relative shrink-0">
                             <button
                               type="button"
                               onClick={() =>
                                 setOpenMenuSessionId(openMenuSessionId === cardKey ? null : cardKey)
                               }
-                              className="p-1 rounded-[6px] text-[#6F6F6F] hover:text-[#111111] dark:text-[#A1A1AA] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                              className="p-1 rounded-[6px] text-slate-500 hover:text-slate-900 dark:text-[#CBD5E1] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
                               title="Class Options"
                             >
-                              <MoreVertical className="w-4 h-4" />
+                              <MoreHorizontal className="w-4 h-4" />
                             </button>
 
                             {openMenuSessionId === cardKey && (
@@ -430,7 +436,6 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                                     <span>Faculty Actions</span>
                                   </div>
 
-                                  {/* Reschedule / Edit Timing Action */}
                                   {isRescheduled ? (
                                     <button
                                       type="button"
@@ -459,7 +464,6 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                                     )
                                   )}
 
-                                  {/* Cancel / Restore Action */}
                                   {isCancelled ? (
                                     <button
                                       type="button"
@@ -488,7 +492,6 @@ export const FacultyWeeklyTimetable: React.FC = () => {
 
                                   <div className="h-px bg-black/[0.06] dark:bg-white/[0.08] my-1" />
 
-                                  {/* Share Notice via WhatsApp */}
                                   <button
                                     type="button"
                                     onClick={() => {
@@ -507,31 +510,26 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Subject Name */}
-                      <h3 className={`text-[18px] sm:text-[20px] font-bold leading-[24px] mb-2 pr-4 line-clamp-2 ${isCancelled ? 'line-through opacity-70' : ''} ${isLive ? 'text-white' : 'text-[#151515] dark:text-[#F4F4F6]'}`}>
+                      <h4 className={`text-[16px] sm:text-[17px] leading-[22px] font-bold tracking-tight break-words mb-2 ${isCancelled ? 'line-through opacity-70' : ''} ${isLive ? 'text-white' : 'text-[#151515] dark:text-white'}`}>
                         {subjectName}
-                      </h3>
+                      </h4>
 
-                      {/* Rescheduled Notice */}
                       {isRescheduled && rescheduleMeta?.originalStartTime && (
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] font-mono font-medium mb-2.5 self-start">
                           <Clock className="w-3.5 h-3.5 shrink-0" />
                           <span>
-                            Rescheduled from {formatTime12Hour(rescheduleMeta.originalStartTime)} - {formatTime12Hour(rescheduleMeta.originalEndTime)}
+                            Rescheduled from {formatTime12Hour(rescheduleMeta.originalStartTime)} – {formatTime12Hour(rescheduleMeta.originalEndTime)}
                             {rescheduleMeta.reason ? ` · ${rescheduleMeta.reason}` : ''}
                           </span>
                         </div>
                       )}
 
-                      {/* Room */}
-                      <div className={`flex items-center gap-1.5 text-[12px] font-mono font-medium ${isLive ? 'text-white/70' : 'text-black/60 dark:text-[#A1A1AA]'}`}>
-                        <MapPin className="w-3.5 h-3.5 opacity-70" />
-                        <span>{session.room || 'Room TBA'}</span>
-                      </div>
-
-                      {/* Connected Batch Pill below Room */}
-                      <div className="mt-2.5 flex items-center">
-                        <span className="px-2.5 py-0.5 rounded-[4px] bg-black/5 dark:bg-white/10 text-[10px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70 inline-flex items-center font-mono border border-black/5 dark:border-white/5">
+                      <div className={`flex items-center gap-1.5 text-[12px] font-medium truncate ${isLive ? 'text-white/80' : 'text-slate-600 dark:text-[#CBD5E1]'}`}>
+                        <span className="shrink-0 flex items-center gap-1">
+                          <span className="text-[10px] leading-none opacity-80 text-slate-400 dark:text-[#CBD5E1]">◉</span> {session.room || 'Room TBA'}
+                        </span>
+                        <span className="shrink-0 opacity-40">·</span>
+                        <span className="truncate px-2 py-0.5 rounded-[4px] bg-black/5 dark:bg-white/10 text-[10px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70 inline-flex items-center font-mono border border-black/5 dark:border-white/5">
                           {pillLabel}
                         </span>
                       </div>
@@ -540,6 +538,248 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                 );
               })
             )}
+          </div>
+
+          {/* Desktop Weekly Grid (>= 768px) - Exact match to student timetable */}
+          <div
+            className="hidden md:grid gap-4 items-start"
+            style={{ gridTemplateColumns: `repeat(${DAYS.length}, minmax(0, 1fr))` }}
+          >
+            {DAYS.map((day) => {
+              const isToday = currentDay === day;
+              const daySessions = allWeekSessions[day] || [];
+
+              return (
+                <div
+                  key={day}
+                  className={clsx(
+                    "flex flex-col gap-4 p-4 border transition-all rounded-none",
+                    isToday
+                      ? "bg-white dark:bg-[#13151D] border-[#111111] dark:border-emerald-500/40 dark:shadow-[0_0_25px_-5px_rgba(16,185,129,0.12)] shadow-xs"
+                      : "bg-white dark:bg-[#121317] border-[#D9D9D6] dark:border-white/[0.08]"
+                  )}
+                >
+                  <div className="flex items-center justify-between px-1 pb-3 border-b border-[#EEEEEC] dark:border-white/[0.08]">
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[14px] font-bold tracking-tight text-[#111111] dark:text-[#F4F4F6]">
+                          {day}
+                        </span>
+                        {isToday && (
+                          <span className="text-[10px] font-bold text-white dark:text-emerald-400 bg-[#111111] dark:bg-emerald-500/20 dark:border dark:border-emerald-500/30 px-2 py-0.5 uppercase tracking-wider font-mono">
+                            Today
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] font-medium text-[#6F6F6F] dark:text-[#94A3B8]">
+                        {daySessions.length} {daySessions.length === 1 ? 'class' : 'classes'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3 min-h-[400px]">
+                    {daySessions.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-48 text-center bg-black/[0.02] dark:bg-white/[0.02] border border-dashed border-[#D9D9D6] dark:border-white/[0.08]">
+                        <CalendarDays className="w-6 h-6 text-[#888888] mb-2 opacity-50" />
+                        <span className="text-xs font-semibold text-[#888888] dark:text-[#64748B]">No Lectures</span>
+                      </div>
+                    ) : (
+                      daySessions.map((agg) => {
+                        const {
+                          session,
+                          batch,
+                          subjectName,
+                          subjectCode,
+                          isCancelled,
+                          isRescheduled,
+                          rescheduleMeta,
+                          isLive,
+                        } = agg;
+
+                        const theme = getSubjectCardTheme({
+                          subjectName,
+                          subjectCode,
+                          isLab: session.isLab,
+                          isCancelled,
+                          isRescheduled,
+                        });
+
+                        const { pillLabel } = formatFacultyCombinedBatchLabel(agg.linkedBatches, agg.batch);
+                        const cardKey = `desk_${session.id}_${day}_${agg.linkedBatches?.map((b) => b.batchKey).join('_') || batch.batchKey}`;
+                        const categoryLabel = isLive
+                          ? 'LIVE NOW'
+                          : isCancelled
+                          ? 'CANCELLED'
+                          : isRescheduled
+                          ? 'RESCHEDULED'
+                          : session.isLab
+                          ? 'LAB'
+                          : (subjectCode || 'LECTURE');
+
+                        return (
+                          <div
+                            key={cardKey}
+                            className={clsx(
+                              "group relative flex flex-col p-3.5 text-left transition-all rounded-[10px] shadow-xs hover:shadow-md",
+                              openMenuSessionId === cardKey ? "overflow-visible z-40" : "overflow-hidden z-0",
+                              isLive
+                                ? "bg-[#111111] dark:bg-[#111111] border-2 border-[#18A889] shadow-[0_0_20px_-4px_rgba(24,168,137,0.3)] ring-1 ring-[#18A889]/30"
+                                : isCancelled
+                                ? "border border-rose-200 dark:border-rose-900/40 opacity-75"
+                                : isRescheduled
+                                ? "border border-amber-200 dark:border-amber-900/40"
+                                : "border border-black/[0.05] dark:border-[color:var(--card-accent-border)]"
+                            )}
+                            style={{
+                              ['--card-accent-border' as any]: `${theme.accent}45`,
+                              borderColor: isLive ? '#18A889' : undefined,
+                            }}
+                          >
+                            {!isLive && (
+                              <>
+                                <div
+                                  className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[9px]"
+                                  style={{ backgroundColor: theme.bg }}
+                                />
+                                <div
+                                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[9px]"
+                                  style={{
+                                    background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
+                                  }}
+                                />
+                              </>
+                            )}
+
+                            <div className="relative z-10 flex flex-col">
+                              <div className="flex items-center justify-between gap-1.5 mb-2">
+                                <span className="text-[10px] font-bold uppercase tracking-wider leading-none">
+                                  <span className="dark:hidden inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] bg-white/80 text-slate-800 text-[9.5px] font-bold font-mono border border-black/[0.05] shadow-xs">
+                                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isLive ? '#18A889' : theme.accent }} />
+                                    {categoryLabel}
+                                  </span>
+                                  <span className="hidden dark:inline font-mono text-[10px]" style={{ color: isLive ? '#18A889' : (theme.darkAccent || theme.accent) }}>
+                                    {categoryLabel}
+                                  </span>
+                                </span>
+
+                                <div className="flex items-center gap-1.5">
+                                  <span className={`text-[11px] font-bold font-mono tracking-tight whitespace-nowrap ${isLive ? 'text-white' : 'text-slate-600 dark:text-[#F4F4F6]'}`}>
+                                    {formatTime12Hour(session.startTime)}
+                                  </span>
+
+                                  <div className="relative shrink-0">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setOpenMenuSessionId(openMenuSessionId === cardKey ? null : cardKey)
+                                      }
+                                      className="p-1 rounded text-slate-500 hover:text-slate-900 dark:text-[#CBD5E1] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                                      title="Class Options"
+                                    >
+                                      <MoreHorizontal className="w-3.5 h-3.5" />
+                                    </button>
+
+                                    {openMenuSessionId === cardKey && (
+                                      <>
+                                        <div
+                                          className="fixed inset-0 z-30"
+                                          onClick={() => setOpenMenuSessionId(null)}
+                                        />
+                                        <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-[#16171D] border border-black/10 dark:border-white/10 rounded-[8px] shadow-xl py-1 z-40 text-left font-sans flex flex-col">
+                                          {isRescheduled ? (
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                setOpenMenuSessionId(null);
+                                                handleRevertReschedule(agg);
+                                              }}
+                                              className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
+                                            >
+                                              <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                                              <span>Revert</span>
+                                            </button>
+                                          ) : (
+                                            !isCancelled && (
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  setOpenMenuSessionId(null);
+                                                  setSessionToReschedule(agg);
+                                                }}
+                                                className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                                              >
+                                                <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
+                                                <span>Reschedule</span>
+                                              </button>
+                                            )
+                                          )}
+
+                                          {isCancelled ? (
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                setOpenMenuSessionId(null);
+                                                handleToggleCancel(agg);
+                                              }}
+                                              className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-left transition-colors cursor-pointer"
+                                            >
+                                              <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                                              <span>Restore</span>
+                                            </button>
+                                          ) : (
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                setOpenMenuSessionId(null);
+                                                handleToggleCancel(agg);
+                                              }}
+                                              className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
+                                            >
+                                              <Ban className="w-3.5 h-3.5 shrink-0" />
+                                              <span>Cancel</span>
+                                            </button>
+                                          )}
+
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              setOpenMenuSessionId(null);
+                                              handleShareWhatsAppNotice(agg);
+                                            }}
+                                            className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                                          >
+                                            <Share2 className="w-3.5 h-3.5 opacity-60 shrink-0" />
+                                            <span>WhatsApp</span>
+                                          </button>
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <h4 className={`text-[14px] leading-[18px] font-bold tracking-tight break-words mb-1.5 ${isCancelled ? 'line-through opacity-70' : ''} ${isLive ? 'text-white' : 'text-[#151515] dark:text-white'}`}>
+                                {subjectName}
+                              </h4>
+
+                              <div className={`flex items-center gap-1.5 text-[11px] font-medium truncate ${isLive ? 'text-white/80' : 'text-slate-600 dark:text-[#CBD5E1]'}`}>
+                                <span className="shrink-0 flex items-center gap-1">
+                                  <span className="text-[9px] leading-none opacity-80 text-slate-400 dark:text-[#CBD5E1]">◉</span> {session.room || 'TBA'}
+                                </span>
+                                <span className="shrink-0 opacity-40">·</span>
+                                <span className="truncate text-[9.5px] font-mono opacity-80">
+                                  {pillLabel}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
