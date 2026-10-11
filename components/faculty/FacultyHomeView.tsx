@@ -5,12 +5,11 @@ import { useApp } from '@/context/AppContext';
 import { ClassSession, DayOfWeek, FacultyLinkedBatch, Subject } from '@/lib/types';
 import { getCurrentDayOfWeek, getTomorrowDayOfWeek, getTodayDateString, timeToMinutes } from '@/lib/timetableUtils';
 import { aggregateFacultyWeeklyTimetable, AggregatedFacultySession } from '@/lib/facultyUtils';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot, collection, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { FacultyHeroHeader } from './FacultyHeroHeader';
 import { FacultyLiveLectureCard } from './FacultyLiveLectureCard';
 import { FacultyScheduleTimeline } from './FacultyScheduleTimeline';
-import { FacultyAssignmentsCard } from './FacultyAssignmentsCard';
 import { FacultyBatchesCard } from './FacultyBatchesCard';
 import { ConnectBatchModal } from './ConnectBatchModal';
 import { CreateAssignmentModal } from './CreateAssignmentModal';
@@ -18,7 +17,7 @@ import { CreateAssignmentModal } from './CreateAssignmentModal';
 const ALL_DAYS: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 export const FacultyHomeView: React.FC = () => {
-  const { profile } = useApp();
+  const { profile, user } = useApp();
   const linkedBatches = profile.facultyLinkedBatches || [];
 
   const [isConnectBatchOpen, setIsConnectBatchOpen] = useState(false);
@@ -54,6 +53,49 @@ export const FacultyHomeView: React.FC = () => {
       unsubs.forEach((u) => u());
     };
   }, [linkedBatches]);
+
+  // Real-time assignment count listener for header stat badge
+  useEffect(() => {
+    if (linkedBatches.length === 0) {
+      setActiveAssignmentsCount(0);
+      return;
+    }
+
+    const unsubs: (() => void)[] = [];
+    const tasksByBatch: Record<string, number> = {};
+
+    linkedBatches.forEach((batch) => {
+      const propRef = collection(db, 'shared_timetables', batch.batchKey, 'proposed_tasks');
+      const q = query(propRef);
+      const unsub = onSnapshot(
+        q,
+        (snap) => {
+          let count = 0;
+          snap.forEach((d) => {
+            const data = d.data();
+            if (
+              data.isFacultyAssignment ||
+              data.creatorRole === 'faculty' ||
+              (user?.id && data.creatorId === user.id)
+            ) {
+              count++;
+            }
+          });
+          tasksByBatch[batch.batchKey] = count;
+          const total = Object.values(tasksByBatch).reduce((a, b) => a + b, 0);
+          setActiveAssignmentsCount(total);
+        },
+        (err) => {
+          console.warn('Error listening to batch assignments count:', err);
+        }
+      );
+      unsubs.push(unsub);
+    });
+
+    return () => {
+      unsubs.forEach((u) => u());
+    };
+  }, [linkedBatches, user?.id]);
 
   // 8:00 PM (20:00) switch: preview tomorrow's schedule like student dashboard
   const currentHour = new Date().getHours();
@@ -98,12 +140,6 @@ export const FacultyHomeView: React.FC = () => {
         targetDay={targetDay}
       />
 
-      {/* Assignments & Real-time Read-Tracking Hub */}
-      <FacultyAssignmentsCard
-        onOpenCreateModal={() => setIsCreateAssignmentOpen(true)}
-        onAssignmentsCountChange={setActiveAssignmentsCount}
-      />
-
       {/* Connected Batches Management */}
       <FacultyBatchesCard onOpenConnectModal={() => setIsConnectBatchOpen(true)} />
 
@@ -113,6 +149,7 @@ export const FacultyHomeView: React.FC = () => {
         onClose={() => setIsConnectBatchOpen(false)}
       />
 
+      {/* Create Assignment Modal */}
       <CreateAssignmentModal
         isOpen={isCreateAssignmentOpen}
         onClose={() => setIsCreateAssignmentOpen(false)}
