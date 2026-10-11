@@ -52,6 +52,28 @@ export const FacultyBatchesCard: React.FC<FacultyBatchesCardProps> = ({
         partialUpdates.batchCode = updated.length > 0 ? updated[0].batchCode : '';
       }
 
+      // Call authoritative server route to disconnect batch in Firestore
+      if (user?.id) {
+        try {
+          const res = await fetch('/api/faculty/disconnect-batch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: user.id,
+              batchKey: target.batchKey,
+              batchCode: target.batchCode,
+              batchId: target.id,
+            }),
+          });
+          const resData = await res.json().catch(() => ({}));
+          if (resData.lastUpdated && typeof window !== 'undefined') {
+            window.localStorage.setItem('iiitnr_last_updated', String(resData.lastUpdated));
+          }
+        } catch (serverErr) {
+          console.warn('Server disconnect batch route error, falling back to client write:', serverErr);
+        }
+      }
+
       updateProfile(partialUpdates);
 
       // Explicit direct Firestore write to guarantee cloud persistence
@@ -67,7 +89,7 @@ export const FacultyBatchesCard: React.FC<FacultyBatchesCardProps> = ({
             ...partialUpdates,
           }),
           lastUpdated: now,
-        }, { merge: true });
+        }, { merge: true }).catch((e) => console.warn('Client setDoc warning:', e));
       }
 
       showToast('Batch Disconnected', `Unlinked ${target.batchName}.`, 'info');

@@ -746,6 +746,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (data.college || data.branch || data.semester) {
         setProfileState((prev) => {
           if (!prev.isBatchSynced && prev.batchKey !== snapshot.id) return prev;
+          if (prev.role === 'faculty') return prev;
           const updated: StudentProfile = {
             ...prev,
             college: data.college || prev.college,
