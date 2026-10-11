@@ -490,25 +490,36 @@ export function formatFacultyBatchDegreeAndBranch(batch: {
 }): { degreeAndBranch: string; semText: string; fullLabel: string } {
   let prog = (batch.programme || '').trim();
   let br = (batch.branch || '').trim();
+  let bName = (batch.batchName || '').trim();
 
-  // If programme and branch are missing, parse from batchName
-  if (!prog && !br && batch.batchName) {
-    let clean = batch.batchName;
+  // Helper to strip any college reference or prefix
+  const cleanCollegeNoise = (str: string) => {
+    let s = str;
     if (batch.college) {
-      clean = clean.replace(new RegExp(`^${batch.college}\\s*·\\s*`, 'i'), '');
+      s = s.replace(new RegExp(`^${batch.college}\\s*·?\\s*`, 'i'), '');
     }
-    clean = clean.replace(/^(IIT|IIIT|NIT|BITS|BU|UNIVERSITY|COLLEGE)[^·]*·\s*/i, '');
-    const parts = clean.split('·').map((p) => p.trim());
+    // Remove known college prefix patterns
+    s = s.replace(/^(IIT|IIIT|NIT|BITS|BU|UNIVERSITY|COLLEGE|INSTITUTE)[^·]*·\s*/i, '');
+    s = s.replace(/^(IIT|IIIT|NIT|BITS|BU|UNIVERSITY|COLLEGE|INSTITUTE)[^·]*$/i, '');
+    return s.trim();
+  };
+
+  prog = cleanCollegeNoise(prog);
+  br = cleanCollegeNoise(br);
+  bName = cleanCollegeNoise(bName);
+
+  // If br and prog are empty or invalid, extract from bName
+  if (!br && !prog && bName) {
+    const parts = bName.split('·').map((p) => p.trim());
     br = parts[0] || 'Batch';
+  } else if (!br && bName) {
+    const parts = bName.split('·').map((p) => p.trim());
+    br = parts.find((p) => !/^(Sem|Sec)/i.test(p)) || parts[0] || 'Batch';
   }
 
-  // Strip college prefix from branch/programme if accidentally stored there
-  if (batch.college) {
-    prog = prog.replace(new RegExp(`^${batch.college}\\s*·\\s*`, 'i'), '');
-    br = br.replace(new RegExp(`^${batch.college}\\s*·\\s*`, 'i'), '');
-  }
-  prog = prog.replace(/^(IIT|IIIT|NIT|BITS|BU|UNIVERSITY|COLLEGE)[^·]*·\s*/i, '').trim();
-  br = br.replace(/^(IIT|IIIT|NIT|BITS|BU|UNIVERSITY|COLLEGE)[^·]*·\s*/i, '').trim();
+  // Strip accidental semester text from branch if present (e.g. "DS & AI · Sem 1" -> "DS & AI")
+  br = br.replace(/·?\s*Sem(ester)?\s*\d+/i, '').trim();
+  prog = prog.replace(/·?\s*Sem(ester)?\s*\d+/i, '').trim();
 
   let degreeAndBranch = '';
   if (prog && br && !prog.toLowerCase().includes(br.toLowerCase()) && !br.toLowerCase().includes(prog.toLowerCase())) {
@@ -516,6 +527,9 @@ export function formatFacultyBatchDegreeAndBranch(batch: {
   } else {
     degreeAndBranch = br || prog || 'Batch';
   }
+
+  // Remove any redundant college noise one more time
+  degreeAndBranch = cleanCollegeNoise(degreeAndBranch);
 
   const sem = batch.semester ? `Sem ${batch.semester}` : '';
   const sec = batch.section ? `Sec ${batch.section}` : '';

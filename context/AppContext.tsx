@@ -613,6 +613,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               batchCode: remoteP.batchCode || prev.batchCode,
               isBatchSynced: isSynced,
               onboardingCompleted: remoteP.onboardingCompleted ?? prev.onboardingCompleted ?? true,
+              facultyLinkedBatches: remoteP.facultyLinkedBatches !== undefined ? remoteP.facultyLinkedBatches : (prev.facultyLinkedBatches || []),
             };
             storage.setProfile(mergedProfile);
             return mergedProfile;
@@ -1534,6 +1535,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setProfileState((prev) => {
       const updated = { ...prev, ...partial };
       storage.setProfile(updated);
+
+      if (user?.id) {
+        const userRef = doc(db, 'users', user.id);
+        const now = Date.now();
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem('iiitnr_last_updated', now.toString());
+        }
+        setDoc(userRef, {
+          profile: sanitizeForFirestore(updated),
+          lastUpdated: now,
+        }, { merge: true }).catch((e) => console.error('Error saving updated profile to cloud:', e));
+      }
+
       return updated;
     });
   };

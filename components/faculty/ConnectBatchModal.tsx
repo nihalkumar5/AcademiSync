@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useApp } from '@/context/AppContext';
+import { useApp, sanitizeForFirestore } from '@/context/AppContext';
 import { Modal } from '@/components/ui/Modal';
 import { FacultyLinkedBatch, Subject } from '@/lib/types';
 import { extractCleanInviteCode } from '@/lib/timetableUtils';
 import { formatFacultyBatchDegreeAndBranch, isCommonSubject } from '@/lib/facultyUtils';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Check, Search, Plus, BookOpen, Users, AlertCircle, Loader2 } from 'lucide-react';
 
@@ -21,7 +21,7 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
   onClose,
   onBatchLinked,
 }) => {
-  const { profile, updateProfile, showToast } = useApp();
+  const { profile, updateProfile, showToast, user } = useApp();
   const [batchCodeInput, setBatchCodeInput] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [foundBatchData, setFoundBatchData] = useState<any | null>(null);
@@ -182,6 +182,21 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
     updateProfile({
       facultyLinkedBatches: updatedBatches,
     });
+
+    if (user?.id) {
+      const userRef = doc(db, 'users', user.id);
+      const now = Date.now();
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('iiitnr_last_updated', now.toString());
+      }
+      setDoc(userRef, {
+        profile: sanitizeForFirestore({
+          ...profile,
+          facultyLinkedBatches: updatedBatches,
+        }),
+        lastUpdated: now,
+      }, { merge: true }).catch((err) => console.error('Error saving linked batch to Firestore:', err));
+    }
 
     showToast('Batch Connected', `Linked to ${degreeAndBranch} with ${selectedSubjectIds.length} subjects.`, 'success');
     if (onBatchLinked) onBatchLinked(newLinkedBatch);

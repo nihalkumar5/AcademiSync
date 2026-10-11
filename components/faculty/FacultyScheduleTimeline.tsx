@@ -22,6 +22,8 @@ import {
   BookOpen,
   RotateCcw,
   CheckCircle,
+  MoreVertical,
+  Ban,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -40,6 +42,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
 
   const [selectedBatchKey, setSelectedBatchKey] = useState<string>('ALL');
   const [sessionToReschedule, setSessionToReschedule] = useState<AggregatedFacultySession | null>(null);
+  const [openMenuSessionId, setOpenMenuSessionId] = useState<string | null>(null);
 
   const rawSessionsForToday = allWeekSessions[currentDay] || [];
 
@@ -231,11 +234,14 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
               isRescheduled,
             });
 
+            const cardKey = `${session.id}_${batch.batchKey}`;
+
             return (
               <div
-                key={`${session.id}_${batch.id}`}
+                key={cardKey}
                 className={clsx(
-                  "group relative flex flex-col p-3.5 sm:p-4 text-left transition-all rounded-[12px] overflow-hidden",
+                  "group relative flex flex-col p-3.5 sm:p-4 text-left transition-all rounded-[12px]",
+                  openMenuSessionId === cardKey ? "overflow-visible z-40" : "overflow-hidden z-0",
                   isCancelled
                     ? "border border-rose-200 dark:border-rose-900/40"
                     : isRescheduled
@@ -258,9 +264,9 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                   }}
                 />
 
-                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="relative z-10 flex items-start justify-between gap-3">
                   {/* Left Details */}
-                  <div className="flex items-start gap-3 min-w-0">
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
                     <div className="flex flex-col items-center justify-center min-w-[70px] py-1.5 px-2 bg-white/60 dark:bg-white/10 border border-black/10 dark:border-white/10 rounded-[6px] shrink-0">
                       <span className="text-xs font-mono font-bold text-[#111111] dark:text-[#FFFFFF]">
                         {formatTime12Hour(session.startTime)}
@@ -270,9 +276,9 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                       </span>
                     </div>
 
-                    <div className="flex flex-col min-w-0">
+                    <div className="flex flex-col min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-bold text-[#111111] dark:text-[#FFFFFF] truncate">
+                        <span className={clsx("text-sm font-bold text-[#111111] dark:text-[#FFFFFF] truncate", isCancelled && "line-through opacity-70")}>
                           {subjectName}
                         </span>
                         {isRescheduled && (
@@ -298,7 +304,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                           {formatFacultyBatchDegreeAndBranch(batch).degreeAndBranch}
                           {formatFacultyBatchDegreeAndBranch(batch).semText ? ` · ${formatFacultyBatchDegreeAndBranch(batch).semText}` : ''}
                         </span>
-                        {subjectCode && (
+                        {subjectCode && !subjectName.toLowerCase().includes(subjectCode.toLowerCase()) && (
                           <>
                             <span>·</span>
                             <span className="px-1.5 py-0.2 bg-black/5 dark:bg-white/10 rounded-[3px] text-[10px]">
@@ -306,66 +312,141 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                             </span>
                           </>
                         )}
-                        {isRescheduled && rescheduleMeta?.originalStartTime && (
-                          <>
-                            <span>·</span>
-                            <span className="text-amber-700 dark:text-amber-300 font-bold">
-                              (Was: {formatTime12Hour(rescheduleMeta.originalStartTime)})
-                            </span>
-                          </>
-                        )}
                       </div>
+
+                      {/* Cancelled text */}
+                      {isCancelled && (
+                        <span className="text-[11px] font-mono text-[#C94B5C] mt-1 font-semibold block">
+                          Cancelled for today
+                        </span>
+                      )}
+
+                      {/* Soft Peach Info Area for Rescheduled Class */}
+                      {isRescheduled && !isCancelled && (
+                        <div className="flex items-start gap-2 bg-[#FDECE4] dark:bg-[#2C1813] border border-[#F5D8CC] dark:border-[#C85F3D]/30 p-2.5 rounded-[6px] mt-2.5">
+                          <Calendar className="w-3.5 h-3.5 text-[#C85F3D] mt-0.5 shrink-0" />
+                          <div className="flex flex-col text-xs leading-snug">
+                            <span className="font-semibold text-[#C85F3D] dark:text-[#E88C6E]">
+                              Rescheduled from {rescheduleMeta?.originalStartTime ? formatTime12Hour(rescheduleMeta.originalStartTime) : session.startTime}–{rescheduleMeta?.originalEndTime ? formatTime12Hour(rescheduleMeta.originalEndTime) : session.endTime}
+                            </span>
+                            {rescheduleMeta?.reason && (
+                              <span className="text-[11px] text-[#A65437] dark:text-[#E88C6E]/80 mt-0.5 font-normal">
+                                Reason: {rescheduleMeta.reason}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  {/* Right Actions */}
-                  <div className="flex items-center gap-1.5 self-start sm:self-center shrink-0 flex-wrap">
-                    {/* WhatsApp Notice */}
+                  {/* Options Dropdown Menu (CR Pattern) */}
+                  <div className="shrink-0 flex items-center gap-1.5 self-start relative">
                     <button
                       type="button"
-                      onClick={() => handleShareWhatsAppNotice(agg)}
-                      className="p-1.5 bg-white/70 dark:bg-white/10 hover:bg-white dark:hover:bg-white/20 border border-black/10 dark:border-white/10 text-black dark:text-white rounded-[6px] transition-colors cursor-pointer shadow-2xs"
-                      title="Share Notice via WhatsApp"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuSessionId(openMenuSessionId === cardKey ? null : cardKey);
+                      }}
+                      className="p-1.5 text-[#A0A0A0] hover:text-[#151515] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer rounded-[4px]"
+                      title="More Options"
                     >
-                      <Share2 className="w-3.5 h-3.5" />
+                      <MoreVertical className="w-4 h-4" />
                     </button>
 
-                    {/* Reschedule / Revert Actions */}
-                    {isRescheduled ? (
-                      <button
-                        type="button"
-                        onClick={() => handleRevertReschedule(agg)}
-                        className="px-2 py-1 bg-amber-500 text-black text-[10.5px] font-bold uppercase tracking-wider rounded-[6px] hover:bg-amber-600 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
-                        title="Revert to original slot"
-                      >
-                        <RotateCcw className="w-3 h-3" />
-                        <span>Revert</span>
-                      </button>
-                    ) : (
-                      !isCancelled && (
-                        <button
-                          type="button"
-                          onClick={() => setSessionToReschedule(agg)}
-                          className="px-2 py-1 bg-white/70 dark:bg-white/10 hover:bg-white dark:hover:bg-white/20 border border-black/10 dark:border-white/10 text-black dark:text-white text-[10.5px] font-bold uppercase tracking-wider rounded-[6px] transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+                    {openMenuSessionId === cardKey && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-40 bg-black/5 dark:bg-black/20"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuSessionId(null);
+                          }}
+                        />
+                        <div
+                          className="absolute right-0 top-full mt-1.5 w-52 rounded-[10px] bg-white dark:bg-[#18191E] border border-black/10 dark:border-white/[0.1] shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 text-left overflow-hidden"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <Clock className="w-3 h-3" />
-                          <span>Reschedule</span>
-                        </button>
-                      )
-                    )}
+                          <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[9.5px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
+                            <span>🎓</span>
+                            <span>Faculty Actions</span>
+                          </div>
 
-                    {/* Cancel / Restore Action */}
-                    <button
-                      type="button"
-                      onClick={() => handleToggleCancel(agg)}
-                      className={`px-2 py-1 text-[10.5px] font-bold uppercase tracking-wider rounded-[6px] transition-colors cursor-pointer shadow-2xs border ${
-                        isCancelled
-                          ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700'
-                          : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-900/60 hover:bg-rose-600 hover:text-white'
-                      }`}
-                    >
-                      {isCancelled ? 'Restore' : 'Cancel'}
-                    </button>
+                          {/* Cancel / Restore Action */}
+                          {isCancelled ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenMenuSessionId(null);
+                                handleToggleCancel(agg);
+                              }}
+                              className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-left transition-colors cursor-pointer"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                              <span>Restore Class for Batch</span>
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenMenuSessionId(null);
+                                handleToggleCancel(agg);
+                              }}
+                              className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
+                            >
+                              <Ban className="w-3.5 h-3.5 shrink-0" />
+                              <span>Cancel Class for Batch</span>
+                            </button>
+                          )}
+
+                          <div className="h-px bg-black/[0.06] dark:bg-white/[0.08] my-1" />
+
+                          {/* Reschedule / Revert Action */}
+                          {isRescheduled ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenMenuSessionId(null);
+                                handleRevertReschedule(agg);
+                              }}
+                              className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                              <span>Revert Reschedule</span>
+                            </button>
+                          ) : (
+                            !isCancelled && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setOpenMenuSessionId(null);
+                                  setSessionToReschedule(agg);
+                                }}
+                                className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                              >
+                                <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
+                                <span>Reschedule Class</span>
+                              </button>
+                            )
+                          )}
+
+                          <div className="h-px bg-black/[0.06] dark:bg-white/[0.08] my-1" />
+
+                          {/* Share Notice via WhatsApp */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenMenuSessionId(null);
+                              handleShareWhatsAppNotice(agg);
+                            }}
+                            className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                          >
+                            <Share2 className="w-3.5 h-3.5 opacity-60 shrink-0" />
+                            <span>Share Notice via WhatsApp</span>
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useApp } from '@/context/AppContext';
-import { FacultyLinkedBatch } from '@/lib/types';
+import { useApp, sanitizeForFirestore } from '@/context/AppContext';
+import { FacultyLinkedBatch, StudentProfile } from '@/lib/types';
 import { Users, Plus, Trash2, BookOpen, AlertCircle } from 'lucide-react';
 import { formatFacultyBatchDegreeAndBranch, isCommonSubject } from '@/lib/facultyUtils';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 interface FacultyBatchesCardProps {
   onOpenConnectModal: () => void;
@@ -13,16 +15,69 @@ interface FacultyBatchesCardProps {
 export const FacultyBatchesCard: React.FC<FacultyBatchesCardProps> = ({
   onOpenConnectModal,
 }) => {
-  const { profile, updateProfile, showToast } = useApp();
+  const { profile, updateProfile, showToast, user } = useApp();
   const linkedBatches = profile.facultyLinkedBatches || [];
   const [batchToUnlink, setBatchToUnlink] = useState<FacultyLinkedBatch | null>(null);
+  const [isUnlinking, setIsUnlinking] = useState(false);
 
-  const handleConfirmUnlink = () => {
+  const handleConfirmUnlink = async () => {
     if (!batchToUnlink) return;
-    const updated = linkedBatches.filter((b) => b.id !== batchToUnlink.id);
-    updateProfile({ facultyLinkedBatches: updated });
-    showToast('Batch Disconnected', `Unlinked ${batchToUnlink.batchName}.`, 'info');
-    setBatchToUnlink(null);
+    setIsUnlinking(true);
+
+    try {
+      const target = batchToUnlink;
+      const updated = linkedBatches.filter((b) => {
+        // Exclude matching batch by id, batchKey, batchCode, or batchName
+        if (target.id && b.id && b.id === target.id) return false;
+        if (target.batchKey && b.batchKey && b.batchKey === target.batchKey) return false;
+        if (
+          target.batchCode &&
+          b.batchCode &&
+          b.batchCode.trim().toUpperCase() === target.batchCode.trim().toUpperCase()
+        ) return false;
+        if (target.batchName && b.batchName && b.batchName.trim().toLowerCase() === target.batchName.trim().toLowerCase()) return false;
+        return true;
+      });
+
+      const partialUpdates: Partial<StudentProfile> = {
+        facultyLinkedBatches: updated,
+      };
+
+      // Also clean up primary batchKey/batchCode if it matched the unlinked batch
+      if (
+        profile.batchKey === target.batchKey ||
+        (profile.batchCode && target.batchCode && profile.batchCode.trim().toUpperCase() === target.batchCode.trim().toUpperCase())
+      ) {
+        partialUpdates.batchKey = updated.length > 0 ? updated[0].batchKey : '';
+        partialUpdates.batchCode = updated.length > 0 ? updated[0].batchCode : '';
+      }
+
+      updateProfile(partialUpdates);
+
+      // Explicit direct Firestore write to guarantee cloud persistence
+      if (user?.id) {
+        const userRef = doc(db, 'users', user.id);
+        const now = Date.now();
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem('iiitnr_last_updated', now.toString());
+        }
+        await setDoc(userRef, {
+          profile: sanitizeForFirestore({
+            ...profile,
+            ...partialUpdates,
+          }),
+          lastUpdated: now,
+        }, { merge: true });
+      }
+
+      showToast('Batch Disconnected', `Unlinked ${target.batchName}.`, 'info');
+      setBatchToUnlink(null);
+    } catch (err: any) {
+      console.error('Failed to unlink batch:', err);
+      showToast('Error', err.message || 'Failed to disconnect batch.', 'error');
+    } finally {
+      setIsUnlinking(false);
+    }
   };
 
   return (
@@ -64,11 +119,11 @@ export const FacultyBatchesCard: React.FC<FacultyBatchesCardProps> = ({
             </button>
           </div>
         ) : (
-          linkedBatches.map((batch) => {
+          linkedBatches.map((batch, idx) => {
             const { degreeAndBranch, semText } = formatFacultyBatchDegreeAndBranch(batch);
             return (
               <div
-                key={batch.id}
+                key={batch.id || batch.batchKey || batch.batchCode || `batch_${idx}`}
                 className="p-4 rounded-[12px] border border-black/[0.06] dark:border-white/[0.08] bg-[#F9F9FB] dark:bg-[#181A22] flex flex-col gap-3 transition-all hover:border-black/20 dark:hover:border-white/20 shadow-2xs"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -158,9 +213,10 @@ export const FacultyBatchesCard: React.FC<FacultyBatchesCardProps> = ({
             <button
               type="button"
               onClick={handleConfirmUnlink}
-              className="px-4 py-1.5 rounded-[8px] bg-red-600 text-white text-xs font-bold uppercase hover:bg-red-700 transition-colors cursor-pointer shadow-2xs"
+              disabled={isUnlinking}
+              className="px-4 py-1.5 rounded-[8px] bg-red-600 text-white text-xs font-bold uppercase hover:bg-red-700 transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
             >
-              Disconnect
+              {isUnlinking ? 'Disconnecting...' : 'Disconnect'}
             </button>
           </div>
         </div>
