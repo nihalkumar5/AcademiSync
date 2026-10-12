@@ -403,8 +403,6 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                 <span className="truncate">{subjectCode}</span>
               </>
             )}
-            <span className="opacity-40 shrink-0">·</span>
-            <span className="truncate">Syncs to {batch.batchName.split('·').pop()?.trim() || 'batch'}</span>
           </div>
 
           {/* Progress Bar (3px) */}
@@ -647,10 +645,6 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                 </span>
               </>
             )}
-            <span>·</span>
-            <span className="text-black/50 dark:text-white/50">
-              Syncs to {batch.batchName.split('·').pop()?.trim() || 'batch'}
-            </span>
           </div>
         </div>
       </div>
