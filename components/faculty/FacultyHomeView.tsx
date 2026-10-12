@@ -9,7 +9,6 @@ import { doc, getDoc, onSnapshot, collection, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { FacultyHeroHeader } from './FacultyHeroHeader';
 import { FacultyLiveLectureCard } from './FacultyLiveLectureCard';
-import { FacultyScheduleTimeline } from './FacultyScheduleTimeline';
 import { FacultySmartFocusList } from './FacultySmartFocusList';
 import { ConnectBatchModal } from './ConnectBatchModal';
 import { CreateAssignmentModal } from './CreateAssignmentModal';
@@ -125,7 +124,7 @@ export const FacultyHomeView: React.FC = () => {
         activeAssignmentsCount={activeAssignmentsCount}
       />
 
-      {/* Live / Next Lecture Today Card */}
+      {/* Live / Next Lecture Today Card (Top Card) */}
       <FacultyLiveLectureCard
         aggregatedSessions={todaySessions}
         tomorrowSessions={tomorrowSessions}
@@ -133,18 +132,11 @@ export const FacultyHomeView: React.FC = () => {
         tomorrowDay={tomorrowDay}
       />
 
-      {/* Teaching Timetable & Today's Focus in 2-column grid matching student interface */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mt-2 sm:mt-3">
-        <FacultyScheduleTimeline
-          allWeekSessions={allWeekSessions}
-          isAfter8PM={isAfter8PM}
-          targetDay={targetDay}
-        />
-        <FacultySmartFocusList
-          targetSessions={isAfter8PM ? tomorrowSessions : todaySessions}
-          isAfter8PM={isAfter8PM}
-        />
-      </div>
+      {/* Today's Focus (Priorities: assignment deadlines, practical labs) */}
+      <FacultySmartFocusList
+        targetSessions={isAfter8PM ? tomorrowSessions : todaySessions}
+        isAfter8PM={isAfter8PM}
+      />
 
       {/* Modals */}
       <ConnectBatchModal

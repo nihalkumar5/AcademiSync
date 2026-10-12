@@ -60,9 +60,28 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
     return null;
   }
 
-  // Only render when a lecture is LIVE RIGHT NOW. Avoids redundant card duplication with Today's Schedule timeline.
-  if (!activeSession || !activeSession.isLive) {
-    return null;
+  if (!activeSession) {
+    const tomorrowCount = tomorrowSessions.filter((s) => !s.isCancelled).length;
+
+    return (
+      <div className="w-full bg-[#FAFAFA] dark:bg-[#121317] border border-[#E0E0E0] dark:border-white/[0.08] rounded-none p-5 flex flex-col text-left">
+        <span className="text-[11px] font-semibold text-[#808080] dark:text-[#94A3B8] uppercase tracking-[1.4px] leading-none mb-3">
+          SCHEDULE COMPLETE
+        </span>
+        <h3 className="text-[16px] font-semibold text-[#111111] dark:text-[#F4F4F6] leading-snug mb-2">
+          You&apos;re done for today.
+        </h3>
+        <span className="text-[13px] text-[#6B6B6B] dark:text-[#94A3B8] leading-none">
+          {isAfter8PM
+            ? (tomorrowCount === 0
+                ? 'No classes scheduled for tomorrow.'
+                : `${tomorrowCount} ${tomorrowCount === 1 ? 'lecture' : 'lectures'} scheduled for tomorrow.`)
+            : (aggregatedSessions.length === 0
+                ? 'No classes scheduled for today.'
+                : `${aggregatedSessions.length} ${aggregatedSessions.length === 1 ? 'lecture' : 'lectures'} scheduled for today.`)}
+        </span>
+      </div>
+    );
   }
 
   const {
