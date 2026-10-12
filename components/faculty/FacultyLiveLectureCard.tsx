@@ -23,6 +23,7 @@ import {
   RotateCcw,
   Sparkles,
   ArrowRight,
+  MoreHorizontal,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -46,6 +47,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
   const { profile, user, showToast } = useApp();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const todayStr = getTodayDateString();
 
@@ -223,7 +225,12 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
   if (isLive) {
     return (
       <>
-        <div className="w-full bg-[#111111] dark:bg-[#111111] border-2 border-[#18A889] rounded-[12px] p-5 sm:p-6 flex flex-col relative group shadow-[0_0_24px_-4px_rgba(24,168,137,0.3)] ring-1 ring-[#18A889]/30 text-white text-left">
+        <div
+          className={clsx(
+            "w-full bg-[#111111] dark:bg-[#111111] border-2 border-[#18A889] rounded-[12px] p-5 sm:p-6 flex flex-col relative group shadow-[0_0_24px_-4px_rgba(24,168,137,0.3)] ring-1 ring-[#18A889]/30 text-white text-left transition-all",
+            menuOpen ? "overflow-visible z-30" : "overflow-hidden z-0"
+          )}
+        >
           {/* Top Bar */}
           <div className="flex items-center justify-between mb-3.5 flex-wrap gap-2">
             <div className="flex items-center gap-2">
@@ -245,6 +252,114 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
               <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-[10.5px] font-bold text-white/80 uppercase tracking-wider">
                 {pillLabel}
               </span>
+
+              {/* 3-Dots Action Menu */}
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpen((prev) => !prev);
+                  }}
+                  className="p-1 rounded-[3px] text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                  title="Lecture actions"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+
+                {menuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-30"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMenuOpen(false);
+                      }}
+                    />
+                    <div
+                      className="absolute right-0 top-full mt-1.5 w-52 bg-[#16171D] border border-white/15 rounded-[4px] shadow-xl py-1.5 z-40 text-left font-sans flex flex-col"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-white/50 border-b border-white/10 mb-1 flex items-center gap-1.5">
+                        <span>🎓</span>
+                        <span>Faculty Actions</span>
+                      </div>
+
+                      {/* Reschedule / Revert Actions */}
+                      {isRescheduled ? (
+                        <button
+                          type="button"
+                          disabled={isProcessing}
+                          onClick={() => {
+                            setMenuOpen(false);
+                            handleRevertReschedule();
+                          }}
+                          className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-amber-400 hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                          <span>Revert Reschedule</span>
+                        </button>
+                      ) : (
+                        !isCancelled && (
+                          <button
+                            type="button"
+                            disabled={isProcessing}
+                            onClick={() => {
+                              setMenuOpen(false);
+                              setIsRescheduleModalOpen(true);
+                            }}
+                            className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-[#F4F4F6] hover:bg-white/[0.08] text-left transition-colors cursor-pointer"
+                          >
+                            <Clock className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                            <span>Reschedule Class</span>
+                          </button>
+                        )
+                      )}
+
+                      {/* Cancel / Restore Actions */}
+                      <button
+                        type="button"
+                        disabled={isProcessing}
+                        onClick={() => {
+                          setMenuOpen(false);
+                          handleToggleCancel();
+                        }}
+                        className={clsx(
+                          "flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-left transition-colors cursor-pointer",
+                          isCancelled
+                            ? "text-emerald-400 hover:bg-emerald-950/30"
+                            : "text-rose-400 hover:bg-rose-950/30"
+                        )}
+                      >
+                        {isCancelled ? (
+                          <>
+                            <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                            <span>Restore Class</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-3.5 h-3.5 shrink-0" />
+                            <span>Cancel Class</span>
+                          </>
+                        )}
+                      </button>
+
+                      {/* WhatsApp Notice */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          handleShareWhatsAppNotice();
+                        }}
+                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-[#F4F4F6] hover:bg-white/[0.08] text-left transition-colors cursor-pointer border-t border-white/10"
+                      >
+                        <Share2 className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+                        <span>WhatsApp Notice</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -254,10 +369,10 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
           </h3>
 
           {/* Meta Details */}
-          <div className="flex items-center gap-3 text-[13px] text-white/70 font-mono mb-4 flex-wrap">
+          <div className="flex items-center gap-3 text-[13px] text-white/70 font-mono flex-wrap">
             <span className="flex items-center gap-1.5 text-white/90 font-medium">
               <MapPin className="w-3.5 h-3.5 text-[#18A889]" />
-              {session.room || 'Room TBA'}
+              {session.room ? (session.room.toLowerCase().startsWith('room') ? session.room : `Room ${session.room}`) : 'Room TBA'}
             </span>
             {subjectCode && (
               <>
@@ -267,43 +382,9 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                 </span>
               </>
             )}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center justify-between gap-3 pt-3 border-t border-white/10 flex-wrap">
-            <div className="flex items-center gap-2 flex-wrap">
-              <button
-                type="button"
-                onClick={handleShareWhatsAppNotice}
-                className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold uppercase tracking-wider rounded-[8px] flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                <span>WhatsApp Notice</span>
-              </button>
-
-              <button
-                type="button"
-                disabled={isProcessing}
-                onClick={() => setIsRescheduleModalOpen(true)}
-                className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold uppercase tracking-wider rounded-[8px] flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <Clock className="w-3.5 h-3.5" />
-                <span>Reschedule</span>
-              </button>
-
-              <button
-                type="button"
-                disabled={isProcessing}
-                onClick={handleToggleCancel}
-                className="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-xs font-bold uppercase tracking-wider rounded-[8px] flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <XCircle className="w-3.5 h-3.5" />
-                <span>Cancel Class</span>
-              </button>
-            </div>
-
-            <span className="text-[11px] text-white/50 font-mono">
-              Synced with batch
+            <span>·</span>
+            <span className="text-white/50 text-[12px]">
+              Syncs to {batch.batchName.split('·').pop()?.trim() || 'batch'}
             </span>
           </div>
         </div>
@@ -323,7 +404,8 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
     <>
       <div
         className={clsx(
-          "w-full border shadow-xs rounded-[12px] p-5 sm:p-6 flex flex-col relative group transition-all overflow-hidden text-left",
+          "w-full border shadow-xs rounded-[12px] p-5 sm:p-6 flex flex-col relative group transition-all text-left",
+          menuOpen ? "overflow-visible z-30" : "overflow-hidden z-0",
           isCancelled
             ? "border-rose-200 dark:border-rose-900/40"
             : isRescheduled
@@ -377,6 +459,114 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
               <span className="px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[10px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
                 {pillLabel}
               </span>
+
+              {/* 3-Dots Action Menu */}
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpen((prev) => !prev);
+                  }}
+                  className="p-1 rounded-[3px] text-slate-500 hover:text-slate-900 dark:text-[#CBD5E1] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                  title="Lecture actions"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+
+                {menuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-30"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMenuOpen(false);
+                      }}
+                    />
+                    <div
+                      className="absolute right-0 top-full mt-1.5 w-52 bg-white dark:bg-[#16171D] border border-black/10 dark:border-white/10 rounded-[4px] shadow-xl py-1.5 z-40 text-left font-sans flex flex-col"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-black/50 dark:text-white/50 border-b border-black/5 dark:border-white/5 mb-1 flex items-center gap-1.5">
+                        <span>🎓</span>
+                        <span>Faculty Actions</span>
+                      </div>
+
+                      {/* Reschedule / Revert Actions */}
+                      {isRescheduled ? (
+                        <button
+                          type="button"
+                          disabled={isProcessing}
+                          onClick={() => {
+                            setMenuOpen(false);
+                            handleRevertReschedule();
+                          }}
+                          className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                          <span>Revert Schedule</span>
+                        </button>
+                      ) : (
+                        !isCancelled && (
+                          <button
+                            type="button"
+                            disabled={isProcessing}
+                            onClick={() => {
+                              setMenuOpen(false);
+                              setIsRescheduleModalOpen(true);
+                            }}
+                            className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                          >
+                            <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
+                            <span>Reschedule Class</span>
+                          </button>
+                        )
+                      )}
+
+                      {/* Cancel / Restore Actions */}
+                      <button
+                        type="button"
+                        disabled={isProcessing}
+                        onClick={() => {
+                          setMenuOpen(false);
+                          handleToggleCancel();
+                        }}
+                        className={clsx(
+                          "flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-left transition-colors cursor-pointer",
+                          isCancelled
+                            ? "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                            : "text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                        )}
+                      >
+                        {isCancelled ? (
+                          <>
+                            <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                            <span>Restore Lecture</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-3.5 h-3.5 shrink-0" />
+                            <span>Cancel Today</span>
+                          </>
+                        )}
+                      </button>
+
+                      {/* WhatsApp Notice */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          handleShareWhatsAppNotice();
+                        }}
+                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-slate-800 dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer border-t border-black/5 dark:border-white/5"
+                      >
+                        <Share2 className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                        <span>WhatsApp Notice</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -397,10 +587,10 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
           )}
 
           {/* Details Row */}
-          <div className="flex items-center gap-3 text-[12px] text-black/60 dark:text-[#A1A1AA] font-mono mb-4 flex-wrap">
+          <div className="flex items-center gap-3 text-[12px] text-black/60 dark:text-[#A1A1AA] font-mono flex-wrap">
             <span className="flex items-center gap-1.5 text-black/80 dark:text-white/90 font-medium">
               <MapPin className="w-3.5 h-3.5 opacity-70" />
-              {session.room || 'Room TBA'}
+              {session.room ? (session.room.toLowerCase().startsWith('room') ? session.room : `Room ${session.room}`) : 'Room TBA'}
             </span>
             {subjectCode && (
               <>
@@ -410,72 +600,8 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                 </span>
               </>
             )}
-          </div>
-
-          {/* Actions Row */}
-          <div className="flex items-center justify-between gap-3 pt-3 border-t border-black/5 dark:border-white/5 flex-wrap">
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* WhatsApp Notice */}
-              <button
-                type="button"
-                onClick={handleShareWhatsAppNotice}
-                className="px-3 py-1.5 bg-white/80 dark:bg-white/10 hover:bg-white dark:hover:bg-white/15 border border-black/10 dark:border-white/10 text-xs font-bold uppercase tracking-wider text-black dark:text-white rounded-[8px] flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                <span>WhatsApp Notice</span>
-              </button>
-
-              {/* Reschedule / Revert Actions */}
-              {isRescheduled ? (
-                <button
-                  type="button"
-                  disabled={isProcessing}
-                  onClick={handleRevertReschedule}
-                  className="px-3 py-1.5 bg-amber-500 text-black hover:bg-amber-600 text-xs font-bold uppercase tracking-wider rounded-[8px] flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Revert Schedule</span>
-                </button>
-              ) : (
-                !isCancelled && (
-                  <button
-                    type="button"
-                    disabled={isProcessing}
-                    onClick={() => setIsRescheduleModalOpen(true)}
-                    className="px-3 py-1.5 bg-white/80 dark:bg-white/10 hover:bg-white dark:hover:bg-white/15 border border-black/10 dark:border-white/10 text-xs font-bold uppercase tracking-wider text-black dark:text-white rounded-[8px] flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-                  >
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>Reschedule</span>
-                  </button>
-                )
-              )}
-
-              {/* Cancel / Restore Actions */}
-              <button
-                type="button"
-                disabled={isProcessing}
-                onClick={handleToggleCancel}
-                className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-[8px] flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs border ${
-                  isCancelled
-                    ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700'
-                    : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-900/60 hover:bg-rose-600 hover:text-white'
-                }`}
-              >
-                {isCancelled ? (
-                  <>
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Restore Lecture</span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="w-3.5 h-3.5" />
-                    <span>Cancel Today</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            <span className="text-[11px] text-[#6F6F6F] dark:text-[#A1A1AA] font-mono">
+            <span>·</span>
+            <span className="text-black/50 dark:text-white/50">
               Syncs to {batch.batchName.split('·').pop()?.trim() || 'batch'}
             </span>
           </div>
