@@ -10,6 +10,7 @@ import {
   getTomorrowDateString,
   getDateStringForDayOfWeek,
   formatTime12Hour,
+  timeToMinutes,
 } from '@/lib/timetableUtils';
 import {
   AggregatedFacultySession,
@@ -62,7 +63,16 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
   const [sessionToReschedule, setSessionToReschedule] = useState<AggregatedFacultySession | null>(null);
   const [openMenuSessionId, setOpenMenuSessionId] = useState<string | null>(null);
 
-  const sessionsForTarget = allWeekSessions[targetDay] || [];
+  const rawSessionsForTarget = allWeekSessions[targetDay] || [];
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  // Hide completed classes for today (matches student TodayTimeline)
+  const sessionsForTarget = rawSessionsForTarget.filter((agg) => {
+    if (isAfter8PM) return true;
+    const endMins = timeToMinutes(agg.session.endTime);
+    if (currentMinutes >= endMins) return false;
+    return true;
+  });
 
   const handleToggleCancel = async (agg: AggregatedFacultySession) => {
     try {
@@ -216,10 +226,18 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
       {sessionsForTarget.length === 0 ? (
         <EmptyState
           icon={<MonochromeIllustration type="no-classes" size={48} />}
-          title={isAfter8PM ? "No classes tomorrow" : "No classes scheduled today"}
+          title={
+            isAfter8PM
+              ? "No classes tomorrow"
+              : rawSessionsForTarget.length > 0
+              ? "All classes completed"
+              : "No classes scheduled today"
+          }
           description={
             isAfter8PM
               ? `You don't have any classes scheduled tomorrow (${targetDay}). Enjoy your break!`
+              : rawSessionsForTarget.length > 0
+              ? "All your scheduled classes for today are complete. Enjoy your break!"
               : "You don't have any classes scheduled on your timetable today. Enjoy your break!"
           }
           actionLabel="View Full Timetable"
