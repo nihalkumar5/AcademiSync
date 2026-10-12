@@ -444,12 +444,21 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
     );
   }
 
-  // Next / Upcoming Class -> Exactly matches student theme (creamy pastel light, rich gradient dark)
+  // Next / Upcoming Class -> Exactly matches student theme with pro graphic designer polish
+  const formatCountdown = (minutes: number) => {
+    if (minutes <= 0) return 'Starting now';
+    if (minutes < 60) return `Starts in ${minutes} min`;
+    const hrs = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (mins === 0) return `Starts in ${hrs}h`;
+    return `Starts in ${hrs}h ${mins.toString().padStart(2, '0')}m`;
+  };
+
   return (
     <>
       <div
         className={clsx(
-          "w-full border shadow-xs rounded-[12px] p-5 sm:p-6 flex flex-col relative group transition-all text-left",
+          "w-full border shadow-xs rounded-[12px] p-5 flex flex-col relative group transition-all text-left",
           menuOpen ? "overflow-visible z-30" : "overflow-hidden z-0",
           isCancelled
             ? "border-rose-200 dark:border-rose-900/40"
@@ -475,10 +484,10 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
 
         <div className="relative z-10 flex flex-col">
           {/* Header Row */}
-          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between mb-3.5 gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <span
-                className="text-[11px] font-bold uppercase tracking-[1.4px] leading-none"
+                className="text-[11px] font-bold uppercase tracking-[1.4px] leading-none shrink-0"
                 style={{ color: theme.accent }}
               >
                 {isCancelled
@@ -490,30 +499,34 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                   : 'NEXT LECTURE'}
               </span>
 
-              {minutesUntilStart > 0 && !isCancelled && (
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70">
-                  in {minutesUntilStart}m
+              {session.isLab && (
+                <span
+                  className="text-[9.5px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[2px] bg-black/5 dark:bg-white/10 shrink-0"
+                  style={{ color: theme.accent }}
+                >
+                  LAB
                 </span>
               )}
+
+              <span className="px-2 py-0.5 rounded-[3px] bg-black/5 dark:bg-white/10 text-[10px] font-mono font-bold uppercase tracking-wider text-black/70 dark:text-white/70 truncate">
+                {pillLabel}
+              </span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <span className="text-[12px] font-bold text-[#151515] dark:text-[#F4F4F6] font-mono leading-none">
-                {formatTime12Hour(session.startTime)} - {formatTime12Hour(session.endTime)}
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[10px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
-                {pillLabel}
+                {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
               </span>
 
               {/* 3-Dots Action Menu */}
-              <div className="relative shrink-0">
+              <div className="relative shrink-0 flex items-center">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     setMenuOpen((prev) => !prev);
                   }}
-                  className="p-1 rounded-[3px] text-slate-500 hover:text-slate-900 dark:text-[#CBD5E1] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                  className="p-1 rounded-[2px] text-slate-500 hover:text-slate-900 dark:text-[#CBD5E1] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
                   title="Lecture actions"
                 >
                   <MoreHorizontal className="w-4 h-4" />
@@ -616,35 +629,58 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
           </div>
 
           {/* Subject Title */}
-          <h3 className="text-[20px] sm:text-[22px] font-bold text-[#151515] dark:text-[#F4F4F6] leading-[26px] mb-2 pr-4 tracking-tight">
+          <h3 className="text-[19px] sm:text-[21px] font-bold text-[#151515] dark:text-[#F4F4F6] leading-[26px] mb-2 pr-4 tracking-tight line-clamp-2">
             {subjectName}
           </h3>
 
           {/* Rescheduled Pill */}
           {isRescheduled && rescheduleMeta?.originalStartTime && (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] font-mono font-medium mb-3 self-start">
-              <Clock className="w-3.5 h-3.5 shrink-0" />
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[10.5px] font-mono font-medium mb-3 self-start">
+              <Clock className="w-3 h-3 shrink-0" />
               <span>
-                Rescheduled from {formatTime12Hour(rescheduleMeta.originalStartTime)} - {formatTime12Hour(rescheduleMeta.originalEndTime)}
+                Rescheduled from {formatTime12Hour(rescheduleMeta.originalStartTime)} – {formatTime12Hour(rescheduleMeta.originalEndTime)}
                 {rescheduleMeta.reason ? ` · ${rescheduleMeta.reason}` : ''}
               </span>
             </div>
           )}
 
           {/* Details Row */}
-          <div className="flex items-center gap-3 text-[12px] text-black/60 dark:text-[#A1A1AA] font-mono flex-wrap">
-            <span className="flex items-center gap-1.5 text-black/80 dark:text-white/90 font-medium">
-              <MapPin className="w-3.5 h-3.5 opacity-70" />
+          <div className="flex items-center gap-2 text-[12px] text-black/60 dark:text-[#A1A1AA] font-mono leading-none mb-4">
+            <span className="flex items-center gap-1.5 shrink-0 text-black/80 dark:text-white/90 font-medium">
+              <span className="text-[10px] leading-none opacity-80">◉</span>
               {session.room ? (session.room.toLowerCase().startsWith('room') ? session.room : `Room ${session.room}`) : 'Room TBA'}
             </span>
             {subjectCode && (
               <>
-                <span>·</span>
-                <span className="px-1.5 py-0.5 bg-black/5 dark:bg-white/10 rounded-[3px] text-[10.5px]">
+                <span className="opacity-40 shrink-0">·</span>
+                <span className="px-1.5 py-0.5 bg-black/5 dark:bg-white/10 rounded-[3px] text-[10.5px] font-mono font-medium">
                   {subjectCode}
                 </span>
               </>
             )}
+          </div>
+
+          {/* Footer Anchor */}
+          <div className="flex items-center justify-between border-t border-black/[0.06] dark:border-white/[0.08] pt-3.5 mt-0.5">
+            <div className="flex items-center gap-2">
+              <span
+                className="w-1.5 h-1.5 rounded-full shrink-0"
+                style={{ backgroundColor: isCancelled ? '#E11D48' : theme.accent }}
+              />
+              <span
+                className="text-[12.5px] font-bold font-mono tracking-tight leading-none"
+                style={{ color: isCancelled ? '#E11D48' : theme.accent }}
+              >
+                {isCancelled ? 'Cancelled for today' : formatCountdown(minutesUntilStart)}
+              </span>
+            </div>
+            <div
+              style={{ color: isCancelled ? '#E11D48' : theme.accent }}
+              className="flex items-center gap-1 text-[11px] font-mono font-medium opacity-70 group-hover:opacity-100 transition-opacity"
+            >
+              <span>{isCancelled ? 'Notice Sent' : 'Upcoming'}</span>
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+            </div>
           </div>
         </div>
       </div>
