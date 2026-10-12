@@ -10,7 +10,7 @@ import { db } from '@/lib/firebase';
 import { FacultyHeroHeader } from './FacultyHeroHeader';
 import { FacultyLiveLectureCard } from './FacultyLiveLectureCard';
 import { FacultyScheduleTimeline } from './FacultyScheduleTimeline';
-import { FacultyBatchesCard } from './FacultyBatchesCard';
+import { FacultySmartFocusList } from './FacultySmartFocusList';
 import { ConnectBatchModal } from './ConnectBatchModal';
 import { CreateAssignmentModal } from './CreateAssignmentModal';
 
@@ -133,15 +133,18 @@ export const FacultyHomeView: React.FC = () => {
         tomorrowDay={tomorrowDay}
       />
 
-      {/* Teaching Timetable across Batches (Switches to Tomorrow's Schedule at 8:00 PM) */}
-      <FacultyScheduleTimeline
-        allWeekSessions={allWeekSessions}
-        isAfter8PM={isAfter8PM}
-        targetDay={targetDay}
-      />
-
-      {/* Connected Batches Management */}
-      <FacultyBatchesCard onOpenConnectModal={() => setIsConnectBatchOpen(true)} />
+      {/* Teaching Timetable & Today's Focus in 2-column grid matching student interface */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mt-2 sm:mt-3">
+        <FacultyScheduleTimeline
+          allWeekSessions={allWeekSessions}
+          isAfter8PM={isAfter8PM}
+          targetDay={targetDay}
+        />
+        <FacultySmartFocusList
+          targetSessions={isAfter8PM ? tomorrowSessions : todaySessions}
+          isAfter8PM={isAfter8PM}
+        />
+      </div>
 
       {/* Modals */}
       <ConnectBatchModal
