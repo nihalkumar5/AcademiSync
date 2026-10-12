@@ -358,6 +358,10 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                             <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-bold uppercase tracking-wider bg-[#D2F1E8] text-[#18A889] shrink-0">
                               Lab
                             </span>
+                          ) : agg.isUpcoming && agg.minutesUntilStart !== undefined && agg.minutesUntilStart > 0 ? (
+                            <span className="px-2 py-0.5 rounded-[2px] bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 text-[10px] font-mono font-bold uppercase tracking-wider shrink-0">
+                              in {agg.minutesUntilStart < 60 ? `${agg.minutesUntilStart}m` : `${Math.floor(agg.minutesUntilStart / 60)}h ${agg.minutesUntilStart % 60}m`}
+                            </span>
                           ) : null}
                         </div>
 
