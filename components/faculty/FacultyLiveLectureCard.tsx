@@ -406,32 +406,12 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
           </div>
 
           {/* Progress Bar (3px) */}
-          <div className="w-full bg-[#3A3A3A] h-[3px] overflow-hidden mb-5 rounded-full">
+          <div className="w-full bg-[#3A3A3A] h-[3px] overflow-hidden rounded-full">
             <div
               className="bg-[#18A889] h-full transition-all duration-1000"
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
-
-          {/* Up Next */}
-          {nextSession && (
-            <div className="flex items-center justify-between border-t border-[#262626] pt-3.5">
-              <div className="flex flex-col gap-1.5 min-w-0 pr-4">
-                <span className="text-[11px] font-bold text-[#A8A8A8] uppercase tracking-[1.4px] leading-none">
-                  NEXT · {formatTime12Hour(nextSession.session.startTime)}
-                </span>
-                <span className="text-[14px] text-[#FFFFFF] font-semibold truncate leading-none">
-                  {nextSession.subjectName}
-                </span>
-                {(nextSession.session.room || nextSession.minutesUntilStart !== undefined) && (
-                  <span className="text-[12px] text-[#A8A8A8] leading-none mt-0.5">
-                    {nextSession.session.room ? `${nextSession.session.room} · ` : ''}{nextSession.minutesUntilStart}m
-                  </span>
-                )}
-              </div>
-              <ArrowRight className="w-4 h-4 text-[#FFFFFF] shrink-0 transition-transform group-hover:translate-x-1" />
-            </div>
-          )}
         </div>
 
         <FacultyRescheduleModal
