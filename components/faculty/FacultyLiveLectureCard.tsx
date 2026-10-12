@@ -237,7 +237,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
       <>
         <div
           className={clsx(
-            "w-full bg-[#111111] border border-[#111111] rounded-[3px] p-5 flex flex-col relative group shadow-lg text-left transition-all",
+            "w-full bg-[#111111] dark:bg-gradient-to-br dark:from-[#0D2620] dark:via-[#091D18] dark:to-[#071713] border border-[#111111] dark:border-[#18A889]/40 rounded-[12px] p-5 flex flex-col relative group shadow-lg dark:shadow-[0_4px_24px_rgba(24,168,137,0.15)] text-left transition-all",
             menuOpen ? "overflow-visible z-30" : "overflow-hidden z-0"
           )}
         >
