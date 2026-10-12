@@ -21,7 +21,7 @@ interface FacultySmartFocusListProps {
 interface FacultyFocusItem {
   id: string;
   title: string;
-  type: 'assignment' | 'lab' | 'lecture' | 'rescheduled';
+  type: 'assignment' | 'lab';
   urgency: 'high' | 'medium' | 'low';
   tag: string;
   deadlineText?: string;
@@ -157,43 +157,8 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
         });
       });
 
-    // 3. Rescheduled Classes requiring student notice or special timing
-    targetSessions
-      .filter((s) => s.isRescheduled && !s.isCancelled)
-      .forEach((resch) => {
-        const { pillLabel } = formatFacultyCombinedBatchLabel(resch.linkedBatches, resch.batch);
-        items.push({
-          id: `resched_${resch.session.id}`,
-          title: `Rescheduled Class: ${resch.subjectName}`,
-          type: 'rescheduled',
-          urgency: 'high',
-          tag: `Rescheduled · ${pillLabel}`,
-          deadlineText: `${formatTime12Hour(resch.session.startTime)} – ${formatTime12Hour(resch.session.endTime)} · Room ${resch.session.room || 'TBA'}`,
-          originalPriority: 'High',
-        });
-      });
-
-    // 4. Regular Lectures today (if space permits)
-    if (items.length < 3) {
-      targetSessions
-        .filter((s) => !s.session.isLab && !s.isRescheduled && !s.isCancelled)
-        .slice(0, 3 - items.length)
-        .forEach((lec) => {
-          const { pillLabel } = formatFacultyCombinedBatchLabel(lec.linkedBatches, lec.batch);
-          items.push({
-            id: `lec_${lec.session.id}`,
-            title: `Lecture: ${lec.subjectName}`,
-            type: 'lecture',
-            urgency: 'medium',
-            tag: `${pillLabel} · ${lec.subjectCode || 'Lecture'}`,
-            deadlineText: `${formatTime12Hour(lec.session.startTime)} – ${formatTime12Hour(lec.session.endTime)} · Room ${lec.session.room || 'TBA'}`,
-            originalPriority: 'Medium',
-          });
-        });
-    }
-
     return items;
-  }, [assignments, targetSessions]);
+  }, [assignments, targetSessions, linkedBatches]);
 
   const toggleCompleted = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
