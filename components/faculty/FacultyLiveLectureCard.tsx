@@ -508,29 +508,24 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                 </span>
               )}
 
-              <span className="px-2 py-0.5 rounded-[3px] bg-black/5 dark:bg-white/10 text-[10px] font-mono font-bold uppercase tracking-wider text-black/70 dark:text-white/70 truncate">
+              <span className="px-2 py-0.5 rounded-[3px] bg-black/5 dark:bg-white/10 text-[10px] font-mono font-bold uppercase tracking-wider text-black/70 dark:text-white/70 whitespace-nowrap">
                 {pillLabel}
               </span>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[12px] font-bold text-[#151515] dark:text-[#F4F4F6] font-mono leading-none">
-                {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
-              </span>
-
-              {/* 3-Dots Action Menu */}
-              <div className="relative shrink-0 flex items-center">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMenuOpen((prev) => !prev);
-                  }}
-                  className="p-1 rounded-[2px] text-slate-500 hover:text-slate-900 dark:text-[#CBD5E1] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                  title="Lecture actions"
-                >
-                  <MoreHorizontal className="w-4 h-4" />
-                </button>
+            {/* 3-Dots Action Menu */}
+            <div className="relative shrink-0 flex items-center">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen((prev) => !prev);
+                }}
+                className="p-1 rounded-[2px] text-slate-500 hover:text-slate-900 dark:text-[#CBD5E1] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                title="Lecture actions"
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
 
                 {menuOpen && (
                   <>
@@ -626,7 +621,6 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                 )}
               </div>
             </div>
-          </div>
 
           {/* Subject Title */}
           <h3 className="text-[19px] sm:text-[21px] font-bold text-[#151515] dark:text-[#F4F4F6] leading-[26px] mb-2 pr-4 tracking-tight line-clamp-2">
@@ -645,7 +639,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
           )}
 
           {/* Details Row */}
-          <div className="flex items-center gap-2 text-[12px] text-black/60 dark:text-[#A1A1AA] font-mono leading-none mb-4">
+          <div className="flex items-center gap-2 text-[12px] text-black/60 dark:text-[#A1A1AA] font-mono leading-none mb-4 flex-wrap">
             <span className="flex items-center gap-1.5 shrink-0 text-black/80 dark:text-white/90 font-medium">
               <span className="text-[10px] leading-none opacity-80">◉</span>
               {session.room ? (session.room.toLowerCase().startsWith('room') ? session.room : `Room ${session.room}`) : 'Room TBA'}
@@ -658,6 +652,10 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                 </span>
               </>
             )}
+            <span className="opacity-40 shrink-0">·</span>
+            <span>
+              {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
+            </span>
           </div>
 
           {/* Footer Anchor */}
