@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ClassSession, DayOfWeek, FacultyLinkedBatch, Subject } from '@/lib/types';
-import { getCurrentDayOfWeek, getTodayDateString, getDateStringForDayOfWeek, formatTime12Hour } from '@/lib/timetableUtils';
+import { getCurrentDayOfWeek, getTodayDateString, getDateStringForDayOfWeek, formatTime12Hour, timeToMinutes } from '@/lib/timetableUtils';
 import {
   AggregatedFacultySession,
   revertFacultyReschedule,
@@ -221,48 +221,49 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
     }
   };
 
-  // If class is LIVE RIGHT NOW -> Sleek High-Contrast Dark Card with Emerald Pulse (exact student live class style)
+  // If class is LIVE RIGHT NOW -> Identical to Student LiveClassCard (dark brutalist card with progress bar)
   if (isLive) {
+    const startMins = timeToMinutes(session.startTime);
+    const endMins = timeToMinutes(session.endTime);
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const totalDuration = Math.max(1, endMins - startMins);
+    const elapsed = Math.max(0, currentMinutes - startMins);
+    const remainingMinutes = Math.max(0, endMins - currentMinutes);
+    const progressPercentage = Math.min(100, Math.max(0, Math.round((elapsed / totalDuration) * 100)));
+    const nextSession = aggregatedSessions.find((s) => s !== activeSession && s.isUpcoming && !s.isCancelled);
+
     return (
       <>
         <div
           className={clsx(
-            "w-full bg-[#111111] dark:bg-[#111111] border-2 border-[#18A889] rounded-[12px] p-5 sm:p-6 flex flex-col relative group shadow-[0_0_24px_-4px_rgba(24,168,137,0.3)] ring-1 ring-[#18A889]/30 text-white text-left transition-all",
+            "w-full bg-[#111111] border border-[#111111] rounded-[3px] p-5 flex flex-col relative group shadow-lg text-left transition-all",
             menuOpen ? "overflow-visible z-30" : "overflow-hidden z-0"
           )}
         >
-          {/* Top Bar */}
-          <div className="flex items-center justify-between mb-3.5 flex-wrap gap-2">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-3.5">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#18A889] animate-pulse" />
               <span className="text-[11px] font-bold text-[#18A889] uppercase tracking-[1.4px] leading-none">
                 LIVE NOW
               </span>
-              {session.isLab && (
-                <span className="text-[9.5px] font-bold tracking-widest px-1.5 py-0.5 uppercase bg-blue-500/20 text-blue-400 rounded-[3px]">
-                  LAB
-                </span>
-              )}
             </div>
-
             <div className="flex items-center gap-2">
-              <span className="text-[12px] font-bold font-mono text-white/90">
-                {formatTime12Hour(session.startTime)} - {formatTime12Hour(session.endTime)}
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-[10.5px] font-bold text-white/80 uppercase tracking-wider">
-                {pillLabel}
+              <span className="text-[13px] font-bold text-[#FFFFFF] font-mono leading-none">
+                {remainingMinutes}m left
               </span>
 
-              {/* 3-Dots Action Menu */}
-              <div className="relative shrink-0">
+              {/* Options Menu */}
+              <div className="relative shrink-0 flex items-center">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     setMenuOpen((prev) => !prev);
                   }}
-                  className="p-1 rounded-[3px] text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-                  title="Lecture actions"
+                  className="p-1 rounded-[2px] text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                  title="Class Options"
                 >
                   <MoreHorizontal className="w-4 h-4" />
                 </button>
@@ -270,17 +271,17 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                 {menuOpen && (
                   <>
                     <div
-                      className="fixed inset-0 z-30"
+                      className="fixed inset-0 z-40 bg-black/5 dark:bg-black/20"
                       onClick={(e) => {
                         e.stopPropagation();
                         setMenuOpen(false);
                       }}
                     />
                     <div
-                      className="absolute right-0 top-full mt-1.5 w-52 bg-[#16171D] border border-white/15 rounded-[4px] shadow-xl py-1.5 z-40 text-left font-sans flex flex-col"
+                      className="absolute right-0 top-full mt-1.5 w-52 bg-white dark:bg-[#18191E] border border-black/10 dark:border-white/[0.1] shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 text-left overflow-hidden rounded-[10px]"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-white/50 border-b border-white/10 mb-1 flex items-center gap-1.5">
+                      <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[9.5px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
                         <span>🎓</span>
                         <span>Faculty Actions</span>
                       </div>
@@ -294,7 +295,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                             setMenuOpen(false);
                             handleRevertReschedule();
                           }}
-                          className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-amber-400 hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
+                          className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
                         >
                           <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                           <span>Revert Reschedule</span>
@@ -308,9 +309,9 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                               setMenuOpen(false);
                               setIsRescheduleModalOpen(true);
                             }}
-                            className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-[#F4F4F6] hover:bg-white/[0.08] text-left transition-colors cursor-pointer"
+                            className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
                           >
-                            <Clock className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                            <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
                             <span>Reschedule Class</span>
                           </button>
                         )
@@ -327,8 +328,8 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                         className={clsx(
                           "flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-left transition-colors cursor-pointer",
                           isCancelled
-                            ? "text-emerald-400 hover:bg-emerald-950/30"
-                            : "text-rose-400 hover:bg-rose-950/30"
+                            ? "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                            : "text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30"
                         )}
                       >
                         {isCancelled ? (
@@ -351,9 +352,9 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                           setMenuOpen(false);
                           handleShareWhatsAppNotice();
                         }}
-                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-[#F4F4F6] hover:bg-white/[0.08] text-left transition-colors cursor-pointer border-t border-white/10"
+                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-slate-800 dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer border-t border-black/5 dark:border-white/5"
                       >
-                        <Share2 className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+                        <Share2 className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                         <span>WhatsApp Notice</span>
                       </button>
                     </div>
@@ -363,30 +364,76 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
             </div>
           </div>
 
-          {/* Subject Title */}
-          <h3 className="text-[22px] sm:text-[24px] font-bold text-white leading-[28px] mb-2 pr-4 tracking-tight">
+          {/* Subject */}
+          <h3 className="text-[20px] sm:text-[22px] font-bold text-[#FFFFFF] leading-[26px] mb-2 line-clamp-2 tracking-tight">
             {subjectName}
           </h3>
 
-          {/* Meta Details */}
-          <div className="flex items-center gap-3 text-[13px] text-white/70 font-mono flex-wrap">
-            <span className="flex items-center gap-1.5 text-white/90 font-medium">
-              <MapPin className="w-3.5 h-3.5 text-[#18A889]" />
+          {/* Time and Reschedule / Batch Badge */}
+          <div className="flex items-center gap-2 flex-wrap mb-3">
+            <div className="text-[13px] text-[#FFFFFF]/90 font-mono font-medium leading-none">
+              {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
+            </div>
+            {isRescheduled && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] bg-amber-500/20 text-amber-300 text-[10.5px] font-mono font-bold uppercase tracking-wider">
+                <Clock className="w-2.5 h-2.5" />
+                Rescheduled
+                {rescheduleMeta?.originalStartTime ? ` (Was ${formatTime12Hour(rescheduleMeta.originalStartTime)})` : ''}
+              </span>
+            )}
+            {session.isLab && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] bg-[#18A889]/20 text-[#18A889] text-[10.5px] font-mono font-bold uppercase tracking-wider">
+                Lab
+              </span>
+            )}
+            <span className="px-2 py-0.5 rounded-[2px] bg-white/10 text-[10px] font-mono font-bold uppercase tracking-wider text-white/80">
+              {pillLabel}
+            </span>
+          </div>
+
+          {/* Metadata */}
+          <div className="flex items-center gap-2 text-[12px] text-[#A8A8A8] leading-none mb-5 flex-wrap">
+            <span className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[10px] leading-none opacity-80">◉</span>
               {session.room ? (session.room.toLowerCase().startsWith('room') ? session.room : `Room ${session.room}`) : 'Room TBA'}
             </span>
             {subjectCode && (
               <>
-                <span>·</span>
-                <span className="px-1.5 py-0.5 bg-white/10 rounded-[3px] text-[11px]">
-                  {subjectCode}
-                </span>
+                <span className="opacity-40 shrink-0">·</span>
+                <span className="truncate">{subjectCode}</span>
               </>
             )}
-            <span>·</span>
-            <span className="text-white/50 text-[12px]">
-              Syncs to {batch.batchName.split('·').pop()?.trim() || 'batch'}
-            </span>
+            <span className="opacity-40 shrink-0">·</span>
+            <span className="truncate">Syncs to {batch.batchName.split('·').pop()?.trim() || 'batch'}</span>
           </div>
+
+          {/* Progress Bar (3px) */}
+          <div className="w-full bg-[#3A3A3A] h-[3px] overflow-hidden mb-5 rounded-full">
+            <div
+              className="bg-[#18A889] h-full transition-all duration-1000"
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
+
+          {/* Up Next */}
+          {nextSession && (
+            <div className="flex items-center justify-between border-t border-[#262626] pt-3.5">
+              <div className="flex flex-col gap-1.5 min-w-0 pr-4">
+                <span className="text-[11px] font-bold text-[#A8A8A8] uppercase tracking-[1.4px] leading-none">
+                  NEXT · {formatTime12Hour(nextSession.session.startTime)}
+                </span>
+                <span className="text-[14px] text-[#FFFFFF] font-semibold truncate leading-none">
+                  {nextSession.subjectName}
+                </span>
+                {(nextSession.session.room || nextSession.minutesUntilStart !== undefined) && (
+                  <span className="text-[12px] text-[#A8A8A8] leading-none mt-0.5">
+                    {nextSession.session.room ? `${nextSession.session.room} · ` : ''}{nextSession.minutesUntilStart}m
+                  </span>
+                )}
+              </div>
+              <ArrowRight className="w-4 h-4 text-[#FFFFFF] shrink-0 transition-transform group-hover:translate-x-1" />
+            </div>
+          )}
         </div>
 
         <FacultyRescheduleModal
