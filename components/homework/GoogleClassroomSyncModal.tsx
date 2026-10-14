@@ -37,6 +37,7 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
     subjects,
     homework,
     addHomework,
+    updateHomework,
     showToast,
     isBatchCR,
     isBatchPilot,
@@ -134,15 +135,25 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
 
     try {
       for (const item of toImport) {
-        const alreadyPresent = homework.find(
-          (h) =>
-            h.externalId === item.courseWork.id ||
-            h.title.trim().toLowerCase() === item.courseWork.title.trim().toLowerCase()
-        );
+        const cleanTitle = item.courseWork.title.trim().toLowerCase();
+        const alreadyPresent = homework.find((h) => {
+          if (h.externalId && h.externalId === item.courseWork.id) return true;
+          if (h.externalLink && item.courseWork.alternateLink && h.externalLink === item.courseWork.alternateLink) return true;
+          if (h.attachmentName && item.courseWork.alternateLink && h.attachmentName === item.courseWork.alternateLink) return true;
+          const hTitle = h.title.trim().toLowerCase();
+          if (hTitle === cleanTitle) return true;
+          if (hTitle.includes(cleanTitle) || cleanTitle.includes(hTitle)) {
+            if (h.deadline && item.computedDeadline) {
+              const d1 = new Date(h.deadline).toISOString().split('T')[0];
+              const d2 = new Date(item.computedDeadline).toISOString().split('T')[0];
+              if (d1 === d2) return true;
+            }
+          }
+          return false;
+        });
 
         if (broadcastToBatch && canBroadcast && profile?.batchKey) {
-          // Pilot Broadcast Mode: pushes as batch proposal that auto-approves
-          // and instantly delivers to every batch student's device via real-time Firestore listener!
+          // Pilot Broadcast Mode
           await proposeBatchTask({
             title: item.courseWork.title,
             description: item.courseWork.description || `Classroom Assignment: ${item.courseName}`,
@@ -153,8 +164,23 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
             attachmentName: item.courseWork.alternateLink || '',
           });
           count++;
-        } else if (!alreadyPresent) {
-          // Personal Import Mode
+        } else if (alreadyPresent) {
+          // Overwrite existing task with fresh Classroom metadata
+          const statusToSet: HomeworkStatus = item.isTurnedIn ? 'Completed' : alreadyPresent.status;
+          updateHomework(alreadyPresent.id, {
+            source: 'google_classroom',
+            externalId: item.courseWork.id,
+            externalLink: item.courseWork.alternateLink,
+            attachmentName: item.courseWork.alternateLink ? 'Open in Classroom' : alreadyPresent.attachmentName,
+            status: statusToSet,
+            completedAt: item.isTurnedIn ? (alreadyPresent.completedAt || new Date().toISOString()) : alreadyPresent.completedAt,
+            deadline: item.computedDeadline || alreadyPresent.deadline,
+            description: item.courseWork.description || alreadyPresent.description,
+            updatedAt: new Date().toISOString(),
+          });
+          count++;
+        } else {
+          // Create new task
           const status: HomeworkStatus = item.isTurnedIn ? 'Completed' : 'Not Started';
           addHomework({
             subjectId: item.matchedSubjectId,
@@ -234,10 +260,10 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
                 Connect your student Google account to fetch coursework, pending deadlines, and
                 submission states across all enrolled classrooms.
               </p>
-              {canBroadcast && profile?.batchKey && (
-                <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-none bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-[11px] font-medium font-mono">
-                  <Users className="w-3.5 h-3.5" />
-                  Pilot Mode Enabled
+              {canBroadcast && (
+                <div className="inline-flex items-center gap-1.5 mt-3 px-2.5 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-[10.5px] font-bold uppercase tracking-wider">
+                  <Users className="w-3 h-3" />
+                  Pilot Mode
                 </div>
               )}
             </div>

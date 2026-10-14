@@ -85,17 +85,31 @@ export const isSameHomeworkDeadline = (d1?: string, d2?: string): boolean => {
   if (!d1 || !d2) return false;
   const t1 = new Date(d1).getTime();
   const t2 = new Date(d2).getTime();
-  if (!isNaN(t1) && !isNaN(t2)) return t1 === t2;
+  if (!isNaN(t1) && !isNaN(t2)) {
+    if (t1 === t2) return true;
+    const day1 = new Date(d1).toISOString().split('T')[0];
+    const day2 = new Date(d2).toISOString().split('T')[0];
+    if (day1 === day2) return true;
+  }
   return d1.trim() === d2.trim();
 };
 
 export const areHomeworksSame = (h1: Homework, h2: Homework): boolean => {
   if (h1.id && h2.id && h1.id === h2.id) return true;
   if (h1.proposalId && h2.proposalId && h1.proposalId === h2.proposalId) return true;
+  if (h1.externalId && h2.externalId && h1.externalId === h2.externalId) return true;
+
+  const link1 = h1.externalLink || (h1.attachmentName?.startsWith('http') ? h1.attachmentName : '');
+  const link2 = h2.externalLink || (h2.attachmentName?.startsWith('http') ? h2.attachmentName : '');
+  if (link1 && link2 && link1 === link2) return true;
+
   const t1 = normalizeHomeworkTitle(h1.title);
   const t2 = normalizeHomeworkTitle(h2.title);
-  if (t1 && t2 && t1 === t2 && isSameHomeworkDeadline(h1.deadline, h2.deadline)) {
-    return true;
+  if (t1 && t2) {
+    if (t1 === t2) return true;
+    if (isSameHomeworkDeadline(h1.deadline, h2.deadline)) {
+      if (t1.includes(t2) || t2.includes(t1)) return true;
+    }
   }
   return false;
 };
