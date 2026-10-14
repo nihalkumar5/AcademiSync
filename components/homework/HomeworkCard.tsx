@@ -35,6 +35,7 @@ export interface HomeworkCardProps {
   index: number;
   onToggleStatus: (id: string) => void;
   onEdit: (homework: Homework) => void;
+  onViewDetail?: (homework: Homework) => void;
   onDelete: (id: string) => void;
   onShare?: (homework: Homework) => void;
 }
@@ -45,6 +46,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
   index,
   onToggleStatus,
   onEdit,
+  onViewDetail,
   onDelete,
   onShare,
 }) => {
@@ -442,7 +444,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
             )}
           </button>
           <div 
-            onClick={() => onEdit(homework)}
+            onClick={() => onViewDetail ? onViewDetail(homework) : onEdit(homework)}
             className="flex flex-col flex-1 cursor-pointer group"
           >
             <h4 className={clsx(

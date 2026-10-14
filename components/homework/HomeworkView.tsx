@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Homework, HomeworkStatus, HomeworkPriority } from '@/lib/types';
 import { HomeworkCard } from './HomeworkCard';
+import { HomeworkDetailModal } from './HomeworkDetailModal';
 import { AddHomeworkModal } from './AddHomeworkModal';
 import { HomeworkScanModal } from './HomeworkScanModal';
 import { GoogleClassroomSyncModal } from './GoogleClassroomSyncModal';
@@ -47,6 +48,7 @@ export const HomeworkView: React.FC = () => {
   const [showScanModal, setShowScanModal] = useState(false);
   const [showClassroomModal, setShowClassroomModal] = useState(false);
   const [editHomework, setEditHomework] = useState<Homework | null>(null);
+  const [selectedDetailHomework, setSelectedDetailHomework] = useState<Homework | null>(null);
   const [prefilledData, setPrefilledData] = useState<Partial<Homework> | null>(null);
   const [pilotPendingCount, setPilotPendingCount] = useState<number | null>(null);
 
@@ -453,6 +455,7 @@ export const HomeworkView: React.FC = () => {
                 setEditHomework(h);
                 setShowAddModal(true);
               }}
+              onViewDetail={(h) => setSelectedDetailHomework(h)}
               onDelete={deleteHomework}
               onShare={handleShareTask}
             />
@@ -461,6 +464,26 @@ export const HomeworkView: React.FC = () => {
       )}
 
       {/* Modals */}
+      <HomeworkDetailModal
+        isOpen={Boolean(selectedDetailHomework)}
+        onClose={() => setSelectedDetailHomework(null)}
+        homework={
+          selectedDetailHomework
+            ? homework.find((h) => h.id === selectedDetailHomework.id) || selectedDetailHomework
+            : null
+        }
+        onEdit={(h) => {
+          setSelectedDetailHomework(null);
+          setEditHomework(h);
+          setShowAddModal(true);
+        }}
+        onDelete={(id) => {
+          setSelectedDetailHomework(null);
+          deleteHomework(id);
+        }}
+        onShare={handleShareTask}
+      />
+
       <AddHomeworkModal
         isOpen={showAddModal}
         onClose={() => {
