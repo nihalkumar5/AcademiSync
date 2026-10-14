@@ -179,7 +179,7 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
       if (broadcastToBatch && canBroadcast && profile?.batchKey) {
         showToast(
           'Batch Broadcast Complete',
-          `Delivered ${count} assignments to batch ${profile.batchKey}!`,
+          `Delivered ${count} assignments to your batch!`,
           'success'
         );
       } else {
@@ -237,7 +237,7 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
               {canBroadcast && profile?.batchKey && (
                 <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-none bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-[11px] font-medium font-mono">
                   <Users className="w-3.5 h-3.5" />
-                  Pilot Mode Enabled ({profile.batchKey})
+                  Pilot Mode Enabled
                 </div>
               )}
             </div>
@@ -287,7 +287,7 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
                   <Users className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                   <div>
                     <p className="text-xs font-bold text-blue-900 dark:text-blue-200">
-                      Broadcast to Entire Batch ({profile.batchKey})
+                      Broadcast to Entire Batch
                     </p>
                     <p className="text-[11px] text-blue-700/80 dark:text-blue-300/80">
                       Auto-deliver selected tasks to all student devices in real-time.

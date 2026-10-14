@@ -294,34 +294,34 @@ export const HomeworkView: React.FC = () => {
 
       {isPilot && (
         pilotPendingCount && pilotPendingCount > 0 ? (
-          <div className="flex items-center justify-between p-3.5 border-2 border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/15 text-xs animate-in fade-in slide-in-from-top-1">
-            <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-between p-3 border-2 border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/15 text-xs animate-in fade-in slide-in-from-top-1 w-full overflow-hidden">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
               <span className="relative flex h-3 w-3 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
               </span>
-              <div>
-                <p className="font-bold text-[#111111] dark:text-[#FFFFFF] text-[13px] leading-tight">
-                  📢 {pilotPendingCount} New Classroom Assignment{pilotPendingCount > 1 ? 's' : ''} Detected!
+              <div className="min-w-0 flex-1">
+                <p className="font-bold text-[#111111] dark:text-[#FFFFFF] text-[12.5px] leading-tight truncate">
+                  📢 {pilotPendingCount} New Assignment{pilotPendingCount > 1 ? 's' : ''} Detected!
                 </p>
-                <p className="text-[#6B6B6B] dark:text-[#94A3B8] text-[11.5px] mt-0.5">
-                  Ready to review and broadcast to batch <span className="font-mono font-bold text-blue-600 dark:text-blue-400">({profile.batchKey})</span>.
+                <p className="text-[#6B6B6B] dark:text-[#94A3B8] text-[11px] mt-0.5 truncate">
+                  Ready to review and broadcast to your batch.
                 </p>
               </div>
             </div>
             <button
               onClick={() => setShowClassroomModal(true)}
-              className="flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-wider text-white bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1.5 cursor-pointer shrink-0 ml-3 shadow-xs"
+              className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 cursor-pointer shrink-0 ml-2 shadow-xs"
             >
               Review & Push <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         ) : (
-          <div className="flex items-center justify-between p-3 border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-500/10 text-xs">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between p-3 border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-500/10 text-xs w-full overflow-hidden">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
               <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <p className="text-[#111111] dark:text-[#F4F4F6] text-[12px] leading-tight">
-                <span className="font-bold">Pilot Bridge:</span> Sync assignments from Google Classroom and broadcast directly to batch <span className="font-mono font-bold text-blue-600 dark:text-blue-400">({profile.batchKey})</span>.
+              <p className="text-[#111111] dark:text-[#F4F4F6] text-[12px] leading-snug">
+                <span className="font-bold">Pilot Bridge:</span> Sync and broadcast Classroom assignments to your batch.
               </p>
             </div>
             <button
