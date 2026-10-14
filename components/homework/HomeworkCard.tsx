@@ -15,6 +15,8 @@ import {
   Vote,
   Clock,
   RotateCcw,
+  GraduationCap,
+  ExternalLink,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -203,6 +205,11 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
             {!isDone && homework.priority === 'Medium' && (
               <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8]/70 text-[#C96B45]/90 text-[9.5px] font-bold uppercase tracking-wider">
                 MED
+              </span>
+            )}
+            {homework.source === 'google_classroom' && (
+              <span className="px-2 py-0.5 rounded-[2px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[9.5px] font-bold uppercase tracking-wider flex items-center gap-1 border border-emerald-500/20">
+                <GraduationCap className="w-2.5 h-2.5" /> CLASSROOM
               </span>
             )}
             {isInProgress && (
@@ -480,6 +487,21 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
             >
               <Paperclip className="w-3 h-3 text-blue-500" />
               <span>ATTACHMENT</span>
+            </button>
+          )}
+
+          {homework.externalLink && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                openAttachment(homework.externalLink);
+              }}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[10.5px] font-bold font-mono uppercase tracking-wider bg-emerald-500/10 hover:bg-emerald-500/20 dark:bg-emerald-500/15 dark:hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 transition-colors cursor-pointer"
+              title="Open in Google Classroom"
+            >
+              <ExternalLink className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+              <span>CLASSROOM</span>
             </button>
           )}
         </div>

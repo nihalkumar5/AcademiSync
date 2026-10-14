@@ -142,6 +142,9 @@ export interface Homework {
   facultyTitle?: string;
   batchKey?: string;
   readReceipts?: Record<string, AssignmentReadReceipt>;
+  source?: 'manual' | 'ai_scan' | 'google_classroom';
+  externalId?: string;
+  externalLink?: string;
 }
 
 export interface BatchProposedTask {

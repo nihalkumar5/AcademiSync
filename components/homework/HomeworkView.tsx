@@ -6,9 +6,10 @@ import { Homework, HomeworkStatus, HomeworkPriority } from '@/lib/types';
 import { HomeworkCard } from './HomeworkCard';
 import { AddHomeworkModal } from './AddHomeworkModal';
 import { HomeworkScanModal } from './HomeworkScanModal';
+import { GoogleClassroomSyncModal } from './GoogleClassroomSyncModal';
 import { ProposedBatchTasksVoting } from './ProposedBatchTasksVoting';
 import { EmptyState } from '../ui/EmptyState';
-import { Plus, Sparkles, Search, CheckSquare, X } from 'lucide-react';
+import { Plus, Sparkles, Search, CheckSquare, X, GraduationCap } from 'lucide-react';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Capacitor } from '@capacitor/core';
@@ -31,6 +32,7 @@ export const HomeworkView: React.FC = () => {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showScanModal, setShowScanModal] = useState(false);
+  const [showClassroomModal, setShowClassroomModal] = useState(false);
   const [editHomework, setEditHomework] = useState<Homework | null>(null);
   const [prefilledData, setPrefilledData] = useState<Partial<Homework> | null>(null);
 
@@ -195,6 +197,13 @@ export const HomeworkView: React.FC = () => {
           </button>
 
           <button
+            onClick={() => setShowClassroomModal(true)}
+            className="flex items-center justify-center h-[36px] px-[14px] rounded-none border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] bg-transparent hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors text-[12px] font-semibold cursor-pointer w-auto gap-2"
+          >
+            <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Classroom Sync
+          </button>
+
+          <button
             onClick={() => {
               setEditHomework(null);
               setShowAddModal(true);
@@ -307,6 +316,11 @@ export const HomeworkView: React.FC = () => {
       <HomeworkScanModal
         isOpen={showScanModal}
         onClose={() => setShowScanModal(false)}
+      />
+
+      <GoogleClassroomSyncModal
+        isOpen={showClassroomModal}
+        onClose={() => setShowClassroomModal(false)}
       />
     </div>
   );
