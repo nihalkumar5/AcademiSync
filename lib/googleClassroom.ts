@@ -94,6 +94,10 @@ export async function getGoogleClassroomToken(): Promise<string> {
     if (!token) {
       throw new Error('Could not get Google Access Token from native auth.');
     }
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('classroom_access_token', token);
+      window.localStorage.setItem('classroom_token_expires_at', (Date.now() + 55 * 60 * 1000).toString());
+    }
     return token;
   }
 
@@ -109,7 +113,49 @@ export async function getGoogleClassroomToken(): Promise<string> {
   if (!token) {
     throw new Error('No Google Access Token returned from OAuth login.');
   }
+
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem('classroom_access_token', token);
+    window.localStorage.setItem('classroom_token_expires_at', (Date.now() + 55 * 60 * 1000).toString());
+  }
+
   return token;
+}
+
+/**
+ * Return stored Google Classroom token if still valid (< 55 mins old)
+ */
+export function getStoredClassroomToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  const token = window.localStorage.getItem('classroom_access_token');
+  const expiresAt = Number(window.localStorage.getItem('classroom_token_expires_at') || '0');
+  if (!token || Date.now() > expiresAt) {
+    return null;
+  }
+  return token;
+}
+
+/**
+ * Check for unimported assignments silently in the background
+ */
+export async function checkUnimportedClassroomAssignments(
+  token: string,
+  subjects: Subject[],
+  existingHomework: Homework[]
+): Promise<FetchedAssignmentItem[]> {
+  const existingExternalIds = new Set(
+    existingHomework.filter((h) => h.externalId).map((h) => h.externalId)
+  );
+  const existingTitles = new Set(
+    existingHomework.map((h) => h.title.trim().toLowerCase())
+  );
+
+  const allItems = await syncAllClassroomAssignments(token, subjects);
+  return allItems.filter(
+    (item) =>
+      !existingExternalIds.has(item.courseWork.id) &&
+      !existingTitles.has(item.courseWork.title.trim().toLowerCase())
+  );
 }
 
 /**

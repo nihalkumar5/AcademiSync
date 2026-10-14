@@ -7,9 +7,13 @@ import { HomeworkCard } from './HomeworkCard';
 import { AddHomeworkModal } from './AddHomeworkModal';
 import { HomeworkScanModal } from './HomeworkScanModal';
 import { GoogleClassroomSyncModal } from './GoogleClassroomSyncModal';
+import {
+  getStoredClassroomToken,
+  checkUnimportedClassroomAssignments,
+} from '@/lib/googleClassroom';
 import { ProposedBatchTasksVoting } from './ProposedBatchTasksVoting';
 import { EmptyState } from '../ui/EmptyState';
-import { Plus, Sparkles, Search, CheckSquare, X, GraduationCap } from 'lucide-react';
+import { Plus, Sparkles, Search, CheckSquare, X, GraduationCap, ArrowRight, Check } from 'lucide-react';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Capacitor } from '@capacitor/core';
@@ -21,12 +25,21 @@ export const HomeworkView: React.FC = () => {
     homework,
     subjects,
     toggleHomeworkStatus,
+    updateHomework,
     deleteHomework,
     showToast,
+    profile,
+    isBatchCR,
+    isBatchPilot,
   } = useApp();
 
+  const isPilot =
+    (isBatchCR || isBatchPilot || profile?.role === 'cr') &&
+    profile?.isBatchSynced &&
+    !!profile?.batchKey;
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'All' | HomeworkStatus>('All');
+  const [statusFilter, setStatusFilter] = useState<HomeworkStatus>('Not Started');
   const [priorityFilter, setPriorityFilter] = useState<'All' | HomeworkPriority>('All');
   const [subjectFilter, setSubjectFilter] = useState<string>('All');
 
@@ -35,6 +48,41 @@ export const HomeworkView: React.FC = () => {
   const [showClassroomModal, setShowClassroomModal] = useState(false);
   const [editHomework, setEditHomework] = useState<Homework | null>(null);
   const [prefilledData, setPrefilledData] = useState<Partial<Homework> | null>(null);
+  const [pilotPendingCount, setPilotPendingCount] = useState<number | null>(null);
+
+  // On-Open check for Batch Pilot
+  React.useEffect(() => {
+    if (!isPilot) return;
+
+    const token = getStoredClassroomToken();
+    if (!token) return;
+
+    // Rate-limit silent check to once every 15 mins per session
+    const lastCheck = Number(sessionStorage.getItem('last_classroom_pilot_check') || '0');
+    if (Date.now() - lastCheck < 15 * 60 * 1000) return;
+
+    let mounted = true;
+    sessionStorage.setItem('last_classroom_pilot_check', Date.now().toString());
+
+    checkUnimportedClassroomAssignments(token, subjects, homework)
+      .then((items) => {
+        if (mounted && items.length > 0) {
+          setPilotPendingCount(items.length);
+          showToast(
+            'New Classroom Tasks',
+            `Found ${items.length} new unbroadcasted assignment(s) for your batch.`,
+            'info'
+          );
+        }
+      })
+      .catch((err) => {
+        console.warn('Classroom silent check error:', err);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [isPilot, subjects, homework, showToast]);
 
   React.useEffect(() => {
     const handleTaskParam = (taskParam: string) => {
@@ -96,7 +144,24 @@ export const HomeworkView: React.FC = () => {
 
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
-  const filtered = homework.filter((hw) => {
+  // Auto-purge stale assignments older than 3 days post-deadline
+  const isPastThreeDays = (hw: Homework) => {
+    if (!hw.deadline) return false;
+    const dl = new Date(hw.deadline).getTime();
+    if (isNaN(dl)) return false;
+    return Date.now() - dl > 3 * 24 * 60 * 60 * 1000;
+  };
+
+  React.useEffect(() => {
+    const stale = homework.filter(isPastThreeDays);
+    if (stale.length > 0) {
+      stale.forEach((st) => deleteHomework(st.id));
+    }
+  }, [homework, deleteHomework]);
+
+  const activeHomework = homework.filter((h) => !isPastThreeDays(h));
+
+  const filtered = activeHomework.filter((hw) => {
     // Search query match
     if (
       searchQuery &&
@@ -105,8 +170,8 @@ export const HomeworkView: React.FC = () => {
     ) {
       return false;
     }
-    // Status filter
-    if (statusFilter !== 'All' && hw.status !== statusFilter) {
+    // Status filter (only To Do, Doing, Done)
+    if (hw.status !== statusFilter) {
       return false;
     }
     // Priority filter
@@ -120,15 +185,20 @@ export const HomeworkView: React.FC = () => {
     return true;
   });
 
-  const pendingCount = homework.filter((h) => h.status !== 'Completed').length;
-  const completedCount = homework.filter((h) => h.status === 'Completed').length;
+  const pendingCount = activeHomework.filter((h) => h.status !== 'Completed').length;
+  const completedCount = activeHomework.filter((h) => h.status === 'Completed').length;
 
   const filterTabs = [
-    { id: 'All', label: 'All', count: homework.length },
-    { id: 'Not Started', label: 'To Do', count: homework.filter((h) => h.status === 'Not Started').length },
-    { id: 'In Progress', label: 'Doing', count: homework.filter((h) => h.status === 'In Progress').length },
+    { id: 'Not Started', label: 'To Do', count: activeHomework.filter((h) => h.status === 'Not Started').length },
+    { id: 'In Progress', label: 'Doing', count: activeHomework.filter((h) => h.status === 'In Progress').length },
     { id: 'Completed', label: 'Done', count: completedCount },
   ] as const;
+
+  const dueTodayTask = activeHomework.find((h) => {
+    if (h.status === 'Completed' || !h.deadline) return false;
+    const diffDays = Math.ceil((new Date(h.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    return diffDays <= 0;
+  });
 
   const handleShareTask = async (hw: Homework) => {
     const shareData = {
@@ -200,7 +270,13 @@ export const HomeworkView: React.FC = () => {
             onClick={() => setShowClassroomModal(true)}
             className="flex items-center justify-center h-[36px] px-[14px] rounded-none border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] bg-transparent hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors text-[12px] font-semibold cursor-pointer w-auto gap-2"
           >
-            <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Classroom Sync
+            <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span>Classroom Sync</span>
+            {isPilot && (
+              <span className="text-[9.5px] font-bold font-mono px-1.5 py-0.2 rounded-none bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30 uppercase">
+                PILOT
+              </span>
+            )}
           </button>
 
           <button
@@ -216,7 +292,89 @@ export const HomeworkView: React.FC = () => {
         </div>
       </div>
 
+      {isPilot && (
+        pilotPendingCount && pilotPendingCount > 0 ? (
+          <div className="flex items-center justify-between p-3.5 border-2 border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/15 text-xs animate-in fade-in slide-in-from-top-1">
+            <div className="flex items-center gap-2.5">
+              <span className="relative flex h-3 w-3 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+              </span>
+              <div>
+                <p className="font-bold text-[#111111] dark:text-[#FFFFFF] text-[13px] leading-tight">
+                  📢 {pilotPendingCount} New Classroom Assignment{pilotPendingCount > 1 ? 's' : ''} Detected!
+                </p>
+                <p className="text-[#6B6B6B] dark:text-[#94A3B8] text-[11.5px] mt-0.5">
+                  Ready to review and broadcast to batch <span className="font-mono font-bold text-blue-600 dark:text-blue-400">({profile.batchKey})</span>.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowClassroomModal(true)}
+              className="flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-wider text-white bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1.5 cursor-pointer shrink-0 ml-3 shadow-xs"
+            >
+              Review & Push <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between p-3 border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-500/10 text-xs">
+            <div className="flex items-center gap-2">
+              <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <p className="text-[#111111] dark:text-[#F4F4F6] text-[12px] leading-tight">
+                <span className="font-bold">Pilot Bridge:</span> Sync assignments from Google Classroom and broadcast directly to batch <span className="font-mono font-bold text-blue-600 dark:text-blue-400">({profile.batchKey})</span>.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowClassroomModal(true)}
+              className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 px-2.5 py-1 border border-emerald-500/25 cursor-pointer shrink-0 ml-2"
+            >
+              Broadcast
+            </button>
+          </div>
+        )
+      )}
+
       <ProposedBatchTasksVoting />
+
+      {/* AI Deadline Check-in Card (Proactive Prompt) */}
+      {dueTodayTask && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.03] gap-3">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div>
+              <p className="text-[12.5px] font-semibold text-[#111111] dark:text-[#FFFFFF] leading-tight">
+                Hey! Did you complete <span className="font-bold underline">"{dueTodayTask.title}"</span>?
+              </p>
+              <p className="text-[11px] text-[#6B6B6B] dark:text-[#94A3B8] mt-0.5">
+                Marked due today. Let us know so your timetable stays updated.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+            <button
+              onClick={() => {
+                updateHomework(dueTodayTask.id, {
+                  status: 'Completed',
+                  completedAt: new Date().toISOString(),
+                });
+                showToast('Completed', `"${dueTodayTask.title}" marked as complete! 🎉`, 'success');
+              }}
+              className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer flex items-center gap-1"
+            >
+              <Check className="w-3 h-3 stroke-[3]" /> Yes, Done
+            </button>
+            <button
+              onClick={() => {
+                updateHomework(dueTodayTask.id, { status: 'In Progress' });
+                showToast('In Progress', 'Marked as Doing ⏳', 'info');
+              }}
+              className="px-2.5 py-1.5 text-[11px] font-semibold border border-black/10 dark:border-white/10 text-[#6B6B6B] dark:text-[#94A3B8] hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
+            >
+              Still Doing
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Search Bar */}
       <div className="relative w-full">
@@ -240,14 +398,14 @@ export const HomeworkView: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter Tabs */}
+      {/* Filter Tabs (Only 3: TO DO, DOING, DONE) */}
       <div className="flex items-center w-full mt-4 mb-2 h-[44px] border-b border-[#D9D9D6] dark:border-white/[0.08]">
         {filterTabs.map((tab) => {
           const isSelected = statusFilter === tab.id;
           return (
             <button
               key={tab.id}
-              onClick={() => setStatusFilter(tab.id as 'All' | HomeworkStatus)}
+              onClick={() => setStatusFilter(tab.id as HomeworkStatus)}
               className={`relative flex-1 flex items-center justify-center gap-1.5 h-full text-[11px] font-semibold tracking-[1px] uppercase transition-colors whitespace-nowrap cursor-pointer ${
                 isSelected
                   ? 'text-[#111111] dark:text-[#F4F4F6]'

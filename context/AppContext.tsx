@@ -1052,6 +1052,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
           if (existingIndex >= 0) {
             const existing = filteredHw[existingIndex];
+            const isClassroomProp = prop.attachmentName?.includes('classroom.google.com');
             filteredHw[existingIndex] = {
               ...existing,
               isBatchShared: true,
@@ -1061,6 +1062,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               facultyTitle: prop.facultyTitle,
               batchKey: prop.batchKey || profile.batchKey,
               readReceipts: prop.readReceipts,
+              source: isClassroomProp ? 'google_classroom' : existing.source,
+              externalLink: isClassroomProp ? prop.attachmentName : existing.externalLink,
             };
             changed = true;
             return;
@@ -1070,6 +1073,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           const existsInPrev = prevHw.find((h) => areHomeworksSame(h, propHwRep));
           if (existsInPrev) {
             if (!filteredHw.some((h) => h.id === existsInPrev.id)) {
+              const isClassroomProp = prop.attachmentName?.includes('classroom.google.com');
               filteredHw.push({
                 ...existsInPrev,
                 isBatchShared: true,
@@ -1079,6 +1083,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 facultyTitle: prop.facultyTitle,
                 batchKey: prop.batchKey || profile.batchKey,
                 readReceipts: prop.readReceipts,
+                source: isClassroomProp ? 'google_classroom' : existsInPrev.source,
+                externalLink: isClassroomProp ? prop.attachmentName : existsInPrev.externalLink,
               });
               changed = true;
             }
@@ -1086,6 +1092,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           }
 
           const nowIso = new Date().toISOString();
+          const isClassroomProp = prop.attachmentName?.includes('classroom.google.com');
           const newHw: Homework = {
             id: `hw_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
             subjectId: prop.subjectId,
@@ -1096,6 +1103,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             priority: prop.priority,
             status: 'Not Started',
             attachmentName: prop.attachmentName || '',
+            source: isClassroomProp ? 'google_classroom' : undefined,
+            externalLink: isClassroomProp ? prop.attachmentName : undefined,
             createdAt: nowIso,
             updatedAt: nowIso,
             isBatchShared: true,

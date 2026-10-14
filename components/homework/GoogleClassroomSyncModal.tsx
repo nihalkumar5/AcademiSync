@@ -21,6 +21,7 @@ import {
   AlertCircle,
   Check,
   Sparkles,
+  Users,
 } from 'lucide-react';
 
 export interface GoogleClassroomSyncModalProps {
@@ -32,7 +33,21 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
   isOpen,
   onClose,
 }) => {
-  const { subjects, homework, addHomework, showToast } = useApp();
+  const {
+    subjects,
+    homework,
+    addHomework,
+    showToast,
+    isBatchCR,
+    isBatchPilot,
+    profile,
+    proposeBatchTask,
+  } = useApp();
+
+  const canBroadcast =
+    (isBatchCR || isBatchPilot || profile?.role === 'cr') &&
+    profile?.isBatchSynced &&
+    !!profile?.batchKey;
 
   const [step, setStep] = useState<'prompt' | 'syncing' | 'review' | 'success'>('prompt');
   const [progressMsg, setProgressMsg] = useState('');
@@ -40,6 +55,8 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
   const [fetchedItems, setFetchedItems] = useState<FetchedAssignmentItem[]>([]);
   const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({});
   const [importedCount, setImportedCount] = useState(0);
+  const [broadcastToBatch, setBroadcastToBatch] = useState(canBroadcast);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resetState = () => {
     setStep('prompt');
@@ -48,6 +65,7 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
     setFetchedItems([]);
     setSelectedIds({});
     setImportedCount(0);
+    setIsSubmitting(false);
   };
 
   const handleClose = () => {
@@ -103,7 +121,7 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
     }
   };
 
-  const handleImport = () => {
+  const handleImport = async () => {
     const toImport = fetchedItems.filter((item) => selectedIds[item.courseWork.id]);
 
     if (!toImport.length) {
@@ -111,38 +129,68 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
       return;
     }
 
+    setIsSubmitting(true);
     let count = 0;
-    toImport.forEach((item) => {
-      // Check if already in homework list
-      const alreadyPresent = homework.find(
-        (h) =>
-          h.externalId === item.courseWork.id ||
-          h.title.trim().toLowerCase() === item.courseWork.title.trim().toLowerCase()
-      );
 
-      const status: HomeworkStatus = item.isTurnedIn ? 'Completed' : 'Not Started';
+    try {
+      for (const item of toImport) {
+        const alreadyPresent = homework.find(
+          (h) =>
+            h.externalId === item.courseWork.id ||
+            h.title.trim().toLowerCase() === item.courseWork.title.trim().toLowerCase()
+        );
 
-      if (!alreadyPresent) {
-        addHomework({
-          subjectId: item.matchedSubjectId,
-          subjectName: item.courseName,
-          title: item.courseWork.title,
-          description: item.courseWork.description || `Imported from ${item.courseName}`,
-          deadline: item.computedDeadline,
-          priority: item.suggestedPriority,
-          status,
-          source: 'google_classroom',
-          externalId: item.courseWork.id,
-          externalLink: item.courseWork.alternateLink,
-          attachmentName: item.courseWork.alternateLink ? 'Open in Classroom' : undefined,
-        });
-        count++;
+        if (broadcastToBatch && canBroadcast && profile?.batchKey) {
+          // Pilot Broadcast Mode: pushes as batch proposal that auto-approves
+          // and instantly delivers to every batch student's device via real-time Firestore listener!
+          await proposeBatchTask({
+            title: item.courseWork.title,
+            description: item.courseWork.description || `Classroom Assignment: ${item.courseName}`,
+            subjectId: item.matchedSubjectId,
+            subjectName: item.courseName,
+            deadline: item.computedDeadline,
+            priority: item.suggestedPriority,
+            attachmentName: item.courseWork.alternateLink || '',
+          });
+          count++;
+        } else if (!alreadyPresent) {
+          // Personal Import Mode
+          const status: HomeworkStatus = item.isTurnedIn ? 'Completed' : 'Not Started';
+          addHomework({
+            subjectId: item.matchedSubjectId,
+            subjectName: item.courseName,
+            title: item.courseWork.title,
+            description: item.courseWork.description || `Imported from ${item.courseName}`,
+            deadline: item.computedDeadline,
+            priority: item.suggestedPriority,
+            status,
+            source: 'google_classroom',
+            externalId: item.courseWork.id,
+            externalLink: item.courseWork.alternateLink,
+            attachmentName: item.courseWork.alternateLink ? 'Open in Classroom' : undefined,
+          });
+          count++;
+        }
       }
-    });
 
-    setImportedCount(count);
-    setStep('success');
-    showToast('Classroom Sync', `Successfully imported ${count} assignments!`, 'success');
+      setImportedCount(count);
+      setStep('success');
+
+      if (broadcastToBatch && canBroadcast && profile?.batchKey) {
+        showToast(
+          'Batch Broadcast Complete',
+          `Delivered ${count} assignments to batch ${profile.batchKey}!`,
+          'success'
+        );
+      } else {
+        showToast('Classroom Sync', `Successfully imported ${count} assignments!`, 'success');
+      }
+    } catch (err: any) {
+      console.error('Error importing assignments:', err);
+      showToast('Import Error', err.message || 'Could not import assignments.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const toggleSelectAll = (select: boolean) => {
@@ -186,6 +234,12 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
                 Connect your student Google account to fetch coursework, pending deadlines, and
                 submission states across all enrolled classrooms.
               </p>
+              {canBroadcast && profile?.batchKey && (
+                <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-none bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-[11px] font-medium font-mono">
+                  <Users className="w-3.5 h-3.5" />
+                  Pilot Mode Enabled ({profile.batchKey})
+                </div>
+              )}
             </div>
 
             <div className="w-full max-w-sm flex flex-col gap-2.5 pt-2">
@@ -226,6 +280,32 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
         {/* STEP 3: REVIEW ITEMS */}
         {step === 'review' && (
           <div className="flex flex-col gap-4">
+            {/* Batch Pilot Broadcast Toggle Bar */}
+            {canBroadcast && profile?.batchKey && (
+              <div className="flex items-center justify-between p-3.5 bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/25 rounded-none">
+                <div className="flex items-center gap-2.5">
+                  <Users className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <div>
+                    <p className="text-xs font-bold text-blue-900 dark:text-blue-200">
+                      Broadcast to Entire Batch ({profile.batchKey})
+                    </p>
+                    <p className="text-[11px] text-blue-700/80 dark:text-blue-300/80">
+                      Auto-deliver selected tasks to all student devices in real-time.
+                    </p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-3">
+                  <input
+                    type="checkbox"
+                    checked={broadcastToBatch}
+                    onChange={(e) => setBroadcastToBatch(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-black/20 peer-focus:outline-none rounded-full peer dark:bg-white/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+            )}
+
             <div className="flex items-center justify-between text-xs border-b border-black/10 dark:border-white/10 pb-3">
               <span className="font-semibold text-[#111111] dark:text-white">
                 Found {fetchedItems.length} assignments ({selectedTotal} selected)
@@ -249,7 +329,7 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
               </div>
             </div>
 
-            <div className="flex flex-col gap-2.5 max-h-[50vh] overflow-y-auto pr-1">
+            <div className="flex flex-col gap-2.5 max-h-[48vh] overflow-y-auto pr-1">
               {fetchedItems.map((item) => {
                 const isSelected = !!selectedIds[item.courseWork.id];
                 const isAlreadyPresent =
@@ -343,16 +423,32 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-black/10 dark:border-white/10">
-              <Button variant="ghost" onClick={handleClose} className="text-xs">
+              <Button variant="ghost" onClick={handleClose} disabled={isSubmitting} className="text-xs">
                 Cancel
               </Button>
               <Button
                 variant="primary"
                 onClick={handleImport}
-                disabled={selectedTotal === 0}
-                className="text-xs font-semibold px-5"
+                disabled={selectedTotal === 0 || isSubmitting}
+                className="text-xs font-semibold px-5 flex items-center gap-2"
               >
-                Import {selectedTotal} Selected
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    {broadcastToBatch ? 'Broadcasting...' : 'Importing...'}
+                  </>
+                ) : (
+                  <>
+                    {broadcastToBatch && canBroadcast ? (
+                      <>
+                        <Users className="w-3.5 h-3.5" />
+                        Broadcast {selectedTotal} to Batch
+                      </>
+                    ) : (
+                      `Import ${selectedTotal} Selected`
+                    )}
+                  </>
+                )}
               </Button>
             </div>
           </div>
@@ -367,10 +463,12 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
 
             <div>
               <h3 className="text-lg font-bold text-[#111111] dark:text-[#F4F4F6]">
-                Sync Completed!
+                {broadcastToBatch && canBroadcast ? 'Broadcast Successful!' : 'Sync Completed!'}
               </h3>
               <p className="text-xs text-[#6B6B6B] dark:text-[#94A3B8] mt-1.5">
-                Added {importedCount} new assignments to your schedule.
+                {broadcastToBatch && canBroadcast
+                  ? `Delivered ${importedCount} assignments to all students in batch ${profile?.batchKey}.`
+                  : `Added ${importedCount} new assignments to your schedule.`}
               </p>
             </div>
 
