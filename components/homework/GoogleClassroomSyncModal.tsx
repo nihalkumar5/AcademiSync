@@ -9,6 +9,8 @@ import { Button } from '../ui/Button';
 import {
   getGoogleClassroomToken,
   syncAllClassroomAssignments,
+  getClassroomConnectionInfo,
+  ClassroomConnectionInfo,
   FetchedAssignmentItem,
 } from '@/lib/googleClassroom';
 import {
@@ -58,6 +60,18 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
   const [importedCount, setImportedCount] = useState(0);
   const [broadcastToBatch, setBroadcastToBatch] = useState(canBroadcast);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [connInfo, setConnInfo] = useState<ClassroomConnectionInfo>({
+    isConnected: false,
+    email: null,
+    lastSyncedAt: null,
+    hasValidToken: false,
+  });
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setConnInfo(getClassroomConnectionInfo());
+    }
+  }, [isOpen]);
 
   const resetState = () => {
     setStep('prompt');
@@ -82,13 +96,40 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
   const startSync = async () => {
     setErrorMsg('');
     setStep('syncing');
-    setProgressMsg('Authenticating with Google...');
+    setProgressMsg('Authenticating with Google Classroom...');
 
     try {
-      const token = await getGoogleClassroomToken();
-      const items = await syncAllClassroomAssignments(token, subjects, (msg) => {
-        setProgressMsg(msg);
-      });
+      let token: string;
+      try {
+        // Try cached token first to avoid repeated popups
+        token = await getGoogleClassroomToken(false);
+      } catch {
+        token = await getGoogleClassroomToken(true);
+      }
+
+      let items: FetchedAssignmentItem[] = [];
+
+      try {
+        items = await syncAllClassroomAssignments(token, subjects, (msg) => {
+          setProgressMsg(msg);
+        });
+      } catch (apiErr: any) {
+        // If 401 Unauthorized (token expired on Google servers), re-authenticate once
+        if (apiErr?.message?.includes('401') || apiErr?.message?.includes('403')) {
+          setProgressMsg('Refreshing session with Google...');
+          token = await getGoogleClassroomToken(true);
+          items = await syncAllClassroomAssignments(token, subjects, (msg) => {
+            setProgressMsg(msg);
+          });
+        } else {
+          throw apiErr;
+        }
+      }
+
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('classroom_last_synced_at', new Date().toISOString());
+      }
+      setConnInfo(getClassroomConnectionInfo());
 
       if (!items.length) {
         setErrorMsg('No active courses or assignments found in this Google Classroom account.');
@@ -248,17 +289,36 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
         {/* STEP 1: PROMPT */}
         {step === 'prompt' && (
           <div className="flex flex-col items-center text-center py-6 px-4 gap-4">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/10 dark:bg-emerald-400/10 flex items-center justify-center border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-              <GraduationCap className="w-8 h-8 stroke-[1.75]" />
+            <div className="relative">
+              <div className="w-16 h-16 rounded-full bg-emerald-500/10 dark:bg-emerald-400/10 flex items-center justify-center border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                <GraduationCap className="w-8 h-8 stroke-[1.75]" />
+              </div>
+              {connInfo.isConnected && (
+                <span className="absolute bottom-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#16171D]">
+                  <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
+                </span>
+              )}
             </div>
 
             <div className="max-w-md">
+              {connInfo.isConnected && (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[11px] font-semibold mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Classroom Connected
+                </div>
+              )}
               <h3 className="text-lg font-bold text-[#111111] dark:text-[#F4F4F6]">
-                Sync Your Course Assignments
+                {connInfo.isConnected ? 'Sync Course Assignments' : 'Connect Your Google Classroom'}
               </h3>
+              {connInfo.email && (
+                <p className="text-xs font-mono font-medium text-[#111111] dark:text-[#F4F4F6] mt-1">
+                  {connInfo.email}
+                </p>
+              )}
               <p className="text-xs text-[#6B6B6B] dark:text-[#94A3B8] mt-1.5 leading-relaxed">
-                Connect your student Google account to fetch coursework, pending deadlines, and
-                submission states across all enrolled classrooms.
+                {connInfo.isConnected
+                  ? 'Fetch new coursework, test submissions, and pending deadlines directly into your schedule.'
+                  : 'Connect your student Google account to fetch coursework, pending deadlines, and submission states across all enrolled classrooms.'}
               </p>
               {canBroadcast && (
                 <div className="inline-flex items-center gap-1.5 mt-3 px-2.5 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-[10.5px] font-bold uppercase tracking-wider">
@@ -275,7 +335,7 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
                 className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-semibold"
               >
                 <Sparkles className="w-4 h-4" />
-                Connect & Fetch Assignments
+                {connInfo.isConnected ? 'Sync Assignments Now' : 'Connect & Fetch Assignments'}
               </Button>
               <Button
                 variant="ghost"

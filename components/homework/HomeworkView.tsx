@@ -11,6 +11,7 @@ import { GoogleClassroomSyncModal } from './GoogleClassroomSyncModal';
 import {
   getStoredClassroomToken,
   checkUnimportedClassroomAssignments,
+  getClassroomConnectionInfo,
 } from '@/lib/googleClassroom';
 import { ProposedBatchTasksVoting } from './ProposedBatchTasksVoting';
 import { EmptyState } from '../ui/EmptyState';
@@ -47,10 +48,18 @@ export const HomeworkView: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showScanModal, setShowScanModal] = useState(false);
   const [showClassroomModal, setShowClassroomModal] = useState(false);
+  const [classroomConnected, setClassroomConnected] = useState(false);
   const [editHomework, setEditHomework] = useState<Homework | null>(null);
   const [selectedDetailHomework, setSelectedDetailHomework] = useState<Homework | null>(null);
   const [prefilledData, setPrefilledData] = useState<Partial<Homework> | null>(null);
   const [pilotPendingCount, setPilotPendingCount] = useState<number | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const info = getClassroomConnectionInfo();
+      setClassroomConnected(info.isConnected);
+    }
+  }, [showClassroomModal]);
 
   // On-Open check for Batch Pilot
   React.useEffect(() => {
@@ -270,10 +279,21 @@ export const HomeworkView: React.FC = () => {
 
           <button
             onClick={() => setShowClassroomModal(true)}
-            className="flex items-center justify-center h-[36px] px-[14px] rounded-none border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] bg-transparent hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors text-[12px] font-semibold cursor-pointer w-auto gap-2"
+            className={`flex items-center justify-center h-[36px] px-[14px] rounded-none border text-[#111111] dark:text-[#F4F4F6] transition-colors text-[12px] font-semibold cursor-pointer w-auto gap-2 ${
+              classroomConnected
+                ? 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10'
+                : 'border-[#D9D9D6] dark:border-white/[0.1] bg-transparent hover:bg-black/5 dark:hover:bg-white/[0.06]'
+            }`}
           >
-            <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span>Classroom Sync</span>
+            {classroomConnected ? (
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+            ) : (
+              <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            )}
+            <span>{classroomConnected ? 'Classroom Synced' : 'Classroom Sync'}</span>
             {isPilot && (
               <span className="text-[9.5px] font-bold font-mono px-1.5 py-0.2 rounded-none bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30 uppercase">
                 PILOT
@@ -323,7 +343,7 @@ export const HomeworkView: React.FC = () => {
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <p className="text-[#111111] dark:text-[#F4F4F6] text-[12px] leading-snug">
-                <span className="font-bold">Pilot Bridge:</span> Sync and broadcast Classroom assignments to your batch.
+                <span className="font-bold">Pilot Bridge:</span> {classroomConnected ? 'Classroom connected. Broadcast assignments to your batch.' : 'Sync and broadcast Classroom assignments to your batch.'}
               </p>
             </div>
             <button

@@ -63,11 +63,44 @@ export interface FetchedAssignmentItem {
   matchedSubjectId: string;
 }
 
+export interface ClassroomConnectionInfo {
+  isConnected: boolean;
+  email: string | null;
+  lastSyncedAt: string | null;
+  hasValidToken: boolean;
+}
+
+/**
+ * Return current Classroom connection info from local storage
+ */
+export function getClassroomConnectionInfo(): ClassroomConnectionInfo {
+  if (typeof window === 'undefined') {
+    return { isConnected: false, email: null, lastSyncedAt: null, hasValidToken: false };
+  }
+  const email = window.localStorage.getItem('classroom_user_email');
+  const lastSyncedAt = window.localStorage.getItem('classroom_last_synced_at');
+  const validToken = getStoredClassroomToken();
+  const isConnected = Boolean(email || validToken);
+
+  return {
+    isConnected,
+    email,
+    lastSyncedAt,
+    hasValidToken: Boolean(validToken),
+  };
+}
+
 /**
  * Acquire Google OAuth access token with Google Classroom scopes.
+ * Reuses valid cached token unless forceInteractive=true.
  * Supports web popup and Capacitor native GoogleAuth plugin.
  */
-export async function getGoogleClassroomToken(): Promise<string> {
+export async function getGoogleClassroomToken(forceInteractive = false): Promise<string> {
+  if (!forceInteractive) {
+    const cached = getStoredClassroomToken();
+    if (cached) return cached;
+  }
+
   if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
     const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
     GoogleAuth.initialize({
@@ -97,6 +130,10 @@ export async function getGoogleClassroomToken(): Promise<string> {
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('classroom_access_token', token);
       window.localStorage.setItem('classroom_token_expires_at', (Date.now() + 55 * 60 * 1000).toString());
+      const email = (googleUser as any)?.email;
+      if (email) {
+        window.localStorage.setItem('classroom_user_email', email);
+      }
     }
     return token;
   }
@@ -117,6 +154,10 @@ export async function getGoogleClassroomToken(): Promise<string> {
   if (typeof window !== 'undefined') {
     window.localStorage.setItem('classroom_access_token', token);
     window.localStorage.setItem('classroom_token_expires_at', (Date.now() + 55 * 60 * 1000).toString());
+    const email = result?.user?.email;
+    if (email) {
+      window.localStorage.setItem('classroom_user_email', email);
+    }
   }
 
   return token;
