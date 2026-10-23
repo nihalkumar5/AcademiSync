@@ -210,7 +210,7 @@ ${PLAY_STORE_URL}
             <span>
               {new Date(nextExam.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
               {' • '}
-              {new Date(nextExam.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+              {nextExam.time || new Date(nextExam.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
             </span>
             {nextExam.room && (
               <span className="bg-amber-200/50 dark:bg-amber-900/40 px-2 py-0.5 text-[12px] font-medium text-[#78350F] dark:text-amber-200">
@@ -291,7 +291,7 @@ ${PLAY_STORE_URL}
                             <span className="text-[#D9D9D6] dark:text-white/[0.1]">•</span>
                             <span className="text-[11.5px] font-mono text-[#6F6F6F] dark:text-[#94A3B8] flex items-center gap-1">
                               <Clock className="w-3 h-3 text-[#A1A1AA]" />
-                              {new Date(exam.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                              {exam.time || new Date(exam.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                               {exam.durationMinutes ? ` (${exam.durationMinutes}m)` : ''}
                             </span>
                             {exam.room && (

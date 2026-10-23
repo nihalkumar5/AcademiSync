@@ -93,11 +93,17 @@ export const AddEditExamModal: React.FC<AddEditExamModalProps> = ({
     const combinedDate = new Date(y, m - 1, d, h || 9, min || 0, 0);
     const isoString = combinedDate.toISOString();
 
+    const startHour12 = ((h || 9) % 12) || 12;
+    const startAmPm = (h || 9) >= 12 ? 'PM' : 'AM';
+    const startMinStr = String(min || 0).padStart(2, '0');
+    const formattedStartTime = `${String(startHour12).padStart(2, '0')}:${startMinStr} ${startAmPm}`;
+
     if (examToEdit) {
       updateExam({
         ...examToEdit,
         subjectName: trimmedSubject,
         date: isoString,
+        time: formattedStartTime,
         room: room.trim() || undefined,
         syllabus: syllabus.trim() || undefined,
         durationMinutes: durationMinutes ? Number(durationMinutes) : undefined,
@@ -106,6 +112,7 @@ export const AddEditExamModal: React.FC<AddEditExamModalProps> = ({
       addExam({
         subjectName: trimmedSubject,
         date: isoString,
+        time: formattedStartTime,
         room: room.trim() || undefined,
         syllabus: syllabus.trim() || undefined,
         durationMinutes: durationMinutes ? Number(durationMinutes) : undefined,

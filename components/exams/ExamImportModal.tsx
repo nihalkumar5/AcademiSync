@@ -14,6 +14,31 @@ interface ExamImportModalProps {
   onClose: () => void;
 }
 
+// Helper to parse start time from human-readable strings like "09:30 AM - 12:30 PM", "2:00 PM", "14:00"
+function parseExamStartTime(timeStr?: string): { hours: number; minutes: number } {
+  if (!timeStr) return { hours: 9, minutes: 30 };
+  const str = timeStr.trim().toLowerCase();
+
+  const match = str.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+  if (!match) return { hours: 9, minutes: 30 };
+
+  let hours = parseInt(match[1], 10);
+  const minutes = match[2] ? parseInt(match[2], 10) : 0;
+  const meridian = match[3] ? match[3].toLowerCase() : null;
+
+  if (meridian === 'pm' && hours < 12) {
+    hours += 12;
+  } else if (meridian === 'am' && hours === 12) {
+    hours = 0;
+  } else if (!meridian) {
+    if (hours >= 1 && hours <= 7) {
+      hours += 12;
+    }
+  }
+
+  return { hours, minutes };
+}
+
 export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClose }) => {
   const { exams, setFullExams, showToast, user, profile, subjects } = useApp();
 
@@ -128,12 +153,18 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
   };
 
   const addExtractedRow = () => {
+    const today = new Date();
+    today.setDate(today.getDate() + 7);
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+
     setExtractedExams((prev) => [
       ...prev,
       {
-        subjectName: 'New Exam',
-        date: new Date().toISOString(),
-        time: '10:00 AM - 1:00 PM',
+        subjectName: '',
+        date: `${yyyy}-${mm}-${dd}`,
+        time: '09:30 AM - 12:30 PM',
         syllabus: '',
         room: '',
         durationMinutes: 180,
@@ -142,17 +173,35 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
   };
 
   const handleSaveConfirmed = () => {
-    // Save to context
-    const formattedExams = extractedExams.map((e, idx) => ({
-      id: `exam_${Date.now()}_${idx}`,
-      subjectName: e.subjectName || 'Exam',
-      date: e.date,
-      syllabus: e.syllabus || '',
-      room: e.room || '',
-      durationMinutes: e.durationMinutes || undefined,
-      createdAt: new Date().toISOString(),
-    }));
-    // Overwrite old exams completely
+    const formattedExams = extractedExams.map((e, idx) => {
+      let cleanDate = (e.date || '').trim();
+      if (cleanDate.includes('T')) {
+        cleanDate = cleanDate.split('T')[0];
+      }
+      if (!cleanDate || cleanDate.length < 10) {
+        const now = new Date();
+        cleanDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      }
+
+      const [y, m, d] = cleanDate.split('-').map(Number);
+      const { hours, minutes } = parseExamStartTime(e.time);
+
+      // Create Date object in local browser time to eliminate timezone offset issues
+      const localDate = new Date(y, m - 1, d, hours, minutes, 0);
+      const isoDate = !isNaN(localDate.getTime()) ? localDate.toISOString() : new Date().toISOString();
+
+      return {
+        id: `exam_${Date.now()}_${idx}`,
+        subjectName: e.subjectName?.trim() || 'Exam',
+        date: isoDate,
+        time: e.time?.trim() || undefined,
+        syllabus: e.syllabus?.trim() || '',
+        room: e.room?.trim() || '',
+        durationMinutes: e.durationMinutes || undefined,
+        createdAt: new Date().toISOString(),
+      };
+    });
+
     setFullExams(formattedExams);
     handleClose();
   };
@@ -255,43 +304,67 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
                       <X className="w-3 h-3" />
                     </button>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Subject</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
+                      <div className="sm:col-span-5 flex flex-col gap-1.5">
+                        <label className="text-[10.5px] font-bold text-black/70 dark:text-[#94A3B8] uppercase tracking-wider">
+                          Subject Name
+                        </label>
                         <input
                           type="text"
                           value={event.subjectName}
+                          placeholder="e.g. Operating Systems (CS501)"
                           onChange={(e) => updateExtractedRow(index, { subjectName: e.target.value })}
                           className="w-full px-3 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
                         />
                       </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Date & Time</label>
-                        <div className="grid grid-cols-2 gap-2">
-                          <input
-                            type="text"
-                            value={event.date}
-                            onChange={(e) => updateExtractedRow(index, { date: e.target.value })}
-                            className="w-full px-3 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
-                          />
-                          <input
-                            type="text"
-                            value={event.time}
-                            onChange={(e) => updateExtractedRow(index, { time: e.target.value })}
-                            className="w-full px-3 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
-                          />
-                        </div>
+                      <div className="sm:col-span-3 flex flex-col gap-1.5">
+                        <label className="text-[10.5px] font-bold text-black/70 dark:text-[#94A3B8] uppercase tracking-wider">
+                          Exam Date
+                        </label>
+                        <input
+                          type="date"
+                          value={event.date?.includes('T') ? event.date.split('T')[0] : event.date}
+                          onChange={(e) => updateExtractedRow(index, { date: e.target.value })}
+                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
+                        />
+                      </div>
+                      <div className="sm:col-span-4 flex flex-col gap-1.5">
+                        <label className="text-[10.5px] font-bold text-black/70 dark:text-[#94A3B8] uppercase tracking-wider">
+                          Exam Time
+                        </label>
+                        <input
+                          type="text"
+                          value={event.time}
+                          placeholder="e.g. 09:30 AM - 12:30 PM"
+                          onChange={(e) => updateExtractedRow(index, { time: e.target.value })}
+                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
+                        />
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 gap-3">
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Syllabus (Optional)</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
+                      <div className="sm:col-span-4 flex flex-col gap-1.5">
+                        <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">
+                          Room / Hall (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={event.room || ''}
+                          placeholder="e.g. Room 204 or Hall B"
+                          onChange={(e) => updateExtractedRow(index, { room: e.target.value })}
+                          className="w-full px-3 py-1.5 h-[36px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[12.5px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
+                        />
+                      </div>
+                      <div className="sm:col-span-8 flex flex-col gap-1.5">
+                        <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">
+                          Syllabus / Modules (Optional)
+                        </label>
                         <input
                           type="text"
                           value={event.syllabus || ''}
+                          placeholder="e.g. Modules 1 to 4"
                           onChange={(e) => updateExtractedRow(index, { syllabus: e.target.value })}
-                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
+                          className="w-full px-3 py-1.5 h-[36px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[12.5px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
                         />
                       </div>
                     </div>

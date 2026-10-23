@@ -86,12 +86,12 @@ CRITICAL INSTRUCTIONS FOR TARGET BRANCH CODE & SEMESTER ISOLATION:
 3. FALLBACK GUARANTEE:
 - If the document is for a single branch or routine without multi-branch columns or headings, extract all visible exam slots on the uploaded page(s) so the student can review and adjust them in the preview table. DO NOT return an empty list if exams are visible!
 
-4. ACCURATE EXAM DATE & TIMINGS (STRICT 24-HOUR / ISO 8601):
-- "date": ISO 8601 string combining the exam date and start time (e.g., "2026-10-25T09:30:00.000Z").
+4. ACCURATE EXAM DATE & TIMINGS (SEPARATE DATE AND TIME FIELDS):
+- "date": Strict calendar date in "YYYY-MM-DD" format (e.g., "2026-10-25"). Do NOT attach time, 'T', or 'Z' to this field.
   * Parse Day, Month, and Year from the sheet. If Year is not stated, assume current academic year (${new Date().getFullYear()}).
-  * Academic time resolution: Morning slots (09:00, 09:30, 10:00) are AM. Afternoon slots (01:30, 02:00, 02:30) are PM (13:30, 14:00).
-- "time": Formatted human-readable string (e.g., "09:30 AM - 12:30 PM" or "02:00 PM - 05:00 PM").
-- "durationMinutes": Calculate duration in minutes (e.g., 180 for a 3-hour exam, 120 for 2 hours).
+- "time": Formatted human-readable time string for the exam shift/slot (e.g., "09:30 AM - 12:30 PM", "10:00 AM - 01:00 PM", or "02:00 PM - 05:00 PM").
+  * Morning slots (09:00, 09:30, 10:00) are AM. Afternoon slots (01:30, 02:00, 02:30) are PM.
+- "durationMinutes": Calculate duration in minutes (e.g., 180 for a 3-hour exam, 120 for 2 hours, 90 for 1.5 hours).
 - "subjectName": Full subject name and course code if available (e.g., "Operating Systems (CS501)").
 - "syllabus": Syllabus, units, or modules mentioned, or null.
 - "room": Room / Hall / Examination center number if mentioned, or null.
@@ -100,7 +100,7 @@ Return ONLY a raw JSON array:
 [
   {
     "subjectName": "Operating Systems (CS501)",
-    "date": "2026-10-25T09:30:00.000Z",
+    "date": "2026-10-25",
     "time": "09:30 AM - 12:30 PM",
     "syllabus": "Modules 1 to 4",
     "room": "Hall A",
@@ -142,15 +142,35 @@ Return ONLY a raw JSON array:
 
           if (Array.isArray(parsed) && parsed.length > 0) {
             const cleanedExams = parsed.map((item: any, idx: number) => {
-              let isoDate = item.date;
-              if (!isoDate || isNaN(new Date(isoDate).getTime())) {
-                const now = new Date();
-                isoDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (idx * 2) + 1, 9, 30).toISOString();
+              let dateStr = String(item.date || '').trim();
+              if (dateStr.includes('T')) {
+                dateStr = dateStr.split('T')[0];
               }
+
+              const match = dateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+              if (match) {
+                const yyyy = match[1];
+                const mm = String(match[2]).padStart(2, '0');
+                const dd = String(match[3]).padStart(2, '0');
+                dateStr = `${yyyy}-${mm}-${dd}`;
+              } else {
+                const parsedDate = new Date(dateStr);
+                if (!isNaN(parsedDate.getTime())) {
+                  const yyyy = parsedDate.getFullYear();
+                  const mm = String(parsedDate.getMonth() + 1).padStart(2, '0');
+                  const dd = String(parsedDate.getDate()).padStart(2, '0');
+                  dateStr = `${yyyy}-${mm}-${dd}`;
+                } else {
+                  const now = new Date();
+                  const future = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (idx * 2) + 1);
+                  dateStr = `${future.getFullYear()}-${String(future.getMonth() + 1).padStart(2, '0')}-${String(future.getDate()).padStart(2, '0')}`;
+                }
+              }
+
               return {
                 subjectName: String(item.subjectName || 'Exam').trim(),
-                date: isoDate,
-                time: item.time || '09:30 AM - 12:30 PM',
+                date: dateStr,
+                time: String(item.time || '09:30 AM - 12:30 PM').trim(),
                 syllabus: item.syllabus ? String(item.syllabus).trim() : null,
                 room: item.room ? String(item.room).trim() : null,
                 durationMinutes: typeof item.durationMinutes === 'number' && item.durationMinutes > 0 ? item.durationMinutes : 180,

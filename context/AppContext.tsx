@@ -2305,6 +2305,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const newExam: Exam = {
       subjectName: examData.subjectName || '',
       date: examData.date,
+      time: examData.time || undefined,
       syllabus: examData.syllabus || '',
       room: examData.room || '',
       durationMinutes: examData.durationMinutes || undefined,
@@ -2377,6 +2378,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       id: ex.id || `exam_${Date.now()}`,
       subjectName: ex.subjectName || '',
       date: ex.date,
+      time: ex.time || undefined,
       syllabus: ex.syllabus || '',
       room: ex.room || '',
       durationMinutes: ex.durationMinutes || undefined,

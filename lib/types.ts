@@ -247,6 +247,7 @@ export interface Exam {
   id: string;
   subjectName: string;
   date: string; // ISO String for Date/Time
+  time?: string;
   syllabus?: string;
   room?: string;
   durationMinutes?: number;
