@@ -249,7 +249,10 @@ export const scheduleTimetableLocalNotifications = async (
           },
           sound: 'class_bell',
           channelId: 'class_alerts_v3',
-          extra: null,
+          extra: {
+            relatedId: `class_remind_${session.id}_${dateStr}`,
+            type: 'class_reminder',
+          },
         });
 
         occurrenceCount++;
@@ -294,7 +297,10 @@ export const scheduleTimetableLocalNotifications = async (
           },
           sound: 'class_bell',
           channelId: 'class_alerts_v3',
-          extra: null,
+          extra: {
+            relatedId: `extra_class_${extra.id || extraIdx}_${dateStr}`,
+            type: 'extra_class_reminder',
+          },
         });
       });
     }
@@ -358,6 +364,7 @@ export const scheduleTimetableLocalNotifications = async (
 
       const totalClassesTomorrow = tomorrowRegularClasses.length + (hasExtraClass ? 1 : 0);
       const notifId = 5000 + dayOffset;
+      const eveningDateStr = getLocalDateString(eveningDate);
 
       notificationsToSchedule.push({
         title: '🎒 Pack Your Bag for Tomorrow',
@@ -369,7 +376,10 @@ export const scheduleTimetableLocalNotifications = async (
         },
         sound: 'class_bell',
         channelId: 'class_alerts_v3',
-        extra: null,
+        extra: {
+          relatedId: `carry_evening_${eveningDateStr}`,
+          type: 'carry_reminder',
+        },
       });
     }
 
@@ -395,7 +405,10 @@ export const scheduleTimetableLocalNotifications = async (
             },
             sound: 'class_bell',
             channelId: 'class_alerts_v3',
-            extra: null,
+            extra: {
+              relatedId: `hw_remind_${hw.id}_1d`,
+              type: 'homework_reminder',
+            },
           });
         }
 
@@ -412,7 +425,10 @@ export const scheduleTimetableLocalNotifications = async (
             },
             sound: 'class_bell',
             channelId: 'class_alerts_v3',
-            extra: null,
+            extra: {
+              relatedId: `hw_remind_${hw.id}_0d`,
+              type: 'homework_reminder',
+            },
           });
         }
       });
@@ -429,6 +445,7 @@ export const scheduleTimetableLocalNotifications = async (
         examMorning.setHours(7, 30, 0, 0);
 
         if (examMorning.getTime() > nowMs) {
+          const examDateStr = (exam.date || '').split('T')[0];
           notificationsToSchedule.push({
             title: `📝 Exam Today: ${exam.subjectName}`,
             body: `Examination scheduled for today in ${exam.room || 'Examination Hall'}. All the best!`,
@@ -439,7 +456,10 @@ export const scheduleTimetableLocalNotifications = async (
             },
             sound: 'class_bell',
             channelId: 'class_alerts_v3',
-            extra: null,
+            extra: {
+              relatedId: `exam_${exam.id || idx}_${examDateStr}`,
+              type: 'exam_reminder',
+            },
           });
         }
       });
@@ -455,5 +475,101 @@ export const scheduleTimetableLocalNotifications = async (
     }
   } catch (error) {
     console.error('Failed to schedule timetable local notifications', error);
+  }
+};
+
+// ── Notification Deduplication & Delivery Tracking ────────────────────────────
+
+const DELIVERED_KEYS_STORAGE_KEY = 'delivered_local_notification_keys';
+
+/**
+ * Retrieves the set of notification relatedIds that have already been fired
+ * by the native operating system alarm or marked as delivered.
+ */
+export const getDeliveredNotificationKeysFromStorage = (): Set<string> => {
+  if (typeof window === 'undefined') return new Set();
+  try {
+    const raw = localStorage.getItem(DELIVERED_KEYS_STORAGE_KEY);
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw);
+    return new Set(Array.isArray(arr) ? arr : []);
+  } catch (_) {
+    return new Set();
+  }
+};
+
+/**
+ * Marks a notification relatedId as delivered in localStorage so it never re-fires
+ * or duplicates when opening or foregrounding the app.
+ */
+export const markNotificationDeliveredLocally = (relatedId: string) => {
+  if (typeof window === 'undefined' || !relatedId) return;
+  try {
+    const set = getDeliveredNotificationKeysFromStorage();
+    set.add(relatedId);
+    // Keep at most 300 entries to prevent localStorage bloat
+    const arr = Array.from(set).slice(-300);
+    localStorage.setItem(DELIVERED_KEYS_STORAGE_KEY, JSON.stringify(arr));
+  } catch (_) {}
+};
+
+/**
+ * Syncs any notifications currently residing in the Android/iOS status bar or notification
+ * shade that were delivered while the app was closed/in background.
+ */
+export const syncDeliveredNativeNotifications = async (): Promise<string[]> => {
+  if (!Capacitor.isNativePlatform()) return [];
+  try {
+    const delivered = await LocalNotifications.getDeliveredNotifications();
+    if (!delivered || !Array.isArray(delivered.notifications)) return [];
+    const keys: string[] = [];
+    delivered.notifications.forEach((item) => {
+      const relId = item.extra?.relatedId;
+      if (relId) {
+        keys.push(relId);
+        markNotificationDeliveredLocally(relId);
+      }
+    });
+    return keys;
+  } catch (err) {
+    console.warn('Could not sync delivered notifications:', err);
+    return [];
+  }
+};
+
+/**
+ * Sets up Capacitor LocalNotifications listeners to catch background deliveries
+ * and user tap actions, marking them as delivered / read immediately.
+ */
+export const setupLocalNotificationListeners = (
+  onAction?: (relatedId: string) => void
+): (() => void) => {
+  if (!Capacitor.isNativePlatform()) return () => {};
+
+  try {
+    const receivedPromise = LocalNotifications.addListener('localNotificationReceived', (notification) => {
+      const relId = notification?.extra?.relatedId;
+      if (relId) {
+        markNotificationDeliveredLocally(relId);
+      }
+    });
+
+    const actionPromise = LocalNotifications.addListener('localNotificationActionPerformed', (action) => {
+      const relId = action?.notification?.extra?.relatedId;
+      if (relId) {
+        markNotificationDeliveredLocally(relId);
+        if (onAction) {
+          onAction(relId);
+        }
+      }
+    });
+
+    return () => {
+      receivedPromise.then((h) => h.remove()).catch(() => {});
+      actionPromise.then((h) => h.remove()).catch(() => {});
+    };
+  } catch (err) {
+    console.warn('Failed to register LocalNotifications listeners', err);
+    return () => {};
   }
 };

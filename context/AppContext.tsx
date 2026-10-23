@@ -40,7 +40,13 @@ import { onAuthStateChanged, getRedirectResult } from 'firebase/auth';
 import { doc, collection, onSnapshot, setDoc, deleteDoc, getDoc, getDocs, query, where, updateDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { registerPushNotifications, broadcastBatchPushNotification } from '@/lib/pushNotifications';
-import { triggerLocalNotification, scheduleTimetableLocalNotifications } from '@/lib/localNotifications';
+import { 
+  triggerLocalNotification, 
+  scheduleTimetableLocalNotifications,
+  syncDeliveredNativeNotifications,
+  setupLocalNotificationListeners,
+  markNotificationDeliveredLocally,
+} from '@/lib/localNotifications';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
 import { getHarmonicColorForSubject } from '@/lib/cardColors';
 import { Capacitor } from '@capacitor/core';
@@ -378,6 +384,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const seenBatchAlertIds = useRef<Set<string>>(new Set());
   // True until the very first snapshot fires — used to silently load existing alerts
   const isFirstBatchSnapshot = useRef(true);
+  // Suppress duplicate toasts and alarms on initial app mount and foreground resume
+  const isInitialNotificationCheck = useRef(true);
+  const isResumingFromBackground = useRef(false);
 
   // Authority & CR verification for current batch
   const userEmail = (user?.primaryEmailAddress?.emailAddress || profile.email || '').trim().toLowerCase();
@@ -1367,12 +1376,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             const updated = [...newNotifs, ...prunedNotifications];
             storage.setNotifications(updated);
             
-            if (newNotifs.length > 0) {
+            // Mark new notifications as locally delivered so they never re-trigger
+            newNotifs.forEach((n) => {
+              if (n.relatedId) {
+                markNotificationDeliveredLocally(n.relatedId);
+              }
+            });
+
+            // Suppress in-app toast during initial app load or when resuming from background
+            const shouldSuppressToast = isInitialNotificationCheck.current || isResumingFromBackground.current;
+            if (newNotifs.length > 0 && !shouldSuppressToast) {
               showToast(newNotifs[0].title, newNotifs[0].message, 'info');
-              newNotifs.forEach((n) => {
-                triggerLocalNotification(n.title, n.message);
-              });
             }
+
+            // NOTE: NEVER call triggerLocalNotification here!
+            // Background/OS notifications are already scheduled and managed natively
+            // by scheduleTimetableLocalNotifications(). Calling it here creates duplicate
+            // heads-up alerts and chimes when opening the app.
+
             return updated;
           }
           return prevNotifications;
@@ -1381,6 +1402,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           return prevNotifications;
         }
       });
+
+      // Clear initial check flag after first execution
+      if (isInitialNotificationCheck.current) {
+        isInitialNotificationCheck.current = false;
+      }
     };
 
     // Run once on load/change
@@ -1390,6 +1416,63 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const interval = setInterval(runCheck, 60000);
     return () => clearInterval(interval);
   }, [timetable, subjects, homework, events, settings, cancelledSessions, rescheduledSessions, isHydrated]);
+
+  // Native Local Notification Sync, Tap Handler & App Resume Lifecycle
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    // 1. Sync any background-delivered notifications from device notification tray
+    syncDeliveredNativeNotifications().catch(() => {});
+
+    // 2. Setup tap/action listener to mark tapped notification as read
+    const cleanupListeners = setupLocalNotificationListeners((tappedRelatedId) => {
+      if (tappedRelatedId) {
+        setNotificationsState((prev) => {
+          const updated = prev.map((n) => 
+            (n.relatedId === tappedRelatedId || n.id === tappedRelatedId) ? { ...n, read: true } : n
+          );
+          storage.setNotifications(updated);
+          return updated;
+        });
+      }
+    });
+
+    // 3. Setup app foreground/resume listener to avoid duplicate toasts
+    let appStateHandle: any = null;
+    if (Capacitor.isNativePlatform()) {
+      import('@capacitor/app').then(({ App: CapApp }) => {
+        CapApp.addListener('appStateChange', ({ isActive }) => {
+          if (isActive) {
+            isResumingFromBackground.current = true;
+            syncDeliveredNativeNotifications().catch(() => {});
+            setTimeout(() => {
+              isResumingFromBackground.current = false;
+            }, 3500);
+          }
+        }).then((h) => {
+          appStateHandle = h;
+        }).catch(() => {});
+      });
+    }
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        isResumingFromBackground.current = true;
+        setTimeout(() => {
+          isResumingFromBackground.current = false;
+        }, 3500);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      cleanupListeners();
+      if (appStateHandle && typeof appStateHandle.remove === 'function') {
+        appStateHandle.remove();
+      }
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [isHydrated]);
 
   // Native Local Notification Scheduler Effect (debounced 500ms to avoid race conditions)
   useEffect(() => {

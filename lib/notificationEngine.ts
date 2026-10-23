@@ -1,5 +1,6 @@
 import { AppNotification, ClassSession, Homework, Subject, UserSettings, AcademicEvent } from './types';
 import { getCurrentDayOfWeek, getTomorrowDayOfWeek, timeToMinutes, formatTime12Hour, getTodayDateString, getTomorrowDateString } from './timetableUtils';
+import { getDeliveredNotificationKeysFromStorage } from './localNotifications';
 
 export const checkAndGenerateSmartNotifications = (
   timetable: ClassSession[] = [],
@@ -22,7 +23,9 @@ export const checkAndGenerateSmartNotifications = (
     const safeRescheduled = (rescheduledSessions && typeof rescheduledSessions === 'object') ? rescheduledSessions : {};
 
     const newNotifications: AppNotification[] = [];
+    const deliveredKeys = getDeliveredNotificationKeysFromStorage();
     const existingIds = new Set(safeExisting.map((n) => n?.relatedId || n?.id).filter(Boolean));
+    deliveredKeys.forEach((key) => existingIds.add(key));
     const now = new Date();
     const todayDay = getCurrentDayOfWeek();
     const dateTodayStr = getTodayDateString();
