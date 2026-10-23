@@ -106,6 +106,15 @@ export const ExamsView: React.FC = () => {
   const remainingUpcoming = remainingExams.filter(e => new Date(e.date).getTime() > now.getTime());
   const pastExams = remainingExams.filter(e => new Date(e.date).getTime() <= now.getTime());
 
+  const getCountdownParts = (targetDate: string) => {
+    const diffMs = new Date(targetDate).getTime() - now.getTime();
+    if (diffMs <= 0) return { days: 0, hours: 0, minutes: 0, isPast: true };
+    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    return { days, hours, minutes, isPast: false };
+  };
+
   const getCountdown = (targetDate: string) => {
     const diffMs = new Date(targetDate).getTime() - now.getTime();
     if (diffMs <= 0) return 'Ongoing or finished';
@@ -332,89 +341,138 @@ ${PLAY_STORE_URL}
         </div>
       </div>
 
-      {nextExam && (
-        <div className="relative mb-10 overflow-hidden rounded-[16px] border border-amber-500/30 dark:border-amber-500/35 bg-gradient-to-br from-amber-50/70 via-white to-amber-50/30 dark:from-[#181611] dark:via-[#131317] dark:to-[#0F1014] p-5 sm:p-6 shadow-xs text-left transition-all">
-          <div className="absolute top-0 right-0 -mt-8 -mr-8 w-40 h-40 bg-amber-400/10 dark:bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+      {nextExam && (() => {
+        const cd = getCountdownParts(nextExam.date);
+        return (
+          <div className="relative mb-10 overflow-hidden rounded-[20px] border border-black/[0.08] dark:border-amber-500/25 bg-white dark:bg-[#121318] p-5 sm:p-7 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_30px_rgba(245,158,11,0.05)] text-left transition-all">
+            {/* Top Ambient Glow */}
+            <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 bg-amber-400/10 dark:bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Top Header Badge Row */}
-          <div className="flex items-center justify-between gap-3 mb-3">
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-amber-500/15 dark:bg-amber-500/20 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-[10.5px] font-bold font-mono tracking-wider uppercase">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-600 dark:bg-amber-400"></span>
-              </span>
-              UP NEXT
+            {/* Top Bar: Badge & Action Cluster */}
+            <div className="flex items-center justify-between gap-3 mb-5">
+              <div className="flex items-center gap-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 text-amber-700 dark:text-amber-300 text-[11px] font-mono font-bold tracking-wider uppercase">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-600 dark:bg-amber-400"></span>
+                  </span>
+                  UP NEXT
+                </div>
+                <span className="text-[12px] text-[#71717A] dark:text-[#A1A1AA] font-mono hidden sm:inline-block">
+                  · Target Date: {new Date(nextExam.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => handleEditExam(nextExam)}
+                  className="p-1.5 rounded-lg text-[#71717A] hover:text-[#111111] dark:text-[#A1A1AA] dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                  title="Edit Next Exam"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => handleDeleteExam(nextExam.id, nextExam.subjectName)}
+                  className="p-1.5 rounded-lg text-[#71717A] hover:text-rose-600 dark:text-[#A1A1AA] dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                  title="Delete Next Exam"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/25 text-[#B45309] dark:text-amber-300 font-mono text-[11px] font-bold">
-                <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                {getCountdown(nextExam.date)}
-              </span>
-              <button
-                onClick={() => handleEditExam(nextExam)}
-                className="p-1.5 rounded-lg text-amber-900/70 hover:text-amber-950 dark:text-amber-300/70 dark:hover:text-amber-200 hover:bg-amber-500/10 transition-colors cursor-pointer"
-                title="Edit Next Exam"
-              >
-                <Edit2 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => handleDeleteExam(nextExam.id, nextExam.subjectName)}
-                className="p-1.5 rounded-lg text-rose-700/70 hover:text-rose-900 dark:text-rose-400/70 dark:hover:text-rose-300 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                title="Delete Next Exam"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+            {/* Main Middle Row: Title & Digital Countdown Counter */}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-5 pb-5 border-b border-black/[0.06] dark:border-white/[0.06]">
+              <div className="flex flex-col min-w-0">
+                <h3 className="text-[24px] sm:text-[28px] font-black text-[#111111] dark:text-white tracking-tight leading-tight">
+                  {nextExam.subjectName}
+                </h3>
+                <div className="flex flex-wrap items-center gap-2 mt-2 text-[12.5px] text-[#71717A]">
+                  <span className="inline-flex items-center gap-1 font-medium text-[#111111] dark:text-[#E2E8F0]">
+                    <CalendarDays className="w-3.5 h-3.5 text-amber-500" />
+                    {new Date(nextExam.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                  <span>·</span>
+                  <span className="inline-flex items-center gap-1 font-mono text-[#111111] dark:text-[#E2E8F0]">
+                    <Clock className="w-3.5 h-3.5 text-amber-500" />
+                    {nextExam.time || new Date(nextExam.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                  </span>
+                </div>
+              </div>
+
+              {/* Digital Flight-Board Countdown Timer */}
+              <div className="flex items-center gap-2 shrink-0 bg-black/[0.02] dark:bg-white/[0.02] p-2 rounded-2xl border border-black/[0.04] dark:border-white/[0.06]">
+                <div className="flex flex-col items-center justify-center bg-white dark:bg-[#1A1B22] border border-black/[0.06] dark:border-white/[0.08] rounded-xl w-14 sm:w-16 h-14 shadow-2xs">
+                  <span className="text-[20px] sm:text-[22px] font-black font-mono leading-none text-[#111111] dark:text-white">
+                    {String(cd.days).padStart(2, '0')}
+                  </span>
+                  <span className="text-[8.5px] font-mono font-bold uppercase text-[#71717A] tracking-wider mt-1">
+                    DAYS
+                  </span>
+                </div>
+                <span className="text-amber-500 font-bold text-lg font-mono leading-none">:</span>
+                <div className="flex flex-col items-center justify-center bg-white dark:bg-[#1A1B22] border border-black/[0.06] dark:border-white/[0.08] rounded-xl w-14 sm:w-16 h-14 shadow-2xs">
+                  <span className="text-[20px] sm:text-[22px] font-black font-mono leading-none text-[#111111] dark:text-white">
+                    {String(cd.hours).padStart(2, '0')}
+                  </span>
+                  <span className="text-[8.5px] font-mono font-bold uppercase text-[#71717A] tracking-wider mt-1">
+                    HOURS
+                  </span>
+                </div>
+                <span className="text-amber-500 font-bold text-lg font-mono leading-none">:</span>
+                <div className="flex flex-col items-center justify-center bg-white dark:bg-[#1A1B22] border border-black/[0.06] dark:border-white/[0.08] rounded-xl w-14 sm:w-16 h-14 shadow-2xs">
+                  <span className="text-[20px] sm:text-[22px] font-black font-mono leading-none text-[#111111] dark:text-white">
+                    {String(cd.minutes).padStart(2, '0')}
+                  </span>
+                  <span className="text-[8.5px] font-mono font-bold uppercase text-[#71717A] tracking-wider mt-1">
+                    MINS
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Big Subject Title */}
-          <h3 className="text-[20px] sm:text-[23px] font-bold text-[#111111] dark:text-white tracking-tight leading-snug mb-3">
-            {nextExam.subjectName}
-          </h3>
+            {/* Badges Row */}
+            <div className="flex flex-wrap items-center gap-2">
+              {nextExam.room && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 text-[11.5px] font-semibold">
+                  <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  Room {nextExam.room}
+                </span>
+              )}
 
-          {/* Key Metadata Pills */}
-          <div className="flex flex-wrap items-center gap-2 text-[12px] font-medium">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] text-[#111111] dark:text-[#E2E8F0]">
-              <CalendarDays className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-              {new Date(nextExam.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
-            </span>
+              {nextExam.durationMinutes && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/25 text-blue-800 dark:text-blue-300 font-mono text-[11.5px]">
+                  <Hourglass className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  {nextExam.durationMinutes >= 60
+                    ? `${(nextExam.durationMinutes / 60).toFixed(nextExam.durationMinutes % 60 === 0 ? 0 : 1)} Hours Duration`
+                    : `${nextExam.durationMinutes} Mins Duration`}
+                </span>
+              )}
 
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] text-[#111111] dark:text-[#E2E8F0] font-mono">
-              <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-              {nextExam.time || new Date(nextExam.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-            </span>
+              {nextExam.syllabus && (
+                <button
+                  type="button"
+                  onClick={() => toggleSyllabus(nextExam.id)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-black/[0.03] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-[11.5px] font-medium text-[#444444] dark:text-[#E2E8F0] border border-black/[0.06] dark:border-white/[0.08] transition-colors cursor-pointer"
+                >
+                  <BookOpen className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Syllabus Breakdown</span>
+                  {expandedSyllabus[nextExam.id] ? <ChevronUp className="w-3.5 h-3.5 ml-0.5" /> : <ChevronDown className="w-3.5 h-3.5 ml-0.5" />}
+                </button>
+              )}
+            </div>
 
-            {nextExam.room && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 font-semibold">
-                <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                Room {nextExam.room}
-              </span>
+            {/* Syllabus Box */}
+            {nextExam.syllabus && expandedSyllabus[nextExam.id] && (
+              <div className="mt-4 pt-3.5 border-t border-black/[0.06] dark:border-white/[0.06] flex flex-col gap-1.5">
+                <p className="text-[12.5px] text-[#333333] dark:text-[#E2E8F0] leading-relaxed bg-black/[0.02] dark:bg-white/[0.02] p-3 rounded-xl border border-black/[0.04] dark:border-white/[0.06] whitespace-pre-wrap font-sans">
+                  {nextExam.syllabus}
+                </p>
+              </div>
             )}
-
-            {nextExam.durationMinutes && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/25 text-blue-800 dark:text-blue-300 font-mono text-[11px]">
-                <Hourglass className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-                {nextExam.durationMinutes >= 60
-                  ? `${(nextExam.durationMinutes / 60).toFixed(nextExam.durationMinutes % 60 === 0 ? 0 : 1)}h`
-                  : `${nextExam.durationMinutes}m`}
-              </span>
-            )}
           </div>
-
-          {/* Syllabus Box */}
-          {nextExam.syllabus && (
-            <div className="mt-4 pt-3.5 border-t border-amber-500/20 dark:border-amber-500/20 flex flex-col gap-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800/80 dark:text-amber-400 flex items-center gap-1.5 font-mono">
-                <BookOpen className="w-3 h-3 text-amber-600 dark:text-amber-400" /> Syllabus
-              </span>
-              <p className="text-[12.5px] text-[#451A03] dark:text-[#FDE68A]/90 leading-relaxed bg-amber-500/5 dark:bg-amber-500/10 p-2.5 rounded-lg border border-amber-500/15 whitespace-pre-wrap">
-                {nextExam.syllabus}
-              </p>
-            </div>
-          )}
-        </div>
-      )}
+        );
+      })()}
 
       <div className="flex flex-col">
         {exams.length === 0 ? (
