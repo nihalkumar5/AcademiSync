@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Sparkles, Calendar, CalendarDays, BookOpen, Clock, AlertCircle, Plus, Share2, UserPlus, Edit2, Trash2 } from 'lucide-react';
+import { Sparkles, Calendar, CalendarDays, BookOpen, Clock, AlertCircle, Plus, Share2, UserPlus, Edit2, Trash2, MapPin, Hourglass, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { ExamImportModal } from './ExamImportModal';
 import { AddEditExamModal } from './AddEditExamModal';
@@ -25,6 +25,11 @@ export const ExamsView: React.FC = () => {
   const [inviteInput, setInviteInput] = useState('');
   const [isJoining, setIsJoining] = useState(false);
   const [now, setNow] = useState(new Date());
+  const [expandedSyllabus, setExpandedSyllabus] = useState<Record<string, boolean>>({});
+
+  const toggleSyllabus = (id: string) => {
+    setExpandedSyllabus((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 60000);
@@ -108,6 +113,43 @@ export const ExamsView: React.FC = () => {
     return `${hours}h ${minutes}m left`;
   };
 
+  const getExamStatusBadge = (targetDate: string) => {
+    const diffMs = new Date(targetDate).getTime() - now.getTime();
+    if (diffMs <= 0) {
+      return { label: 'COMPLETED', isPast: true, color: 'bg-zinc-500/10 text-zinc-500 dark:text-zinc-400 border-zinc-500/20' };
+    }
+
+    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    if (days === 0) {
+      return {
+        label: hours <= 2 ? 'STARTS SOON' : 'TODAY',
+        isPast: false,
+        color: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30 font-bold',
+      };
+    }
+    if (days === 1) {
+      return {
+        label: 'TOMORROW',
+        isPast: false,
+        color: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 font-bold',
+      };
+    }
+    if (days <= 5) {
+      return {
+        label: `IN ${days} DAYS`,
+        isPast: false,
+        color: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/25 font-semibold',
+      };
+    }
+    return {
+      label: `IN ${days} DAYS`,
+      isPast: false,
+      color: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25 font-medium',
+    };
+  };
+
   return (
     <div className="flex flex-col flex-1 max-w-4xl mx-auto w-full pt-2 sm:pt-6 pb-16">
       <div className="mb-12">
@@ -179,56 +221,75 @@ ${PLAY_STORE_URL}
       </div>
 
       {nextExam && (
-        <div className="mb-12 flex flex-col p-5 bg-[#FFFBEB] dark:bg-[#16130B] border border-[#FDE68A] dark:border-amber-900/40 rounded-none shadow-xs text-left">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+        <div className="relative mb-10 overflow-hidden rounded-[16px] border border-amber-500/30 dark:border-amber-500/35 bg-gradient-to-br from-amber-50/70 via-white to-amber-50/30 dark:from-[#181611] dark:via-[#131317] dark:to-[#0F1014] p-5 sm:p-6 shadow-xs text-left transition-all">
+          <div className="absolute top-0 right-0 -mt-8 -mr-8 w-40 h-40 bg-amber-400/10 dark:bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Top Header Badge Row */}
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-amber-500/15 dark:bg-amber-500/20 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-[10.5px] font-bold font-mono tracking-wider uppercase">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-600 dark:bg-amber-400"></span>
               </span>
-              <span className="text-[11px] font-mono font-bold tracking-[1.5px] uppercase text-[#B45309] dark:text-amber-400">
-                NEXT EXAM
-              </span>
+              UP NEXT
             </div>
+
             <div className="flex items-center gap-2">
-              <span className="text-[11.5px] font-mono font-bold text-[#78350F] dark:text-amber-200 bg-amber-200/70 dark:bg-amber-950/50 border border-amber-300/80 dark:border-amber-800/50 px-2.5 py-1 rounded-none uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/25 text-[#B45309] dark:text-amber-300 font-mono text-[11px] font-bold">
+                <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                 {getCountdown(nextExam.date)}
               </span>
               <button
                 onClick={() => handleEditExam(nextExam)}
-                className="p-1 text-[#78350F] hover:text-[#B45309] dark:text-amber-300 dark:hover:text-amber-100 hover:bg-amber-200/60 dark:hover:bg-amber-900/30 transition-colors cursor-pointer"
-                title="Edit Exam"
+                className="p-1.5 rounded-lg text-amber-900/70 hover:text-amber-950 dark:text-amber-300/70 dark:hover:text-amber-200 hover:bg-amber-500/10 transition-colors cursor-pointer"
+                title="Edit Next Exam"
               >
                 <Edit2 className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
-          <h3 className="text-[19px] sm:text-[21px] font-bold text-[#111111] dark:text-[#F4F4F6] tracking-tight mb-2">
+
+          {/* Big Subject Title */}
+          <h3 className="text-[20px] sm:text-[23px] font-bold text-[#111111] dark:text-white tracking-tight leading-snug mb-3">
             {nextExam.subjectName}
           </h3>
-          <div className="flex flex-wrap items-center gap-3 text-[13px] font-mono text-[#92400E] dark:text-[#FDE68A]/80 leading-relaxed font-medium">
-            <span>
-              {new Date(nextExam.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-              {' • '}
+
+          {/* Key Metadata Pills */}
+          <div className="flex flex-wrap items-center gap-2 text-[12px] font-medium">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] text-[#111111] dark:text-[#E2E8F0]">
+              <CalendarDays className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+              {new Date(nextExam.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+            </span>
+
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] text-[#111111] dark:text-[#E2E8F0] font-mono">
+              <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
               {nextExam.time || new Date(nextExam.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
             </span>
+
             {nextExam.room && (
-              <span className="bg-amber-200/50 dark:bg-amber-900/40 px-2 py-0.5 text-[12px] font-medium text-[#78350F] dark:text-amber-200">
-                Room: {nextExam.room}
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 font-semibold">
+                <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                Room {nextExam.room}
               </span>
             )}
+
             {nextExam.durationMinutes && (
-              <span className="text-[12px] text-[#92400E]/80 dark:text-[#FDE68A]/70">
-                ({nextExam.durationMinutes} mins)
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/25 text-blue-800 dark:text-blue-300 font-mono text-[11px]">
+                <Hourglass className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                {nextExam.durationMinutes >= 60
+                  ? `${(nextExam.durationMinutes / 60).toFixed(nextExam.durationMinutes % 60 === 0 ? 0 : 1)}h`
+                  : `${nextExam.durationMinutes}m`}
               </span>
             )}
           </div>
+
+          {/* Syllabus Box */}
           {nextExam.syllabus && (
-            <div className="mt-3 pt-3 border-t border-amber-200/80 dark:border-amber-900/50">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-800/70 dark:text-amber-400/70 block mb-0.5">
-                Syllabus
+            <div className="mt-4 pt-3.5 border-t border-amber-500/20 dark:border-amber-500/20 flex flex-col gap-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800/80 dark:text-amber-400 flex items-center gap-1.5 font-mono">
+                <BookOpen className="w-3 h-3 text-amber-600 dark:text-amber-400" /> Syllabus
               </span>
-              <p className="text-[12.5px] text-[#78350F] dark:text-[#FDE68A]/90 leading-relaxed">
+              <p className="text-[12.5px] text-[#451A03] dark:text-[#FDE68A]/90 leading-relaxed bg-amber-500/5 dark:bg-amber-500/10 p-2.5 rounded-lg border border-amber-500/15 whitespace-pre-wrap">
                 {nextExam.syllabus}
               </p>
             </div>
@@ -237,12 +298,14 @@ ${PLAY_STORE_URL}
       )}
 
       <div className="flex flex-col">
-        <p className="text-[10px] font-bold tracking-[2px] uppercase text-[#6F6F6F] dark:text-[#A1A1AA] mb-4">
-          ALL UPCOMING EXAMS
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] dark:text-[#A1A1AA]">
+            ALL SCHEDULED EXAMS ({exams.length})
+          </p>
+        </div>
 
         {exams.length === 0 ? (
-          <div className="py-12 border border-dashed border-[#D9D9D6] dark:border-white/[0.08] flex flex-col items-center justify-center text-center p-6">
+          <div className="py-12 border border-dashed border-[#D9D9D6] dark:border-white/[0.08] rounded-[16px] flex flex-col items-center justify-center text-center p-6 bg-[#F7F7F5]/30 dark:bg-white/[0.01]">
             <Calendar className="w-8 h-8 text-[#6F6F6F] dark:text-[#A1A1AA] mb-3" />
             <h4 className="text-[16px] font-semibold text-[#111111] dark:text-[#F4F4F6]">No exams scheduled</h4>
             <p className="text-[14px] text-[#6F6F6F] dark:text-[#94A3B8] mt-1 mb-5">
@@ -251,87 +314,125 @@ ${PLAY_STORE_URL}
             <div className="flex flex-wrap items-center justify-center gap-3">
               <button
                 onClick={handleAddNewExam}
-                className="flex items-center justify-center h-9 px-4 border border-[#D9D9D6] dark:border-white/[0.08] text-[#111111] dark:text-[#F4F4F6] text-[12.5px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors gap-1.5 cursor-pointer"
+                className="flex items-center justify-center h-9 px-4 border border-[#D9D9D6] dark:border-white/[0.08] text-[#111111] dark:text-[#F4F4F6] text-[12.5px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors gap-1.5 cursor-pointer rounded-lg"
               >
                 <Plus className="w-3.5 h-3.5" /> Add Exam Manually
               </button>
               <button
                 onClick={handleMagicImport}
-                className="flex items-center justify-center h-9 px-4 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] text-[12.5px] font-semibold transition-colors gap-1.5 cursor-pointer shadow-xs"
+                className="flex items-center justify-center h-9 px-4 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] text-[12.5px] font-semibold transition-colors gap-1.5 cursor-pointer shadow-xs rounded-lg"
               >
                 <Sparkles className="w-3.5 h-3.5" /> Magic Import
               </button>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-0">
-            {exams.map((exam, idx) => {
+          <div className="flex flex-col gap-3">
+            {exams.map((exam) => {
               const dateObj = new Date(exam.date);
               const dateDay = dateObj.getDate();
               const dateMonth = dateObj.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+              const dateWeekday = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
               const isPast = dateObj.getTime() < now.getTime();
-              
-              return (
-                <div key={exam.id} className={`border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] p-5 flex flex-col md:flex-row md:items-start justify-between group rounded-none ${idx !== 0 ? 'border-t-0' : ''} ${isPast ? 'opacity-50' : ''}`}>
-                  <div className="flex items-start gap-5 w-full">
-                    <div className="flex flex-col items-center justify-center min-w-[40px]">
-                      <span className="text-[14px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-none">{dateDay}</span>
-                      <span className="text-[10px] font-bold tracking-[1px] uppercase text-[#111111] dark:text-[#A1A1AA] mt-1">{dateMonth}</span>
-                    </div>
-                    <div className="flex flex-col flex-1">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-[15px] text-[#111111] dark:text-[#F4F4F6] font-medium leading-relaxed">
-                            {exam.subjectName}
-                          </p>
-                          <div className="flex flex-wrap items-center gap-2.5 mt-1 mb-2">
-                            <span className="text-[10px] font-bold tracking-[1.5px] uppercase text-[#6F6F6F] dark:text-[#94A3B8]">
-                              {isPast ? 'COMPLETED' : getCountdown(exam.date)}
-                            </span>
-                            <span className="text-[#D9D9D6] dark:text-white/[0.1]">•</span>
-                            <span className="text-[11.5px] font-mono text-[#6F6F6F] dark:text-[#94A3B8] flex items-center gap-1">
-                              <Clock className="w-3 h-3 text-[#A1A1AA]" />
-                              {exam.time || new Date(exam.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                              {exam.durationMinutes ? ` (${exam.durationMinutes}m)` : ''}
-                            </span>
-                            {exam.room && (
-                              <>
-                                <span className="text-[#D9D9D6] dark:text-white/[0.1]">•</span>
-                                <span className="text-[11.5px] font-medium text-[#111111] dark:text-[#F4F4F6] bg-[#F7F7F5] dark:bg-white/[0.04] px-1.5 py-0.5 border border-[#E5E5E5] dark:border-white/[0.08]">
-                                  Room {exam.room}
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        </div>
+              const status = getExamStatusBadge(exam.date);
+              const isExpanded = expandedSyllabus[exam.id];
 
-                        {/* Edit & Delete Action Buttons */}
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            onClick={() => handleEditExam(exam)}
-                            className="p-1.5 text-[#6F6F6F] hover:text-[#111111] dark:text-[#A1A1AA] dark:hover:text-white hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] border border-transparent hover:border-[#E5E5E5] dark:hover:border-white/[0.1] transition-all flex items-center gap-1 text-[12px] font-medium cursor-pointer"
-                            title="Edit Exam"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                            <span className="hidden sm:inline">Edit</span>
-                          </button>
-                          <button
-                            onClick={() => handleDeleteExam(exam.id, exam.subjectName)}
-                            className="p-1.5 text-[#6F6F6F] hover:text-red-600 dark:text-[#A1A1AA] dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 border border-transparent hover:border-red-200 dark:hover:border-red-900/30 transition-all cursor-pointer"
-                            title="Delete Exam"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+              return (
+                <div
+                  key={exam.id}
+                  className={`group relative rounded-[14px] border transition-all duration-200 p-4 sm:p-4.5 flex flex-col gap-3 ${
+                    isPast
+                      ? 'bg-[#F9F9F8] dark:bg-[#101115] border-black/[0.05] dark:border-white/[0.05] opacity-60'
+                      : 'bg-white dark:bg-[#14151B] border-black/[0.08] dark:border-white/[0.08] hover:border-black/20 dark:hover:border-white/20 shadow-xs hover:shadow-sm'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3 sm:gap-4">
+                    {/* Left Calendar Date Ticket Stamp */}
+                    <div className="w-[52px] h-[56px] sm:w-[56px] sm:h-[60px] rounded-[10px] bg-black/[0.03] dark:bg-white/[0.04] border border-black/[0.08] dark:border-white/[0.08] flex flex-col items-center justify-center shrink-0 shadow-2xs group-hover:border-amber-500/40 transition-colors">
+                      <span className="text-[9.5px] sm:text-[10px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 leading-none">
+                        {dateMonth}
+                      </span>
+                      <span className="text-[20px] sm:text-[22px] font-black text-[#111111] dark:text-[#FFFFFF] leading-tight mt-0.5">
+                        {dateDay}
+                      </span>
+                      <span className="text-[9px] font-medium text-[#737373] dark:text-[#94A3B8] leading-none">
+                        {dateWeekday}
+                      </span>
+                    </div>
+
+                    {/* Center Content */}
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="text-[15.5px] sm:text-[16.5px] font-bold text-[#111111] dark:text-[#F4F4F6] tracking-tight leading-snug group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate sm:whitespace-normal">
+                          {exam.subjectName}
+                        </h4>
                       </div>
-                      
-                      {(exam.syllabus) && (
-                        <div className="mt-2 pt-3 border-t border-[#E5E5E5] dark:border-white/[0.08] w-full">
-                          <p className="text-[13px] text-[#6F6F6F] dark:text-[#94A3B8] whitespace-pre-wrap leading-relaxed">{exam.syllabus}</p>
-                        </div>
-                      )}
+
+                      {/* Badges and metadata row */}
+                      <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                        {/* Status Badge */}
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold tracking-wider border ${status.color}`}>
+                          {status.label}
+                        </span>
+
+                        {/* Time Pill */}
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-black/[0.03] dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.06] text-[11px] font-mono text-[#555555] dark:text-[#CBD5E1]">
+                          <Clock className="w-3 h-3 text-amber-500 shrink-0" />
+                          {exam.time || dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                          {exam.durationMinutes ? ` (${exam.durationMinutes}m)` : ''}
+                        </span>
+
+                        {/* Room Badge */}
+                        {exam.room && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
+                            <MapPin className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            Room {exam.room}
+                          </span>
+                        )}
+
+                        {/* Syllabus Toggle Button */}
+                        {exam.syllabus && (
+                          <button
+                            type="button"
+                            onClick={() => toggleSyllabus(exam.id)}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-black/[0.03] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-[10.5px] font-medium text-[#6B6B6B] dark:text-[#94A3B8] transition-colors cursor-pointer border border-black/[0.04] dark:border-white/[0.06]"
+                          >
+                            <BookOpen className="w-3 h-3 text-blue-500 shrink-0" />
+                            <span>Syllabus</span>
+                            {isExpanded ? <ChevronUp className="w-3 h-3 ml-0.5" /> : <ChevronDown className="w-3 h-3 ml-0.5" />}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right Action Buttons */}
+                    <div className="flex items-center gap-1 shrink-0 self-start">
+                      <button
+                        onClick={() => handleEditExam(exam)}
+                        className="p-1.5 rounded-[6px] text-[#737373] hover:text-[#111111] dark:text-[#94A3B8] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                        title="Edit Exam"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteExam(exam.id, exam.subjectName)}
+                        className="p-1.5 rounded-[6px] text-[#737373] hover:text-rose-600 dark:text-[#94A3B8] dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                        title="Delete Exam"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
+
+                  {/* Expandable Syllabus Drawer */}
+                  {exam.syllabus && isExpanded && (
+                    <div className="mt-1 pt-3 border-t border-black/[0.06] dark:border-white/[0.08] text-[12.5px] text-[#444444] dark:text-[#CBD5E1] bg-black/[0.02] dark:bg-white/[0.02] p-3 rounded-lg leading-relaxed whitespace-pre-wrap">
+                      <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#888888] dark:text-[#94A3B8] mb-1 flex items-center gap-1">
+                        <BookOpen className="w-3 h-3 text-amber-500" /> Syllabus Breakdown
+                      </div>
+                      {exam.syllabus}
+                    </div>
+                  )}
                 </div>
               );
             })}
