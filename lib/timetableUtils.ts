@@ -60,7 +60,29 @@ export const getTodayDateString = (): string => {
 export const isGenericExamTitle = (t?: string): boolean => {
   if (!t) return false;
   const clean = t.trim().toLowerCase();
-  return /^(mte|ete|mid[\s-]?term|end[\s-]?term|exam|exams|examination|examinations|mid[\s-]?sem|end[\s-]?sem|mid[\s-]?semester|end[\s-]?semester|term[\s-]?end)(\s*(exam|exams|examination|examinations|week|slot|test|assessment|session|schedule))?$/i.test(clean);
+
+  // Pure generic exam terms like "mte", "ete", "mid term exam", "mte-1", "mte 1", "mid-sem exam"
+  if (/^(mte|ete|mid[\s-]?term|end[\s-]?term|exam|exams|examination|examinations|mid[\s-]?sem|end[\s-]?sem|mid[\s-]?semester|end[\s-]?semester|term[\s-]?end)/i.test(clean)) {
+    const withoutPrefix = clean.replace(/^(mte|ete|mid[\s-]?term|end[\s-]?term|exam|exams|examination|examinations|mid[\s-]?sem|end[\s-]?sem|mid[\s-]?semester|end[\s-]?semester|term[\s-]?end)[\s\-_:0-9\(\)]*/i, '').trim();
+    if (!withoutPrefix || withoutPrefix.length < 3) {
+      return true; // No actual subject name attached, pure placeholder
+    }
+  }
+
+  // Standalone MTE / ETE word (length <= 10, e.g. "MTE", "MTE (ODD)", "MTE 2024")
+  if (/\b(mte|ete)\b/i.test(clean) && clean.length <= 12) {
+    return true;
+  }
+
+  return false;
+};
+
+export const sanitizeExamSubjectName = (t?: string): string => {
+  if (!t) return 'Examination';
+  let cleaned = t.trim();
+  // Strip leading generic prefixes like "MTE - ", "MTE: ", "Mid Term Exam - "
+  cleaned = cleaned.replace(/^(mte|ete|mid[\s-]?term|end[\s-]?term)[\s\-_:]+/i, '').trim();
+  return cleaned || t.trim();
 };
 
 export const getDateStringForDayOfWeek = (day: DayOfWeek): string => {

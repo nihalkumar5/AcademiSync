@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';
-import { getTodayDateString, deduplicateAcademicEvents } from '@/lib/timetableUtils';
+import { getTodayDateString, deduplicateAcademicEvents, isGenericExamTitle } from '@/lib/timetableUtils';
 import { CalendarEventType } from '@/lib/types';
 
 interface UnifiedCalendarItem {
@@ -134,12 +134,6 @@ export const AcademicCalendar: React.FC = () => {
     existing.push(item);
     itemsByDate.set(dStr, existing);
   });
-
-  // Helper: detect if an event is a generic placeholder (e.g. "MTE", "Mid Term Exam", "Finals")
-  const isGenericExamTitle = (t: string) => {
-    const clean = t.trim().toLowerCase();
-    return /^(mte|ete|mid[\s-]?term|end[\s-]?term|exam|exams|examination|examinations|mid[\s-]?sem|end[\s-]?sem|mid[\s-]?semester|end[\s-]?semester)(\s*(exam|exams|examination|examinations|week|slot))?$/i.test(clean);
-  };
 
   // 2. Process Academic Events & Holidays
   events.forEach((ev) => {

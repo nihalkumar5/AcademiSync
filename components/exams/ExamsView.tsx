@@ -11,7 +11,7 @@ import { ExamImportModal } from './ExamImportModal';
 import { AddEditExamModal } from './AddEditExamModal';
 import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
-import { formatBatchDisplayName, getTodayDateString, getTomorrowDateString, isGenericExamTitle } from '@/lib/timetableUtils';
+import { formatBatchDisplayName, getTodayDateString, getTomorrowDateString, isGenericExamTitle, sanitizeExamSubjectName } from '@/lib/timetableUtils';
 import { Exam } from '@/lib/types';
 
 export const ExamsView: React.FC = () => {
@@ -116,13 +116,12 @@ export const ExamsView: React.FC = () => {
     return new Date(ex.date.includes('T') ? ex.date : `${dOnly}T09:30:00`).getTime();
   };
 
-  const validExams = exams.filter(e => {
-    if (isGenericExamTitle(e.subjectName)) {
-      const hasSpecific = exams.some(other => other.id !== e.id && !isGenericExamTitle(other.subjectName));
-      if (hasSpecific) return false;
-    }
-    return true;
-  });
+  const validExams = exams
+    .filter(e => !isGenericExamTitle(e.subjectName))
+    .map(e => ({
+      ...e,
+      subjectName: sanitizeExamSubjectName(e.subjectName),
+    }));
 
   const sortedExams = [...validExams].sort((a, b) => getExactExamTime(a) - getExactExamTime(b));
   const upcomingExams = sortedExams.filter(e => getExactExamTime(e) > now.getTime());

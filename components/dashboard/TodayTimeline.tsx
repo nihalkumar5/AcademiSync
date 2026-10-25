@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { motion } from 'framer-motion';
-import { getCurrentDayOfWeek, timeToMinutes, getTodayDateString, getTomorrowDayOfWeek, getTomorrowDateString, getSubjectThemeStyle, formatTime12Hour, deduplicateTimetableSessions, isGenericExamTitle } from '@/lib/timetableUtils';
+import { getCurrentDayOfWeek, timeToMinutes, getTodayDateString, getTomorrowDayOfWeek, getTomorrowDateString, getSubjectThemeStyle, formatTime12Hour, deduplicateTimetableSessions, isGenericExamTitle, sanitizeExamSubjectName } from '@/lib/timetableUtils';
 import { MapPin, User, Clock, FlaskConical, Ban, RotateCcw, MoreVertical, ChevronDown, Check, Calendar } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
@@ -73,31 +73,28 @@ export const TodayTimeline: React.FC = () => {
         if (isGenericExamTitle(ex.subjectName)) return;
         list.push({
           id: ex.id,
-          subjectName: ex.subjectName,
+          subjectName: sanitizeExamSubjectName(ex.subjectName),
           time: ex.time || '09:30 AM',
           room: ex.room,
           syllabus: ex.syllabus,
         });
       }
     });
-    events.forEach((ev) => {
-      if (ev.date === targetDateStr && ev.type === 'exam') {
-        if (isGenericExamTitle(ev.title)) return;
-        const isDupe = list.some(r =>
-          r.subjectName.toLowerCase().includes(ev.title.toLowerCase()) ||
-          ev.title.toLowerCase().includes(r.subjectName.toLowerCase())
-        );
-        if (!isDupe) {
+
+    if (list.length === 0) {
+      events.forEach((ev) => {
+        if (ev.date === targetDateStr && ev.type === 'exam') {
+          if (isGenericExamTitle(ev.title)) return;
           list.push({
             id: ev.id,
-            subjectName: ev.title,
+            subjectName: sanitizeExamSubjectName(ev.title),
             time: (ev as any).time || ev.startTime || '09:30 AM',
             room: ev.location,
             syllabus: ev.description,
           });
         }
-      }
-    });
+      });
+    }
 
     list.sort((a, b) => {
       const toMins = (t?: string) => {
@@ -397,7 +394,7 @@ export const TodayTimeline: React.FC = () => {
     </Modal>
   );
 
-  if (targetExams.length > 0) {
+  if (targetExams.length === 1) {
     return (
       <div className="flex flex-col text-left">
         <div className="flex items-center justify-between gap-3 px-1 mb-6">
@@ -406,7 +403,7 @@ export const TodayTimeline: React.FC = () => {
               {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
             </h3>
             <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#808080] uppercase tracking-wider mt-0.5">
-              {targetDay} · {targetExams.length} {targetExams.length === 1 ? 'Examination' : 'Examinations'}
+              {targetDay} · Examination Day
             </span>
           </div>
 
@@ -419,16 +416,64 @@ export const TodayTimeline: React.FC = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          className="p-5 sm:p-6 bg-white dark:bg-[#14151B] border border-black dark:border-white flex flex-col gap-3 shadow-xs"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-col gap-1">
+              <span className="text-[10.5px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                Regular Lectures Suspended
+              </span>
+              <p className="text-[13px] sm:text-[13.5px] text-[#444444] dark:text-[#CBD5E1] leading-relaxed">
+                Campus is observing examination schedule for <strong className="text-black dark:text-white font-bold">{targetExams[0].subjectName}</strong>. Check reporting time &amp; venue in hero card above.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveView('exams')}
+              className="px-3 py-1.5 bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-[11px] font-mono font-bold uppercase tracking-wider hover:opacity-85 transition-opacity cursor-pointer shrink-0"
+            >
+              Exams
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (targetExams.length > 1) {
+    const subsequentExams = targetExams.slice(1);
+    return (
+      <div className="flex flex-col text-left">
+        <div className="flex items-center justify-between gap-3 px-1 mb-6">
+          <div className="flex flex-col min-w-0">
+            <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
+              {isAfter8PM ? "TOMORROW'S NEXT EXAM" : "TODAY'S NEXT EXAM"}
+            </h3>
+            <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#808080] uppercase tracking-wider mt-0.5">
+              {targetDay} · Slot 2 Schedule
+            </span>
+          </div>
+
+          <span className="inline-flex items-center px-2 py-0.5 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 text-amber-700 dark:text-amber-400 font-mono text-[10px] font-bold uppercase tracking-wider">
+            Slot 2
+          </span>
+        </div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           className="p-5 sm:p-6 bg-white dark:bg-[#14151B] border border-black dark:border-white flex flex-col divide-y divide-black/10 dark:divide-white/10 gap-4 shadow-xs"
         >
-          {targetExams.map((exam, idx) => (
+          {subsequentExams.map((exam, idx) => (
             <div key={exam.id} className={idx > 0 ? "pt-4 flex flex-col gap-3" : "flex flex-col gap-3"}>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex flex-col gap-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                     <span className="text-[10px] sm:text-[10.5px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                      {targetExams.length > 1 ? `Slot ${idx + 1} of ${targetExams.length}` : 'Examination Schedule'}
+                      Slot {idx + 2} of {targetExams.length}
                     </span>
                   </div>
                   <h4 className="text-[17px] sm:text-[19px] font-bold text-[#111111] dark:text-[#F4F4F6] tracking-tight leading-snug">
@@ -436,21 +481,19 @@ export const TodayTimeline: React.FC = () => {
                   </h4>
                 </div>
 
-                {idx === 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setActiveView('exams')}
-                    className="px-3 py-1.5 bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-[11px] font-mono font-bold uppercase tracking-wider hover:opacity-85 transition-opacity cursor-pointer shrink-0"
-                  >
-                    View Exams
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setActiveView('exams')}
+                  className="px-3 py-1.5 bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-[11px] font-mono font-bold uppercase tracking-wider hover:opacity-85 transition-opacity cursor-pointer shrink-0"
+                >
+                  View Exams
+                </button>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-xs">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-black/[0.04] dark:bg-white/[0.05] font-mono text-[#333333] dark:text-[#CBD5E1]">
                   <Clock className="w-3.5 h-3.5 text-amber-500" />
-                  {exam.time || '09:30 AM'}
+                  {exam.time || '02:00 PM'}
                 </span>
                 {exam.room && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-medium">
