@@ -180,7 +180,7 @@ export const HomeExamAlertCard: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
             <span className="font-mono text-[11px] sm:text-[11.5px] font-bold uppercase tracking-[1.5px] text-amber-700 dark:text-amber-400">
-              {isToday ? "TODAY'S EXAMINATION" : "EXAM TOMORROW"} · CLASSES SUSPENDED
+              {isToday ? "TODAY'S EXAMINATION" : "EXAM TOMORROW"}
             </span>
           </div>
 
@@ -198,7 +198,7 @@ export const HomeExamAlertCard: React.FC = () => {
               {recentExam.subjectName}
             </h3>
             <p className="text-[13px] text-[#555555] dark:text-[#A1A1AA] font-medium leading-relaxed">
-              Regular timetable is suspended. Campus is observing examination schedule.
+              {recentExam.room ? `Reporting Venue: Room ${recentExam.room}` : 'Reporting Time: 15 minutes prior to scheduled start'}
             </p>
           </div>
 

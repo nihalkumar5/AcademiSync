@@ -67,7 +67,7 @@ export const TodayTimeline: React.FC = () => {
   const [extraDate, setExtraDate] = useState(targetDateStr);
   const targetHoliday = events.find((e) => e.date === targetDateStr && e.type === 'holiday');
   const targetExams = (() => {
-    const list: { id: string; subjectName: string; time: string; room?: string; syllabus?: string }[] = [];
+    const list: { id: string; subjectName: string; time: string; room?: string; syllabus?: string; durationMinutes?: number }[] = [];
     exams.forEach((ex) => {
       if (ex.date && ex.date.split('T')[0] === targetDateStr) {
         if (isGenericExamTitle(ex.subjectName)) return;
@@ -77,6 +77,7 @@ export const TodayTimeline: React.FC = () => {
           time: ex.time || '09:30 AM',
           room: ex.room,
           syllabus: ex.syllabus,
+          durationMinutes: ex.durationMinutes,
         });
       }
     });
@@ -91,6 +92,7 @@ export const TodayTimeline: React.FC = () => {
             time: (ev as any).time || ev.startTime || '09:30 AM',
             room: ev.location,
             syllabus: ev.description,
+            durationMinutes: (ev as any).durationMinutes,
           });
         }
       });
@@ -407,8 +409,8 @@ export const TodayTimeline: React.FC = () => {
             </span>
           </div>
 
-          <span className="inline-flex items-center px-2 py-0.5 bg-rose-500/10 dark:bg-rose-500/15 border border-rose-500/25 text-rose-700 dark:text-rose-400 font-mono text-[10px] font-bold uppercase tracking-wider">
-            Classes Suspended
+          <span className="inline-flex items-center px-2 py-0.5 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 text-amber-700 dark:text-amber-400 font-mono text-[10px] font-bold uppercase tracking-wider">
+            Exam Day
           </span>
         </div>
 
@@ -422,7 +424,7 @@ export const TodayTimeline: React.FC = () => {
             <div className="flex flex-col gap-1">
               <span className="text-[10.5px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                Regular Lectures Suspended
+                Exam Day Schedule
               </span>
               <p className="text-[13px] sm:text-[13.5px] text-[#444444] dark:text-[#CBD5E1] leading-relaxed">
                 Campus is observing examination schedule for <strong className="text-black dark:text-white font-bold">{targetExams[0].subjectName}</strong>. Check reporting time &amp; venue in hero card above.
@@ -501,9 +503,11 @@ export const TodayTimeline: React.FC = () => {
                     Room {exam.room}
                   </span>
                 )}
-                <span className="text-[11px] font-mono text-[#777777] dark:text-[#94A3B8]">
-                  Lectures suspended.
-                </span>
+                {exam.durationMinutes && (
+                  <span className="text-[11px] font-mono text-[#777777] dark:text-[#94A3B8]">
+                    {exam.durationMinutes}m
+                  </span>
+                )}
               </div>
 
               {exam.syllabus && (

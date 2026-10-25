@@ -106,7 +106,7 @@ export const TomorrowCarryView: React.FC = () => {
               </span>
             ) : targetExam ? (
               <span className="text-[11px] font-bold font-mono px-2.5 py-1 rounded-[6px] border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-                Exam Day · Classes Suspended
+                Exam Day
               </span>
             ) : (
               <span className="text-[11px] font-bold font-mono px-2.5 py-1 rounded-[6px] border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
@@ -225,7 +225,7 @@ export const TomorrowCarryView: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                   <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                    Examination Day · Regular Lectures Suspended
+                    Examination Day
                   </span>
                 </div>
                 <h4 className="text-[17px] font-bold text-[#111111] dark:text-white">
