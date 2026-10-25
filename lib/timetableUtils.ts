@@ -57,6 +57,12 @@ export const getTodayDateString = (): string => {
   return getLocalDateString(new Date());
 };
 
+export const isGenericExamTitle = (t?: string): boolean => {
+  if (!t) return false;
+  const clean = t.trim().toLowerCase();
+  return /^(mte|ete|mid[\s-]?term|end[\s-]?term|exam|exams|examination|examinations|mid[\s-]?sem|end[\s-]?sem|mid[\s-]?semester|end[\s-]?semester|term[\s-]?end)(\s*(exam|exams|examination|examinations|week|slot|test|assessment|session|schedule))?$/i.test(clean);
+};
+
 export const getDateStringForDayOfWeek = (day: DayOfWeek): string => {
   const currentDay = getCurrentDayOfWeek();
   if (day === currentDay) {

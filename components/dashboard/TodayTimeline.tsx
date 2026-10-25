@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { motion } from 'framer-motion';
-import { getCurrentDayOfWeek, timeToMinutes, getTodayDateString, getTomorrowDayOfWeek, getTomorrowDateString, getSubjectThemeStyle, formatTime12Hour, deduplicateTimetableSessions } from '@/lib/timetableUtils';
+import { getCurrentDayOfWeek, timeToMinutes, getTodayDateString, getTomorrowDayOfWeek, getTomorrowDateString, getSubjectThemeStyle, formatTime12Hour, deduplicateTimetableSessions, isGenericExamTitle } from '@/lib/timetableUtils';
 import { MapPin, User, Clock, FlaskConical, Ban, RotateCcw, MoreVertical, ChevronDown, Check, Calendar } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
@@ -70,6 +70,7 @@ export const TodayTimeline: React.FC = () => {
     const list: { id: string; subjectName: string; time: string; room?: string; syllabus?: string }[] = [];
     exams.forEach((ex) => {
       if (ex.date && ex.date.split('T')[0] === targetDateStr) {
+        if (isGenericExamTitle(ex.subjectName)) return;
         list.push({
           id: ex.id,
           subjectName: ex.subjectName,
@@ -81,6 +82,7 @@ export const TodayTimeline: React.FC = () => {
     });
     events.forEach((ev) => {
       if (ev.date === targetDateStr && ev.type === 'exam') {
+        if (isGenericExamTitle(ev.title)) return;
         const isDupe = list.some(r =>
           r.subjectName.toLowerCase().includes(ev.title.toLowerCase()) ||
           ev.title.toLowerCase().includes(r.subjectName.toLowerCase())
