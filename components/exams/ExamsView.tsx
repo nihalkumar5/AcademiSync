@@ -11,7 +11,7 @@ import { ExamImportModal } from './ExamImportModal';
 import { AddEditExamModal } from './AddEditExamModal';
 import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
-import { formatBatchDisplayName } from '@/lib/timetableUtils';
+import { formatBatchDisplayName, getTodayDateString, getTomorrowDateString } from '@/lib/timetableUtils';
 import { Exam } from '@/lib/types';
 
 export const ExamsView: React.FC = () => {
@@ -100,14 +100,49 @@ export const ExamsView: React.FC = () => {
     }
   };
 
-  const upcomingExams = exams.filter(e => new Date(e.date).getTime() > now.getTime());
-  const nextExam = upcomingExams.length > 0 ? upcomingExams[0] : null;
-  const remainingExams = nextExam ? exams.filter(e => e.id !== nextExam.id) : exams;
-  const remainingUpcoming = remainingExams.filter(e => new Date(e.date).getTime() > now.getTime());
-  const pastExams = remainingExams.filter(e => new Date(e.date).getTime() <= now.getTime());
+  const getExactExamTime = (ex: Exam) => {
+    const dOnly = ex.date.split('T')[0];
+    if (ex.time) {
+      const match = ex.time.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+      if (match) {
+        let h = parseInt(match[1], 10);
+        const m = parseInt(match[2], 10);
+        const ampm = match[3]?.toUpperCase();
+        if (ampm === 'PM' && h < 12) h += 12;
+        if (ampm === 'AM' && h === 12) h = 0;
+        return new Date(`${dOnly}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`).getTime();
+      }
+    }
+    return new Date(ex.date.includes('T') ? ex.date : `${dOnly}T09:30:00`).getTime();
+  };
 
-  const getCountdownParts = (targetDate: string) => {
-    const diffMs = new Date(targetDate).getTime() - now.getTime();
+  const sortedExams = [...exams].sort((a, b) => getExactExamTime(a) - getExactExamTime(b));
+  const upcomingExams = sortedExams.filter(e => getExactExamTime(e) > now.getTime());
+  const nextExam = upcomingExams.length > 0 ? upcomingExams[0] : null;
+  const remainingExams = nextExam ? sortedExams.filter(e => e.id !== nextExam.id) : sortedExams;
+  const remainingUpcoming = remainingExams.filter(e => getExactExamTime(e) > now.getTime());
+  const pastExams = remainingExams.filter(e => getExactExamTime(e) <= now.getTime());
+
+  const getCountdownParts = (targetDate: string, timeStr?: string) => {
+    const dOnly = targetDate.split('T')[0];
+    let exactTarget: Date;
+    if (timeStr) {
+      const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+      if (match) {
+        let h = parseInt(match[1], 10);
+        const m = parseInt(match[2], 10);
+        const ampm = match[3]?.toUpperCase();
+        if (ampm === 'PM' && h < 12) h += 12;
+        if (ampm === 'AM' && h === 12) h = 0;
+        exactTarget = new Date(`${dOnly}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`);
+      } else {
+        exactTarget = new Date(`${dOnly}T09:30:00`);
+      }
+    } else {
+      exactTarget = new Date(targetDate.includes('T') ? targetDate : `${dOnly}T09:30:00`);
+    }
+
+    const diffMs = exactTarget.getTime() - now.getTime();
     if (diffMs <= 0) return { days: 0, hours: 0, minutes: 0, isPast: true };
     const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -125,38 +160,73 @@ export const ExamsView: React.FC = () => {
     return `${hours}h ${minutes}m left`;
   };
 
-  const getExamStatusBadge = (targetDate: string) => {
-    const diffMs = new Date(targetDate).getTime() - now.getTime();
-    if (diffMs <= 0) {
-      return { label: 'COMPLETED', isPast: true, color: 'bg-zinc-500/10 text-zinc-500 dark:text-zinc-400 border-zinc-500/20' };
+  const getExamStatusBadge = (targetDate: string, timeStr?: string) => {
+    const dOnly = targetDate.split('T')[0];
+    const todayStr = getTodayDateString();
+    const tomorrowStr = getTomorrowDateString();
+
+    let examDate: Date;
+    if (timeStr) {
+      const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+      if (match) {
+        let h = parseInt(match[1], 10);
+        const m = parseInt(match[2], 10);
+        const ampm = match[3]?.toUpperCase();
+        if (ampm === 'PM' && h < 12) h += 12;
+        if (ampm === 'AM' && h === 12) h = 0;
+        examDate = new Date(`${dOnly}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`);
+      } else {
+        examDate = new Date(`${dOnly}T09:30:00`);
+      }
+    } else {
+      examDate = new Date(targetDate.includes('T') ? targetDate : `${dOnly}T09:30:00`);
     }
 
-    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const diffMs = examDate.getTime() - now.getTime();
 
-    if (days === 0) {
+    // 1. Exact Calendar Day: TODAY
+    if (dOnly === todayStr) {
+      if (diffMs <= 0) {
+        return { label: 'COMPLETED', isPast: true, color: 'bg-zinc-500/10 text-zinc-500 dark:text-zinc-400 border-zinc-500/20' };
+      }
+      const hoursLeft = Math.floor(diffMs / (1000 * 60 * 60));
       return {
-        label: hours <= 2 ? 'STARTS SOON' : 'TODAY',
+        label: hoursLeft <= 2 ? 'STARTS SOON' : 'TODAY',
         isPast: false,
         color: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30 font-bold',
       };
     }
-    if (days === 1) {
+
+    // 2. Exact Calendar Day: TOMORROW (Never shows TODAY!)
+    if (dOnly === tomorrowStr) {
       return {
         label: 'TOMORROW',
         isPast: false,
         color: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 font-bold',
       };
     }
-    if (days <= 5) {
+
+    // Past date
+    if (dOnly < todayStr || diffMs <= 0) {
+      return { label: 'COMPLETED', isPast: true, color: 'bg-zinc-500/10 text-zinc-500 dark:text-zinc-400 border-zinc-500/20' };
+    }
+
+    // Future days calculation based on midnight-to-midnight day difference
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+    const examMidnight = new Date(`${dOnly}T00:00:00`);
+    const dayDiff = Math.round((examMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (dayDiff <= 5) {
       return {
-        label: `IN ${days} DAYS`,
+        label: `IN ${dayDiff} DAYS`,
         isPast: false,
         color: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/25 font-semibold',
       };
     }
+
     return {
-      label: `IN ${days} DAYS`,
+      label: `IN ${dayDiff} DAYS`,
       isPast: false,
       color: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25 font-medium',
     };
@@ -168,7 +238,7 @@ export const ExamsView: React.FC = () => {
     const dateMonth = dateObj.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
     const dateWeekday = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
     const isPast = dateObj.getTime() < now.getTime();
-    const status = getExamStatusBadge(exam.date);
+    const status = getExamStatusBadge(exam.date, exam.time);
     const isExpanded = expandedSyllabus[exam.id];
 
     return (
@@ -342,7 +412,7 @@ ${PLAY_STORE_URL}
       </div>
 
       {nextExam && (() => {
-        const cd = getCountdownParts(nextExam.date);
+        const cd = getCountdownParts(nextExam.date, nextExam.time);
         return (
           <div className="relative mb-10 overflow-hidden rounded-[20px] border border-black/[0.08] dark:border-amber-500/25 bg-white dark:bg-[#121318] p-5 sm:p-7 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_30px_rgba(245,158,11,0.05)] text-left transition-all">
             {/* Top Ambient Glow */}

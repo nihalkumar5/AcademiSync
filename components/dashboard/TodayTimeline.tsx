@@ -66,19 +66,54 @@ export const TodayTimeline: React.FC = () => {
   const targetDateStr = isAfter8PM ? getTomorrowDateString() : getTodayDateString();
   const [extraDate, setExtraDate] = useState(targetDateStr);
   const targetHoliday = events.find((e) => e.date === targetDateStr && e.type === 'holiday');
-  const targetExam = exams.find((e) => e.date && e.date.split('T')[0] === targetDateStr) ||
-    (() => {
-      const ev = events.find((e) => e.date === targetDateStr && e.type === 'exam');
-      return ev ? {
-        id: ev.id,
-        subjectName: ev.title,
-        date: ev.date,
-        time: (ev as any).time || ev.startTime || '09:30 AM',
-        room: ev.location,
-        syllabus: ev.description,
-        createdAt: '',
-      } : null;
-    })();
+  const targetExams = (() => {
+    const list: { id: string; subjectName: string; time: string; room?: string; syllabus?: string }[] = [];
+    exams.forEach((ex) => {
+      if (ex.date && ex.date.split('T')[0] === targetDateStr) {
+        list.push({
+          id: ex.id,
+          subjectName: ex.subjectName,
+          time: ex.time || '09:30 AM',
+          room: ex.room,
+          syllabus: ex.syllabus,
+        });
+      }
+    });
+    events.forEach((ev) => {
+      if (ev.date === targetDateStr && ev.type === 'exam') {
+        const isDupe = list.some(r =>
+          r.subjectName.toLowerCase().includes(ev.title.toLowerCase()) ||
+          ev.title.toLowerCase().includes(r.subjectName.toLowerCase())
+        );
+        if (!isDupe) {
+          list.push({
+            id: ev.id,
+            subjectName: ev.title,
+            time: (ev as any).time || ev.startTime || '09:30 AM',
+            room: ev.location,
+            syllabus: ev.description,
+          });
+        }
+      }
+    });
+
+    list.sort((a, b) => {
+      const toMins = (t?: string) => {
+        if (!t) return 0;
+        const m = t.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+        if (!m) return 0;
+        let h = parseInt(m[1], 10);
+        const mins = parseInt(m[2], 10);
+        const ampm = m[3]?.toUpperCase();
+        if (ampm === 'PM' && h < 12) h += 12;
+        if (ampm === 'AM' && h === 12) h = 0;
+        return h * 60 + mins;
+      };
+      return toMins(a.time) - toMins(b.time);
+    });
+
+    return list;
+  })();
 
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
@@ -360,7 +395,7 @@ export const TodayTimeline: React.FC = () => {
     </Modal>
   );
 
-  if (targetExam) {
+  if (targetExams.length > 0) {
     return (
       <div className="flex flex-col text-left">
         <div className="flex items-center justify-between gap-3 px-1 mb-6">
@@ -369,7 +404,7 @@ export const TodayTimeline: React.FC = () => {
               {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
             </h3>
             <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#808080] uppercase tracking-wider mt-0.5">
-              {targetDay} · Examination Day
+              {targetDay} · {targetExams.length} {targetExams.length === 1 ? 'Examination' : 'Examinations'}
             </span>
           </div>
 
@@ -382,52 +417,60 @@ export const TodayTimeline: React.FC = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="p-5 sm:p-6 bg-white dark:bg-[#14151B] border border-black dark:border-white flex flex-col gap-4 shadow-xs"
+          className="p-5 sm:p-6 bg-white dark:bg-[#14151B] border border-black dark:border-white flex flex-col divide-y divide-black/10 dark:divide-white/10 gap-4 shadow-xs"
         >
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex flex-col gap-1 min-w-0">
-              <span className="text-[10.5px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                Examination Day
-              </span>
-              <h4 className="text-[18px] sm:text-[20px] font-bold text-[#111111] dark:text-[#F4F4F6] tracking-tight leading-snug">
-                {targetExam.subjectName}
-              </h4>
+          {targetExams.map((exam, idx) => (
+            <div key={exam.id} className={idx > 0 ? "pt-4 flex flex-col gap-3" : "flex flex-col gap-3"}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-col gap-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                    <span className="text-[10px] sm:text-[10.5px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                      {targetExams.length > 1 ? `Slot ${idx + 1} of ${targetExams.length}` : 'Examination Schedule'}
+                    </span>
+                  </div>
+                  <h4 className="text-[17px] sm:text-[19px] font-bold text-[#111111] dark:text-[#F4F4F6] tracking-tight leading-snug">
+                    {exam.subjectName}
+                  </h4>
+                </div>
+
+                {idx === 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveView('exams')}
+                    className="px-3 py-1.5 bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-[11px] font-mono font-bold uppercase tracking-wider hover:opacity-85 transition-opacity cursor-pointer shrink-0"
+                  >
+                    View Exams
+                  </button>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-black/[0.04] dark:bg-white/[0.05] font-mono text-[#333333] dark:text-[#CBD5E1]">
+                  <Clock className="w-3.5 h-3.5 text-amber-500" />
+                  {exam.time || '09:30 AM'}
+                </span>
+                {exam.room && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-medium">
+                    <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    Room {exam.room}
+                  </span>
+                )}
+                <span className="text-[11px] font-mono text-[#777777] dark:text-[#94A3B8]">
+                  Lectures suspended.
+                </span>
+              </div>
+
+              {exam.syllabus && (
+                <div className="p-3 bg-black/[0.02] dark:bg-white/[0.03] border border-black/5 dark:border-white/5 text-[12px] text-[#444444] dark:text-[#CBD5E1] leading-relaxed">
+                  <span className="font-mono font-bold text-[10px] uppercase tracking-wider text-black/50 dark:text-white/50 block mb-1">
+                    Syllabus
+                  </span>
+                  {exam.syllabus}
+                </div>
+              )}
             </div>
-
-            <button
-              type="button"
-              onClick={() => setActiveView('exams')}
-              className="px-3 py-1.5 bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-[11px] font-mono font-bold uppercase tracking-wider hover:opacity-85 transition-opacity cursor-pointer shrink-0"
-            >
-              View Exams
-            </button>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-black/10 dark:border-white/10 text-xs">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-black/[0.04] dark:bg-white/[0.05] font-mono text-[#333333] dark:text-[#CBD5E1]">
-              <Clock className="w-3.5 h-3.5 text-amber-500" />
-              {targetExam.time || '09:30 AM'}
-            </span>
-            {targetExam.room && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-medium">
-                <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                Room {targetExam.room}
-              </span>
-            )}
-            <span className="text-[11px] font-mono text-[#777777] dark:text-[#94A3B8]">
-              All regular lectures & labs suspended.
-            </span>
-          </div>
-
-          {targetExam.syllabus && (
-            <div className="p-3 bg-black/[0.02] dark:bg-white/[0.03] border border-black/5 dark:border-white/5 text-[12px] text-[#444444] dark:text-[#CBD5E1] leading-relaxed">
-              <span className="font-mono font-bold text-[10px] uppercase tracking-wider text-black/50 dark:text-white/50 block mb-1">
-                Syllabus
-              </span>
-              {targetExam.syllabus}
-            </div>
-          )}
+          ))}
         </motion.div>
       </div>
     );
