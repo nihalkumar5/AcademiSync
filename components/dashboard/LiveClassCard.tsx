@@ -17,6 +17,7 @@ export const LiveClassCard: React.FC = () => {
     timetable, 
     subjects, 
     events, 
+    exams,
     isSessionCancelled, 
     toggleSessionCancelled,
     rescheduledSessions, 
@@ -32,15 +33,20 @@ export const LiveClassCard: React.FC = () => {
   const now = new Date();
   const dateTodayStr = getTodayDateString();
   const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
+  const todayExam = exams?.find((e) => e.date && e.date.split('T')[0] === dateTodayStr) ||
+    events.find((e) => e.date === dateTodayStr && e.type === 'exam');
 
-  const getActiveTimetable = () => deduplicateTimetableSessions(timetable.filter((s) => {
-    if (isSessionCancelled(s.id, dateTodayStr)) return false;
-    const sub = subjects.find((subj) => subj.id === s.subjectId);
-    if (sub?.isElective && profile.enrolledElectiveIds && !profile.enrolledElectiveIds.includes(sub.id)) {
-      return false;
-    }
-    return true;
-  })).cleaned;
+  const getActiveTimetable = () => {
+    if (todayExam) return [];
+    return deduplicateTimetableSessions(timetable.filter((s) => {
+      if (isSessionCancelled(s.id, dateTodayStr)) return false;
+      const sub = subjects.find((subj) => subj.id === s.subjectId);
+      if (sub?.isElective && profile.enrolledElectiveIds && !profile.enrolledElectiveIds.includes(sub.id)) {
+        return false;
+      }
+      return true;
+    })).cleaned;
+  };
 
   const [status, setStatus] = useState(() => 
     getLiveClassStatus(getActiveTimetable(), subjects, undefined, dateTodayStr, rescheduledSessions, extraSessions, isSessionCancelled)
@@ -377,6 +383,11 @@ export const LiveClassCard: React.FC = () => {
       </form>
     </Modal>
   );
+
+  // On examination day, regular timetable is suspended. HomeExamAlertCard handles the exam hero display.
+  if (todayExam) {
+    return null;
+  }
 
   // High-Contrast Brutalist Holiday Display (Minimal Design with Subtle Animation)
   if (todayHoliday) {

@@ -20,6 +20,7 @@ import { Copy, Download, ExternalLink } from 'lucide-react';
 
 // Views
 import { OverviewHeader } from '@/components/dashboard/OverviewHeader';
+import { HomeExamAlertCard } from '@/components/dashboard/HomeExamAlertCard';
 import { InviteBatchmatesCard } from '@/components/dashboard/InviteBatchmatesCard';
 import { LiveClassCard } from '@/components/dashboard/LiveClassCard';
 import { HomeMessCard } from '@/components/dashboard/HomeMessCard';
@@ -381,6 +382,7 @@ export default function AppHome() {
               ) : (
                 <div className="flex flex-col gap-6">
                   <OverviewHeader />
+                  <HomeExamAlertCard />
                   <LiveClassCard />
                   <ProposedBatchTasksVoting />
                   <CampusSpotlightCard placement="home" />

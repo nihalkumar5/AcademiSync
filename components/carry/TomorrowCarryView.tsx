@@ -24,6 +24,7 @@ export const TomorrowCarryView: React.FC = () => {
     timetable,
     subjects,
     events,
+    exams,
     carryItems,
     toggleCarryItemPacked,
     deleteCarryItem,
@@ -64,13 +65,15 @@ export const TomorrowCarryView: React.FC = () => {
   const targetDay = isAfterReminderTime ? getTomorrowDayOfWeek() : getCurrentDayOfWeek();
   const targetDateStr = isAfterReminderTime ? getTomorrowDateString() : getTodayDateString();
   const targetHoliday = events.find((e) => e.date === targetDateStr && e.type === 'holiday');
+  const targetExam = exams.find((e) => e.date && e.date.split('T')[0] === targetDateStr) ||
+    events.find((e) => e.date === targetDateStr && e.type === 'exam');
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
   const rawTargetClasses = timetable
     .filter((s) => s.day === targetDay)
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
-  const targetClasses = targetHoliday ? [] : rawTargetClasses;
+  const targetClasses = (targetHoliday || targetExam) ? [] : rawTargetClasses;
 
   const visibleCarryItems = carryItems.filter(i => !i.isHidden);
   const packedCount = visibleCarryItems.filter((i) => i.isPacked).length;
@@ -100,6 +103,10 @@ export const TomorrowCarryView: React.FC = () => {
             {targetHoliday ? (
               <span className="text-[11px] font-bold font-mono px-2.5 py-1 rounded-[6px] border border-rose-500/20 bg-rose-500/10 text-rose-600 dark:text-rose-400 uppercase tracking-wider">
                 Holiday: {targetHoliday.title}
+              </span>
+            ) : targetExam ? (
+              <span className="text-[11px] font-bold font-mono px-2.5 py-1 rounded-[6px] border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+                Exam Day · Classes Suspended
               </span>
             ) : (
               <span className="text-[11px] font-bold font-mono px-2.5 py-1 rounded-[6px] border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
@@ -204,7 +211,7 @@ export const TomorrowCarryView: React.FC = () => {
               <span>{isAfterReminderTime ? "Tomorrow's Schedule" : "Today's Schedule"}</span>
             </div>
             <div className="text-[11px] font-bold font-mono tracking-wider text-[#111111] dark:text-[#F4F4F6] bg-black/[0.04] dark:bg-white/[0.06] px-2.5 py-0.5 rounded-full">
-              {targetHoliday ? '0' : targetClasses.length} {targetClasses.length === 1 ? 'CLASS' : 'CLASSES'}
+              {targetHoliday || targetExam ? '0' : targetClasses.length} {targetClasses.length === 1 ? 'CLASS' : 'CLASSES'}
             </div>
           </div>
 
@@ -212,6 +219,25 @@ export const TomorrowCarryView: React.FC = () => {
             {targetHoliday ? (
               <div className="py-8 text-center text-[#6F6F6F] dark:text-[#94A3B8] text-[14px] bg-black/[0.02] dark:bg-white/[0.02] rounded-[14px] border border-black/[0.06] dark:border-white/[0.06] p-6">
                 No classes today. Enjoy your holiday!
+              </div>
+            ) : targetExam ? (
+              <div className="p-5 text-left bg-amber-500/5 dark:bg-amber-500/10 rounded-[14px] border border-amber-500/20 flex flex-col gap-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                  <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                    Examination Day · Regular Lectures Suspended
+                  </span>
+                </div>
+                <h4 className="text-[17px] font-bold text-[#111111] dark:text-white">
+                  {(targetExam as any).subjectName || (targetExam as any).title}
+                </h4>
+                <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-[#555555] dark:text-[#CBD5E1]">
+                  <span>{(targetExam as any).time || '09:30 AM'}</span>
+                  {(targetExam as any).room && <span>· Room {(targetExam as any).room}</span>}
+                </div>
+                <p className="text-[12px] text-[#666666] dark:text-[#A1A1AA] pt-1 border-t border-amber-500/15">
+                  Pack your Admit Card, College ID, stationery pouch &amp; calculator.
+                </p>
               </div>
             ) : targetClasses.length === 0 ? (
               <div className="py-8 text-center text-[#6F6F6F] dark:text-[#94A3B8] text-[14px] bg-black/[0.02] dark:bg-white/[0.02] rounded-[14px] border border-black/[0.06] dark:border-white/[0.06] p-6">

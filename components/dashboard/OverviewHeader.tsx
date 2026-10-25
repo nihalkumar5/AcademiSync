@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 export const OverviewHeader: React.FC = () => {
-  const { profile, timetable, homework, carryItems, events, setActiveView, extraSessions, isSessionCancelled, cancelledSessions } = useApp();
+  const { profile, timetable, homework, carryItems, events, exams, setActiveView, extraSessions, isSessionCancelled, cancelledSessions } = useApp();
 
   const [time, setTime] = useState<Date | null>(null);
 
@@ -35,11 +35,13 @@ export const OverviewHeader: React.FC = () => {
 
   const dateTodayStr = getTodayDateString();
   const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
+  const todayExam = exams?.find((e) => e.date && e.date.split('T')[0] === dateTodayStr) ||
+    events.find((e) => e.date === dateTodayStr && e.type === 'exam');
 
   const todayDay = getCurrentDayOfWeek();
   const regularToday = timetable.filter((s) => s.day === todayDay && !isSessionCancelled(s.id, dateTodayStr));
   const extraToday = Object.values(extraSessions || {}).filter((ex) => ex && ex.date === dateTodayStr);
-  const todayClasses = todayHoliday ? [] : [...regularToday, ...extraToday];
+  const todayClasses = (todayHoliday || todayExam) ? [] : [...regularToday, ...extraToday];
   const pendingHw = homework.filter((h) => h.status !== 'Completed');
   const upcomingDeadlines = homework.filter((h) => {
     const diff = Math.ceil(
@@ -123,6 +125,10 @@ export const OverviewHeader: React.FC = () => {
             {todayHoliday ? (
               <span className="text-[13px] text-black/50 dark:text-[#71717A] leading-tight">
                 Holiday
+              </span>
+            ) : todayExam ? (
+              <span className="text-[13px] text-amber-600 dark:text-amber-400 font-semibold leading-tight">
+                Exam Day
               </span>
             ) : (
               <span className="text-[13px] text-transparent leading-tight select-none" aria-hidden="true">
