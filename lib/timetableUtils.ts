@@ -85,6 +85,250 @@ export const sanitizeExamSubjectName = (t?: string): string => {
   return cleaned || t.trim();
 };
 
+export interface ParsedExamTiming {
+  startTime24: string;
+  endTime24: string;
+  formattedStart: string;
+  formattedEnd: string;
+  formattedRange: string;
+  durationMinutes: number;
+  startDate: Date;
+  endDate: Date;
+  status: 'upcoming' | 'live' | 'completed';
+  remainingMinutes: number;
+  progressPercentage: number;
+  minutesUntilStart: number;
+}
+
+export interface ActiveExamItem {
+  id: string;
+  subjectName: string;
+  date: string;
+  time?: string;
+  room?: string;
+  syllabus?: string;
+  durationMinutes?: number;
+}
+
+export interface ActiveExamItemWithTiming extends ActiveExamItem {
+  timing: ParsedExamTiming;
+}
+
+/**
+ * Parses an exam's timing into precise start/end Date objects, duration,
+ * and real-time live status ('upcoming' | 'live' | 'completed').
+ */
+export const parseExamTiming = (
+  exam: { date: string; time?: string; durationMinutes?: number },
+  now: Date = new Date()
+): ParsedExamTiming => {
+  const defaultDuration = (typeof exam.durationMinutes === 'number' && exam.durationMinutes > 0)
+    ? exam.durationMinutes
+    : 120;
+
+  const rawTime = (exam.time || '').trim();
+  const delimiter = rawTime.includes('–') ? '–' : rawTime.includes('-') ? '-' : rawTime.toLowerCase().includes(' to ') ? ' to ' : null;
+
+  const parsePart = (str: string, fallbackH: number, fallbackM: number) => {
+    const s = str.trim();
+    const hasPM = /pm/i.test(s);
+    const hasAM = /am/i.test(s);
+    const match = s.match(/(\d{1,2})[:.](\d{2})/);
+    if (match) {
+      let h = parseInt(match[1], 10);
+      const m = parseInt(match[2], 10);
+      if (hasPM && h < 12) h += 12;
+      if (hasAM && h === 12) h = 0;
+      if (!hasAM && !hasPM && h >= 1 && h <= 7) h += 12;
+      return { h, m };
+    }
+    const matchHour = s.match(/(\d{1,2})\s*(am|pm)?/i);
+    if (matchHour) {
+      let h = parseInt(matchHour[1], 10);
+      const ampm = matchHour[2]?.toLowerCase();
+      if (ampm === 'pm' && h < 12) h += 12;
+      if (ampm === 'am' && h === 12) h = 0;
+      if (!ampm && h >= 1 && h <= 7) h += 12;
+      return { h, m: 0 };
+    }
+    return { h: fallbackH, m: fallbackM };
+  };
+
+  let startH = 9;
+  let startM = 30;
+  let endH = 11;
+  let endM = 30;
+  let duration = defaultDuration;
+
+  if (delimiter) {
+    const parts = rawTime.split(delimiter);
+    const startObj = parsePart(parts[0], 9, 30);
+    startH = startObj.h;
+    startM = startObj.m;
+
+    const endObj = parsePart(parts[1], startH + Math.floor(defaultDuration / 60), startM + (defaultDuration % 60));
+    endH = endObj.h;
+    endM = endObj.m;
+
+    let startTotalMins = startH * 60 + startM;
+    let endTotalMins = endH * 60 + endM;
+
+    if (endTotalMins <= startTotalMins && endH < 12) {
+      endH += 12;
+      endTotalMins = endH * 60 + endM;
+    }
+    duration = Math.max(30, endTotalMins - startTotalMins);
+  } else if (rawTime) {
+    const startObj = parsePart(rawTime, 9, 30);
+    startH = startObj.h;
+    startM = startObj.m;
+    const endTotalMins = startH * 60 + startM + defaultDuration;
+    endH = Math.floor(endTotalMins / 60);
+    endM = endTotalMins % 60;
+    duration = defaultDuration;
+  }
+
+  const startTime24 = `${String(startH).padStart(2, '0')}:${String(startM).padStart(2, '0')}`;
+  const endTime24 = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+
+  const formattedStart = formatTime12Hour(startTime24);
+  const formattedEnd = formatTime12Hour(endTime24);
+  const formattedRange = `${formattedStart} – ${formattedEnd}`;
+
+  // Build calendar dates
+  const dOnly = (exam.date ? exam.date.split('T')[0] : getTodayDateString()) || getTodayDateString();
+  let year = now.getFullYear();
+  let month = now.getMonth();
+  let day = now.getDate();
+
+  if (dOnly && dOnly.includes('-')) {
+    const [yStr, moStr, dayStr] = dOnly.split('-');
+    const py = parseInt(yStr, 10);
+    const pm = parseInt(moStr, 10) - 1;
+    const pd = parseInt(dayStr, 10);
+    if (!isNaN(py) && !isNaN(pm) && !isNaN(pd)) {
+      year = py;
+      month = pm;
+      day = pd;
+    }
+  }
+
+  const startDate = new Date(year, month, day, startH, startM, 0, 0);
+  const endDate = new Date(year, month, day, endH, endM, 0, 0);
+
+  const nowMs = now.getTime();
+  const startMs = startDate.getTime();
+  const endMs = endDate.getTime();
+
+  let status: 'upcoming' | 'live' | 'completed' = 'upcoming';
+  let remainingMinutes = 0;
+  let progressPercentage = 0;
+  let minutesUntilStart = 0;
+
+  if (nowMs >= endMs) {
+    status = 'completed';
+    remainingMinutes = 0;
+    progressPercentage = 100;
+    minutesUntilStart = 0;
+  } else if (nowMs >= startMs) {
+    status = 'live';
+    const totalMs = Math.max(60000, endMs - startMs);
+    const elapsedMs = nowMs - startMs;
+    remainingMinutes = Math.max(0, Math.ceil((endMs - nowMs) / 60000));
+    progressPercentage = Math.min(100, Math.max(0, Math.round((elapsedMs / totalMs) * 100)));
+    minutesUntilStart = 0;
+  } else {
+    status = 'upcoming';
+    remainingMinutes = duration;
+    progressPercentage = 0;
+    minutesUntilStart = Math.max(0, Math.ceil((startMs - nowMs) / 60000));
+  }
+
+  return {
+    startTime24,
+    endTime24,
+    formattedStart,
+    formattedEnd,
+    formattedRange,
+    durationMinutes: duration,
+    startDate,
+    endDate,
+    status,
+    remainingMinutes,
+    progressPercentage,
+    minutesUntilStart,
+  };
+};
+
+/**
+ * Returns human-readable countdown text for an exam timing object.
+ */
+export const formatExamCountdownText = (timing: ParsedExamTiming): string => {
+  if (timing.status === 'live') {
+    return `${timing.remainingMinutes}m left`;
+  }
+  if (timing.status === 'completed') {
+    return 'Completed';
+  }
+  const mins = timing.minutesUntilStart;
+  if (mins <= 0) {
+    return 'Starting Now';
+  }
+  if (mins < 60) {
+    return `Starts in ${mins}m`;
+  }
+  const totalHours = Math.floor(mins / 60);
+  const remainingMins = mins % 60;
+  if (totalHours < 24) {
+    return remainingMins > 0 ? `Starts in ${totalHours}h ${remainingMins}m` : `Starts in ${totalHours}h`;
+  }
+  const days = Math.floor(totalHours / 24);
+  const remHours = totalHours % 24;
+  return `Starts in ${days}d ${remHours}h`;
+};
+
+/**
+ * Evaluates a list of exams for a specific day, returning the active hero exam
+ * (promotes next exam as soon as previous finishes), remaining subsequent exams,
+ * completed exams, and overall completion state.
+ */
+export const getLiveExamSchedule = (
+  examsList: ActiveExamItem[],
+  now: Date = new Date()
+) => {
+  const parsed: ActiveExamItemWithTiming[] = examsList.map((ex) => ({
+    ...ex,
+    timing: parseExamTiming(ex, now),
+  }));
+
+  // Sort chronologically by start date / time
+  parsed.sort((a, b) => a.timing.startDate.getTime() - b.timing.startDate.getTime());
+
+  const liveExam = parsed.find((ex) => ex.timing.status === 'live') || null;
+  const upcomingExam = parsed.find((ex) => ex.timing.status === 'upcoming') || null;
+  const completedExams = parsed.filter((ex) => ex.timing.status === 'completed');
+
+  const allCompletedToday = parsed.length > 0 && parsed.every((ex) => ex.timing.status === 'completed');
+
+  // Hero exam priority: currently live exam first, then next upcoming exam
+  const heroExam = liveExam || upcomingExam || null;
+  const heroIndex = heroExam ? parsed.findIndex((ex) => ex.id === heroExam.id) : -1;
+
+  // Subsequent exams are chronologically after heroExam
+  const subsequentExams = heroIndex >= 0 ? parsed.slice(heroIndex + 1) : [];
+
+  return {
+    parsed,
+    liveExam,
+    upcomingExam,
+    completedExams,
+    allCompletedToday,
+    heroExam,
+    heroIndex,
+    subsequentExams,
+  };
+};
+
 export const getDateStringForDayOfWeek = (day: DayOfWeek): string => {
   const currentDay = getCurrentDayOfWeek();
   if (day === currentDay) {

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import React, { useState, useEffect } from 'react';
 // Trigger Vercel sync build for academi-sync-chi
 import { useApp } from '@/context/AppContext';
-import { getCurrentDayOfWeek, formatCollegeBadge, getTodayDateString, getShortCollegeName } from '@/lib/timetableUtils';
+import { getCurrentDayOfWeek, formatCollegeBadge, getTodayDateString, getShortCollegeName, isGenericExamTitle } from '@/lib/timetableUtils';
 import {
   BookOpen,
   CheckSquare,
@@ -35,8 +35,12 @@ export const OverviewHeader: React.FC = () => {
 
   const dateTodayStr = getTodayDateString();
   const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
-  const todayExam = exams?.find((e) => e.date && e.date.split('T')[0] === dateTodayStr) ||
-    events.find((e) => e.date === dateTodayStr && e.type === 'exam');
+  const todayExamsList = (() => {
+    const list = exams.filter(ex => ex.date && ex.date.split('T')[0] === dateTodayStr && !isGenericExamTitle(ex.subjectName));
+    if (list.length > 0) return list;
+    return events.filter(ev => ev.date === dateTodayStr && ev.type === 'exam' && !isGenericExamTitle(ev.title));
+  })();
+  const todayExam = todayExamsList.length > 0;
 
   const todayDay = getCurrentDayOfWeek();
   const regularToday = timetable.filter((s) => s.day === todayDay && !isSessionCancelled(s.id, dateTodayStr));
@@ -110,17 +114,17 @@ export const OverviewHeader: React.FC = () => {
         <div className="absolute left-1/3 top-[15%] bottom-[15%] w-px bg-black/10 dark:bg-white/[0.08]" />
         <div className="absolute left-[66.666%] top-[15%] bottom-[15%] w-px bg-black/10 dark:bg-white/[0.08]" />
 
-        {/* Classes */}
+        {/* Classes or Exams */}
         <button
-          onClick={() => setActiveView('timetable')}
+          onClick={() => setActiveView(todayExam ? 'exams' : 'timetable')}
           className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center cursor-pointer"
         >
           <span className="text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
-            {todayClasses.length}
+            {todayExam ? todayExamsList.length : todayClasses.length}
           </span>
           <div className="flex flex-col items-center">
             <span className="text-[14px] font-medium text-black/60 dark:text-[#A1A1AA] leading-tight">
-              Classes
+              {todayExam ? (todayExamsList.length === 1 ? 'Exam' : 'Exams') : 'Classes'}
             </span>
             {todayHoliday ? (
               <span className="text-[13px] text-black/50 dark:text-[#71717A] leading-tight">
