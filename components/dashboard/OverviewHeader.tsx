@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import React, { useState, useEffect } from 'react';
 // Trigger Vercel sync build for academi-sync-chi
 import { useApp } from '@/context/AppContext';
-import { getCurrentDayOfWeek, formatCollegeBadge, getTodayDateString, getShortCollegeName, isGenericExamTitle } from '@/lib/timetableUtils';
+import { getCurrentDayOfWeek, formatCollegeBadge, getTodayDateString, getShortCollegeName, isGenericExamTitle, getLiveExamSchedule, sanitizeExamSubjectName } from '@/lib/timetableUtils';
 import {
   BookOpen,
   CheckSquare,
@@ -40,12 +40,27 @@ export const OverviewHeader: React.FC = () => {
     if (list.length > 0) return list;
     return events.filter(ev => ev.date === dateTodayStr && ev.type === 'exam' && !isGenericExamTitle(ev.title));
   })();
-  const todayExam = todayExamsList.length > 0;
+
+  const todaySchedule = getLiveExamSchedule(
+    todayExamsList.map(e => ({
+      id: e.id,
+      subjectName: sanitizeExamSubjectName((e as any).subjectName || (e as any).title),
+      date: e.date,
+      time: (e as any).time || (e as any).startTime || '09:30 AM',
+      room: (e as any).room || (e as any).location,
+      durationMinutes: (e as any).durationMinutes
+    })),
+    time || new Date()
+  );
+
+  // Exam mode on overview header only active if an exam is currently LIVE or UPCOMING today.
+  // Once today's exams are completed (or no real exams), regular classes resume!
+  const hasActiveExamToday = !todaySchedule.allCompletedToday && (todaySchedule.liveExam !== null || todaySchedule.upcomingExam !== null);
 
   const todayDay = getCurrentDayOfWeek();
   const regularToday = timetable.filter((s) => s.day === todayDay && !isSessionCancelled(s.id, dateTodayStr));
   const extraToday = Object.values(extraSessions || {}).filter((ex) => ex && ex.date === dateTodayStr);
-  const todayClasses = (todayHoliday || todayExam) ? [] : [...regularToday, ...extraToday];
+  const todayClasses = (todayHoliday || hasActiveExamToday) ? [] : [...regularToday, ...extraToday];
   const pendingHw = homework.filter((h) => h.status !== 'Completed');
   const upcomingDeadlines = homework.filter((h) => {
     const diff = Math.ceil(
@@ -116,21 +131,21 @@ export const OverviewHeader: React.FC = () => {
 
         {/* Classes or Exams */}
         <button
-          onClick={() => setActiveView(todayExam ? 'exams' : 'timetable')}
+          onClick={() => setActiveView(hasActiveExamToday ? 'exams' : 'timetable')}
           className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center cursor-pointer"
         >
           <span className="text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
-            {todayExam ? todayExamsList.length : todayClasses.length}
+            {hasActiveExamToday ? todayExamsList.length : todayClasses.length}
           </span>
           <div className="flex flex-col items-center">
             <span className="text-[14px] font-medium text-black/60 dark:text-[#A1A1AA] leading-tight">
-              {todayExam ? (todayExamsList.length === 1 ? 'Exam' : 'Exams') : 'Classes'}
+              {hasActiveExamToday ? (todayExamsList.length === 1 ? 'Exam' : 'Exams') : 'Classes'}
             </span>
             {todayHoliday ? (
               <span className="text-[13px] text-black/50 dark:text-[#71717A] leading-tight">
                 Holiday
               </span>
-            ) : todayExam ? (
+            ) : hasActiveExamToday ? (
               <span className="text-[13px] text-amber-600 dark:text-amber-400 font-semibold leading-tight">
                 Exam Day
               </span>

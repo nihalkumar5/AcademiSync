@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
-import { getLiveClassStatus, formatTime12Hour, getTodayDateString, getCurrentDayOfWeek, deduplicateTimetableSessions } from '@/lib/timetableUtils';
+import { getLiveClassStatus, formatTime12Hour, getTodayDateString, getCurrentDayOfWeek, deduplicateTimetableSessions, isGenericExamTitle, getLiveExamSchedule, sanitizeExamSubjectName } from '@/lib/timetableUtils';
 import { Clock, MapPin, User, CheckCircle2, ChevronRight, ArrowRight, MoreVertical, Ban, RotateCcw, ChevronDown, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
@@ -33,11 +33,26 @@ export const LiveClassCard: React.FC = () => {
   const now = new Date();
   const dateTodayStr = getTodayDateString();
   const todayHoliday = events.find((e) => e.date === dateTodayStr && e.type === 'holiday');
-  const todayExam = exams?.find((e) => e.date && e.date.split('T')[0] === dateTodayStr) ||
-    events.find((e) => e.date === dateTodayStr && e.type === 'exam');
+
+  // Real, non-generic subject exams for today
+  const todayRealExams = (exams || [])
+    .filter((e) => e.date && e.date.split('T')[0] === dateTodayStr && !isGenericExamTitle(e.subjectName))
+    .map((e) => ({
+      id: e.id,
+      subjectName: sanitizeExamSubjectName(e.subjectName),
+      date: e.date,
+      time: e.time || '09:30 AM',
+      room: e.room,
+      durationMinutes: e.durationMinutes,
+    }));
+
+  const todaySchedule = getLiveExamSchedule(todayRealExams, now);
+  // Classes only suspended if a real exam is currently LIVE or UPCOMING today.
+  // Once the exam schedule is complete (or no real exams today), regular timetable resumes!
+  const hasActiveExamToday = !todaySchedule.allCompletedToday && (todaySchedule.liveExam !== null || todaySchedule.upcomingExam !== null);
 
   const getActiveTimetable = () => {
-    if (todayExam) return [];
+    if (hasActiveExamToday) return [];
     return deduplicateTimetableSessions(timetable.filter((s) => {
       if (isSessionCancelled(s.id, dateTodayStr)) return false;
       const sub = subjects.find((subj) => subj.id === s.subjectId);
@@ -384,8 +399,8 @@ export const LiveClassCard: React.FC = () => {
     </Modal>
   );
 
-  // On examination day, regular timetable is suspended. HomeExamAlertCard handles the exam hero display.
-  if (todayExam) {
+  // On examination day, regular timetable is suspended only while an exam is live/upcoming.
+  if (hasActiveExamToday) {
     return null;
   }
 

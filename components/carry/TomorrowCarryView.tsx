@@ -8,6 +8,7 @@ import {
   getTodayDateString,
   getTomorrowDateString,
   timeToMinutes,
+  isGenericExamTitle,
 } from '@/lib/timetableUtils';
 import { getSubjectCardTheme } from '@/lib/cardColors';
 import { CarryItemRow } from './CarryItemRow';
@@ -65,8 +66,8 @@ export const TomorrowCarryView: React.FC = () => {
   const targetDay = isAfterReminderTime ? getTomorrowDayOfWeek() : getCurrentDayOfWeek();
   const targetDateStr = isAfterReminderTime ? getTomorrowDateString() : getTodayDateString();
   const targetHoliday = events.find((e) => e.date === targetDateStr && e.type === 'holiday');
-  const targetExam = exams.find((e) => e.date && e.date.split('T')[0] === targetDateStr) ||
-    events.find((e) => e.date === targetDateStr && e.type === 'exam');
+  const targetExam = exams.find((e) => e.date && e.date.split('T')[0] === targetDateStr && !isGenericExamTitle(e.subjectName)) ||
+    events.find((e) => e.date === targetDateStr && e.type === 'exam' && !isGenericExamTitle(e.title));
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
   const rawTargetClasses = timetable

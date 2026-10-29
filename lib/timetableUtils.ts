@@ -58,19 +58,28 @@ export const getTodayDateString = (): string => {
 };
 
 export const isGenericExamTitle = (t?: string): boolean => {
-  if (!t) return false;
+  if (!t) return true;
   const clean = t.trim().toLowerCase();
 
-  // Pure generic exam terms like "mte", "ete", "mid term exam", "mte-1", "mte 1", "mid-sem exam"
-  if (/^(mte|ete|mid[\s-]?term|end[\s-]?term|exam|exams|examination|examinations|mid[\s-]?sem|end[\s-]?sem|mid[\s-]?semester|end[\s-]?semester|term[\s-]?end)/i.test(clean)) {
-    const withoutPrefix = clean.replace(/^(mte|ete|mid[\s-]?term|end[\s-]?term|exam|exams|examination|examinations|mid[\s-]?sem|end[\s-]?sem|mid[\s-]?semester|end[\s-]?semester|term[\s-]?end)[\s\-_:0-9\(\)]*/i, '').trim();
-    if (!withoutPrefix || withoutPrefix.length < 3) {
-      return true; // No actual subject name attached, pure placeholder
-    }
+  // Pure standalone generic words
+  if (/^(m\.?t\.?e\.?|e\.?t\.?e\.?|t\.?e\.?e\.?|m\.?s\.?t\.?|exam|exams|examination|examinations)$/i.test(clean)) {
+    return true;
   }
 
-  // Standalone MTE / ETE word (length <= 10, e.g. "MTE", "MTE (ODD)", "MTE 2024")
-  if (/\b(mte|ete)\b/i.test(clean) && clean.length <= 12) {
+  // Strip all generic academic calendar / exam milestone tokens
+  const stripped = clean
+    .replace(/\b(m\.?t\.?e\.?|e\.?t\.?e\.?|t\.?e\.?e\.?|m\.?s\.?t\.?)\b/gi, '')
+    .replace(/\b(mid[\s-]?term|end[\s-]?term|mid[\s-]?sem|end[\s-]?sem|mid[\s-]?semester|end[\s-]?semester|term[\s-]?end|midterm|endterm)\b/gi, '')
+    .replace(/\b(exam|exams|examination|examinations|assessment|evaluation|test|tests)\b/gi, '')
+    .replace(/\b(theory|practical|viva|slot|session|schedule|period|week|datesheet|date[\s-]?sheet)\b/gi, '')
+    .replace(/\b(odd|even|regular|re-appear|reappear|backlog|re-exam|reexam)\b/gi, '')
+    .replace(/\b(commencement|starting|start|starts|ending|end|ends|conduction|holiday|break)\b/gi, '')
+    .replace(/[^a-z0-9]/gi, '')
+    .trim();
+
+  // If stripped is empty, or if generic exam words were stripped and remaining length < 3
+  const hasGenericWord = /\b(m\.?t\.?e|e\.?t\.?e|mid|term|sem|semester|exam|examination|assessment|eval)\b/i.test(clean);
+  if (stripped.length === 0 || (hasGenericWord && stripped.length < 3)) {
     return true;
   }
 

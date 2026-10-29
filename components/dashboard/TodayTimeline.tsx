@@ -405,57 +405,9 @@ export const TodayTimeline: React.FC = () => {
     </Modal>
   );
 
-  if (targetExams.length > 0) {
-    if (allCompletedToday) {
-      return (
-        <div className="flex flex-col text-left">
-          <div className="flex items-center justify-between gap-3 px-1 mb-6">
-            <div className="flex flex-col min-w-0">
-              <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
-                {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
-              </h3>
-              <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#808080] uppercase tracking-wider mt-0.5">
-                {targetDay} · Examination Day
-              </span>
-            </div>
-
-            <span className="inline-flex items-center px-2 py-0.5 bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-700 dark:text-emerald-400 font-mono text-[10px] font-bold uppercase tracking-wider">
-              Concluded
-            </span>
-          </div>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="p-5 sm:p-6 bg-white dark:bg-[#14151B] border border-black dark:border-white flex flex-col gap-3.5 shadow-xs"
-          >
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                All Examinations Concluded
-              </span>
-            </div>
-            <p className="text-[13px] sm:text-[13.5px] text-[#444444] dark:text-[#CBD5E1] leading-relaxed">
-              All {targetExams.length} scheduled exam slot{targetExams.length > 1 ? 's' : ''} have finished for {targetDay}.
-            </p>
-            <div className="flex flex-col gap-2 pt-2 border-t border-black/10 dark:border-white/10">
-              {completedExams.map((ex, idx) => (
-                <div key={ex.id} className="flex items-center justify-between text-[11.5px] font-mono">
-                  <span className="text-black dark:text-white font-medium truncate">
-                    {idx + 1}. {ex.subjectName}
-                  </span>
-                  <span className="text-black/50 dark:text-white/50 shrink-0">
-                    {ex.timing.formattedRange}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      );
-    }
-
+  // Only render exam timeline when an exam is currently LIVE or UPCOMING.
+  // When all exams are completed (or no real exams), regular class timetable resumes!
+  if (targetExams.length > 0 && !allCompletedToday) {
     if (subsequentExams.length > 0) {
       return (
         <div className="flex flex-col text-left">
