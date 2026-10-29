@@ -1369,7 +1369,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             settings,
             prunedNotifications,
             cancelledSessions,
-            rescheduledSessions
+            rescheduledSessions,
+            exams
           );
           
           if (newNotifs.length > 0 || prunedNotifications.length !== safePrev.length) {
@@ -1387,6 +1388,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             const shouldSuppressToast = isInitialNotificationCheck.current || isResumingFromBackground.current;
             if (newNotifs.length > 0 && !shouldSuppressToast) {
               showToast(newNotifs[0].title, newNotifs[0].message, 'info');
+
+              // Show native browser Web Notification if granted for Web/PWA
+              if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+                try {
+                  new Notification(newNotifs[0].title, {
+                    body: newNotifs[0].message,
+                    icon: '/logo1.png',
+                  });
+                } catch (_) {}
+              }
             }
 
             // NOTE: NEVER call triggerLocalNotification here!
@@ -1415,7 +1426,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // Check every 60 seconds for time-based triggers
     const interval = setInterval(runCheck, 60000);
     return () => clearInterval(interval);
-  }, [timetable, subjects, homework, events, settings, cancelledSessions, rescheduledSessions, isHydrated]);
+  }, [timetable, subjects, homework, events, settings, cancelledSessions, rescheduledSessions, isHydrated, exams]);
 
   // Native Local Notification Sync, Tap Handler & App Resume Lifecycle
   useEffect(() => {

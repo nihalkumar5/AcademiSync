@@ -1,7 +1,7 @@
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Capacitor } from '@capacitor/core';
 import { ClassSession, Subject, Homework, Exam, UserSettings, AcademicEvent } from './types';
-import { formatTime12Hour, getLocalDateString } from './timetableUtils';
+import { formatTime12Hour, getLocalDateString, isGenericExamTitle } from './timetableUtils';
 
 // Helper to configure a high-importance native Android channel for lockscreen alerts & sound
 const ensureNotificationChannel = async () => {
@@ -143,12 +143,21 @@ export const scheduleTimetableLocalNotifications = async (
 
     const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
-    // Build a Set of dates to skip class notifications (holidays + exam days = no classes)
+    // Build a Set of dates to skip class notifications (holidays + real exam days = no classes)
     const skipDates = new Set<string>();
     if (events && events.length > 0) {
       events.forEach((ev) => {
-        if ((ev.type === 'holiday' || ev.type === 'exam') && ev.date) {
+        if (ev.type === 'holiday' && ev.date) {
           skipDates.add(ev.date);
+        } else if (ev.type === 'exam' && ev.date && !isGenericExamTitle(ev.title)) {
+          skipDates.add(ev.date);
+        }
+      });
+    }
+    if (exams && exams.length > 0) {
+      exams.forEach((ex) => {
+        if (ex.date && !isGenericExamTitle(ex.subjectName)) {
+          skipDates.add(ex.date.split('T')[0]);
         }
       });
     }
@@ -438,7 +447,7 @@ export const scheduleTimetableLocalNotifications = async (
     if (exams && exams.length > 0) {
       const nowMs = Date.now();
       exams.forEach((exam, idx) => {
-        if (!exam.date) return;
+        if (!exam.date || isGenericExamTitle(exam.subjectName)) return;
         const examDate = new Date(exam.date);
         // Alert at 07:30 AM on exam day
         const examMorning = new Date(examDate);

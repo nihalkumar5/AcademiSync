@@ -1,5 +1,5 @@
-import { AppNotification, ClassSession, Homework, Subject, UserSettings, AcademicEvent } from './types';
-import { getCurrentDayOfWeek, getTomorrowDayOfWeek, timeToMinutes, formatTime12Hour, getTodayDateString, getTomorrowDateString } from './timetableUtils';
+import { AppNotification, ClassSession, Homework, Subject, UserSettings, AcademicEvent, Exam } from './types';
+import { getCurrentDayOfWeek, getTomorrowDayOfWeek, timeToMinutes, formatTime12Hour, getTodayDateString, getTomorrowDateString, isGenericExamTitle, getLiveExamSchedule, sanitizeExamSubjectName } from './timetableUtils';
 import { getDeliveredNotificationKeysFromStorage } from './localNotifications';
 
 export const checkAndGenerateSmartNotifications = (
@@ -10,7 +10,8 @@ export const checkAndGenerateSmartNotifications = (
   settings: UserSettings = {} as UserSettings,
   existingNotifications: AppNotification[] = [],
   cancelledSessionKeys: string[] = [],
-  rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string }> = {}
+  rescheduledSessions: Record<string, { startTime: string; endTime: string; room?: string }> = {},
+  exams: Exam[] = []
 ): AppNotification[] => {
   try {
     const safeTimetable = Array.isArray(timetable) ? timetable : [];
@@ -21,6 +22,7 @@ export const checkAndGenerateSmartNotifications = (
     const safeSettings = settings || ({} as UserSettings);
     const safeCancelledKeys = Array.isArray(cancelledSessionKeys) ? cancelledSessionKeys : [];
     const safeRescheduled = (rescheduledSessions && typeof rescheduledSessions === 'object') ? rescheduledSessions : {};
+    const safeExams = Array.isArray(exams) ? exams : [];
 
     const newNotifications: AppNotification[] = [];
     const deliveredKeys = getDeliveredNotificationKeysFromStorage();
@@ -35,7 +37,34 @@ export const checkAndGenerateSmartNotifications = (
 
     const todayEvents = safeEvents.filter((e) => e && e.date === dateTodayStr);
     const todayHoliday = todayEvents.find((e) => e && e.type === 'holiday');
-    const isHolidayOrExam = todayEvents.some((e) => e && (e.type === 'holiday' || e.type === 'exam'));
+
+    // Build today's real non-generic exams
+    const todayRealExams = [
+      ...safeExams
+        .filter((ex) => ex && ex.date && ex.date.split('T')[0] === dateTodayStr && !isGenericExamTitle(ex.subjectName))
+        .map((ex) => ({
+          id: ex.id,
+          subjectName: sanitizeExamSubjectName(ex.subjectName),
+          date: ex.date,
+          time: ex.time || '09:30 AM',
+          room: ex.room,
+          durationMinutes: ex.durationMinutes,
+        })),
+      ...todayEvents
+        .filter((ev) => ev && ev.type === 'exam' && !isGenericExamTitle(ev.title))
+        .map((ev) => ({
+          id: ev.id,
+          subjectName: sanitizeExamSubjectName(ev.title),
+          date: ev.date,
+          time: (ev as any).time || ev.startTime || '09:30 AM',
+          room: ev.location,
+          durationMinutes: (ev as any).durationMinutes,
+        })),
+    ];
+
+    const todaySchedule = getLiveExamSchedule(todayRealExams, now);
+    const hasActiveExamToday = !todaySchedule.allCompletedToday && (todaySchedule.liveExam !== null || todaySchedule.upcomingExam !== null);
+    const isHolidayOrExam = !!todayHoliday || hasActiveExamToday;
 
   // 0. Today's Holiday Alert
   const holidayAlertKey = `holiday_alert_${dateTodayStr}`;
@@ -144,8 +173,10 @@ export const checkAndGenerateSmartNotifications = (
     const carryCheckKey = `carry_evening_${dateTodayStr}`;
     const tomorrowDay = getTomorrowDayOfWeek();
     const tomorrowHoliday = safeEvents.find((e) => e && e.date === dateTomorrowStr && e.type === 'holiday');
-    const tomorrowExam = safeEvents.find((e) => e && e.date === dateTomorrowStr && e.type === 'exam');
-    const isTomorrowHolidayOrExam = !!(tomorrowHoliday || tomorrowExam);
+    const tomorrowRealEventExam = safeEvents.find((e) => e && e.date === dateTomorrowStr && e.type === 'exam' && !isGenericExamTitle(e.title));
+    const tomorrowRealExams = safeExams.filter((ex) => ex && ex.date && ex.date.split('T')[0] === dateTomorrowStr && !isGenericExamTitle(ex.subjectName));
+    const isTomorrowExam = !!(tomorrowRealEventExam || tomorrowRealExams.length > 0);
+    const isTomorrowHolidayOrExam = !!(tomorrowHoliday || isTomorrowExam);
 
     const tomorrowClasses = isTomorrowHolidayOrExam ? [] : safeTimetable
       .filter((s) => s && s.day === tomorrowDay && !safeCancelledKeys.includes(`${dateTomorrowStr}_${s.id}`));
@@ -211,6 +242,9 @@ export const checkAndGenerateSmartNotifications = (
   // 5. Academic Calendar Events & Holidays for Today (Generates once per day per event)
   todayEvents.forEach((ev) => {
     if (!ev || !ev.id) return;
+    // Skip generic placeholder exam events like "MTE" or "Mid Term Examination"
+    if (ev.type === 'exam' && isGenericExamTitle(ev.title)) return;
+
     const eventKey = `event_today_${ev.id}_${dateTodayStr}`;
     if (!existingIds.has(eventKey)) {
       let emoji = '📅';
@@ -235,6 +269,23 @@ export const checkAndGenerateSmartNotifications = (
         timestamp: new Date().toISOString(),
         read: false,
         relatedId: eventKey,
+      });
+    }
+  });
+
+  // 6. Datesheet Real Exams for Today
+  todayRealExams.forEach((ex) => {
+    if (!ex || !ex.id) return;
+    const examKey = `exam_today_${ex.id}_${dateTodayStr}`;
+    if (!existingIds.has(examKey)) {
+      newNotifications.push({
+        id: `notif_${Date.now()}_ex_${ex.id}`,
+        title: `📝 Exam Today: ${ex.subjectName}`,
+        message: `Scheduled today at ${formatTime12Hour(ex.time)}${ex.room ? ` in ${ex.room}` : ''}. Best of luck!`,
+        category: 'events',
+        timestamp: new Date().toISOString(),
+        read: false,
+        relatedId: examKey,
       });
     }
   });

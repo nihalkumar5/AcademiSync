@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { adminDb, adminMessaging } from '@/lib/firebase-admin';
 import { logServerError } from '@/lib/errorUtils';
+import { isGenericExamTitle } from '@/lib/timetableUtils';
 
 export const dynamic = 'force-dynamic';
 
@@ -109,7 +110,7 @@ export async function GET(request: Request) {
           const eventDate = typeof event.date === 'string'
             ? event.date
             : new Date(event.date.seconds * 1000 + istOffset).toISOString().split('T')[0];
-          return eventDate === tomorrowDateStr && (event.type === 'holiday' || event.type === 'exam');
+          return eventDate === tomorrowDateStr && (event.type === 'holiday' || (event.type === 'exam' && !isGenericExamTitle(event.title)));
         });
 
         const tomorrowClasses = isTomorrowHolidayOrExam ? [] : timetable.filter((c: any) => c.day === tomorrowDayStr);
