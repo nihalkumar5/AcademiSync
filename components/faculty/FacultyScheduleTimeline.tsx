@@ -343,7 +343,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                           </h4>
 
                           {isCancelled ? (
-                            <span className="px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#FAD3D9] text-[#C94B5C] rounded-[2px] shrink-0">
+                            <span className="px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#FAD3D9] text-[#C94B5C] rounded-[2px] shrink-0 dark:bg-red-500/15 dark:text-red-300">
                               Cancelled
                             </span>
                           ) : isLive ? (
@@ -351,11 +351,11 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                               Live
                             </span>
                           ) : isRescheduled ? (
-                            <span className="px-2 py-0.5 rounded-[2px] text-[11px] font-bold uppercase tracking-wider bg-[#FCE0D5] text-[#C85F3D] shrink-0">
+                            <span className="px-2 py-0.5 rounded-[2px] text-[11px] font-bold uppercase tracking-wider bg-[#FCE0D5] text-[#C85F3D] shrink-0 dark:bg-orange-500/15 dark:text-orange-300">
                               Rescheduled
                             </span>
                           ) : session.isLab ? (
-                            <span className="px-2 py-0.5 rounded-[2px] text-[11px] font-bold uppercase tracking-wider bg-[#D2F1E8] text-[#18A889] shrink-0">
+                            <span className="px-2 py-0.5 rounded-[2px] text-[11px] font-bold uppercase tracking-wider bg-[#D2F1E8] text-[#18A889] shrink-0 dark:bg-teal-500/15 dark:text-teal-300">
                               Lab
                             </span>
                           ) : agg.isUpcoming && agg.minutesUntilStart !== undefined && agg.minutesUntilStart > 0 ? (

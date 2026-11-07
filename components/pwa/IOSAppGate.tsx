@@ -90,7 +90,7 @@ export const IOSAppGate: React.FC = () => {
           </div>
 
           {/* Text Card */}
-          <div className="w-full px-8 flex flex-col gap-2 pb-5 bg-[#F4F4F4] shrink-0 z-10 relative rounded-t-[40px] pt-6 -mt-6">
+          <div className="w-full px-8 flex flex-col gap-2 pb-5 bg-[#F4F4F4] shrink-0 z-10 relative rounded-t-[40px] pt-6 -mt-6 dark:bg-white/[0.05]">
             <h2 className="text-[26px] sm:text-[28px] leading-[1.1] font-bold text-[#111111]">
               Install on your iPhone.
             </h2>
@@ -134,7 +134,7 @@ export const IOSAppGate: React.FC = () => {
 
           {/* Controls Footer */}
           <div 
-            className="w-full px-6 sm:px-8 pt-2 pb-6 flex flex-col items-center justify-center gap-2 shrink-0 bg-[#F7F7F5] z-10 relative"
+            className="w-full px-6 sm:px-8 pt-2 pb-6 flex flex-col items-center justify-center gap-2 shrink-0 bg-[#F7F7F5] z-10 relative dark:bg-white/[0.05]"
             style={{
               paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 16px), 24px)',
             }}

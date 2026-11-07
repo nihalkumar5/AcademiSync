@@ -392,7 +392,7 @@ export const SubjectListView: React.FC = () => {
                         {sub.credits} Credits
                       </span>
                       {sub.isLab && (
-                        <span className="text-[11px] font-bold tracking-wider px-2 py-0.5 uppercase rounded-[2px] bg-[#D2F1E8] text-[#18A889]">
+                        <span className="text-[11px] font-bold tracking-wider px-2 py-0.5 uppercase rounded-[2px] bg-[#D2F1E8] text-[#18A889] dark:bg-teal-500/15 dark:text-teal-300">
                           LAB
                         </span>
                       )}

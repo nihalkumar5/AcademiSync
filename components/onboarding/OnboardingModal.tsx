@@ -249,7 +249,7 @@ export const OnboardingModal = () => {
                   <img 
                     src={slides[currentIndex].image} 
                     alt="Onboarding" 
-                    className={`relative z-10 max-h-[40vh] w-auto max-w-[85vw] object-contain object-bottom pointer-events-none ${
+                    className={`relative z-10 max-h-[40vh] w-auto max-w-[85vw] object-contain object-bottom pointer-events-none dark:invert dark:mix-blend-screen ${
                       currentIndex === 0 ? 'scale-[1.35] translate-y-[2%]' :
                       currentIndex === 1 ? 'scale-[1.5] translate-y-[9%]' :
                       'scale-[1.3] translate-y-[2%]'
@@ -449,7 +449,7 @@ export const OnboardingModal = () => {
                 <img 
                   src={currentIndex < 3 ? slides[currentIndex].image : '/onboard-3.png'} 
                   alt="Onboarding Illustration" 
-                  className={`max-h-[54vh] lg:max-h-[58vh] w-auto max-w-[85%] object-contain pointer-events-none drop-shadow-sm transition-all duration-300 ${
+                  className={`max-h-[54vh] lg:max-h-[58vh] w-auto max-w-[85%] object-contain pointer-events-none drop-shadow-sm dark:drop-shadow-none dark:invert dark:mix-blend-screen transition-all duration-300 ${
                     currentIndex === 0 ? 'scale-[1.3]' :
                     currentIndex === 1 ? 'scale-[1.45]' :
                     currentIndex === 2 ? 'scale-[1.28]' :

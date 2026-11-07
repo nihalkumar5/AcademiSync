@@ -97,30 +97,30 @@ export const SmartFocusList: React.FC = () => {
                   {/* Number and Top Right Toolbar */}
                   <div className="flex items-start justify-between gap-3">
                     <div 
-                      className="text-[44px] font-bold leading-[40px] tracking-tighter font-mono select-none pointer-events-none"
-                      style={{ color: theme.numberColor }}
+                      className="text-[44px] font-bold leading-[40px] tracking-tighter font-mono select-none pointer-events-none text-[var(--num-light)] dark:text-[var(--num-dark)]"
+                      style={{ '--num-light': theme.numberColor, '--num-dark': `${theme.accent}66` } as any}
                     >
                       {String(idx + 1).padStart(2, '0')}
                     </div>
 
                     <div className="flex items-center gap-1.5 self-start">
                       {item.type === 'homework' && item.originalPriority === 'High' && !isCompleted && (
-                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8] text-[#C96B45] text-[11px] font-bold uppercase tracking-wider">
+                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8] text-[#C96B45] text-[11px] font-bold uppercase tracking-wider dark:bg-orange-500/15 dark:text-orange-300">
                           HIGH
                         </span>
                       )}
                       {item.type === 'homework' && item.originalPriority === 'Medium' && !isCompleted && (
-                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8]/70 text-[#C96B45]/90 text-[11px] font-bold uppercase tracking-wider">
+                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8]/70 text-[#C96B45]/90 text-[11px] font-bold uppercase tracking-wider dark:bg-orange-500/15 dark:text-orange-300">
                           MED
                         </span>
                       )}
                       {isInProgress && (
-                        <span className="px-2 py-0.5 rounded-[2px] bg-[#DCE4FF] text-[#334CC4] text-[11px] font-bold uppercase tracking-wider">
+                        <span className="px-2 py-0.5 rounded-[2px] bg-[#DCE4FF] text-[#334CC4] text-[11px] font-bold uppercase tracking-wider dark:bg-indigo-500/15 dark:text-indigo-300">
                           DOING
                         </span>
                       )}
                       {isCompleted && (
-                        <span className="px-2 py-0.5 rounded-[2px] bg-[#D2F1E8] text-[#18A889] text-[11px] font-bold uppercase tracking-wider">
+                        <span className="px-2 py-0.5 rounded-[2px] bg-[#D2F1E8] text-[#18A889] text-[11px] font-bold uppercase tracking-wider dark:bg-teal-500/15 dark:text-teal-300">
                           DONE
                         </span>
                       )}
@@ -150,9 +150,9 @@ export const SmartFocusList: React.FC = () => {
                       <span className={clsx(
                         "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[11px] font-bold font-mono uppercase tracking-wider",
                         isUrgent
-                          ? "bg-[#FFF0E8] text-[#C96B45] border border-[#F5D8CC]"
+                          ? "bg-[#FFF0E8] text-[#C96B45] border border-[#F5D8CC] dark:bg-orange-500/15 dark:text-orange-300 dark:border-orange-500/30"
                           : isOverdue
-                          ? "bg-[#FCEBED] text-[#C94B5C] border border-[#F5CBD1]"
+                          ? "bg-[#FCEBED] text-[#C94B5C] border border-[#F5CBD1] dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30"
                           : "bg-black/[0.04] dark:bg-white/[0.05] text-[#737373] dark:text-[#94A3B8] border border-black/[0.04] dark:border-white/[0.06]"
                       )}>
                         <Calendar className="w-3 h-3 shrink-0" />

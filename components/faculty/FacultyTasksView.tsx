@@ -331,8 +331,8 @@ export const FacultyTasksView: React.FC = () => {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
-                        className="text-[28px] sm:text-[32px] font-bold leading-none tracking-tighter font-mono select-none"
-                        style={{ color: theme.numberColor }}
+                        className="text-[28px] sm:text-[32px] font-bold leading-none tracking-tighter font-mono select-none text-[var(--num-light)] dark:text-[var(--num-dark)]"
+                        style={{ '--num-light': theme.numberColor, '--num-dark': `${theme.accent}66` } as any}
                       >
                         {formattedIndex}
                       </span>
@@ -349,7 +349,7 @@ export const FacultyTasksView: React.FC = () => {
 
                       {/* Priority if High */}
                       {task.priority === 'High' && (
-                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8] text-[#C96B45] text-[11px] font-bold uppercase tracking-wider font-mono">
+                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8] text-[#C96B45] text-[11px] font-bold uppercase tracking-wider font-mono dark:bg-orange-500/15 dark:text-orange-300">
                           HIGH PRIORITY
                         </span>
                       )}

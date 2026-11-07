@@ -153,8 +153,8 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
                     {/* Top Row: Index number & Action Badges */}
                     <div className="flex items-start justify-between gap-3">
                       <div
-                        className="text-[36px] sm:text-[40px] font-bold leading-[34px] tracking-tighter font-mono select-none pointer-events-none"
-                        style={{ color: theme.numberColor }}
+                        className="text-[36px] sm:text-[40px] font-bold leading-[34px] tracking-tighter font-mono select-none pointer-events-none text-[var(--num-light)] dark:text-[var(--num-dark)]"
+                        style={{ '--num-light': theme.numberColor, '--num-dark': `${theme.accent}66` } as any}
                       >
                         {formattedIndex}
                       </div>
@@ -166,7 +166,7 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
                         </span>
 
                         {task.priority === 'High' && (
-                          <span className="px-2 py-0.5 rounded-[4px] bg-[#FFF0E8] text-[#C96B45] text-[11px] font-bold uppercase tracking-wider">
+                          <span className="px-2 py-0.5 rounded-[4px] bg-[#FFF0E8] text-[#C96B45] text-[11px] font-bold uppercase tracking-wider dark:bg-orange-500/15 dark:text-orange-300">
                             HIGH
                           </span>
                         )}

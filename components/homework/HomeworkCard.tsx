@@ -191,8 +191,8 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
         {/* Number and Top-Right Action Toolbar */}
         <div className="flex items-start justify-between gap-3">
           <div 
-            className="text-[44px] font-bold leading-[40px] tracking-tighter font-mono select-none pointer-events-none"
-            style={{ color: theme.numberColor }}
+            className="text-[44px] font-bold leading-[40px] tracking-tighter font-mono select-none pointer-events-none text-[var(--num-light)] dark:text-[var(--num-dark)]"
+            style={{ '--num-light': theme.numberColor, '--num-dark': `${theme.accent}66` } as any}
           >
             {formattedIndex}
           </div>
@@ -200,12 +200,12 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
           {/* Clean Action Toolbar */}
           <div className="flex items-center gap-1.5 self-start">
             {!isDone && homework.priority === 'High' && (
-              <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8] text-[#C96B45] text-[11px] font-bold uppercase tracking-wider">
+              <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8] text-[#C96B45] text-[11px] font-bold uppercase tracking-wider dark:bg-orange-500/15 dark:text-orange-300">
                 HIGH
               </span>
             )}
             {!isDone && homework.priority === 'Medium' && (
-              <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8]/70 text-[#C96B45]/90 text-[11px] font-bold uppercase tracking-wider">
+              <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8]/70 text-[#C96B45]/90 text-[11px] font-bold uppercase tracking-wider dark:bg-orange-500/15 dark:text-orange-300">
                 MED
               </span>
             )}
@@ -221,7 +221,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                   e.stopPropagation();
                   setShowCompleteConfirmModal(true);
                 }}
-                className="px-2 py-0.5 rounded-[2px] bg-[#DCE4FF] text-[#334CC4] text-[11px] font-bold uppercase tracking-wider hover:opacity-80 transition-opacity cursor-pointer"
+                className="px-2 py-0.5 rounded-[2px] bg-[#DCE4FF] text-[#334CC4] text-[11px] font-bold uppercase tracking-wider hover:opacity-80 transition-opacity cursor-pointer dark:bg-indigo-500/15 dark:text-indigo-300"
                 title="Click to complete" aria-label="Click to complete"
               >
                 DOING
@@ -234,7 +234,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                   e.stopPropagation();
                   handleStatusAction();
                 }}
-                className="px-2 py-0.5 rounded-[2px] bg-[#D2F1E8] text-[#18A889] text-[11px] font-bold uppercase tracking-wider hover:opacity-80 transition-opacity cursor-pointer"
+                className="px-2 py-0.5 rounded-[2px] bg-[#D2F1E8] text-[#18A889] text-[11px] font-bold uppercase tracking-wider hover:opacity-80 transition-opacity cursor-pointer dark:bg-teal-500/15 dark:text-teal-300"
                 title="Click to reopen" aria-label="Click to reopen"
               >
                 DONE
@@ -467,9 +467,9 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
           <span className={clsx(
             "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[11px] font-bold font-mono uppercase tracking-wider",
             isUrgent
-              ? "bg-[#FFF0E8] text-[#C96B45] border border-[#F5D8CC]"
+              ? "bg-[#FFF0E8] text-[#C96B45] border border-[#F5D8CC] dark:bg-orange-500/15 dark:text-orange-300 dark:border-orange-500/30"
               : isOverdue
-              ? "bg-[#FCEBED] text-[#C94B5C] border border-[#F5CBD1]"
+              ? "bg-[#FCEBED] text-[#C94B5C] border border-[#F5CBD1] dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30"
               : "bg-black/[0.04] dark:bg-white/[0.05] text-[#737373] dark:text-[#94A3B8] border border-black/[0.04] dark:border-white/[0.06]"
           )}>
             <Calendar className="w-3 h-3 shrink-0" />

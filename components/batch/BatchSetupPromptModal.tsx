@@ -101,7 +101,7 @@ If you are our Batch Pilot or want to setup the synced batch timetable for all o
               <img 
                 src="/cr.png" 
                 alt="Batch Pilot" 
-                className="w-full max-w-[300px] sm:max-w-[280px] h-auto object-contain drop-shadow-sm"
+                className="w-full max-w-[300px] sm:max-w-[280px] h-auto object-contain drop-shadow-sm dark:drop-shadow-none dark:invert dark:mix-blend-screen"
               />
             </div>
             
