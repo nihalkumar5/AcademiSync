@@ -89,10 +89,10 @@ service cloud.firestore {
     }
 
     // 2. Shared Batch Timetables Collection:
-    // Read: Signed-in users (join by invite code, batch discovery)
+    // Read: Public — the "Find Your Class & Batch" search in onboarding runs before sign-in
     // Write: Admins and this batch's Pilots; faculty may change sessions/alerts; members may join/leave
     match /shared_timetables/{batchKey} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow create: if isSuperAdmin() || (isAuthenticated() && callerRole() in ['cr', 'super_admin']);
       allow update: if isAuthenticated() && (
         isAdmin() ||
