@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logServerError } from '@/lib/errorUtils';
 import { validateServerUploadPayload } from '@/lib/fileSafety';
-import { checkAiRateLimit } from '@/lib/rateLimit';
-import { getVerifiedUser } from '@/lib/serverAuth';
+import { guardAiRequest } from '@/lib/aiGuard';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -12,8 +11,6 @@ export async function POST(req: Request) {
   try {
     // Check if JSON body (from multi-image/PDF converter) or FormData
     let imageList: { name?: string; base64: string; mimeType: string }[] = [];
-    // Rate-limit by verified Firebase uid only (a userId in the body/header can be spoofed)
-    const userId = (await getVerifiedUser(req))?.uid ?? null;
     const contentType = req.headers.get('content-type') || '';
 
     if (contentType.includes('application/json')) {
@@ -37,17 +34,9 @@ export async function POST(req: Request) {
       }
     }
 
-    // Campus-Safe AI Rate Limiter Guard
-    const rateCheck = checkAiRateLimit(req, userId);
-    if (!rateCheck.allowed) {
-      return NextResponse.json(
-        { success: false, error: rateCheck.error || 'Rate limit exceeded. Please wait a few minutes before scanning again.' },
-        { 
-          status: 429, 
-          headers: rateCheck.retryAfterSeconds ? { 'Retry-After': String(rateCheck.retryAfterSeconds) } : undefined 
-        }
-      );
-    }
+    // Signed-in users only, with durable per-user quotas
+    const blocked = await guardAiRequest(req);
+    if (blocked) return blocked;
 
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 

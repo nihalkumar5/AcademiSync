@@ -67,10 +67,14 @@ export async function POST(req: Request) {
       (Array.isArray(batchData.crEmails) && userEmail && batchData.crEmails.map((e: string) => (e || '').toLowerCase().trim()).includes(userEmail))
     );
     const isBatchPilotInProfile = senderData.profile?.role === 'cr' && senderData.profile?.batchKey === batchKey;
+    // Faculty role can only be granted by a Super Admin (firestore.rules), so linked faculty may alert their batches
+    const isLinkedFaculty = senderData.profile?.role === 'faculty' &&
+      Array.isArray(senderData.profile?.facultyLinkedBatches) &&
+      senderData.profile.facultyLinkedBatches.some((b: any) => b?.batchKey === batchKey);
 
-    if (!isSuperAdmin && !isBatchCreator && !isBatchPilotInDoc && !isBatchPilotInProfile) {
+    if (!isSuperAdmin && !isBatchCreator && !isBatchPilotInDoc && !isBatchPilotInProfile && !isLinkedFaculty) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized: Only verified Batch Pilots or Admins can broadcast notifications to this batch' },
+        { success: false, error: 'Unauthorized: Only verified Batch Pilots, linked Faculty or Admins can broadcast notifications to this batch' },
         { status: 403 }
       );
     }

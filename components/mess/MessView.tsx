@@ -189,7 +189,31 @@ const LiveMealCard = ({
 };
 
 export const MessView: React.FC = () => {
-  const { messMenu, updateMessMenu, showToast } = useApp();
+  const { messMenu, updateMessMenu, showToast, user } = useApp();
+
+  // Only the publisher may update a shared mess doc. Anyone else's edits are saved as their own
+  // copy under a new code, so they can't overwrite the menu everyone else joined.
+  const saveSharedMess = async (updatedMess: any) => {
+    if (!user?.id || !updatedMess.id) return updatedMess;
+
+    if (updatedMess.creatorId === user.id) {
+      await setDoc(doc(db, 'messes', updatedMess.id), updatedMess, { merge: true }).catch(() => {});
+      return updatedMess;
+    }
+
+    const ownCopy = {
+      ...updatedMess,
+      id: Math.random().toString(36).substring(2, 6).toUpperCase(),
+      creatorId: user.id,
+      createdAt: new Date().toISOString(),
+    };
+    try {
+      await setDoc(doc(db, 'messes', ownCopy.id), ownCopy);
+      return ownCopy;
+    } catch {
+      return updatedMess;
+    }
+  };
 
   const today = format(new Date(), 'EEEE');
   const [selectedDay, setSelectedDay] = useState(today);
@@ -285,11 +309,8 @@ ${PLAY_STORE_URL}
       timings: tempTimings,
     };
     updateMessMenu(updatedMess);
-    if (messMenu.id) {
-      try {
-        await setDoc(doc(db, 'messes', messMenu.id), updatedMess, { merge: true });
-      } catch (err) {}
-    }
+    const savedMess = await saveSharedMess(updatedMess);
+    if (savedMess !== updatedMess) updateMessMenu(savedMess);
     setShowEditTimingsModal(false);
     showToast('Timings Updated', 'Meal timings have been saved and synced across devices.', 'success');
   };
@@ -301,11 +322,8 @@ ${PLAY_STORE_URL}
       menu: tempMenu,
     };
     updateMessMenu(updatedMess);
-    if (messMenu.id) {
-      try {
-        await setDoc(doc(db, 'messes', messMenu.id), updatedMess, { merge: true });
-      } catch (err) {}
-    }
+    const savedMess = await saveSharedMess(updatedMess);
+    if (savedMess !== updatedMess) updateMessMenu(savedMess);
     setShowEditMenuModal(false);
     showToast('Menu Updated', 'Weekly menu changes saved and synced.', 'success');
   };
@@ -337,11 +355,8 @@ ${PLAY_STORE_URL}
     };
 
     updateMessMenu(updatedMess);
-    if (messMenu.id) {
-      try {
-        await setDoc(doc(db, 'messes', messMenu.id), updatedMess, { merge: true });
-      } catch (err) {}
-    }
+    const savedMess = await saveSharedMess(updatedMess);
+    if (savedMess !== updatedMess) updateMessMenu(savedMess);
 
     setQuickEditMeal(null);
     showToast('Meal Saved', `${meal} updated for ${day}.`, 'success');

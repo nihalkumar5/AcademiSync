@@ -146,6 +146,8 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
       createdAt: new Date().toISOString(),
       menu: extractedData,
       timings: extractedTimings,
+      // Firestore rules only let the publisher update this shared menu later
+      ...(user?.id ? { creatorId: user.id } : {}),
     };
 
     try {

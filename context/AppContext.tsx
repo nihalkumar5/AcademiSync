@@ -3982,7 +3982,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         updatedAt: new Date().toISOString(),
       });
 
-      await setDoc(docRef, payload, { merge: true });
+      try {
+        await setDoc(docRef, payload, { merge: true });
+      } catch (writeErr: any) {
+        // A classmate already shared this batch's calendar; only they or a Batch Pilot can update it
+        const existing = writeErr?.code === 'permission-denied' ? await getDoc(docRef).catch(() => null) : null;
+        if (!existing?.exists()) throw writeErr;
+        showToast('Calendar Already Shared', 'A classmate already shared this batch calendar, so its link is being shared.', 'info');
+        return canonicalKey;
+      }
       showToast('Calendar Shared', 'Your academic calendar is now live for your batchmates!', 'success');
       return canonicalKey;
     } catch (e) {
@@ -4036,7 +4044,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         updatedAt: new Date().toISOString(),
       });
 
-      await setDoc(docRef, payload, { merge: true });
+      try {
+        await setDoc(docRef, payload, { merge: true });
+      } catch (writeErr: any) {
+        // A classmate already shared this batch's exams; only they or a Batch Pilot can update them
+        const existing = writeErr?.code === 'permission-denied' ? await getDoc(docRef).catch(() => null) : null;
+        if (!existing?.exists()) throw writeErr;
+        showToast('Exams Already Shared', 'A classmate already shared this batch exam schedule, so its link is being shared.', 'info');
+        return canonicalKey;
+      }
       showToast('Exams Shared', 'Your exam schedule is now live for your batchmates!', 'success');
       return canonicalKey;
     } catch (e) {

@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // The app doesn't use next/image; turning the optimizer off removes the /_next/image attack surface
+  images: {
+    unoptimized: true,
+  },
   transpilePackages: [
     "@capacitor/core",
     "@capacitor/splash-screen",

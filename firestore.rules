@@ -60,14 +60,23 @@ service cloud.firestore {
         && isPilotOf(get(/databases/$(database)/documents/shared_timetables/$(batchKey)).data);
     }
 
-    // Users can't promote themselves: 'student'/'faculty' are self-selectable, 'cr' needs a pilot
-    // seat in the batch doc (given by an admin or an existing pilot), 'super_admin' needs an admin.
+    // Users can't promote themselves: only 'student' is self-selectable. 'cr' needs a pilot seat in the
+    // batch doc (given by an admin or an existing pilot); 'faculty' and 'super_admin' are granted by an admin.
     function roleChangeAllowed(newData, oldRole) {
       let newRole = profileRole(newData);
       return newRole == oldRole
-        || newRole in ['student', 'faculty']
+        || newRole == 'student'
         || (newRole == 'cr' && isPilotOfBatchKey(newData.get('profile', {}).get('batchKey', '')))
-        || (newRole == 'super_admin' && isSuperAdmin());
+        || (newRole in ['faculty', 'super_admin'] && isSuperAdmin());
+    }
+
+    // Shared calendars/exams: the first sharer owns the doc; this batch's pilots and admins may update it
+    function canUpdateSharedBatchDoc(batchKey) {
+      return isAdmin()
+        || isPilotOfBatchKey(batchKey)
+        || (isAuthenticated()
+          && resource.data.get('creatorId', '') == request.auth.uid
+          && request.resource.data.get('creatorId', '') == request.auth.uid);
     }
 
     // 1. Users Collection: private to the owner (and admins). Classmates' public fields are served
@@ -131,25 +140,31 @@ service cloud.firestore {
 
     // 4. Mess Menus:
     // Read: Public (all hostel students)
-    // Write: Authenticated hostel students / reps; delete: Super Admin only
+    // Create: signed-in publisher (stored as creatorId); Update/Delete: that publisher or a Super Admin.
+    // Anyone else's edits are saved as their own copy under a new code (see MessView).
     match /messes/{messId} {
       allow read: if true;
-      allow create, update: if isAuthenticated();
-      allow delete: if isSuperAdmin();
+      allow create: if isAuthenticated() && request.resource.data.get('creatorId', '') == request.auth.uid;
+      allow update: if isSuperAdmin() || (isAuthenticated()
+        && resource.data.get('creatorId', '') == request.auth.uid
+        && request.resource.data.get('creatorId', '') == request.auth.uid);
+      allow delete: if isSuperAdmin() || (isAuthenticated() && resource.data.get('creatorId', '') == request.auth.uid);
     }
 
     // 5. Academic Calendars & Exam Schedules shared with a batch:
     // Read: Public (all college students)
-    // Write: Authenticated students / admins; delete: Super Admin only
+    // Create: signed-in sharer (stored as creatorId); Update: that sharer, the batch's Pilots or admins
     match /shared_calendars/{calendarKey} {
       allow read: if true;
-      allow create, update: if isAuthenticated();
-      allow delete: if isSuperAdmin();
+      allow create: if isAuthenticated() && request.resource.data.get('creatorId', '') == request.auth.uid;
+      allow update: if canUpdateSharedBatchDoc(calendarKey);
+      allow delete: if isSuperAdmin() || (isAuthenticated() && resource.data.get('creatorId', '') == request.auth.uid);
     }
     match /shared_exams/{examsKey} {
       allow read: if true;
-      allow create, update: if isAuthenticated();
-      allow delete: if isSuperAdmin();
+      allow create: if isAuthenticated() && request.resource.data.get('creatorId', '') == request.auth.uid;
+      allow update: if canUpdateSharedBatchDoc(examsKey);
+      allow delete: if isSuperAdmin() || (isAuthenticated() && resource.data.get('creatorId', '') == request.auth.uid);
     }
 
     // 6. Campus Spotlight (Announcements/Notices):
