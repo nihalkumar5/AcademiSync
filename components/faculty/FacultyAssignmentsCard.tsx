@@ -160,18 +160,18 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
                       </div>
 
                       <div className="flex items-center gap-1.5 flex-wrap self-start">
-                        <span className="px-2 py-0.5 rounded-[4px] bg-black/5 dark:bg-white/10 text-[10px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70 flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-[4px] bg-black/5 dark:bg-white/10 text-[11px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70 flex items-center gap-1">
                           <Users className="w-3 h-3" />
                           {batchName}
                         </span>
 
                         {task.priority === 'High' && (
-                          <span className="px-2 py-0.5 rounded-[4px] bg-[#FFF0E8] text-[#C96B45] text-[9.5px] font-bold uppercase tracking-wider">
+                          <span className="px-2 py-0.5 rounded-[4px] bg-[#FFF0E8] text-[#C96B45] text-[11px] font-bold uppercase tracking-wider">
                             HIGH
                           </span>
                         )}
 
-                        <span className="px-2 py-0.5 rounded-[4px] bg-black/5 dark:bg-white/5 text-[10px] font-mono text-black/70 dark:text-white/70 flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-[4px] bg-black/5 dark:bg-white/5 text-[11px] font-mono text-black/70 dark:text-white/70 flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           Due {deadlineDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           {diffDays <= 2 && diffDays >= 0 && (

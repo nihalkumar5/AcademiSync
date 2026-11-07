@@ -332,7 +332,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                     <button
                       type="button"
                       onClick={() => setExtractError(null)}
-                      className="text-[11px] text-black/50 dark:text-white/50 hover:underline ml-auto cursor-pointer"
+                      className="text-[11px] text-black/60 dark:text-white/60 hover:underline ml-auto cursor-pointer"
                     >
                       Dismiss
                     </button>
@@ -387,7 +387,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
               Choose file
             </div>
 
-            <div className="text-[10px] text-black/40 dark:text-[#64748B] font-medium tracking-[0.5px] uppercase">
+            <div className="text-[11px] text-black/40 dark:text-[#64748B] font-medium tracking-[0.5px] uppercase">
               JPG · PNG · PDF
             </div>
           </div>
@@ -445,7 +445,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         <div className="flex flex-col text-left">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-bold tracking-[0.2em] text-black/50 dark:text-white/40 uppercase">Extracted Sessions</span>
+              <span className="text-[11px] font-bold tracking-[0.2em] text-black/60 dark:text-white/60 uppercase">Extracted Sessions</span>
               
               <div className="flex flex-col gap-4">
                 {extractedSessions.map((session, index) => (
@@ -460,7 +460,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                     
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Day</label>
+                        <label className="text-[11px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Day</label>
                         <div className="relative">
                           <select
                             value={session.day}
@@ -475,13 +475,13 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                             <option value="Saturday" className="dark:bg-[#121317]">Saturday</option>
                             <option value="Sunday" className="dark:bg-[#121317]">Sunday</option>
                           </select>
-                          <ChevronDown className="w-3 h-3 absolute right-2.5 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40 pointer-events-none" />
+                          <ChevronDown className="w-3 h-3 absolute right-2.5 top-1/2 -translate-y-1/2 text-black/60 dark:text-white/60 pointer-events-none" />
                         </div>
                       </div>
                       
                       <div className="flex items-center gap-2">
                         <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                          <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase truncate">Start</label>
+                          <label className="text-[11px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase truncate">Start</label>
                           <input
                             type="time"
                             value={session.startTime}
@@ -489,9 +489,9 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                             className="w-full px-2.5 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
                           />
                         </div>
-                        <span className="text-black/30 dark:text-white/20 mt-5">-</span>
+                        <span className="text-black/60 dark:text-white/20 mt-5">-</span>
                         <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                          <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase truncate">End</label>
+                          <label className="text-[11px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase truncate">End</label>
                           <input
                             type="time"
                             value={session.endTime}
@@ -503,7 +503,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Subject Details</label>
+                      <label className="text-[11px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Subject Details</label>
                       <div className="grid grid-cols-[80px_1fr] sm:grid-cols-[100px_1fr] gap-2">
                         <input
                           type="text"

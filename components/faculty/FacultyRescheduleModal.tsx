@@ -122,7 +122,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
             <span className="text-sm font-bold text-black dark:text-white">
               {subjectName}
             </span>
-            <span className="text-[11px] font-mono text-black/50 dark:text-white/50">
+            <span className="text-[11px] font-mono text-black/60 dark:text-white/60">
               {subjectCode}
             </span>
           </div>
@@ -152,7 +152,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10.5px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
                 New Start Time
               </label>
               <input
@@ -165,7 +165,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10.5px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
                 New End Time
               </label>
               <input
@@ -179,7 +179,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10.5px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
               New Room / Lab (Optional)
             </label>
             <input
@@ -192,7 +192,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10.5px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
               Reason / Message for Students (Optional)
             </label>
             <input

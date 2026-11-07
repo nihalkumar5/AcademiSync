@@ -504,7 +504,7 @@ export const SettingsView: React.FC = () => {
                   className="inline-flex items-center gap-1 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] px-2 py-0.5 shrink-0 h-[22px]"
                 >
                   <Crown className="w-3 h-3" />
-                  <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
+                  <span className="text-[11px] font-bold tracking-[1.2px] uppercase">
                     ADMIN
                   </span>
                 </span>
@@ -513,7 +513,7 @@ export const SettingsView: React.FC = () => {
                   title="Official Faculty Member"
                   className="inline-flex items-center gap-1.5 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] px-2.5 py-0.5 shrink-0 h-[22px]"
                 >
-                  <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
+                  <span className="text-[11px] font-bold tracking-[1.2px] uppercase">
                     FACULTY
                   </span>
                 </span>
@@ -523,7 +523,7 @@ export const SettingsView: React.FC = () => {
                   className="inline-flex items-center gap-1.5 bg-[#F3F2EF] dark:bg-[#222222] text-[#111111] dark:text-[#F4F1EA] px-2 py-0.5 shrink-0 h-[22px] border border-[#D8D8D8] dark:border-[#333333]"
                 >
                   <Crown className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                  <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
+                  <span className="text-[11px] font-bold tracking-[1.2px] uppercase">
                     BATCH PILOT
                   </span>
                 </span>
@@ -536,7 +536,7 @@ export const SettingsView: React.FC = () => {
                     <circle cx="12" cy="12" r="12" fill="#111111" className="dark:fill-white" />
                     <path d="M7.5 12L10.5 15L17 8" stroke="#FFFFFF" className="dark:stroke-black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <span className="text-[9px] font-bold tracking-[1.2px] uppercase">
+                  <span className="text-[11px] font-bold tracking-[1.2px] uppercase">
                     VERIFIED
                   </span>
                 </span>
@@ -551,11 +551,11 @@ export const SettingsView: React.FC = () => {
               ) : college ? (
                 college
               ) : (
-                <span className="text-[#888888]">Set up your academic details below</span>
+                <span className="text-[#6B6B6B]">Set up your academic details below</span>
               )}
             </p>
             
-            <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[1px] text-[#A0A0A0] mt-3 flex-wrap">
+            <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[1px] text-[#6B6B6B] mt-3 flex-wrap">
               {isFaculty ? (
                 <>
                   <span>{facultyTitle}</span>
@@ -618,69 +618,69 @@ export const SettingsView: React.FC = () => {
                 isFaculty ? (
                   <div className="flex flex-col gap-6">
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Full Name &amp; Title</span>
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#A1A1AA]">Full Name &amp; Title</span>
                       <span className="text-[15px] font-[600] text-[#111111] dark:text-[#F4F4F6] leading-snug break-words">
                         {facultyTitle} {name || 'Not specified'}
                       </span>
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">College / University</span>
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#A1A1AA]">College / University</span>
                       <span className="text-[15px] font-[600] text-[#111111] dark:text-[#F4F4F6] leading-snug break-words">{college || 'Not specified'}</span>
                     </div>
                     
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Department</span>
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#A1A1AA]">Department</span>
                       <span className="text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] break-words">
                         {facultyDepartment || 'Not specified'}
                       </span>
                     </div>
                     
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Office / Cabin Room</span>
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#A1A1AA]">Office / Cabin Room</span>
                       <span className="text-[14px] font-mono font-medium text-[#111111] dark:text-[#F4F4F6]">
                         {facultyOfficeRoom || 'Not specified'}
                       </span>
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Employee ID</span>
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#A1A1AA]">Employee ID</span>
                       <span className="text-[14px] font-mono font-medium text-[#111111] dark:text-[#F4F4F6]">
                         {facultyEmployeeId || 'Not specified'}
                       </span>
                     </div>
                     
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Official Email</span>
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#A1A1AA]">Official Email</span>
                       <a href={`mailto:${email}`} className="text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:underline underline-offset-2 break-all">{email || 'Not specified'}</a>
                     </div>
                   </div>
                 ) : (
                   <div className="flex flex-col gap-6">
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Full Name</span>
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#A1A1AA]">Full Name</span>
                       <span className="text-[15px] font-[600] text-[#111111] dark:text-[#F4F4F6] leading-snug break-words">{name || 'Not specified'}</span>
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">College / University</span>
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#A1A1AA]">College / University</span>
                       <span className="text-[15px] font-[600] text-[#111111] dark:text-[#F4F4F6] leading-snug break-words">{college || 'Not specified'}</span>
                     </div>
                     
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Programme &amp; Branch</span>
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#A1A1AA]">Programme &amp; Branch</span>
                       <span className="text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] break-words">
                         {programme} {branch ? `· ${branch}` : ''} {profile.section ? `· Sec ${profile.section}` : ''} {semester ? `(Sem ${semester})` : ''}
                       </span>
                     </div>
                     
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Roll Number</span>
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#A1A1AA]">Roll Number</span>
                       <span className="text-[14px] font-mono font-medium text-[#111111] dark:text-[#F4F4F6] break-all">{rollNumber || 'Not specified'}</span>
                     </div>
                     
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#64748B]">Institute Email</span>
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#A1A1AA]">Institute Email</span>
                       <a href={`mailto:${email}`} className="text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:underline underline-offset-2 break-all">{email || 'Not specified'}</a>
                     </div>
                   </div>
@@ -692,7 +692,7 @@ export const SettingsView: React.FC = () => {
                 }} className="flex flex-col gap-5">
                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                     <div className="flex flex-col gap-1.5 sm:col-span-1">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Title</label>
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Title</label>
                       <select
                         value={facultyTitle}
                         onChange={(e) => setFacultyTitle(e.target.value)}
@@ -705,7 +705,7 @@ export const SettingsView: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col gap-1.5 sm:col-span-3">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Full Name</label>
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Full Name</label>
                       <input
                         type="text"
                         value={name}
@@ -718,7 +718,7 @@ export const SettingsView: React.FC = () => {
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">College / University</label>
+                    <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">College / University</label>
                     <input
                       type="text"
                       value={college}
@@ -731,7 +731,7 @@ export const SettingsView: React.FC = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Department</label>
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Department</label>
                       <input
                         type="text"
                         value={facultyDepartment}
@@ -742,7 +742,7 @@ export const SettingsView: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Cabin / Office Room</label>
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Cabin / Office Room</label>
                       <input
                         type="text"
                         value={facultyOfficeRoom}
@@ -755,7 +755,7 @@ export const SettingsView: React.FC = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Employee ID</label>
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Employee ID</label>
                       <input
                         type="text"
                         value={facultyEmployeeId}
@@ -766,7 +766,7 @@ export const SettingsView: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Official Email</label>
+                      <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Official Email</label>
                       <input
                         type="email"
                         value={email}
@@ -806,16 +806,16 @@ export const SettingsView: React.FC = () => {
                             </span>
                           </div>
                         </div>
-                        <span className="text-[9.5px] font-mono font-bold uppercase bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 px-2 py-0.5">
+                        <span className="text-[11px] font-mono font-bold uppercase bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 px-2 py-0.5">
                           Locked
                         </span>
                       </div>
 
                       {/* Full Name */}
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Full Name</label>
+                        <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Full Name</label>
                         <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
-                          <User className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                          <User className="w-4 h-4 text-[#6B6B6B] shrink-0" />
                           <input
                             type="text"
                             value={name}
@@ -830,9 +830,9 @@ export const SettingsView: React.FC = () => {
                       {/* Roll Number & Email */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Roll Number</label>
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Roll Number</label>
                           <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
-                            <Hash className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
+                            <Hash className="w-4 h-4 text-[#6B6B6B] dark:text-[#A1A1AA] shrink-0" />
                             <input
                               type="text"
                               value={rollNumber}
@@ -844,9 +844,9 @@ export const SettingsView: React.FC = () => {
                           </div>
                         </div>
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Institute Email</label>
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Institute Email</label>
                           <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
-                            <Mail className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
+                            <Mail className="w-4 h-4 text-[#6B6B6B] dark:text-[#A1A1AA] shrink-0" />
                             <input
                               type="email"
                               value={email}
@@ -861,7 +861,7 @@ export const SettingsView: React.FC = () => {
 
                       {/* Section (Optional) */}
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Section (Optional)</label>
+                        <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Section (Optional)</label>
                         <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[44px]">
                           <input
                             type="text"
@@ -877,9 +877,9 @@ export const SettingsView: React.FC = () => {
                     <>
                       {/* Full Name */}
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Full Name</label>
+                        <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Full Name</label>
                         <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
-                          <User className="w-4 h-4 text-[#A0A0A0] shrink-0" />
+                          <User className="w-4 h-4 text-[#6B6B6B] shrink-0" />
                           <input
                             type="text"
                             value={name}
@@ -893,7 +893,7 @@ export const SettingsView: React.FC = () => {
 
                       {/* College Name (Strict Verification) */}
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">College / University</label>
+                        <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">College / University</label>
                         <div className="relative w-full">
                           {college && !isChangingCollege ? (
                             <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
@@ -915,7 +915,7 @@ export const SettingsView: React.FC = () => {
                           ) : (
                             <div className="relative">
                               <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#111111] dark:border-white/30">
-                                <Building2 className="w-4 h-4 text-[#888888] shrink-0" />
+                                <Building2 className="w-4 h-4 text-[#6B6B6B] shrink-0" />
                                 <input
                                   type="text"
                                   value={collegeSearchInput}
@@ -940,9 +940,9 @@ export const SettingsView: React.FC = () => {
                               </div>
                               {showCollegeDropdown && (
                                 <div className="absolute top-full left-0 w-full mt-1.5 max-h-60 overflow-y-auto bg-white dark:bg-[#121317] border border-slate-200 dark:border-white/[0.1] shadow-2xl rounded-none z-50 divide-y divide-slate-100 dark:divide-white/[0.06]">
-                                  <div className="p-2 bg-slate-50 dark:bg-zinc-900/80 text-[10.5px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between sticky top-0 backdrop-blur-sm">
+                                  <div className="p-2 bg-slate-50 dark:bg-zinc-900/80 text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between sticky top-0 backdrop-blur-sm">
                                     <span>{isLoadingColleges ? 'Searching verified directory...' : 'Select Your University'}</span>
-                                    <span className="text-[9px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold">SheerID Verified</span>
+                                    <span className="text-[11px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold">SheerID Verified</span>
                                   </div>
 
                                   {suggestedColleges.length > 0 ? (
@@ -980,7 +980,7 @@ export const SettingsView: React.FC = () => {
                             </div>
                           )}
                         </div>
-                        <p className="text-[11px] text-[#A0A0A0] font-medium mt-0.5">
+                        <p className="text-[11px] text-[#6B6B6B] font-medium mt-0.5">
                           Select your official university from the verified directory to ensure seamless batch syncing.
                         </p>
                       </div>
@@ -988,9 +988,9 @@ export const SettingsView: React.FC = () => {
                       {/* Roll Number & Email */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Roll Number</label>
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Roll Number</label>
                           <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
-                            <Hash className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
+                            <Hash className="w-4 h-4 text-[#6B6B6B] dark:text-[#A1A1AA] shrink-0" />
                             <input
                               type="text"
                               value={rollNumber}
@@ -1001,9 +1001,9 @@ export const SettingsView: React.FC = () => {
                           </div>
                         </div>
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Institute Email</label>
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Institute Email</label>
                           <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
-                            <Mail className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
+                            <Mail className="w-4 h-4 text-[#6B6B6B] dark:text-[#A1A1AA] shrink-0" />
                             <input
                               type="email"
                               value={email}
@@ -1018,10 +1018,10 @@ export const SettingsView: React.FC = () => {
                       {/* Programme & Branch */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Degree / Programme</label>
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Degree / Programme</label>
                           <div className="relative w-full">
                             <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
-                              <GraduationCap className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
+                              <GraduationCap className="w-4 h-4 text-[#6B6B6B] dark:text-[#A1A1AA] shrink-0" />
                               <input
                                 type="text"
                                 value={programme}
@@ -1069,10 +1069,10 @@ export const SettingsView: React.FC = () => {
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Major / Branch</label>
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Major / Branch</label>
                           <div className="relative w-full">
                             <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1]">
-                              <Building2 className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
+                              <Building2 className="w-4 h-4 text-[#6B6B6B] dark:text-[#A1A1AA] shrink-0" />
                               <input
                                 type="text"
                                 value={branch}
@@ -1123,9 +1123,9 @@ export const SettingsView: React.FC = () => {
                       {/* Year, Semester, Section */}
                       <div className="grid grid-cols-3 gap-3 items-start">
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8] h-4 flex items-center">Year</label>
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8] h-4 flex items-center">Year</label>
                           <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[44px]">
-                            <CalendarDays className="w-4 h-4 text-[#A0A0A0] dark:text-[#64748B] shrink-0" />
+                            <CalendarDays className="w-4 h-4 text-[#6B6B6B] dark:text-[#A1A1AA] shrink-0" />
                             <input
                               type="number"
                               min="1"
@@ -1138,7 +1138,7 @@ export const SettingsView: React.FC = () => {
                           </div>
                         </div>
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8] h-4 flex items-center">Semester</label>
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8] h-4 flex items-center">Semester</label>
                           <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[44px]">
                             <input
                               type="number"
@@ -1153,7 +1153,7 @@ export const SettingsView: React.FC = () => {
                           </div>
                         </div>
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8] h-4 flex items-center">Section</label>
+                          <label className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8] h-4 flex items-center">Section</label>
                           <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[44px]">
                             <input
                               type="text"
@@ -1211,7 +1211,7 @@ export const SettingsView: React.FC = () => {
                   {isBatchPilotUser && (
                     <span 
                       title="Batch Pilot"
-                      className="text-[10px] font-bold tracking-widest text-[#111111] dark:text-emerald-400 border border-[#111111] dark:border-emerald-500/30 dark:bg-emerald-500/10 px-1.5 py-0.5 uppercase"
+                      className="text-[11px] font-bold tracking-widest text-[#111111] dark:text-emerald-400 border border-[#111111] dark:border-emerald-500/30 dark:bg-emerald-500/10 px-1.5 py-0.5 uppercase"
                     >
                       BP
                     </span>
@@ -1222,7 +1222,7 @@ export const SettingsView: React.FC = () => {
                 {isBatchCR && currentBatchData?.inviteCode && (
                   <div className="flex items-center justify-between p-3.5 bg-white dark:bg-[#0B0C0E] border border-[#E5E5E5] dark:border-white/[0.08]">
                     <div className="flex items-center gap-2.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#94A3B8]">BATCH CODE:</span>
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B6B6B] dark:text-[#94A3B8]">BATCH CODE:</span>
                       <span className="text-[14px] font-mono font-bold tracking-[2px] text-[#111111] dark:text-[#F4F4F6] select-all">
                         {currentBatchData.inviteCode}
                       </span>
@@ -1233,7 +1233,7 @@ export const SettingsView: React.FC = () => {
                         navigator.clipboard.writeText(currentBatchData.inviteCode);
                         showToast('Code Copied', `Batch code ${currentBatchData.inviteCode} copied to clipboard.`, 'success');
                       }}
-                      className="px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-wider bg-[#111111] dark:bg-white text-white dark:text-[#090A0C] hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                      className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider bg-[#111111] dark:bg-white text-white dark:text-[#090A0C] hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                     >
                       Copy Code
                     </button>
@@ -1363,17 +1363,17 @@ ${PLAY_STORE_URL}
               <div className="flex flex-col gap-3 py-5 border-b border-[#D8D8D8] dark:border-white/[0.08]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 border border-[#D8D8D8] dark:border-white/[0.08] flex items-center justify-center overflow-hidden bg-[#F4F4F4] dark:bg-[#161820] font-bold text-[13px] text-[#888888]">
+                    <div className="w-10 h-10 border border-[#D8D8D8] dark:border-white/[0.08] flex items-center justify-center overflow-hidden bg-[#F4F4F4] dark:bg-[#161820] font-bold text-[13px] text-[#6B6B6B]">
                       G
                     </div>
                     <div className="flex flex-col gap-0.5">
                       <span className="text-[14px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-none">Guest User</span>
-                      <span className="text-[12px] text-[#888888] dark:text-[#94A3B8]">Local mode · Not connected</span>
+                      <span className="text-[12px] text-[#6B6B6B] dark:text-[#94A3B8]">Local mode · Not connected</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-amber-400" />
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-[#888888] dark:text-[#94A3B8] hidden sm:inline-block">Local Only</span>
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-[#6B6B6B] dark:text-[#94A3B8] hidden sm:inline-block">Local Only</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mt-1">
@@ -1578,7 +1578,7 @@ ${PLAY_STORE_URL}
                   setIsHolding(false);
                   setShowResetModal(false);
                 }}
-                className="absolute top-5 right-5 p-1 text-[#A0A0A0] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer"
+                className="absolute top-5 right-5 p-1 text-[#6B6B6B] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1752,7 +1752,7 @@ ${PLAY_STORE_URL}
         <div className="p-5 flex flex-col gap-5">
           {activeSetting === 'classReminder' && (
             <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Remind me before class</span>
+              <span className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Remind me before class</span>
               <div className="grid grid-cols-2 gap-2">
                 {[5, 10, 15, 30].map(mins => (
                   <button
@@ -1779,7 +1779,7 @@ ${PLAY_STORE_URL}
 
           {activeSetting === 'eveningCheck' && (
             <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Daily evening check time</span>
+              <span className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Daily evening check time</span>
               <div className="flex flex-col gap-2">
                 <input
                   type="time"
@@ -1805,7 +1805,7 @@ ${PLAY_STORE_URL}
 
           {activeSetting === 'hwWarning' && (
             <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-bold tracking-widest uppercase text-[#A0A0A0] dark:text-[#94A3B8]">Days before deadline</span>
+              <span className="text-[11px] font-bold tracking-widest uppercase text-[#6B6B6B] dark:text-[#94A3B8]">Days before deadline</span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[1, 2, 3, 5].map(days => (
                   <button
@@ -1978,11 +1978,11 @@ ${PLAY_STORE_URL}
                   <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">
                     {isBatchCR ? 'Manage batch members' : 'View batch members'}
                   </span>
-                  <span className="text-[11.5px] text-[#6F6F6F] dark:text-[#94A3B8]">
+                  <span className="text-[12px] text-[#6F6F6F] dark:text-[#94A3B8]">
                     See students and pilots in your branch
                   </span>
                 </div>
-                <Users className="w-4 h-4 text-[#888888] dark:text-[#71717A]" />
+                <Users className="w-4 h-4 text-[#6B6B6B] dark:text-[#A1A1AA]" />
               </button>
               
               <button 
@@ -2007,11 +2007,11 @@ ${PLAY_STORE_URL}
                   <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">
                     Copy batch code
                   </span>
-                  <span className="text-[11.5px] text-[#6F6F6F] dark:text-[#94A3B8]">
+                  <span className="text-[12px] text-[#6F6F6F] dark:text-[#94A3B8]">
                     Copy invite code to share with classmates
                   </span>
                 </div>
-                <Share2 className="w-4 h-4 text-[#888888] dark:text-[#71717A]" />
+                <Share2 className="w-4 h-4 text-[#6B6B6B] dark:text-[#A1A1AA]" />
               </button>
 
               {isBatchCR && (
@@ -2027,11 +2027,11 @@ ${PLAY_STORE_URL}
                       <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">
                         Regenerate batch code
                       </span>
-                      <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-500/20 px-1.5 py-0.5 border border-amber-500/30">
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-500/20 px-1.5 py-0.5 border border-amber-500/30">
                         Pilot Only
                       </span>
                     </div>
-                    <span className="text-[11.5px] text-[#6F6F6F] dark:text-[#94A3B8]">
+                    <span className="text-[12px] text-[#6F6F6F] dark:text-[#94A3B8]">
                       Create a new 6-character code; previous code expires
                     </span>
                   </div>
@@ -2047,7 +2047,7 @@ ${PLAY_STORE_URL}
                   <span className="text-[14px] font-bold text-red-600">
                     Leave batch
                   </span>
-                  <span className="text-[11.5px] text-red-600/70">
+                  <span className="text-[12px] text-red-600/70">
                     Disconnect and revert to personal schedule
                   </span>
                 </div>
@@ -2119,12 +2119,12 @@ ${PLAY_STORE_URL}
         <div className="flex flex-col gap-4 p-1 text-left font-sans">
           <div className="p-3.5 bg-black/[0.02] dark:bg-white/[0.03] border border-[#E5E5E5] dark:border-white/[0.08] flex items-center justify-between">
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#888888] dark:text-[#94A3B8]">CURRENT CODE</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B6B6B] dark:text-[#94A3B8]">CURRENT CODE</span>
               <span className="text-[16px] font-mono font-bold tracking-[2.5px] text-[#111111] dark:text-[#FFFFFF]">
                 {currentBatchData?.inviteCode || '------'}
               </span>
             </div>
-            <div className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider">
+            <div className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-[11px] font-mono font-bold uppercase tracking-wider">
               Will Expire
             </div>
           </div>

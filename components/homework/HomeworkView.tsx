@@ -295,7 +295,7 @@ export const HomeworkView: React.FC = () => {
             )}
             <span>{classroomConnected ? 'Classroom Synced' : 'Classroom Sync'}</span>
             {isPilot && (
-              <span className="text-[9.5px] font-bold font-mono px-1.5 py-0.2 rounded-none bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30 uppercase">
+              <span className="text-[11px] font-bold font-mono px-1.5 py-0.2 rounded-none bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30 uppercase">
                 PILOT
               </span>
             )}
@@ -323,7 +323,7 @@ export const HomeworkView: React.FC = () => {
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
               </span>
               <div className="min-w-0 flex-1">
-                <p className="font-bold text-[#111111] dark:text-[#FFFFFF] text-[12.5px] leading-tight truncate">
+                <p className="font-bold text-[#111111] dark:text-[#FFFFFF] text-[13px] leading-tight truncate">
                   📢 {pilotPendingCount} New Assignment{pilotPendingCount > 1 ? 's' : ''} Detected!
                 </p>
                 <p className="text-[#6B6B6B] dark:text-[#94A3B8] text-[11px] mt-0.5 truncate">
@@ -364,7 +364,7 @@ export const HomeworkView: React.FC = () => {
           <div className="flex items-center gap-2.5">
             <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <div>
-              <p className="text-[12.5px] font-semibold text-[#111111] dark:text-[#FFFFFF] leading-tight">
+              <p className="text-[13px] font-semibold text-[#111111] dark:text-[#FFFFFF] leading-tight">
                 Hey! Did you complete <span className="font-bold underline">"{dueTodayTask.title}"</span>?
               </p>
               <p className="text-[11px] text-[#6B6B6B] dark:text-[#94A3B8] mt-0.5">

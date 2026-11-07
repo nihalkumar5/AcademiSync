@@ -8,6 +8,7 @@ import { AddEditClassModal } from '../timetable/AddEditClassModal';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import {
   BookOpen,
   Plus,
@@ -32,6 +33,7 @@ import { clsx } from 'clsx';
 
 export const SubjectListView: React.FC = () => {
   const { subjects, deleteSubject, profile, timetable, showToast, isBatchCR, currentBatchData, toggleElectiveEnrollment } = useApp();
+  const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
 
   const [showModal, setShowModal] = useState(false);
   const [editSubject, setEditSubject] = useState<Subject | null>(null);
@@ -116,7 +118,7 @@ export const SubjectListView: React.FC = () => {
       {/* Quick Summary Stat Chips */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-3 bg-white dark:bg-[#16171D] border border-[#E5E5E0] dark:border-white/[0.08] rounded-[3px] flex flex-col">
-          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#737373] dark:text-[#94A3B8]">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#737373] dark:text-[#94A3B8]">
             Enrolled Courses
           </span>
           <span className="text-xl font-bold text-[#151515] dark:text-[#F4F4F6] mt-0.5">
@@ -125,7 +127,7 @@ export const SubjectListView: React.FC = () => {
         </div>
 
         <div className="p-3 bg-white dark:bg-[#16171D] border border-[#E5E5E0] dark:border-white/[0.08] rounded-[3px] flex flex-col">
-          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#737373] dark:text-[#94A3B8]">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#737373] dark:text-[#94A3B8]">
             Total Credits
           </span>
           <span className="text-xl font-bold text-[#334CC4] dark:text-[#8AA4FF] mt-0.5">
@@ -134,7 +136,7 @@ export const SubjectListView: React.FC = () => {
         </div>
 
         <div className="p-3 bg-white dark:bg-[#16171D] border border-[#E5E5E0] dark:border-white/[0.08] rounded-[3px] flex flex-col">
-          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#737373] dark:text-[#94A3B8]">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#737373] dark:text-[#94A3B8]">
             Practical Labs
           </span>
           <span className="text-xl font-bold text-[#18A889] dark:text-[#2DD4BF] mt-0.5">
@@ -143,7 +145,7 @@ export const SubjectListView: React.FC = () => {
         </div>
 
         <div className="p-3 bg-white dark:bg-[#16171D] border border-[#E5E5E0] dark:border-white/[0.08] rounded-[3px] flex flex-col">
-          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#737373] dark:text-[#94A3B8]">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#737373] dark:text-[#94A3B8]">
             Weekly Timetable Slots
           </span>
           <span className="text-xl font-bold text-[#8067B5] dark:text-[#C084FC] mt-0.5">
@@ -180,7 +182,7 @@ export const SubjectListView: React.FC = () => {
                   }`}
                 >
                   <div className="flex flex-col min-w-0">
-                    <span className="text-[10px] font-mono font-bold uppercase text-[#8067B5] dark:text-[#C084FC]">
+                    <span className="text-[11px] font-mono font-bold uppercase text-[#8067B5] dark:text-[#C084FC]">
                       {elec.code && elec.code !== 'UNK' ? elec.code : 'ELECTIVE'}
                     </span>
                     <span className="text-xs font-bold truncate text-[#151515] dark:text-[#F4F4F6]">
@@ -193,7 +195,7 @@ export const SubjectListView: React.FC = () => {
                       e.stopPropagation();
                       toggleElectiveEnrollment(elec.id);
                     }}
-                    className={`px-2.5 py-1 text-[10.5px] font-bold uppercase rounded-[2px] transition-colors shrink-0 cursor-pointer ${
+                    className={`px-2.5 py-1 text-[11px] font-bold uppercase rounded-[2px] transition-colors shrink-0 cursor-pointer ${
                       isEnrolled
                         ? 'bg-[#8067B5] text-white'
                         : 'bg-black/10 dark:bg-white/10 text-black dark:text-white hover:bg-[#8067B5] hover:text-white'
@@ -212,7 +214,7 @@ export const SubjectListView: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
         {/* Search Input */}
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-[#8A8A88] dark:text-[#71717A] absolute left-3 top-1/2 -translate-y-1/2 shrink-0" strokeWidth={1.5} />
+          <Search className="w-4 h-4 text-[#8A8A88] dark:text-[#A1A1AA] absolute left-3 top-1/2 -translate-y-1/2 shrink-0" strokeWidth={1.5} />
           <input
             type="text"
             placeholder="Search by course name, code, faculty, or room..."
@@ -228,7 +230,7 @@ export const SubjectListView: React.FC = () => {
             type="button"
             onClick={() => setFilterType('all')}
             className={clsx(
-              "px-3 py-1.5 text-[11.5px] font-semibold rounded-[3px] transition-all cursor-pointer border",
+              "px-3 py-1.5 text-[12px] font-semibold rounded-[3px] transition-all cursor-pointer border",
               filterType === 'all'
                 ? "bg-[#111111] text-white border-[#111111]"
                 : "bg-white dark:bg-[#16171D] border-[#E5E5E0] dark:border-white/[0.08] text-[#737373] dark:text-[#94A3B8] hover:bg-neutral-100"
@@ -240,7 +242,7 @@ export const SubjectListView: React.FC = () => {
             type="button"
             onClick={() => setFilterType('lab')}
             className={clsx(
-              "px-3 py-1.5 text-[11.5px] font-semibold rounded-[3px] transition-all cursor-pointer border",
+              "px-3 py-1.5 text-[12px] font-semibold rounded-[3px] transition-all cursor-pointer border",
               filterType === 'lab'
                 ? "bg-[#111111] text-white border-[#111111]"
                 : "bg-white dark:bg-[#16171D] border-[#E5E5E0] dark:border-white/[0.08] text-[#737373] dark:text-[#94A3B8] hover:bg-neutral-100"
@@ -252,7 +254,7 @@ export const SubjectListView: React.FC = () => {
             type="button"
             onClick={() => setFilterType('theory')}
             className={clsx(
-              "px-3 py-1.5 text-[11.5px] font-semibold rounded-[3px] transition-all cursor-pointer border",
+              "px-3 py-1.5 text-[12px] font-semibold rounded-[3px] transition-all cursor-pointer border",
               filterType === 'theory'
                 ? "bg-[#111111] text-white border-[#111111]"
                 : "bg-white dark:bg-[#16171D] border-[#E5E5E0] dark:border-white/[0.08] text-[#737373] dark:text-[#94A3B8] hover:bg-neutral-100"
@@ -264,7 +266,7 @@ export const SubjectListView: React.FC = () => {
             type="button"
             onClick={() => setFilterType('carry')}
             className={clsx(
-              "px-3 py-1.5 text-[11.5px] font-semibold rounded-[3px] transition-all cursor-pointer border",
+              "px-3 py-1.5 text-[12px] font-semibold rounded-[3px] transition-all cursor-pointer border",
               filterType === 'carry'
                 ? "bg-[#111111] text-white border-[#111111]"
                 : "bg-white dark:bg-[#16171D] border-[#E5E5E0] dark:border-white/[0.08] text-[#737373] dark:text-[#94A3B8] hover:bg-neutral-100"
@@ -277,7 +279,7 @@ export const SubjectListView: React.FC = () => {
               type="button"
               onClick={() => setFilterType('electives')}
               className={clsx(
-                "px-3 py-1.5 text-[11.5px] font-semibold rounded-[3px] transition-all cursor-pointer border",
+                "px-3 py-1.5 text-[12px] font-semibold rounded-[3px] transition-all cursor-pointer border",
                 filterType === 'electives'
                   ? "bg-[#8067B5] text-white border-[#8067B5]"
                   : "bg-white dark:bg-[#16171D] border-[#8067B5]/40 text-[#8067B5] dark:text-[#C084FC] hover:bg-[#8067B5]/10"
@@ -303,7 +305,7 @@ export const SubjectListView: React.FC = () => {
         />
       ) : filteredSubjects.length === 0 ? (
         <div className="py-12 px-4 border border-dashed border-[#E5E5E0] dark:border-white/[0.08] text-center flex flex-col items-center justify-center gap-2">
-          <BookOpen className="w-6 h-6 text-[#8A8A88] dark:text-[#71717A] opacity-60" />
+          <BookOpen className="w-6 h-6 text-[#8A8A88] dark:text-[#A1A1AA] opacity-60" />
           <p className="text-sm font-semibold text-[#151515] dark:text-[#F4F4F6]">No matching courses found</p>
           <p className="text-xs text-[#737373] dark:text-[#94A3B8]">Try adjusting your search query or active filter.</p>
           <button
@@ -386,16 +388,16 @@ export const SubjectListView: React.FC = () => {
                         )}
                       </span>
 
-                      <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-[2px] bg-white/80 dark:bg-black/40 border border-black/[0.06] dark:border-white/[0.08] text-[#151515] dark:text-[#E2E8F0]">
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-[2px] bg-white/80 dark:bg-black/40 border border-black/[0.06] dark:border-white/[0.08] text-[#151515] dark:text-[#E2E8F0]">
                         {sub.credits} Credits
                       </span>
                       {sub.isLab && (
-                        <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 uppercase rounded-[2px] bg-[#D2F1E8] text-[#18A889]">
+                        <span className="text-[11px] font-bold tracking-wider px-2 py-0.5 uppercase rounded-[2px] bg-[#D2F1E8] text-[#18A889]">
                           LAB
                         </span>
                       )}
                       {sub.isElective && (
-                        <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 uppercase rounded-[2px] bg-[#8067B5]/20 border border-[#8067B5]/40 text-[#8067B5] dark:text-[#C084FC]">
+                        <span className="text-[11px] font-bold tracking-wider px-2 py-0.5 uppercase rounded-[2px] bg-[#8067B5]/20 border border-[#8067B5]/40 text-[#8067B5] dark:text-[#C084FC]">
                           ★ Elective
                         </span>
                       )}
@@ -406,7 +408,7 @@ export const SubjectListView: React.FC = () => {
                             e.stopPropagation();
                             toggleElectiveEnrollment(sub.id);
                           }}
-                          className={`text-[9.5px] font-bold tracking-wider px-2 py-0.5 uppercase rounded-[2px] transition-colors cursor-pointer ${
+                          className={`text-[11px] font-bold tracking-wider px-2 py-0.5 uppercase rounded-[2px] transition-colors cursor-pointer ${
                             (profile.enrolledElectiveIds === undefined || profile.enrolledElectiveIds.includes(sub.id))
                               ? 'bg-[#8067B5] text-white'
                               : 'bg-black/10 dark:bg-white/10 text-[#737373] dark:text-[#94A3B8] hover:bg-[#8067B5] hover:text-white'
@@ -416,7 +418,7 @@ export const SubjectListView: React.FC = () => {
                         </button>
                       )}
                       {isReadOnlyOfficial && (
-                        <span className="text-[9.5px] font-semibold tracking-wide px-1.5 py-0.5 rounded-[2px] bg-black/5 dark:bg-white/10 text-[#737373] dark:text-[#94A3B8]">
+                        <span className="text-[11px] font-semibold tracking-wide px-1.5 py-0.5 rounded-[2px] bg-black/5 dark:bg-white/10 text-[#737373] dark:text-[#94A3B8]">
                           Official Course
                         </span>
                       )}
@@ -431,7 +433,7 @@ export const SubjectListView: React.FC = () => {
                           setShowModal(true);
                         }}
                         className="p-1.5 text-[#737373] hover:text-[#151515] dark:hover:text-white rounded hover:bg-black/5 dark:hover:bg-white/[0.06] cursor-pointer transition-colors"
-                        title={isReadOnlyOfficial ? "Customize Color Theme" : "Edit Subject"}
+                        title={isReadOnlyOfficial ? "Customize Color Theme" : "Edit Subject"} aria-label={isReadOnlyOfficial ? "Customize Color Theme" : "Edit Subject"}
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
@@ -440,12 +442,11 @@ export const SubjectListView: React.FC = () => {
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (window.confirm(`Delete "${sub.name}"? This will also remove all its class slots from your timetable.`)) {
-                              deleteSubject(sub.id);
-                            }
+                            setSubjectToDelete(sub);
                           }}
                           className="p-1.5 text-[#737373] hover:text-[#C94B5C] rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors"
                           title="Delete Subject"
+                          aria-label={`Delete ${sub.name}`}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -481,7 +482,7 @@ export const SubjectListView: React.FC = () => {
                           <a
                             href={`mailto:${sub.facultyEmail}?subject=${encodeURIComponent(`[${sub.code || sub.name}] Inquiry`)}`}
                             onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10.5px] font-medium rounded-[2px] bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-[#151515] dark:text-white transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[11px] font-medium rounded-[2px] bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-[#151515] dark:text-white transition-colors cursor-pointer"
                             title="Send Email"
                           >
                             <Mail className="w-3 h-3 text-[#334CC4] dark:text-[#8AA4FF]" />
@@ -495,7 +496,7 @@ export const SubjectListView: React.FC = () => {
                               handleCopyEmail(sub.facultyEmail!);
                             }}
                             className="p-1 text-[#737373] hover:text-[#151515] dark:hover:text-white rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                            title="Copy Email"
+                            title="Copy Email" aria-label="Copy Email"
                           >
                             {copiedEmail === sub.facultyEmail ? (
                               <Check className="w-3 h-3 text-emerald-600" />
@@ -523,7 +524,7 @@ export const SubjectListView: React.FC = () => {
                         <Clock className="w-3.5 h-3.5 text-[#334CC4] dark:text-[#8AA4FF]" />
                         <span>Weekly Slots:</span>
                       </span>
-                      <span className="font-mono text-[10px]">
+                      <span className="font-mono text-[11px]">
                         {scheduledSessions.length} {scheduledSessions.length === 1 ? 'class' : 'classes'} / week
                       </span>
                     </div>
@@ -533,7 +534,7 @@ export const SubjectListView: React.FC = () => {
                         {scheduledSessions.map((sess) => (
                           <span
                             key={sess.id}
-                            className="inline-flex items-center gap-1 text-[10.5px] font-mono px-2 py-0.5 rounded-[2px] bg-white/80 dark:bg-black/30 border border-black/[0.06] dark:border-white/[0.08] text-[#151515] dark:text-[#CBD5E1]"
+                            className="inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-[2px] bg-white/80 dark:bg-black/30 border border-black/[0.06] dark:border-white/[0.08] text-[#151515] dark:text-[#CBD5E1]"
                           >
                             <span className="font-bold text-[#111111] dark:text-white">{sess.day.slice(0, 3)}</span>
                             <span>{sess.startTime}</span>
@@ -593,7 +594,7 @@ export const SubjectListView: React.FC = () => {
                         {sub.carryRequirements.map((item, idx) => (
                           <span
                             key={idx}
-                            className="text-[10.5px] px-2 py-0.5 rounded-[2px] bg-white/80 dark:bg-white/[0.06] border border-black/[0.04] dark:border-white/[0.08] text-[#151515] dark:text-[#CBD5E1] font-medium"
+                            className="text-[11px] px-2 py-0.5 rounded-[2px] bg-white/80 dark:bg-white/[0.06] border border-black/[0.04] dark:border-white/[0.08] text-[#151515] dark:text-[#CBD5E1] font-medium"
                           >
                             {item}
                           </span>
@@ -627,6 +628,19 @@ export const SubjectListView: React.FC = () => {
           setPreselectedClassSession(null);
         }}
         sessionToEdit={preselectedClassSession}
+      />
+      <ConfirmModal
+        isOpen={!!subjectToDelete}
+        onClose={() => setSubjectToDelete(null)}
+        onConfirm={() => {
+          if (subjectToDelete) deleteSubject(subjectToDelete.id);
+          setSubjectToDelete(null);
+        }}
+        title="Delete subject?"
+        description="All of its class slots will also be removed from your timetable."
+        highlightText={subjectToDelete?.name}
+        confirmLabel="Delete"
+        variant="danger"
       />
     </div>
   );

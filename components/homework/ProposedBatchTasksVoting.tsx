@@ -35,7 +35,7 @@ export const ProposedBatchTasksVoting: React.FC = () => {
           <div>
             <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-black dark:text-[#F4F4F6] flex items-center gap-2">
               <span>Batch Assignment Proposals</span>
-              <span className="px-2 py-0.5 rounded-none bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[10px] font-mono font-bold uppercase">
+              <span className="px-2 py-0.5 rounded-none bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[11px] font-mono font-bold uppercase">
                 {activeProposals.length} VOTING ACTIVE
               </span>
             </h3>
@@ -87,8 +87,8 @@ export const ProposedBatchTasksVoting: React.FC = () => {
                           e.stopPropagation();
                           deleteBatchProposal(proposal.id);
                         }}
-                        title="Delete Proposal"
-                        className="p-1 text-black/40 hover:text-rose-600 dark:text-white/40 dark:hover:text-rose-400 transition-colors ml-1 cursor-pointer"
+                        title="Delete Proposal" aria-label="Delete Proposal"
+                        className="p-1 text-black/60 hover:text-rose-600 dark:text-white/60 dark:hover:text-rose-400 transition-colors ml-1 cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -106,7 +106,7 @@ export const ProposedBatchTasksVoting: React.FC = () => {
                   )}
 
                   {/* Creator Info */}
-                  <div className="mt-2 text-[11px] text-black/50 dark:text-[#64748B]">
+                  <div className="mt-2 text-[11px] text-black/60 dark:text-[#A1A1AA]">
                     Proposed by: <span className="font-semibold text-black/70 dark:text-[#94A3B8]">{proposal.creatorName}</span>
                   </div>
                 </div>
@@ -115,7 +115,7 @@ export const ProposedBatchTasksVoting: React.FC = () => {
                 <div className="pt-3 border-t border-black/10 dark:border-white/[0.06] flex flex-col gap-2.5">
                   {/* Progress Bar */}
                   <div className="flex flex-col gap-1">
-                    <div className="flex items-center justify-between text-[10px] font-mono text-black/70 dark:text-[#94A3B8]">
+                    <div className="flex items-center justify-between text-[11px] font-mono text-black/70 dark:text-[#94A3B8]">
                       <span>Consensus: {proposal.approvalsCount} / {neededVotes} Approvals Needed</span>
                       <span className="font-bold text-black dark:text-[#F4F4F6]">{progressPercent}%</span>
                     </div>
@@ -142,7 +142,7 @@ export const ProposedBatchTasksVoting: React.FC = () => {
                             You Rejected
                           </span>
                         )}
-                        <span className="text-[11px] text-black/40 dark:text-[#64748B] font-normal">
+                        <span className="text-[11px] text-black/60 dark:text-[#A1A1AA] font-normal">
                           (Waiting for batch votes)
                         </span>
                       </div>

@@ -179,7 +179,7 @@ export const AddEditExamModal: React.FC<AddEditExamModalProps> = ({
                   type="button"
                   key={sub.id}
                   onClick={() => setSubjectName(sub.name + (sub.code ? ` (${sub.code})` : ''))}
-                  className="px-2 py-0.5 text-[11.5px] border border-[#E5E5E5] dark:border-white/[0.08] hover:border-[#111111] dark:hover:border-white/40 bg-[#F7F7F5] dark:bg-white/[0.03] text-[#111111] dark:text-[#F4F4F6] transition-colors rounded-none cursor-pointer"
+                  className="px-2 py-0.5 text-[12px] border border-[#E5E5E5] dark:border-white/[0.08] hover:border-[#111111] dark:hover:border-white/40 bg-[#F7F7F5] dark:bg-white/[0.03] text-[#111111] dark:text-[#F4F4F6] transition-colors rounded-none cursor-pointer"
                 >
                   {sub.code || sub.shortName || sub.name}
                 </button>

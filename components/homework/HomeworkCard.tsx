@@ -200,17 +200,17 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
           {/* Clean Action Toolbar */}
           <div className="flex items-center gap-1.5 self-start">
             {!isDone && homework.priority === 'High' && (
-              <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8] text-[#C96B45] text-[9.5px] font-bold uppercase tracking-wider">
+              <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8] text-[#C96B45] text-[11px] font-bold uppercase tracking-wider">
                 HIGH
               </span>
             )}
             {!isDone && homework.priority === 'Medium' && (
-              <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8]/70 text-[#C96B45]/90 text-[9.5px] font-bold uppercase tracking-wider">
+              <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8]/70 text-[#C96B45]/90 text-[11px] font-bold uppercase tracking-wider">
                 MED
               </span>
             )}
             {homework.source === 'google_classroom' && (
-              <span className="px-2 py-0.5 rounded-[2px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[9.5px] font-bold uppercase tracking-wider flex items-center gap-1 border border-emerald-500/20">
+              <span className="px-2 py-0.5 rounded-[2px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 border border-emerald-500/20">
                 <GraduationCap className="w-2.5 h-2.5" /> CLASSROOM
               </span>
             )}
@@ -221,8 +221,8 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                   e.stopPropagation();
                   setShowCompleteConfirmModal(true);
                 }}
-                className="px-2 py-0.5 rounded-[2px] bg-[#DCE4FF] text-[#334CC4] text-[9.5px] font-bold uppercase tracking-wider hover:opacity-80 transition-opacity cursor-pointer"
-                title="Click to complete"
+                className="px-2 py-0.5 rounded-[2px] bg-[#DCE4FF] text-[#334CC4] text-[11px] font-bold uppercase tracking-wider hover:opacity-80 transition-opacity cursor-pointer"
+                title="Click to complete" aria-label="Click to complete"
               >
                 DOING
               </button>
@@ -234,8 +234,8 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                   e.stopPropagation();
                   handleStatusAction();
                 }}
-                className="px-2 py-0.5 rounded-[2px] bg-[#D2F1E8] text-[#18A889] text-[9.5px] font-bold uppercase tracking-wider hover:opacity-80 transition-opacity cursor-pointer"
-                title="Click to reopen"
+                className="px-2 py-0.5 rounded-[2px] bg-[#D2F1E8] text-[#18A889] text-[11px] font-bold uppercase tracking-wider hover:opacity-80 transition-opacity cursor-pointer"
+                title="Click to reopen" aria-label="Click to reopen"
               >
                 DONE
               </button>
@@ -248,7 +248,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                 e.stopPropagation();
                 setShowDeleteConfirmModal(true);
               }}
-              className="p-1 text-[#A0A0A0] hover:text-[#C94B5C] hover:bg-black/5 dark:hover:bg-white/10 rounded transition-colors cursor-pointer"
+              className="p-1 text-[#6B6B6B] hover:text-[#C94B5C] hover:bg-black/5 dark:hover:bg-white/10 rounded transition-colors cursor-pointer"
               title="Delete Task"
               aria-label="Delete Task"
             >
@@ -263,7 +263,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                   e.stopPropagation();
                   setShowMenu(!showMenu);
                 }}
-                className="p-1 text-[#A0A0A0] hover:text-[#151515] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded transition-colors cursor-pointer"
+                className="p-1 text-[#6B6B6B] hover:text-[#151515] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded transition-colors cursor-pointer"
                 aria-label="More options"
               >
                 <MoreVertical className="w-4 h-4" />
@@ -409,11 +409,11 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
 
         {/* Course Name & Faculty Badge */}
         <div className="flex items-center gap-2 flex-wrap pr-2 mt-3.5">
-          <span className="text-[10.5px] font-bold uppercase tracking-[1.3px] text-[#737373] dark:text-[#94A3B8] break-words">
+          <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-[#737373] dark:text-[#94A3B8] break-words">
             {subject?.name || homework.subjectName || 'GENERAL'}
           </span>
           {homework.isFacultyAssignment && (
-            <span className="px-1.5 py-0.5 bg-blue-500/10 dark:bg-blue-400/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-[9.5px] font-bold uppercase tracking-wider rounded-none">
+            <span className="px-1.5 py-0.5 bg-blue-500/10 dark:bg-blue-400/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-[11px] font-bold uppercase tracking-wider rounded-none">
               🎓 FACULTY: {homework.facultyName || 'Professor'}
             </span>
           )}
@@ -465,7 +465,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
         <div className="flex items-center justify-between mt-[16px] gap-2 flex-wrap">
           {/* Due Date Pill */}
           <span className={clsx(
-            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[10.5px] font-bold font-mono uppercase tracking-wider",
+            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[11px] font-bold font-mono uppercase tracking-wider",
             isUrgent
               ? "bg-[#FFF0E8] text-[#C96B45] border border-[#F5D8CC]"
               : isOverdue
@@ -484,8 +484,8 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                 e.stopPropagation();
                 openAttachment(homework.attachmentName);
               }}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[10.5px] font-bold font-mono uppercase tracking-wider bg-black/[0.04] hover:bg-black/[0.08] dark:bg-white/[0.06] dark:hover:bg-white/[0.12] text-[#111111] dark:text-[#FFFFFF] border border-black/[0.06] dark:border-white/[0.08] transition-colors cursor-pointer"
-              title="Open Attachment"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[11px] font-bold font-mono uppercase tracking-wider bg-black/[0.04] hover:bg-black/[0.08] dark:bg-white/[0.06] dark:hover:bg-white/[0.12] text-[#111111] dark:text-[#FFFFFF] border border-black/[0.06] dark:border-white/[0.08] transition-colors cursor-pointer"
+              title="Open Attachment" aria-label="Open Attachment"
             >
               <Paperclip className="w-3 h-3 text-blue-500" />
               <span>ATTACHMENT</span>
@@ -499,8 +499,8 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                 e.stopPropagation();
                 openAttachment(homework.externalLink);
               }}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[10.5px] font-bold font-mono uppercase tracking-wider bg-emerald-500/10 hover:bg-emerald-500/20 dark:bg-emerald-500/15 dark:hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 transition-colors cursor-pointer"
-              title="Open in Google Classroom"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[11px] font-bold font-mono uppercase tracking-wider bg-emerald-500/10 hover:bg-emerald-500/20 dark:bg-emerald-500/15 dark:hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 transition-colors cursor-pointer"
+              title="Open in Google Classroom" aria-label="Open in Google Classroom"
             >
               <ExternalLink className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
               <span>CLASSROOM</span>

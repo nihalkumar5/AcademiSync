@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Sparkles, Calendar, CalendarDays, BookOpen, Clock, AlertCircle, Plus, Share2, UserPlus, Edit2, Trash2, MapPin, Hourglass, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { ExamImportModal } from './ExamImportModal';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { AddEditExamModal } from './AddEditExamModal';
 import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
@@ -53,15 +54,15 @@ export const ExamsView: React.FC = () => {
     setShowAddEditModal(true);
   };
 
+  const [examToDelete, setExamToDelete] = useState<{ id: string; name: string } | null>(null);
+
   const handleEditExam = (exam: Exam) => {
     setSelectedExamToEdit(exam);
     setShowAddEditModal(true);
   };
 
   const handleDeleteExam = (id: string, name: string) => {
-    if (window.confirm(`Are you sure you want to delete the exam for "${name}"?`)) {
-      deleteExam(id);
-    }
+    setExamToDelete({ id, name });
   };
 
   const handleJoinSubmit = async (e: React.FormEvent) => {
@@ -260,13 +261,13 @@ export const ExamsView: React.FC = () => {
         <div className="flex items-start justify-between gap-3 sm:gap-4">
           {/* Left Calendar Date Ticket Stamp */}
           <div className="w-[52px] h-[56px] sm:w-[56px] sm:h-[60px] rounded-[10px] bg-black/[0.03] dark:bg-white/[0.04] border border-black/[0.08] dark:border-white/[0.08] flex flex-col items-center justify-center shrink-0 shadow-2xs group-hover:border-amber-500/40 transition-colors">
-            <span className="text-[9.5px] sm:text-[10px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 leading-none">
+            <span className="text-[11px] sm:text-[11px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 leading-none">
               {dateMonth}
             </span>
             <span className="text-[20px] sm:text-[22px] font-black text-[#111111] dark:text-[#FFFFFF] leading-tight mt-0.5">
               {dateDay}
             </span>
-            <span className="text-[9px] font-medium text-[#737373] dark:text-[#94A3B8] leading-none">
+            <span className="text-[11px] font-medium text-[#737373] dark:text-[#94A3B8] leading-none">
               {dateWeekday}
             </span>
           </div>
@@ -274,7 +275,7 @@ export const ExamsView: React.FC = () => {
           {/* Center Content */}
           <div className="flex flex-col flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
-              <h4 className="text-[15.5px] sm:text-[16.5px] font-bold text-[#111111] dark:text-[#F4F4F6] tracking-tight leading-snug group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate sm:whitespace-normal">
+              <h4 className="text-[16px] sm:text-[17px] font-bold text-[#111111] dark:text-[#F4F4F6] tracking-tight leading-snug group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate sm:whitespace-normal">
                 {exam.subjectName}
               </h4>
             </div>
@@ -282,7 +283,7 @@ export const ExamsView: React.FC = () => {
             {/* Badges and metadata row */}
             <div className="flex flex-wrap items-center gap-2 mt-1.5">
               {/* Status Badge */}
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold tracking-wider border ${status.color}`}>
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-[4px] text-[11px] font-mono font-bold tracking-wider border ${status.color}`}>
                 {status.label}
               </span>
 
@@ -306,7 +307,7 @@ export const ExamsView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => toggleSyllabus(exam.id)}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-black/[0.03] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-[10.5px] font-medium text-[#6B6B6B] dark:text-[#94A3B8] transition-colors cursor-pointer border border-black/[0.04] dark:border-white/[0.06]"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-black/[0.03] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-[11px] font-medium text-[#6B6B6B] dark:text-[#94A3B8] transition-colors cursor-pointer border border-black/[0.04] dark:border-white/[0.06]"
                 >
                   <BookOpen className="w-3 h-3 text-blue-500 shrink-0" />
                   <span>Syllabus</span>
@@ -321,14 +322,14 @@ export const ExamsView: React.FC = () => {
             <button
               onClick={() => handleEditExam(exam)}
               className="p-1.5 rounded-[6px] text-[#737373] hover:text-[#111111] dark:text-[#94A3B8] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-              title="Edit Exam"
+              title="Edit Exam" aria-label="Edit Exam"
             >
               <Edit2 className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => handleDeleteExam(exam.id, exam.subjectName)}
               className="p-1.5 rounded-[6px] text-[#737373] hover:text-rose-600 dark:text-[#94A3B8] dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
-              title="Delete Exam"
+              title="Delete Exam" aria-label="Delete Exam"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -337,8 +338,8 @@ export const ExamsView: React.FC = () => {
 
         {/* Expandable Syllabus Drawer */}
         {exam.syllabus && isExpanded && (
-          <div className="mt-1 pt-3 border-t border-black/[0.06] dark:border-white/[0.08] text-[12.5px] text-[#444444] dark:text-[#CBD5E1] bg-black/[0.02] dark:bg-white/[0.02] p-3 rounded-lg leading-relaxed whitespace-pre-wrap">
-            <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#888888] dark:text-[#94A3B8] mb-1 flex items-center gap-1">
+          <div className="mt-1 pt-3 border-t border-black/[0.06] dark:border-white/[0.08] text-[13px] text-[#444444] dark:text-[#CBD5E1] bg-black/[0.02] dark:bg-white/[0.02] p-3 rounded-lg leading-relaxed whitespace-pre-wrap">
+            <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#6B6B6B] dark:text-[#94A3B8] mb-1 flex items-center gap-1">
               <BookOpen className="w-3 h-3 text-amber-500" /> Syllabus Breakdown
             </div>
             {exam.syllabus}
@@ -444,14 +445,14 @@ ${PLAY_STORE_URL}
                 <button
                   onClick={() => handleEditExam(nextExam)}
                   className="p-1.5 rounded-lg text-[#71717A] hover:text-[#111111] dark:text-[#A1A1AA] dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
-                  title="Edit Next Exam"
+                  title="Edit Next Exam" aria-label="Edit Next Exam"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => handleDeleteExam(nextExam.id, nextExam.subjectName)}
                   className="p-1.5 rounded-lg text-[#71717A] hover:text-rose-600 dark:text-[#A1A1AA] dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
-                  title="Delete Next Exam"
+                  title="Delete Next Exam" aria-label="Delete Next Exam"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -464,7 +465,7 @@ ${PLAY_STORE_URL}
                 <h3 className="text-[24px] sm:text-[28px] font-black text-[#111111] dark:text-white tracking-tight leading-tight">
                   {nextExam.subjectName}
                 </h3>
-                <div className="flex flex-wrap items-center gap-2 mt-2 text-[12.5px] text-[#71717A]">
+                <div className="flex flex-wrap items-center gap-2 mt-2 text-[13px] text-[#71717A]">
                   <span className="inline-flex items-center gap-1 font-medium text-[#111111] dark:text-[#E2E8F0]">
                     <CalendarDays className="w-3.5 h-3.5 text-amber-500" />
                     {new Date(nextExam.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
@@ -483,7 +484,7 @@ ${PLAY_STORE_URL}
                   <span className="text-[20px] sm:text-[22px] font-black font-mono leading-none text-[#111111] dark:text-white">
                     {String(cd.days).padStart(2, '0')}
                   </span>
-                  <span className="text-[8.5px] font-mono font-bold uppercase text-[#71717A] tracking-wider mt-1">
+                  <span className="text-[11px] font-mono font-bold uppercase text-[#71717A] tracking-wider mt-1">
                     DAYS
                   </span>
                 </div>
@@ -492,7 +493,7 @@ ${PLAY_STORE_URL}
                   <span className="text-[20px] sm:text-[22px] font-black font-mono leading-none text-[#111111] dark:text-white">
                     {String(cd.hours).padStart(2, '0')}
                   </span>
-                  <span className="text-[8.5px] font-mono font-bold uppercase text-[#71717A] tracking-wider mt-1">
+                  <span className="text-[11px] font-mono font-bold uppercase text-[#71717A] tracking-wider mt-1">
                     HOURS
                   </span>
                 </div>
@@ -501,7 +502,7 @@ ${PLAY_STORE_URL}
                   <span className="text-[20px] sm:text-[22px] font-black font-mono leading-none text-[#111111] dark:text-white">
                     {String(cd.minutes).padStart(2, '0')}
                   </span>
-                  <span className="text-[8.5px] font-mono font-bold uppercase text-[#71717A] tracking-wider mt-1">
+                  <span className="text-[11px] font-mono font-bold uppercase text-[#71717A] tracking-wider mt-1">
                     MINS
                   </span>
                 </div>
@@ -511,14 +512,14 @@ ${PLAY_STORE_URL}
             {/* Badges Row */}
             <div className="flex flex-wrap items-center gap-2">
               {nextExam.room && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 text-[11.5px] font-semibold">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 text-[12px] font-semibold">
                   <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   Room {nextExam.room}
                 </span>
               )}
 
               {nextExam.durationMinutes && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/25 text-blue-800 dark:text-blue-300 font-mono text-[11.5px]">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/25 text-blue-800 dark:text-blue-300 font-mono text-[12px]">
                   <Hourglass className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                   {nextExam.durationMinutes >= 60
                     ? `${(nextExam.durationMinutes / 60).toFixed(nextExam.durationMinutes % 60 === 0 ? 0 : 1)} Hours Duration`
@@ -530,7 +531,7 @@ ${PLAY_STORE_URL}
                 <button
                   type="button"
                   onClick={() => toggleSyllabus(nextExam.id)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-black/[0.03] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-[11.5px] font-medium text-[#444444] dark:text-[#E2E8F0] border border-black/[0.06] dark:border-white/[0.08] transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-black/[0.03] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-[12px] font-medium text-[#444444] dark:text-[#E2E8F0] border border-black/[0.06] dark:border-white/[0.08] transition-colors cursor-pointer"
                 >
                   <BookOpen className="w-3.5 h-3.5 text-amber-500" />
                   <span>Syllabus Breakdown</span>
@@ -542,7 +543,7 @@ ${PLAY_STORE_URL}
             {/* Syllabus Box */}
             {nextExam.syllabus && expandedSyllabus[nextExam.id] && (
               <div className="mt-4 pt-3.5 border-t border-black/[0.06] dark:border-white/[0.06] flex flex-col gap-1.5">
-                <p className="text-[12.5px] text-[#333333] dark:text-[#E2E8F0] leading-relaxed bg-black/[0.02] dark:bg-white/[0.02] p-3 rounded-xl border border-black/[0.04] dark:border-white/[0.06] whitespace-pre-wrap font-sans">
+                <p className="text-[13px] text-[#333333] dark:text-[#E2E8F0] leading-relaxed bg-black/[0.02] dark:bg-white/[0.02] p-3 rounded-xl border border-black/[0.04] dark:border-white/[0.06] whitespace-pre-wrap font-sans">
                   {nextExam.syllabus}
                 </p>
               </div>
@@ -562,13 +563,13 @@ ${PLAY_STORE_URL}
             <div className="flex flex-wrap items-center justify-center gap-3">
               <button
                 onClick={handleAddNewExam}
-                className="flex items-center justify-center h-9 px-4 border border-[#D9D9D6] dark:border-white/[0.08] text-[#111111] dark:text-[#F4F4F6] text-[12.5px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors gap-1.5 cursor-pointer rounded-lg"
+                className="flex items-center justify-center h-9 px-4 border border-[#D9D9D6] dark:border-white/[0.08] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors gap-1.5 cursor-pointer rounded-lg"
               >
                 <Plus className="w-3.5 h-3.5" /> Add Exam Manually
               </button>
               <button
                 onClick={handleMagicImport}
-                className="flex items-center justify-center h-9 px-4 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] text-[12.5px] font-semibold transition-colors gap-1.5 cursor-pointer shadow-xs rounded-lg"
+                className="flex items-center justify-center h-9 px-4 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] text-[13px] font-semibold transition-colors gap-1.5 cursor-pointer shadow-xs rounded-lg"
               >
                 <Sparkles className="w-3.5 h-3.5" /> Magic Import
               </button>
@@ -594,7 +595,7 @@ ${PLAY_STORE_URL}
             {nextExam && remainingUpcoming.length === 0 && pastExams.length === 0 && (
               <div className="rounded-[14px] border border-black/[0.06] dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.02] p-6 text-center flex flex-col items-center justify-center">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mb-1.5" />
-                <p className="text-[13.5px] font-semibold text-[#111111] dark:text-[#F4F4F6]">
+                <p className="text-[14px] font-semibold text-[#111111] dark:text-[#F4F4F6]">
                   All clear after this!
                 </p>
                 <p className="text-[12px] text-[#6F6F6F] dark:text-[#94A3B8] mt-0.5">
@@ -654,6 +655,19 @@ ${PLAY_STORE_URL}
           </button>
         </form>
       </Modal>
+      <ConfirmModal
+        isOpen={!!examToDelete}
+        onClose={() => setExamToDelete(null)}
+        onConfirm={() => {
+          if (examToDelete) deleteExam(examToDelete.id);
+          setExamToDelete(null);
+        }}
+        title="Delete exam?"
+        description="This exam will be removed from your schedule and reminders."
+        highlightText={examToDelete?.name}
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   );
 };

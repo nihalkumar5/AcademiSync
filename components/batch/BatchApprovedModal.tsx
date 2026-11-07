@@ -111,13 +111,13 @@ ${PLAY_STORE_URL}
             <Crown className="w-5 h-5 text-amber-600 dark:text-amber-400" />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
               Verified Pilot Status
             </span>
             <h4 className="text-[14px] font-bold text-black dark:text-white leading-tight mt-0.5">
               {batchTitle}
             </h4>
-            <p className="text-[11.5px] text-black/60 dark:text-[#94A3B8] leading-tight mt-1">
+            <p className="text-[12px] text-black/60 dark:text-[#94A3B8] leading-tight mt-1">
               {effectiveCollege} · Official Workspace
             </p>
           </div>
@@ -125,7 +125,7 @@ ${PLAY_STORE_URL}
 
         {/* Big Batch Code Box */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[10.5px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
+          <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA]">
             Your Official 6-Digit Batch Code
           </label>
           <div className="flex items-center justify-between p-3.5 bg-black/5 dark:bg-white/[0.05] border-2 border-black/15 dark:border-white/[0.15]">
@@ -133,7 +133,7 @@ ${PLAY_STORE_URL}
               <span className="text-[26px] font-mono font-black tracking-widest text-black dark:text-white uppercase select-all">
                 {inviteCode}
               </span>
-              <span className="text-[10px] text-black/40 dark:text-[#71717A]">
+              <span className="text-[11px] text-black/60 dark:text-[#A1A1AA]">
                 Classmates will use this code to join
               </span>
             </div>

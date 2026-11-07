@@ -333,7 +333,7 @@ export const AcademicCalendar: React.FC = () => {
                 if (!isSignedIn) { router.push('/sign-in'); return; }
                 setShowImportCalendarModal(true);
               }}
-              className="flex items-center justify-center h-9 px-3.5 rounded-lg border border-[#D9D9D6] dark:border-white/[0.08] text-[#111111] dark:text-[#F4F4F6] text-[12.5px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors gap-1.5 cursor-pointer shadow-2xs"
+              className="flex items-center justify-center h-9 px-3.5 rounded-lg border border-[#D9D9D6] dark:border-white/[0.08] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors gap-1.5 cursor-pointer shadow-2xs"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Magic Import
             </button>
@@ -342,7 +342,7 @@ export const AcademicCalendar: React.FC = () => {
                 if (!isSignedIn) { router.push('/sign-in'); return; }
                 setShowAddEventModal(true);
               }}
-              className="flex items-center justify-center h-9 px-3.5 rounded-lg bg-[#111111] dark:bg-white text-white dark:text-[#090A0C] text-[12.5px] font-semibold transition-colors gap-1.5 cursor-pointer shadow-xs"
+              className="flex items-center justify-center h-9 px-3.5 rounded-lg bg-[#111111] dark:bg-white text-white dark:text-[#090A0C] text-[13px] font-semibold transition-colors gap-1.5 cursor-pointer shadow-xs"
             >
               <Plus className="w-3.5 h-3.5" /> Add Event
             </button>
@@ -350,7 +350,7 @@ export const AcademicCalendar: React.FC = () => {
               <button
                 onClick={() => cleanDuplicateEvents()}
                 className="flex items-center justify-center h-9 px-3 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25 text-[11px] font-bold uppercase tracking-wider hover:bg-amber-500/20 transition-colors gap-1 cursor-pointer"
-                title="Clean duplicate events"
+                title="Clean duplicate events" aria-label="Clean duplicate events"
               >
                 <Sparkles className="w-3 h-3" /> Clean ({dupCount})
               </button>
@@ -449,14 +449,14 @@ export const AcademicCalendar: React.FC = () => {
                 <button
                   onClick={prevMonth}
                   className="p-1.5 rounded-lg text-[#71717A] hover:text-[#111111] dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
-                  title="Previous Month"
+                  title="Previous Month" aria-label="Previous Month"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
                   onClick={nextMonth}
                   className="p-1.5 rounded-lg text-[#71717A] hover:text-[#111111] dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
-                  title="Next Month"
+                  title="Next Month" aria-label="Next Month"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -467,7 +467,7 @@ export const AcademicCalendar: React.FC = () => {
             <div className="grid grid-cols-7 mb-2 text-center">
               {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((d, i) => (
                 <div key={i} className="py-1">
-                  <span className="text-[10.5px] font-mono font-bold tracking-wider text-[#A1A1AA] dark:text-[#71717A]">
+                  <span className="text-[11px] font-mono font-bold tracking-wider text-[#6B6B6B] dark:text-[#A1A1AA]">
                     {d}
                   </span>
                 </div>
@@ -537,7 +537,7 @@ export const AcademicCalendar: React.FC = () => {
                         })}
                         {activeFilterItems.length > 3 && (
                           <span className={clsx(
-                            "text-[8px] font-mono leading-none font-bold",
+                            "text-[11px] font-mono leading-none font-bold",
                             isSelected ? "text-white/80 dark:text-black/80" : "text-[#71717A]"
                           )}>
                             +
@@ -570,14 +570,14 @@ export const AcademicCalendar: React.FC = () => {
             
             <div className="flex items-center justify-between pb-3 border-b border-black/[0.06] dark:border-white/[0.06]">
               <div>
-                <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#71717A]">
+                <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#71717A]">
                   AGENDA FOR
                 </p>
                 <h4 className="text-[16px] font-bold text-[#111111] dark:text-white tracking-tight">
                   {selectedDateFormatted}
                 </h4>
               </div>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
                 {getRelativeDayTag(selectedDate)}
               </span>
             </div>
@@ -589,7 +589,7 @@ export const AcademicCalendar: React.FC = () => {
                 <p className="text-[13px] font-semibold text-[#111111] dark:text-[#F4F4F6]">
                   No items on this date
                 </p>
-                <p className="text-[11.5px] text-[#71717A] mt-0.5 max-w-[240px]">
+                <p className="text-[12px] text-[#71717A] mt-0.5 max-w-[240px]">
                   No classes, exams or assignment deadlines.
                 </p>
 
@@ -626,11 +626,11 @@ export const AcademicCalendar: React.FC = () => {
 
                         <div className="flex flex-col flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-[4px] text-[9px] font-mono font-bold tracking-wider border ${meta.badgeColor}`}>
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-[4px] text-[11px] font-mono font-bold tracking-wider border ${meta.badgeColor}`}>
                               {meta.label}
                             </span>
                             {item.subject && (
-                              <span className="text-[11.5px] font-semibold text-amber-700 dark:text-amber-400 truncate">
+                              <span className="text-[12px] font-semibold text-amber-700 dark:text-amber-400 truncate">
                                 {item.subject}
                               </span>
                             )}
@@ -656,7 +656,7 @@ export const AcademicCalendar: React.FC = () => {
                           </div>
 
                           {item.description && (
-                            <p className="text-[11.5px] text-[#555555] dark:text-[#94A3B8] mt-2 bg-black/[0.02] dark:bg-white/[0.03] p-2 rounded-lg border border-black/[0.04] dark:border-white/[0.06] whitespace-pre-wrap leading-relaxed">
+                            <p className="text-[12px] text-[#555555] dark:text-[#94A3B8] mt-2 bg-black/[0.02] dark:bg-white/[0.03] p-2 rounded-lg border border-black/[0.04] dark:border-white/[0.06] whitespace-pre-wrap leading-relaxed">
                               {item.description}
                             </p>
                           )}
@@ -674,8 +674,8 @@ export const AcademicCalendar: React.FC = () => {
                             deleteEvent(item.id);
                           }
                         }}
-                        title="Delete item"
-                        className="p-1.5 rounded-lg text-[#A1A1AA] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer shrink-0"
+                        title="Delete item" aria-label="Delete item"
+                        className="p-1.5 rounded-lg text-[#6B6B6B] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer shrink-0"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -690,7 +690,7 @@ export const AcademicCalendar: React.FC = () => {
           {upcomingSpotlight.length > 0 && (
             <div className="rounded-[20px] border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#121318] p-5 shadow-xs flex flex-col gap-3">
               <div className="flex items-center justify-between pb-2 border-b border-black/[0.06] dark:border-white/[0.06]">
-                <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#71717A] flex items-center gap-1">
+                <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#71717A] flex items-center gap-1">
                   <Clock className="w-3 h-3 text-amber-500" /> NEXT ON SEMESTER TIMELINE
                 </p>
               </div>
@@ -714,7 +714,7 @@ export const AcademicCalendar: React.FC = () => {
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className="w-9 h-10 rounded-lg bg-black/[0.03] dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.06] flex flex-col items-center justify-center shrink-0">
-                          <span className="text-[7.5px] font-mono font-bold uppercase text-amber-600 dark:text-amber-400 leading-none">
+                          <span className="text-[11px] font-mono font-bold uppercase text-amber-600 dark:text-amber-400 leading-none">
                             {monthShort}
                           </span>
                           <span className="text-[14px] font-black text-[#111111] dark:text-white leading-tight mt-0.5">
@@ -723,16 +723,16 @@ export const AcademicCalendar: React.FC = () => {
                         </div>
 
                         <div className="flex flex-col min-w-0">
-                          <span className="text-[12.5px] font-bold text-[#111111] dark:text-white truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                          <span className="text-[13px] font-bold text-[#111111] dark:text-white truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                             {item.title}
                           </span>
-                          <span className="text-[10.5px] text-[#71717A] truncate">
+                          <span className="text-[11px] text-[#71717A] truncate">
                             {item.subject || meta.label} {item.location && `· ${item.location}`}
                           </span>
                         </div>
                       </div>
 
-                      <span className="shrink-0 text-[9.5px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                      <span className="shrink-0 text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
                         {relTag}
                       </span>
                     </div>
@@ -772,7 +772,7 @@ export const AcademicCalendar: React.FC = () => {
 
             {/* Segmented Category Picker */}
             <div>
-              <label className="text-[10px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1.5 block">
+              <label className="text-[11px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1.5 block">
                 Category
               </label>
               <div className="grid grid-cols-4 gap-1.5 p-1 bg-black/[0.03] dark:bg-white/[0.04] rounded-xl border border-black/[0.04] dark:border-white/[0.06]">
@@ -797,7 +797,7 @@ export const AcademicCalendar: React.FC = () => {
             {/* Inputs */}
             <div className="flex flex-col gap-3">
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1 block">
+                <label className="text-[11px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1 block">
                   Title
                 </label>
                 <input
@@ -812,44 +812,44 @@ export const AcademicCalendar: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1 block">
+                  <label className="text-[11px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1 block">
                     Date
                   </label>
                   <input
                     type="date"
                     value={newDate}
                     onChange={(e) => setNewDate(e.target.value)}
-                    className="w-full bg-[#F7F7F5] dark:bg-[#0A0B0E] border border-[#D9D9D6] dark:border-white/[0.1] rounded-xl px-3 py-2 text-[12.5px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-amber-500 font-mono"
+                    className="w-full bg-[#F7F7F5] dark:bg-[#0A0B0E] border border-[#D9D9D6] dark:border-white/[0.1] rounded-xl px-3 py-2 text-[13px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-amber-500 font-mono"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1 block">
+                  <label className="text-[11px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1 block">
                     Time
                   </label>
                   <input
                     type="time"
                     value={newTime}
                     onChange={(e) => setNewTime(e.target.value)}
-                    className="w-full bg-[#F7F7F5] dark:bg-[#0A0B0E] border border-[#D9D9D6] dark:border-white/[0.1] rounded-xl px-3 py-2 text-[12.5px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-amber-500 font-mono"
+                    className="w-full bg-[#F7F7F5] dark:bg-[#0A0B0E] border border-[#D9D9D6] dark:border-white/[0.1] rounded-xl px-3 py-2 text-[13px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-amber-500 font-mono"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1 block">
+                <label className="text-[11px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1 block">
                   Location / Room (Optional)
                 </label>
                 <input
                   type="text"
                   value={newLocation}
                   onChange={(e) => setNewLocation(e.target.value)}
-                  className="w-full bg-[#F7F7F5] dark:bg-[#0A0B0E] border border-[#D9D9D6] dark:border-white/[0.1] rounded-xl px-3.5 py-2 text-[12.5px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-amber-500"
+                  className="w-full bg-[#F7F7F5] dark:bg-[#0A0B0E] border border-[#D9D9D6] dark:border-white/[0.1] rounded-xl px-3.5 py-2 text-[13px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-amber-500"
                   placeholder="e.g. Auditorium / LT-1"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1 block">
+                <label className="text-[11px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1 block">
                   Description / Notes (Optional)
                 </label>
                 <textarea
@@ -866,7 +866,7 @@ export const AcademicCalendar: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowAddEventModal(false)}
-                className="px-4 py-2 rounded-xl text-[12.5px] font-medium text-[#71717A] hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-xl text-[13px] font-medium text-[#71717A] hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -874,7 +874,7 @@ export const AcademicCalendar: React.FC = () => {
                 type="button"
                 onClick={handleSaveEvent}
                 disabled={!newTitle.trim()}
-                className="px-5 py-2 rounded-xl bg-[#111111] dark:bg-white text-white dark:text-[#090A0C] text-[12.5px] font-semibold disabled:opacity-50 transition-opacity cursor-pointer shadow-xs"
+                className="px-5 py-2 rounded-xl bg-[#111111] dark:bg-white text-white dark:text-[#090A0C] text-[13px] font-semibold disabled:opacity-50 transition-opacity cursor-pointer shadow-xs"
               >
                 Add Event
               </button>

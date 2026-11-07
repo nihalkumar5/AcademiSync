@@ -76,7 +76,7 @@ export default function ContactPage() {
       </Link>
 
       <div className="flex flex-col gap-3 mb-8 sm:mb-10">
-        <span className="text-[10px] font-bold tracking-[1.5px] uppercase text-[#999999]">
+        <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#6B6B6B]">
           Support & Help
         </span>
         <h1 className="text-[36px] sm:text-[40px] font-bold tracking-tight leading-none text-[#111111] dark:text-[#FFFFFF]">

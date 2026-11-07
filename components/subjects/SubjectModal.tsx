@@ -168,7 +168,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
             <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
             <div className="flex flex-col gap-0.5">
               <span className="font-bold">Official Batch Course</span>
-              <span className="text-[11.5px] opacity-90 leading-relaxed">
+              <span className="text-[12px] opacity-90 leading-relaxed">
                 Curriculum details, room number ({room}), and faculty are synced with your batch schedule. You have full permission to choose your <strong>personal pastel color theme</strong> below.
               </span>
             </div>
@@ -347,17 +347,17 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
                 <div className="relative z-10 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span 
-                      className="text-[10px] font-bold uppercase tracking-wider font-mono"
+                      className="text-[11px] font-bold uppercase tracking-wider font-mono"
                       style={{ color: previewTheme.darkAccent || previewTheme.accent }}
                     >
                       {previewTheme.name}
                     </span>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-[3px] bg-black/5 dark:bg-white/10 text-slate-700 dark:text-zinc-300">
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-[3px] bg-black/5 dark:bg-white/10 text-slate-700 dark:text-zinc-300">
                       {credits || 3} Credits
                     </span>
                     {isLab && (
                       <span 
-                        className="text-[9px] font-bold px-1.5 py-0.5 rounded-[3px]"
+                        className="text-[11px] font-bold px-1.5 py-0.5 rounded-[3px]"
                         style={{
                           backgroundColor: previewTheme.badgeBg,
                           color: previewTheme.badgeText,
@@ -367,7 +367,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-zinc-500">
+                  <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 dark:text-zinc-500">
                     Live Theme Preview
                   </span>
                 </div>
@@ -420,7 +420,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
             />
             <label htmlFor="subIsElective" className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 cursor-pointer flex items-center gap-1.5">
               <span>Elective Course (Department / Open / Minor)</span>
-              <span className="text-[10px] px-1.5 py-0.5 bg-[#8067B5]/20 text-[#8067B5] dark:text-[#C084FC] font-bold uppercase tracking-wider">Elective</span>
+              <span className="text-[11px] px-1.5 py-0.5 bg-[#8067B5]/20 text-[#8067B5] dark:text-[#C084FC] font-bold uppercase tracking-wider">Elective</span>
             </label>
           </div>
           <p className="text-[11px] text-zinc-600 dark:text-zinc-400 pl-6">
@@ -442,7 +442,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
 
           {/* Quick Presets */}
           <div className="flex flex-wrap gap-1.5 mt-1">
-            <span className="text-[10.5px] font-bold text-zinc-400 dark:text-zinc-500 self-center mr-1">
+            <span className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 self-center mr-1">
               Quick Add:
             </span>
             {carryPresets.map((preset) => (
@@ -450,7 +450,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
                 key={preset}
                 type="button"
                 onClick={() => handleAddCarryItem(preset)}
-                className="text-[10.5px] font-medium px-2 py-0.5 rounded-[2px] bg-white dark:bg-[#1E1F24] border border-zinc-200 dark:border-zinc-700 hover:border-black/30 dark:hover:border-white/30 text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
+                className="text-[11px] font-medium px-2 py-0.5 rounded-[2px] bg-white dark:bg-[#1E1F24] border border-zinc-200 dark:border-zinc-700 hover:border-black/30 dark:hover:border-white/30 text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
               >
                 + {preset}
               </button>

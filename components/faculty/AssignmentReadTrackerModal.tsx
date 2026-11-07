@@ -111,7 +111,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
             className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 cursor-pointer ${
               activeTab === 'opened'
                 ? 'border-black dark:border-white text-black dark:text-white'
-                : 'border-transparent text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white'
+                : 'border-transparent text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white'
             }`}
           >
             Opened ({openedList.length})
@@ -122,7 +122,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
             className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 cursor-pointer ${
               activeTab === 'unopened'
                 ? 'border-black dark:border-white text-black dark:text-white'
-                : 'border-transparent text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white'
+                : 'border-transparent text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white'
             }`}
           >
             Not Opened Yet ({unopenedMembers.length > 0 ? unopenedMembers.length : Math.max(0, totalBatchCount - openedList.length)})
@@ -133,7 +133,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
         <div className="max-h-64 overflow-y-auto flex flex-col gap-1.5 p-1">
           {activeTab === 'opened' ? (
             openedList.length === 0 ? (
-              <div className="py-8 text-center text-xs text-black/40 dark:text-white/40 flex flex-col items-center justify-center gap-1.5">
+              <div className="py-8 text-center text-xs text-black/60 dark:text-white/60 flex flex-col items-center justify-center gap-1.5">
                 <Eye className="w-6 h-6 opacity-30" />
                 <span>No students have opened this assignment yet.</span>
               </div>
@@ -148,12 +148,12 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
                       {st.studentName || 'Student'}
                     </span>
                     {st.rollNumber && (
-                      <span className="text-[10px] font-mono text-black/50 dark:text-white/50">
+                      <span className="text-[11px] font-mono text-black/60 dark:text-white/60">
                         Roll: {st.rollNumber}
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 shrink-0 flex items-center gap-1">
+                  <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 shrink-0 flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" />
                     {new Date(st.readAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
@@ -163,7 +163,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
           ) : (
             /* Unopened Tab */
             unopenedMembers.length === 0 ? (
-              <div className="py-8 text-center text-xs text-black/40 dark:text-white/40 flex flex-col items-center justify-center gap-1.5">
+              <div className="py-8 text-center text-xs text-black/60 dark:text-white/60 flex flex-col items-center justify-center gap-1.5">
                 <CheckCircle2 className="w-6 h-6 text-emerald-500 opacity-60" />
                 <span>All registered batch members have opened this assignment!</span>
               </div>
@@ -178,12 +178,12 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
                       {m.name || m.email || 'Student'}
                     </span>
                     {m.rollNumber && (
-                      <span className="text-[10px] font-mono text-black/50 dark:text-white/50">
+                      <span className="text-[11px] font-mono text-black/60 dark:text-white/60">
                         Roll: {m.rollNumber}
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] font-mono text-red-500 dark:text-red-400 shrink-0 flex items-center gap-1">
+                  <span className="text-[11px] font-mono text-red-500 dark:text-red-400 shrink-0 flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     Pending
                   </span>

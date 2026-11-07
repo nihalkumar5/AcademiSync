@@ -152,21 +152,21 @@ export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({
       >
         {/* Subtle top banner strip */}
         <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-black/10 dark:border-white/[0.08]">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-none border border-black/10 dark:border-white/[0.1] bg-black/5 dark:bg-white/[0.06] text-[10px] font-bold tracking-widest uppercase text-black dark:text-[#F4F4F6]">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-none border border-black/10 dark:border-white/[0.1] bg-black/5 dark:bg-white/[0.06] text-[11px] font-bold tracking-widest uppercase text-black dark:text-[#F4F4F6]">
             {getCategoryIcon(currentCampaign.category)}
             <span>{badgeText}</span>
           </div>
 
           <div className="flex items-center gap-2">
             {campaigns.length > 1 && (
-              <span className="text-[10px] font-mono text-black/50 dark:text-white/40">
+              <span className="text-[11px] font-mono text-black/60 dark:text-white/60">
                 {currentIndex + 1} / {campaigns.length}
               </span>
             )}
             <button
               onClick={() => setIsDismissed(true)}
-              className="p-1 rounded-none text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
-              title="Dismiss"
+              className="p-1 rounded-none text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              title="Dismiss" aria-label="Dismiss"
             >
               <X className="w-3.5 h-3.5" />
             </button>

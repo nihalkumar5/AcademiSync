@@ -299,7 +299,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
         <div className="flex flex-col text-left">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-bold tracking-[0.2em] text-black/50 dark:text-white/40 uppercase">Extracted Events</span>
+              <span className="text-[11px] font-bold tracking-[0.2em] text-black/60 dark:text-white/60 uppercase">Extracted Events</span>
               
               <div className="flex flex-col gap-4">
                 {extractedEvents.map((event, index) => (
@@ -314,7 +314,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
                     
                     <div className="grid grid-cols-[1fr_120px] gap-3">
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Event Title</label>
+                        <label className="text-[11px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Event Title</label>
                         <input
                           type="text"
                           value={event.title}
@@ -323,7 +323,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
                         />
                       </div>
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Type</label>
+                        <label className="text-[11px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Type</label>
                         <div className="relative">
                           <select
                             value={event.type}
@@ -335,14 +335,14 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
                             <option value="assignment" className="dark:bg-[#121317]">Deadline</option>
                             <option value="event" className="dark:bg-[#121317]">Event</option>
                           </select>
-                          <ChevronDown className="w-3 h-3 absolute right-2.5 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40 pointer-events-none" />
+                          <ChevronDown className="w-3 h-3 absolute right-2.5 top-1/2 -translate-y-1/2 text-black/60 dark:text-white/60 pointer-events-none" />
                         </div>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Start Date</label>
+                        <label className="text-[11px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Start Date</label>
                         <input
                           type="date"
                           value={event.startDate || event.date}
@@ -360,9 +360,9 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
                       </div>
                       <div className="flex flex-col gap-1.5">
                         <div className="flex items-center justify-between">
-                          <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">End Date</label>
+                          <label className="text-[11px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">End Date</label>
                           {event.startDate && event.endDate && event.startDate !== event.endDate && (
-                            <span className="text-[9px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                            <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
                               Range
                             </span>
                           )}
@@ -375,7 +375,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
                         />
                       </div>
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Location / Info</label>
+                        <label className="text-[11px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Location / Info</label>
                         <input
                           type="text"
                           value={event.location || ''}
@@ -387,7 +387,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
                     </div>
 
                     {event.description && (
-                      <p className="text-[11px] text-black/50 dark:text-[#94A3B8] italic line-clamp-2">
+                      <p className="text-[11px] text-black/60 dark:text-[#94A3B8] italic line-clamp-2">
                         {event.description}
                       </p>
                     )}

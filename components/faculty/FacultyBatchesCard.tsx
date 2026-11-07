@@ -120,7 +120,7 @@ export const FacultyBatchesCard: React.FC<FacultyBatchesCardProps> = ({
           <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
             Connected Batches
           </h3>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-black/5 dark:bg-white/10 text-black/60 dark:text-white/60">
+          <span className="px-1.5 py-0.2 rounded-full text-[11px] font-mono font-bold bg-black/5 dark:bg-white/10 text-black/60 dark:text-white/60">
             {linkedBatches.length}
           </span>
         </div>
@@ -138,7 +138,7 @@ export const FacultyBatchesCard: React.FC<FacultyBatchesCardProps> = ({
       {/* Batches List */}
       <div className="flex flex-col gap-3">
         {linkedBatches.length === 0 ? (
-          <div className="py-8 text-center text-xs text-black/50 dark:text-white/50 flex flex-col items-center justify-center gap-2">
+          <div className="py-8 text-center text-xs text-black/60 dark:text-white/60 flex flex-col items-center justify-center gap-2">
             <Users className="w-7 h-7 opacity-30" />
             <span>No batches linked yet. Connect your first batch code.</span>
             <button
@@ -180,8 +180,8 @@ export const FacultyBatchesCard: React.FC<FacultyBatchesCardProps> = ({
                       <button
                         type="button"
                         onClick={() => handleCopyCode(code)}
-                        className="inline-flex items-center gap-1 text-[11px] font-mono text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
-                        title="Click to copy batch code"
+                        className="inline-flex items-center gap-1 text-[11px] font-mono text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
+                        title="Click to copy batch code" aria-label="Click to copy batch code"
                       >
                         <span>· Code:</span>
                         <span className="font-bold underline decoration-dotted">{code}</span>
@@ -198,8 +198,8 @@ export const FacultyBatchesCard: React.FC<FacultyBatchesCardProps> = ({
                   <button
                     type="button"
                     onClick={() => setBatchToUnlink(batch)}
-                    className="p-1 rounded-md text-black/30 dark:text-white/30 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer shrink-0"
-                    title="Disconnect Batch"
+                    className="p-1 rounded-md text-black/60 dark:text-white/30 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer shrink-0"
+                    title="Disconnect Batch" aria-label="Disconnect Batch"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>

@@ -106,7 +106,7 @@ If you are our Batch Pilot or want to setup the synced batch timetable for all o
             </div>
             
             <div className="flex flex-col gap-1 z-10 relative px-3 py-2 bg-[#F9F9F8]/90 dark:bg-[#121317]/90 backdrop-blur-sm">
-              <span className="text-[10.5px] font-bold font-mono tracking-widest uppercase text-amber-600 dark:text-amber-400">
+              <span className="text-[11px] font-bold font-mono tracking-widest uppercase text-amber-600 dark:text-amber-400">
                 CLASS LEADERSHIP
               </span>
               <h3 className="text-[16px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-snug">
@@ -123,7 +123,7 @@ If you are our Batch Pilot or want to setup the synced batch timetable for all o
             
             {/* Section 1: WHAT YOU'LL UNLOCK */}
             <div className="flex flex-col gap-2.5">
-              <span className="text-[10.5px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#64748B]">
+              <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#6B6B6B] dark:text-[#A1A1AA]">
                 WHAT YOU&apos;LL UNLOCK
               </span>
 
@@ -134,11 +134,11 @@ If you are our Batch Pilot or want to setup the synced batch timetable for all o
                     <Calendar className="w-4 h-4 text-[#111111] dark:text-[#F4F4F6] stroke-[1.8]" />
                   </div>
                   <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
-                    <span className="text-[10px] font-bold font-mono text-[#111111] dark:text-[#F4F4F6]">01</span>
-                    <h4 className="text-[12.5px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-snug truncate">
+                    <span className="text-[11px] font-bold font-mono text-[#111111] dark:text-[#F4F4F6]">01</span>
+                    <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-snug truncate">
                       One timetable
                     </h4>
-                    <p className="text-[11px] text-[#888888] dark:text-[#94A3B8] leading-relaxed">
+                    <p className="text-[11px] text-[#6B6B6B] dark:text-[#94A3B8] leading-relaxed">
                       Update once, everyone gets it.
                     </p>
                   </div>
@@ -150,11 +150,11 @@ If you are our Batch Pilot or want to setup the synced batch timetable for all o
                     <Bell className="w-4 h-4 text-[#111111] dark:text-[#F4F4F6] stroke-[1.8]" />
                   </div>
                   <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
-                    <span className="text-[10px] font-bold font-mono text-[#111111] dark:text-[#F4F4F6]">02</span>
-                    <h4 className="text-[12.5px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-snug truncate">
+                    <span className="text-[11px] font-bold font-mono text-[#111111] dark:text-[#F4F4F6]">02</span>
+                    <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-snug truncate">
                       Instant class alerts
                     </h4>
-                    <p className="text-[11px] text-[#888888] dark:text-[#94A3B8] leading-relaxed">
+                    <p className="text-[11px] text-[#6B6B6B] dark:text-[#94A3B8] leading-relaxed">
                       Room changes &amp; cancellations.
                     </p>
                   </div>
@@ -166,11 +166,11 @@ If you are our Batch Pilot or want to setup the synced batch timetable for all o
                     <Clock className="w-4 h-4 text-[#111111] dark:text-[#F4F4F6] stroke-[1.8]" />
                   </div>
                   <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
-                    <span className="text-[10px] font-bold font-mono text-[#111111] dark:text-[#F4F4F6]">03</span>
-                    <h4 className="text-[12.5px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-snug truncate">
+                    <span className="text-[11px] font-bold font-mono text-[#111111] dark:text-[#F4F4F6]">03</span>
+                    <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-snug truncate">
                       Shared tasks &amp; labs
                     </h4>
-                    <p className="text-[11px] text-[#888888] dark:text-[#94A3B8] leading-relaxed">
+                    <p className="text-[11px] text-[#6B6B6B] dark:text-[#94A3B8] leading-relaxed">
                       Deadlines visible to the batch.
                     </p>
                   </div>
@@ -182,11 +182,11 @@ If you are our Batch Pilot or want to setup the synced batch timetable for all o
                     <Users className="w-4 h-4 text-[#111111] dark:text-[#F4F4F6] stroke-[1.8]" />
                   </div>
                   <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
-                    <span className="text-[10px] font-bold font-mono text-[#111111] dark:text-[#F4F4F6]">04</span>
-                    <h4 className="text-[12.5px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-snug truncate">
+                    <span className="text-[11px] font-bold font-mono text-[#111111] dark:text-[#F4F4F6]">04</span>
+                    <h4 className="text-[13px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-snug truncate">
                       No WhatsApp chaos
                     </h4>
-                    <p className="text-[11px] text-[#888888] dark:text-[#94A3B8] leading-relaxed">
+                    <p className="text-[11px] text-[#6B6B6B] dark:text-[#94A3B8] leading-relaxed">
                       One authoritative schedule hub.
                     </p>
                   </div>
@@ -197,19 +197,19 @@ If you are our Batch Pilot or want to setup the synced batch timetable for all o
             {/* Section 2: YOUR RESPONSIBILITY */}
             <div className="p-3.5 border border-[#E5E5E5] dark:border-white/[0.08] bg-[#FAF9F7] dark:bg-[#121317] rounded-none flex items-center justify-between">
               <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#888888] dark:text-[#64748B]">
+                <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#6B6B6B] dark:text-[#A1A1AA]">
                   YOUR RESPONSIBILITY
                 </span>
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
-                  <div className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#111111] dark:text-[#F4F4F6]">
+                  <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#111111] dark:text-[#F4F4F6]">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                     <span>Update timetable</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#111111] dark:text-[#F4F4F6]">
+                  <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#111111] dark:text-[#F4F4F6]">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                     <span>Broadcast changes</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#111111] dark:text-[#F4F4F6]">
+                  <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#111111] dark:text-[#F4F4F6]">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                     <span>Accurate info</span>
                   </div>
@@ -242,7 +242,7 @@ If you are our Batch Pilot or want to setup the synced batch timetable for all o
                 <button
                   type="button"
                   onClick={handlePersonalTimetable}
-                  className="py-2.5 px-3 border border-transparent hover:border-[#D8D8D8] dark:hover:border-white/[0.1] text-[12px] font-medium text-[#888888] dark:text-[#94A3B8] hover:text-[#111111] dark:hover:text-[#F4F4F6] rounded-none transition-colors text-center cursor-pointer"
+                  className="py-2.5 px-3 border border-transparent hover:border-[#D8D8D8] dark:hover:border-white/[0.1] text-[12px] font-medium text-[#6B6B6B] dark:text-[#94A3B8] hover:text-[#111111] dark:hover:text-[#F4F4F6] rounded-none transition-colors text-center cursor-pointer"
                 >
                   Personal mode for now →
                 </button>

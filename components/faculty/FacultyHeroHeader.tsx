@@ -74,7 +74,7 @@ export const FacultyHeroHeader: React.FC<FacultyHeroHeaderProps> = ({
         <div>
           {profile.facultyEmployeeId && (
             <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="inline-flex items-center gap-1 bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 px-2.5 py-0.5 text-[10px] font-mono uppercase rounded-[4px]">
+              <span className="inline-flex items-center gap-1 bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 px-2.5 py-0.5 text-[11px] font-mono uppercase rounded-[4px]">
                 ID: {profile.facultyEmployeeId}
               </span>
             </div>

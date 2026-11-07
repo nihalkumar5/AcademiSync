@@ -1294,37 +1294,37 @@ export default function SuperAdminPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col py-2">
                 <div className="text-[32px] font-black leading-none text-[#111111] dark:text-[#FFFFFF]">{deduplicatedUsersList.length}</div>
-                <div className="text-[11px] font-bold text-[#A0A0A0] uppercase tracking-widest mt-2">Total Unique Students</div>
+                <div className="text-[11px] font-bold text-[#6B6B6B] uppercase tracking-widest mt-2">Total Unique Students</div>
               </div>
 
               <div className="flex flex-col py-2">
                 <div className="text-[32px] font-black leading-none text-[#111111] dark:text-[#FFFFFF]">{batchesList.length}</div>
-                <div className="text-[11px] font-bold text-[#A0A0A0] uppercase tracking-widest mt-2">Active Batches</div>
+                <div className="text-[11px] font-bold text-[#6B6B6B] uppercase tracking-widest mt-2">Active Batches</div>
               </div>
             </div>
             
             {/* Campaign Performance */}
             <div className="mt-4 border-t border-[#D8D8D8] dark:border-[#333333] pt-6">
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#A0A0A0] mb-4">Campaign Performance</h3>
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#6B6B6B] mb-4">Campaign Performance</h3>
               <div className="grid grid-cols-3 gap-4">
                 <div className="flex flex-col">
                   <div className="text-[20px] font-bold leading-none text-[#111111] dark:text-[#FFFFFF]">{totalImpressions}</div>
-                  <div className="text-[10px] text-[#6F6F6F] mt-1 font-medium uppercase tracking-wider">Impressions</div>
+                  <div className="text-[11px] text-[#6F6F6F] mt-1 font-medium uppercase tracking-wider">Impressions</div>
                 </div>
                 <div className="flex flex-col">
                   <div className="text-[20px] font-bold leading-none text-[#111111] dark:text-[#FFFFFF]">{totalClicks}</div>
-                  <div className="text-[10px] text-[#6F6F6F] mt-1 font-medium uppercase tracking-wider">Clicks</div>
+                  <div className="text-[11px] text-[#6F6F6F] mt-1 font-medium uppercase tracking-wider">Clicks</div>
                 </div>
                 <div className="flex flex-col">
                   <div className="text-[20px] font-bold leading-none text-[#111111] dark:text-[#FFFFFF]">{overallCTR}%</div>
-                  <div className="text-[10px] text-[#6F6F6F] mt-1 font-medium uppercase tracking-wider">CTR</div>
+                  <div className="text-[11px] text-[#6F6F6F] mt-1 font-medium uppercase tracking-wider">CTR</div>
                 </div>
               </div>
             </div>
 
             {/* Admin Actions */}
             <div className="mt-8">
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#A0A0A0] mb-2 border-b border-[#F0F0F0] dark:border-[#333333] pb-2">Admin Actions</h3>
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#6B6B6B] mb-2 border-b border-[#F0F0F0] dark:border-[#333333] pb-2">Admin Actions</h3>
               
               <div className="flex flex-col gap-0">
                 <button
@@ -1413,7 +1413,7 @@ export default function SuperAdminPage() {
                   <button
                     onClick={() => setSearchUserQuery('')}
                     className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] font-mono opacity-50 hover:opacity-100"
-                    title="Clear search"
+                    title="Clear search" aria-label="Clear search"
                   >
                     ✕
                   </button>
@@ -1425,7 +1425,7 @@ export default function SuperAdminPage() {
             <div className="flex flex-wrap items-center justify-between gap-3 p-3 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111]">
               {/* Role Filters */}
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#6F6F6F] mr-1 flex items-center gap-1">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F] mr-1 flex items-center gap-1">
                   <Filter className="w-3 h-3" />
                   Role Filter:
                 </span>
@@ -1439,7 +1439,7 @@ export default function SuperAdminPage() {
                   <button
                     key={f.id}
                     onClick={() => setSelectedRoleFilter(f.id as any)}
-                    className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors rounded-none cursor-pointer border ${
+                    className={`px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider transition-colors rounded-none cursor-pointer border ${
                       selectedRoleFilter === f.id
                         ? 'bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] border-[#111111] dark:border-[#FFFFFF]'
                         : 'border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
@@ -1461,7 +1461,7 @@ export default function SuperAdminPage() {
                     }
                     setCollapsedColleges(next);
                   }}
-                  className="text-[10px] font-mono uppercase tracking-wider text-[#6F6F6F] hover:text-[#111111] dark:hover:text-white transition-colors underline cursor-pointer"
+                  className="text-[11px] font-mono uppercase tracking-wider text-[#6F6F6F] hover:text-[#111111] dark:hover:text-white transition-colors underline cursor-pointer"
                 >
                   {collegeUserGroups.length > 0 && collegeUserGroups.every(g => !!collapsedColleges[g.key]) ? 'Expand All Colleges' : 'Collapse All'}
                 </button>
@@ -1480,7 +1480,7 @@ export default function SuperAdminPage() {
               >
                 <Building2 className="w-3.5 h-3.5" />
                 <span>All Colleges</span>
-                <span className="font-mono text-[9px] opacity-75">({deduplicatedUsersList.length})</span>
+                <span className="font-mono text-[11px] opacity-75">({deduplicatedUsersList.length})</span>
               </button>
 
               {allCollegeOptions.map((c) => (
@@ -1492,10 +1492,10 @@ export default function SuperAdminPage() {
                       ? 'bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] border-[#111111] dark:border-[#FFFFFF]'
                       : 'border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
                   }`}
-                  title={c.displayName}
+                  title={c.displayName} aria-label={c.displayName}
                 >
                   <span>{c.shortName}</span>
-                  <span className="font-mono text-[9px] px-1.5 py-0.2 border border-current/20 bg-current/5">
+                  <span className="font-mono text-[11px] px-1.5 py-0.2 border border-current/20 bg-current/5">
                     {c.count}
                   </span>
                 </button>
@@ -1540,7 +1540,7 @@ export default function SuperAdminPage() {
                                 {group.displayName}
                               </h3>
                               {group.shortName !== 'NOT SET' && (
-                                <span className="font-mono text-[9px] uppercase px-1.5 py-0.5 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-[#6F6F6F] dark:text-[#A0A0A0]">
+                                <span className="font-mono text-[11px] uppercase px-1.5 py-0.5 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-[#6F6F6F] dark:text-[#A0A0A0]">
                                   {group.shortName}
                                 </span>
                               )}
@@ -1553,12 +1553,12 @@ export default function SuperAdminPage() {
 
                         <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
                           {group.crCount > 0 && (
-                            <span className="px-2 py-0.5 text-[10px] font-bold font-mono uppercase bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40">
+                            <span className="px-2 py-0.5 text-[11px] font-bold font-mono uppercase bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40">
                               {group.crCount} CR{group.crCount > 1 ? 's' : ''}
                             </span>
                           )}
                           {group.proCount > 0 && (
-                            <span className="px-2 py-0.5 text-[10px] font-bold font-mono uppercase bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-900/40">
+                            <span className="px-2 py-0.5 text-[11px] font-bold font-mono uppercase bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-900/40">
                               {group.proCount} PRO
                             </span>
                           )}
@@ -1582,7 +1582,7 @@ export default function SuperAdminPage() {
                           <div className="hidden sm:block overflow-x-auto">
                             <table className="w-full text-[12px] text-left border-collapse min-w-[800px]">
                               <thead>
-                                <tr className="border-b border-[#F0F0F0] dark:border-[#222222] bg-[#FAFAF8] dark:bg-[#141414] font-bold uppercase tracking-[1px] text-[10px] text-[#A0A0A0]">
+                                <tr className="border-b border-[#F0F0F0] dark:border-[#222222] bg-[#FAFAF8] dark:bg-[#141414] font-bold uppercase tracking-[1px] text-[11px] text-[#6B6B6B]">
                                   <th className="p-3.5 font-bold">Student</th>
                                   <th className="p-3.5 font-bold">Branch & Semester</th>
                                   <th className="p-3.5 font-bold">Roll No</th>
@@ -1605,7 +1605,7 @@ export default function SuperAdminPage() {
                                             {p.name && p.name.toLowerCase() !== 'student' ? p.name : (!p.email ? 'Student (Guest / No Name)' : (p.name || 'Anonymous'))}
                                           </div>
                                           {currentRole === 'cr' && (
-                                            <span className="px-1.5 py-0.2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[9px] font-bold uppercase tracking-wider font-mono">
+                                            <span className="px-1.5 py-0.2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[11px] font-bold uppercase tracking-wider font-mono">
                                               CR
                                             </span>
                                           )}
@@ -1648,7 +1648,7 @@ export default function SuperAdminPage() {
                                                     handleUpdateUserRole(u.id, role as any, u.linkedDocIds);
                                                     setActiveRoleDropdown(null);
                                                   }}
-                                                  className="px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-[1px] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
+                                                  className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1px] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
                                                 >
                                                   {role === 'super_admin' ? 'Super Admin' : role === 'faculty' ? 'Faculty (Prof)' : role === 'cr' ? 'CR (Class Rep)' : 'Student'}
                                                 </button>
@@ -1660,7 +1660,7 @@ export default function SuperAdminPage() {
                                       <td className="p-3.5">
                                         <button
                                           onClick={() => handleToggleUserPro(u.id, isPro, u.linkedDocIds)}
-                                          className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border cursor-pointer rounded-none transition-colors ${
+                                          className={`px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider border cursor-pointer rounded-none transition-colors ${
                                             isPro
                                               ? 'bg-[#111111] text-[#FFFFFF] border-[#111111] dark:bg-[#FFFFFF] dark:text-[#111111] dark:border-[#FFFFFF]'
                                               : 'border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
@@ -1695,7 +1695,7 @@ export default function SuperAdminPage() {
                                           {p.name && p.name.toLowerCase() !== 'student' ? p.name : (!p.email ? 'Student (Guest / No Name)' : (p.name || 'Anonymous'))}
                                         </span>
                                         {currentRole === 'cr' && (
-                                          <span className="px-1.5 py-0.2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[9px] font-bold font-mono uppercase">
+                                          <span className="px-1.5 py-0.2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[11px] font-bold font-mono uppercase">
                                             CR
                                           </span>
                                         )}
@@ -1705,7 +1705,7 @@ export default function SuperAdminPage() {
                                       </span>
                                     </div>
                                     <div className="text-right">
-                                      <span className="text-[10px] text-[#A0A0A0] font-mono block">Joined {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}</span>
+                                      <span className="text-[11px] text-[#6B6B6B] font-mono block">Joined {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}</span>
                                     </div>
                                   </div>
 
@@ -1725,7 +1725,7 @@ export default function SuperAdminPage() {
                                           e.stopPropagation();
                                           setActiveRoleDropdown(activeRoleDropdown === u.id ? null : u.id);
                                         }}
-                                        className="w-full h-full flex items-center justify-between px-2.5 py-1.5 border border-[#D8D8D8] dark:border-[#333333] bg-transparent text-[10px] font-bold uppercase cursor-pointer rounded-none focus:outline-none"
+                                        className="w-full h-full flex items-center justify-between px-2.5 py-1.5 border border-[#D8D8D8] dark:border-[#333333] bg-transparent text-[11px] font-bold uppercase cursor-pointer rounded-none focus:outline-none"
                                       >
                                         <span>{currentRole === 'super_admin' ? 'Super Admin' : currentRole === 'faculty' ? 'Faculty' : currentRole === 'cr' ? 'CR' : 'Student'}</span>
                                         <ChevronDown className="w-3 h-3 opacity-50" />
@@ -1741,7 +1741,7 @@ export default function SuperAdminPage() {
                                                 handleUpdateUserRole(u.id, role as any, u.linkedDocIds);
                                                 setActiveRoleDropdown(null);
                                               }}
-                                              className="px-3 py-2 text-left text-[10px] font-bold uppercase hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
+                                              className="px-3 py-2 text-left text-[11px] font-bold uppercase hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
                                             >
                                               {role === 'super_admin' ? 'Super Admin' : role === 'faculty' ? 'Faculty' : role === 'cr' ? 'CR (Class Rep)' : 'Student'}
                                             </button>
@@ -1752,7 +1752,7 @@ export default function SuperAdminPage() {
 
                                     <button
                                       onClick={() => handleToggleUserPro(u.id, isPro, u.linkedDocIds)}
-                                      className={`flex-1 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider border cursor-pointer rounded-none transition-colors ${
+                                      className={`flex-1 px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wider border cursor-pointer rounded-none transition-colors ${
                                         isPro
                                           ? 'bg-[#111111] text-[#FFFFFF] border-[#111111] dark:bg-[#FFFFFF] dark:text-[#111111] dark:border-[#FFFFFF]'
                                           : 'border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
@@ -1787,7 +1787,7 @@ export default function SuperAdminPage() {
               </div>
 
               <div className="relative w-full sm:w-72">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40" />
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-black/60 dark:text-white/60" />
                 <input
                   type="text"
                   placeholder="Search college, branch..."
@@ -1809,20 +1809,20 @@ export default function SuperAdminPage() {
                   <div key={b.id} className="border border-[#D8D8D8] dark:border-[#333333] p-4 flex flex-col gap-4 bg-white dark:bg-[#111111]">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-col flex-1">
-                        <span className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#A0A0A0]">Batch Code</span>
+                        <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#6B6B6B]">Batch Code</span>
                         <div className="flex items-center gap-2 mt-1">
                           {b.inviteCode ? (
                             <span className="font-mono font-black text-[14px] tracking-wider px-2.5 py-0.5 bg-black/5 dark:bg-white/10 text-black dark:text-white border border-black/10 dark:border-white/20 select-all">
                               {b.inviteCode}
                             </span>
                           ) : (
-                            <span className="text-[12px] font-mono text-[#A0A0A0] italic">No code set</span>
+                            <span className="text-[12px] font-mono text-[#6B6B6B] italic">No code set</span>
                           )}
                           <button
                             type="button"
                             onClick={() => handleCopyBatchCode(b.inviteCode || b.id)}
-                            className="p-1 text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
-                            title="Copy Batch Code"
+                            className="p-1 text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
+                            title="Copy Batch Code" aria-label="Copy Batch Code"
                           >
                             {copiedBatchCode === (b.inviteCode || b.id) ? (
                               <Check className="w-3.5 h-3.5 text-emerald-500" />
@@ -1834,18 +1834,18 @@ export default function SuperAdminPage() {
                             <button
                               type="button"
                               onClick={() => handleGenerateBatchCode(b.id)}
-                              className="text-[10px] uppercase font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                              className="text-[11px] uppercase font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
                             >
                               Generate
                             </button>
                           )}
                         </div>
-                        <span className="font-mono text-[10px] text-[#6F6F6F] break-all mt-1">Key: {b.id}</span>
+                        <span className="font-mono text-[11px] text-[#6F6F6F] break-all mt-1">Key: {b.id}</span>
                       </div>
                       <button
                         onClick={() => handleDeleteBatch(b.id)}
                         className="p-2 border border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer rounded-none shrink-0"
-                        title="Delete Batch"
+                        title="Delete Batch" aria-label="Delete Batch"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -1860,11 +1860,11 @@ export default function SuperAdminPage() {
 
                     <div className="flex flex-col gap-2 pt-3 border-t border-[#F0F0F0] dark:border-[#222222]">
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-[#A0A0A0] uppercase font-bold tracking-[1px]">Creator</span>
+                        <span className="text-[11px] text-[#6B6B6B] uppercase font-bold tracking-[1px]">Creator</span>
                         <span className="text-[11px] font-medium text-[#111111] dark:text-[#FFFFFF]">{b.creatorName || 'Anonymous'}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-[#A0A0A0] uppercase font-bold tracking-[1px]">Data</span>
+                        <span className="text-[11px] text-[#6B6B6B] uppercase font-bold tracking-[1px]">Data</span>
                         <span className="text-[11px] font-mono text-[#6F6F6F]">
                           {b.subjects?.length || 0} Sub • {b.events?.length || 0} Evt
                         </span>
@@ -1879,7 +1879,7 @@ export default function SuperAdminPage() {
             <div className="hidden sm:block border border-[#D8D8D8] dark:border-[#333333] overflow-x-auto bg-white dark:bg-[#111111]">
               <table className="w-full text-[12px] text-left border-collapse min-w-[950px]">
                 <thead>
-                  <tr className="border-b border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] font-bold uppercase tracking-[1px] text-[10px] text-[#A0A0A0]">
+                  <tr className="border-b border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] font-bold uppercase tracking-[1px] text-[11px] text-[#6B6B6B]">
                     <th className="p-4 font-bold">Batch Code & Key</th>
                     <th className="p-4 font-bold">College & Programme</th>
                     <th className="p-4 font-bold">Branch & Semester</th>
@@ -1912,7 +1912,7 @@ export default function SuperAdminPage() {
                                 type="button"
                                 onClick={() => handleCopyBatchCode(b.inviteCode || b.id)}
                                 className="p-1 text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
-                                title="Copy Batch Code"
+                                title="Copy Batch Code" aria-label="Copy Batch Code"
                               >
                                 {copiedBatchCode === (b.inviteCode || b.id) ? (
                                   <Check className="w-3.5 h-3.5 text-emerald-500" />
@@ -1924,13 +1924,13 @@ export default function SuperAdminPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleGenerateBatchCode(b.id)}
-                                  className="text-[10px] uppercase font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                                  className="text-[11px] uppercase font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
                                 >
                                   Generate
                                 </button>
                               )}
                             </div>
-                            <div className="font-mono text-[10.5px] text-[#6F6F6F] truncate max-w-[210px]" title={b.id}>
+                            <div className="font-mono text-[11px] text-[#6F6F6F] truncate max-w-[210px]" title={b.id}>
                               Key: {b.id}
                             </div>
                           </div>
@@ -1945,7 +1945,7 @@ export default function SuperAdminPage() {
                         </td>
                         <td className="p-4">
                           <div className="font-medium text-[#111111] dark:text-[#FFFFFF]">{b.creatorName || 'Anonymous'}</div>
-                          <div className="text-[10px] font-mono text-[#6F6F6F] truncate max-w-[120px]" title={b.creatorId}>{b.creatorId}</div>
+                          <div className="text-[11px] font-mono text-[#6F6F6F] truncate max-w-[120px]" title={b.creatorId}>{b.creatorId}</div>
                         </td>
                         <td className="p-4 font-mono text-[11px] text-[#6F6F6F]">
                           <div>{b.subjects?.length || 0} Sub</div>
@@ -1957,7 +1957,7 @@ export default function SuperAdminPage() {
                               type="button"
                               onClick={() => handleCopyBatchCode(b.inviteCode || b.id)}
                               className="p-1.5 border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 text-[#111111] dark:text-[#FFFFFF] transition-colors cursor-pointer rounded-none inline-flex items-center justify-center gap-1 text-[11px] font-mono"
-                              title="Copy Code"
+                              title="Copy Code" aria-label="Copy Code"
                             >
                               {copiedBatchCode === (b.inviteCode || b.id) ? (
                                 <Check className="w-3.5 h-3.5 text-emerald-500" />
@@ -1969,7 +1969,7 @@ export default function SuperAdminPage() {
                             <button
                               onClick={() => handleDeleteBatch(b.id)}
                               className="p-1.5 border border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer rounded-none inline-flex items-center justify-center"
-                              title="Delete Batch"
+                              title="Delete Batch" aria-label="Delete Batch"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -2052,7 +2052,7 @@ export default function SuperAdminPage() {
                     >
                       <div>
                         <div className="flex items-center justify-between pb-3 mb-3 border-b border-black/10 dark:border-white/10">
-                          <div className="flex items-center gap-1.5 px-2 py-0.5 border border-black dark:border-white text-[10px] font-bold uppercase tracking-wider">
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 border border-black dark:border-white text-[11px] font-bold uppercase tracking-wider">
                             {camp.category === 'movie' && <Film className="w-3 h-3" />}
                             {camp.category === 'merch' && <ShoppingBag className="w-3 h-3" />}
                             {camp.category === 'event' && <Calendar className="w-3 h-3" />}
@@ -2062,7 +2062,7 @@ export default function SuperAdminPage() {
 
                           <div className="flex items-center gap-2">
                             <span
-                              className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 border ${
+                              className={`text-[11px] font-bold uppercase tracking-widest px-2 py-0.5 border ${
                                 camp.isActive
                                   ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
                                   : 'border-rose-500 text-rose-500 bg-rose-500/10'
@@ -2106,7 +2106,7 @@ export default function SuperAdminPage() {
                             )}
                           </div>
                           {!isUniversal && (
-                            <div className="text-[10px] text-black/70 dark:text-white/70 flex flex-col gap-0.5 pt-0.5">
+                            <div className="text-[11px] text-black/70 dark:text-white/70 flex flex-col gap-0.5 pt-0.5">
                               <div>Colleges: {camp.targetColleges?.length ? camp.targetColleges.join(', ') : 'All Colleges'}</div>
                               <div>Branches: {camp.targetBranches?.length ? camp.targetBranches.join(', ') : 'All Branches'}</div>
                               {camp.targetSemesters?.length ? (
@@ -2116,7 +2116,7 @@ export default function SuperAdminPage() {
                           )}
                         </div>
 
-                        <div className="mt-2 text-[10px] font-mono text-black/60 dark:text-white/60 truncate">
+                        <div className="mt-2 text-[11px] font-mono text-black/60 dark:text-white/60 truncate">
                           Link: <a href={camp.targetUrl} target="_blank" rel="noreferrer" className="underline hover:text-black dark:hover:text-white">{camp.targetUrl}</a>
                         </div>
                       </div>
@@ -2147,14 +2147,14 @@ export default function SuperAdminPage() {
                           <button
                             onClick={() => openEditCampaign(camp)}
                             className="p-1.5 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer"
-                            title="Edit"
+                            title="Edit" aria-label="Edit"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteCampaign(camp.id)}
                             className="p-1.5 border border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer"
-                            title="Delete"
+                            title="Delete" aria-label="Delete"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -2262,7 +2262,7 @@ export default function SuperAdminPage() {
                             </div>
 
                             <span
-                              className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-none border ${
+                              className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-none border ${
                                 isPending
                                   ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800'
                                   : isApproved
@@ -2284,7 +2284,7 @@ export default function SuperAdminPage() {
                               <span>📚</span>
                               <span>{req.branch} · Sem {req.semester}</span>
                             </div>
-                            <div className="text-[10px] font-mono text-slate-400 pt-0.5 truncate">
+                            <div className="text-[11px] font-mono text-slate-400 pt-0.5 truncate">
                               Batch Key: {req.batchKey}
                             </div>
                           </div>
@@ -2375,7 +2375,7 @@ export default function SuperAdminPage() {
                                 <button
                                   onClick={() => handleApproveCRRequest(req)}
                                   className="text-[11px] text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-white hover:underline uppercase font-bold cursor-pointer"
-                                  title="Force push approved batch details to user profile"
+                                  title="Force push approved batch details to user profile" aria-label="Force push approved batch details to user profile"
                                 >
                                   Re-sync
                                 </button>
@@ -2485,7 +2485,7 @@ export default function SuperAdminPage() {
                                   {m.name || 'Anonymous User'}
                                 </span>
                                 {isUnread && (
-                                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 uppercase tracking-widest">
+                                  <span className="text-[11px] font-bold px-1.5 py-0.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 uppercase tracking-widest">
                                     New
                                   </span>
                                 )}
@@ -2503,7 +2503,7 @@ export default function SuperAdminPage() {
                             <span className="text-xs px-2.5 py-1 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-medium rounded-none">
                               {m.subject || 'General Inquiry'}
                             </span>
-                            <span className="text-[11px] text-[#999999]">
+                            <span className="text-[11px] text-[#6B6B6B]">
                               {m.createdAt ? new Date(m.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
                             </span>
                           </div>
@@ -2550,7 +2550,7 @@ export default function SuperAdminPage() {
                               }
                             }}
                             className="p-1.5 text-rose-500 hover:text-rose-700 transition-colors"
-                            title="Delete message"
+                            title="Delete message" aria-label="Delete message"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -2594,7 +2594,7 @@ export default function SuperAdminPage() {
                   <Crown className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold font-mono tracking-widest uppercase text-emerald-600 dark:text-emerald-400">
+                  <div className="text-[11px] font-bold font-mono tracking-widest uppercase text-emerald-600 dark:text-emerald-400">
                     Verification Complete
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
@@ -2627,7 +2627,7 @@ export default function SuperAdminPage() {
 
               {/* 6-digit Batch Code Highlight Box */}
               <div className="p-4 bg-amber-500/5 dark:bg-amber-500/10 border-2 border-dashed border-amber-500/40 mb-4 flex flex-col items-center text-center">
-                <span className="text-[10px] font-mono uppercase font-bold tracking-wider text-amber-700 dark:text-amber-400 mb-1">
+                <span className="text-[11px] font-mono uppercase font-bold tracking-wider text-amber-700 dark:text-amber-400 mb-1">
                   OFFICIAL 6-DIGIT BATCH CODE
                 </span>
                 <div className="flex items-center gap-3 my-1">
@@ -2647,7 +2647,7 @@ export default function SuperAdminPage() {
                       }
                     }}
                     className="p-2 border border-slate-300 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors rounded-none cursor-pointer"
-                    title="Copy Code"
+                    title="Copy Code" aria-label="Copy Code"
                   >
                     {copiedSuccessCode ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-slate-600 dark:text-zinc-300" />}
                   </button>
@@ -2909,7 +2909,7 @@ export default function SuperAdminPage() {
                         {/* Search and Add College */}
                         <div className="relative">
                           <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-[#1A1A1A] border border-[#D9D9D6] dark:border-[#333333]">
-                            <Search className="w-4 h-4 text-[#888888] shrink-0" />
+                            <Search className="w-4 h-4 text-[#6B6B6B] shrink-0" />
                             <input
                               type="text"
                               value={campaignCollegeQuery}
@@ -2938,9 +2938,9 @@ export default function SuperAdminPage() {
 
                           {showCampaignCollegeDropdown && (suggestedCampaignColleges.length > 0 || isSearchingColleges) && (
                             <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] shadow-xl z-50 divide-y divide-[#E5E5E5] dark:divide-[#2C2C2C]">
-                              <div className="p-2 bg-[#F9F9F8] dark:bg-[#161616] text-[10px] font-bold uppercase tracking-wider text-[#888888] flex items-center justify-between sticky top-0">
+                              <div className="p-2 bg-[#F9F9F8] dark:bg-[#161616] text-[11px] font-bold uppercase tracking-wider text-[#6B6B6B] flex items-center justify-between sticky top-0">
                                 <span>{isSearchingColleges ? 'Searching SheerID...' : 'Search Results'}</span>
-                                <span className="text-[8.5px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 font-mono font-bold">SheerID Verified</span>
+                                <span className="text-[11px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 font-mono font-bold">SheerID Verified</span>
                               </div>
                               {suggestedCampaignColleges.map((item) => (
                                 <button
@@ -2957,7 +2957,7 @@ export default function SuperAdminPage() {
                                     {item.name}
                                   </span>
                                   {item.state && (
-                                    <span className="text-[10.5px] text-[#888888]">
+                                    <span className="text-[11px] text-[#6B6B6B]">
                                       {item.state}
                                     </span>
                                   )}
@@ -3106,7 +3106,7 @@ export default function SuperAdminPage() {
                   {/* Reach Estimate */}
                   <div className="p-6 bg-white dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] mt-2">
                     <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#A0A0A0]">Estimated Reach</span>
+                      <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#6B6B6B]">Estimated Reach</span>
                       <span className="text-[24px] font-bold text-[#111111] dark:text-[#FFFFFF]">
                         {(() => {
                           if (campaignForm.targetAudienceType === 'all') return `${deduplicatedUsersList.length} students (Everyone)`;

@@ -189,7 +189,7 @@ export const HomeMessCard: React.FC = () => {
         <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
           MESS MENU
         </h3>
-        <span className="text-[10.5px] sm:text-[11px] font-mono font-bold text-[#808080] uppercase tracking-wider">
+        <span className="text-[11px] sm:text-[11px] font-mono font-bold text-[#6B6B6B] uppercase tracking-wider">
           {isLive ? 'LIVE NOW' : 'NEXT MEAL'}
         </span>
       </div>
@@ -212,7 +212,7 @@ export const HomeMessCard: React.FC = () => {
         <div className="flex items-center justify-between gap-2 sm:gap-3 relative z-10 w-full flex-wrap sm:flex-nowrap">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             {isLive ? (
-              <div className="flex items-center gap-1.5 font-mono text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#18A889] min-w-0">
+              <div className="flex items-center gap-1.5 font-mono text-[11px] sm:text-[11px] font-bold uppercase tracking-wider text-[#18A889] min-w-0">
                 <span className="relative flex h-2 w-2 shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#18A889] opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#18A889]"></span>
@@ -222,22 +222,22 @@ export const HomeMessCard: React.FC = () => {
                 </span>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 font-mono text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#A0A0A0] min-w-0">
-                <span className="text-[#C99A32] text-[8px] shrink-0">●</span>
+              <div className="flex items-center gap-1.5 font-mono text-[11px] sm:text-[11px] font-bold uppercase tracking-wider text-[#A0A0A0] min-w-0">
+                <span className="text-[#C99A32] text-[11px] shrink-0">●</span>
                 <span className="shrink-0">{mealInfo.status === 'TOMORROW' ? 'TOMORROW' : 'UPCOMING'}</span>
                 <span className="opacity-40 select-none">·</span>
                 <span className="text-white font-extrabold truncate">{mealInfo.mealName.toUpperCase()}</span>
               </div>
             )}
             {mealInfo.timingStr && (
-              <span className="hidden md:inline font-mono text-[10.5px] text-[#737373] tracking-normal shrink-0">
+              <span className="hidden md:inline font-mono text-[11px] text-[#737373] tracking-normal shrink-0">
                 ({mealInfo.timingStr})
               </span>
             )}
           </div>
 
           {/* Right Time Badge */}
-          <div className={`px-2 py-0.5 sm:px-2.5 sm:py-1 uppercase tracking-wider font-mono font-bold text-[10px] sm:text-[11px] shrink-0 rounded-[3px] border flex items-center gap-1 sm:gap-1.5 ${
+          <div className={`px-2 py-0.5 sm:px-2.5 sm:py-1 uppercase tracking-wider font-mono font-bold text-[11px] sm:text-[11px] shrink-0 rounded-[3px] border flex items-center gap-1 sm:gap-1.5 ${
             isLive
               ? 'bg-[#18A889]/15 text-[#2DD4BF] border-[#18A889]/30'
               : 'bg-white/[0.08] text-white/90 border-white/10'
@@ -258,12 +258,12 @@ export const HomeMessCard: React.FC = () => {
                 >
                   {item}
                   {idx < displayItems.length - 1 && (
-                    <span className="text-white/30 ml-2.5 font-normal select-none">·</span>
+                    <span className="text-white/60 ml-2.5 font-normal select-none">·</span>
                   )}
                 </span>
               ))
             ) : (
-              <span className="text-[13.5px] font-medium text-[#737373]">
+              <span className="text-[14px] font-medium text-[#737373]">
                 Menu items updating soon
               </span>
             )}

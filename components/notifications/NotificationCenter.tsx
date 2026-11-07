@@ -92,13 +92,13 @@ export const NotificationCenter: React.FC = () => {
           <p className="text-[14px] text-black/60 dark:text-[#94A3B8] font-medium leading-snug">
             {n.message}
           </p>
-          <span className="text-[12px] text-black/40 dark:text-[#64748B] font-medium mt-1">
+          <span className="text-[12px] text-black/60 dark:text-[#A1A1AA] font-medium mt-1">
             {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
         </div>
       </div>
       <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity pr-2">
-        <ChevronRight className="w-4 h-4 text-black/30 dark:text-white/30" />
+        <ChevronRight className="w-4 h-4 text-black/60 dark:text-white/60" />
       </div>
     </motion.div>
   );
@@ -108,7 +108,7 @@ export const NotificationCenter: React.FC = () => {
       {/* Header section - Clean Hierarchy */}
       <div className="flex items-end justify-between">
         <div>
-          <h2 className="text-[11px] font-bold tracking-[0.2em] uppercase text-black/50 dark:text-white/40 mb-1.5">
+          <h2 className="text-[11px] font-bold tracking-[0.2em] uppercase text-black/60 dark:text-white/60 mb-1.5">
             Notifications
           </h2>
           <div className="text-2xl font-bold tracking-tight text-black dark:text-[#F4F4F6] flex items-center gap-3">
@@ -119,7 +119,7 @@ export const NotificationCenter: React.FC = () => {
         {notifications.length > 0 && (
           <button
             onClick={markAllNotificationsAsRead}
-            className="text-[13px] font-bold text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors cursor-pointer mb-1"
+            className="text-[13px] font-bold text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition-colors cursor-pointer mb-1"
           >
             Mark all read
           </button>
@@ -137,7 +137,7 @@ export const NotificationCenter: React.FC = () => {
               className={`flex-1 pb-3 text-center text-[11px] font-bold uppercase tracking-widest transition-colors relative whitespace-nowrap cursor-pointer ${
                 isSelected
                   ? 'text-black dark:text-[#F4F4F6]'
-                  : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-[#F4F4F6]/70'
+                  : 'text-black/60 dark:text-white/60 hover:text-black/70 dark:hover:text-[#F4F4F6]/70'
               }`}
             >
               {cat === 'all' ? 'All' : cat}
@@ -155,7 +155,7 @@ export const NotificationCenter: React.FC = () => {
       {/* Notifications Feed */}
       {filtered.length === 0 ? (
         <EmptyState
-          icon={<Bell className="w-6 h-6 text-black/30 dark:text-white/30" />}
+          icon={<Bell className="w-6 h-6 text-black/60 dark:text-white/60" />}
           title="All caught up"
           description="You don't have any new notifications."
         />
@@ -165,7 +165,7 @@ export const NotificationCenter: React.FC = () => {
             
             {needsAttention.length > 0 && (
               <div className="flex flex-col">
-                <h3 className="text-[11px] font-bold tracking-[0.2em] uppercase text-black/50 dark:text-white/50 mb-3">
+                <h3 className="text-[11px] font-bold tracking-[0.2em] uppercase text-black/60 dark:text-white/60 mb-3">
                   Needs Attention
                 </h3>
                 <div className="flex flex-col gap-1">
@@ -176,7 +176,7 @@ export const NotificationCenter: React.FC = () => {
 
             {today.length > 0 && (
               <div className="flex flex-col">
-                <h3 className="text-[11px] font-bold tracking-[0.2em] uppercase text-black/50 dark:text-white/50 mb-2 mt-2">
+                <h3 className="text-[11px] font-bold tracking-[0.2em] uppercase text-black/60 dark:text-white/60 mb-2 mt-2">
                   Today
                 </h3>
                 <div className="flex flex-col">
@@ -187,7 +187,7 @@ export const NotificationCenter: React.FC = () => {
 
             {earlier.length > 0 && (
               <div className="flex flex-col">
-                <h3 className="text-[11px] font-bold tracking-[0.2em] uppercase text-black/50 dark:text-white/50 mb-2 mt-4">
+                <h3 className="text-[11px] font-bold tracking-[0.2em] uppercase text-black/60 dark:text-white/60 mb-2 mt-4">
                   Earlier
                 </h3>
                 <div className="flex flex-col">

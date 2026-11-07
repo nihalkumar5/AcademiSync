@@ -75,7 +75,7 @@ export const AndroidAppGate: React.FC = () => {
               inter<span className="font-normal opacity-80">semester</span>
             </h1>
             <div className="w-[24px] h-[1.5px] bg-[#111111] mt-2.5 mb-1.5" />
-            <p className="text-[9.5px] tracking-[2.5px] font-mono font-bold text-[#111111]/60 uppercase whitespace-pre-line text-center">
+            <p className="text-[11px] tracking-[2.5px] font-mono font-bold text-[#111111]/60 uppercase whitespace-pre-line text-center">
               EVERY ACADEMIC DAY{"\n"}CLEAR & PREDICTABLE.
             </p>
           </div>
@@ -107,7 +107,7 @@ export const AndroidAppGate: React.FC = () => {
                 <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center shrink-0 shadow-sm border border-black/5">
                   <Calendar className="w-3.5 h-3.5 text-[#111111]" />
                 </div>
-                <div className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[#111111]">
+                <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111111]">
                   <span>Live Timetable:</span>
                   <span className="font-normal text-[#111111]/80">Sync entire class routine & rooms</span>
                 </div>
@@ -117,7 +117,7 @@ export const AndroidAppGate: React.FC = () => {
                 <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center shrink-0 shadow-sm border border-black/5">
                   <Bell className="w-3.5 h-3.5 text-[#111111]" />
                 </div>
-                <div className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[#111111]">
+                <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111111]">
                   <span>Instant Alerts:</span>
                   <span className="font-normal text-[#111111]/80">Class cancellations & reschedule notices</span>
                 </div>
@@ -127,7 +127,7 @@ export const AndroidAppGate: React.FC = () => {
                 <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center shrink-0 shadow-sm border border-black/5">
                   <Sparkles className="w-3.5 h-3.5 text-[#111111]" />
                 </div>
-                <div className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[#111111]">
+                <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111111]">
                   <span>Exams & Mess:</span>
                   <span className="font-normal text-[#111111]/80">Countdown to papers & daily meal dishes</span>
                 </div>
@@ -163,7 +163,7 @@ export const AndroidAppGate: React.FC = () => {
             <button
               type="button"
               onClick={handleBypass}
-              className="w-full py-1.5 text-center text-[11.5px] font-semibold text-black/60 hover:text-black transition-colors cursor-pointer uppercase tracking-wider underline underline-offset-4"
+              className="w-full py-1.5 text-center text-[12px] font-semibold text-black/60 hover:text-black transition-colors cursor-pointer uppercase tracking-wider underline underline-offset-4"
             >
               Continue on Web
             </button>

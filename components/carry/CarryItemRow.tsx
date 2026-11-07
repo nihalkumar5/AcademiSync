@@ -56,16 +56,16 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
         <div className="flex flex-col min-w-0 flex-1 pr-1 justify-center gap-0.5">
           <span
             className={clsx(
-              'text-[14.5px] sm:text-[15px] font-bold tracking-tight truncate transition-all leading-snug',
+              'text-[15px] sm:text-[15px] font-bold tracking-tight truncate transition-all leading-snug',
               item.isPacked
-                ? 'line-through text-[#808080] dark:text-[#64748B]'
+                ? 'line-through text-[#6B6B6B] dark:text-[#A1A1AA]'
                 : 'text-[#151515] dark:text-[#F4F4F6]'
             )}
           >
             {item.title}
           </span>
 
-          <div className="flex items-center gap-2 text-[11.5px] text-[#6F6F6F] dark:text-[#94A3B8] font-medium min-w-0 flex-wrap">
+          <div className="flex items-center gap-2 text-[12px] text-[#6F6F6F] dark:text-[#94A3B8] font-medium min-w-0 flex-wrap">
             {item.source === 'subject' ? (
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-medium truncate">
                 <BookOpen className="w-[12px] h-[12px] shrink-0" />
@@ -94,7 +94,7 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
             e.stopPropagation();
             setShowMenu(!showMenu);
           }}
-          className="p-1.5 text-[#808080] hover:text-[#111111] dark:text-[#94A3B8] dark:hover:text-white transition-colors cursor-pointer rounded-[4px] hover:bg-black/5 dark:hover:bg-white/10"
+          className="p-1.5 text-[#6B6B6B] hover:text-[#111111] dark:text-[#94A3B8] dark:hover:text-white transition-colors cursor-pointer rounded-[4px] hover:bg-black/5 dark:hover:bg-white/10"
         >
           <MoreVertical className="w-4 h-4" />
         </button>
@@ -112,7 +112,7 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
               {onDelete && item.source === 'custom' && (
                 <button 
                   onClick={(e) => { e.stopPropagation(); onDelete(item.id); setShowMenu(false); }}
-                  className="flex items-center gap-2 w-full text-left px-3.5 py-2 text-[12.5px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                  className="flex items-center gap-2 w-full text-left px-3.5 py-2 text-[13px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5 shrink-0" />
                   <span>Remove from list</span>

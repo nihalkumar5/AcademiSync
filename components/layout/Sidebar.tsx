@@ -93,17 +93,17 @@ export const Sidebar: React.FC = () => {
           className="flex items-center justify-between w-full px-3 py-2.5 rounded-none bg-transparent border border-black/15 dark:border-white/[0.08] text-black/60 dark:text-[#A1A1AA] text-xs hover:bg-black/5 dark:hover:bg-white/[0.04] dark:hover:border-white/20 transition-all group text-left"
         >
           <span className="flex items-center gap-2">
-            <Command className="w-3.5 h-3.5 text-black/40 dark:text-white/40" />
+            <Command className="w-3.5 h-3.5 text-black/60 dark:text-white/60" />
             <span className="font-semibold">Search or jump...</span>
           </span>
-          <kbd className="text-[10px] font-mono bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded-none border border-black/15 dark:border-white/10 text-black/50 dark:text-white/50">
+          <kbd className="text-[11px] font-mono bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded-none border border-black/15 dark:border-white/10 text-black/60 dark:text-white/60">
             ⌘K
           </kbd>
         </button>
 
         {/* Main Navigation links */}
         <div className="flex flex-col gap-1">
-          <span className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-black/40 dark:text-white/40 font-mono">
+          <span className="px-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-black/60 dark:text-white/60 font-mono">
             Academic
           </span>
           {mainNav.map((item) => {
@@ -120,7 +120,7 @@ export const Sidebar: React.FC = () => {
                 )}
               >
                 <span className="flex items-center gap-2.5">
-                  <span className={clsx(isActive ? 'text-white dark:text-white' : 'text-black/40 dark:text-white/40 group-hover:text-black dark:group-hover:text-white')}>
+                  <span className={clsx(isActive ? 'text-white dark:text-white' : 'text-black/40 dark:text-white/60 group-hover:text-black dark:group-hover:text-white')}>
                     {item.icon}
                   </span>
                   {item.label}
@@ -128,7 +128,7 @@ export const Sidebar: React.FC = () => {
                 {item.badge !== undefined && (
                   <span
                     className={clsx(
-                      'text-[9px] font-mono font-bold px-1.5 py-0.5 border rounded-none',
+                      'text-[11px] font-mono font-bold px-1.5 py-0.5 border rounded-none',
                       isActive
                         ? 'bg-white text-black dark:bg-white/20 dark:text-white border-white dark:border-white/20'
                         : 'bg-black/10 dark:bg-white/[0.06] border-black/15 dark:border-white/[0.08] text-black/70 dark:text-[#A1A1AA]'
@@ -144,7 +144,7 @@ export const Sidebar: React.FC = () => {
 
         {/* Secondary Navigation */}
         <div className="flex flex-col gap-1">
-          <span className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-black/40 dark:text-white/40 font-mono">
+          <span className="px-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-black/60 dark:text-white/60 font-mono">
             Management
           </span>
           {secondaryNav.map((item) => {
@@ -161,7 +161,7 @@ export const Sidebar: React.FC = () => {
                 )}
               >
                 <span className="flex items-center gap-2.5">
-                  <span className={clsx(isActive ? 'text-white dark:text-white' : 'text-black/40 dark:text-white/40 group-hover:text-black dark:group-hover:text-white')}>
+                  <span className={clsx(isActive ? 'text-white dark:text-white' : 'text-black/40 dark:text-white/60 group-hover:text-black dark:group-hover:text-white')}>
                     {item.icon}
                   </span>
                   {item.label}
@@ -169,7 +169,7 @@ export const Sidebar: React.FC = () => {
                 {item.badge !== undefined && (
                   <span
                     className={clsx(
-                      'text-[9px] font-mono font-bold px-1.5 py-0.5 border rounded-none bg-rose-500 text-white',
+                      'text-[11px] font-mono font-bold px-1.5 py-0.5 border rounded-none bg-rose-500 text-white',
                       isActive ? 'border-white dark:border-rose-400' : 'border-rose-600'
                     )}
                   >
@@ -195,7 +195,7 @@ export const Sidebar: React.FC = () => {
                   <span className="text-xs font-bold text-black dark:text-[#F4F4F6] truncate">
                     {profile.name || 'User'}
                   </span>
-                  <span className="text-[10px] text-black/50 dark:text-[#71717A] font-mono truncate">
+                  <span className="text-[11px] text-black/60 dark:text-[#A1A1AA] font-mono truncate">
                     Firebase Auth
                   </span>
                 </div>
@@ -213,7 +213,7 @@ export const Sidebar: React.FC = () => {
           <button
             onClick={toggleTheme}
             aria-label="Toggle theme"
-            className="p-1.5 rounded-none text-black/50 dark:text-[#A1A1AA] hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/[0.06] border border-transparent hover:border-black/15 dark:hover:border-white/10 transition-all cursor-pointer"
+            className="p-1.5 rounded-none text-black/60 dark:text-[#A1A1AA] hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/[0.06] border border-transparent hover:border-black/15 dark:hover:border-white/10 transition-all cursor-pointer"
           >
             {settings.theme === 'dark' ? (
               <Sun className="w-3.5 h-3.5 text-amber-400" />

@@ -151,7 +151,7 @@ export const HomeExamAlertCard: React.FC = () => {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className={`w-2.5 h-2.5 rounded-full ${isLive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500 animate-pulse'}`} />
-            <span className={`font-mono text-[11px] sm:text-[11.5px] font-bold uppercase tracking-[1.5px] ${isLive ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}`}>
+            <span className={`font-mono text-[11px] sm:text-[12px] font-bold uppercase tracking-[1.5px] ${isLive ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}`}>
               {isLive
                 ? `EXAMINATION IN PROGRESS · LIVE NOW`
                 : isToday
@@ -162,7 +162,7 @@ export const HomeExamAlertCard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className={`px-2.5 py-1 font-mono text-[10.5px] font-bold uppercase tracking-wider ${
+            <span className={`px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-wider ${
               isLive 
                 ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-black' 
                 : 'bg-black text-white dark:bg-white dark:text-black'
@@ -183,7 +183,7 @@ export const HomeExamAlertCard: React.FC = () => {
                 transition={{ duration: 0.5, ease: 'easeOut' }}
               />
             </div>
-            <div className="flex items-center justify-between text-[10.5px] font-mono text-[#555555] dark:text-[#A1A1AA]">
+            <div className="flex items-center justify-between text-[11px] font-mono text-[#555555] dark:text-[#A1A1AA]">
               <span>Started {activeExam.timing.formattedStart}</span>
               <span className="font-bold text-emerald-700 dark:text-emerald-400">{activeExam.timing.progressPercentage}% Elapsed</span>
               <span>Ends {activeExam.timing.formattedEnd}</span>
@@ -218,14 +218,14 @@ export const HomeExamAlertCard: React.FC = () => {
 
         {/* Chips row: Time, Room, Duration */}
         <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-black/10 dark:border-white/10">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.08] font-mono text-[11.5px] text-[#222222] dark:text-[#E2E8F0] font-semibold">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.08] font-mono text-[12px] text-[#222222] dark:text-[#E2E8F0] font-semibold">
             <Clock className={`w-3.5 h-3.5 shrink-0 ${isLive ? 'text-emerald-500' : 'text-amber-500'}`} />
             {isToday ? 'Today' : 'Tomorrow'} · {activeExam.timing.formattedRange}
             {activeExam.timing.durationMinutes ? ` (${activeExam.timing.durationMinutes}m)` : ''}
           </span>
 
           {activeExam.room && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 font-semibold text-[11.5px]">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 font-semibold text-[12px]">
               <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               Room {activeExam.room}
             </span>
@@ -265,10 +265,10 @@ export const HomeExamAlertCard: React.FC = () => {
             >
               <div className="p-3.5 bg-black/[0.02] dark:bg-white/[0.03] border border-black/5 dark:border-white/10 flex flex-col gap-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-black/60 dark:text-white/60">
+                  <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-black/60 dark:text-white/60">
                     Mandatory Hall Essentials
                   </span>
-                  <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                  <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                     {packedCount} of 4 Packed
                   </span>
                 </div>
@@ -288,17 +288,17 @@ export const HomeExamAlertCard: React.FC = () => {
                         }`}
                       >
                         <div className="flex flex-col min-w-0 pr-2">
-                          <span className={`text-[12px] font-semibold truncate ${isChecked ? 'line-through text-black/50 dark:text-white/50' : 'text-[#111111] dark:text-[#F4F4F6]'}`}>
+                          <span className={`text-[12px] font-semibold truncate ${isChecked ? 'line-through text-black/60 dark:text-white/60' : 'text-[#111111] dark:text-[#F4F4F6]'}`}>
                             {item.label}
                           </span>
-                          <span className="text-[10.5px] text-black/40 dark:text-white/40 truncate">
+                          <span className="text-[11px] text-black/60 dark:text-white/60 truncate">
                             {item.desc}
                           </span>
                         </div>
                         {isChecked ? (
                           <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                         ) : (
-                          <Circle className="w-4 h-4 text-black/30 dark:text-white/30 shrink-0" />
+                          <Circle className="w-4 h-4 text-black/60 dark:text-white/60 shrink-0" />
                         )}
                       </button>
                     );

@@ -184,7 +184,7 @@ export const WeeklyTimetable: React.FC = () => {
       <div className="flex flex-col gap-5 mt-6 sm:mt-8 mb-4">
         <div>
           <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 rounded-[3px]">
+            <span className="px-2 py-0.5 text-[11px] font-mono font-bold uppercase tracking-wider bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 rounded-[3px]">
               WEEKLY SCHEDULE
             </span>
             <span className="text-[12px] font-mono text-[#6F6F6F] dark:text-[#A1A1AA]">
@@ -228,7 +228,7 @@ export const WeeklyTimetable: React.FC = () => {
                 type="button"
                 onClick={() => setActiveView('subjects')}
                 className="flex items-center justify-center h-9 px-3.5 border border-[#8067B5]/40 bg-[#8067B5]/10 text-[#8067B5] dark:text-[#C084FC] text-[13px] font-semibold hover:bg-[#8067B5]/20 transition-colors gap-1.5 cursor-pointer rounded-[3px]"
-                title="Manage your chosen electives in Subject Directory"
+                title="Manage your chosen electives in Subject Directory" aria-label="Manage your chosen electives in Subject Directory"
               >
                 <span>★ My Electives</span>
               </button>
@@ -237,7 +237,7 @@ export const WeeklyTimetable: React.FC = () => {
 
           {profile.isBatchSynced && profile.batchKey && (
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] uppercase mb-1.5">BATCH</span>
+              <span className="text-[11px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] uppercase mb-1.5">BATCH</span>
               <button
                 onClick={() => setShowBatchMembersModal(true)}
                 className="flex items-center justify-between p-3.5 bg-[#FFFFFF] dark:bg-[#121317] border border-[#D9D9D6] dark:border-white/[0.08] hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors text-left cursor-pointer rounded-[3px]"
@@ -283,7 +283,7 @@ export const WeeklyTimetable: React.FC = () => {
               </div>
               <span
                 className={clsx(
-                  'text-[10.5px] font-normal mt-0.5 tracking-tight',
+                  'text-[11px] font-normal mt-0.5 tracking-tight',
                   isSelected ? 'text-white/70' : 'text-[#737373] dark:text-[#94A3B8]'
                 )}
               >
@@ -356,7 +356,7 @@ export const WeeklyTimetable: React.FC = () => {
                       {day}
                     </span>
                     {isToday && (
-                      <span className="text-[10px] font-bold text-white dark:text-emerald-400 bg-[#111111] dark:bg-emerald-500/20 dark:border dark:border-emerald-500/30 px-2 py-0.5 uppercase tracking-wider font-mono">
+                      <span className="text-[11px] font-bold text-white dark:text-emerald-400 bg-[#111111] dark:bg-emerald-500/20 dark:border dark:border-emerald-500/30 px-2 py-0.5 uppercase tracking-wider font-mono">
                         Today
                       </span>
                     )}
@@ -379,8 +379,8 @@ export const WeeklyTimetable: React.FC = () => {
               <div className="flex flex-col gap-3 min-h-[400px]">
                 {daySessions.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-48 text-center bg-black/[0.02] dark:bg-white/[0.02] border border-dashed border-[#D9D9D6] dark:border-white/[0.08]">
-                    <CalendarDays className="w-6 h-6 text-[#888888] mb-2 opacity-50" />
-                    <span className="text-xs font-semibold text-[#888888] dark:text-[#64748B]">No Classes</span>
+                    <CalendarDays className="w-6 h-6 text-[#6B6B6B] mb-2 opacity-50" />
+                    <span className="text-xs font-semibold text-[#6B6B6B] dark:text-[#A1A1AA]">No Classes</span>
                     <button
                       onClick={() => handleAddForDay(day)}
                       className="mt-1.5 text-[11px] font-bold text-[#111111] dark:text-[#F4F4F6] uppercase tracking-wider underline cursor-pointer"

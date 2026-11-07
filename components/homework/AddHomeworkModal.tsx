@@ -164,7 +164,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
               
               {/* SECTION 1: TASK */}
               <div className="flex flex-col gap-[16px]">
-                <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] dark:text-[#64748B] uppercase">TASK</span>
+                <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] dark:text-[#A1A1AA] uppercase">TASK</span>
                 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[11px] font-semibold text-[#111111] dark:text-[#F4F4F6] uppercase">Subject</label>
@@ -196,7 +196,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-[11px] font-semibold text-[#111111] dark:text-[#F4F4F6] uppercase">Description</label>
-                    <span className="text-[10px] font-bold text-[#6F6F6F] dark:text-[#64748B] uppercase tracking-wider">OPTIONAL</span>
+                    <span className="text-[11px] font-bold text-[#6F6F6F] dark:text-[#A1A1AA] uppercase tracking-wider">OPTIONAL</span>
                   </div>
                   <textarea
                     value={description}
@@ -209,7 +209,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
 
               {/* SECTION 2: DEADLINE */}
               <div className="flex flex-col gap-[16px]">
-                <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] dark:text-[#64748B] uppercase">DEADLINE</span>
+                <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] dark:text-[#A1A1AA] uppercase">DEADLINE</span>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
@@ -251,11 +251,11 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
 
               {/* SECTION 3: ATTACHMENT */}
               <div className="flex flex-col gap-[16px]">
-                <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] dark:text-[#64748B] uppercase">ATTACHMENT</span>
+                <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] dark:text-[#A1A1AA] uppercase">ATTACHMENT</span>
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-[11px] font-semibold text-[#111111] dark:text-[#F4F4F6] uppercase">Google Drive Link</label>
-                    <span className="text-[10px] font-bold text-[#6F6F6F] dark:text-[#64748B] uppercase tracking-wider">OPTIONAL</span>
+                    <span className="text-[11px] font-bold text-[#6F6F6F] dark:text-[#A1A1AA] uppercase tracking-wider">OPTIONAL</span>
                   </div>
                   <input
                     type="url"
@@ -270,7 +270,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
               {/* SECTION 4: VISIBILITY */}
               {!homeworkToEdit && profile.isBatchSynced && profile.batchKey && (
                 <div className="flex flex-col gap-[16px]">
-                  <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] dark:text-[#64748B] uppercase">VISIBILITY</span>
+                  <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] dark:text-[#A1A1AA] uppercase">VISIBILITY</span>
                   <div 
                     onClick={() => setShareWithBatch(!shareWithBatch)}
                     className="w-full p-4 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D9D9D6] dark:border-white/[0.1] flex items-center justify-between cursor-pointer group"
@@ -304,7 +304,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
                 <button 
                   type="button" 
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="flex items-center gap-1.5 px-3 py-2 text-[12.5px] font-bold uppercase text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer rounded-none"
+                  className="flex items-center gap-1.5 px-3 py-2 text-[13px] font-bold uppercase text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer rounded-none"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>Delete Task</span>
@@ -324,7 +324,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
                   <button 
                     type="button" 
                     onClick={onClose}
-                    className="px-3 py-2.5 text-[12.5px] font-bold uppercase text-[#6F6F6F] dark:text-[#94A3B8] hover:text-[#111111] dark:hover:text-[#F4F4F6] transition-colors cursor-pointer"
+                    className="px-3 py-2.5 text-[13px] font-bold uppercase text-[#6F6F6F] dark:text-[#94A3B8] hover:text-[#111111] dark:hover:text-[#F4F4F6] transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -377,7 +377,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
               >
                 <div className="flex flex-col pr-4">
                   {sub.code && sub.code !== 'UNK' && (
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] mb-0.5">
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] mb-0.5">
                       {sub.code}
                     </span>
                   )}

@@ -112,7 +112,7 @@ export const Modal: React.FC<ModalProps> = ({
                     </h2>
                   )}
                   {description && (
-                    <p className="mt-1 text-[13px] sm:text-[13.5px] text-[#6F6F6F] dark:text-[#94A3B8] leading-snug">
+                    <p className="mt-1 text-[13px] sm:text-[14px] text-[#6F6F6F] dark:text-[#94A3B8] leading-snug">
                       {description}
                     </p>
                   )}

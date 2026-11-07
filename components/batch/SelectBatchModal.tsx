@@ -227,10 +227,10 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
             
             {/* College Input (Span 7) */}
             <div className="md:col-span-7 flex flex-col gap-1.5 relative">
-              <label className="text-[11.5px] font-bold tracking-wider uppercase text-[#111111] dark:text-[#F4F4F6] flex items-center justify-between">
+              <label className="text-[12px] font-bold tracking-wider uppercase text-[#111111] dark:text-[#F4F4F6] flex items-center justify-between">
                 <span>College / University *</span>
                 {isLoadingColleges && (
-                  <span className="text-[10.5px] font-mono text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                  <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                     <Loader2 className="w-3 h-3 animate-spin" /> Searching...
                   </span>
                 )}
@@ -238,7 +238,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
 
               <div className="relative">
                 <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] focus-within:border-black dark:focus-within:border-white/40 transition-colors">
-                  <School className="w-4 h-4 text-[#888888] dark:text-[#64748B] shrink-0" />
+                  <School className="w-4 h-4 text-[#6B6B6B] dark:text-[#A1A1AA] shrink-0" />
                   <input
                     type="text"
                     value={college}
@@ -249,7 +249,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                     onFocus={() => setShowCollegeDropdown(true)}
                     onBlur={() => setTimeout(() => setShowCollegeDropdown(false), 250)}
                     placeholder="Search your college, institute or university..."
-                    className="w-full bg-transparent text-[13.5px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
+                    className="w-full bg-transparent text-[14px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
                   />
                 </div>
 
@@ -271,7 +271,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                         <p className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8] flex items-center gap-1.5 mt-0.5">
                           <span>{col.state || 'India'}</span>
                           {col.shortName && col.shortName !== col.name && (
-                            <span className="bg-black/5 dark:bg-white/10 px-1.5 py-0.2 rounded text-[10px] uppercase font-mono">
+                            <span className="bg-black/5 dark:bg-white/10 px-1.5 py-0.2 rounded text-[11px] uppercase font-mono">
                               {col.shortName}
                             </span>
                           )}
@@ -285,12 +285,12 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
 
             {/* Degree / Programme Input (Span 5) */}
             <div className="md:col-span-5 flex flex-col gap-1.5 relative">
-              <label className="text-[11.5px] font-bold tracking-wider uppercase text-[#111111] dark:text-[#F4F4F6]">
+              <label className="text-[12px] font-bold tracking-wider uppercase text-[#111111] dark:text-[#F4F4F6]">
                 Degree / Programme *
               </label>
               <div className="relative">
                 <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] focus-within:border-black dark:focus-within:border-white/40 transition-colors">
-                  <GraduationCap className="w-4 h-4 text-[#888888] dark:text-[#64748B] shrink-0" />
+                  <GraduationCap className="w-4 h-4 text-[#6B6B6B] dark:text-[#A1A1AA] shrink-0" />
                   <input
                     type="text"
                     value={programme}
@@ -301,7 +301,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                     onFocus={() => setShowProgrammeDropdown(true)}
                     onBlur={() => setTimeout(() => setShowProgrammeDropdown(false), 200)}
                     placeholder="e.g. B.Tech, BCA, MCA"
-                    className="w-full bg-transparent text-[13.5px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
+                    className="w-full bg-transparent text-[14px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
                   />
                 </div>
 
@@ -326,12 +326,12 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
 
             {/* Branch / Major Input (Span 6) */}
             <div className="md:col-span-6 flex flex-col gap-1.5 relative">
-              <label className="text-[11.5px] font-bold tracking-wider uppercase text-[#111111] dark:text-[#F4F4F6]">
+              <label className="text-[12px] font-bold tracking-wider uppercase text-[#111111] dark:text-[#F4F4F6]">
                 Branch / Major *
               </label>
               <div className="relative">
                 <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] focus-within:border-black dark:focus-within:border-white/40 transition-colors">
-                  <Building2 className="w-4 h-4 text-[#888888] dark:text-[#64748B] shrink-0" />
+                  <Building2 className="w-4 h-4 text-[#6B6B6B] dark:text-[#A1A1AA] shrink-0" />
                   <input
                     type="text"
                     value={branch}
@@ -342,7 +342,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                     onFocus={() => setShowBranchDropdown(true)}
                     onBlur={() => setTimeout(() => setShowBranchDropdown(false), 200)}
                     placeholder="e.g. Computer Science (CSE)"
-                    className="w-full bg-transparent text-[13.5px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
+                    className="w-full bg-transparent text-[14px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
                   />
                 </div>
 
@@ -367,15 +367,15 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
 
             {/* Semester (Span 3) */}
             <div className="md:col-span-3 flex flex-col gap-1.5">
-              <label className="text-[11.5px] font-bold tracking-wider uppercase text-[#111111] dark:text-[#F4F4F6]">
+              <label className="text-[12px] font-bold tracking-wider uppercase text-[#111111] dark:text-[#F4F4F6]">
                 Semester *
               </label>
               <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[43px]">
-                <CalendarDays className="w-4 h-4 text-[#888888] dark:text-[#64748B] shrink-0" />
+                <CalendarDays className="w-4 h-4 text-[#6B6B6B] dark:text-[#A1A1AA] shrink-0" />
                 <select
                   value={semester}
                   onChange={(e) => setSemester(Number(e.target.value))}
-                  className="w-full bg-transparent text-[13.5px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none cursor-pointer"
+                  className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none cursor-pointer"
                 >
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((sem) => (
                     <option key={sem} value={sem} className="dark:bg-[#121317] dark:text-white">
@@ -388,7 +388,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
 
             {/* Section / Group (Span 3) */}
             <div className="md:col-span-3 flex flex-col gap-1.5">
-              <label className="text-[11.5px] font-bold tracking-wider uppercase text-[#111111] dark:text-[#F4F4F6]">
+              <label className="text-[12px] font-bold tracking-wider uppercase text-[#111111] dark:text-[#F4F4F6]">
                 Section (Optional)
               </label>
               <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] h-[43px]">
@@ -398,7 +398,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                   value={section}
                   onChange={(e) => setSection(e.target.value.toUpperCase())}
                   placeholder="e.g. A, B"
-                  className="w-full bg-transparent text-[13.5px] font-mono font-bold text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] uppercase"
+                  className="w-full bg-transparent text-[14px] font-mono font-bold text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] uppercase"
                 />
               </div>
             </div>
@@ -431,7 +431,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                     </span>
                   </div>
 
-                  <span className="text-[11.5px] font-mono text-[#6F6F6F] dark:text-[#94A3B8] flex items-center gap-1">
+                  <span className="text-[12px] font-mono text-[#6F6F6F] dark:text-[#94A3B8] flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                     <span>Verified Schedule</span>
                   </span>
@@ -441,7 +441,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                 <h3 className="text-[20px] sm:text-[22px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight">
                   {matchedBatch.branch || branch}
                 </h3>
-                <p className="text-[13.5px] text-[#6F6F6F] dark:text-[#94A3B8] mt-1 font-medium">
+                <p className="text-[14px] text-[#6F6F6F] dark:text-[#94A3B8] mt-1 font-medium">
                   {matchedBatch.college || college} • {matchedBatch.programme || programme} • Semester {matchedBatch.semester || semester} {matchedBatch.section ? `• Section ${matchedBatch.section}` : section ? `• Section ${section}` : ''}
                 </p>
 
@@ -459,7 +459,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                           {String.fromCharCode(65 + i)}
                         </div>
                       ))}
-                      <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#121317] bg-[#E5E5E5] dark:bg-white/[0.1] flex items-center justify-center text-[#111111] dark:text-white text-[10px] font-bold font-mono">
+                      <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#121317] bg-[#E5E5E5] dark:bg-white/[0.1] flex items-center justify-center text-[#111111] dark:text-white text-[11px] font-bold font-mono">
                         +{Math.max(1, (matchedBatch.studentCount || 1) - 4)}
                       </div>
                     </div>
@@ -473,7 +473,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                           classmates connected
                         </span>
                       </div>
-                      <span className="text-[11.5px] text-[#6F6F6F] dark:text-[#94A3B8] mt-0.5">
+                      <span className="text-[12px] text-[#6F6F6F] dark:text-[#94A3B8] mt-0.5">
                         Live sync for timetable changes & class cancellations
                       </span>
                     </div>
@@ -491,7 +491,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                   type="button"
                   onClick={handleJoinBatch}
                   disabled={isJoining}
-                  className="w-full h-12 bg-[#111111] dark:bg-white text-white dark:text-[#111111] font-bold text-[13.5px] uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                  className="w-full h-12 bg-[#111111] dark:bg-white text-white dark:text-[#111111] font-bold text-[14px] uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer shadow-sm disabled:opacity-50"
                 >
                   {isJoining ? (
                     <>
@@ -513,7 +513,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                   <Crown className="w-6 h-6 text-amber-500" />
                 </div>
                 
-                <span className="text-[10px] font-mono font-bold tracking-[1.5px] uppercase text-amber-600 dark:text-amber-400 mb-1">
+                <span className="text-[11px] font-mono font-bold tracking-[1.5px] uppercase text-amber-600 dark:text-amber-400 mb-1">
                   NO BATCH FOUND YET
                 </span>
                 
@@ -539,7 +539,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                   <button
                     type="button"
                     onClick={handleContinuePersonal}
-                    className="h-11 px-5 border border-[#D8D8D8] dark:border-white/[0.12] text-[#111111] dark:text-[#FFFFFF] text-[12.5px] font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                    className="h-11 px-5 border border-[#D8D8D8] dark:border-white/[0.12] text-[#111111] dark:text-[#FFFFFF] text-[13px] font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
                   >
                     Continue Personal
                   </button>

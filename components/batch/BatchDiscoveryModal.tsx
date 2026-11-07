@@ -165,7 +165,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                 <User className="w-7 h-7 text-[#111111] dark:text-[#FFFFFF] stroke-[1.8]" />
               </div>
               <div>
-                <span className="text-[10px] font-bold font-mono tracking-widest uppercase text-amber-600 dark:text-amber-400">
+                <span className="text-[11px] font-bold font-mono tracking-widest uppercase text-amber-600 dark:text-amber-400">
                   LOGIN COMPULSORY
                 </span>
                 <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF] mt-1">
@@ -265,11 +265,11 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
               {foundBatch && (
                 <div className="p-3.5 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 rounded-none flex flex-col gap-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold font-mono tracking-wider uppercase text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    <span className="text-[11px] font-bold font-mono tracking-wider uppercase text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       VERIFIED CLASS BATCH
                     </span>
-                    <span className="text-[10px] font-mono font-bold text-slate-500 dark:text-zinc-400">
+                    <span className="text-[11px] font-mono font-bold text-slate-500 dark:text-zinc-400">
                       CODE: {foundBatch.inviteCode || inviteCodeInput}
                     </span>
                   </div>
@@ -295,7 +295,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Your Full Name"
                     required
-                    className="w-full bg-transparent text-[13.5px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
+                    className="w-full bg-transparent text-[14px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
                   />
                 </div>
               </div>
@@ -313,7 +313,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="student@college.edu.in"
                     required
-                    className="w-full bg-transparent text-[13.5px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
+                    className="w-full bg-transparent text-[14px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
                   />
                 </div>
               </div>
@@ -332,10 +332,10 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                     placeholder="e.g. 2023UGCS045"
                     required
                     autoFocus
-                    className="w-full bg-transparent text-[13.5px] font-mono text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
+                    className="w-full bg-transparent text-[14px] font-mono text-[#111111] dark:text-[#F4F4F6] focus:outline-none"
                   />
                 </div>
-                <span className="text-[10.5px] text-slate-500 dark:text-zinc-400">
+                <span className="text-[11px] text-slate-500 dark:text-zinc-400">
                   Used to identify you in the official batch members directory.
                 </span>
               </div>
@@ -352,7 +352,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                 <button
                   type="button"
                   onClick={() => setStep('code')}
-                  className="text-center text-[11.5px] text-slate-500 dark:text-zinc-400 hover:text-black dark:hover:text-white uppercase font-bold tracking-wider py-1 cursor-pointer flex items-center justify-center gap-1"
+                  className="text-center text-[12px] text-slate-500 dark:text-zinc-400 hover:text-black dark:hover:text-white uppercase font-bold tracking-wider py-1 cursor-pointer flex items-center justify-center gap-1"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Enter a different code</span>

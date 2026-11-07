@@ -511,14 +511,14 @@ ${PLAY_STORE_URL}
                       <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center mb-2.5">
                         <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${p.avatarUrl || cr.id}&backgroundColor=transparent`} alt="avatar" className="w-full h-full object-contain drop-shadow-sm group-hover:scale-105 transition-transform" />
                       </div>
-                      <span className="text-[13.5px] font-semibold text-[#111111] dark:text-[#F4F4F6] truncate w-full px-2">
+                      <span className="text-[14px] font-semibold text-[#111111] dark:text-[#F4F4F6] truncate w-full px-2">
                         {p.name || 'Pilot'}
                       </span>
                       <span className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8] mt-0.5 truncate w-full px-2 font-mono">
                         Batch Pilot · {p.rollNumber || p.email}
                       </span>
                       {isCurrentUser && (
-                        <span className="absolute top-2.5 left-2.5 text-[8.5px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] border border-[#D9D9D6] dark:border-white/[0.1] px-1.5 py-0.5 uppercase bg-black/[0.02] dark:bg-white/[0.06]">YOU</span>
+                        <span className="absolute top-2.5 left-2.5 text-[11px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] border border-[#D9D9D6] dark:border-white/[0.1] px-1.5 py-0.5 uppercase bg-black/[0.02] dark:bg-white/[0.06]">YOU</span>
                       )}
                       <button 
                         onClick={() => setSelectedMember(cr)}
@@ -546,7 +546,7 @@ ${PLAY_STORE_URL}
                 placeholder="Search members by name, roll number, email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-black/[0.02] dark:bg-[#090A0C] text-[13.5px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none border border-[#D9D9D6] dark:border-white/[0.08] transition-colors placeholder:text-[#6F6F6F] dark:placeholder:text-[#64748B]"
+                className="w-full pl-9 pr-4 py-2 bg-black/[0.02] dark:bg-[#090A0C] text-[14px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none border border-[#D9D9D6] dark:border-white/[0.08] transition-colors placeholder:text-[#6F6F6F] dark:placeholder:text-[#64748B]"
               />
             </div>
 
@@ -579,7 +579,7 @@ ${PLAY_STORE_URL}
                         {p.rollNumber || p.email}
                       </span>
                       {isCurrentUser && (
-                        <span className="absolute top-2 right-2 text-[8px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] border border-[#D9D9D6] dark:border-white/[0.1] px-1 py-0.5 uppercase bg-black/[0.02] dark:bg-white/[0.06]">YOU</span>
+                        <span className="absolute top-2 right-2 text-[11px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] border border-[#D9D9D6] dark:border-white/[0.1] px-1 py-0.5 uppercase bg-black/[0.02] dark:bg-white/[0.06]">YOU</span>
                       )}
                     </div>
                   );
@@ -615,7 +615,7 @@ ${PLAY_STORE_URL}
               ) : isAuthorizedCR && !checkIsCurrentUser(selectedMember) && !checkMemberIsCreator(selectedMember) ? (
                  <>
                    <div className="flex flex-col gap-1 mb-2">
-                     <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-1">BATCH PILOT ROLE</span>
+                     <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-1">BATCH PILOT ROLE</span>
                      <button 
                        onClick={() => { 
                          handleToggleCR(selectedMember, checkMemberIsCR(selectedMember)); 
@@ -628,7 +628,7 @@ ${PLAY_STORE_URL}
                    </div>
                    
                    <div className="flex flex-col gap-1 border-t border-[#D9D9D6] dark:border-[#333333] pt-4 mt-2">
-                     <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-1">DANGER ZONE</span>
+                     <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-1">DANGER ZONE</span>
                      <button 
                        onClick={() => { 
                          handleRemoveMember(selectedMember); 
@@ -642,7 +642,7 @@ ${PLAY_STORE_URL}
                  </>
               ) : checkIsCurrentUser(selectedMember) && checkMemberIsCR(selectedMember) && !checkMemberIsCreator(selectedMember) ? (
                  <div className="flex flex-col gap-1 mb-2">
-                   <span className="text-[10px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-1">BATCH PILOT ROLE</span>
+                   <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-1">BATCH PILOT ROLE</span>
                    <button 
                      onClick={() => { 
                        handleWithdrawSelfAsCR(); 

@@ -307,7 +307,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
               ? 'Reset Password'
               : 'Your Academic Workspace.'}
           </h1>
-          <p className="text-[14.5px] font-medium text-black/60 dark:text-[#94A3B8]">
+          <p className="text-[15px] font-medium text-black/60 dark:text-[#94A3B8]">
             {viewType === 'forgot_password'
               ? 'Enter your email to recover your account'
               : authMode === 'signup'
@@ -318,7 +318,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
 
         {/* Error Alert Box */}
         {errorMsg && (
-          <div className="w-full mb-5 bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 p-3 rounded-none text-red-600 dark:text-rose-400 text-[12.5px] font-medium text-center leading-relaxed">
+          <div className="w-full mb-5 bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 p-3 rounded-none text-red-600 dark:text-rose-400 text-[13px] font-medium text-center leading-relaxed">
             {errorMsg}
           </div>
         )}
@@ -332,9 +332,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
               type="button"
               onClick={handleGoogleLogin}
               disabled={loading}
-              className="w-full h-[48px] px-4 rounded-none border border-black/10 dark:border-white/[0.08] bg-white dark:bg-[#121317] hover:bg-black/[0.03] dark:hover:bg-white/[0.04] active:scale-[0.99] transition-all flex items-center justify-between font-semibold text-[14.5px] text-black dark:text-[#F4F4F6] shadow-sm cursor-pointer disabled:opacity-60"
+              className="w-full h-[52px] px-4 rounded-none border border-[#111111] dark:border-[#F4F4F6] bg-[#111111] dark:bg-[#F4F4F6] hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-between font-semibold text-[15px] text-white dark:text-[#111111] shadow-sm cursor-pointer disabled:opacity-60"
             >
-              <div className="w-6 flex items-center justify-center">
+              <div className="w-7 h-7 bg-white flex items-center justify-center">
                 <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24">
                   <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.57 14.97 1 12 1 7.35 1 3.37 3.68 1.34 7.6l3.96 3.07C6.27 7.37 8.91 5.04 12 5.04z"/>
                   <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.35H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.73 2.89c2.18-2.01 3.7-4.99 3.7-8.63z"/>
@@ -342,23 +342,30 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                   <path fill="#34A853" d="M12 4.49c-1.85 0-3.17.41-4.2 1.1L4.07 2.7C6.05.88 8.76-.2 12-.2c4.65 0 8.63 2.68 10.66 6.6l-3.96 3.07c-.97-3.21-3.61-5.54-6.7-5.54z" transform="translate(0 .2)"/>
                 </svg>
               </div>
-              <span className="flex-1 text-center font-medium">Google</span>
-              <div className="w-6" />
+              <span className="flex-1 text-center font-semibold">Continue with Google</span>
+              <div className="w-7" />
             </button>
+
+            {/* Secondary options */}
+            <div className="flex items-center gap-3 my-1.5" aria-hidden="true">
+              <div className="flex-1 h-px bg-black/10 dark:bg-white/[0.08]" />
+              <span className="text-[12px] uppercase tracking-[1.5px] text-[#6B6B6B] dark:text-[#A1A1AA]">or</span>
+              <div className="flex-1 h-px bg-black/10 dark:bg-white/[0.08]" />
+            </div>
 
             {/* 3. GitHub Button */}
             <button
               type="button"
               onClick={() => handleOAuthLogin('github')}
               disabled={loading}
-              className="w-full h-[48px] px-4 rounded-none border border-black/10 dark:border-white/[0.08] bg-white dark:bg-[#121317] hover:bg-black/[0.03] dark:hover:bg-white/[0.04] active:scale-[0.99] transition-all flex items-center justify-between font-semibold text-[14.5px] text-black dark:text-[#F4F4F6] shadow-sm cursor-pointer disabled:opacity-60"
+              className="w-full h-[48px] px-4 rounded-none border border-black/10 dark:border-white/[0.08] bg-white dark:bg-[#121317] hover:bg-black/[0.03] dark:hover:bg-white/[0.04] active:scale-[0.99] transition-all flex items-center justify-between font-semibold text-[15px] text-black dark:text-[#F4F4F6] shadow-sm cursor-pointer disabled:opacity-60"
             >
               <div className="w-6 flex items-center justify-center">
                 <svg className="w-[18px] h-[18px] fill-current" viewBox="0 0 24 24">
                   <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
                 </svg>
               </div>
-              <span className="flex-1 text-center font-medium">GitHub</span>
+              <span className="flex-1 text-center font-medium">Continue with GitHub</span>
               <div className="w-6" />
             </button>
 
@@ -366,12 +373,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
             <button
               type="button"
               onClick={() => { setViewType('email_form'); setErrorMsg(''); }}
-              className="w-full h-[48px] px-4 rounded-none border border-black/10 dark:border-white/[0.08] bg-white dark:bg-[#121317] hover:bg-black/[0.03] dark:hover:bg-white/[0.04] active:scale-[0.99] transition-all flex items-center justify-between font-semibold text-[14.5px] text-black dark:text-[#F4F4F6] shadow-sm cursor-pointer"
+              className="w-full h-[48px] px-4 rounded-none border border-black/10 dark:border-white/[0.08] bg-white dark:bg-[#121317] hover:bg-black/[0.03] dark:hover:bg-white/[0.04] active:scale-[0.99] transition-all flex items-center justify-between font-semibold text-[15px] text-black dark:text-[#F4F4F6] shadow-sm cursor-pointer"
             >
               <div className="w-6 flex items-center justify-center text-black/60 dark:text-[#94A3B8]">
                 <Mail className="w-[18px] h-[18px]" />
               </div>
-              <span className="flex-1 text-center font-medium">Email</span>
+              <span className="flex-1 text-center font-medium">Continue with Email</span>
               <div className="w-6" />
             </button>
 
@@ -391,7 +398,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                   required
                   autoFocus
                   disabled={loading}
-                  className="w-full h-12 border border-black/10 dark:border-white/[0.1] bg-white dark:bg-[#121317] text-black dark:text-[#F4F4F6] px-4 text-[14.5px] rounded-none placeholder:text-black/40 dark:placeholder:text-[#64748B] focus:outline-none focus:border-black dark:focus:border-white/30 transition-all shadow-sm"
+                  className="w-full h-12 border border-black/10 dark:border-white/[0.1] bg-white dark:bg-[#121317] text-black dark:text-[#F4F4F6] px-4 text-[15px] rounded-none placeholder:text-black/40 dark:placeholder:text-[#64748B] focus:outline-none focus:border-black dark:focus:border-white/30 transition-all shadow-sm"
                 />
               )}
 
@@ -403,7 +410,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                 required
                 autoFocus={authMode === 'signin'}
                 disabled={loading}
-                className="w-full h-12 border border-black/10 dark:border-white/[0.1] bg-white dark:bg-[#121317] text-black dark:text-[#F4F4F6] px-4 text-[14.5px] rounded-none placeholder:text-black/40 dark:placeholder:text-[#64748B] focus:outline-none focus:border-black dark:focus:border-white/30 transition-all shadow-sm"
+                className="w-full h-12 border border-black/10 dark:border-white/[0.1] bg-white dark:bg-[#121317] text-black dark:text-[#F4F4F6] px-4 text-[15px] rounded-none placeholder:text-black/40 dark:placeholder:text-[#64748B] focus:outline-none focus:border-black dark:focus:border-white/30 transition-all shadow-sm"
               />
 
               <div className="relative flex items-center">
@@ -414,13 +421,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                   placeholder={authMode === 'signup' ? 'Create Password (min 6 chars)' : 'Password'}
                   required
                   disabled={loading}
-                  className="w-full h-12 border border-black/10 dark:border-white/[0.1] bg-white dark:bg-[#121317] text-black dark:text-[#F4F4F6] pl-4 pr-11 text-[14.5px] rounded-none placeholder:text-black/40 dark:placeholder:text-[#64748B] focus:outline-none focus:border-black dark:focus:border-white/30 transition-all shadow-sm"
+                  className="w-full h-12 border border-black/10 dark:border-white/[0.1] bg-white dark:bg-[#121317] text-black dark:text-[#F4F4F6] pl-4 pr-11 text-[15px] rounded-none placeholder:text-black/40 dark:placeholder:text-[#64748B] focus:outline-none focus:border-black dark:focus:border-white/30 transition-all shadow-sm"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   tabIndex={-1}
-                  className="absolute right-3.5 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
+                  className="absolute right-3.5 text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -431,7 +438,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                   <button
                     type="button"
                     onClick={() => setViewType('forgot_password')}
-                    className="text-[12.5px] font-medium text-black/60 dark:text-[#94A3B8] hover:text-black dark:hover:text-white hover:underline cursor-pointer"
+                    className="text-[13px] font-medium text-black/60 dark:text-[#94A3B8] hover:text-black dark:hover:text-white hover:underline cursor-pointer"
                   >
                     Forgot password?
                   </button>
@@ -441,7 +448,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 bg-black text-white dark:bg-white dark:text-black font-semibold text-[14.5px] rounded-none hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-1 shadow-sm"
+                className="w-full h-12 bg-black text-white dark:bg-white dark:text-black font-semibold text-[15px] rounded-none hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-1 shadow-sm"
               >
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -480,7 +487,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                 <button
                   type="button"
                   onClick={() => { setResetSent(false); setViewType('email_form'); setAuthMode('signin'); }}
-                  className="mt-2 w-full py-2.5 bg-black text-white dark:bg-white dark:text-black font-semibold text-[13.5px] rounded-none hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+                  className="mt-2 w-full py-2.5 bg-black text-white dark:bg-white dark:text-black font-semibold text-[14px] rounded-none hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
                 >
                   Back to Sign In
                 </button>
@@ -495,13 +502,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                   required
                   autoFocus
                   disabled={loading}
-                  className="w-full h-12 border border-black/10 dark:border-white/[0.1] bg-white dark:bg-[#121317] text-black dark:text-[#F4F4F6] px-4 text-[14.5px] rounded-none placeholder:text-black/40 dark:placeholder:text-[#64748B] focus:outline-none focus:border-black dark:focus:border-white/30 transition-all shadow-sm"
+                  className="w-full h-12 border border-black/10 dark:border-white/[0.1] bg-white dark:bg-[#121317] text-black dark:text-[#F4F4F6] px-4 text-[15px] rounded-none placeholder:text-black/40 dark:placeholder:text-[#64748B] focus:outline-none focus:border-black dark:focus:border-white/30 transition-all shadow-sm"
                 />
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-12 bg-black text-white dark:bg-white dark:text-black font-semibold text-[14.5px] rounded-none hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-1 shadow-sm"
+                  className="w-full h-12 bg-black text-white dark:bg-white dark:text-black font-semibold text-[15px] rounded-none hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-1 shadow-sm"
                 >
                   {loading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -556,7 +563,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
         )}
 
         {/* Terms Disclaimer */}
-        <p className="mt-8 text-center text-[11.5px] text-black/40 dark:text-[#64748B] leading-relaxed max-w-[280px]">
+        <p className="mt-8 text-center text-[12px] text-black/60 dark:text-[#A1A1AA] leading-relaxed max-w-[280px]">
           By continuing, you acknowledge that you understand and agree to the{' '}
           <Link href="/terms" className="underline underline-offset-2 hover:text-black dark:hover:text-white">
             Terms & Conditions
@@ -571,7 +578,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
       </div>
 
       {/* Bottom Footer (Exact Notion Footer) */}
-      <div className="w-full max-w-[340px] flex flex-col items-center gap-2 mt-12 pb-2 text-[12px] text-black/40 dark:text-[#64748B]">
+      <div className="w-full max-w-[340px] flex flex-col items-center gap-2 mt-12 pb-2 text-[12px] text-black/60 dark:text-[#A1A1AA]">
         <div className="flex items-center gap-4">
           <Link href="/privacy" className="hover:underline">Privacy & terms</Link>
           <span>•</span>

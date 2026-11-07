@@ -115,7 +115,7 @@ export const TomorrowCarryView: React.FC = () => {
               </span>
             )}
           </div>
-          <p className="text-[13.5px] font-normal text-[#6B6B6B] dark:text-[#94A3B8] leading-[20px] mt-3 flex items-center gap-1.5">
+          <p className="text-[14px] font-normal text-[#6B6B6B] dark:text-[#94A3B8] leading-[20px] mt-3 flex items-center gap-1.5">
             <CalendarDays className="w-4 h-4 shrink-0 text-black/60 dark:text-white/60" />
             <span>Packing list for {isAfterReminderTime ? 'tomorrow' : 'today'} · {targetFormatted}</span>
           </p>
@@ -134,7 +134,7 @@ export const TomorrowCarryView: React.FC = () => {
               </div>
               <div className="flex flex-col mt-4 mb-5 gap-1">
                 <span className="text-[15px] font-semibold text-[#111111] dark:text-[#FFFFFF]">Nothing packed yet.</span>
-                <span className="text-[13.5px] text-[#6F6F6F] dark:text-[#94A3B8]">Add what you need for {isAfterReminderTime ? 'tomorrow' : 'today'}.</span>
+                <span className="text-[14px] text-[#6F6F6F] dark:text-[#94A3B8]">Add what you need for {isAfterReminderTime ? 'tomorrow' : 'today'}.</span>
               </div>
               <button
                 onClick={() => setShowAddModal(true)}
@@ -151,7 +151,7 @@ export const TomorrowCarryView: React.FC = () => {
                   <Backpack className="w-[18px] h-[18px] stroke-[1.8] text-[#18A889]" />
                   <span>Things to Carry</span>
                 </div>
-                <div className="text-[11.5px] font-bold font-mono tracking-wider text-[#111111] dark:text-[#F4F4F6] bg-black/[0.04] dark:bg-white/[0.06] px-2.5 py-0.5 rounded-full">
+                <div className="text-[12px] font-bold font-mono tracking-wider text-[#111111] dark:text-[#F4F4F6] bg-black/[0.04] dark:bg-white/[0.06] px-2.5 py-0.5 rounded-full">
                   {packedCount} / {totalCount}
                 </div>
               </div>
@@ -289,7 +289,7 @@ export const TomorrowCarryView: React.FC = () => {
                           </h4>
                           {isLab && (
                             <span 
-                              className="text-[9.5px] font-bold tracking-wider px-2 py-0.5 rounded-[3px] uppercase font-mono shrink-0"
+                              className="text-[11px] font-bold tracking-wider px-2 py-0.5 rounded-[3px] uppercase font-mono shrink-0"
                               style={{
                                 color: theme.badgeText,
                                 backgroundColor: theme.badgeBg,
@@ -300,12 +300,12 @@ export const TomorrowCarryView: React.FC = () => {
                           )}
                         </div>
 
-                        <ChevronRight className="w-4 h-4 text-[#808080] dark:text-[#A1A1AA] group-hover:text-black dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
+                        <ChevronRight className="w-4 h-4 text-[#6B6B6B] dark:text-[#A1A1AA] group-hover:text-black dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
                       </div>
 
                       {/* Carry Requirements Highlight Badge */}
                       {reqs.length > 0 ? (
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-white/80 dark:bg-white/[0.08] border border-black/5 dark:border-white/10 backdrop-blur-xs text-[12.5px] font-semibold text-[#18181B] dark:text-[#F4F4F6]">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-white/80 dark:bg-white/[0.08] border border-black/5 dark:border-white/10 backdrop-blur-xs text-[13px] font-semibold text-[#18181B] dark:text-[#F4F4F6]">
                           <Backpack className="w-3.5 h-3.5 text-[#18A889] shrink-0 stroke-[2.2]" />
                           <span className="truncate">Bring: {reqs.join(', ')}</span>
                         </div>

@@ -28,7 +28,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <div className="absolute top-0 right-0 w-32 h-32 bg-black/5 dark:bg-white/[0.03] blur-3xl pointer-events-none" />
       
       {icon && (
-        <div className="mb-4 text-black/40 dark:text-white/40">
+        <div className="mb-4 text-black/60 dark:text-white/60">
           {icon}
         </div>
       )}

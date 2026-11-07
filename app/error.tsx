@@ -102,12 +102,12 @@ export default function Error({
             <button
               type="button"
               onClick={() => setShowDetails(!showDetails)}
-              className="text-[10px] font-mono uppercase tracking-wider text-[#888888] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors flex items-center gap-1"
+              className="text-[11px] font-mono uppercase tracking-wider text-[#888888] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors flex items-center gap-1"
             >
               <span>{showDetails ? '▼ Hide Diagnostic Code' : '▶ Show Diagnostic Code'}</span>
             </button>
             {showDetails && (
-              <pre className="mt-2 p-2.5 bg-[#F5F5F3] dark:bg-[#181817] border border-[#E5E5E3] dark:border-[#262626] text-[10px] font-mono text-[#555555] dark:text-[#999999] overflow-x-auto rounded-none whitespace-pre-wrap break-all">
+              <pre className="mt-2 p-2.5 bg-[#F5F5F3] dark:bg-[#181817] border border-[#E5E5E3] dark:border-[#262626] text-[11px] font-mono text-[#555555] dark:text-[#999999] overflow-x-auto rounded-none whitespace-pre-wrap break-all">
                 {error?.message ? `Error: ${error.message}\n` : ''}
                 {error?.digest ? `Digest: ${error.digest}` : ''}
               </pre>

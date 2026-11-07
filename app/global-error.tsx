@@ -57,7 +57,7 @@ export default function GlobalError({
       <body className="min-h-screen w-full flex items-center justify-center bg-[#FFFFFF] dark:bg-[#090A0C] text-[#111111] dark:text-[#F4F4F6] p-6 font-sans antialiased selection:bg-[#96725B] selection:text-white">
         <div className="max-w-md w-full p-6 sm:p-8 bg-white dark:bg-[#111110] border border-[#E5E5E3] dark:border-[#222222] shadow-sm text-center flex flex-col items-center rounded-none">
           {/* Status Badge */}
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-5 border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 text-[10px] font-mono uppercase tracking-widest rounded-none">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-5 border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 text-[11px] font-mono uppercase tracking-widest rounded-none">
             <span className="w-1.5 h-1.5 bg-red-500 rounded-none inline-block animate-pulse" />
             System Alert
           </div>
@@ -94,12 +94,12 @@ export default function GlobalError({
               <button
                 type="button"
                 onClick={() => setShowDetails(!showDetails)}
-                className="text-[10px] font-mono uppercase tracking-wider text-[#888888] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors flex items-center gap-1"
+                className="text-[11px] font-mono uppercase tracking-wider text-[#888888] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors flex items-center gap-1"
               >
                 <span>{showDetails ? '▼ Hide Diagnostic Code' : '▶ Show Diagnostic Code'}</span>
               </button>
               {showDetails && (
-                <pre className="mt-2 p-2.5 bg-[#F5F5F3] dark:bg-[#181817] border border-[#E5E5E3] dark:border-[#262626] text-[10px] font-mono text-[#555555] dark:text-[#999999] overflow-x-auto rounded-none whitespace-pre-wrap break-all">
+                <pre className="mt-2 p-2.5 bg-[#F5F5F3] dark:bg-[#181817] border border-[#E5E5E3] dark:border-[#262626] text-[11px] font-mono text-[#555555] dark:text-[#999999] overflow-x-auto rounded-none whitespace-pre-wrap break-all">
                   {error?.message ? `Error: ${error.message}\n` : ''}
                   {error?.digest ? `Digest: ${error.digest}` : ''}
                 </pre>

@@ -201,7 +201,7 @@ export const OnboardingModal = () => {
                 inter<span className="font-normal opacity-80">semester</span>
               </h1>
               <div className="w-[28px] h-[1.5px] bg-[#111111] dark:bg-[#FFFFFF] mt-2.5 mb-1.5" />
-              <p className="text-[9.5px] tracking-[2.5px] font-mono font-bold text-[#111111]/60 dark:text-[#FFFFFF]/60 uppercase whitespace-pre-line text-center">
+              <p className="text-[11px] tracking-[2.5px] font-mono font-bold text-[#111111]/60 dark:text-[#FFFFFF]/60 uppercase whitespace-pre-line text-center">
                 {slides[0].topText}
               </p>
             </div>
@@ -223,7 +223,7 @@ export const OnboardingModal = () => {
               <button 
                 type="button"
                 onClick={handleSkip} 
-                className="px-4 py-1.5 -mr-2 text-[13.5px] font-semibold text-[#888888] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer uppercase tracking-wider"
+                className="px-4 py-1.5 -mr-2 text-[14px] font-semibold text-[#6B6B6B] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer uppercase tracking-wider"
               >
                 Skip
               </button>
@@ -249,7 +249,7 @@ export const OnboardingModal = () => {
                   <img 
                     src={slides[currentIndex].image} 
                     alt="Onboarding" 
-                    className={`relative z-10 max-h-[54vh] w-auto max-w-[95vw] object-contain object-bottom pointer-events-none ${
+                    className={`relative z-10 max-h-[40vh] w-auto max-w-[85vw] object-contain object-bottom pointer-events-none ${
                       currentIndex === 0 ? 'scale-[1.35] translate-y-[2%]' :
                       currentIndex === 1 ? 'scale-[1.5] translate-y-[9%]' :
                       'scale-[1.3] translate-y-[2%]'
@@ -275,8 +275,8 @@ export const OnboardingModal = () => {
                               <feat.icon className="w-3.5 h-3.5 text-black dark:text-[#F4F4F6]" />
                             </div>
                             <div className="flex flex-col text-left">
-                              <span className="text-[12.5px] font-bold text-black dark:text-[#F4F4F6]">{feat.title}</span>
-                              <span className="text-[11.5px] text-black/60 dark:text-[#94A3B8] leading-snug">{feat.desc}</span>
+                              <span className="text-[13px] font-bold text-black dark:text-[#F4F4F6]">{feat.title}</span>
+                              <span className="text-[12px] text-black/60 dark:text-[#94A3B8] leading-snug">{feat.desc}</span>
                             </div>
                           </div>
                         ))}
@@ -307,7 +307,7 @@ export const OnboardingModal = () => {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="h-[46px] px-7 bg-black text-white dark:bg-white dark:text-black rounded-none flex items-center gap-2 font-bold text-[13.5px] hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm uppercase tracking-wider"
+                    className="h-[46px] px-7 bg-black text-white dark:bg-white dark:text-black rounded-none flex items-center gap-2 font-bold text-[14px] hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm uppercase tracking-wider"
                   >
                     {slides[currentIndex].buttonText}
                     <ArrowRight className="w-4 h-4" />
@@ -353,7 +353,7 @@ export const OnboardingModal = () => {
                           setInviteCode(e.target.value);
                           if (inviteError) setInviteError(false);
                         }}
-                        className={`flex-1 h-11 px-3.5 bg-white dark:bg-[#090A0C] border rounded-none text-[13.5px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none transition-all shadow-xs ${
+                        className={`flex-1 h-11 px-3.5 bg-white dark:bg-[#090A0C] border rounded-none text-[14px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none transition-all shadow-xs ${
                           inviteError
                             ? 'border-rose-500 ring-1 ring-rose-500'
                             : 'border-[#D8D8D8] dark:border-white/[0.1] focus:border-[#111111] dark:focus:border-white/40'
@@ -368,7 +368,7 @@ export const OnboardingModal = () => {
                       </button>
                     </form>
                     {inviteError && (
-                      <p className="text-[11.5px] text-rose-500 font-medium mt-1.5">
+                      <p className="text-[12px] text-rose-500 font-medium mt-1.5">
                         ⚠️ Please paste an invite code or link.
                       </p>
                     )}
@@ -376,7 +376,7 @@ export const OnboardingModal = () => {
 
                   <div className="flex items-center gap-3 my-1 mb-4">
                     <div className="flex-1 h-[1px] bg-[#E5E5E5] dark:bg-white/[0.08]" />
-                    <span className="text-[10px] font-mono font-bold tracking-[1.5px] text-[#888888] dark:text-[#64748B] uppercase">
+                    <span className="text-[11px] font-mono font-bold tracking-[1.5px] text-[#6B6B6B] dark:text-[#A1A1AA] uppercase">
                       OR FIND YOUR BATCH
                     </span>
                     <div className="flex-1 h-[1px] bg-[#E5E5E5] dark:bg-white/[0.08]" />
@@ -389,13 +389,13 @@ export const OnboardingModal = () => {
                     <div className="w-10 h-10 border border-[#E5E5E5] dark:border-white/[0.1] bg-white dark:bg-[#1A1C23] flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform shadow-xs">
                       <GraduationCap className="w-5 h-5 text-black dark:text-[#F4F4F6]" />
                     </div>
-                    <span className="text-[10px] font-mono font-bold tracking-[1.5px] uppercase text-[#888888] dark:text-[#94A3B8] mb-1">
+                    <span className="text-[11px] font-mono font-bold tracking-[1.5px] uppercase text-[#888888] dark:text-[#94A3B8] mb-1">
                       CLASS DIRECTORY
                     </span>
                     <h3 className="text-[16px] font-bold text-black dark:text-[#F4F4F6] mb-1">
                       Select Your College & Batch
                     </h3>
-                    <p className="text-[12.5px] text-black/60 dark:text-[#94A3B8] max-w-[280px] leading-relaxed mb-3.5">
+                    <p className="text-[13px] text-black/60 dark:text-[#94A3B8] max-w-[280px] leading-relaxed mb-3.5">
                       Select your college, branch, and semester to connect with your classmates and sync your schedule.
                     </p>
                     <div className="px-6 h-[38px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[12px] pointer-events-none rounded-none w-fit mx-auto shadow-xs uppercase tracking-wider gap-1.5 group-hover:opacity-90 transition-opacity">
@@ -491,7 +491,7 @@ export const OnboardingModal = () => {
             <button 
               type="button"
               onClick={handleSkip} 
-              className="px-4 py-1.5 -mr-2 text-[13.5px] font-semibold text-black/50 dark:text-[#94A3B8] hover:text-black dark:hover:text-white transition-colors cursor-pointer uppercase tracking-wider"
+              className="px-4 py-1.5 -mr-2 text-[14px] font-semibold text-black/60 dark:text-[#94A3B8] hover:text-black dark:hover:text-white transition-colors cursor-pointer uppercase tracking-wider"
             >
               Skip
             </button>
@@ -574,7 +574,7 @@ export const OnboardingModal = () => {
                           setInviteCode(e.target.value);
                           if (inviteError) setInviteError(false);
                         }}
-                        className={`flex-1 h-11 px-3.5 bg-[#FAFAF8] dark:bg-[#090A0C] border rounded-none text-[13.5px] text-black dark:text-[#F4F4F6] focus:outline-none transition-all shadow-sm ${
+                        className={`flex-1 h-11 px-3.5 bg-[#FAFAF8] dark:bg-[#090A0C] border rounded-none text-[14px] text-black dark:text-[#F4F4F6] focus:outline-none transition-all shadow-sm ${
                           inviteError
                             ? 'border-rose-500 ring-1 ring-rose-500'
                             : 'border-black/10 dark:border-white/[0.1] focus:border-black dark:focus:border-white/30'
@@ -597,7 +597,7 @@ export const OnboardingModal = () => {
 
                   <div className="flex items-center gap-3 my-1 mb-5">
                     <div className="flex-1 h-[1px] bg-black/10 dark:bg-white/[0.08]" />
-                    <span className="text-[10.5px] font-bold tracking-[1.5px] text-black/40 dark:text-white/40 uppercase font-mono">
+                    <span className="text-[11px] font-bold tracking-[1.5px] text-black/60 dark:text-white/60 uppercase font-mono">
                       OR FIND YOUR BATCH
                     </span>
                     <div className="flex-1 h-[1px] bg-black/10 dark:bg-white/[0.08]" />
@@ -610,7 +610,7 @@ export const OnboardingModal = () => {
                     <div className="w-11 h-11 border border-black/10 dark:border-white/[0.1] bg-white dark:bg-[#1A1C23] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform shadow-xs">
                       <GraduationCap className="w-5 h-5 text-black dark:text-[#F4F4F6]" />
                     </div>
-                    <span className="text-[10.5px] font-mono font-bold tracking-[1.5px] uppercase text-black/50 dark:text-[#94A3B8] mb-1">
+                    <span className="text-[11px] font-mono font-bold tracking-[1.5px] uppercase text-black/50 dark:text-[#94A3B8] mb-1">
                       CLASS DIRECTORY
                     </span>
                     <h3 className="text-[17px] font-bold text-black dark:text-[#F4F4F6] mb-1.5">
@@ -619,7 +619,7 @@ export const OnboardingModal = () => {
                     <p className="text-[13px] text-black/60 dark:text-[#94A3B8] max-w-[320px] leading-relaxed mb-4">
                       Select your college, branch, and semester to connect with your classmates and sync your schedule.
                     </p>
-                    <div className="px-7 h-[42px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[12.5px] pointer-events-none rounded-none w-fit mx-auto shadow-sm uppercase tracking-wider gap-2 group-hover:opacity-90 transition-opacity">
+                    <div className="px-7 h-[42px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto shadow-sm uppercase tracking-wider gap-2 group-hover:opacity-90 transition-opacity">
                       <span>Select Batch</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </div>
@@ -629,7 +629,7 @@ export const OnboardingModal = () => {
                     <button
                       type="button"
                       onClick={handleSkip}
-                      className="text-[13.5px] font-semibold text-black/60 dark:text-[#94A3B8] hover:text-black dark:hover:text-white underline underline-offset-4 cursor-pointer py-2 px-4 inline-block transition-colors active:scale-95"
+                      className="text-[14px] font-semibold text-black/60 dark:text-[#94A3B8] hover:text-black dark:hover:text-white underline underline-offset-4 cursor-pointer py-2 px-4 inline-block transition-colors active:scale-95"
                     >
                       I'll set up or customize classes manually ➜
                     </button>

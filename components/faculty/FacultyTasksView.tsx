@@ -5,6 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { BatchProposedTask, FacultyLinkedBatch } from '@/lib/types';
 import { collection, query, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import {
   CheckSquare,
   Plus,
@@ -113,10 +114,14 @@ export const FacultyTasksView: React.FC = () => {
     });
   }, [assignments, searchQuery, selectedBatchFilter]);
 
-  const handleDeleteAssignment = async (task: BatchProposedTask) => {
-    const confirmed = window.confirm(`Delete assignment "${task.title}"?`);
-    if (!confirmed) return;
+  const [assignmentToDelete, setAssignmentToDelete] = useState<BatchProposedTask | null>(null);
 
+  const handleDeleteAssignment = (task: BatchProposedTask) => {
+    setAssignmentToDelete(task);
+  };
+
+  const confirmDeleteAssignment = async (task: BatchProposedTask) => {
+    setAssignmentToDelete(null);
     try {
       await deleteDoc(doc(db, 'shared_timetables', task.batchKey, 'proposed_tasks', task.id));
       showToast('Assignment Deleted', `"${task.title}" was removed.`, 'info');
@@ -166,7 +171,7 @@ export const FacultyTasksView: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 rounded-[3px]">
+              <span className="px-2 py-0.5 text-[11px] font-mono font-bold uppercase tracking-wider bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 rounded-[3px]">
                 FACULTY ASSIGNMENTS
               </span>
               <span className="text-[12px] font-mono text-[#6F6F6F] dark:text-[#A1A1AA]">
@@ -333,18 +338,18 @@ export const FacultyTasksView: React.FC = () => {
                       </span>
 
                       {/* Batch Pill */}
-                      <span className="px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold uppercase bg-black text-white dark:bg-white dark:text-black">
+                      <span className="px-2 py-0.5 rounded-[4px] text-[11px] font-mono font-bold uppercase bg-black text-white dark:bg-white dark:text-black">
                         {batchLabel}
                       </span>
 
                       {/* Subject */}
-                      <span className="px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold uppercase bg-black/5 dark:bg-white/10 text-black/80 dark:text-white/80 border border-black/5 dark:border-white/5">
+                      <span className="px-2 py-0.5 rounded-[4px] text-[11px] font-mono font-bold uppercase bg-black/5 dark:bg-white/10 text-black/80 dark:text-white/80 border border-black/5 dark:border-white/5">
                         {task.subjectName || 'Coursework'}
                       </span>
 
                       {/* Priority if High */}
                       {task.priority === 'High' && (
-                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8] text-[#C96B45] text-[9.5px] font-bold uppercase tracking-wider font-mono">
+                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8] text-[#C96B45] text-[11px] font-bold uppercase tracking-wider font-mono">
                           HIGH PRIORITY
                         </span>
                       )}
@@ -360,8 +365,8 @@ export const FacultyTasksView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleDeleteAssignment(task)}
-                        className="p-1 rounded text-black/30 dark:text-white/30 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
-                        title="Delete Assignment"
+                        className="p-1 rounded text-black/60 dark:text-white/30 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                        title="Delete Assignment" aria-label="Delete Assignment"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -388,7 +393,7 @@ export const FacultyTasksView: React.FC = () => {
                         type="button"
                         onClick={() => setSelectedTaskForTracking(task)}
                         className="h-7 px-2.5 rounded-[3px] bg-emerald-500/10 hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-mono font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-xs"
-                        title="View student reads"
+                        title="View student reads" aria-label="View student reads"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         <span>{readCount} Opened</span>
@@ -415,7 +420,7 @@ export const FacultyTasksView: React.FC = () => {
                         type="button"
                         onClick={() => handleShareWhatsApp(task)}
                         className="h-7 px-2.5 rounded-[3px] border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 text-black/70 dark:text-white/70 transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
-                        title="Share to WhatsApp"
+                        title="Share to WhatsApp" aria-label="Share to WhatsApp"
                       >
                         <Share2 className="w-3 h-3" />
                         <span>Share</span>
@@ -449,6 +454,16 @@ export const FacultyTasksView: React.FC = () => {
         isOpen={!!selectedTaskForTracking}
         onClose={() => setSelectedTaskForTracking(null)}
         task={selectedTaskForTracking}
+      />
+      <ConfirmModal
+        isOpen={!!assignmentToDelete}
+        onClose={() => setAssignmentToDelete(null)}
+        onConfirm={async () => { if (assignmentToDelete) await confirmDeleteAssignment(assignmentToDelete); }}
+        title="Delete assignment?"
+        description="Students in this batch will no longer see it."
+        highlightText={assignmentToDelete?.title}
+        confirmLabel="Delete"
+        variant="danger"
       />
     </div>
   );

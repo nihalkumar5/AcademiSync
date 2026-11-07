@@ -113,7 +113,7 @@ export const Header: React.FC = () => {
 
           {/* Desktop Breadcrumb indicator so logo is never duplicated */}
           <div className="hidden md:flex items-center gap-2 font-mono text-xs">
-            <span className="text-black/35 dark:text-white/35 uppercase">Workspace /</span>
+            <span className="text-black/60 dark:text-white/60 uppercase">Workspace /</span>
             <span className="font-bold uppercase tracking-wider text-black dark:text-[#F4F4F6]">
               {viewTitles[activeView] || 'Dashboard'}
             </span>
@@ -123,7 +123,7 @@ export const Header: React.FC = () => {
         <div className="flex items-center gap-1 sm:gap-2.5 text-sm font-medium tracking-tight text-black dark:text-white">
           {/* Live Clock Pill */}
           {currentTime && (
-            <div className="hidden lg:flex items-center gap-2 h-8 px-3 border border-[#D9D9D6] dark:border-white/[0.08] bg-black/[0.02] dark:bg-white/[0.03] text-[11.5px] font-mono text-[#555555] dark:text-[#A1A1AA] rounded-none">
+            <div className="hidden lg:flex items-center gap-2 h-8 px-3 border border-[#D9D9D6] dark:border-white/[0.08] bg-black/[0.02] dark:bg-white/[0.03] text-[12px] font-mono text-[#555555] dark:text-[#A1A1AA] rounded-none">
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_6px_#10b981]" />
               <span className="tracking-wide">{currentTime}</span>
             </div>
@@ -134,11 +134,11 @@ export const Header: React.FC = () => {
             type="button"
             onClick={() => setCommandPaletteOpen(true)}
             className="w-10 h-10 md:w-auto md:h-8 flex items-center justify-center p-2 md:px-3 md:border md:border-[#D9D9D6] md:dark:border-white/[0.08] md:hover:border-[#111111] md:dark:hover:border-white/20 md:bg-black/[0.02] md:dark:bg-white/[0.03] text-[#111111] dark:text-[#F4F4F6] md:text-[#555555] md:dark:text-[#A1A1AA] md:hover:text-[#111111] md:dark:hover:text-[#FFFFFF] transition-all cursor-pointer rounded-none active:scale-95"
-            title="Search (⌘K)"
+            title="Search (⌘K)" aria-label="Search (⌘K)"
           >
             <Search className="w-4 h-4 md:w-3.5 md:h-3.5 md:mr-1.5 text-[#111111] dark:text-[#F4F4F6]" />
             <span className="hidden md:inline text-[12px] font-medium">Search</span>
-            <kbd className="hidden md:inline text-[10px] font-mono px-1.5 py-0.5 border border-[#D9D9D6] dark:border-white/10 bg-black/5 dark:bg-white/5 opacity-75 ml-1.5">
+            <kbd className="hidden md:inline text-[11px] font-mono px-1.5 py-0.5 border border-[#D9D9D6] dark:border-white/10 bg-black/5 dark:bg-white/5 opacity-75 ml-1.5">
               ⌘K
             </kbd>
           </button>
@@ -167,7 +167,7 @@ export const Header: React.FC = () => {
           >
             <Bell className="w-4 h-4 md:w-3.5 md:h-3.5 text-[#111111] dark:text-[#F4F4F6]" />
             {unreadNotifs > 0 && (
-              <span className="absolute top-1.5 right-1.5 md:-top-1 md:-right-1 min-w-[14px] h-[14px] md:min-w-[15px] md:h-[15px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[9px] font-bold flex items-center justify-center border border-white dark:border-[#090A0C] leading-none rounded-full">
+              <span className="absolute top-1.5 right-1.5 md:-top-1 md:-right-1 min-w-[14px] h-[14px] md:min-w-[15px] md:h-[15px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[11px] font-bold flex items-center justify-center border border-white dark:border-[#090A0C] leading-none rounded-full">
                 {unreadNotifs > 99 ? '99+' : unreadNotifs}
               </span>
             )}
@@ -179,7 +179,7 @@ export const Header: React.FC = () => {
               type="button"
               onClick={() => setAddMenuOpen(!addMenuOpen)}
               className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-[#111111] dark:text-[#F4F4F6] md:bg-[#111111] md:dark:bg-[#F4F4F6] md:text-[#FFFFFF] md:dark:text-[#090A0C] hover:opacity-80 transition-all cursor-pointer rounded-none active:scale-95 shadow-xs"
-              title="Add New Action"
+              title="Add New Action" aria-label="Add New Action"
             >
               <Plus className={`w-5 h-5 md:w-4 md:h-4 stroke-[2.5] transition-transform duration-200 ${addMenuOpen ? 'rotate-45' : ''}`} />
             </button>

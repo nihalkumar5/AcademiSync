@@ -239,7 +239,7 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
               Subject / Course *
             </span>
             {uniqueSubjects.length > 0 && (
-              <span className="text-[10px] font-mono text-[#6F6F6F] dark:text-[#A1A1AA]">
+              <span className="text-[11px] font-mono text-[#6F6F6F] dark:text-[#A1A1AA]">
                 {uniqueSubjects.length} subjects found
               </span>
             )}
@@ -280,7 +280,7 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
               <button
                 type="button"
                 onClick={handleToggleSelectAll}
-                className="text-[10.5px] font-bold uppercase tracking-wider text-[#6F6F6F] dark:text-[#A1A1AA] hover:text-black dark:hover:text-white cursor-pointer"
+                className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F] dark:text-[#A1A1AA] hover:text-black dark:hover:text-white cursor-pointer"
               >
                 {selectedBatchIds.length === linkedBatches.length
                   ? 'Subject Batches Only'
@@ -327,7 +327,7 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
                         {degreeAndBranch}
                       </span>
                       <span
-                        className={`text-[9.5px] font-mono ${
+                        className={`text-[11px] font-mono ${
                           isSelected ? 'text-white/70 dark:text-black/70' : 'text-black/40 dark:text-white/40'
                         }`}
                       >
@@ -336,7 +336,7 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
                     </div>
                     {teachesThisSubject && (
                       <span
-                        className={`text-[9.5px] font-mono uppercase px-1.5 py-0.5 rounded-[3px] shrink-0 font-bold ${
+                        className={`text-[11px] font-mono uppercase px-1.5 py-0.5 rounded-[3px] shrink-0 font-bold ${
                           isSelected
                             ? 'bg-white/20 text-white dark:bg-black/20 dark:text-black'
                             : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
@@ -351,7 +351,7 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
             </div>
           )}
 
-          <p className="text-[10.5px] text-[#6F6F6F] dark:text-[#A1A1AA]">
+          <p className="text-[11px] text-[#6F6F6F] dark:text-[#A1A1AA]">
             {selectedBatchIds.length === 1
               ? `Posting to 1 batch. Real-time read tracking will activate.`
               : `Posting to ${selectedBatchIds.length} batches automatically in parallel.`}

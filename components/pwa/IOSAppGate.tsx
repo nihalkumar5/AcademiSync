@@ -72,7 +72,7 @@ export const IOSAppGate: React.FC = () => {
               inter<span className="font-normal opacity-80">semester</span>
             </h1>
             <div className="w-[24px] h-[1.5px] bg-[#111111] mt-2.5 mb-1.5" />
-            <p className="text-[9.5px] tracking-[2.5px] font-mono font-bold text-[#111111]/60 uppercase whitespace-pre-line text-center">
+            <p className="text-[11px] tracking-[2.5px] font-mono font-bold text-[#111111]/60 uppercase whitespace-pre-line text-center">
               EVERY ACADEMIC DAY{"\n"}CLEAR & PREDICTABLE.
             </p>
           </div>
@@ -104,7 +104,7 @@ export const IOSAppGate: React.FC = () => {
                 <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center shrink-0 shadow-sm border border-black/5">
                   <Share className="w-3.5 h-3.5 text-[#111111]" />
                 </div>
-                <div className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[#111111]">
+                <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111111]">
                   <span>Step 1:</span>
                   <span className="font-normal text-[#111111]/80">Tap <span className="font-semibold text-blue-600">Share</span> in Safari bottom bar</span>
                 </div>
@@ -114,7 +114,7 @@ export const IOSAppGate: React.FC = () => {
                 <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center shrink-0 shadow-sm border border-black/5">
                   <PlusSquare className="w-3.5 h-3.5 text-[#111111]" />
                 </div>
-                <div className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[#111111]">
+                <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111111]">
                   <span>Step 2:</span>
                   <span className="font-normal text-[#111111]/80">Select <span className="font-semibold">&quot;Add to Home Screen&quot;</span></span>
                 </div>
@@ -124,7 +124,7 @@ export const IOSAppGate: React.FC = () => {
                 <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center shrink-0 shadow-sm border border-black/5">
                   <Check className="w-3.5 h-3.5 text-[#111111]" />
                 </div>
-                <div className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[#111111]">
+                <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111111]">
                   <span>Step 3:</span>
                   <span className="font-normal text-[#111111]/80">Tap <span className="font-semibold">&quot;Add&quot;</span> and launch from Home Screen</span>
                 </div>
@@ -147,7 +147,7 @@ export const IOSAppGate: React.FC = () => {
             <button
               type="button"
               onClick={handleBypass}
-              className="w-full pt-2 text-center text-[11.5px] font-semibold text-black/60 hover:text-black transition-colors cursor-pointer uppercase tracking-wider underline underline-offset-4"
+              className="w-full pt-2 text-center text-[12px] font-semibold text-black/60 hover:text-black transition-colors cursor-pointer uppercase tracking-wider underline underline-offset-4"
             >
               Continue on Web
             </button>

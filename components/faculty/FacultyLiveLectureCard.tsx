@@ -65,7 +65,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
 
     return (
       <div className="w-full bg-[#FAFAFA] dark:bg-[#121317] border border-[#E0E0E0] dark:border-white/[0.08] rounded-none p-5 flex flex-col text-left">
-        <span className="text-[11px] font-semibold text-[#808080] dark:text-[#94A3B8] uppercase tracking-[1.4px] leading-none mb-3">
+        <span className="text-[11px] font-semibold text-[#6B6B6B] dark:text-[#94A3B8] uppercase tracking-[1.4px] leading-none mb-3">
           SCHEDULE COMPLETE
         </span>
         <h3 className="text-[16px] font-semibold text-[#111111] dark:text-[#F4F4F6] leading-snug mb-2">
@@ -263,7 +263,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                     setMenuOpen((prev) => !prev);
                   }}
                   className="p-1 rounded-[2px] text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-                  title="Class Options"
+                  title="Class Options" aria-label="Class Options"
                 >
                   <MoreHorizontal className="w-4 h-4" />
                 </button>
@@ -281,7 +281,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                       className="absolute right-0 top-full mt-1.5 w-52 bg-white dark:bg-[#18191E] border border-black/10 dark:border-white/[0.1] shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 text-left overflow-hidden rounded-[10px]"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[9.5px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
+                      <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
                         <span>🎓</span>
                         <span>Faculty Actions</span>
                       </div>
@@ -295,7 +295,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                             setMenuOpen(false);
                             handleRevertReschedule();
                           }}
-                          className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
+                          className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
                         >
                           <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                           <span>Revert Reschedule</span>
@@ -309,7 +309,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                               setMenuOpen(false);
                               setIsRescheduleModalOpen(true);
                             }}
-                            className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                            className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
                           >
                             <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
                             <span>Reschedule Class</span>
@@ -326,7 +326,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                           handleToggleCancel();
                         }}
                         className={clsx(
-                          "flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-left transition-colors cursor-pointer",
+                          "flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-left transition-colors cursor-pointer",
                           isCancelled
                             ? "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
                             : "text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30"
@@ -352,7 +352,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                           setMenuOpen(false);
                           handleShareWhatsAppNotice();
                         }}
-                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-slate-800 dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer border-t border-black/5 dark:border-white/5"
+                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-slate-800 dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer border-t border-black/5 dark:border-white/5"
                       >
                         <Share2 className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                         <span>WhatsApp Notice</span>
@@ -375,26 +375,26 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
               {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
             </div>
             {isRescheduled && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] bg-amber-500/20 text-amber-300 text-[10.5px] font-mono font-bold uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] bg-amber-500/20 text-amber-300 text-[11px] font-mono font-bold uppercase tracking-wider">
                 <Clock className="w-2.5 h-2.5" />
                 Rescheduled
                 {rescheduleMeta?.originalStartTime ? ` (Was ${formatTime12Hour(rescheduleMeta.originalStartTime)})` : ''}
               </span>
             )}
             {session.isLab && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] bg-[#18A889]/20 text-[#18A889] text-[10.5px] font-mono font-bold uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] bg-[#18A889]/20 text-[#18A889] text-[11px] font-mono font-bold uppercase tracking-wider">
                 Lab
               </span>
             )}
-            <span className="px-2 py-0.5 rounded-[2px] bg-white/10 text-[10px] font-mono font-bold uppercase tracking-wider text-white/80">
+            <span className="px-2 py-0.5 rounded-[2px] bg-white/10 text-[11px] font-mono font-bold uppercase tracking-wider text-white/80">
               {pillLabel}
             </span>
           </div>
 
           {/* Metadata */}
-          <div className="flex items-center gap-2 text-[12px] text-[#A8A8A8] leading-none mb-5 flex-wrap">
+          <div className="flex items-center gap-2 text-[12px] text-[#6B6B6B] leading-none mb-5 flex-wrap">
             <span className="flex items-center gap-1.5 shrink-0">
-              <span className="text-[10px] leading-none opacity-80">◉</span>
+              <span className="text-[11px] leading-none opacity-80">◉</span>
               {session.room ? (session.room.toLowerCase().startsWith('room') ? session.room : `Room ${session.room}`) : 'Room TBA'}
             </span>
             {subjectCode && (
@@ -481,14 +481,14 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
 
               {session.isLab && (
                 <span
-                  className="text-[9.5px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[2px] bg-black/5 dark:bg-white/10 shrink-0"
+                  className="text-[11px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[2px] bg-black/5 dark:bg-white/10 shrink-0"
                   style={{ color: theme.accent }}
                 >
                   LAB
                 </span>
               )}
 
-              <span className="px-2 py-0.5 rounded-[3px] bg-black/5 dark:bg-white/10 text-[10px] font-mono font-bold uppercase tracking-wider text-black/70 dark:text-white/70 whitespace-nowrap">
+              <span className="px-2 py-0.5 rounded-[3px] bg-black/5 dark:bg-white/10 text-[11px] font-mono font-bold uppercase tracking-wider text-black/70 dark:text-white/70 whitespace-nowrap">
                 {pillLabel}
               </span>
             </div>
@@ -502,7 +502,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                   setMenuOpen((prev) => !prev);
                 }}
                 className="p-1 rounded-[2px] text-slate-500 hover:text-slate-900 dark:text-[#CBD5E1] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                title="Lecture actions"
+                title="Lecture actions" aria-label="Lecture actions"
               >
                 <MoreHorizontal className="w-4 h-4" />
               </button>
@@ -520,7 +520,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                       className="absolute right-0 top-full mt-1.5 w-52 bg-white dark:bg-[#16171D] border border-black/10 dark:border-white/10 rounded-[4px] shadow-xl py-1.5 z-40 text-left font-sans flex flex-col"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-black/50 dark:text-white/50 border-b border-black/5 dark:border-white/5 mb-1 flex items-center gap-1.5">
+                      <div className="px-3 py-1 text-[11px] font-mono uppercase tracking-wider text-black/60 dark:text-white/60 border-b border-black/5 dark:border-white/5 mb-1 flex items-center gap-1.5">
                         <span>🎓</span>
                         <span>Faculty Actions</span>
                       </div>
@@ -534,7 +534,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                             setMenuOpen(false);
                             handleRevertReschedule();
                           }}
-                          className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
+                          className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
                         >
                           <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                           <span>Revert Schedule</span>
@@ -548,7 +548,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                               setMenuOpen(false);
                               setIsRescheduleModalOpen(true);
                             }}
-                            className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                            className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
                           >
                             <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
                             <span>Reschedule Class</span>
@@ -565,7 +565,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                           handleToggleCancel();
                         }}
                         className={clsx(
-                          "flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-left transition-colors cursor-pointer",
+                          "flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-left transition-colors cursor-pointer",
                           isCancelled
                             ? "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
                             : "text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30"
@@ -591,7 +591,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                           setMenuOpen(false);
                           handleShareWhatsAppNotice();
                         }}
-                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-slate-800 dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer border-t border-black/5 dark:border-white/5"
+                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-slate-800 dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer border-t border-black/5 dark:border-white/5"
                       >
                         <Share2 className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                         <span>WhatsApp Notice</span>
@@ -609,7 +609,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
 
           {/* Rescheduled Pill */}
           {isRescheduled && rescheduleMeta?.originalStartTime && (
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[10.5px] font-mono font-medium mb-3 self-start">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] font-mono font-medium mb-3 self-start">
               <Clock className="w-3 h-3 shrink-0" />
               <span>
                 Rescheduled from {formatTime12Hour(rescheduleMeta.originalStartTime)} – {formatTime12Hour(rescheduleMeta.originalEndTime)}
@@ -621,13 +621,13 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
           {/* Details Row */}
           <div className="flex items-center gap-2 text-[12px] text-black/60 dark:text-[#A1A1AA] font-mono leading-none mb-4 flex-wrap">
             <span className="flex items-center gap-1.5 shrink-0 text-black/80 dark:text-white/90 font-medium">
-              <span className="text-[10px] leading-none opacity-80">◉</span>
+              <span className="text-[11px] leading-none opacity-80">◉</span>
               {session.room ? (session.room.toLowerCase().startsWith('room') ? session.room : `Room ${session.room}`) : 'Room TBA'}
             </span>
             {subjectCode && (
               <>
                 <span className="opacity-40 shrink-0">·</span>
-                <span className="px-1.5 py-0.5 bg-black/5 dark:bg-white/10 rounded-[3px] text-[10.5px] font-mono font-medium">
+                <span className="px-1.5 py-0.5 bg-black/5 dark:bg-white/10 rounded-[3px] text-[11px] font-mono font-medium">
                   {subjectCode}
                 </span>
               </>
@@ -646,7 +646,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                 style={{ backgroundColor: isCancelled ? '#E11D48' : theme.accent }}
               />
               <span
-                className="text-[12.5px] font-bold font-mono tracking-tight leading-none"
+                className="text-[13px] font-bold font-mono tracking-tight leading-none"
                 style={{ color: isCancelled ? '#E11D48' : theme.accent }}
               >
                 {isCancelled ? 'Cancelled for today' : formatCountdown(minutesUntilStart)}

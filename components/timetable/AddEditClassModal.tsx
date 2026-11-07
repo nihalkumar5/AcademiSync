@@ -162,7 +162,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
           
           {/* SECTION 1: CLASS */}
           <div className="flex flex-col gap-3">
-            <span className="text-[10px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#64748B] uppercase">CLASS</span>
+            <span className="text-[11px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#A1A1AA] uppercase">CLASS</span>
             <div className="flex flex-col gap-1.5">
               <label className="text-[11px] font-semibold text-[#111111] dark:text-[#F4F4F6] uppercase">Subject</label>
               <div className="relative">
@@ -187,7 +187,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
 
           {/* SECTION 2: SCHEDULE */}
           <div className="flex flex-col gap-3">
-            <span className="text-[10px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#64748B] uppercase">SCHEDULE</span>
+            <span className="text-[11px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#A1A1AA] uppercase">SCHEDULE</span>
             <div className="flex flex-col gap-1.5">
               <label className="text-[11px] font-semibold text-[#111111] dark:text-[#F4F4F6] uppercase">Day</label>
               <div className="relative">
@@ -228,7 +228,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
 
           {/* SECTION 3: LOCATION & FACULTY */}
           <div className="flex flex-col gap-3">
-            <span className="text-[10px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#64748B] uppercase">LOCATION & FACULTY</span>
+            <span className="text-[11px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#A1A1AA] uppercase">LOCATION & FACULTY</span>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] font-semibold text-[#111111] dark:text-[#F4F4F6] uppercase">Room / Lab</label>
@@ -284,7 +284,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
                     className="text-[13px] font-semibold text-[#111111] dark:text-[#F4F4F6] cursor-pointer flex items-center gap-1.5"
                   >
                     <span>Broadcast to Entire Batch</span>
-                    <span className="text-[10px] px-1.5 py-0.5 bg-amber-500/20 text-amber-700 dark:text-amber-400 font-bold uppercase tracking-wider">Pilot Only</span>
+                    <span className="text-[11px] px-1.5 py-0.5 bg-amber-500/20 text-amber-700 dark:text-amber-400 font-bold uppercase tracking-wider">Pilot Only</span>
                   </label>
                   <p className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8] mt-0.5">
                     {syncWithBatch 

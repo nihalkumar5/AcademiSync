@@ -82,7 +82,7 @@ export const AddCustomItemModal: React.FC<AddCustomItemModalProps> = ({
         
         {/* Subject Selection */}
         <div className="flex flex-col gap-3 pt-2">
-          <label className="text-[12px] uppercase tracking-[1.5px] font-bold text-[#6F6F6F] dark:text-[#64748B]">
+          <label className="text-[12px] uppercase tracking-[1.5px] font-bold text-[#6F6F6F] dark:text-[#A1A1AA]">
             Subject
           </label>
           <div className="relative">
@@ -137,7 +137,7 @@ export const AddCustomItemModal: React.FC<AddCustomItemModalProps> = ({
 
         {/* Suggestions */}
         <div className="flex flex-col gap-3">
-          <label className="text-[12px] uppercase tracking-[1.5px] font-bold text-[#6F6F6F] dark:text-[#64748B]">
+          <label className="text-[12px] uppercase tracking-[1.5px] font-bold text-[#6F6F6F] dark:text-[#A1A1AA]">
             What do you need?
           </label>
           <div className="grid grid-cols-2 gap-2.5">
@@ -189,7 +189,7 @@ export const AddCustomItemModal: React.FC<AddCustomItemModalProps> = ({
           </button>
         ) : (
           <div className="animate-in fade-in duration-200">
-            <label className="block text-[12px] uppercase tracking-[1.5px] font-bold text-[#6F6F6F] dark:text-[#64748B] mb-3">
+            <label className="block text-[12px] uppercase tracking-[1.5px] font-bold text-[#6F6F6F] dark:text-[#A1A1AA] mb-3">
               Item name
             </label>
             <input

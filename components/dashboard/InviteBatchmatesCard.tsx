@@ -62,7 +62,7 @@ ${PLAY_STORE_URL}
             </p>
             {isSynced && sixDigitCode && (
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-[10px] font-bold text-[#6F6F6F] dark:text-[#A1A1AA] uppercase tracking-wider">
+                <span className="text-[11px] font-bold text-[#6F6F6F] dark:text-[#A1A1AA] uppercase tracking-wider">
                   Batch Code:
                 </span>
                 <span className="text-[12px] font-mono font-bold tracking-[1.5px] text-[#111111] dark:text-[#F4F4F6] bg-black/5 dark:bg-white/[0.08] px-2 py-0.5 rounded border border-black/10 dark:border-white/10 select-all">

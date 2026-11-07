@@ -360,7 +360,7 @@ export default function AppHome() {
           {!Capacitor.isNativePlatform() && isAndroid && isSignedIn && (
             <div className="mb-6 p-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] flex items-center justify-between rounded-none">
               <div className="flex flex-col pr-4">
-                <span className="text-[10px] font-bold uppercase tracking-widest opacity-70 mb-1">
+                <span className="text-[11px] font-bold uppercase tracking-widest opacity-70 mb-1">
                   Intersemester App
                 </span>
                 <span className="text-[14px] font-medium leading-snug">
@@ -463,7 +463,7 @@ export default function AppHome() {
               <div className="flex flex-col gap-4">
                 {/* Prominent 6-Digit Batch Code */}
                 <div className="p-4 bg-[#111111] dark:bg-white text-white dark:text-[#111111] flex flex-col gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-[2px] opacity-70">
+                  <span className="text-[11px] font-bold uppercase tracking-[2px] opacity-70">
                     6-Digit Batch Code
                   </span>
                   <div className="flex items-center justify-between gap-3">
@@ -608,7 +608,7 @@ export default function AppHome() {
               /* Strictly Web View -> Mobile App Gate Only */
               <div className="flex flex-col gap-4">
                 <div className="p-4 bg-[#111111] dark:bg-white text-white dark:text-[#111111] flex flex-col gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-[2px] opacity-70">
+                  <span className="text-[11px] font-bold uppercase tracking-[2px] opacity-70">
                     Calendar Code / ID
                   </span>
                   <div className="flex items-center justify-between gap-3">
@@ -757,7 +757,7 @@ export default function AppHome() {
               /* Strictly Web View -> Mobile App Gate Only */
               <div className="flex flex-col gap-4">
                 <div className="p-4 bg-[#111111] dark:bg-white text-white dark:text-[#111111] flex flex-col gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-[2px] opacity-70">
+                  <span className="text-[11px] font-bold uppercase tracking-[2px] opacity-70">
                     Exam Schedule Code / ID
                   </span>
                   <div className="flex items-center justify-between gap-3">

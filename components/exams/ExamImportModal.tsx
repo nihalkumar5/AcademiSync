@@ -292,7 +292,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
         <div className="flex flex-col text-left">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-bold tracking-[0.2em] text-black/50 dark:text-white/40 uppercase">Extracted Exams</span>
+              <span className="text-[11px] font-bold tracking-[0.2em] text-black/60 dark:text-white/60 uppercase">Extracted Exams</span>
               
               <div className="flex flex-col gap-4">
                 {extractedExams.map((event, index) => (
@@ -307,7 +307,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
                     
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
                       <div className="sm:col-span-5 flex flex-col gap-1.5">
-                        <label className="text-[10.5px] font-bold text-black/70 dark:text-[#94A3B8] uppercase tracking-wider">
+                        <label className="text-[11px] font-bold text-black/70 dark:text-[#94A3B8] uppercase tracking-wider">
                           Subject Name
                         </label>
                         <input
@@ -319,7 +319,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
                         />
                       </div>
                       <div className="sm:col-span-3 flex flex-col gap-1.5">
-                        <label className="text-[10.5px] font-bold text-black/70 dark:text-[#94A3B8] uppercase tracking-wider">
+                        <label className="text-[11px] font-bold text-black/70 dark:text-[#94A3B8] uppercase tracking-wider">
                           Exam Date
                         </label>
                         <input
@@ -330,7 +330,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
                         />
                       </div>
                       <div className="sm:col-span-4 flex flex-col gap-1.5">
-                        <label className="text-[10.5px] font-bold text-black/70 dark:text-[#94A3B8] uppercase tracking-wider">
+                        <label className="text-[11px] font-bold text-black/70 dark:text-[#94A3B8] uppercase tracking-wider">
                           Exam Time
                         </label>
                         <input
@@ -345,7 +345,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
                     
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
                       <div className="sm:col-span-4 flex flex-col gap-1.5">
-                        <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">
+                        <label className="text-[11px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">
                           Room / Hall (Optional)
                         </label>
                         <input
@@ -353,11 +353,11 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
                           value={event.room || ''}
                           placeholder="e.g. Room 204 or Hall B"
                           onChange={(e) => updateExtractedRow(index, { room: e.target.value })}
-                          className="w-full px-3 py-1.5 h-[36px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[12.5px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
+                          className="w-full px-3 py-1.5 h-[36px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
                         />
                       </div>
                       <div className="sm:col-span-8 flex flex-col gap-1.5">
-                        <label className="text-[10px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">
+                        <label className="text-[11px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">
                           Syllabus / Modules (Optional)
                         </label>
                         <input
@@ -365,7 +365,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
                           value={event.syllabus || ''}
                           placeholder="e.g. Modules 1 to 4"
                           onChange={(e) => updateExtractedRow(index, { syllabus: e.target.value })}
-                          className="w-full px-3 py-1.5 h-[36px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[12.5px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
+                          className="w-full px-3 py-1.5 h-[36px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
                         />
                       </div>
                     </div>

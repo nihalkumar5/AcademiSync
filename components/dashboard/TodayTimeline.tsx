@@ -233,7 +233,7 @@ export const TodayTimeline: React.FC = () => {
       <form onSubmit={handleAddExtraSubmit} className="flex flex-col gap-4 mt-3">
         {/* Custom Theme-Aware Subject Dropdown */}
         <div className="flex flex-col gap-1.5 text-left relative">
-          <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
+          <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA]">
             Subject / Course
           </label>
           
@@ -288,7 +288,7 @@ export const TodayTimeline: React.FC = () => {
                           {sub.name}
                         </span>
                         {sub.facultyName && (
-                          <span className="text-[10.5px] text-black/40 dark:text-[#71717A] truncate mt-0.5">
+                          <span className="text-[11px] text-black/60 dark:text-[#A1A1AA] truncate mt-0.5">
                             {sub.facultyName}
                           </span>
                         )}
@@ -306,7 +306,7 @@ export const TodayTimeline: React.FC = () => {
 
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
+            <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA]">
               Start Time
             </label>
             <input 
@@ -319,7 +319,7 @@ export const TodayTimeline: React.FC = () => {
           </div>
 
           <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
+            <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA]">
               End Time
             </label>
             <input 
@@ -334,7 +334,7 @@ export const TodayTimeline: React.FC = () => {
 
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
+            <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA]">
               Room / Venue
             </label>
             <input 
@@ -342,12 +342,12 @@ export const TodayTimeline: React.FC = () => {
               value={extraRoom}
               onChange={(e) => setExtraRoom(e.target.value)}
               placeholder="e.g. LT-2, Lab-3"
-              className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] placeholder:dark:text-[#71717A] text-sm focus:outline-none rounded-none"
+              className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] placeholder:dark:text-[#A1A1AA] text-sm focus:outline-none rounded-none"
             />
           </div>
 
           <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
+            <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA]">
               Faculty (Optional)
             </label>
             <input 
@@ -355,13 +355,13 @@ export const TodayTimeline: React.FC = () => {
               value={extraFaculty}
               onChange={(e) => setExtraFaculty(e.target.value)}
               placeholder="Prof. Name"
-              className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] placeholder:dark:text-[#71717A] text-sm focus:outline-none rounded-none"
+              className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] placeholder:dark:text-[#A1A1AA] text-sm focus:outline-none rounded-none"
             />
           </div>
         </div>
 
         <div className="flex flex-col gap-1.5 text-left">
-          <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
+          <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA]">
             Notes / Reason (Optional)
           </label>
           <input 
@@ -369,7 +369,7 @@ export const TodayTimeline: React.FC = () => {
             value={extraNotes}
             onChange={(e) => setExtraNotes(e.target.value)}
             placeholder="e.g. Compensatory lecture for Monday"
-            className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] placeholder:dark:text-[#71717A] text-sm focus:outline-none rounded-none"
+            className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] placeholder:dark:text-[#A1A1AA] text-sm focus:outline-none rounded-none"
           />
         </div>
 
@@ -416,12 +416,12 @@ export const TodayTimeline: React.FC = () => {
               <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
                 {isAfter8PM ? "TOMORROW'S NEXT EXAM" : "TODAY'S NEXT EXAM"}
               </h3>
-              <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#808080] uppercase tracking-wider mt-0.5">
+              <span className="text-[11px] sm:text-[11px] font-mono font-medium text-[#6B6B6B] uppercase tracking-wider mt-0.5">
                 {targetDay} · Slot {heroIndex + 2} of {targetExams.length}
               </span>
             </div>
 
-            <span className="inline-flex items-center px-2 py-0.5 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 text-amber-700 dark:text-amber-400 font-mono text-[10px] font-bold uppercase tracking-wider">
+            <span className="inline-flex items-center px-2 py-0.5 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 text-amber-700 dark:text-amber-400 font-mono text-[11px] font-bold uppercase tracking-wider">
               Slot {heroIndex + 2}
             </span>
           </div>
@@ -438,7 +438,7 @@ export const TodayTimeline: React.FC = () => {
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   Previous Slot Concluded
                 </span>
-                <span className="text-black/50 dark:text-white/50 truncate max-w-[180px]">
+                <span className="text-black/60 dark:text-white/60 truncate max-w-[180px]">
                   {completedExams[completedExams.length - 1].subjectName}
                 </span>
               </div>
@@ -450,7 +450,7 @@ export const TodayTimeline: React.FC = () => {
                   <div className="flex flex-col gap-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                      <span className="text-[10px] sm:text-[10.5px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                      <span className="text-[11px] sm:text-[11px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
                         Slot {heroIndex + 2 + idx} of {targetExams.length}
                       </span>
                     </div>
@@ -488,7 +488,7 @@ export const TodayTimeline: React.FC = () => {
 
                 {exam.syllabus && (
                   <div className="p-3 bg-black/[0.02] dark:bg-white/[0.03] border border-black/5 dark:border-white/5 text-[12px] text-[#444444] dark:text-[#CBD5E1] leading-relaxed">
-                    <span className="font-mono font-bold text-[10px] uppercase tracking-wider text-black/50 dark:text-white/50 block mb-1">
+                    <span className="font-mono font-bold text-[11px] uppercase tracking-wider text-black/60 dark:text-white/60 block mb-1">
                       Syllabus
                     </span>
                     {exam.syllabus}
@@ -509,12 +509,12 @@ export const TodayTimeline: React.FC = () => {
             <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
               {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
             </h3>
-            <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#808080] uppercase tracking-wider mt-0.5">
+            <span className="text-[11px] sm:text-[11px] font-mono font-medium text-[#6B6B6B] uppercase tracking-wider mt-0.5">
               {targetDay} · Examination Day
             </span>
           </div>
 
-          <span className="inline-flex items-center px-2 py-0.5 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 text-amber-700 dark:text-amber-400 font-mono text-[10px] font-bold uppercase tracking-wider">
+          <span className="inline-flex items-center px-2 py-0.5 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 text-amber-700 dark:text-amber-400 font-mono text-[11px] font-bold uppercase tracking-wider">
             {heroExam?.timing.status === 'live' ? 'Live Now' : 'Exam Day'}
           </span>
         </div>
@@ -531,7 +531,7 @@ export const TodayTimeline: React.FC = () => {
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 Slot 1 Concluded
               </span>
-              <span className="text-black/50 dark:text-white/50 truncate max-w-[180px]">
+              <span className="text-black/60 dark:text-white/60 truncate max-w-[180px]">
                 {completedExams[0].subjectName}
               </span>
             </div>
@@ -539,11 +539,11 @@ export const TodayTimeline: React.FC = () => {
 
           <div className="flex items-start justify-between gap-3">
             <div className="flex flex-col gap-1">
-              <span className="text-[10.5px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                 {heroExam?.timing.status === 'live' ? 'Examination Underway' : 'Exam Day Schedule'}
               </span>
-              <p className="text-[13px] sm:text-[13.5px] text-[#444444] dark:text-[#CBD5E1] leading-relaxed">
+              <p className="text-[13px] sm:text-[14px] text-[#444444] dark:text-[#CBD5E1] leading-relaxed">
                 Campus is observing examination schedule for <strong className="text-black dark:text-white font-bold">{heroExam?.subjectName || targetExams[0].subjectName}</strong>. Check live status &amp; venue in hero card above.
               </p>
             </div>
@@ -568,7 +568,7 @@ export const TodayTimeline: React.FC = () => {
             <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
               {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
             </h3>
-            <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#808080] uppercase tracking-wider mt-0.5">
+            <span className="text-[11px] sm:text-[11px] font-mono font-medium text-[#6B6B6B] uppercase tracking-wider mt-0.5">
               {targetDay}
             </span>
           </div>
@@ -586,7 +586,7 @@ export const TodayTimeline: React.FC = () => {
                 }
                 setIsAddExtraOpen(true);
               }}
-              className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
+              className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[11px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
             >
               <span>+ Extra Class</span>
             </button>
@@ -621,7 +621,7 @@ export const TodayTimeline: React.FC = () => {
             <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
               {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
             </h3>
-            <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#808080] uppercase tracking-wider mt-0.5">
+            <span className="text-[11px] sm:text-[11px] font-mono font-medium text-[#6B6B6B] uppercase tracking-wider mt-0.5">
               {targetDay}
             </span>
           </div>
@@ -639,7 +639,7 @@ export const TodayTimeline: React.FC = () => {
                 }
                 setIsAddExtraOpen(true);
               }}
-              className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
+              className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[11px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
             >
               <span>+ Extra Class</span>
             </button>
@@ -721,7 +721,7 @@ export const TodayTimeline: React.FC = () => {
           <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
             {isAfter8PM ? "TOMORROW'S SCHEDULE" : "LATER TODAY"}
           </h3>
-          <span className="text-[10px] sm:text-[11px] font-mono font-medium text-[#808080] uppercase tracking-wider mt-0.5">
+          <span className="text-[11px] sm:text-[11px] font-mono font-medium text-[#6B6B6B] uppercase tracking-wider mt-0.5">
             {targetDay}
           </span>
         </div>
@@ -739,7 +739,7 @@ export const TodayTimeline: React.FC = () => {
               }
               setIsAddExtraOpen(true);
             }}
-            className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[10.5px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
+            className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[11px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
             >
               <span>+ Extra Class</span>
             </button>
@@ -798,7 +798,7 @@ export const TodayTimeline: React.FC = () => {
                         <div className="w-20 shrink-0 flex flex-col pt-0.5">
                           {reschedule ? (
                             <div className="flex flex-col">
-                              <span className="text-[11px] line-through text-[#9CA3AF] font-mono font-medium leading-none mb-1">
+                              <span className="text-[11px] line-through text-[#6B6B6B] font-mono font-medium leading-none mb-1">
                                 {formatTime12Hour(session.startTime)}
                               </span>
                               <span className="text-[13px] font-bold tracking-tighter font-mono text-[#C85F3D] leading-none">
@@ -858,23 +858,23 @@ export const TodayTimeline: React.FC = () => {
                                 </h4>
                                 
                                 {isCancelled ? (
-                                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#FAD3D9] text-[#C94B5C] rounded-[2px] shrink-0">
+                                  <span className="px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#FAD3D9] text-[#C94B5C] rounded-[2px] shrink-0">
                                     Cancelled
                                   </span>
                                 ) : isNow ? (
-                                  <span className="px-2 py-0.5 rounded-[2px] bg-[#18A889]/20 text-[#18A889] text-[10px] font-bold uppercase tracking-wider animate-pulse border border-[#18A889]/40 shrink-0">
+                                  <span className="px-2 py-0.5 rounded-[2px] bg-[#18A889]/20 text-[#18A889] text-[11px] font-bold uppercase tracking-wider animate-pulse border border-[#18A889]/40 shrink-0">
                                     Now
                                   </span>
                                 ) : reschedule ? (
-                                  <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-bold uppercase tracking-wider bg-[#FCE0D5] text-[#C85F3D] shrink-0">
+                                  <span className="px-2 py-0.5 rounded-[2px] text-[11px] font-bold uppercase tracking-wider bg-[#FCE0D5] text-[#C85F3D] shrink-0">
                                     Rescheduled
                                   </span>
                                 ) : isLab ? (
-                                  <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-bold uppercase tracking-wider bg-[#D2F1E8] text-[#18A889] shrink-0">
+                                  <span className="px-2 py-0.5 rounded-[2px] text-[11px] font-bold uppercase tracking-wider bg-[#D2F1E8] text-[#18A889] shrink-0">
                                     Lab
                                   </span>
                                 ) : session.isExtra ? (
-                                  <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-bold uppercase tracking-wider bg-[#E4D8F8] text-[#8067B5] shrink-0">
+                                  <span className="px-2 py-0.5 rounded-[2px] text-[11px] font-bold uppercase tracking-wider bg-[#E4D8F8] text-[#8067B5] shrink-0">
                                     Extra Class
                                   </span>
                                 ) : null}
@@ -891,7 +891,7 @@ export const TodayTimeline: React.FC = () => {
                                 style={{ color: subTextColor }}
                               >
                                 <span className="flex items-center gap-1">
-                                  <span className="text-[10px] leading-none opacity-80">◉</span>
+                                  <span className="text-[11px] leading-none opacity-80">◉</span>
                                   {reschedule?.room || session.room}
                                 </span>
                                 {session.faculty && (
@@ -914,7 +914,7 @@ export const TodayTimeline: React.FC = () => {
 
                               {session.notes && (
                                 <span 
-                                  className="text-[11.5px] font-mono mt-1 block italic opacity-80"
+                                  className="text-[12px] font-mono mt-1 block italic opacity-80"
                                   style={{ color: titleColor }}
                                 >
                                   Note: {session.notes}
@@ -953,8 +953,8 @@ export const TodayTimeline: React.FC = () => {
                                 e.stopPropagation();
                                 setOpenMenuSessionId(openMenuSessionId === session.id ? null : session.id);
                               }}
-                              className="p-1.5 text-[#A0A0A0] hover:text-[#151515] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer rounded-[4px]"
-                              title="More Options"
+                              className="p-1.5 text-[#6B6B6B] hover:text-[#151515] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer rounded-[4px]"
+                              title="More Options" aria-label="More Options"
                             >
                               <MoreVertical className="w-4 h-4" />
                             </button>
@@ -975,7 +975,7 @@ export const TodayTimeline: React.FC = () => {
                                   {session.isExtra ? (
                                     <>
                                       {profile.isBatchSynced && (
-                                        <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[9.5px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
+                                        <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
                                           <span>👑</span>
                                           <span>BP Extra Slot</span>
                                         </div>
@@ -986,7 +986,7 @@ export const TodayTimeline: React.FC = () => {
                                           setOpenMenuSessionId(null);
                                           deleteExtraSession(session.id);
                                         }}
-                                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
+                                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
                                       >
                                         <Ban className="w-3.5 h-3.5 shrink-0" />
                                         <span>Delete Extra Class</span>
@@ -994,18 +994,18 @@ export const TodayTimeline: React.FC = () => {
                                     </>
                                   ) : profile.isBatchSynced && !isBatchCR ? (
                                     <div className="p-3 text-[11px] text-black/70 dark:text-[#A1A1AA] flex flex-col gap-1">
-                                      <div className="font-bold text-black dark:text-white flex items-center gap-1.5 uppercase text-[10px]">
+                                      <div className="font-bold text-black dark:text-white flex items-center gap-1.5 uppercase text-[11px]">
                                         <Ban className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                                         <span>Pilot Managed Schedule</span>
                                       </div>
-                                      <p className="text-[10px] text-black/60 dark:text-[#71717A] leading-tight mt-0.5">
+                                      <p className="text-[11px] text-black/60 dark:text-[#A1A1AA] leading-tight mt-0.5">
                                         Only a verified Batch Pilot can cancel or reschedule classes for this batch.
                                       </p>
                                     </div>
                                   ) : isCancelled ? (
                                     <>
                                       {profile.isBatchSynced && (
-                                        <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[9.5px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
+                                        <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
                                           <span>🚀</span>
                                           <span>Pilot Live Action</span>
                                         </div>
@@ -1016,7 +1016,7 @@ export const TodayTimeline: React.FC = () => {
                                           setOpenMenuSessionId(null);
                                           toggleSessionCancelled(session.id, targetDateStr);
                                         }}
-                                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-left transition-colors cursor-pointer"
+                                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-left transition-colors cursor-pointer"
                                       >
                                         <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                                         <span>Restore Class for Batch</span>
@@ -1025,7 +1025,7 @@ export const TodayTimeline: React.FC = () => {
                                   ) : (
                                     <>
                                       {profile.isBatchSynced && (
-                                        <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[9.5px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
+                                        <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
                                           <span>👑</span>
                                           <span>BP Live Controls</span>
                                         </div>
@@ -1036,7 +1036,7 @@ export const TodayTimeline: React.FC = () => {
                                           setOpenMenuSessionId(null);
                                           toggleSessionCancelled(session.id, targetDateStr);
                                         }}
-                                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
+                                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
                                       >
                                         <Ban className="w-3.5 h-3.5 shrink-0" />
                                         <span>Cancel Class for Batch</span>
@@ -1051,7 +1051,7 @@ export const TodayTimeline: React.FC = () => {
                                             setOpenMenuSessionId(null);
                                             rescheduleSession(session.id, null, targetDateStr);
                                           }}
-                                          className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
+                                          className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
                                         >
                                           <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                                           <span>Revert Reschedule</span>
@@ -1068,7 +1068,7 @@ export const TodayTimeline: React.FC = () => {
                                             setRescheduleSubjectId(currentReschedule?.subjectId || session.subjectId);
                                             setRescheduleTarget(session);
                                           }}
-                                          className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                                          className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
                                         >
                                           <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
                                           <span>Reschedule Class</span>
@@ -1098,7 +1098,7 @@ export const TodayTimeline: React.FC = () => {
         <form onSubmit={handleRescheduleSubmit} className="flex flex-col gap-4 mt-3">
           {/* Custom Theme-Aware Subject Dropdown */}
           <div className="flex flex-col gap-1.5 text-left relative">
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
+            <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA]">
               Subject / Course
             </label>
             
@@ -1150,7 +1150,7 @@ export const TodayTimeline: React.FC = () => {
                             {sub.name}
                           </span>
                           {sub.facultyName && (
-                            <span className="text-[10.5px] text-black/40 dark:text-[#71717A] truncate mt-0.5">
+                            <span className="text-[11px] text-black/60 dark:text-[#A1A1AA] truncate mt-0.5">
                               {sub.facultyName}
                             </span>
                           )}
@@ -1167,7 +1167,7 @@ export const TodayTimeline: React.FC = () => {
           </div>
 
           <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
+            <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA]">
               New Start Time
             </label>
             <input 
@@ -1180,7 +1180,7 @@ export const TodayTimeline: React.FC = () => {
           </div>
 
           <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
+            <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA]">
               New End Time
             </label>
             <input 
@@ -1193,7 +1193,7 @@ export const TodayTimeline: React.FC = () => {
           </div>
 
           <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
+            <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA]">
               New Room (Optional)
             </label>
             <input 
@@ -1201,7 +1201,7 @@ export const TodayTimeline: React.FC = () => {
               value={rescheduleRoom}
               onChange={(e) => setRescheduleRoom(e.target.value)}
               placeholder="e.g. LT-2, Lab-3"
-              className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] placeholder:dark:text-[#71717A] text-sm focus:outline-none rounded-none"
+              className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] placeholder:dark:text-[#A1A1AA] text-sm focus:outline-none rounded-none"
             />
           </div>
 

@@ -94,37 +94,36 @@ export const OverviewHeader: React.FC = () => {
   const seconds = time ? time.getSeconds().toString().padStart(2, '0') : '00';
 
   return (
-    <div className="flex flex-col gap-6 mt-8 mb-4">
-      {/* Huge Greeting */}
+    <div className="flex flex-col gap-4 mt-4 sm:mt-8 mb-2">
+      {/* Greeting: compact on phones so the live/next class card stays above the fold */}
       <div>
-        <h2 className="text-[40px] text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
-          <span className="font-normal">{greeting},</span><br />
-          <span className="font-medium inline-flex items-baseline gap-2">
+        <h2 className="text-[28px] leading-[34px] sm:text-[40px] sm:leading-[44px] text-[#111111] dark:text-[#FFFFFF] tracking-tight">
+          <span className="font-normal">{greeting},</span>{' '}
+          <span className="font-medium">
             {(profile?.name || 'Student').split(' ')[0]}
-            <span>👋</span>
           </span>
         </h2>
-        
-        <div className="flex flex-col gap-2 mt-2">
-          <p className="text-[14px] font-normal text-[#6F6F6F] leading-[20px]">
-            {dateFormatted} · {timeFormatted}
-          </p>
 
-          {(profile?.programme || profile?.branch) && (
-            <div className="flex flex-col">
-              <span className="text-[13px] leading-[18px] font-semibold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider truncate">
-                SEM {profile?.semester || 1} · {profile?.programme || ''}{profile?.branch ? ` · ${profile.branch.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')}` : ''}
+        <p className="mt-1.5 text-[14px] font-normal text-[#6B6B6B] dark:text-[#A1A1AA] leading-[20px]">
+          {dateFormatted} · {timeFormatted}
+        </p>
+
+        {(profile?.programme || profile?.branch) && (
+          <p className="mt-1 text-[13px] leading-[18px] uppercase tracking-wide truncate">
+            <span className="font-semibold text-[#111111] dark:text-[#FFFFFF]">
+              Sem {profile?.semester || 1} · {profile?.programme || ''}{profile?.branch ? ` · ${profile.branch.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')}` : ''}
+            </span>
+            {(profile?.rollNumber || profile?.college) && (
+              <span className="font-normal text-[#6B6B6B] dark:text-[#A1A1AA]">
+                {' · '}{profile?.rollNumber ? `${profile.rollNumber} · ` : ''}{getShortCollegeName(profile?.college || '')}
               </span>
-              <span className="text-[13px] leading-[18px] font-normal text-[#6F6F6F] uppercase truncate tracking-wide mt-1">
-                {profile?.rollNumber ? `${profile.rollNumber} · ` : ''}{getShortCollegeName(profile?.college || '')}
-              </span>
-            </div>
-          )}
-        </div>
+            )}
+          </p>
+        )}
       </div>
 
       {/* Brutalist Stats Grid */}
-      <div className="grid grid-cols-3 gap-0 py-4 mt-7 border-y border-black/10 dark:border-white/[0.08] relative">
+      <div className="grid grid-cols-3 gap-0 py-3 sm:py-4 mt-2 sm:mt-5 border-y border-black/10 dark:border-white/[0.08] relative">
         {/* Vertical dividers (~70% height) */}
         <div className="absolute left-1/3 top-[15%] bottom-[15%] w-px bg-black/10 dark:bg-white/[0.08]" />
         <div className="absolute left-[66.666%] top-[15%] bottom-[15%] w-px bg-black/10 dark:bg-white/[0.08]" />
@@ -134,7 +133,7 @@ export const OverviewHeader: React.FC = () => {
           onClick={() => setActiveView(hasActiveExamToday ? 'exams' : 'timetable')}
           className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center cursor-pointer"
         >
-          <span className="text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
+          <span className="text-[28px] sm:text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
             {hasActiveExamToday ? todayExamsList.length : todayClasses.length}
           </span>
           <div className="flex flex-col items-center">
@@ -142,7 +141,7 @@ export const OverviewHeader: React.FC = () => {
               {hasActiveExamToday ? (todayExamsList.length === 1 ? 'Exam' : 'Exams') : 'Classes'}
             </span>
             {todayHoliday ? (
-              <span className="text-[13px] text-black/50 dark:text-[#71717A] leading-tight">
+              <span className="text-[13px] text-black/60 dark:text-[#A1A1AA] leading-tight">
                 Holiday
               </span>
             ) : hasActiveExamToday ? (
@@ -162,7 +161,7 @@ export const OverviewHeader: React.FC = () => {
           onClick={() => setActiveView('homework')}
           className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center cursor-pointer"
         >
-          <span className="text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
+          <span className="text-[28px] sm:text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
             {pendingHw.length}
           </span>
           <div className="flex flex-col items-center">
@@ -180,7 +179,7 @@ export const OverviewHeader: React.FC = () => {
           onClick={() => setActiveView('homework')}
           className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center cursor-pointer"
         >
-          <span className="text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
+          <span className="text-[28px] sm:text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
             {upcomingDeadlines.length}
           </span>
           <div className="flex flex-col items-center">

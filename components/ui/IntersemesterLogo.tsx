@@ -55,7 +55,7 @@ export const IntersemesterLogo: React.FC<IntersemesterLogoProps> = ({
       </div>
 
       {showTagline && (
-        <span className="text-[9px] font-mono font-bold tracking-widest uppercase text-black/50 dark:text-white/50 mt-1">
+        <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-black/50 dark:text-white/50 mt-1">
           {taglineText}
         </span>
       )}

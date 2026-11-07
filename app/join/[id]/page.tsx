@@ -94,7 +94,7 @@ export default function JoinMessPage() {
 
       <div className="border border-[#D8D8D8] dark:border-[#333333] bg-[#FFFFFF] dark:bg-[#111111] p-6 w-full mb-6 text-left shadow-sm">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-[11px] font-bold tracking-widest text-[#A0A0A0] uppercase">INVITE CODE: {params.id}</p>
+          <p className="text-[11px] font-bold tracking-widest text-[#6B6B6B] uppercase">INVITE CODE: {params.id}</p>
           <button
             type="button"
             onClick={copyCode}

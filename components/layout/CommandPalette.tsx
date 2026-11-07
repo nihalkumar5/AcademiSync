@@ -208,7 +208,7 @@ export const CommandPalette: React.FC = () => {
           >
             {/* Search Input Bar */}
             <div className="flex items-center gap-3 px-4 h-[48px] sm:h-[50px] border-b border-[#EEEEEC] dark:border-white/[0.06] bg-[#FCFCFA] dark:bg-[#121317]">
-              <Search className="w-[18px] h-[18px] text-[#8A8A88] dark:text-[#71717A] shrink-0" strokeWidth={1.5} />
+              <Search className="w-[18px] h-[18px] text-[#8A8A88] dark:text-[#A1A1AA] shrink-0" strokeWidth={1.5} />
               
               <input
                 autoFocus
@@ -220,11 +220,11 @@ export const CommandPalette: React.FC = () => {
                   setSelectedIndex(0);
                 }}
                 onKeyDown={handleKeyDown}
-                className="w-full bg-transparent text-[14.5px] font-medium text-[#111111] dark:text-[#F4F4F6] placeholder:text-[#8A8A88] dark:placeholder:text-[#71717A] focus:outline-none tracking-tight"
+                className="w-full bg-transparent text-[15px] font-medium text-[#111111] dark:text-[#F4F4F6] placeholder:text-[#8A8A88] dark:placeholder:text-[#71717A] focus:outline-none tracking-tight"
               />
 
               <div className="flex items-center gap-1.5 shrink-0">
-                <kbd className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-[3px] border border-[#E2E2DC] dark:border-white/10 bg-[#F2F2EE] dark:bg-white/[0.06] text-[#6E6E6A] dark:text-[#A1A1AA] shadow-2xs">
+                <kbd className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-[3px] border border-[#E2E2DC] dark:border-white/10 bg-[#F2F2EE] dark:bg-white/[0.06] text-[#6E6E6A] dark:text-[#A1A1AA] shadow-2xs">
                   ESC
                 </kbd>
               </div>
@@ -233,7 +233,7 @@ export const CommandPalette: React.FC = () => {
             {/* Results Command List */}
             <div className="max-h-[350px] overflow-y-auto p-2 space-y-1">
               {filtered.length === 0 ? (
-                <div className="py-12 flex flex-col items-center justify-center gap-2 text-center text-[#8A8A88] dark:text-[#71717A]">
+                <div className="py-12 flex flex-col items-center justify-center gap-2 text-center text-[#8A8A88] dark:text-[#A1A1AA]">
                   <Sparkles className="w-5 h-5 opacity-60" strokeWidth={1.5} />
                   <p className="text-xs font-semibold">No results found for &ldquo;{query}&rdquo;</p>
                 </div>
@@ -261,14 +261,14 @@ export const CommandPalette: React.FC = () => {
                         >
                           {cmd.icon}
                         </div>
-                        <span className="text-[13.5px] font-semibold tracking-tight truncate">
+                        <span className="text-[14px] font-semibold tracking-tight truncate">
                           {cmd.title}
                         </span>
                       </div>
 
                       <div className="flex items-center gap-2.5 shrink-0 ml-3">
                         <span
-                          className={`text-[9.5px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-[2px] border ${
+                          className={`text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-[2px] border ${
                             isSelected
                               ? 'border-white/25 bg-white/10 text-white/80'
                               : 'border-black/10 dark:border-white/10 text-[#787874] dark:text-[#94A3B8] font-normal'
@@ -292,24 +292,24 @@ export const CommandPalette: React.FC = () => {
             <div className="flex items-center justify-between px-4 h-[36px] bg-[#F3F3F1] dark:bg-[#16171B] border-t border-[#E8E8E4] dark:border-white/[0.06] text-[#787874] dark:text-[#94A3B8]">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5 text-[11px] font-medium">
-                  <kbd className="font-mono text-[9.5px] bg-white dark:bg-[#1E1F24] px-1.5 py-0.5 rounded-[2px] border border-[#D8D8D2] dark:border-white/15 text-[#555552] dark:text-[#CBD5E1] shadow-2xs">
+                  <kbd className="font-mono text-[11px] bg-white dark:bg-[#1E1F24] px-1.5 py-0.5 rounded-[2px] border border-[#D8D8D2] dark:border-white/15 text-[#555552] dark:text-[#CBD5E1] shadow-2xs">
                     ↑
                   </kbd>
-                  <kbd className="font-mono text-[9.5px] bg-white dark:bg-[#1E1F24] px-1.5 py-0.5 rounded-[2px] border border-[#D8D8D2] dark:border-white/15 text-[#555552] dark:text-[#CBD5E1] shadow-2xs">
+                  <kbd className="font-mono text-[11px] bg-white dark:bg-[#1E1F24] px-1.5 py-0.5 rounded-[2px] border border-[#D8D8D2] dark:border-white/15 text-[#555552] dark:text-[#CBD5E1] shadow-2xs">
                     ↓
                   </kbd>
                   <span>Navigate</span>
                 </span>
                 <span className="flex items-center gap-1.5 text-[11px] font-medium">
-                  <kbd className="font-mono text-[9.5px] bg-white dark:bg-[#1E1F24] px-1.5 py-0.5 rounded-[2px] border border-[#D8D8D2] dark:border-white/15 text-[#555552] dark:text-[#CBD5E1] shadow-2xs">
+                  <kbd className="font-mono text-[11px] bg-white dark:bg-[#1E1F24] px-1.5 py-0.5 rounded-[2px] border border-[#D8D8D2] dark:border-white/15 text-[#555552] dark:text-[#CBD5E1] shadow-2xs">
                     ↵
                   </kbd>
                   <span>Open</span>
                 </span>
               </div>
 
-              <div className="flex items-center gap-1.5 font-mono text-[10px] text-[#787874] dark:text-[#94A3B8]">
-                <kbd className="text-[9.5px] bg-white dark:bg-[#1E1F24] px-1.5 py-0.5 rounded-[2px] border border-[#D8D8D2] dark:border-white/15 text-[#555552] dark:text-[#CBD5E1] shadow-2xs flex items-center gap-0.5">
+              <div className="flex items-center gap-1.5 font-mono text-[11px] text-[#787874] dark:text-[#94A3B8]">
+                <kbd className="text-[11px] bg-white dark:bg-[#1E1F24] px-1.5 py-0.5 rounded-[2px] border border-[#D8D8D2] dark:border-white/15 text-[#555552] dark:text-[#CBD5E1] shadow-2xs flex items-center gap-0.5">
                   <Command className="w-2.5 h-2.5" strokeWidth={2} />
                 </kbd>
                 <span>Spotlight</span>

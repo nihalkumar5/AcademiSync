@@ -179,7 +179,7 @@ const LiveMealCard = ({
 
         {/* Dishes */}
         {timeState.items.length > 0 && (
-          <p className="text-[14.5px] font-normal text-[#D1D1D1] dark:text-[#CBD5E1] leading-relaxed">
+          <p className="text-[15px] font-normal text-[#D1D1D1] dark:text-[#CBD5E1] leading-relaxed">
             {timeState.items.join(' · ')}
           </p>
         )}
@@ -426,7 +426,7 @@ ${PLAY_STORE_URL}
                 )}
               </div>
               <span
-                className={`text-[10px] font-medium mt-0.5 ${
+                className={`text-[11px] font-medium mt-0.5 ${
                   isSelected ? 'text-indigo-100' : 'text-slate-400 dark:text-zinc-500'
                 }`}
               >
@@ -472,7 +472,7 @@ ${PLAY_STORE_URL}
                           timing: rawTiming,
                         });
                       }}
-                      className="text-[10px] font-bold tracking-wider uppercase text-[#666666] hover:text-black dark:text-[#94A3B8] dark:hover:text-white px-2 py-0.5 border border-[#D9D9D6] dark:border-white/[0.1] hover:bg-[#F0F0ED] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                      className="text-[11px] font-bold tracking-wider uppercase text-[#666666] hover:text-black dark:text-[#94A3B8] dark:hover:text-white px-2 py-0.5 border border-[#D9D9D6] dark:border-white/[0.1] hover:bg-[#F0F0ED] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
                     >
                       Edit
                     </button>
@@ -517,7 +517,7 @@ ${PLAY_STORE_URL}
                 className="w-full px-3.5 py-2 border border-[#D9D9D6] dark:border-[#333333] bg-transparent text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
                 required
               />
-              <p className="text-[11px] text-[#888888]">
+              <p className="text-[11px] text-[#6B6B6B]">
                 Supports single timing or day formats like (Mon-Fri) / (Sat-Sun).
               </p>
             </div>
@@ -629,7 +629,7 @@ ${PLAY_STORE_URL}
                       const valStr = Array.isArray(items) ? items.join(', ') : items;
                       return (
                         <div key={meal} className="flex flex-col gap-1">
-                          <label className="text-[10px] font-bold uppercase tracking-wider text-[#666666]">
+                          <label className="text-[11px] font-bold uppercase tracking-wider text-[#666666]">
                             {meal}
                           </label>
                           <input

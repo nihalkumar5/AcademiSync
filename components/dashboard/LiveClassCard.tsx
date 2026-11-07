@@ -135,9 +135,9 @@ export const LiveClassCard: React.FC = () => {
             "p-1.5 rounded-[2px] transition-colors cursor-pointer",
             isDarkTheme
               ? "text-white/60 hover:text-white hover:bg-white/10"
-              : "text-black/50 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
+              : "text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
           )}
-          title="Class Options"
+          title="Class Options" aria-label="Class Options"
         >
           <MoreVertical className="w-4 h-4" />
         </button>
@@ -158,7 +158,7 @@ export const LiveClassCard: React.FC = () => {
               {session.isExtra ? (
                 <>
                   {profile.isBatchSynced && (
-                    <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[9.5px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
+                    <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
                       <span>👑</span>
                       <span>BP Extra Slot</span>
                     </div>
@@ -169,7 +169,7 @@ export const LiveClassCard: React.FC = () => {
                       setOpenMenuSessionId(null);
                       deleteExtraSession(session.id);
                     }}
-                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
+                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
                   >
                     <Ban className="w-3.5 h-3.5 shrink-0" />
                     <span>Delete Extra Class</span>
@@ -177,18 +177,18 @@ export const LiveClassCard: React.FC = () => {
                 </>
               ) : profile.isBatchSynced && !isBatchCR ? (
                 <div className="p-3 text-[11px] text-black/70 dark:text-[#A1A1AA] flex flex-col gap-1">
-                  <div className="font-bold text-black dark:text-white flex items-center gap-1.5 uppercase text-[10px]">
+                  <div className="font-bold text-black dark:text-white flex items-center gap-1.5 uppercase text-[11px]">
                     <Ban className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                     <span>Pilot Managed Schedule</span>
                   </div>
-                  <p className="text-[10px] text-black/60 dark:text-[#71717A] leading-tight mt-0.5">
+                  <p className="text-[11px] text-black/60 dark:text-[#A1A1AA] leading-tight mt-0.5">
                     Only a verified Batch Pilot can cancel or reschedule classes for this batch.
                   </p>
                 </div>
               ) : isCancelled ? (
                 <>
                   {profile.isBatchSynced && (
-                    <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[9.5px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
+                    <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
                       <span>🚀</span>
                       <span>Pilot Live Action</span>
                     </div>
@@ -199,7 +199,7 @@ export const LiveClassCard: React.FC = () => {
                       setOpenMenuSessionId(null);
                       toggleSessionCancelled(session.id, dateTodayStr);
                     }}
-                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-left transition-colors cursor-pointer"
+                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-left transition-colors cursor-pointer"
                   >
                     <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                     <span>Restore Class for Batch</span>
@@ -208,7 +208,7 @@ export const LiveClassCard: React.FC = () => {
               ) : (
                 <>
                   {profile.isBatchSynced && (
-                    <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[9.5px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
+                    <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
                       <span>👑</span>
                       <span>BP Live Controls</span>
                     </div>
@@ -219,7 +219,7 @@ export const LiveClassCard: React.FC = () => {
                       setOpenMenuSessionId(null);
                       toggleSessionCancelled(session.id, dateTodayStr);
                     }}
-                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
+                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
                   >
                     <Ban className="w-3.5 h-3.5 shrink-0" />
                     <span>Cancel Class for Batch</span>
@@ -234,7 +234,7 @@ export const LiveClassCard: React.FC = () => {
                         setOpenMenuSessionId(null);
                         rescheduleSession(session.id, null, dateTodayStr);
                       }}
-                      className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
+                      className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
                     >
                       <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                       <span>Revert Reschedule</span>
@@ -251,7 +251,7 @@ export const LiveClassCard: React.FC = () => {
                         setRescheduleSubjectId(currentReschedule?.subjectId || session.subjectId);
                         setRescheduleTarget(session);
                       }}
-                      className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[12.5px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                      className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
                     >
                       <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
                       <span>Reschedule Class</span>
@@ -276,7 +276,7 @@ export const LiveClassCard: React.FC = () => {
       <form onSubmit={handleRescheduleSubmit} className="flex flex-col gap-4 mt-3">
         {/* Custom Theme-Aware Subject Dropdown */}
         <div className="flex flex-col gap-1.5 text-left relative">
-          <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
+          <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA]">
             Subject / Course
           </label>
           
@@ -328,7 +328,7 @@ export const LiveClassCard: React.FC = () => {
                           {s.name}
                         </span>
                         {s.facultyName && (
-                          <span className="text-[10.5px] text-black/40 dark:text-[#71717A] truncate mt-0.5">
+                          <span className="text-[11px] text-black/60 dark:text-[#A1A1AA] truncate mt-0.5">
                             {s.facultyName}
                           </span>
                         )}
@@ -345,7 +345,7 @@ export const LiveClassCard: React.FC = () => {
         </div>
 
         <div className="flex flex-col gap-1.5 text-left">
-          <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
+          <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA]">
             New Start Time
           </label>
           <input 
@@ -358,7 +358,7 @@ export const LiveClassCard: React.FC = () => {
         </div>
 
         <div className="flex flex-col gap-1.5 text-left">
-          <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
+          <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA]">
             New End Time
           </label>
           <input 
@@ -371,7 +371,7 @@ export const LiveClassCard: React.FC = () => {
         </div>
 
         <div className="flex flex-col gap-1.5 text-left">
-          <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 dark:text-[#A1A1AA]">
+          <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA]">
             New Room (Optional)
           </label>
           <input 
@@ -379,7 +379,7 @@ export const LiveClassCard: React.FC = () => {
             value={rescheduleRoom}
             onChange={(e) => setRescheduleRoom(e.target.value)}
             placeholder="e.g. LT-2, Lab-3"
-            className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] placeholder:dark:text-[#71717A] text-sm focus:outline-none rounded-none"
+            className="px-3 py-2 bg-transparent border border-black/15 dark:border-white/[0.1] dark:text-[#F4F4F6] placeholder:dark:text-[#A1A1AA] text-sm focus:outline-none rounded-none"
           />
         </div>
 
@@ -488,14 +488,14 @@ export const LiveClassCard: React.FC = () => {
             {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
           </div>
           {currentReschedule && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] bg-amber-500/20 text-amber-300 text-[10.5px] font-mono font-bold uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] bg-amber-500/20 text-amber-300 text-[11px] font-mono font-bold uppercase tracking-wider">
               <Clock className="w-2.5 h-2.5" />
               Rescheduled by {currentReschedule.by || 'Pilot'}
               {origSession && (origSession.startTime !== session.startTime || origSession.endTime !== session.endTime) ? ` (Was ${formatTime12Hour(origSession.startTime)})` : ''}
             </span>
           )}
           {session.isExtra && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] bg-blue-500/20 text-blue-300 text-[10.5px] font-mono font-bold uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] bg-blue-500/20 text-blue-300 text-[11px] font-mono font-bold uppercase tracking-wider">
               Extra Class
             </span>
           )}
@@ -504,7 +504,7 @@ export const LiveClassCard: React.FC = () => {
         {/* Metadata */}
         <div className="flex items-center gap-2 text-[12px] text-[#A8A8A8] leading-none mb-5">
           <span className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[10px] leading-none opacity-80">◉</span>
+            <span className="text-[11px] leading-none opacity-80">◉</span>
             {session.room}
           </span>
           {session.faculty && (
@@ -593,7 +593,7 @@ export const LiveClassCard: React.FC = () => {
                 </span>
                 {isLab && (
                   <span 
-                    className="text-[9.5px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[2px]"
+                    className="text-[11px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[2px]"
                     style={{
                       color: theme.badgeText,
                       backgroundColor: theme.badgeBg,
@@ -616,7 +616,7 @@ export const LiveClassCard: React.FC = () => {
             </h3>
 
             {nextReschedule && (
-              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10.5px] font-mono font-medium mb-3">
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] font-mono font-medium mb-3">
                 <Clock className="w-3 h-3 shrink-0" />
                 <span>
                   Rescheduled by {nextReschedule.by || 'Pilot'}
@@ -629,7 +629,7 @@ export const LiveClassCard: React.FC = () => {
 
             <div className="flex items-center gap-2 text-[12px] text-[#6F737C] dark:text-[#94A3B8] leading-none mb-4">
               <span className="flex items-center gap-1.5 shrink-0">
-                <span className="text-[10px] leading-none opacity-80">◉</span>
+                <span className="text-[11px] leading-none opacity-80">◉</span>
                 {session.room}
               </span>
               {session.faculty && (
@@ -675,7 +675,7 @@ export const LiveClassCard: React.FC = () => {
   
   return (
     <div className="w-full bg-[#FAFAFA] dark:bg-[#121317] border border-[#E0E0E0] dark:border-white/[0.08] rounded-none p-5 flex flex-col">
-      <span className="text-[11px] font-semibold text-[#808080] dark:text-[#94A3B8] uppercase tracking-[1.4px] leading-none mb-3">
+      <span className="text-[11px] font-semibold text-[#6B6B6B] dark:text-[#94A3B8] uppercase tracking-[1.4px] leading-none mb-3">
         SCHEDULE COMPLETE
       </span>
       <h3 className="text-[16px] font-semibold text-[#111111] dark:text-[#F4F4F6] leading-snug mb-2">

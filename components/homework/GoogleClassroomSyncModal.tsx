@@ -321,7 +321,7 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
                   : 'Connect your student Google account to fetch coursework, pending deadlines, and submission states across all enrolled classrooms.'}
               </p>
               {canBroadcast && (
-                <div className="inline-flex items-center gap-1.5 mt-3 px-2.5 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-[10.5px] font-bold uppercase tracking-wider">
+                <div className="inline-flex items-center gap-1.5 mt-3 px-2.5 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-[11px] font-bold uppercase tracking-wider">
                   <Users className="w-3 h-3" />
                   Pilot Mode
                 </div>
@@ -457,20 +457,20 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-none border border-black/10 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.03] text-black dark:text-white uppercase">
+                        <span className="text-[11px] font-bold font-mono px-2 py-0.5 rounded-none border border-black/10 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.03] text-black dark:text-white uppercase">
                           {item.courseName}
                         </span>
                         {item.isTurnedIn ? (
-                          <span className="text-[9.5px] font-bold px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase">
+                          <span className="text-[11px] font-bold px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase">
                             Submitted
                           </span>
                         ) : (
-                          <span className="text-[9.5px] font-bold px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 uppercase">
+                          <span className="text-[11px] font-bold px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 uppercase">
                             Pending
                           </span>
                         )}
                         {isAlreadyPresent && (
-                          <span className="text-[9.5px] font-mono text-[#6B6B6B] dark:text-[#94A3B8]">
+                          <span className="text-[11px] font-mono text-[#6B6B6B] dark:text-[#94A3B8]">
                             (Already in tasks)
                           </span>
                         )}

@@ -241,7 +241,7 @@ ${PLAY_STORE_URL}
                   <p className="text-[14px] text-black dark:text-[#F4F4F6] font-medium leading-relaxed">
                     Have an invite code?
                   </p>
-                  <p className="text-[10px] font-bold tracking-[1px] uppercase text-black/50 dark:text-[#64748B] mt-1">
+                  <p className="text-[11px] font-bold tracking-[1px] uppercase text-black/60 dark:text-[#A1A1AA] mt-1">
                     ENTER MESS ID BELOW
                   </p>
                 </div>
@@ -270,26 +270,26 @@ ${PLAY_STORE_URL}
             exit={{ opacity: 0, y: -10 }}
             className="flex flex-col justify-center flex-1 min-h-[500px] max-w-sm mx-auto w-full"
           >
-            <p className="text-[11px] font-bold tracking-[2px] uppercase text-black/50 dark:text-white/40 mb-10 text-center">
+            <p className="text-[11px] font-bold tracking-[2px] uppercase text-black/60 dark:text-white/60 mb-10 text-center">
               READING YOUR MENU
             </p>
 
             <div className="flex flex-col gap-5 mb-12">
               <div className="flex items-center gap-3">
                 {progress > 20 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-black/20 dark:border-white/20" />}
-                <span className={`text-[16px] font-medium ${progress > 20 ? 'text-black dark:text-[#F4F4F6]' : 'text-black/40 dark:text-[#64748B]'}`}>Finding days</span>
+                <span className={`text-[16px] font-medium ${progress > 20 ? 'text-black dark:text-[#F4F4F6]' : 'text-black/60 dark:text-[#A1A1AA]'}`}>Finding days</span>
               </div>
               <div className="flex items-center gap-3">
                 {progress > 40 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-black/20 dark:border-white/20" />}
-                <span className={`text-[16px] font-medium ${progress > 40 ? 'text-black dark:text-[#F4F4F6]' : 'text-black/40 dark:text-[#64748B]'}`}>Detecting meals</span>
+                <span className={`text-[16px] font-medium ${progress > 40 ? 'text-black dark:text-[#F4F4F6]' : 'text-black/60 dark:text-[#A1A1AA]'}`}>Detecting meals</span>
               </div>
               <div className="flex items-center gap-3">
                 {progress > 60 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-black/20 dark:border-white/20" />}
-                <span className={`text-[16px] font-medium ${progress > 60 ? 'text-black dark:text-[#F4F4F6]' : 'text-black/40 dark:text-[#64748B]'}`}>Reading dishes</span>
+                <span className={`text-[16px] font-medium ${progress > 60 ? 'text-black dark:text-[#F4F4F6]' : 'text-black/60 dark:text-[#A1A1AA]'}`}>Reading dishes</span>
               </div>
               <div className="flex items-center gap-3">
                 {progress > 80 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-black/20 dark:border-white/20" />}
-                <span className={`text-[16px] font-medium ${progress > 80 ? 'text-black dark:text-[#F4F4F6]' : 'text-black/40 dark:text-[#64748B]'}`}>Matching timings</span>
+                <span className={`text-[16px] font-medium ${progress > 80 ? 'text-black dark:text-[#F4F4F6]' : 'text-black/60 dark:text-[#A1A1AA]'}`}>Matching timings</span>
               </div>
             </div>
 
@@ -316,7 +316,7 @@ ${PLAY_STORE_URL}
             exit={{ opacity: 0, y: -10 }}
             className="flex flex-col h-full py-4 max-h-[80vh]"
           >
-            <p className="text-[11px] font-bold tracking-[2px] uppercase text-black/50 dark:text-white/40 mb-6 text-center">
+            <p className="text-[11px] font-bold tracking-[2px] uppercase text-black/60 dark:text-white/60 mb-6 text-center">
               {isEditing ? 'EDIT YOUR MENU' : 'YOUR MENU IS READY'}
             </p>
 
@@ -368,7 +368,7 @@ ${PLAY_STORE_URL}
                 return (
                   <div key={day} className="bg-white dark:bg-[#121317] border border-black/10 dark:border-white/[0.08] rounded-none p-6 shadow-sm">
                     <h3 className="text-[15px] font-bold text-black dark:text-[#F4F4F6] mb-6 border-b border-black/10 dark:border-white/[0.08] pb-3">
-                      {day.toUpperCase()} {(!isEditing && day === 'Monday') && <span className="text-[11px] text-black/50 dark:text-[#94A3B8] ml-2 font-normal lowercase">(preview)</span>}
+                      {day.toUpperCase()} {(!isEditing && day === 'Monday') && <span className="text-[11px] text-black/60 dark:text-[#94A3B8] ml-2 font-normal lowercase">(preview)</span>}
                     </h3>
                     
                     {['Breakfast', 'Lunch', 'Snacks', 'Dinner'].map(meal => {
@@ -377,7 +377,7 @@ ${PLAY_STORE_URL}
                       
                       return (
                         <div key={meal} className="mb-6 last:mb-0">
-                          <h4 className="text-[11px] font-bold tracking-[1px] uppercase text-black/50 dark:text-[#94A3B8] mb-2">
+                          <h4 className="text-[11px] font-bold tracking-[1px] uppercase text-black/60 dark:text-[#94A3B8] mb-2">
                             {meal}
                           </h4>
                           {isEditing ? (
@@ -442,7 +442,7 @@ ${PLAY_STORE_URL}
             animate={{ opacity: 1, scale: 1 }}
             className="flex flex-col items-center justify-center flex-1 min-h-[500px] text-center"
           >
-            <p className="text-[11px] font-bold tracking-[2px] uppercase text-black/50 dark:text-white/40 mb-6">
+            <p className="text-[11px] font-bold tracking-[2px] uppercase text-black/60 dark:text-white/60 mb-6">
               YOUR MESS IS READY 🎉
             </p>
             <h2 className="text-[32px] font-semibold leading-[1.1] text-black dark:text-[#F4F4F6] mb-4">

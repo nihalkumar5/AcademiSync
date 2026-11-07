@@ -33,7 +33,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {helperText && !error && (
-          <p className="text-[11px] text-zinc-500 dark:text-[#64748B]">{helperText}</p>
+          <p className="text-[11px] text-zinc-500 dark:text-[#A1A1AA]">{helperText}</p>
         )}
         {error && <p className="text-[11px] text-rose-500 font-medium">{error}</p>}
       </div>
@@ -71,7 +71,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           {...props}
         />
         {helperText && !error && (
-          <p className="text-[11px] text-zinc-500 dark:text-[#64748B]">{helperText}</p>
+          <p className="text-[11px] text-zinc-500 dark:text-[#A1A1AA]">{helperText}</p>
         )}
         {error && <p className="text-[11px] text-rose-500 font-medium">{error}</p>}
       </div>
@@ -111,7 +111,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           {children}
         </select>
         {helperText && !error && (
-          <p className="text-[11px] text-zinc-500 dark:text-[#64748B]">{helperText}</p>
+          <p className="text-[11px] text-zinc-500 dark:text-[#A1A1AA]">{helperText}</p>
         )}
         {error && <p className="text-[11px] text-rose-500 font-medium">{error}</p>}
       </div>

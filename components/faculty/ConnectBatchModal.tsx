@@ -262,7 +262,7 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
                       <Users className="w-3.5 h-3.5 text-black/60 dark:text-white/60" />
                       {degreeAndBranch}
                     </span>
-                    <span className="px-2 py-0.5 rounded-[4px] bg-black/10 dark:bg-white/10 text-[10px] font-mono font-bold uppercase text-black dark:text-white">
+                    <span className="px-2 py-0.5 rounded-[4px] bg-black/10 dark:bg-white/10 text-[11px] font-mono font-bold uppercase text-black dark:text-white">
                       CODE: {foundBatchData.inviteCode || foundBatchData.id}
                     </span>
                   </div>
@@ -282,7 +282,7 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
                   <BookOpen className="w-3.5 h-3.5" />
                   Select Subjects You Teach:
                 </label>
-                <span className="text-[10px] font-mono text-black/50 dark:text-white/50">
+                <span className="text-[11px] font-mono text-black/60 dark:text-white/60">
                   {selectedSubjectIds.length} selected
                 </span>
               </div>
@@ -313,7 +313,7 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
                             </span>
                             {isCommon && (
                               <span
-                                className={`px-1.5 py-0.2 rounded text-[9px] font-mono font-bold uppercase tracking-wider ${
+                                className={`px-1.5 py-0.2 rounded text-[11px] font-mono font-bold uppercase tracking-wider ${
                                   isChecked
                                     ? 'bg-emerald-400 text-black'
                                     : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
@@ -324,7 +324,7 @@ export const ConnectBatchModal: React.FC<ConnectBatchModalProps> = ({
                             )}
                           </div>
                           <span
-                            className={`text-[10.5px] font-mono mt-0.5 ${
+                            className={`text-[11px] font-mono mt-0.5 ${
                               isChecked ? 'text-white/70 dark:text-black/70' : 'text-black/50 dark:text-white/50'
                             }`}
                           >

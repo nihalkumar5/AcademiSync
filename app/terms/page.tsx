@@ -16,7 +16,7 @@ export default function TermsPage() {
       </Link>
 
       <div className="flex flex-col gap-3 mb-12">
-        <span className="text-[10px] font-bold tracking-[1.5px] uppercase text-[#999999]">
+        <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#6B6B6B]">
           Legal & Support
         </span>
         <h1 className="text-[40px] font-bold tracking-tight leading-none text-[#111111] dark:text-[#FFFFFF]">

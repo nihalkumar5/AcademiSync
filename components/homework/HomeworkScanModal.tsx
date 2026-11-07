@@ -197,7 +197,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
           </div>
           
           <div className="w-full max-w-[280px] flex flex-col gap-2 mb-6">
-            <div className="flex items-center justify-between text-[11px] font-bold tracking-[1px] uppercase text-black/50 dark:text-white/40">
+            <div className="flex items-center justify-between text-[11px] font-bold tracking-[1px] uppercase text-black/60 dark:text-white/40">
               <span>SCANNING WITH GEMINI</span>
               <span className="font-mono">AI AUTO-PARSE</span>
             </div>
@@ -226,7 +226,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
           <div className="flex flex-col gap-6">
             {/* SECTION 1: SUBJECT */}
             <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-bold tracking-[0.2em] text-black/50 dark:text-white/40 uppercase">Subject</span>
+              <span className="text-[11px] font-bold tracking-[0.2em] text-black/60 dark:text-white/60 uppercase">Subject</span>
               <div className="flex flex-col gap-1.5">
                 <div className="relative">
                   <select
@@ -242,14 +242,14 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40 pointer-events-none" />
+                  <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-black/60 dark:text-white/60 pointer-events-none" />
                 </div>
               </div>
             </div>
 
             {/* SECTION 2: TASK DETAILS */}
             <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-bold tracking-[0.2em] text-black/50 dark:text-white/40 uppercase">Task Details</span>
+              <span className="text-[11px] font-bold tracking-[0.2em] text-black/60 dark:text-white/60 uppercase">Task Details</span>
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] font-semibold text-black/70 dark:text-[#94A3B8] uppercase">Task / Assignment Title</label>
@@ -274,7 +274,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
 
             {/* SECTION 3: SCHEDULE & PRIORITY */}
             <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-bold tracking-[0.2em] text-black/50 dark:text-white/40 uppercase">Schedule & Priority</span>
+              <span className="text-[11px] font-bold tracking-[0.2em] text-black/60 dark:text-white/60 uppercase">Schedule & Priority</span>
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
@@ -300,7 +300,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
                       <option value="Medium" className="dark:bg-[#121317]">Medium Priority</option>
                       <option value="High" className="dark:bg-[#121317]">High Priority</option>
                     </select>
-                    <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40 pointer-events-none" />
+                    <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-black/60 dark:text-white/60 pointer-events-none" />
                   </div>
                 </div>
               </div>

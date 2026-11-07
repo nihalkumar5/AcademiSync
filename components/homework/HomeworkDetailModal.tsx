@@ -123,14 +123,14 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
           </span>
 
           {homework.source === 'google_classroom' && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold font-mono px-2 py-0.5 rounded-none bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 uppercase">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold font-mono px-2 py-0.5 rounded-none bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 uppercase">
               <GraduationCap className="w-3 h-3" />
               Classroom
             </span>
           )}
 
           <span
-            className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded-none uppercase ${
+            className={`text-[11px] font-bold font-mono px-2 py-0.5 rounded-none uppercase ${
               homework.priority === 'High'
                 ? 'bg-rose-500/10 text-rose-600 border border-rose-500/20'
                 : homework.priority === 'Medium'
@@ -142,7 +142,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
           </span>
 
           <span
-            className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded-none uppercase ${
+            className={`text-[11px] font-bold font-mono px-2 py-0.5 rounded-none uppercase ${
               isDone
                 ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30'
                 : isInProgress
@@ -179,7 +179,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
               </span>
               <span>•</span>
               <span
-                className={`font-mono font-bold uppercase text-[10.5px] px-1.5 py-0.2 rounded-none ${
+                className={`font-mono font-bold uppercase text-[11px] px-1.5 py-0.2 rounded-none ${
                   isOverdue && !isDone
                     ? 'bg-rose-500/10 text-rose-600 border border-rose-500/20'
                     : 'bg-black/[0.04] dark:bg-white/[0.05] text-[#111111] dark:text-[#FFFFFF]'
@@ -202,7 +202,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
                 {homework.description}
               </p>
             ) : (
-              <p className="text-xs italic text-[#A0A0A0]">No detailed instructions provided.</p>
+              <p className="text-xs italic text-[#6B6B6B]">No detailed instructions provided.</p>
             )}
           </div>
         </div>
@@ -248,7 +248,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
                 type="button"
                 onClick={() => onShare(homework)}
                 className="p-2 border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 text-[#6B6B6B] dark:text-[#94A3B8] transition-colors rounded-none cursor-pointer"
-                title="Share Task"
+                title="Share Task" aria-label="Share Task"
               >
                 <Share2 className="w-4 h-4" />
               </button>
@@ -261,7 +261,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
                 onEdit(homework);
               }}
               className="flex items-center gap-1.5 px-3 py-2 border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 text-[#111111] dark:text-[#F4F4F6] text-xs font-medium rounded-none transition-colors cursor-pointer"
-              title="Edit Task"
+              title="Edit Task" aria-label="Edit Task"
             >
               <Edit2 className="w-3.5 h-3.5" />
               <span>Edit</span>
@@ -274,7 +274,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
                 onDelete(homework.id);
               }}
               className="p-2 border border-rose-500/20 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 transition-colors rounded-none cursor-pointer"
-              title="Delete Task"
+              title="Delete Task" aria-label="Delete Task"
             >
               <Trash2 className="w-4 h-4" />
             </button>

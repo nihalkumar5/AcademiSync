@@ -205,7 +205,7 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
         <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
           {headerTitle}
         </h3>
-        <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wider">
+        <span className="text-[11px] font-bold text-[#6B6B6B] uppercase tracking-wider">
           {focusItems.length} {focusItems.length === 1 ? 'PRIORITY' : 'PRIORITIES'}
         </span>
       </div>
@@ -272,17 +272,17 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
 
                     <div className="flex items-center gap-1.5 self-start">
                       {item.originalPriority === 'High' && !isCompleted && (
-                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8] text-[#C96B45] text-[9.5px] font-bold uppercase tracking-wider">
+                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8] text-[#C96B45] text-[11px] font-bold uppercase tracking-wider">
                           HIGH
                         </span>
                       )}
                       {item.originalPriority === 'Medium' && !isCompleted && (
-                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8]/70 text-[#C96B45]/90 text-[9.5px] font-bold uppercase tracking-wider">
+                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8]/70 text-[#C96B45]/90 text-[11px] font-bold uppercase tracking-wider">
                           MED
                         </span>
                       )}
                       {isCompleted && (
-                        <span className="px-2 py-0.5 rounded-[2px] bg-[#D2F1E8] text-[#18A889] text-[9.5px] font-bold uppercase tracking-wider">
+                        <span className="px-2 py-0.5 rounded-[2px] bg-[#D2F1E8] text-[#18A889] text-[11px] font-bold uppercase tracking-wider">
                           DONE
                         </span>
                       )}
@@ -297,7 +297,7 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
                             ? 'bg-[#18A889] border-[#18A889] text-white'
                             : 'border-black/20 dark:border-white/20 hover:border-black/50 dark:hover:border-white/50 bg-white/40 dark:bg-black/20'
                         )}
-                        title={isCompleted ? 'Mark as incomplete' : 'Mark as completed'}
+                        title={isCompleted ? 'Mark as incomplete' : 'Mark as completed'} aria-label={isCompleted ? 'Mark as incomplete' : 'Mark as completed'}
                       >
                         {isCompleted && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                       </button>
@@ -305,7 +305,7 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
                   </div>
 
                   {/* Tag */}
-                  <span className="text-[10.5px] font-bold uppercase tracking-[1.3px] text-[#737373] dark:text-[#94A3B8] break-words pr-2 mt-3.5">
+                  <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-[#737373] dark:text-[#94A3B8] break-words pr-2 mt-3.5">
                     {item.tag}
                   </span>
 
@@ -330,7 +330,7 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
                     {item.deadlineText ? (
                       <span
                         className={clsx(
-                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[10.5px] font-bold font-mono uppercase tracking-wider',
+                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[11px] font-bold font-mono uppercase tracking-wider',
                           isUrgent
                             ? 'bg-[#FFF0E8] text-[#C96B45] border border-[#F5D8CC]'
                             : isOverdue
