@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+// Next 15 no longer caches GET handlers by default; keep this file static like before
+export const dynamic = 'force-static';
+
 export async function GET() {
   const assetlinks = [
     {

@@ -1,14 +1,16 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Utensils, ArrowRight, Download, Copy, ExternalLink } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 
-export default function JoinMessPage({ params }: { params: { id: string } }) {
+export default function JoinMessPage() {
+  // Next 15 passes page params as a Promise; useParams reads them synchronously in client pages
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const { updateMessMenu, setActiveView, showToast } = useApp();
   const [loading, setLoading] = useState(true);
