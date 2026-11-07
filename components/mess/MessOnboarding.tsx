@@ -11,6 +11,7 @@ import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 import { MessImportModal } from './MessImportModal';
 import { processMultipleFilesForAi } from '@/lib/fileCompressor';
+import { getAuthHeaders } from '@/lib/authHeaders';
 
 export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: 'join' | 'import' | null }> = ({ onCancel, initialAction }) => {
   const { setActiveView, updateMessMenu, showToast, user } = useApp();
@@ -104,7 +105,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
     try {
       const res = await fetch('/api/extract-mess', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({
           images: files,
           userId: user?.id || (user as any)?.uid || null,

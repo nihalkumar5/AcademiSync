@@ -7,6 +7,7 @@ import { Users, Plus, Trash2, Copy, Check, AlertCircle } from 'lucide-react';
 import { formatFacultyBatchDegreeAndBranch } from '@/lib/facultyUtils';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { getAuthHeaders } from '@/lib/authHeaders';
 
 interface FacultyBatchesCardProps {
   onOpenConnectModal: () => void;
@@ -66,7 +67,7 @@ export const FacultyBatchesCard: React.FC<FacultyBatchesCardProps> = ({
         try {
           const res = await fetch('/api/faculty/disconnect-batch', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: await getAuthHeaders(),
             body: JSON.stringify({
               userId: user.id,
               batchKey: target.batchKey,

@@ -9,6 +9,7 @@ import { PromotionalCampaign, CampaignCategory, AdminRole } from '@/lib/types';
 import { searchCollegesAsync, CollegeItem, POPULAR_INDIAN_COLLEGES } from '@/lib/collegeDirectory';
 import { getShortCollegeName } from '@/lib/timetableUtils';
 import { PLAY_STORE_URL } from '@/lib/shareUtils';
+import { getAuthHeaders } from '@/lib/authHeaders';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import {
   Shield,
@@ -662,7 +663,7 @@ export default function SuperAdminPage() {
       // 4. Background push notification (best-effort, non-blocking)
       fetch('/api/admin/approve-cr', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ requestId: req.id, adminId: user?.id }),
       }).catch(() => {});
 

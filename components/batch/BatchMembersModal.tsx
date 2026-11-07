@@ -6,8 +6,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { isUserSuperAdmin, SUPER_ADMIN_EMAILS } from '@/lib/adminAuth';
 import { normalizeIdList, isValidProperEmail } from '@/lib/timetableUtils';
-import { collection, onSnapshot, doc, updateDoc, increment, query, where, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { onSnapshot, doc, updateDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { getAuthHeaders } from '@/lib/authHeaders';
 import { Modal } from '@/components/ui/Modal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Crown, Search, Check, Share2, ArrowRight, MoreVertical, ChevronLeft } from 'lucide-react';
@@ -173,31 +174,32 @@ export const BatchMembersModal: React.FC<BatchMembersModalProps> = ({
   useEffect(() => {
     if (!batchKey || !isOpen) return;
 
+    let cancelled = false;
     setLoading(true);
-    try {
-      const usersQuery = query(
-        collection(db, 'users'),
-        where('profile.batchKey', '==', batchKey),
-        where('profile.isBatchSynced', '==', true)
-      );
 
-      const unsubscribe = onSnapshot(usersQuery, (snapshot) => {
-        const fetched: any[] = [];
-        snapshot.forEach((d) => {
-          fetched.push({ id: d.id, ...d.data() });
+    // Classmates' public profile fields come from the server; users docs are owner-only in Firestore rules
+    (async () => {
+      try {
+        const res = await fetch(`/api/batch/members?batchKey=${encodeURIComponent(batchKey)}`, {
+          headers: await getAuthHeaders({}),
         });
-        setMembers(fetched);
-        setLoading(false);
-      }, (err) => {
-        console.error('Error fetching batch members:', err);
-        setLoading(false);
-      });
+        const data = await res.json().catch(() => ({}));
+        if (cancelled) return;
+        if (res.ok && Array.isArray(data.members)) {
+          setMembers(data.members);
+        } else {
+          console.error('Error fetching batch members:', data.error || res.status);
+        }
+      } catch (err) {
+        if (!cancelled) console.error('Error fetching batch members:', err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
 
-      return () => unsubscribe();
-    } catch (e) {
-      console.error(e);
-      setLoading(false);
-    }
+    return () => {
+      cancelled = true;
+    };
   }, [batchKey, isOpen]);
 
   const isLegacyBatch = !batchData?.crUserIds && !batchData?.crEmails;

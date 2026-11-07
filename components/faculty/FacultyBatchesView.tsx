@@ -25,8 +25,9 @@ import {
 } from 'lucide-react';
 import { formatFacultyBatchDegreeAndBranch, isCommonSubject } from '@/lib/facultyUtils';
 import { getSubjectCardTheme } from '@/lib/cardColors';
-import { doc, onSnapshot, collection, query, where, getDocs, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { getAuthHeaders } from '@/lib/authHeaders';
 import { ConnectBatchModal } from './ConnectBatchModal';
 import { CreateAssignmentModal } from './CreateAssignmentModal';
 import { Modal } from '@/components/ui/Modal';
@@ -115,19 +116,20 @@ export const FacultyBatchesView: React.FC = () => {
 
     linkedBatches.forEach(async (batch) => {
       try {
-        const usersRef = collection(db, 'users');
-        const q = query(usersRef, where('profile.batchKey', '==', batch.batchKey));
-        const snap = await getDocs(q);
+        // Users docs are owner-only in Firestore rules, so member info comes from the server
+        const res = await fetch(`/api/batch/members?batchKey=${encodeURIComponent(batch.batchKey)}`, {
+          headers: await getAuthHeaders({}),
+        });
+        const data = await res.json().catch(() => ({}));
 
-        if (!isMounted) return;
+        if (!isMounted || !res.ok || !Array.isArray(data.members)) return;
 
         let crUser: any = null;
         let count = 0;
 
-        snap.forEach((d) => {
+        data.members.forEach((m: any) => {
           count++;
-          const uData = d.data();
-          const uProf = uData?.profile;
+          const uProf = m?.profile;
           if (uProf?.role === 'cr' || uProf?.role === 'super_admin') {
             if (!crUser) crUser = uProf;
           }
@@ -275,7 +277,7 @@ export const FacultyBatchesView: React.FC = () => {
         try {
           const res = await fetch('/api/faculty/disconnect-batch', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: await getAuthHeaders(),
             body: JSON.stringify({
               userId: user.id,
               batchKey: target.batchKey,

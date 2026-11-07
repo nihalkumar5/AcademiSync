@@ -60,6 +60,40 @@ export interface RateLimitResult {
   retryAfterSeconds?: number;
 }
 
+// Generic fixed-window limiter for non-AI endpoints (e.g. contact form)
+const simpleBuckets = new Map<string, RateLimitRecord>();
+
+export function checkSimpleRateLimit(key: string, maxRequests: number, windowMs: number): RateLimitResult {
+  try {
+    const now = Date.now();
+    if (simpleBuckets.size > 5000) {
+      for (const [k, record] of Array.from(simpleBuckets.entries())) {
+        if (now > record.resetAt) simpleBuckets.delete(k);
+      }
+    }
+
+    const record = simpleBuckets.get(key) || { count: 0, resetAt: now + windowMs };
+    if (now > record.resetAt) {
+      record.count = 0;
+      record.resetAt = now + windowMs;
+    }
+
+    if (record.count >= maxRequests) {
+      return {
+        allowed: false,
+        error: 'Too many requests. Please wait a few minutes and try again.',
+        retryAfterSeconds: Math.max(1, Math.ceil((record.resetAt - now) / 1000)),
+      };
+    }
+
+    record.count += 1;
+    simpleBuckets.set(key, record);
+    return { allowed: true };
+  } catch {
+    return { allowed: true };
+  }
+}
+
 /**
  * Checks rate limits for AI endpoints in a campus-safe manner.
  * If user is authenticated, limit is isolated to their specific user ID.

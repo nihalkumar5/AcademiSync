@@ -1,18 +1,36 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { logServerError } from '@/lib/errorUtils';
+import { getVerifiedUser } from '@/lib/serverAuth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json().catch(() => ({}));
-    const { userId, batchKey, batchCode, batchId } = body;
-
-    if (!userId || (!batchKey && !batchCode && !batchId)) {
+    const caller = await getVerifiedUser(req);
+    if (!caller) {
       return NextResponse.json(
-        { success: false, error: 'userId and batchKey/batchCode/batchId are required' },
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const { batchKey, batchCode, batchId } = body;
+    const userId = body.userId || caller.uid;
+
+    if (!batchKey && !batchCode && !batchId) {
+      return NextResponse.json(
+        { success: false, error: 'batchKey/batchCode/batchId is required' },
         { status: 400 }
+      );
+    }
+
+    // Users may only disconnect batches from their own profile
+    if (userId !== caller.uid) {
+      return NextResponse.json(
+        { success: false, error: 'You can only update your own profile' },
+        { status: 403 }
       );
     }
 

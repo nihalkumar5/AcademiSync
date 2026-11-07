@@ -3,12 +3,14 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logServerError } from '@/lib/errorUtils';
 import { validateServerUploadPayload } from '@/lib/fileSafety';
 import { checkAiRateLimit } from '@/lib/rateLimit';
+import { getVerifiedUser } from '@/lib/serverAuth';
 
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { imageBase64, mimeType, fileName, userId } = body;
-    const clientUserId = userId || req.headers.get('x-user-id') || null;
+    const { imageBase64, mimeType, fileName } = body;
+    // Rate-limit by verified Firebase uid only (a userId in the body/header can be spoofed)
+    const clientUserId = (await getVerifiedUser(req))?.uid ?? null;
 
     // Campus-Safe AI Rate Limiter Guard (skip for mock demo clicks without image)
     if (imageBase64) {

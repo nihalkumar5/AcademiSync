@@ -1,21 +1,30 @@
 import { NextResponse } from 'next/server';
-import { adminDb, adminMessaging, adminAuth } from '@/lib/firebase-admin';
+import { adminDb, adminMessaging } from '@/lib/firebase-admin';
 import { logServerError } from '@/lib/errorUtils';
+import { getVerifiedUser, isSuperAdminUser } from '@/lib/serverAuth';
 
 export const dynamic = 'force-dynamic';
 
-const SUPER_ADMIN_EMAILS = [
-  'nihalkumar@iiitnr.edu.in',
-  'nihalkumar538@gmail.com',
-  'nihal88758@gmail.com',
-  'nihal26302@iiitnr.edu.in',
-  'kumarnihal829@gmail.com',
-];
-
 export async function POST(req: Request) {
   try {
+    // Only a signed-in Super Admin may approve CR requests
+    const caller = await getVerifiedUser(req);
+    if (!caller) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+    if (!(await isSuperAdminUser(caller))) {
+      return NextResponse.json(
+        { success: false, error: 'Only Super Admins can approve CR requests' },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json().catch(() => ({}));
-    const { requestId, adminId } = body;
+    const { requestId } = body;
+    const adminId = caller.uid;
 
     if (!requestId) {
       return NextResponse.json(

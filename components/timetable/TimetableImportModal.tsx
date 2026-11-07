@@ -7,6 +7,7 @@ import { ExtractedClassSession, DayOfWeek, ClassSession, Subject } from '@/lib/t
 import { DAYS_OF_WEEK, mergeConsecutiveSessions, normalizeSection, sanitizeAcademicTime, deduplicateTimetableSessions } from '@/lib/timetableUtils';
 import { autoAssignHarmonicColorsToSubjects, getHarmonicColorForSubject } from '@/lib/cardColors';
 import { validateUploadedFile } from '@/lib/fileSafety';
+import { getAuthHeaders } from '@/lib/authHeaders';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Upload, Sparkles, Check, Trash2, Plus, ShieldAlert, Bot, X, ChevronDown, Filter, AlertTriangle } from 'lucide-react';
@@ -85,7 +86,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     try {
       const res = await fetch('/api/extract-timetable', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({
           fileName: filesInfo.length === 1 ? filesInfo[0].name : 'Multiple Files',
           images: filesInfo,

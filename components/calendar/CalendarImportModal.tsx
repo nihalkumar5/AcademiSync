@@ -6,6 +6,7 @@ import { useApp } from '@/context/AppContext';
 import { AcademicEvent, CalendarEventType } from '@/lib/types';
 import { getLocalDateString, getTodayDateString } from '@/lib/timetableUtils';
 import { validateUploadedFile } from '@/lib/fileSafety';
+import { getAuthHeaders } from '@/lib/authHeaders';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import {  Upload, Sparkles, Check, Trash2, CalendarDays , Bot, Plus , X, ChevronDown} from 'lucide-react';
@@ -40,7 +41,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
     try {
       const res = await fetch('/api/extract-calendar', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({
           fileName: filesInfo.length === 1 ? filesInfo[0].name : 'Multiple Files',
           images: filesInfo,

@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { HomeworkPriority } from '@/lib/types';
 import { validateUploadedFile } from '@/lib/fileSafety';
+import { getAuthHeaders } from '@/lib/authHeaders';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input, Textarea, Select } from '../ui/Input';
@@ -50,7 +51,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
     try {
       const res = await fetch('/api/extract-homework', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({
           fileName: name,
           imageBase64: base64,

@@ -1,18 +1,24 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
     // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
+    // Email-based checks only trust addresses Firebase has verified (Google sign-in is verified,
+    // email/password sign-ups are not), so nobody can claim an admin or CR email by registering it.
+    function hasVerifiedEmail() {
+      return isAuthenticated() && request.auth.token.email_verified == true;
+    }
+
     function isSuperAdmin() {
-      return isAuthenticated() && (
+      return hasVerifiedEmail() && (
         request.auth.token.email in [
           'nihalkumar@iiitnr.edu.in',
           'nihalkumar538@gmail.com',
@@ -23,33 +29,76 @@ service cloud.firestore {
       );
     }
 
-    // 1. Users Collection: Authenticated students can read profiles to view classmates; only owners and Super Admins can write
+    function profileRole(data) {
+      return data.get('profile', {}).get('role', 'student');
+    }
+
+    // Role stored in the caller's own profile (promotions are locked down in /users below)
+    function callerRole() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? profileRole(get(/databases/$(database)/documents/users/$(request.auth.uid)).data)
+        : 'student';
+    }
+
+    function isAdmin() {
+      return isSuperAdmin() || (isAuthenticated() && callerRole() == 'super_admin');
+    }
+
+    // Batch Pilot (CR) of a batch. The batch doc's creator/crUserIds/crEmails are the source of truth.
+    function isPilotOf(batch) {
+      return isAuthenticated() && (
+        batch.get('creatorId', '') == request.auth.uid ||
+        (batch.get('crUserIds', []) is list && request.auth.uid in batch.get('crUserIds', [])) ||
+        (hasVerifiedEmail() && batch.get('creatorEmail', '') == request.auth.token.email) ||
+        (hasVerifiedEmail() && batch.get('crEmails', []) is list && request.auth.token.email in batch.get('crEmails', []))
+      );
+    }
+
+    function isPilotOfBatchKey(batchKey) {
+      return batchKey is string && batchKey != ''
+        && exists(/databases/$(database)/documents/shared_timetables/$(batchKey))
+        && isPilotOf(get(/databases/$(database)/documents/shared_timetables/$(batchKey)).data);
+    }
+
+    // Users can't promote themselves: 'student'/'faculty' are self-selectable, 'cr' needs a pilot
+    // seat in the batch doc (given by an admin or an existing pilot), 'super_admin' needs an admin.
+    function roleChangeAllowed(newData, oldRole) {
+      let newRole = profileRole(newData);
+      return newRole == oldRole
+        || newRole in ['student', 'faculty']
+        || (newRole == 'cr' && isPilotOfBatchKey(newData.get('profile', {}).get('batchKey', '')))
+        || (newRole == 'super_admin' && isSuperAdmin());
+    }
+
+    // 1. Users Collection: private to the owner (and admins). Classmates' public fields are served
+    // by /api/batch/members, so FCM tokens, homework and notifications never leak.
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId) || isSuperAdmin();
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isSuperAdmin() || (isOwner(userId) && roleChangeAllowed(request.resource.data, 'student'));
+      allow update: if isSuperAdmin() || (isOwner(userId) && roleChangeAllowed(request.resource.data, profileRole(resource.data)));
+      allow delete: if isOwner(userId) || isSuperAdmin();
     }
 
     // 2. Shared Batch Timetables Collection:
-    // Read: Any student can view shared timetable
-    // Write: Super Admins, Batch Creator, or Verified Batch Pilots
+    // Read: Signed-in users (join by invite code, batch discovery)
+    // Write: Admins and this batch's Pilots; faculty may change sessions/alerts; members may join/leave
     match /shared_timetables/{batchKey} {
-      allow read: if true;
-      allow create: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow create: if isSuperAdmin() || (isAuthenticated() && callerRole() in ['cr', 'super_admin']);
       allow update: if isAuthenticated() && (
-        isSuperAdmin() ||
-        (resource.data.creatorId == request.auth.uid) ||
-        ('creatorEmail' in resource.data && request.auth.token.email == resource.data.creatorEmail) ||
-        ('crUserIds' in resource.data && resource.data.crUserIds is list && request.auth.uid in resource.data.crUserIds) ||
-        ('crEmails' in resource.data && resource.data.crEmails is list && request.auth.token.email in resource.data.crEmails) ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.profile.role in ['cr', 'super_admin']) ||
-        // Allow joining, session status sync, cancellations, reschedules, and alert broadcasts
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'studentCount', 'members', 'lastActive', 'homeworkProposals', 
-          'cancelledSessions', 'cancelledSessionsMeta', 'rescheduledSessions', 
+        isAdmin() ||
+        isPilotOf(resource.data) ||
+        // Faculty cancellations, reschedules, extra classes and the alerts that announce them
+        (callerRole() == 'faculty' && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'cancelledSessions', 'cancelledSessionsMeta', 'rescheduledSessions',
           'extraSessions', 'batchAlerts', 'updatedAt'
+        ])) ||
+        // Joining/leaving and homework proposals
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'studentCount', 'members', 'lastActive', 'homeworkProposals', 'updatedAt'
         ])
       );
-      allow delete: if isSuperAdmin() || (isAuthenticated() && resource.data.creatorId == request.auth.uid);
+      allow delete: if isSuperAdmin() || (isAuthenticated() && resource.data.get('creatorId', '') == request.auth.uid);
 
       // Subcollection for proposed tasks/homework
       match /proposed_tasks/{taskId} {
@@ -57,30 +106,50 @@ service cloud.firestore {
       }
     }
 
-    // 3. Batch Pilot & CR Requests:
+    // 3. Batch Pilot & CR Requests: students submit their own request as 'pending';
+    // only admins can approve or reject.
     match /cr_requests/{requestId} {
-      allow create, update: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow create: if isSuperAdmin() || (isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.get('status', 'pending') == 'pending');
+      allow update: if isSuperAdmin() || (isAuthenticated()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.get('status', 'pending') in ['pending', resource.data.get('status', 'pending')]);
       allow read, delete: if isSuperAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
     }
     match /cr_applications/{appId} {
-      allow create, update: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow create: if isSuperAdmin() || (isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.get('status', 'pending') == 'pending');
+      allow update: if isSuperAdmin() || (isAuthenticated()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.get('status', 'pending') in ['pending', resource.data.get('status', 'pending')]);
       allow read, delete: if isSuperAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
     }
 
     // 4. Mess Menus:
     // Read: Public (all hostel students)
-    // Write: Authenticated hostel students / reps
+    // Write: Authenticated hostel students / reps; delete: Super Admin only
     match /messes/{messId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      allow delete: if isSuperAdmin();
     }
 
-    // 5. Academic Calendars:
+    // 5. Academic Calendars & Exam Schedules shared with a batch:
     // Read: Public (all college students)
-    // Write: Authenticated students / admins
+    // Write: Authenticated students / admins; delete: Super Admin only
     match /shared_calendars/{calendarKey} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      allow delete: if isSuperAdmin();
+    }
+    match /shared_exams/{examsKey} {
+      allow read: if true;
+      allow create, update: if isAuthenticated();
+      allow delete: if isSuperAdmin();
     }
 
     // 6. Campus Spotlight (Announcements/Notices):
@@ -100,10 +169,10 @@ service cloud.firestore {
     }
 
     // 8. Contact & Support Messages:
-    // Create: Anyone (public / visitors submitting messages)
+    // Create: only through /api/contact (Admin SDK, rate limited)
     // Read/Write/Delete: Super Admin only
     match /contact_messages/{messageId} {
-      allow create: if true;
+      allow create: if false;
       allow read, update, delete: if isSuperAdmin();
     }
 

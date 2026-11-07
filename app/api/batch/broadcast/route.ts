@@ -1,48 +1,42 @@
 import { NextResponse } from 'next/server';
-import { adminDb, adminMessaging, adminAuth } from '@/lib/firebase-admin';
+import { adminDb, adminMessaging } from '@/lib/firebase-admin';
 import { logServerError } from '@/lib/errorUtils';
+import { getVerifiedUser, isVerifiedAdminEmail } from '@/lib/serverAuth';
 
 export const dynamic = 'force-dynamic';
 
-const SUPER_ADMIN_EMAILS = [
-  'nihalkumar@iiitnr.edu.in',
-  'nihalkumar538@gmail.com',
-  'nihal88758@gmail.com',
-  'nihal26302@iiitnr.edu.in',
-  'kumarnihal829@gmail.com',
-];
+const MAX_TITLE_LENGTH = 120;
+const MAX_BODY_LENGTH = 500;
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json().catch(() => ({}));
-    const { batchKey, title, body: messageBody, type, senderId, senderName } = body;
-
-    if (!batchKey || !title || !messageBody || !senderId) {
+    // The sender is whoever owns the verified ID token — never the senderId in the body
+    const caller = await getVerifiedUser(req);
+    if (!caller) {
       return NextResponse.json(
-        { success: false, error: 'batchKey, title, body, and senderId are required' },
+        { success: false, error: 'Invalid or expired authentication session' },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const { batchKey, type, senderName } = body;
+    const title = typeof body.title === 'string' ? body.title.trim().slice(0, MAX_TITLE_LENGTH) : '';
+    const messageBody = typeof body.body === 'string' ? body.body.trim().slice(0, MAX_BODY_LENGTH) : '';
+    const senderId = caller.uid;
+
+    if (!batchKey || typeof batchKey !== 'string' || !title || !messageBody) {
+      return NextResponse.json(
+        { success: false, error: 'batchKey, title, and body are required' },
         { status: 400 }
       );
     }
 
-    // Optional Bearer token verification if provided
-    const authHeader = req.headers.get('authorization');
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.substring(7);
-      try {
-        const decoded = await adminAuth.verifyIdToken(token);
-        if (decoded.uid !== senderId) {
-          return NextResponse.json(
-            { success: false, error: 'Security token mismatch' },
-            { status: 403 }
-          );
-        }
-      } catch (tokenErr) {
-        console.warn('[BatchBroadcast] Invalid auth token supplied:', tokenErr);
-        return NextResponse.json(
-          { success: false, error: 'Invalid or expired authentication session' },
-          { status: 401 }
-        );
-      }
+    if (body.senderId && body.senderId !== senderId) {
+      return NextResponse.json(
+        { success: false, error: 'Security token mismatch' },
+        { status: 403 }
+      );
     }
 
     // Verify sender identity and permission in Firestore
@@ -60,9 +54,10 @@ export async function POST(req: Request) {
 
     const senderData = senderDoc.data() || {};
     const batchData = batchDoc.exists ? batchDoc.data() : null;
-    const userEmail = (senderData.profile?.email || '').toLowerCase().trim();
+    // Use the token's verified email: profile.email is user-editable and can't be trusted
+    const userEmail = caller.emailVerified && caller.email ? caller.email : '';
 
-    const isSuperAdmin = senderData.profile?.role === 'super_admin' || SUPER_ADMIN_EMAILS.includes(userEmail);
+    const isSuperAdmin = senderData.profile?.role === 'super_admin' || isVerifiedAdminEmail(caller);
     const isBatchCreator = batchData && (
       batchData.creatorId === senderId ||
       (userEmail && (batchData.creatorEmail || '').toLowerCase().trim() === userEmail)

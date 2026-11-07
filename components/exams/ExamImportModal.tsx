@@ -8,6 +8,7 @@ import { Upload, Bot, X, Sparkles, Check, Trash2, Plus } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { ExtractedExam } from '@/lib/types';
 import { validateUploadedFile } from '@/lib/fileSafety';
+import { getAuthHeaders } from '@/lib/authHeaders';
 
 interface ExamImportModalProps {
   isOpen: boolean;
@@ -72,7 +73,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
       const branchCode = getBranchCode(profile?.branch);
       const res = await fetch('/api/extract-exam', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({
           fileName: filesInfo.length === 1 ? filesInfo[0].name : 'Multiple Files',
           images: filesInfo,

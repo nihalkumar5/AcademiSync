@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logServerError } from '@/lib/errorUtils';
 import { validateServerUploadPayload } from '@/lib/fileSafety';
 import { checkAiRateLimit } from '@/lib/rateLimit';
+import { getVerifiedUser } from '@/lib/serverAuth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -11,17 +12,16 @@ export async function POST(req: Request) {
   try {
     // Check if JSON body (from multi-image/PDF converter) or FormData
     let imageList: { name?: string; base64: string; mimeType: string }[] = [];
-    let userId: string | null = req.headers.get('x-user-id');
+    // Rate-limit by verified Firebase uid only (a userId in the body/header can be spoofed)
+    const userId = (await getVerifiedUser(req))?.uid ?? null;
     const contentType = req.headers.get('content-type') || '';
 
     if (contentType.includes('application/json')) {
       const body = await req.json().catch(() => ({}));
       const { images, imageBase64, mimeType, fileName } = body;
-      if (body.userId) userId = body.userId;
       imageList = images || (imageBase64 ? [{ name: fileName, base64: imageBase64, mimeType }] : []);
     } else {
       const formData = await req.formData();
-      if (formData.get('userId')) userId = String(formData.get('userId'));
       const files = formData.getAll('files') as File[];
       const singleFile = formData.get('file') as File;
       const allFiles = files.length > 0 ? files : (singleFile ? [singleFile] : []);

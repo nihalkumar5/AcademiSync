@@ -1,12 +1,26 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
+import { checkSimpleRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
 const RECIPIENT_EMAIL = 'nihal88758@gmail.com';
+const CONTACT_MAX_PER_WINDOW = 5;
+const CONTACT_WINDOW_MS = 15 * 60 * 1000;
 
 export async function POST(req: Request) {
   try {
+    const rateCheck = checkSimpleRateLimit(`contact:${getClientIp(req)}`, CONTACT_MAX_PER_WINDOW, CONTACT_WINDOW_MS);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: rateCheck.error },
+        {
+          status: 429,
+          headers: rateCheck.retryAfterSeconds ? { 'Retry-After': String(rateCheck.retryAfterSeconds) } : undefined,
+        }
+      );
+    }
+
     const body = await req.json().catch(() => ({}));
     const { name, email, subject, message } = body;
 
@@ -19,10 +33,10 @@ export async function POST(req: Request) {
 
     const timestamp = new Date().toISOString();
     const docData = {
-      name: String(name).trim(),
-      email: String(email).trim().toLowerCase(),
-      subject: String(subject || 'Feedback / Support').trim(),
-      message: String(message).trim(),
+      name: String(name).trim().slice(0, 100),
+      email: String(email).trim().toLowerCase().slice(0, 200),
+      subject: String(subject || 'Feedback / Support').trim().slice(0, 150),
+      message: String(message).trim().slice(0, 5000),
       recipientEmail: RECIPIENT_EMAIL,
       createdAt: timestamp,
       status: 'unread',
