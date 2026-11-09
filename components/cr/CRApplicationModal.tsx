@@ -1,5 +1,6 @@
 'use client';
 
+import { SignInPanel } from '@/components/auth/SignInPrompt';
 import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useApp } from '@/context/AppContext';
@@ -299,6 +300,10 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
       };
 
       await setDoc(doc(db, 'cr_requests', requestId!), payload, { merge: true });
+      // Let the campus admins of this college know (best effort)
+      import('@/lib/authHeaders')
+        .then(async ({ getAuthHeaders }) => fetch('/api/cr-request/notify', { method: 'POST', headers: await getAuthHeaders(), body: JSON.stringify({ requestId }) }))
+        .catch(() => {});
       showToast('Application Submitted! 🚀', 'Your Batch Pilot request has been sent for verification.', 'success');
       onClose();
     } catch (err: any) {
@@ -322,42 +327,13 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
         
         {/* CASE 1: USER IS NOT SIGNED IN */}
         {!user ? (
-          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-line bg-surface-2 rounded-none">
-            <div className="w-14 h-14 border border-line bg-surface rounded-none flex items-center justify-center shadow-sm">
-              <User className="w-7 h-7 text-fg stroke-[1.8]" />
-            </div>
-            <div>
-              <span className="text-[12px] font-bold font-mono text-amber-600 dark:text-amber-400">
-                Authentication required
-              </span>
-              <h3 className="text-[18px] font-bold text-fg mt-1">
-                Please Sign In First
-              </h3>
-              <p className="text-[13px] text-muted mt-1.5 max-w-md leading-relaxed">
-                You need to sign in with your student account before applying for Batch Pilot verification. This keeps schedule permissions verified and secure.
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs mt-2">
-              <button 
-                type="button"
-                onClick={() => {
-                  onClose();
-                  router.push('/sign-in');
-                }} 
-                className="btn btn-primary flex-1"
-              >
-                <User className="w-4 h-4" />
-                <span>Sign In Now</span>
-              </button>
-              <button 
-                type="button"
-                onClick={onClose} 
-                className="px-5 h-11 border border-line text-fg text-[14px] font-semibold hover:bg-surface-2 transition-colors rounded-none cursor-pointer"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+          <SignInPanel
+            title="Sign in to apply as Batch Pilot"
+            body="Pilots can change the class timetable, so we check who's applying. Your account is how we know it's you."
+            perks={['Verified by your campus admin', 'Edit the timetable for your whole class', 'Changes reach everyone instantly']}
+            onNavigate={onClose}
+            onCancel={onClose}
+          />
         ) : isSuperAdmin ? (
           /* CASE 2A: USER IS SUPER ADMIN */
           <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-line bg-surface-2 rounded-none">

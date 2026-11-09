@@ -80,6 +80,7 @@ export async function GET(req: Request) {
         status: r.status || 'pending',
         createdAt: r.createdAt || '',
         inviteCode: r.inviteCode || '',
+        batchKey: r.batchKey || '',
       });
     });
     requests.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));

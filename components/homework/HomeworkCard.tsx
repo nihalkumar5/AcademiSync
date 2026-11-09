@@ -17,6 +17,7 @@ import {
   RotateCcw,
   GraduationCap,
   ExternalLink,
+  AlertTriangle,
 } from '@/components/ui/icons';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,7 +28,7 @@ import { Capacitor } from '@capacitor/core';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-import { getTaskCardTheme } from '@/lib/cardColors';
+import { DUE_TONE, dueInfo, subjectLabel, subjectTone } from '@/lib/assignmentDisplay';
 
 export interface HomeworkCardProps {
   homework: Homework;
@@ -155,359 +156,228 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
     }
   };
 
-  const theme = getTaskCardTheme({
-    isDone,
-    isOverdue,
-    isInProgress,
-    priority: homework.priority,
-  });
-  
-  const formattedIndex = String(index + 1).padStart(2, '0');
+  const due = dueInfo(homework);
+  const tone = subjectTone(subject, homework.subjectName);
+  const label = subjectLabel(subject, homework.subjectName);
+  const fileCount = homework.files?.length || 0;
+  const link = homework.attachmentUrl || (homework.attachmentName?.startsWith('http') ? homework.attachmentName : '');
+  const classroomLink = homework.externalLink || (homework.source === 'google_classroom' ? link : '');
+  const extraLink = link && link !== classroomLink ? link : '';
+  const openDetail = () => (onViewDetail ? onViewDetail(homework) : onEdit(homework));
+  const source = homework.isFacultyAssignment
+    ? { icon: GraduationCap, text: homework.facultyName ? homework.facultyName.split(' ').slice(-1)[0] : 'Faculty', title: `Posted by ${homework.facultyName || 'faculty'}` }
+    : homework.source === 'google_classroom'
+    ? { icon: GraduationCap, text: 'Classroom', title: 'From Google Classroom' }
+    : homework.isBatchShared
+    ? { icon: Users, text: 'Batch', title: 'Shared with your batch' }
+    : null;
+
+  const menuItem = 'flex items-center gap-2.5 w-full px-3 h-9 text-[13px] font-medium text-left text-fg hover:bg-surface-2 transition-colors cursor-pointer';
 
   return (
-    <div 
-      className={clsx(
-        "relative flex flex-col p-4 sm:p-[18px] rounded-[12px] border border-black/[0.05] dark:border-[color:var(--card-accent-border)] transition-all w-full overflow-hidden shadow-xs",
-        showMenu ? 'z-40' : 'z-0',
-        isDone ? 'opacity-65' : 'opacity-100'
-      )}
-      style={{
-        ['--card-accent-border' as any]: `${theme.accent}45`,
-      }}
-    >
-      {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
-      <div 
-        className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-none"
-        style={{ backgroundColor: theme.bg }}
-      />
-      <div 
-        className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-none"
-        style={{ 
-          background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
-        }}
-      />
-
-      <div className="relative z-10 flex flex-col">
-        {/* Number and Top-Right Action Toolbar */}
-        <div className="flex items-start justify-between gap-3">
-          <div 
-            className="text-[44px] font-bold leading-[40px] tracking-tighter font-mono select-none pointer-events-none text-[var(--num-light)] dark:text-[var(--num-dark)]"
-            style={{ '--num-light': theme.numberColor, '--num-dark': `${theme.accent}66` } as any}
-          >
-            {formattedIndex}
-          </div>
-
-          {/* Clean Action Toolbar */}
-          <div className="flex items-center gap-1.5 self-start">
-            {!isDone && homework.priority === 'High' && (
-              <span className="px-2 py-0.5 rounded-none bg-[#FFF0E8] text-[#C96B45] text-[12px] font-bold dark:bg-orange-500/15 dark:text-orange-300">
-                HIGH
-              </span>
-            )}
-            {!isDone && homework.priority === 'Medium' && (
-              <span className="px-2 py-0.5 rounded-none bg-[#FFF0E8]/70 text-[#C96B45]/90 text-[12px] font-bold dark:bg-orange-500/15 dark:text-orange-300">
-                MED
-              </span>
-            )}
-            {homework.source === 'google_classroom' && (
-              <span className="px-2 py-0.5 rounded-none bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[12px] font-bold flex items-center gap-1 border border-emerald-500/20">
-                <GraduationCap className="w-2.5 h-2.5" /> CLASSROOM
-              </span>
-            )}
-            {isInProgress && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowCompleteConfirmModal(true);
-                }}
-                className="px-2 py-0.5 rounded-none bg-[#DCE4FF] text-[#334CC4] text-[12px] font-bold hover:opacity-80 transition-opacity cursor-pointer dark:bg-indigo-500/15 dark:text-indigo-300"
-                title="Click to complete" aria-label="Click to complete"
-              >
-                DOING
-              </button>
-            )}
-            {isDone && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleStatusAction();
-                }}
-                className="px-2 py-0.5 rounded-none bg-[#D2F1E8] text-[#18A889] text-[12px] font-bold hover:opacity-80 transition-opacity cursor-pointer dark:bg-teal-500/15 dark:text-teal-300"
-                title="Click to reopen" aria-label="Click to reopen"
-              >
-                DONE
-              </button>
-            )}
-
-            {/* Direct Quick Delete Button */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowDeleteConfirmModal(true);
-              }}
-              className="p-1 text-[#6B6B6B] hover:text-[#C94B5C] hover:bg-surface-2 rounded-none transition-colors cursor-pointer"
-              title="Delete Task"
-              aria-label="Delete Task"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-
-            {/* Overflow Options Menu */}
-            <div className="relative shrink-0" ref={dropdownRef}>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowMenu(!showMenu);
-                }}
-                className="p-1 text-[#6B6B6B] hover:text-fg hover:bg-surface-2 rounded-none transition-colors cursor-pointer"
-                aria-label="More options"
-              >
-                <MoreVertical className="w-4 h-4" />
-              </button>
-
-              <AnimatePresence>
-                {showMenu && (
-                  <>
-                    <div 
-                      className="fixed inset-0 z-40 bg-transparent"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowMenu(false);
-                      }}
-                    />
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95, y: -5 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute right-0 top-full mt-1 w-52 bg-surface border border-line shadow-[0_12px_32px_rgba(0,0,0,0.2)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.6)] z-50 py-1 rounded-none overflow-hidden"
-                    >
-                    {/* Status Changer Actions */}
-                    {homework.status !== 'In Progress' && (
-                      <button
-                        onClick={() => {
-                          updateHomework(homework.id, { status: 'In Progress' });
-                          setShowMenu(false);
-                          showToast('In Progress', `"${homework.title}" marked as in progress ⏳`, 'info');
-                        }}
-                        className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#334CC4] dark:text-[#5A75F0] hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors w-full cursor-pointer"
-                      >
-                        <Clock className="w-3.5 h-3.5" />
-                        Mark as Doing
-                      </button>
-                    )}
-
-                    {homework.status !== 'Completed' && (
-                      <button
-                        onClick={() => {
-                          setShowMenu(false);
-                          setShowCompleteConfirmModal(true);
-                        }}
-                        className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#18A889] hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors w-full cursor-pointer"
-                      >
-                        <Check className="w-3.5 h-3.5" />
-                        Mark as Done
-                      </button>
-                    )}
-
-                    {homework.status !== 'Not Started' && (
-                      <button
-                        onClick={() => {
-                          updateHomework(homework.id, { status: 'Not Started', completedAt: undefined });
-                          setShowMenu(false);
-                          showToast('Reset to To-Do', `"${homework.title}" reset to to-do`, 'info');
-                        }}
-                        className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-muted hover:bg-surface-2 transition-colors w-full cursor-pointer"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        Reset to To-Do
-                      </button>
-                    )}
-
-                    {homework.attachmentName && (
-                      <button
-                        type="button"
+    <div className={clsx('relative w-full', showMenu ? 'z-40' : 'z-0')}>
+      <article
+        className={clsx(
+          'relative flex border bg-surface transition-[border-color,box-shadow] duration-150',
+          isDone ? 'border-line-soft' : 'border-line hover:border-line-strong hover:shadow-[0_10px_28px_-18px_rgba(17,17,17,0.35)]'
+        )}
+        style={{ '--sub': tone.accent, '--sub-dark': tone.darkAccent } as React.CSSProperties}
+      >
+        <div className="flex-1 min-w-0 py-3.5 pl-4 pr-2">
+          {/* Subject · source · menu */}
+          <div className="flex items-center gap-2 min-h-[28px]">
+            <span className={clsx('inline-flex items-center gap-1.5 min-w-0 text-[12px]', isDone ? 'text-faint' : 'text-muted')}>
+              {/* Subject colour: same as this subject's timetable and subject cards */}
+              <span aria-hidden="true" className={clsx('w-2.5 h-2.5 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]', isDone && 'opacity-40')} />
+              {label.code && <span className="font-bold tracking-wide text-fg/80 shrink-0">{label.code}</span>}
+              {label.code && <span aria-hidden="true">·</span>}
+              <span className="truncate font-medium">{label.name}</span>
+            </span>
+            <span className="ml-auto flex items-center gap-0.5 shrink-0">
+              {source && (
+                <span title={source.title} className="inline-flex items-center gap-1 h-6 px-1.5 text-[11px] font-semibold text-muted">
+                  <source.icon className="w-3.5 h-3.5" />
+                  {source.text}
+                </span>
+              )}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowMenu(!showMenu);
+                  }}
+                  className="w-8 h-8 flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                  aria-label="More options"
+                  aria-expanded={showMenu}
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+                <AnimatePresence>
+                  {showMenu && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-40"
                         onClick={(e) => {
                           e.stopPropagation();
                           setShowMenu(false);
-                          openAttachment(homework.attachmentName);
                         }}
-                        className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-fg hover:bg-surface-2 transition-colors w-full cursor-pointer border-t border-line-soft"
+                      />
+                      <motion.div
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.12 }}
+                        className="absolute right-0 top-full mt-1 w-44 bg-surface border border-line shadow-[0_12px_32px_-12px_rgba(0,0,0,0.28)] z-50 py-1"
+                        role="menu"
                       >
-                        <Link className="w-3.5 h-3.5 text-blue-500" />
-                        Open Attachment
-                      </button>
-                    )}
-
-                    {onShare && (
-                      <button
-                        onClick={() => {
-                          onShare(homework);
-                          setShowMenu(false);
-                        }}
-                        className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-fg hover:bg-surface-2 transition-colors w-full cursor-pointer"
-                      >
-                        <Share2 className="w-3.5 h-3.5" />
-                        Share Task
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => {
-                        if (profile?.role !== 'cr') {
-                          showToast("Not Allowed", "Only verified Batch Pilots can broadcast tasks to the batch.", "error");
-                          return;
-                        }
-                        if (homework.isBatchShared) {
-                          showToast("Already Shared", "This task has already been shared with your batch.", "info");
-                          return;
-                        }
-                        setShowConfirmModal(true);
-                      }}
-                      className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors w-full cursor-pointer border-t border-line-soft"
-                    >
-                      {isBatchCR ? (
-                        <Users className="w-3.5 h-3.5" />
-                      ) : (
-                        <Vote className="w-3.5 h-3.5" />
-                      )}
-                      {isBatchCR ? 'Post to Entire Batch' : 'Propose to Batch'}
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        onEdit(homework);
-                        setShowMenu(false);
-                      }}
-                      className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-fg hover:bg-surface-2 transition-colors w-full cursor-pointer border-t border-line-soft"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                      Edit Task
-                    </button>
-                    
-                    <button
-                      onClick={() => {
-                        setShowMenu(false);
-                        setShowDeleteConfirmModal(true);
-                      }}
-                      className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-left text-[#C94B5C] hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors w-full cursor-pointer border-t border-line-soft"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      Delete Task
-                    </button>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-
-        {/* Course Name & Faculty Badge */}
-        <div className="flex items-center gap-2 flex-wrap pr-2 mt-3.5">
-          <span className="text-[12px] font-bold text-muted break-words">
-            {subject?.name || homework.subjectName || 'GENERAL'}
-          </span>
-          {homework.isFacultyAssignment && (
-            <span className="px-1.5 py-0.5 bg-blue-500/10 dark:bg-blue-400/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-[12px] font-bold rounded-none">
-              🎓 FACULTY: {homework.facultyName || 'Professor'}
+                        <button
+                          role="menuitem"
+                          onClick={() => {
+                            onEdit(homework);
+                            setShowMenu(false);
+                          }}
+                          className={menuItem}
+                        >
+                          <Edit2 className="w-3.5 h-3.5 text-muted" /> Edit
+                        </button>
+                        {onShare && (
+                          <button
+                            role="menuitem"
+                            onClick={() => {
+                              onShare(homework);
+                              setShowMenu(false);
+                            }}
+                            className={menuItem}
+                          >
+                            <Share2 className="w-3.5 h-3.5 text-muted" /> Share
+                          </button>
+                        )}
+                        {!homework.isBatchShared && (
+                          <button
+                            role="menuitem"
+                            onClick={() => {
+                              setShowMenu(false);
+                              if (profile?.role !== 'cr' && !isBatchCR) {
+                                showToast('Pilots only', 'Only your Batch Pilot can post to the whole batch.', 'info');
+                                return;
+                              }
+                              setShowConfirmModal(true);
+                            }}
+                            className={menuItem}
+                          >
+                            {isBatchCR ? <Users className="w-3.5 h-3.5 text-muted" /> : <Vote className="w-3.5 h-3.5 text-muted" />}
+                            {isBatchCR ? 'Post to batch' : 'Propose to batch'}
+                          </button>
+                        )}
+                        <button
+                          role="menuitem"
+                          onClick={() => {
+                            setShowMenu(false);
+                            setShowDeleteConfirmModal(true);
+                          }}
+                          className={clsx(menuItem, 'text-danger hover:bg-danger-soft')}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Delete
+                        </button>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
             </span>
-          )}
-        </div>
+          </div>
 
-        {/* Title Row with Checkbox */}
-        <div className="flex items-start gap-3 mt-2.5">
-          <button 
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleStatusAction();
-            }}
-            aria-label={isDone ? "Mark as incomplete" : isInProgress ? "Complete task" : "Start task"}
-            title={isDone ? "Mark as incomplete" : isInProgress ? "Complete task" : "Start task"}
-            className={clsx(
-              "mt-[3px] shrink-0 w-[20px] h-[20px] rounded-full border-[1.5px] flex items-center justify-center transition-all cursor-pointer",
-              isDone 
-                ? "bg-[#18A889] border-[#18A889] text-white" 
-                : isInProgress
-                ? "border-[#334CC4] dark:border-[#5A75F0] bg-[#334CC4]/10 hover:bg-[#334CC4]/20"
-                : "border-[#8067B5] dark:border-[#8067B5]/70 hover:bg-[#8067B5]/15 bg-transparent"
-            )}
-          >
-            {isDone && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
+          {/* Status + title */}
+          <div className="mt-1.5 flex items-start gap-3">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleStatusAction();
+              }}
+              aria-label={isDone ? 'Mark as not done' : isInProgress ? 'Mark as done' : 'Start working'}
+              title={isDone ? 'Mark as not done' : isInProgress ? 'Mark as done' : 'Start working'}
+              className={clsx(
+                'mt-0.5 shrink-0 w-[22px] h-[22px] rounded-full flex items-center justify-center transition-colors cursor-pointer',
+                isDone
+                  ? 'bg-emerald-600 text-white dark:bg-emerald-500'
+                  : 'border-2 border-[var(--sub)] dark:border-[var(--sub-dark)] hover:bg-surface-2'
+              )}
+            >
+              {isDone && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
+              {isInProgress && <span className="w-[10px] h-[10px] rounded-full bg-[var(--sub)] dark:bg-[var(--sub-dark)]" />}
+            </button>
+            <button type="button" onClick={openDetail} className="min-w-0 flex-1 text-left cursor-pointer pr-2">
+              <h4
+                className={clsx(
+                  'text-[16px] leading-[22px] font-semibold tracking-tight break-words',
+                  isDone ? 'text-muted line-through decoration-1' : 'text-fg'
+                )}
+              >
+                {homework.title}
+              </h4>
+              {homework.description && !isDone && <p className="mt-0.5 text-[13px] leading-[19px] text-muted line-clamp-1">{homework.description}</p>}
+            </button>
+          </div>
+
+          {/* Due · state · extras */}
+          <div className="mt-3 pl-[34px] pr-2 flex flex-wrap items-center gap-1.5">
+            <span className={clsx('inline-flex items-center gap-1.5 h-7 px-2.5 border text-[12px] font-semibold', DUE_TONE[due.tone])}>
+              {due.tone === 'overdue' ? (
+                <AlertTriangle className="w-3.5 h-3.5" />
+              ) : due.tone === 'done' ? (
+                <Check className="w-3.5 h-3.5" />
+              ) : (
+                <Clock className="w-3.5 h-3.5" />
+              )}
+              {due.label}
+            </span>
             {isInProgress && (
-              <div className="w-2.5 h-2.5 rounded-full bg-[#334CC4] dark:bg-[#5A75F0]" />
+              <span className="inline-flex items-center gap-1.5 h-7 px-2.5 border border-line-soft bg-surface-2 text-[12px] font-semibold text-fg">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--sub)] dark:bg-[var(--sub-dark)]" /> In progress
+              </span>
             )}
-          </button>
-          <div 
-            onClick={() => onViewDetail ? onViewDetail(homework) : onEdit(homework)}
-            className="flex flex-col flex-1 cursor-pointer group"
-          >
-            <h4 className={clsx(
-              "text-[16px] sm:text-[17px] font-bold leading-[22px] tracking-tight group-hover:opacity-80 transition-opacity",
-              isDone ? "text-[#6B6B6B] dark:text-[#71717A] line-through" : "text-fg"
-            )}>
-              {homework.title}
-            </h4>
-            {homework.description && (
-              <p className="text-[13px] text-muted mt-1 line-clamp-2 leading-relaxed">
-                {homework.description}
-              </p>
+            {!isDone && homework.priority === 'High' && (
+              <span className="inline-flex items-center gap-1.5 h-7 px-1.5 text-[12px] font-semibold text-rose-700 dark:text-rose-300" title="High priority">
+                <span className="inline-flex items-end gap-[2px]" aria-hidden="true">
+                  <i className="block w-[3px] h-[5px] bg-current" />
+                  <i className="block w-[3px] h-[8px] bg-current" />
+                  <i className="block w-[3px] h-[11px] bg-current" />
+                </span>
+                High
+              </span>
+            )}
+            {(fileCount > 0 || extraLink) && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (extraLink && !fileCount) openAttachment(extraLink);
+                  else openDetail();
+                }}
+                className="inline-flex items-center gap-1 h-7 px-1.5 text-[12px] font-semibold text-muted hover:text-fg cursor-pointer"
+                title={fileCount ? `${fileCount} file${fileCount === 1 ? '' : 's'}` : 'Open link'}
+              >
+                <Paperclip className="w-3.5 h-3.5" />
+                {fileCount + (extraLink ? 1 : 0)}
+              </button>
+            )}
+            {classroomLink && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openAttachment(classroomLink);
+                }}
+                className="ml-auto inline-flex items-center gap-1 h-7 px-1.5 text-[12px] font-semibold text-emerald-700 dark:text-emerald-300 hover:underline underline-offset-2 cursor-pointer"
+              >
+                Open <ExternalLink className="w-3 h-3" />
+              </button>
             )}
           </div>
         </div>
-
-        {/* Bottom row metadata pill */}
-        <div className="flex items-center justify-between mt-[16px] gap-2 flex-wrap">
-          {/* Due Date Pill */}
-          <span className={clsx(
-            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[11px] font-bold font-mono uppercase tracking-wider",
-            isUrgent
-              ? "bg-[#FFF0E8] text-[#C96B45] border border-[#F5D8CC] dark:bg-orange-500/15 dark:text-orange-300 dark:border-orange-500/30"
-              : isOverdue
-              ? "bg-[#FCEBED] text-[#C94B5C] border border-[#F5CBD1] dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30"
-              : "bg-surface-2 text-muted border border-line-soft"
-          )}>
-            <Calendar className="w-3 h-3 shrink-0" />
-            DUE {deadlineLabel.toUpperCase()}
-          </span>
-
-          {/* Quick 1-Tap Attachment Button */}
-          {homework.attachmentName && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                openAttachment(homework.attachmentName);
-              }}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-[12px] font-bold font-mono bg-surface-2 hover:bg-black/[0.08] dark:hover:bg-white/[0.12] text-fg border border-line-soft transition-colors cursor-pointer"
-              title="Open Attachment" aria-label="Open Attachment"
-            >
-              <Paperclip className="w-3 h-3 text-blue-500" />
-              <span>Attachment</span>
-            </button>
-          )}
-
-          {homework.externalLink && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                openAttachment(homework.externalLink);
-              }}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-[12px] font-bold font-mono bg-emerald-500/10 hover:bg-emerald-500/20 dark:bg-emerald-500/15 dark:hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 transition-colors cursor-pointer"
-              title="Open in Google Classroom" aria-label="Open in Google Classroom"
-            >
-              <ExternalLink className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-              <span>Classroom</span>
-            </button>
-          )}
-        </div>
-      </div>
+      </article>
 
       <Modal
         isOpen={showConfirmModal}

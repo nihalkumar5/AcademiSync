@@ -1,10 +1,11 @@
 'use client';
 
+import { SignInPanel } from '@/components/auth/SignInPrompt';
 import React, { useEffect, useMemo, useState } from 'react';
 import { clsx } from 'clsx';
 import { useApp } from '@/context/AppContext';
 import { Modal } from '@/components/ui/Modal';
-import { Illustration } from '@/components/ui/Illustration';
+import { Illustration, IllustrationName } from '@/components/ui/Illustration';
 import {
   AlertTriangle,
   Check,
@@ -273,9 +274,9 @@ const Skeleton = () => (
   </div>
 );
 
-const Notice: React.FC<{ icon: React.ReactNode; title: string; body: string; action?: React.ReactNode }> = ({ icon, title, body, action }) => (
+const Notice: React.FC<{ icon: React.ReactNode; title: string; body: string; action?: React.ReactNode; art?: IllustrationName }> = ({ icon, title, body, action, art = 'attendance' }) => (
   <section className="border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
-    <Illustration name="attendance" className="h-[120px] w-auto self-center" />
+    <Illustration name={art} className="h-[120px] w-auto self-center" />
     <span className="sr-only">{icon}</span>
     <h3 className="mt-4 text-[18px] font-semibold text-fg tracking-tight">{title}</h3>
     <p className="mt-1.5 text-[14px] leading-[21px] text-muted max-w-md">{body}</p>
@@ -379,15 +380,10 @@ export const StudentAttendanceView: React.FC = () => {
   let body: React.ReactNode;
   if (!uid) {
     body = (
-      <Notice
-        icon={<LogIn className="w-5 h-5" />}
+      <SignInPanel
         title="Sign in to see your attendance"
-        body="Your teachers' registers are linked to your account, so attendance shows up once you're signed in."
-        action={
-          <button type="button" onClick={() => setActiveView('settings')} className="btn btn-primary">
-            Go to Profile
-          </button>
-        }
+        body="Your teachers' registers are linked to your account, so your numbers show up once you're signed in."
+        perks={['Your % in every subject', 'How many classes you can still skip', 'Updated when your teacher marks']}
       />
     );
   } else if (loading && !data) {
@@ -395,6 +391,7 @@ export const StudentAttendanceView: React.FC = () => {
   } else if (error && !data) {
     body = (
       <Notice
+        art="error"
         icon={<AlertTriangle className="w-5 h-5" />}
         title="Couldn't load your attendance"
         body="Check your connection and try again."
@@ -408,6 +405,7 @@ export const StudentAttendanceView: React.FC = () => {
   } else if (data && !data.batchKey) {
     body = (
       <Notice
+        art="setup"
         icon={<Users className="w-5 h-5" />}
         title="Join your class batch first"
         body="Teachers mark attendance for a class batch. Join yours from Profile with your batch code, and your attendance will show up here."

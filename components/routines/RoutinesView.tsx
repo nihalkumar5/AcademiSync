@@ -1,5 +1,6 @@
 'use client';
 
+import { Illustration } from '@/components/ui/Illustration';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { useApp } from '@/context/AppContext';
@@ -337,10 +338,8 @@ export const RoutinesView: React.FC = () => {
         /* First run: templates make the first routine two taps away */
         <section>
           <div className="flex flex-col items-center text-center px-6 py-10 border border-dashed border-line">
-            <span className="text-[34px]" aria-hidden="true">
-              ⏰
-            </span>
-            <h3 className="mt-2 text-[17px] font-semibold text-fg">No routines yet</h3>
+            <Illustration name="routines" className="h-[160px] w-auto" />
+            <h3 className="mt-f3 text-[17px] font-semibold text-fg">No routines yet</h3>
             <p className="mt-1.5 text-[14px] text-muted max-w-[300px]">Pick a starting point below or make your own.</p>
             <p className="mt-f3 font-cursive text-[21px] font-semibold text-fg -rotate-2">Small habits, big semester ✌</p>
           </div>

@@ -1,12 +1,14 @@
 'use client';
 
+import { SignInPanel } from '@/components/auth/SignInPrompt';
+import { Illustration } from '@/components/ui/Illustration';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import { useApp } from '@/context/AppContext';
 import { Modal } from '@/components/ui/Modal';
 import { AlertTriangle, Camera, ImageIcon, Loader2, Lock, Smartphone, Trash2, Users, X } from '@/components/ui/icons';
 import { formatTime12Hour, getTodayDateString } from '@/lib/timetableUtils';
-import { MAX_NOTE_CHARS, MAX_SHARED_IMAGE_KB, MyNote, NoteSlot, SharedNote, notesApi } from '@/lib/classNotes';
+import { MAX_NOTE_CHARS, MAX_SHARED_IMAGE_KB, MyNote, NoteSlot, SharedNote, notesApi, subjectKeyOf } from '@/lib/classNotes';
 import { blobToBase64, compressPhoto, deletePhoto, getPhoto, savePhoto } from '@/lib/notePhotos';
 
 // One notes sheet for the whole app. Open it with openClassNotes(slot) from lib/classNotes.
@@ -61,6 +63,28 @@ const LocalPhoto: React.FC<{ id: string; onOpen: (url: string) => void }> = ({ i
   );
 };
 
+// Small copy of my notes on this phone, so they still show if the server can't be reached.
+const cacheKey = (uid: string) => `classnotes_mine_v1_${uid}`;
+const readMineCache = (uid: string): MyNote[] => {
+  try {
+    const v = JSON.parse(localStorage.getItem(cacheKey(uid)) || '[]');
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+};
+const writeMineCache = (uid: string, list: MyNote[]) => {
+  try {
+    localStorage.setItem(cacheKey(uid), JSON.stringify(list.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 300)));
+  } catch {}
+};
+const cacheMine = (uid: string, notes: MyNote[]) => {
+  const map = new Map(readMineCache(uid).map((n) => [n.id, n]));
+  notes.forEach((n) => map.set(n.id, n));
+  writeMineCache(uid, Array.from(map.values()));
+};
+const uncacheMine = (uid: string, id: string) => writeMineCache(uid, readMineCache(uid).filter((n) => n.id !== id));
+
 type Pending = { blob: Blob; url: string };
 
 export const ClassNotesHost: React.FC = () => {
@@ -112,13 +136,19 @@ export const ClassNotesHost: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      const q = `?subjectId=${encodeURIComponent(slot.subjectId)}${range === 'slot' ? `&date=${slot.date}` : ''}`;
+      const q = `?subjectId=${encodeURIComponent(slot.subjectId)}&subject=${encodeURIComponent(slot.subjectName || '')}${range === 'slot' ? `&date=${slot.date}` : ''}`;
       const d = await notesApi('GET', q);
       const byNewest = (a: { createdAt: string }, b: { createdAt: string }) => b.createdAt.localeCompare(a.createdAt);
       setMine((d.mine || []).sort(byNewest));
+      cacheMine(user.id, d.mine || []);
       setShared((d.shared || []).sort(byNewest));
       setHasBatch(!!d.hasBatch);
     } catch (e: any) {
+      // Offline or server hiccup: still show what this phone already knows
+      const cached = readMineCache(user.id).filter(
+        (n) => (n.subjectId === slot.subjectId || subjectKeyOf(n.subjectName) === subjectKeyOf(slot.subjectName)) && (range === 'all' || n.date === slot.date)
+      );
+      if (cached.length) setMine(cached.sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
       setError(e.message);
     } finally {
       setLoading(false);
@@ -166,7 +196,8 @@ export const ClassNotesHost: React.FC = () => {
     try {
       if (tab === 'mine') {
         for (const p of pending) savedIds.push(await savePhoto(p.blob));
-        await notesApi('POST', '', { action: 'addMine', ...base, photos: savedIds });
+        const res = await notesApi('POST', '', { action: 'addMine', ...base, photos: savedIds });
+        if (res?.note && user?.id) cacheMine(user.id, [res.note]);
         showToast?.('Note saved', `${slot.subjectName} · ${dateLabel(slot.date)}`, 'success');
       } else {
         let image: string | undefined;
@@ -193,6 +224,7 @@ export const ClassNotesHost: React.FC = () => {
   const removeMine = async (n: MyNote) => {
     try {
       await notesApi('POST', '', { action: 'deleteMine', id: n.id });
+      if (user?.id) uncacheMine(user.id, n.id);
       n.photos.forEach((id) => deletePhoto(id));
       setMine((list) => list.filter((x) => x.id !== n.id));
     } catch (e: any) {
@@ -238,7 +270,13 @@ export const ClassNotesHost: React.FC = () => {
         {slot && (
           <div className="flex flex-col gap-f4">
             {!user?.id ? (
-              <p className="text-[14px] text-muted">Sign in to save notes for your classes.</p>
+              <SignInPanel
+                bare
+                title="Sign in to save notes"
+                body="Your notes are linked to each class, so you can find them by subject and date later."
+                perks={['Snap the board in one tap', 'Notes saved to the right class', 'Share useful notes with your batch']}
+                onNavigate={close}
+              />
             ) : (
               <>
                 {/* Mine / Class */}
@@ -346,9 +384,12 @@ export const ClassNotesHost: React.FC = () => {
                     <Loader2 className="w-4 h-4 animate-spin" /> Loading notes…
                   </div>
                 ) : list.length === 0 ? (
-                  <p className="border border-dashed border-line px-f3 py-f4 text-center text-[14px] text-muted">
-                    {tab === 'mine' ? 'No notes yet. Snap the whiteboard or jot down what matters.' : 'No class notes yet. Share something useful with your batch.'}
-                  </p>
+                  <div className="flex flex-col items-center border border-dashed border-line px-f3 py-f4 text-center">
+                    <Illustration name={tab === 'mine' ? 'notes' : 'friends'} className="h-[110px] w-auto" />
+                    <p className="mt-f3 text-[14px] text-muted max-w-[300px]">
+                      {tab === 'mine' ? 'No notes yet. Snap the whiteboard or jot down what matters.' : 'No class notes yet. Share something useful with your batch.'}
+                    </p>
+                  </div>
                 ) : (
                   <div className="flex flex-col gap-f3">
                     {groups.map((g) => (

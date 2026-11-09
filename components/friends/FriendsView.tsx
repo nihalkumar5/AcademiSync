@@ -1,5 +1,6 @@
 'use client';
 
+import { SignInPanel } from '@/components/auth/SignInPrompt';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import { useApp } from '@/context/AppContext';
@@ -628,11 +629,11 @@ export const FriendsView: React.FC = () => {
   let body: React.ReactNode;
   if (!user?.id) {
     body = (
-      <section className="border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
-        <Illustration name="tasks-done" className="h-[150px] w-auto" />
-        <h3 className="mt-4 text-[18px] font-semibold text-fg">Sign in to add friends</h3>
-        <button type="button" onClick={() => setActiveView('settings')} className="btn btn-primary mt-5">Go to Profile</button>
-      </section>
+      <SignInPanel
+        title="Sign in to add friends"
+        body="Friends are people from your campus who add you with your code, so you need an account to have one."
+        perks={['See who is free right now', 'Find a free slot together', 'You choose what friends can see']}
+      />
     );
   } else if (loading && !data) {
     body = (
@@ -651,7 +652,8 @@ export const FriendsView: React.FC = () => {
   } else if (error && !data) {
     body = (
       <section className="border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
-        <h3 className="text-[18px] font-semibold text-fg">{error.code === 'no-college' ? 'Add your college first' : "Couldn't load friends"}</h3>
+        <Illustration name={error.code === 'no-college' ? 'setup' : 'error'} className="h-[140px] w-auto" />
+        <h3 className="mt-4 text-[18px] font-semibold text-fg">{error.code === 'no-college' ? 'Add your college first' : "Couldn't load friends"}</h3>
         <p className="mt-1.5 text-[14px] text-muted">{error.message}</p>
         <button type="button" onClick={() => (error.code === 'no-college' ? setActiveView('settings') : reload())} className="btn btn-primary mt-5">
           {error.code === 'no-college' ? 'Go to Profile' : 'Try again'}
@@ -767,7 +769,7 @@ export const FriendsView: React.FC = () => {
         {/* Friends */}
         {friends.length === 0 ? (
           <section className="border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
-            <Illustration name="tasks-done" className="h-[150px] w-auto" />
+            <Illustration name="friends" className="h-[160px] w-auto" />
             <h3 className="mt-4 text-[18px] font-semibold text-fg">See when your friends are free</h3>
             <p className="mt-1.5 text-[14px] text-muted max-w-sm">Add friends from your campus with a QR or code. Their free time shows up here on its own, from their timetable.</p>
             <button type="button" onClick={() => { setPendingCode(undefined); setAddOpen(true); }} className="btn btn-primary mt-5">

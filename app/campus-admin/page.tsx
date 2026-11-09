@@ -7,6 +7,7 @@ import { useApp } from '@/context/AppContext';
 import { getAuthHeaders } from '@/lib/authHeaders';
 import { PromotionalCampaign } from '@/lib/types';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { CampusSetup } from '@/components/campus/CampusSetup';
 import { CampaignComposer, CampaignFormState, EMPTY_CAMPAIGN_FORM } from '@/components/admin/CampaignComposer';
 import { isCampaignRunning, getCategoryMeta } from '@/components/ads/CampusSpotlightCard';
 import { btn, surface, divider, muted, strong, PageTitle, SectionHead, Badge, StatTile, Segmented, SearchField, Empty, AttentionRow, timeAgo } from '@/components/admin/AdminUI';
@@ -40,6 +41,8 @@ export default function CampusAdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tab, setTab] = useState<Tab>('overview');
+  const [setupTarget, setSetupTarget] = useState<string | null>(null);
+  const clearSetupTarget = useCallback(() => setSetupTarget(null), []);
 
   const [studentQuery, setStudentQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'cr' | 'student' | 'other'>('all');
@@ -246,7 +249,7 @@ export default function CampusAdminPage() {
     { id: 'requests', label: 'Requests', icon: Crown, count: pending.length, alert: pending.length > 0 },
     { id: 'notices', label: 'Notices & ads', icon: Megaphone, count: live.length },
     { id: 'students', label: 'Students', icon: Users, count: students.length },
-    { id: 'batches', label: 'Batches', icon: Layers, count: batches.length },
+    { id: 'batches', label: 'Set up', icon: Layers, count: batches.length },
   ];
 
   const noticeCard = (c: PromotionalCampaign) => {
@@ -380,6 +383,11 @@ export default function CampusAdminPage() {
                         <p className={`text-[13px] ${muted}`}>{batchLabel(r)}</p>
                         <p className={`text-[12px] ${muted} truncate`}>{[r.email, r.phone, timeAgo(r.createdAt)].filter(Boolean).join(' · ')}</p>
                         {r.status === 'approved' && r.inviteCode && <p className={`mt-1 text-[12px] font-mono ${strong}`}>Code {r.inviteCode}</p>}
+                        {r.status === 'approved' && (r as any).batchKey && (
+                          <button type="button" onClick={() => { setSetupTarget((r as any).batchKey); setTab('batches'); }} className={`${btn.ghost} mt-1.5 -ml-2.5`}>
+                            Set up timetable &amp; calendar →
+                          </button>
+                        )}
                       </div>
                       {r.status === 'pending' && (
                         <div className="flex gap-2 shrink-0">
@@ -475,27 +483,7 @@ export default function CampusAdminPage() {
           </>
         )}
 
-        {tab === 'batches' && (
-          <>
-            <PageTitle title="Batches" description="Classes from your college that share a timetable." />
-            <SearchField value={batchQuery} onChange={setBatchQuery} placeholder="Search branch, semester, code, pilot" />
-            {visibleBatches.length === 0 ? (
-              <Empty icon={Layers} title="No batches yet" body="Batches appear here once a batch pilot from your college is approved." />
-            ) : (
-              <div className={`${surface} ${divider}`}>
-                {visibleBatches.map((b) => (
-                  <div key={b.id} className="px-f4 py-f3 flex items-center gap-f3">
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-[15px] font-medium truncate ${strong}`}>{batchLabel(b)}</p>
-                      <p className={`text-[13px] truncate ${muted}`}>{[b.creatorName ? `Pilot: ${b.creatorName}` : '', `${b.members} ${b.members === 1 ? 'member' : 'members'}`].filter(Boolean).join(' · ')}</p>
-                    </div>
-                    {b.inviteCode && <span className={`shrink-0 font-mono text-[13px] font-semibold px-2 h-7 inline-flex items-center border border-line ${strong}`}>{b.inviteCode}</span>}
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
+        {tab === 'batches' && <CampusSetup withPreview={withPreview} openBatch={setupTarget} onOpened={clearSetupTarget} />}
       </main>
 
       {composerOpen && (

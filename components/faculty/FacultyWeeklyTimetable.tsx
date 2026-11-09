@@ -285,7 +285,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
           <div className="flex md:hidden flex-col gap-3.5">
             {sessionsForDay.length === 0 ? (
               <EmptyState
-                illustration="no-classes"
+                illustration="free-day"
                 title={`No lectures on ${selectedDay}`}
                 description="No teaching sessions scheduled for this day."
                 actionLabel="Connect Another Batch"

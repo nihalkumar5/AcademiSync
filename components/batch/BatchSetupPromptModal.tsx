@@ -5,17 +5,8 @@ import { Modal } from '@/components/ui/Modal';
 import { useApp } from '@/context/AppContext';
 import { getShortCollegeName, formatBatchDisplayName } from '@/lib/timetableUtils';
 import { CRApplicationModal } from '@/components/cr/CRApplicationModal';
-import { 
-  Calendar, 
-  Bell, 
-  Clock, 
-  Users, 
-  CheckCircle2, 
-  ArrowRight, 
-  ShieldCheck, 
-  MessageCircle, 
-  Share2 
-} from '@/components/ui/icons';
+import { Calendar, Bell, Clock, Users, ArrowRight, ShieldCheck, MessageCircle } from '@/components/ui/icons';
+import { Illustration } from '@/components/ui/Illustration';
 import { shareLink, PLAY_STORE_URL } from '@/lib/shareUtils';
 
 interface BatchSetupPromptModalProps {
@@ -82,173 +73,148 @@ If you are our Batch Pilot or want to setup the synced batch timetable for all o
     }
   };
 
+  // "Data Science & Artificial Intelligence (DS & AI)" → "DS & AI"
+  const shortBranch = /\(([^)]{1,16})\)/.exec(activeBranch)?.[1]?.trim() || activeBranch;
+  const batchLabel = formatBatchDisplayName(shortBranch, activeSem);
+
   return (
     <>
-      <Modal 
-        isOpen={isOpen && !showCRModal} 
-        onClose={onClose} 
-        title="Become a Batch Pilot 🚀"
-        description="Keep everyone on the same timetable and never miss what matters."
-        mobileFullSheet={true} 
+      <Modal
+        isOpen={isOpen && !showCRModal}
+        onClose={onClose}
+        title="Batch Pilot"
+        mobileFullSheet={true}
         maxWidth="4xl"
         showCloseButton={true}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-stretch font-sans text-left">
-          
-          {/* Left Column: Hero Illustration & Info Card */}
-          <div className="md:col-span-5 flex flex-col items-center justify-center bg-surface-2 border border-line-soft rounded-none p-4 sm:p-5 text-center relative overflow-hidden gap-3">
-            <div className="w-full flex items-center justify-center relative dark:bg-white dark:py-3">
-              <img 
-                src="/cr.png" 
-                alt="Batch Pilot" 
-                className="w-full max-w-[300px] sm:max-w-[280px] h-auto object-contain drop-shadow-sm dark:drop-shadow-none"
-              />
-            </div>
-            
-            <div className="flex flex-col gap-1 z-10 relative px-3 py-2 bg-[#F9F9F8]/90 dark:bg-[#121317]/90 backdrop-blur-sm">
-              <span className="text-[12px] font-bold font-mono text-amber-600 dark:text-amber-400">
-                Class leadership
-              </span>
-              <h3 className="text-[16px] font-bold text-fg leading-snug">
-                Power your entire batch
-              </h3>
-              <p className="text-[12px] text-muted leading-relaxed">
-                Up to 3 verified Batch Pilots can manage schedules, room changes, and live alerts for {shortCollege}.
-              </p>
+        footer={
+          <div className="px-5 sm:px-8 pt-3 pb-[max(calc(env(safe-area-inset-bottom)+8px),12px)] flex flex-col sm:flex-row gap-2">
+            <button type="button" onClick={() => setShowCRModal(true)} className="btn btn-primary btn-lg w-full sm:w-auto sm:flex-[1.6]">
+              Become the pilot
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-1">
+              <button type="button" onClick={handleShareToWhatsApp} className="btn btn-secondary sm:btn-lg sm:flex-1">
+                <MessageCircle className="w-4 h-4" />
+                Ask class
+              </button>
+              <button type="button" onClick={handlePersonalTimetable} className="btn btn-ghost sm:btn-lg">
+                Not now
+              </button>
             </div>
           </div>
+        }
+      >
+        {/* Bleeds to the dialog edges; the footer sticks to the bottom while the body scrolls */}
+        <div className="-m-5 sm:-m-6 flex flex-col font-sans text-left">
+          <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+            {/* ===== Hero ===== */}
+            <section className="relative overflow-hidden bg-amber-50 dark:bg-amber-400/[0.06] border-b md:border-b-0 md:border-r border-line px-5 sm:px-8 pt-6 pb-8 flex flex-col">
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute -right-24 -top-24 w-72 h-72 rounded-full bg-[radial-gradient(closest-side,rgba(255,107,107,0.18),transparent)] dark:bg-[radial-gradient(closest-side,rgba(255,107,107,0.10),transparent)]"
+              />
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute -left-20 bottom-10 w-60 h-60 rounded-full bg-[radial-gradient(closest-side,rgba(0,179,179,0.16),transparent)] dark:bg-[radial-gradient(closest-side,rgba(0,179,179,0.10),transparent)]"
+              />
 
-          {/* Right Column: Unlocks, Responsibilities & Actions */}
-          <div className="md:col-span-7 flex flex-col justify-between gap-5">
-            
-            {/* Section 1: WHAT YOU'LL UNLOCK */}
-            <div className="flex flex-col gap-2.5">
-              <span className="section-label">
-                WHAT YOU&apos;LL UNLOCK
-              </span>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {/* 01 */}
-                <div className="p-3 border border-line-soft bg-surface rounded-none flex gap-3 items-start">
-                  <div className="w-9 h-9 rounded-none bg-surface-2 border border-line-soft flex items-center justify-center shrink-0 mt-0.5">
-                    <Calendar className="w-4 h-4 text-fg stroke-[1.8]" />
-                  </div>
-                  <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
-                    <span className="text-[11px] font-bold font-mono text-fg">01</span>
-                    <h4 className="text-[13px] font-bold text-fg leading-snug truncate">
-                      One timetable
-                    </h4>
-                    <p className="text-[11px] text-muted leading-relaxed">
-                      Update once, everyone gets it.
-                    </p>
-                  </div>
-                </div>
-
-                {/* 02 */}
-                <div className="p-3 border border-line-soft bg-surface rounded-none flex gap-3 items-start">
-                  <div className="w-9 h-9 rounded-none bg-surface-2 border border-line-soft flex items-center justify-center shrink-0 mt-0.5">
-                    <Bell className="w-4 h-4 text-fg stroke-[1.8]" />
-                  </div>
-                  <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
-                    <span className="text-[11px] font-bold font-mono text-fg">02</span>
-                    <h4 className="text-[13px] font-bold text-fg leading-snug truncate">
-                      Instant class alerts
-                    </h4>
-                    <p className="text-[11px] text-muted leading-relaxed">
-                      Room changes &amp; cancellations.
-                    </p>
-                  </div>
-                </div>
-
-                {/* 03 */}
-                <div className="p-3 border border-line-soft bg-surface rounded-none flex gap-3 items-start">
-                  <div className="w-9 h-9 rounded-none bg-surface-2 border border-line-soft flex items-center justify-center shrink-0 mt-0.5">
-                    <Clock className="w-4 h-4 text-fg stroke-[1.8]" />
-                  </div>
-                  <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
-                    <span className="text-[11px] font-bold font-mono text-fg">03</span>
-                    <h4 className="text-[13px] font-bold text-fg leading-snug truncate">
-                      Shared tasks &amp; labs
-                    </h4>
-                    <p className="text-[11px] text-muted leading-relaxed">
-                      Deadlines visible to the batch.
-                    </p>
-                  </div>
-                </div>
-
-                {/* 04 */}
-                <div className="p-3 border border-line-soft bg-surface rounded-none flex gap-3 items-start">
-                  <div className="w-9 h-9 rounded-none bg-surface-2 border border-line-soft flex items-center justify-center shrink-0 mt-0.5">
-                    <Users className="w-4 h-4 text-fg stroke-[1.8]" />
-                  </div>
-                  <div className="flex flex-col gap-0.5 pt-0.5 min-w-0">
-                    <span className="text-[11px] font-bold font-mono text-fg">04</span>
-                    <h4 className="text-[13px] font-bold text-fg leading-snug truncate">
-                      No WhatsApp chaos
-                    </h4>
-                    <p className="text-[11px] text-muted leading-relaxed">
-                      One authoritative schedule hub.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Section 2: YOUR RESPONSIBILITY */}
-            <div className="p-3.5 border border-line-soft bg-[#FAF9F7] dark:bg-[#121317] rounded-none flex items-center justify-between">
-              <div className="flex flex-col gap-1.5">
-                <span className="section-label">
-                  Your responsibility
+              <div className="relative flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 h-7 px-2.5 bg-surface border border-amber-200 dark:border-amber-400/25 text-[12px] font-semibold text-amber-800 dark:text-amber-300">
+                  <span className="relative flex w-2 h-2">
+                    <span className="absolute inset-0 bg-amber-500 animate-ping opacity-60 motion-reduce:hidden" />
+                    <span className="relative w-2 h-2 bg-amber-500" />
+                  </span>
+                  No pilot yet
                 </span>
-                <div className="flex flex-wrap gap-x-4 gap-y-1">
-                  <div className="flex items-center gap-1.5 text-[12px] font-medium text-fg">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                    <span>Update timetable</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[12px] font-medium text-fg">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                    <span>Broadcast changes</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[12px] font-medium text-fg">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                    <span>Accurate info</span>
-                  </div>
+                <span className="h-7 px-2.5 inline-flex items-center bg-surface/70 border border-line text-[12px] font-medium text-fg truncate max-w-full">
+                  {batchLabel} · {shortCollege}
+                </span>
+              </div>
+
+              <Illustration name="pilot" className="relative mt-6 h-[176px] sm:h-[210px] w-auto self-center" />
+
+              <h2 className="relative mt-6 text-[32px] sm:text-[38px] leading-[1.06] tracking-tight text-fg">
+                Your batch
+                <br />
+                needs a pilot.
+              </h2>
+              <p className="relative mt-3 text-[15px] leading-[23px] text-muted max-w-[380px]">
+                Nobody has set up {shortBranch} Sem {activeSem} yet. Do it once, and everyone in your batch gets the timetable, every change and every alert on
+                their phone.
+              </p>
+
+              {/* What one update does, shown as the notification classmates receive */}
+              <div className="relative mt-6">
+                <p className="mb-2 text-[12px] font-semibold text-muted">What your batch sees when you move a class</p>
+                <div className="bg-surface border border-line shadow-[0_12px_32px_-16px_rgba(17,17,17,0.25)] p-3 flex gap-3">
+                  <span className="w-9 h-9 shrink-0 overflow-hidden bg-white border border-line">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/logo51.png" alt="" className="w-full h-full object-cover scale-[1.75]" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center justify-between gap-2 text-[11px] text-muted">
+                      <span className="font-semibold">Intersemester</span>
+                      <span>now</span>
+                    </span>
+                    <span className="block mt-0.5 text-[14px] font-semibold text-fg leading-snug">Data Structures moved to Room 204</span>
+                    <span className="block text-[13px] text-muted leading-snug">Today, 10:00 AM · updated by your Batch Pilot</span>
+                  </span>
                 </div>
               </div>
-            </div>
+            </section>
 
-            {/* Actions */}
-            <div className="flex flex-col gap-2.5">
-              <button
-                type="button"
-                onClick={() => setShowCRModal(true)}
-                className="btn btn-primary w-full tracking-wide"
-              >
-                <span>Apply to become a Batch Pilot 🚀</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={handleShareToWhatsApp}
-                  className="btn btn-secondary"
-                >
-                  <MessageCircle className="w-4 h-4 text-fg" />
-                  <span>Ask Pilot on WhatsApp</span>
-                  <Share2 className="w-3 h-3 text-muted" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handlePersonalTimetable}
-                  className="h-11 px-3 border border-transparent hover:border-line text-[14px] font-medium text-muted hover:text-fg rounded-none transition-colors text-center cursor-pointer"
-                >
-                  Personal mode for now →
-                </button>
+            {/* ===== Details ===== */}
+            <section className="px-5 sm:px-8 py-7 flex flex-col gap-8">
+              {/* How it works */}
+              <div>
+                <h3 className="text-[13px] font-semibold text-muted">How it works</h3>
+                <ol className="mt-4 flex flex-col">
+                  {[
+                    { title: 'Apply', body: 'Tell us your class. Takes about a minute.' },
+                    { title: 'Get approved', body: 'Your campus team checks that it’s really you.' },
+                    { title: 'Add the timetable', body: 'Snap or upload it. We turn it into a schedule for everyone.' },
+                  ].map((st, i, arr) => (
+                    <li key={st.title} className="relative flex gap-4 pb-5 last:pb-0">
+                      {i < arr.length - 1 && <span aria-hidden="true" className="absolute left-[15px] top-8 bottom-0 w-px bg-line" />}
+                      <span className={`relative z-10 w-8 h-8 shrink-0 flex items-center justify-center text-[13px] font-bold tabular-nums ${i === 0 ? 'bg-ink text-on-ink' : 'bg-surface border border-line text-fg'}`}>
+                        {i + 1}
+                      </span>
+                      <span className="pt-1">
+                        <span className="block text-[15px] font-semibold text-fg leading-tight">{st.title}</span>
+                        <span className="block mt-1 text-[14px] leading-[20px] text-muted">{st.body}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
               </div>
-            </div>
 
+              {/* Powers */}
+              <div>
+                <h3 className="text-[13px] font-semibold text-muted">What a pilot can do</h3>
+                <ul className="mt-4 grid grid-cols-2 gap-2">
+                  {[
+                    { icon: Calendar, title: 'One timetable', body: 'Update once, everyone has it', tone: 'bg-sky-50 text-sky-700 border-sky-200/70 dark:bg-sky-400/10 dark:text-sky-300 dark:border-sky-400/20' },
+                    { icon: Bell, title: 'Instant alerts', body: 'Cancel or move a class', tone: 'bg-rose-50 text-rose-700 border-rose-200/70 dark:bg-rose-400/10 dark:text-rose-300 dark:border-rose-400/20' },
+                    { icon: Clock, title: 'Shared deadlines', body: 'Tasks and labs for all', tone: 'bg-violet-50 text-violet-700 border-violet-200/70 dark:bg-violet-400/10 dark:text-violet-300 dark:border-violet-400/20' },
+                    { icon: Users, title: 'No more chaos', body: 'One place, not 5 groups', tone: 'bg-emerald-50 text-emerald-700 border-emerald-200/70 dark:bg-emerald-400/10 dark:text-emerald-300 dark:border-emerald-400/20' },
+                  ].map(({ icon: Icon, title, body, tone }) => (
+                    <li key={title} className="border border-line bg-surface p-3.5">
+                      <span className={`w-9 h-9 flex items-center justify-center border ${tone}`}>
+                        <Icon className="w-[18px] h-[18px]" />
+                      </span>
+                      <span className="block mt-3 text-[14px] font-semibold text-fg leading-tight">{title}</span>
+                      <span className="block mt-1 text-[13px] leading-[18px] text-muted">{body}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-4 flex items-start gap-2 text-[13px] leading-[19px] text-muted">
+                  <ShieldCheck className="w-4 h-4 mt-0.5 shrink-0 text-fg" />
+                  <span>
+                    Up to 3 pilots per batch, so you can share the work. You only step in when something changes.
+                  </span>
+                </p>
+              </div>
+            </section>
           </div>
 
         </div>

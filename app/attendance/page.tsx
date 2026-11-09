@@ -1,5 +1,6 @@
 'use client';
 
+import { SignInPanel } from '@/components/auth/SignInPrompt';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -268,7 +269,17 @@ export default function AttendanceCenterPage() {
   );
   if (!isClerkLoaded) return gate(<Loader2 className="w-6 h-6 animate-spin" />, 'Loading…', 'Checking your account.');
   if (!user)
-    return gate(<Lock className="w-6 h-6" />, 'Sign in to see attendance', 'Attendance records are saved to your faculty account.', <Link href="/sign-in" className={btn.primary}>Sign in</Link>);
+    return (
+      <div className="min-h-screen bg-canvas flex items-center justify-center p-5">
+        <div className="w-full max-w-md">
+          <SignInPanel
+            title="Sign in to open the attendance center"
+            body="Attendance records are saved to your faculty account, so they're safe and the same on every device."
+            perks={['Every class and student in one place', 'Trends and students at risk', 'Export reports any time']}
+          />
+        </div>
+      </div>
+    );
   if (!isFaculty)
     return gate(<Lock className="w-6 h-6" />, 'For faculty only', 'The attendance center is available to faculty accounts.', <Link href="/" className={btn.secondary}><ArrowLeft className="w-4 h-4" /> Back to the app</Link>);
 

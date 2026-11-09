@@ -120,7 +120,7 @@ interface CampusSpotlightCardProps {
   className?: string;
 }
 
-const matchesAudience = (data: PromotionalCampaign, profile: { college?: string; branch?: string; semester?: number }) => {
+export const matchesAudience = (data: PromotionalCampaign, profile: { college?: string; branch?: string; semester?: number }) => {
   if (data.targetAudienceType === 'all') return true;
   // Campus-admin notices carry exact college keys; a student outside that college never sees them
   const keys = Array.isArray(data.targetCollegeKeys) ? data.targetCollegeKeys.filter(Boolean) : [];

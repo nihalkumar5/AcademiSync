@@ -6,7 +6,7 @@
 //   handed out as 1-hour signed links.
 import { getStorage } from 'firebase-admin/storage';
 import { adminDb } from '@/lib/firebase-admin';
-import { MAX_NOTE_CHARS, MAX_SHARED_IMAGE_KB, MyNote, SharedNote } from '@/lib/classNotes';
+import { MAX_NOTE_CHARS, MAX_SHARED_IMAGE_KB, MyNote, SharedNote, subjectKeyOf } from '@/lib/classNotes';
 
 export class NoteError extends Error {
   constructor(public status: number, message: string, public code?: string) {
@@ -43,9 +43,11 @@ const slotOf = (input: any) => {
   const date = input?.date;
   if (!validKey(subjectId) || subjectId.length > 128) throw new NoteError(400, 'Missing subject');
   if (typeof date !== 'string' || !DATE_RE.test(date)) throw new NoteError(400, 'Missing date');
+  const subjectName = isStr(input?.subjectName, 120) ? input.subjectName.trim() : 'Class';
   return {
     subjectId,
-    subjectName: isStr(input?.subjectName, 120) ? input.subjectName.trim() : 'Class',
+    subjectKey: subjectKeyOf(subjectName) || subjectId,
+    subjectName,
     date,
     startTime: isStr(input?.startTime, 12) ? input.startTime.trim() : '',
   };
@@ -65,11 +67,27 @@ const toMine = (id: string, d: any): MyNote => ({
   createdAt: d.createdAt || '',
 });
 
-export async function listMine(uid: string, subjectId: string, date?: string) {
-  let q = mine(uid).where('subjectId', '==', subjectId);
-  if (date) q = q.where('date', '==', date);
-  const snap = await q.limit(300).get();
-  return snap.docs.map((d: any) => toMine(d.id, d.data()));
+/** Notes for a subject, found by its id OR its name, so a changed subject id doesn't hide old notes. */
+const findBy = async (col: any, subjectId: string, subjectKey: string | undefined, date: string | undefined, max: number, subjectName?: string) => {
+  const run = (field: string, value: string) => {
+    let q = col.where(field, '==', value);
+    if (date) q = q.where('date', '==', date);
+    return q.limit(max).get();
+  };
+  // subjectName: notes saved before subjectKey existed
+  const snaps = await Promise.all([
+    run('subjectId', subjectId),
+    ...(subjectKey ? [run('subjectKey', subjectKey)] : []),
+    ...(subjectName ? [run('subjectName', subjectName)] : []),
+  ]);
+  const seen = new Map<string, any>();
+  for (const s of snaps) for (const d of s.docs) seen.set(d.id, d);
+  return Array.from(seen.values());
+};
+
+export async function listMine(uid: string, subjectId: string, date?: string, subjectKey?: string, subjectName?: string) {
+  const docs = await findBy(mine(uid), subjectId, subjectKey, date, 300, subjectName);
+  return docs.map((d: any) => toMine(d.id, d.data()));
 }
 
 export async function addMine(uid: string, input: any) {
@@ -104,11 +122,10 @@ const canModerate = async (who: Who, batchKey: string) => {
   return false;
 };
 
-export async function listShared(who: Who, subjectId: string, date?: string): Promise<SharedNote[]> {
+export async function listShared(who: Who, subjectId: string, date?: string, subjectKey?: string, subjectName?: string): Promise<SharedNote[]> {
   if (!who.batchKey) return [];
-  let q = shared(who.batchKey).where('subjectId', '==', subjectId);
-  if (date) q = q.where('date', '==', date);
-  const [snap, mod] = await Promise.all([q.limit(200).get(), canModerate(who, who.batchKey)]);
+  const [docs, mod] = await Promise.all([findBy(shared(who.batchKey), subjectId, subjectKey, date, 200, subjectName), canModerate(who, who.batchKey)]);
+  const snap = { docs };
   const expires = Date.now() + 60 * 60 * 1000;
   return Promise.all(
     snap.docs.map(async (doc: any) => {

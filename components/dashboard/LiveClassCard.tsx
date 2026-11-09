@@ -536,10 +536,10 @@ export const LiveClassCard: React.FC = () => {
     
     const formatCountdown = (minutes: number) => {
       if (minutes <= 0) return "Starting now";
-      if (minutes < 60) return `Starts in ${minutes} min`;
+      if (minutes < 60) return `In ${minutes} min`;
       const hrs = Math.floor(minutes / 60);
       const mins = minutes % 60;
-      return `Starts in ${hrs}h ${mins.toString().padStart(2, '0')}m`;
+      return `In ${hrs}h ${mins.toString().padStart(2, '0')}m`;
     };
 
     const renderFaculty = (facultyStr: string) => {
@@ -559,73 +559,60 @@ export const LiveClassCard: React.FC = () => {
         >
 
           <div className="relative z-10 flex flex-col">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <span 
-                  className="text-[11px] font-bold uppercase tracking-[1.4px] leading-none"
-                  style={{ color: theme.accent }}
-                >
-                  {typeLabel}
-                </span>
-                {isLab && (
-                  <span 
-                    className="text-[12px] font-bold px-1.5 py-0.5 border"
-                    style={{
-                      color: theme.accent,
-                      borderColor: `${theme.accent}55`,
-                    }}
-                  >
-                    LAB
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[12px] font-bold text-fg font-mono leading-none">
-                  {formatTime12Hour(session.startTime)}
-                </span>
-                {renderOptionsMenu(session, false)}
-              </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="inline-flex items-center gap-2 text-[12px] font-semibold text-muted">
+                {typeLabel === 'NEXT LAB' ? 'Next lab' : typeLabel === 'NEXT ELECTIVE' ? 'Next elective' : 'Next class'}
+              </span>
+              {renderOptionsMenu(session, false)}
             </div>
 
-            <h3 className="text-[20px] sm:text-[22px] font-semibold text-fg leading-[26px] mb-2 pr-8 line-clamp-2 tracking-tight">
-              {sub?.name || (session as any).subjectName || 'Class Session'}
-            </h3>
+            <div className="mt-1.5 flex items-start gap-2.5">
+              {/* Subject colour, same as its timetable card */}
+              <span aria-hidden="true" className="mt-[9px] w-2.5 h-2.5 shrink-0" style={{ backgroundColor: theme.accent }} />
+              <h3 className="text-[20px] sm:text-[22px] font-semibold text-fg leading-[28px] line-clamp-2 tracking-tight pr-6">
+                {sub?.name || (session as any).subjectName || 'Class Session'}
+              </h3>
+            </div>
+
+            <div className="mt-1.5 pl-5 flex items-center gap-1.5 text-[13px] text-muted min-w-0">
+              {session.room && (
+                <span className="inline-flex items-center gap-1 shrink-0">
+                  <MapPin className="w-3.5 h-3.5" />
+                  {session.room}
+                </span>
+              )}
+              {session.room && session.faculty && <span className="opacity-50 shrink-0">·</span>}
+              {session.faculty && <span className="truncate">{renderFaculty(session.faculty)}</span>}
+            </div>
 
             {nextReschedule && (
-              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-none bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] font-mono font-medium mb-3">
-                <Clock className="w-3 h-3 shrink-0" />
+              <div className="mt-3 ml-5 inline-flex self-start items-center gap-1.5 h-7 px-2.5 border border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300 text-[12px] font-semibold">
+                <Clock className="w-3.5 h-3.5 shrink-0" />
                 <span>
-                  Rescheduled by {nextReschedule.by || 'Pilot'}
+                  Moved by {nextReschedule.by || 'your pilot'}
                   {nextOrigSession && (nextOrigSession.startTime !== session.startTime || nextOrigSession.endTime !== session.endTime)
-                    ? ` (Was ${formatTime12Hour(nextOrigSession.startTime)})`
+                    ? ` · was ${formatTime12Hour(nextOrigSession.startTime)}`
                     : ''}
                 </span>
               </div>
             )}
 
-            <div className="flex items-center gap-2 text-[12px] text-[#6F737C] dark:text-[#A1A1AA] leading-none mb-4">
-              <span className="flex items-center gap-1.5 shrink-0">
-                <span className="text-[11px] leading-none opacity-80">◉</span>
-                {session.room}
+            <div className="mt-4 pt-3.5 border-t border-line-soft flex items-center justify-between gap-3">
+              <span className="flex items-baseline gap-1.5 min-w-0">
+                <span className="text-[18px] font-semibold text-fg tabular-nums leading-none">{formatTime12Hour(session.startTime)}</span>
+                {session.endTime && <span className="text-[13px] text-muted tabular-nums leading-none truncate">to {formatTime12Hour(session.endTime)}</span>}
               </span>
-              {session.faculty && (
-                <>
-                  <span className="opacity-40 shrink-0">·</span>
-                  <span className="truncate">{renderFaculty(session.faculty)}</span>
-                </>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span 
-                className="text-[13px] font-bold leading-none"
-                style={{ color: theme.accent }}
+              <span
+                className={clsx(
+                  'shrink-0 inline-flex items-center gap-1.5 h-7 px-2.5 border text-[12px] font-semibold tabular-nums',
+                  nextClass.minutesUntilStart <= 15
+                    ? 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300'
+                    : 'border-line-soft bg-surface-2 text-fg'
+                )}
               >
+                {nextClass.minutesUntilStart <= 15 && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse motion-reduce:animate-none" />}
                 {formatCountdown(nextClass.minutesUntilStart)}
               </span>
-              <div style={{ color: theme.accent }}>
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </div>
             </div>
           </div>
         </div>

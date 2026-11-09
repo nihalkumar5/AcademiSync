@@ -7,6 +7,7 @@ import { MobileNav } from '@/components/layout/MobileNav';
 import { Header } from '@/components/layout/Header';
 import { CommandPalette } from '@/components/layout/CommandPalette';
 import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
+import { SignInPromptHost } from '@/components/auth/SignInPrompt';
 import { BatchApprovedModal } from '@/components/batch/BatchApprovedModal';
 import { Toast } from '@/components/ui/Toast';
 import { IntersemesterLogo } from '@/components/ui/IntersemesterLogo';
@@ -42,6 +43,7 @@ import { MessView } from '@/components/mess/MessView';
 import { SettingsView } from '@/components/settings/SettingsView';
 import { HolidayBalloons } from '@/components/ui/HolidayBalloons';
 import { CampusSpotlightCard } from '@/components/ads/CampusSpotlightCard';
+import { CampusNoticesView } from '@/components/notices/CampusNoticesView';
 import { ProposedBatchTasksVoting } from '@/components/homework/ProposedBatchTasksVoting';
 import { IOSAppGate } from '@/components/pwa/IOSAppGate';
 import { AndroidAppGate } from '@/components/pwa/AndroidAppGate';
@@ -49,6 +51,7 @@ import { WebPushPrompt } from '@/components/pwa/WebPushPrompt';
 import { WidgetSync } from '@/components/widget/WidgetSync';
 import { QuestionPapersView } from '@/components/papers/QuestionPapersView';
 import { ClassNotesHost } from '@/components/notes/ClassNotesHost';
+import { AdminProposalsCard } from '@/components/campus/AdminProposalsCard';
 import { FriendsView } from '@/components/friends/FriendsView';
 import { FriendsFreeNowCard, FriendLinkHost } from '@/components/friends/FriendsHome';
 import { FacultyHomeView } from '@/components/faculty/FacultyHomeView';
@@ -400,6 +403,7 @@ export default function AppHome() {
               ) : (
                 <div className="flex flex-col gap-f5 sm:gap-f6">
                   <OverviewHeader />
+                  <AdminProposalsCard />
                   <HomeExamAlertCard />
                   <LiveClassCard />
                   <FriendsFreeNowCard />
@@ -424,6 +428,7 @@ export default function AppHome() {
             )}
             {activeView === 'exams' && <ExamsView />}
             {activeView === 'papers' && <QuestionPapersView />}
+            {activeView === 'notices' && <CampusNoticesView />}
             {activeView === 'friends' && <FriendsView />}
             {activeView === 'carry' && (
               profile?.role === 'faculty' ? <FacultyBatchesView /> : <TomorrowCarryView />
@@ -446,6 +451,7 @@ export default function AppHome() {
       {/* Overlays & Modals */}
       <CommandPalette />
       <OnboardingModal />
+      <SignInPromptHost />
       <BatchApprovedModal />
       <WebPushPrompt />
       <WidgetSync />

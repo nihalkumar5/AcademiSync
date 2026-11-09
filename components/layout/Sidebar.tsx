@@ -19,6 +19,7 @@ import {
   Settings,
   GraduationCap,
   FileText,
+  Megaphone,
 } from '@/components/ui/icons';
 import { useApp, ActiveView } from '@/context/AppContext';
 import { dedupeNotifications } from '@/lib/notificationDedupe';
@@ -58,6 +59,7 @@ export const Sidebar: React.FC = () => {
             { id: 'routines', label: 'Routines', icon: Repeat, count: routinesLeft || undefined },
             { id: 'calendar', label: 'Academic calendar', icon: CalendarRange },
             { id: 'papers', label: 'Question papers', icon: FileText },
+            { id: 'notices', label: 'Campus notices', icon: Megaphone },
           ],
         },
       ]
@@ -66,7 +68,7 @@ export const Sidebar: React.FC = () => {
           items: [
             { id: 'home', label: 'Home', icon: House },
             { id: 'timetable', label: 'Timetable', icon: CalendarDays },
-            { id: 'homework', label: 'Tasks', icon: CheckSquare, count: pendingTasks || undefined },
+            { id: 'homework', label: 'Assignments', icon: CheckSquare, count: pendingTasks || undefined },
             { id: 'exams', label: 'Exams', icon: ClipboardList },
             { id: 'papers', label: 'Question papers', icon: FileText },
             { id: 'routines', label: 'Routines', icon: Repeat, count: routinesLeft || undefined },
@@ -76,11 +78,12 @@ export const Sidebar: React.FC = () => {
         {
           label: 'Campus',
           items: [
-            { id: 'friends', label: 'Friends', icon: Users },
             { id: 'mess', label: 'Mess menu', icon: Utensils },
+            { id: 'notices', label: 'Campus notices', icon: Megaphone },
             { id: 'subjects', label: 'Subjects', icon: BookOpen },
             { id: 'faculty', label: 'Faculty', icon: GraduationCap },
             { id: 'calendar', label: 'Academic calendar', icon: CalendarRange },
+            { id: 'friends', label: 'Friends', icon: Users },
           ],
         },
       ];

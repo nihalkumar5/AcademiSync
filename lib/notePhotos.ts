@@ -15,13 +15,27 @@ const openDb = () =>
     req.onerror = () => reject(req.error);
   });
 
+// Resolves only once the transaction has COMMITTED (not just when the request succeeds),
+// so a refresh right after saving can't lose the photo.
 const tx = async <T>(mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRequest<T>) => {
   const db = await openDb();
   return new Promise<T>((resolve, reject) => {
     const t = db.transaction(STORE, mode);
     const r = fn(t.objectStore(STORE));
-    r.onsuccess = () => resolve(r.result);
-    r.onerror = () => reject(r.error);
+    let result: T;
+    r.onsuccess = () => (result = r.result);
+    t.oncomplete = () => {
+      db.close();
+      resolve(result);
+    };
+    t.onerror = () => {
+      db.close();
+      reject(t.error || r.error);
+    };
+    t.onabort = () => {
+      db.close();
+      reject(t.error || new Error('Could not save the photo'));
+    };
   });
 };
 
@@ -68,6 +82,7 @@ export const compressPhoto = (file: Blob, maxSide = 1600, quality = 0.72): Promi
   });
 
 export const savePhoto = async (blob: Blob): Promise<string> => {
+  keepPhotosSafe();
   const id = `ph_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
   await tx('readwrite', (s) => s.put({ id, blob, createdAt: Date.now() }));
   keepPhotosSafe();

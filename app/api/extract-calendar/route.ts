@@ -163,7 +163,14 @@ Many academic calendar rows specify only a month or have a footnote saying date 
       }
     }
 
-    // Fallback for sample run or when API key is missing
+    // Sample data only when the sample was asked for. A failed read must never look like a real
+    // calendar (fake holidays would reach every student of a batch).
+    if (!isSample) {
+      return NextResponse.json(
+        { success: false, error: "Couldn't read this calendar. Try a clearer photo or the PDF, or add the dates by hand." },
+        { status: 422 }
+      );
+    }
     const today = new Date();
     const curYear = today.getFullYear();
     const curMonth = String(today.getMonth() + 1).padStart(2, '0');

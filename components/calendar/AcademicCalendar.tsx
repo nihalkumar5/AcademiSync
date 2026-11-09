@@ -1,5 +1,6 @@
 'use client';
 
+import { requestSignIn } from '@/components/auth/SignInPrompt';
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { CalendarImportModal } from './CalendarImportModal';
@@ -336,7 +337,7 @@ export const AcademicCalendar: React.FC = () => {
           <div className="page-actions">
             <button
               onClick={() => {
-                if (!isSignedIn) { router.push('/sign-in'); return; }
+                if (!isSignedIn) { requestSignIn({ title: 'Sign in to add to your calendar', body: 'Events you add are saved to your account and show up on every device.' }); return; }
                 setShowAddEventModal(true);
               }}
               className="btn btn-primary"
@@ -345,7 +346,7 @@ export const AcademicCalendar: React.FC = () => {
             </button>
             <button
               onClick={() => {
-                if (!isSignedIn) { router.push('/sign-in'); return; }
+                if (!isSignedIn) { requestSignIn({ title: 'Sign in to add to your calendar', body: 'Events you add are saved to your account and show up on every device.' }); return; }
                 setShowImportCalendarModal(true);
               }}
               className="btn btn-secondary"

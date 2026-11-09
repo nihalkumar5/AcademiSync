@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { logServerError } from '@/lib/errorUtils';
 import { getVerifiedUser } from '@/lib/serverAuth';
+import { subjectKeyOf } from '@/lib/classNotes';
 import { NoteError, addMine, addShared, deleteMine, deleteShared, listMine, listShared, whoIs } from '@/lib/server/classNotes';
 
 export const dynamic = 'force-dynamic';
@@ -21,10 +22,12 @@ export async function GET(req: Request) {
     const p = new URL(req.url).searchParams;
     const subjectId = p.get('subjectId') || '';
     const date = p.get('date') || undefined;
+    const subjectName = (p.get('subject') || '').trim().slice(0, 120) || undefined;
+    const subjectKey = subjectKeyOf(subjectName) || undefined;
     if (!subjectId || subjectId.length > 128 || subjectId.includes('/')) return NextResponse.json({ success: false, error: 'Missing subject' }, { status: 400, headers: NO_STORE });
     if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) return NextResponse.json({ success: false, error: 'Invalid date' }, { status: 400, headers: NO_STORE });
     const who = await whoIs(user.uid);
-    const [mine, shared] = await Promise.all([listMine(user.uid, subjectId, date), listShared(who, subjectId, date)]);
+    const [mine, shared] = await Promise.all([listMine(user.uid, subjectId, date, subjectKey, subjectName), listShared(who, subjectId, date, subjectKey, subjectName)]);
     return ok({ mine, shared, hasBatch: !!who.batchKey });
   } catch (err) {
     return fail(err, 'class-notes GET');

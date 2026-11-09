@@ -1,5 +1,6 @@
 'use client';
 
+import { requestSignIn } from '@/components/auth/SignInPrompt';
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { DayOfWeek, ClassSession, Subject } from '@/lib/types';
@@ -122,7 +123,7 @@ const StudentWeeklyTimetable: React.FC = () => {
 
   const handleAddForDay = (day: DayOfWeek) => {
     if (!isSignedIn) {
-      router.push('/sign-in');
+      requestSignIn({ title: 'Sign in to edit your timetable', body: 'Your classes are saved to your account, so they are on every device and reminders keep working.' });
       return;
     }
     setTargetAddDay(day);
@@ -132,7 +133,7 @@ const StudentWeeklyTimetable: React.FC = () => {
 
   const handleImportTimetable = () => {
     if (!isSignedIn) {
-      router.push('/sign-in');
+      requestSignIn({ title: 'Sign in to edit your timetable', body: 'Your classes are saved to your account, so they are on every device and reminders keep working.' });
       return;
     }
     setShowImportModal(true);
@@ -141,7 +142,13 @@ const StudentWeeklyTimetable: React.FC = () => {
   const handleJoinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isSignedIn) {
-      router.push('/sign-in');
+      requestSignIn({
+        title: 'Sign in to join your class',
+        body: 'Joining puts you on your class list, so your timetable arrives ready and every change your CR makes reaches you.',
+        beforeSignIn: () => {
+          if (inviteInput.trim()) localStorage.setItem('pending_join_invite', inviteInput.trim());
+        },
+      });
       return;
     }
 
@@ -182,7 +189,7 @@ const StudentWeeklyTimetable: React.FC = () => {
 
   const handleEditSession = (session: ClassSession) => {
     if (!isSignedIn) {
-      router.push('/sign-in');
+      requestSignIn({ title: 'Sign in to edit your timetable', body: 'Your classes are saved to your account, so they are on every device and reminders keep working.' });
       return;
     }
     if (!canModifySession(session)) {
@@ -317,7 +324,7 @@ const StudentWeeklyTimetable: React.FC = () => {
           if (sessions.length === 0) {
             return (
               <EmptyState
-                illustration="no-classes"
+                illustration="free-day"
                 title={`No classes on ${selectedMobileDay}`}
                 description="Take a break or schedule a class manually."
                 actionLabel="Add Class for this day"

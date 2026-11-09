@@ -7,15 +7,10 @@ import { HomeworkCard } from './HomeworkCard';
 import { HomeworkDetailModal } from './HomeworkDetailModal';
 import { AddHomeworkModal } from './AddHomeworkModal';
 import { HomeworkScanModal } from './HomeworkScanModal';
-import { GoogleClassroomSyncModal } from './GoogleClassroomSyncModal';
-import {
-  getStoredClassroomToken,
-  checkUnimportedClassroomAssignments,
-  getClassroomConnectionInfo,
-} from '@/lib/googleClassroom';
+import { ClassroomBridgeCard } from '@/components/classroom/ClassroomBridgeCard';
 import { ProposedBatchTasksVoting } from './ProposedBatchTasksVoting';
 import { EmptyState } from '../ui/EmptyState';
-import { Plus, Sparkles, Search, CheckSquare, X, GraduationCap, ArrowRight, Check } from '@/components/ui/icons';
+import { Plus, Sparkles, Search, CheckSquare, X, Check } from '@/components/ui/icons';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Capacitor } from '@capacitor/core';
@@ -47,53 +42,9 @@ export const HomeworkView: React.FC = () => {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showScanModal, setShowScanModal] = useState(false);
-  const [showClassroomModal, setShowClassroomModal] = useState(false);
-  const [classroomConnected, setClassroomConnected] = useState(false);
   const [editHomework, setEditHomework] = useState<Homework | null>(null);
   const [selectedDetailHomework, setSelectedDetailHomework] = useState<Homework | null>(null);
   const [prefilledData, setPrefilledData] = useState<Partial<Homework> | null>(null);
-  const [pilotPendingCount, setPilotPendingCount] = useState<number | null>(null);
-
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const info = getClassroomConnectionInfo();
-      setClassroomConnected(info.isConnected);
-    }
-  }, [showClassroomModal]);
-
-  // On-Open check for Batch Pilot
-  React.useEffect(() => {
-    if (!isPilot) return;
-
-    const token = getStoredClassroomToken();
-    if (!token) return;
-
-    // Rate-limit silent check to once every 15 mins per session
-    const lastCheck = Number(sessionStorage.getItem('last_classroom_pilot_check') || '0');
-    if (Date.now() - lastCheck < 15 * 60 * 1000) return;
-
-    let mounted = true;
-    sessionStorage.setItem('last_classroom_pilot_check', Date.now().toString());
-
-    checkUnimportedClassroomAssignments(token, subjects, homework)
-      .then((items) => {
-        if (mounted && items.length > 0) {
-          setPilotPendingCount(items.length);
-          showToast(
-            'New Classroom Tasks',
-            `Found ${items.length} new unbroadcasted assignment(s) for your batch.`,
-            'info'
-          );
-        }
-      })
-      .catch((err) => {
-        console.warn('Classroom silent check error:', err);
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, [isPilot, subjects, homework, showToast]);
 
   React.useEffect(() => {
     const handleTaskParam = (taskParam: string) => {
@@ -256,7 +207,7 @@ export const HomeworkView: React.FC = () => {
         {/* Large stacked heading with badge inline */}
         <div>
           <h2 className="page-title">
-            Tasks,<br />To-Do,<br />Pending
+            Assignments,<br />Labs,<br />Deadlines
           </h2>
           <div className="flex items-center gap-3 mt-5">
             <span className="tag bg-surface">
@@ -278,7 +229,7 @@ export const HomeworkView: React.FC = () => {
             className="btn btn-primary"
           >
             <Plus className="w-4 h-4" />
-            New Task
+            New assignment
           </button>
 
           <button
@@ -287,78 +238,10 @@ export const HomeworkView: React.FC = () => {
           >
             <Sparkles className="w-4 h-4" /> Magic Import
           </button>
-
-          <button
-            onClick={() => setShowClassroomModal(true)}
-            className={`btn btn-secondary ${
-              classroomConnected ? 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10' : ''
-            }`}
-          >
-            {classroomConnected ? (
-              <span className="relative flex h-2 w-2 shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-            ) : (
-              <GraduationCap className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-            )}
-            <span className="truncate">
-              Classroom<span className="hidden sm:inline">{classroomConnected ? ' Synced' : ' Sync'}</span>
-            </span>
-            {isPilot && (
-              <span className="shrink-0 text-[10px] leading-4 font-bold tracking-wide px-1 bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30">
-                PILOT
-              </span>
-            )}
-          </button>
-
         </div>
       </div>
 
-      {isPilot && (
-        pilotPendingCount && pilotPendingCount > 0 ? (
-          <div className="flex items-center justify-between p-3 border-2 border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/15 text-xs animate-in fade-in slide-in-from-top-1 w-full overflow-hidden">
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <span className="relative flex h-3 w-3 shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="font-bold text-fg text-[13px] leading-tight truncate">
-                  📢 {pilotPendingCount} New Assignment{pilotPendingCount > 1 ? 's' : ''} Detected!
-                </p>
-                <p className="text-muted text-[11px] mt-0.5 truncate">
-                  Ready to review and broadcast to your batch.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowClassroomModal(true)}
-              className="flex items-center gap-1.5 text-[12px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 h-9 cursor-pointer shrink-0 ml-2 shadow-xs"
-            >
-              Review & Push <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-3 p-3.5 border border-line bg-surface w-full">
-            <span className="w-10 h-10 shrink-0 flex items-center justify-center bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
-              <GraduationCap className="w-5 h-5" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[14px] font-semibold text-fg leading-tight">Pilot Bridge</p>
-              <p className="mt-0.5 text-[13px] text-muted leading-snug">
-                {classroomConnected ? 'Classroom connected. Share assignments with your batch.' : 'Sync Classroom assignments and share them with your batch.'}
-              </p>
-            </div>
-            <button
-              onClick={() => setShowClassroomModal(true)}
-              className="h-9 px-3.5 shrink-0 text-[13px] font-semibold border border-line-strong text-fg hover:bg-ink hover:text-on-ink transition-colors cursor-pointer"
-            >
-              Broadcast
-            </button>
-          </div>
-        )
-      )}
+      {isPilot && <ClassroomBridgeCard />}
 
       <ProposedBatchTasksVoting />
 
@@ -408,10 +291,10 @@ export const HomeworkView: React.FC = () => {
           <Search className="w-[18px] h-[18px] text-muted shrink-0" />
           <input
             type="text"
-            placeholder="Search tasks"
+            placeholder="Search assignments"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            aria-label="Search tasks" className="w-full bg-transparent text-[15px] text-fg placeholder:text-[#6B6B6B] dark:placeholder:text-[#A1A1AA] focus:outline-none"
+            aria-label="Search assignments" className="w-full bg-transparent text-[15px] text-fg placeholder:text-[#6B6B6B] dark:placeholder:text-[#A1A1AA] focus:outline-none"
           />
           {searchQuery && (
             <button
@@ -457,15 +340,15 @@ export const HomeworkView: React.FC = () => {
       {filtered.length === 0 ? (
         <div className="py-12 px-4">
           <EmptyState
-            illustration="tasks-done"
+            illustration={searchQuery ? 'search' : 'trophy'}
             title={searchQuery ? 'No matches' : 'All caught up'}
             note={!searchQuery && pendingCount === 0 ? 'Nothing pending. Go enjoy your evening!' : undefined}
             description={
               searchQuery
-                ? 'No tasks matched your search query.'
-                : 'Nothing here right now. Add a task to keep track of it.'
+                ? 'No assignments match your search.'
+                : 'Nothing due right now. Add one to keep track of it.'
             }
-            actionLabel="Add task"
+            actionLabel="Add assignment"
             onAction={() => {
               setEditHomework(null);
               setShowAddModal(true);
@@ -527,11 +410,6 @@ export const HomeworkView: React.FC = () => {
       <HomeworkScanModal
         isOpen={showScanModal}
         onClose={() => setShowScanModal(false)}
-      />
-
-      <GoogleClassroomSyncModal
-        isOpen={showClassroomModal}
-        onClose={() => setShowClassroomModal(false)}
       />
     </div>
   );

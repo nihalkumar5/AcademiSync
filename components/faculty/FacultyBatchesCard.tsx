@@ -1,5 +1,6 @@
 'use client';
 
+import { Illustration } from '@/components/ui/Illustration';
 import React, { useState } from 'react';
 import { useApp, sanitizeForFirestore } from '@/context/AppContext';
 import { FacultyLinkedBatch, StudentProfile } from '@/lib/types';
@@ -135,9 +136,7 @@ export const FacultyBatchesCard: React.FC<FacultyBatchesCardProps> = ({
 
       {linkedBatches.length === 0 ? (
         <div className="flex flex-col items-center text-center px-6 py-f5 border border-dashed border-line">
-          <span className="w-12 h-12 flex items-center justify-center bg-surface-2 border border-line-soft text-fg">
-            <Users className="w-5 h-5" />
-          </span>
+          <Illustration name="setup" className="h-[120px] w-auto" />
           <p className="mt-f3 text-[15px] font-semibold text-fg">No batches yet</p>
           <p className="mt-1 text-[14px] text-muted max-w-[280px]">Enter a batch code from the class&apos;s batch pilot.</p>
           <button

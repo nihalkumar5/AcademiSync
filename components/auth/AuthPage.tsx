@@ -31,6 +31,7 @@ import {
   ChevronLeft
 } from '@/components/ui/icons';
 import Link from 'next/link';
+import { Illustration, IllustrationName } from '@/components/ui/Illustration';
 
 import { getSanitizedErrorMessage, logServerError } from '@/lib/errorUtils';
 
@@ -55,6 +56,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
   const [errorMsg, setErrorMsg] = useState('');
   const [resetSent, setResetSent] = useState(false);
   const isNavigatingRef = React.useRef(false);
+  const [slide, setSlide] = useState(0);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    const t = setInterval(() => setSlide((i) => (i + 1) % SLIDES.length), 4500);
+    return () => clearInterval(t);
+  }, [slide]);
 
   const proceedAfterAuth = async () => {
     if (isNavigatingRef.current) return;
@@ -280,314 +288,409 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
     }
   };
 
+  // ---------- UI ----------
+  const isSignup = authMode === 'signup';
+  const title =
+    viewType === 'forgot_password'
+      ? 'Reset your password'
+      : viewType === 'email_form'
+      ? isSignup
+        ? 'Create your account'
+        : 'Log in with email'
+      : 'Your semester, sorted.';
+  const subtitle =
+    viewType === 'forgot_password'
+      ? "Enter the email you signed up with. We'll send you a link."
+      : viewType === 'email_form'
+      ? isSignup
+        ? 'Takes less than a minute.'
+        : 'Pick up right where you left off.'
+      : 'New here or coming back, continue the same way.';
+
+  const inputCls =
+    'w-full h-12 border border-line bg-surface text-fg px-4 text-[15px] rounded-none placeholder:text-faint focus:outline-none focus:border-fg transition-colors disabled:opacity-60';
+  const labelCls = 'text-[13px] font-semibold text-fg';
+
+  const slideNow = SLIDES[slide];
+
   return (
-    <div className="min-h-[100dvh] w-full flex flex-col justify-between items-center px-6 py-8 sm:py-12 bg-surface text-fg transition-colors selection:bg-[#111111] selection:text-white dark:selection:bg-white dark:selection:text-[#111111]">
-      
-      {/* Top Spacer for perfect optical centering */}
-      <div className="h-2 sm:h-8" />
-
-      {/* Main Container centered vertically */}
-      <div className="w-full max-w-[340px] flex flex-col items-center my-auto py-4">
-        
-        {/* Brand Logo (logo51.png) */}
-        <div className="mb-5 flex items-center justify-center">
-          <div className="w-[64px] h-[64px] rounded-[18px] overflow-hidden flex items-center justify-center shadow-sm border border-line bg-surface">
-            <img 
-              src="/logo51.png" 
-              alt="Intersemester Logo" 
-              className="w-full h-full object-cover scale-[1.75] select-none"
-            />
-          </div>
+    <div className="min-h-[100dvh] w-full bg-canvas text-fg lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+      {/* ===== Brand panel (desktop) ===== */}
+      <aside className="hidden lg:flex sheen-ink relative overflow-hidden bg-ink text-on-ink flex-col justify-between p-12 xl:p-16">
+        <div className="flex items-center gap-3">
+          <BrandMark />
+          <span className="text-[17px] font-semibold tracking-tight">Intersemester</span>
         </div>
 
-        {/* Title & Subtitle */}
-        <div className="text-center flex flex-col gap-1 mb-8">
-          <h1 className="text-[23px] sm:text-[25px] font-bold tracking-tight text-fg leading-snug">
-            {viewType === 'forgot_password'
-              ? 'Reset Password'
-              : 'Your Academic Workspace.'}
-          </h1>
-          <p className="text-[15px] font-medium text-muted">
-            {viewType === 'forgot_password'
-              ? 'Enter your email to recover your account'
-              : authMode === 'signup'
-              ? 'Create your Intersemester account'
-              : 'Log in to your Intersemester account'}
-          </p>
+        <div className="max-w-[520px]">
+          <div className="bg-surface border border-white/10 p-8 flex items-center justify-center h-[300px]">
+            <Illustration key={slideNow.art} name={slideNow.art} className="h-full w-auto auth-fade" />
+          </div>
+          <p className="mt-8 text-[13px] font-semibold uppercase tracking-[0.12em] opacity-60">{slideNow.kicker}</p>
+          <h2 className="mt-2 text-[34px] xl:text-[40px] leading-[1.08] tracking-tight">{slideNow.title}</h2>
+          <p className="mt-3 text-[16px] leading-[24px] opacity-70 max-w-[440px]">{slideNow.body}</p>
+          <SlideDots active={slide} onPick={setSlide} onInk />
         </div>
 
-        {/* Error Alert Box */}
-        {errorMsg && (
-          <div className="w-full mb-5 bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 p-3 rounded-none text-red-600 dark:text-rose-400 text-[13px] font-medium text-center leading-relaxed">
-            {errorMsg}
+        <p className="text-[13px] opacity-50">Made for students, faculty and campus teams.</p>
+      </aside>
+
+      {/* ===== Form side ===== */}
+      <main className="min-h-[100dvh] flex flex-col">
+        {/* Top bar */}
+        <header className="flex items-center justify-between px-5 sm:px-8 pt-[max(env(safe-area-inset-top),20px)] pb-2">
+          <div className="flex items-center gap-2.5 lg:invisible">
+            <BrandMark small />
+            <span className="text-[15px] font-semibold tracking-tight">Intersemester</span>
           </div>
-        )}
+          <Link href="/contact" className="text-[13px] font-medium text-muted hover:text-fg">
+            Need help?
+          </Link>
+        </header>
 
-        {/* VIEW 1: Main Providers Stack (Exact Notion Stack) */}
-        {viewType === 'providers' && (
-          <div className="w-full flex flex-col gap-2.5">
-            
-            {/* 1. Google Button */}
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              disabled={loading}
-              className="w-full h-[52px] px-4 rounded-none border border-line-strong bg-ink hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-between font-semibold text-[15px] text-on-ink shadow-sm cursor-pointer disabled:opacity-60"
-            >
-              <div className="w-7 h-7 bg-white flex items-center justify-center">
-                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24">
-                  <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.57 14.97 1 12 1 7.35 1 3.37 3.68 1.34 7.6l3.96 3.07C6.27 7.37 8.91 5.04 12 5.04z"/>
-                  <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.35H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.73 2.89c2.18-2.01 3.7-4.99 3.7-8.63z"/>
-                  <path fill="#FBBC05" d="M5.3 14.33l-3.96 3.07C3.37 21.32 7.35 24 12 24c3.24 0 5.95-1.08 7.93-2.91l-3.73-2.89c-1.03.69-2.35 1.1-4.2 1.1-3.09 0-5.73-2.33-6.7-5.54L5.3 14.33z"/>
-                  <path fill="#34A853" d="M12 4.49c-1.85 0-3.17.41-4.2 1.1L4.07 2.7C6.05.88 8.76-.2 12-.2c4.65 0 8.63 2.68 10.66 6.6l-3.96 3.07c-.97-3.21-3.61-5.54-6.7-5.54z" transform="translate(0 .2)"/>
-                </svg>
-              </div>
-              <span className="flex-1 text-center font-semibold">Continue with Google</span>
-              <div className="w-7" />
-            </button>
+        <div className="flex-1 flex flex-col items-center px-5 sm:px-8 pb-8">
+          <div className="w-full max-w-[400px] flex flex-col my-auto">
+            {/* Illustration (phones and tablets) */}
+            {viewType === 'providers' && (
+              <section className="lg:hidden mt-3 border border-line bg-surface">
+                <div className="h-[184px] flex items-center justify-center px-6 pt-5 bg-surface-2/60">
+                  <Illustration key={slideNow.art} name={slideNow.art} className="h-full w-auto auth-fade" />
+                </div>
+                <div className="flex items-center justify-between gap-3 px-4 py-3 min-h-[62px] border-t border-line">
+                  <p key={slideNow.title} className="text-[13px] leading-[18px] text-fg font-medium auth-fade">
+                    {slideNow.short}
+                  </p>
+                  <SlideDots active={slide} onPick={setSlide} />
+                </div>
+              </section>
+            )}
 
-            {/* Secondary options */}
-            <div className="flex items-center gap-3 my-1.5" aria-hidden="true">
-              <div className="flex-1 h-px bg-surface-3" />
-              <span className="text-[12px] text-muted">Or</span>
-              <div className="flex-1 h-px bg-surface-3" />
+            {viewType !== 'providers' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setViewType(viewType === 'forgot_password' ? 'email_form' : 'providers');
+                  setErrorMsg('');
+                  setResetSent(false);
+                }}
+                className="self-start -ml-1 mt-2 h-9 px-1 inline-flex items-center gap-1 text-[14px] font-medium text-muted hover:text-fg cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" /> Back
+              </button>
+            )}
+
+            {/* Heading */}
+            <div className={viewType === 'providers' ? 'mt-7' : 'mt-4'}>
+              <h1 className="text-[30px] sm:text-[34px] leading-[1.1] tracking-tight text-fg">{title}</h1>
+              <p className="mt-2 text-[15px] leading-[22px] text-muted">{subtitle}</p>
             </div>
 
-            {/* 3. GitHub Button */}
-            <button
-              type="button"
-              onClick={() => handleOAuthLogin('github')}
-              disabled={loading}
-              className="w-full h-[48px] px-4 rounded-none border border-line bg-surface hover:bg-surface-2 active:scale-[0.99] transition-all flex items-center justify-between font-semibold text-[15px] text-fg shadow-sm cursor-pointer disabled:opacity-60"
-            >
-              <div className="w-6 flex items-center justify-center">
-                <svg className="w-[18px] h-[18px] fill-current" viewBox="0 0 24 24">
-                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-                </svg>
+            {/* Error */}
+            {errorMsg && (
+              <div role="alert" className="mt-4 flex items-start gap-2.5 border border-danger/30 bg-danger-soft px-3.5 py-3 text-[13px] leading-[19px] text-danger">
+                <span className="mt-[5px] w-1.5 h-1.5 shrink-0 bg-danger" />
+                <span>{errorMsg}</span>
               </div>
-              <span className="flex-1 text-center font-medium">Continue with GitHub</span>
-              <div className="w-6" />
-            </button>
+            )}
 
-            {/* 5. Direct Email Button */}
-            <button
-              type="button"
-              onClick={() => { setViewType('email_form'); setErrorMsg(''); }}
-              className="w-full h-[48px] px-4 rounded-none border border-line bg-surface hover:bg-surface-2 active:scale-[0.99] transition-all flex items-center justify-between font-semibold text-[15px] text-fg shadow-sm cursor-pointer"
-            >
-              <div className="w-6 flex items-center justify-center text-muted">
-                <Mail className="w-[18px] h-[18px]" />
-              </div>
-              <span className="flex-1 text-center font-medium">Continue with Email</span>
-              <div className="w-6" />
-            </button>
-
-          </div>
-        )}
-
-        {/* VIEW 2: Email Form (Expandable View) */}
-        {viewType === 'email_form' && (
-          <div className="w-full flex flex-col gap-4">
-            <form onSubmit={handleEmailSubmit} className="flex flex-col gap-3">
-              {authMode === 'signup' && (
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Full Name (e.g. Rahul Sharma)"
-                  required
-                  autoFocus
-                  disabled={loading}
-                  className="w-full h-12 border border-line bg-surface text-fg px-4 text-[15px] rounded-none placeholder:text-black/40 dark:placeholder:text-[#71717A] focus:outline-none focus:border-line-strong transition-all shadow-sm"
-                />
-              )}
-
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@gmail.com"
-                required
-                autoFocus={authMode === 'signin'}
-                disabled={loading}
-                className="w-full h-12 border border-line bg-surface text-fg px-4 text-[15px] rounded-none placeholder:text-black/40 dark:placeholder:text-[#71717A] focus:outline-none focus:border-line-strong transition-all shadow-sm"
-              />
-
-              <div className="relative flex items-center">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={authMode === 'signup' ? 'Create Password (min 6 chars)' : 'Password'}
-                  required
-                  disabled={loading}
-                  className="w-full h-12 border border-line bg-surface text-fg pl-4 pr-11 text-[15px] rounded-none placeholder:text-black/40 dark:placeholder:text-[#71717A] focus:outline-none focus:border-line-strong transition-all shadow-sm"
-                />
+            {/* ---- Providers ---- */}
+            {viewType === 'providers' && (
+              <div className="mt-5 flex flex-col gap-2.5">
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  tabIndex={-1}
-                  className="absolute right-3.5 text-muted hover:text-fg transition-colors cursor-pointer"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-
-              {authMode === 'signin' && (
-                <div className="flex justify-end -mt-0.5">
-                  <button
-                    type="button"
-                    onClick={() => setViewType('forgot_password')}
-                    className="text-[13px] font-medium text-muted hover:text-fg hover:underline cursor-pointer"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn btn-primary w-full mt-1"
-              >
-                {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    <span>{authMode === 'signup' ? 'Continue with Email' : 'Log In'}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </form>
-
-            <button
-              type="button"
-              onClick={() => { setViewType('providers'); setErrorMsg(''); }}
-              className="w-full h-9 text-[13px] font-medium text-muted hover:text-fg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span>All sign-in options</span>
-            </button>
-          </div>
-        )}
-
-        {/* VIEW 3: Forgot Password Form */}
-        {viewType === 'forgot_password' && (
-          <div className="w-full flex flex-col gap-4">
-            {resetSent ? (
-              <div className="flex flex-col items-center gap-3 p-5 bg-surface border border-line rounded-none text-center shadow-sm">
-                <CheckCircle2 className="w-8 h-8 text-emerald-500" />
-                <div className="flex flex-col gap-1">
-                  <span className="text-[15px] font-bold text-fg">Reset Link Sent!</span>
-                  <p className="text-[13px] text-muted leading-relaxed">
-                    We sent password instructions to <span className="font-semibold text-fg">{email}</span>.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => { setResetSent(false); setViewType('email_form'); setAuthMode('signin'); }}
-                  className="mt-2 w-full h-11 bg-ink text-on-ink font-semibold text-[14px] rounded-none hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
-                >
-                  Back to Sign In
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleResetPassword} className="flex flex-col gap-3">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your registered email..."
-                  required
-                  autoFocus
+                  onClick={handleGoogleLogin}
                   disabled={loading}
-                  className="w-full h-12 border border-line bg-surface text-fg px-4 text-[15px] rounded-none placeholder:text-black/40 dark:placeholder:text-[#71717A] focus:outline-none focus:border-line-strong transition-all shadow-sm"
-                />
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn btn-primary w-full mt-1"
+                  className="btn btn-primary btn-lg w-full relative disabled:opacity-60"
                 >
                   {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
                     <>
-                      <Mail className="w-4 h-4" />
-                      <span>Send Reset Link</span>
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-white flex items-center justify-center">
+                        <GoogleG />
+                      </span>
+                      <span>Continue with Google</span>
                     </>
                   )}
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => { setViewType('email_form'); setErrorMsg(''); }}
-                  className="w-full h-9 text-[13px] font-medium text-muted hover:text-fg transition-colors flex items-center justify-center gap-1.5 cursor-pointer mt-1"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span>Back to Log In</span>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => handleOAuthLogin('github')}
+                    disabled={loading}
+                    className="btn btn-secondary h-12 disabled:opacity-60"
+                  >
+                    <GitHubMark />
+                    <span>GitHub</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setViewType('email_form');
+                      setErrorMsg('');
+                    }}
+                    disabled={loading}
+                    className="btn btn-secondary h-12 disabled:opacity-60"
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span>Email</span>
+                  </button>
+                </div>
+
+              </div>
+            )}
+
+            {/* ---- Email form ---- */}
+            {viewType === 'email_form' && (
+              <form onSubmit={handleEmailSubmit} className="mt-5 flex flex-col gap-4" noValidate>
+                {isSignup && (
+                  <label className="flex flex-col gap-1.5">
+                    <span className={labelCls}>Full name</span>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Rahul Sharma"
+                      autoComplete="name"
+                      required
+                      autoFocus
+                      disabled={loading}
+                      className={inputCls}
+                    />
+                  </label>
+                )}
+
+                <label className="flex flex-col gap-1.5">
+                  <span className={labelCls}>Email</span>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@college.edu"
+                    autoComplete="email"
+                    inputMode="email"
+                    required
+                    autoFocus={!isSignup}
+                    disabled={loading}
+                    className={inputCls}
+                  />
+                </label>
+
+                <label className="flex flex-col gap-1.5">
+                  <span className="flex items-center justify-between">
+                    <span className={labelCls}>Password</span>
+                    {!isSignup && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setViewType('forgot_password');
+                          setErrorMsg('');
+                        }}
+                        className="text-[13px] font-medium text-muted hover:text-fg underline-offset-4 hover:underline cursor-pointer"
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+                  </span>
+                  <span className="relative flex items-center">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder={isSignup ? 'At least 6 characters' : 'Your password'}
+                      autoComplete={isSignup ? 'new-password' : 'current-password'}
+                      required
+                      disabled={loading}
+                      className={`${inputCls} pr-12`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      className="absolute right-0 h-12 w-12 flex items-center justify-center text-muted hover:text-fg cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </span>
+                  {isSignup && password.length > 0 && password.length < 6 && (
+                    <span className="text-[12px] text-muted">{6 - password.length} more character{6 - password.length === 1 ? '' : 's'} to go</span>
+                  )}
+                </label>
+
+                <button type="submit" disabled={loading} className="btn btn-primary btn-lg w-full mt-1">
+                  {loading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <span>{isSignup ? 'Create account' : 'Log in'}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
+
+                <p className="text-center text-[14px] text-muted">
+                  {isSignup ? 'Already have an account?' : 'New here?'}{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode(isSignup ? 'signin' : 'signup');
+                      setErrorMsg('');
+                    }}
+                    className="font-semibold text-fg underline underline-offset-4 cursor-pointer"
+                  >
+                    {isSignup ? 'Log in' : 'Create an account'}
+                  </button>
+                </p>
               </form>
             )}
-          </div>
-        )}
 
-        {/* Mode Switcher (New user? Sign up / Already have an account? Log in) */}
-        {viewType !== 'forgot_password' && (
-          <div className="mt-6 text-center">
-            {authMode === 'signin' ? (
-              <p className="text-[14px] text-muted">
-                New user?{' '}
-                <button
-                  type="button"
-                  onClick={() => { setAuthMode('signup'); setErrorMsg(''); }}
-                  className="font-semibold text-fg underline underline-offset-4 hover:opacity-80 transition-opacity cursor-pointer"
-                >
-                  Sign up
-                </button>
-              </p>
-            ) : (
-              <p className="text-[14px] text-muted">
-                Already have an account?{' '}
-                <button
-                  type="button"
-                  onClick={() => { setAuthMode('signin'); setErrorMsg(''); }}
-                  className="font-semibold text-fg underline underline-offset-4 hover:opacity-80 transition-opacity cursor-pointer"
-                >
-                  Log in
-                </button>
-              </p>
+            {/* ---- Forgot password ---- */}
+            {viewType === 'forgot_password' && (
+              <div className="mt-5">
+                {resetSent ? (
+                  <div className="border border-line bg-surface p-5 flex flex-col items-center text-center">
+                    <Illustration name="signin" className="h-[120px] w-auto" />
+                    <p className="mt-4 text-[16px] font-semibold text-fg">Check your inbox</p>
+                    <p className="mt-1 text-[14px] leading-[21px] text-muted">
+                      We sent a reset link to <span className="font-semibold text-fg break-all">{email}</span>.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setResetSent(false);
+                        setViewType('email_form');
+                        setAuthMode('signin');
+                      }}
+                      className="btn btn-primary w-full mt-5"
+                    >
+                      Back to log in
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleResetPassword} className="flex flex-col gap-4" noValidate>
+                    <label className="flex flex-col gap-1.5">
+                      <span className={labelCls}>Email</span>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@college.edu"
+                        autoComplete="email"
+                        inputMode="email"
+                        required
+                        autoFocus
+                        disabled={loading}
+                        className={inputCls}
+                      />
+                    </label>
+                    <button type="submit" disabled={loading} className="btn btn-primary btn-lg w-full">
+                      {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Send reset link</span>}
+                    </button>
+                  </form>
+                )}
+              </div>
             )}
+
+            <p className="mt-7 text-[12px] leading-[18px] text-muted">
+              By continuing you agree to our{' '}
+              <Link href="/terms" className="text-fg underline underline-offset-2">
+                Terms
+              </Link>{' '}
+              and{' '}
+              <Link href="/privacy" className="text-fg underline underline-offset-2">
+                Privacy Policy
+              </Link>
+              .
+            </p>
           </div>
-        )}
-
-        {/* Terms Disclaimer */}
-        <p className="mt-8 text-center text-[12px] text-muted leading-relaxed max-w-[280px]">
-          By continuing, you acknowledge that you understand and agree to the{' '}
-          <Link href="/terms" className="underline underline-offset-2 hover:text-fg">
-            Terms & Conditions
-          </Link>{' '}
-          and{' '}
-          <Link href="/privacy" className="underline underline-offset-2 hover:text-fg">
-            Privacy Policy
-          </Link>
-          .
-        </p>
-
-      </div>
-
-      {/* Bottom Footer (Exact Notion Footer) */}
-      <div className="w-full max-w-[340px] flex flex-col items-center gap-2 mt-12 pb-2 text-[12px] text-muted">
-        <div className="flex items-center gap-4">
-          <Link href="/privacy" className="hover:underline">Privacy & terms</Link>
-          <span>•</span>
-          <Link href="/contact" className="hover:underline">Need help?</Link>
         </div>
-        <span className="text-[11px] opacity-70">© 2026 Intersemester Labs Inc.</span>
-      </div>
 
+        <footer className="px-5 sm:px-8 pb-[max(env(safe-area-inset-bottom),20px)] flex items-center justify-between text-[12px] text-faint">
+          <span>© 2026 Intersemester</span>
+          <span className="flex items-center gap-4">
+            <Link href="/privacy" className="hover:text-fg">Privacy</Link>
+            <Link href="/terms" className="hover:text-fg">Terms</Link>
+          </span>
+        </footer>
+      </main>
+
+      <style>{`
+        .auth-fade { animation: authFade .45s ease both; }
+        @keyframes authFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .auth-fade { animation: none; } }
+      `}</style>
     </div>
   );
 };
 
+// ---------- Pieces ----------
+const SLIDES: { art: IllustrationName; kicker: string; title: string; body: string; short: string }[] = [
+  {
+    art: 'attendance',
+    kicker: 'Attendance',
+    title: 'Know exactly how many classes you can skip.',
+    body: "Straight from your teacher's register. No maths, no guessing before the 75% line.",
+    short: 'Know how many classes you can still skip.',
+  },
+  {
+    art: 'friends',
+    kicker: 'Friends',
+    title: 'See when your friends are free.',
+    body: 'Add classmates with a QR code. Free time shows up on its own, straight from their timetable.',
+    short: 'See when your friends are free.',
+  },
+  {
+    art: 'papers',
+    kicker: 'Question papers',
+    title: 'Past papers from your own branch.',
+    body: 'Shared by your seniors, named neatly and easy to search before exams.',
+    short: 'Past papers from your own branch.',
+  },
+  {
+    art: 'notes',
+    kicker: 'Class notes',
+    title: 'Snap the board. Find it later.',
+    body: 'Every photo and note is saved to the class it came from, so nothing gets lost in your gallery.',
+    short: 'Snap the board, find it by class later.',
+  },
+];
+
+const SlideDots: React.FC<{ active: number; onPick: (i: number) => void; onInk?: boolean }> = ({ active, onPick, onInk }) => (
+  <div className={`flex items-center gap-1.5 ${onInk ? 'mt-8' : 'shrink-0'}`}>
+    {SLIDES.map((s, i) => (
+      <button
+        key={s.art}
+        type="button"
+        onClick={() => onPick(i)}
+        aria-label={`Show: ${s.kicker}`}
+        aria-current={i === active}
+        className={`h-1.5 transition-all cursor-pointer ${i === active ? 'w-5' : 'w-1.5'} ${
+          onInk ? (i === active ? 'bg-on-ink' : 'bg-on-ink/30') : i === active ? 'bg-fg' : 'bg-line-strong'
+        }`}
+      />
+    ))}
+  </div>
+);
+
+const BrandMark: React.FC<{ small?: boolean }> = ({ small }) => (
+  <span className={`${small ? 'w-8 h-8' : 'w-10 h-10'} overflow-hidden bg-white border border-line flex items-center justify-center shrink-0`}>
+    {/* eslint-disable-next-line @next/next/no-img-element */}
+    <img src="/logo51.png" alt="" className="w-full h-full object-cover scale-[1.75] select-none" draggable={false} />
+  </span>
+);
+
+const GoogleG = () => (
+  <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" aria-hidden="true">
+    <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.57 14.97 1 12 1 7.35 1 3.37 3.68 1.34 7.6l3.96 3.07C6.27 7.37 8.91 5.04 12 5.04z" />
+    <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.35H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.73 2.89c2.18-2.01 3.7-4.99 3.7-8.63z" />
+    <path fill="#FBBC05" d="M5.3 14.33l-3.96 3.07C3.37 21.32 7.35 24 12 24c3.24 0 5.95-1.08 7.93-2.91l-3.73-2.89c-1.03.69-2.35 1.1-4.2 1.1-3.09 0-5.73-2.33-6.7-5.54L5.3 14.33z" />
+    <path fill="#34A853" d="M12 4.49c-1.85 0-3.17.41-4.2 1.1L4.07 2.7C6.05.88 8.76-.2 12-.2c4.65 0 8.63 2.68 10.66 6.6l-3.96 3.07c-.97-3.21-3.61-5.54-6.7-5.54z" transform="translate(0 .2)" />
+  </svg>
+);
+
+const GitHubMark = () => (
+  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+  </svg>
+);

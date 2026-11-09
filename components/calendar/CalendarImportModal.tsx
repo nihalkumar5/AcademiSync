@@ -156,7 +156,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
 
   const handleSaveConfirmed = () => {
     const expandedEvents: Omit<AcademicEvent, 'id'>[] = [];
-    const milestoneRegex = /convocation|commencement|inauguration|orientation|re-opening|foundation|declaration|result|submission|deadline|registration|fee|senate|meeting|alumni|holiday/i;
+    const milestoneRegex = /convocation|commencement|inauguration|orientation|re-opening|foundation|declaration|result|submission|deadline|registration|fee|senate|meeting|alumni/i;
 
     extractedEvents.forEach((ev) => {
       const startStr = ev.startDate || ev.date || getTodayDateString();
@@ -179,10 +179,12 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
 
       const diffDays = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
       const isMilestone = milestoneRegex.test(ev.title || '');
-      const isExamOrRecess = ev.type === 'exam' || /exam|test|viva|quiz|vacation|recess|break|fest/i.test(ev.title || '');
+      const isHoliday = ev.type === 'holiday' || /vacation|recess|break/i.test(ev.title || '');
+      const isExam = ev.type === 'exam' || /exam|test|viva/i.test(ev.title || '');
 
-      // Milestones, non-exam/non-vacations, or spans > 14 days must NEVER spam daily calendar entries
-      if (isMilestone || !isExamOrRecess || diffDays > 14) {
+      // Only holidays (up to 2 months, e.g. winter vacation) and exam periods (up to 3 weeks) get one
+      // entry per day; that's all Home reacts to. Every other event stays a single entry.
+      if (isMilestone || !((isHoliday && diffDays <= 62) || (isExam && diffDays <= 21))) {
         const rangeNote = `(Span: ${startStr} to ${endStr})`;
         const updatedDesc = ev.description ? `${rangeNote} ${ev.description}` : rangeNote;
         expandedEvents.push({

@@ -1,5 +1,6 @@
 'use client';
 
+import { Illustration } from '@/components/ui/Illustration';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -269,7 +270,7 @@ export const CommandPalette: React.FC = () => {
             <div className="max-h-[350px] overflow-y-auto p-2 space-y-1">
               {filtered.length === 0 ? (
                 <div className="py-12 flex flex-col items-center justify-center gap-2 text-center text-[#8A8A88] dark:text-[#A1A1AA]">
-                  <Sparkles className="w-5 h-5 opacity-60" strokeWidth={1.5} />
+                  <Illustration name="search" className="h-[90px] w-auto" />
                   <p className="text-xs font-semibold">No results found for &ldquo;{query}&rdquo;</p>
                 </div>
               ) : (

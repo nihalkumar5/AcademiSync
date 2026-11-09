@@ -83,8 +83,9 @@ export const Header: React.FC = () => {
     timetable: 'Timetable',
     exams: 'Exams',
     papers: 'Question papers',
+    notices: 'Campus notices',
     friends: 'Friends',
-    homework: isFacultyUser ? 'Assignments' : 'Tasks',
+    homework: 'Assignments',
     carry: isFacultyUser ? 'Batches' : 'Bag',
     routines: 'Routines',
     attendance: 'Attendance',
@@ -134,7 +135,7 @@ export const Header: React.FC = () => {
         {
           title: 'Create',
           items: [
-            { label: 'New task', hint: 'Homework, project or submission', icon: CheckSquare, tone: TONE.indigo, run: () => setShowAddHwModal(true) },
+            { label: 'New assignment', hint: 'Homework, lab or submission', icon: CheckSquare, tone: TONE.indigo, run: () => setShowAddHwModal(true) },
             { label: 'Scan homework', hint: 'Snap a photo, AI fills it in', icon: Sparkles, tone: TONE.violet, run: () => setShowHwScanModal(true) },
             { label: 'New routine', hint: 'Study, gym or sleep reminders', icon: Repeat, tone: TONE.teal, run: () => goAndOpen('routines', 'routines:new') },
           ],

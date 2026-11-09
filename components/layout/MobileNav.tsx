@@ -19,13 +19,14 @@ import {
   UserCheck,
   GraduationCap,
   FileText,
+  Megaphone,
 } from '@/components/ui/icons';
 import { useApp, ActiveView } from '@/context/AppContext';
 import { dedupeNotifications } from '@/lib/notificationDedupe';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 
-type MoreItem = { id: ActiveView; label: string; hint: string; icon: React.ReactNode; badge?: number };
+type MoreItem = { id: ActiveView; label: string; short?: string; hint: string; icon: React.ReactNode; badge?: number };
 
 // Soft tinted tiles for the More sheet: pastel fill + deeper ink of the same hue (dark mode uses a
 // low-alpha fill and a lighter ink so they glow without shouting). Full class strings so Tailwind keeps them.
@@ -40,6 +41,7 @@ const MORE_TONES: Record<string, string> = {
   calendar: 'bg-sky-50 text-sky-700 border-sky-200/70 dark:bg-sky-400/10 dark:text-sky-300 dark:border-sky-400/20',
   faculty: 'bg-violet-50 text-violet-700 border-violet-200/70 dark:bg-violet-400/10 dark:text-violet-300 dark:border-violet-400/20',
   subjects: 'bg-emerald-50 text-emerald-700 border-emerald-200/70 dark:bg-emerald-400/10 dark:text-emerald-300 dark:border-emerald-400/20',
+  notices: 'bg-blue-50 text-blue-700 border-blue-200/70 dark:bg-blue-400/10 dark:text-blue-300 dark:border-blue-400/20',
   notifications: 'bg-indigo-50 text-indigo-700 border-indigo-200/70 dark:bg-indigo-400/10 dark:text-indigo-300 dark:border-indigo-400/20',
   settings: 'bg-stone-100 text-stone-700 border-stone-200 dark:bg-white/[0.06] dark:text-stone-300 dark:border-white/10',
 };
@@ -66,38 +68,62 @@ export const MobileNav: React.FC = () => {
     ...(isFaculty ? [{ id: 'attendance' as ActiveView, label: 'Attendance', icon: <UserCheck className="w-5 h-5" /> }] : []),
     {
       id: 'homework',
-      label: isFaculty ? 'Assignments' : 'Tasks',
+      label: 'Assignments',
       icon: <CheckSquare className="w-5 h-5" />,
       badge: !isFaculty && pendingHomework > 0 ? pendingHomework : undefined,
     },
     ...(isFaculty ? [] : [{ id: 'routines' as ActiveView, label: 'Routines', icon: <Repeat className="w-5 h-5" />, badge: routinesLeftToday || undefined }]),
   ];
 
-  // Everything that isn't a daily destination lives one tap away under "More"
-  const moreItems: MoreItem[] = [
-    ...(isFaculty
-      ? [
-          { id: 'carry' as ActiveView, label: 'Batches', hint: 'Linked batches & class codes', icon: <Users className="w-5 h-5" /> },
-          { id: 'routines' as ActiveView, label: 'Routines', hint: 'Your reminders & repeating to-dos', icon: <Repeat className="w-5 h-5" />, badge: routinesLeftToday || undefined },
-          { id: 'papers' as ActiveView, label: 'Question papers', hint: 'Past papers for your college', icon: <FileText className="w-5 h-5" /> },
-        ]
-      : [
-          { id: 'friends' as ActiveView, label: 'Friends', hint: "See who's free right now", icon: <Users className="w-5 h-5" /> },
-          { id: 'attendance' as ActiveView, label: 'Attendance', hint: 'See how many classes you can skip', icon: <UserCheck className="w-5 h-5" /> },
-        ]),
-    ...(isFaculty ? [] : [
-      { id: 'exams' as ActiveView, label: 'Exams', hint: 'Dates, rooms & countdowns', icon: <ClipboardList className="w-5 h-5" />, badge: examsThisWeek || undefined },
-      { id: 'papers' as ActiveView, label: 'Question papers', hint: 'Past papers of your branch', icon: <FileText className="w-5 h-5" /> },
-      { id: 'mess' as ActiveView, label: 'Mess Menu', hint: "Today's meals & timings", icon: <Utensils className="w-5 h-5" /> },
-    ]),
-    { id: 'calendar', label: 'Academic Calendar', hint: 'Holidays, events & breaks', icon: <CalendarRange className="w-5 h-5" /> },
-    ...(isFaculty ? [] : [
-      { id: 'faculty' as ActiveView, label: 'Faculty', hint: 'Your teachers & campus faculty', icon: <GraduationCap className="w-5 h-5" /> },
-      { id: 'subjects' as ActiveView, label: 'Subjects', hint: 'Faculty, rooms & what to carry', icon: <BookOpen className="w-5 h-5" /> },
-    ]),
-    { id: 'notifications', label: 'Notifications', hint: 'Batch alerts & reminders', icon: <Bell className="w-5 h-5" />, badge: unreadNotifs || undefined },
-    { id: 'settings', label: 'Profile & Settings', hint: 'Account, batch & preferences', icon: <User className="w-5 h-5" /> },
-  ];
+  // Everything that isn't a daily destination lives one tap away under "More".
+  // Grouped so the eye finds things by purpose: what's urgent for studies first, then daily campus
+  // life, then people. Notifications and Profile already sit in the header, so they're not repeated.
+  type MoreGroup = { label: string; items: MoreItem[] };
+  const moreGroups: MoreGroup[] = isFaculty
+    ? [
+        {
+          label: 'Teaching',
+          items: [
+            { id: 'carry', label: 'Batches', hint: 'Linked batches & class codes', icon: <Users className="w-5 h-5" /> },
+            { id: 'papers', label: 'Question papers', short: 'Papers', hint: 'Past papers for your college', icon: <FileText className="w-5 h-5" /> },
+            { id: 'routines', label: 'Routines', hint: 'Your reminders & repeating to-dos', icon: <Repeat className="w-5 h-5" />, badge: routinesLeftToday || undefined },
+          ],
+        },
+        {
+          label: 'Campus',
+          items: [
+            { id: 'notices', label: 'Campus notices', short: 'Notices', hint: 'Events, deadlines & offers', icon: <Megaphone className="w-5 h-5" /> },
+            { id: 'calendar', label: 'Academic calendar', short: 'Calendar', hint: 'Holidays, exams & breaks', icon: <CalendarRange className="w-5 h-5" /> },
+          ],
+        },
+      ]
+    : [
+        {
+          label: 'Studies',
+          items: [
+            { id: 'attendance', label: 'Attendance', hint: 'See how many classes you can skip', icon: <UserCheck className="w-5 h-5" /> },
+            { id: 'exams', label: 'Exams', hint: 'Dates, rooms & countdowns', icon: <ClipboardList className="w-5 h-5" />, badge: examsThisWeek || undefined },
+            { id: 'papers', label: 'Question papers', short: 'Papers', hint: 'Past papers of your branch', icon: <FileText className="w-5 h-5" /> },
+          ],
+        },
+        {
+          label: 'Campus',
+          items: [
+            { id: 'mess', label: 'Mess menu', short: 'Mess', hint: "Today's meals & timings", icon: <Utensils className="w-5 h-5" /> },
+            { id: 'notices', label: 'Campus notices', short: 'Notices', hint: 'Events, deadlines & offers', icon: <Megaphone className="w-5 h-5" /> },
+            { id: 'calendar', label: 'Academic calendar', short: 'Calendar', hint: 'Holidays, exams & breaks', icon: <CalendarRange className="w-5 h-5" /> },
+          ],
+        },
+        {
+          label: 'People & classes',
+          items: [
+            { id: 'subjects', label: 'Subjects', hint: 'Rooms, teachers & what to carry', icon: <BookOpen className="w-5 h-5" /> },
+            { id: 'faculty', label: 'Faculty', hint: 'Your teachers & campus faculty', icon: <GraduationCap className="w-5 h-5" /> },
+            { id: 'friends', label: 'Friends', hint: "See who's free right now", icon: <Users className="w-5 h-5" /> },
+          ],
+        },
+      ];
+  const moreItems: MoreItem[] = moreGroups.flatMap((g) => g.items);
 
   const isMoreActive = moreItems.some((item) => item.id === activeView);
   const moreBadge = moreItems.reduce((sum, item) => sum + (item.badge || 0), 0);
@@ -169,49 +195,60 @@ export const MobileNav: React.FC = () => {
               role="dialog"
               aria-modal="true"
               aria-label="More sections"
-              className="md:hidden fixed left-0 right-0 bottom-0 z-[39] bg-surface border-t border-line pt-3 px-4"
+              className="md:hidden fixed left-0 right-0 bottom-0 z-[39] bg-surface border-t border-line pt-[13px] px-[21px]"
               style={{ paddingBottom: 'calc(max(calc(env(safe-area-inset-bottom, 0px) + 8px), 20px) + 68px)' }}
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 32, stiffness: 340 }}
             >
-              <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[#D9D9D6] dark:bg-white/15" />
-              <p className="text-[12px] font-bold text-muted mb-2 px-1">More</p>
-              <ul className="max-w-md mx-auto divide-y divide-line-soft">
-                {moreItems.map((item) => {
-                  const isActive = activeView === item.id;
-                  return (
-                    <li key={item.id}>
-                      <button
-                        type="button"
-                        onClick={() => goTo(item.id)}
-                        aria-current={isActive ? 'page' : undefined}
-                        className="w-full flex items-center gap-3.5 py-3 px-1 min-h-[56px] text-left cursor-pointer active:bg-[#F4F4F2] dark:active:bg-white/[0.04]"
-                      >
-                        <span className={clsx(
-                          'w-10 h-10 flex items-center justify-center shrink-0 border',
-                          isActive
-                            ? 'bg-ink text-on-ink border-line-strong'
-                            : MORE_TONES[item.id] || 'bg-surface-2 text-fg border-line-soft'
-                        )}>
-                          {item.icon}
-                        </span>
-                        <span className="flex-1 min-w-0">
-                          <span className="block text-[15px] font-semibold text-fg leading-tight">{item.label}</span>
-                          <span className="block text-[13px] text-muted leading-snug mt-0.5 truncate">{item.hint}</span>
-                        </span>
-                        {item.badge ? (
-                          <span className="min-w-[22px] h-[22px] px-1.5 bg-rose-500 text-white text-[12px] font-bold tabular-nums flex items-center justify-center rounded-full">
-                            {item.badge}
-                          </span>
-                        ) : null}
-                        <ChevronRight className="w-4 h-4 text-muted shrink-0" aria-hidden="true" />
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
+              <div className="mx-auto mb-[21px] h-1 w-[34px] rounded-full bg-[#D9D9D6] dark:bg-white/15" />
+              {/* Spacing follows the Fibonacci scale (8 · 13 · 21 · 34), each step ≈ the last × φ (1.618) */}
+              <div className="max-w-md mx-auto max-h-[72vh] overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden flex flex-col gap-[21px] pb-[8px]">
+                {moreGroups.map((g) => (
+                  <section key={g.label} aria-label={g.label}>
+                    <p className="mb-[8px] text-[13px] font-semibold text-muted">{g.label}</p>
+                    <ul className="grid grid-cols-3 gap-[8px]">
+                      {g.items.map((item) => {
+                        const isActive = activeView === item.id;
+                        return (
+                          <li key={item.id}>
+                            <button
+                              type="button"
+                              onClick={() => goTo(item.id)}
+                              aria-current={isActive ? 'page' : undefined}
+                              aria-label={`${item.label}: ${item.hint}`}
+                              className={clsx(
+                                'relative w-full h-[89px] p-[13px] flex flex-col items-start justify-between text-left border transition-colors cursor-pointer',
+                                isActive
+                                  ? 'bg-ink text-on-ink border-ink'
+                                  : 'bg-surface border-line-soft hover:border-line active:bg-surface-2'
+                              )}
+                            >
+                              <span
+                                className={clsx(
+                                  'w-[34px] h-[34px] flex items-center justify-center border [&>svg]:w-[21px] [&>svg]:h-[21px]',
+                                  isActive ? 'bg-on-ink/10 border-on-ink/20 text-on-ink' : MORE_TONES[item.id] || 'bg-surface-2 text-fg border-line-soft'
+                                )}
+                              >
+                                {item.icon}
+                              </span>
+                              <span className={clsx('text-[13px] font-semibold leading-none truncate max-w-full', isActive ? 'text-on-ink' : 'text-fg')}>
+                                {item.short || item.label}
+                              </span>
+                              {item.badge ? (
+                                <span className="absolute top-[8px] right-[8px] min-w-[21px] h-[21px] px-1 bg-rose-500 text-white text-[11px] font-bold tabular-nums flex items-center justify-center rounded-full">
+                                  {item.badge}
+                                </span>
+                              ) : null}
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </section>
+                ))}
+              </div>
             </motion.div>
           </>
         )}

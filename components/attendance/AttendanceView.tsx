@@ -1,5 +1,6 @@
 'use client';
 
+import { SignInPanel } from '@/components/auth/SignInPrompt';
 import React, { useEffect, useMemo, useState } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -189,11 +190,11 @@ export const AttendanceView: React.FC = () => {
     return (
       <div className="flex flex-col gap-f5 text-left max-w-4xl mx-auto w-full">
         <h2 className="page-title">Attendance</h2>
-        <div className="flex flex-col items-center text-center px-6 py-10 border border-dashed border-line">
-          <Lock className="w-6 h-6 text-fg" />
-          <p className="mt-f3 text-[17px] font-semibold text-fg">Sign in to take attendance</p>
-          <p className="mt-1 text-[14px] text-muted max-w-[300px]">Class lists and records are saved to your account, so they&apos;re safe across devices.</p>
-        </div>
+        <SignInPanel
+          title="Sign in to take attendance"
+          body="Class lists and records are saved to your account, so they're safe and the same on every device."
+          perks={['Mark a class in seconds', 'Students see their own numbers', 'Export reports any time']}
+        />
       </div>
     );
   }

@@ -268,7 +268,7 @@ export const FacultyTasksView: React.FC = () => {
         ) : filteredAssignments.length === 0 ? (
           <div className="py-8 px-4">
             <EmptyState
-              illustration="tasks-done"
+              illustration="papers"
               title={assignments.length === 0 ? "No assignments published" : "No assignments for this batch"}
               description={
                 assignments.length === 0

@@ -1,5 +1,6 @@
 'use client';
 
+import { Illustration } from '@/components/ui/Illustration';
 import { shareLink, PLAY_STORE_URL } from '@/lib/shareUtils';
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -208,6 +209,7 @@ ${PLAY_STORE_URL}
                   <X className="w-6 h-6" />
                 </button>
               )}
+              <Illustration name="mess" className="h-[150px] w-auto mb-f5" />
               <h2 className="page-title">
                 Hostel,<br />
                 Mess,<br />
@@ -442,6 +444,7 @@ ${PLAY_STORE_URL}
             animate={{ opacity: 1, scale: 1 }}
             className="flex flex-col items-center justify-center flex-1 min-h-[500px] text-center"
           >
+            <Illustration name="trophy" className="h-[150px] w-auto mb-f5" />
             <p className="text-[12px] font-bold text-muted mb-6">
               YOUR MESS IS READY 🎉
             </p>

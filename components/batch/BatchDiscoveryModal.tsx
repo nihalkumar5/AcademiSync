@@ -1,5 +1,6 @@
 'use client';
 
+import { SignInPanel } from '@/components/auth/SignInPrompt';
 import React, { useState } from 'react';
 import { Modal } from '../ui/Modal';
 import { useApp } from '@/context/AppContext';
@@ -153,55 +154,25 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
       <Modal 
         isOpen={isOpen} 
         onClose={handleModalClose} 
-        title={!isSignedIn ? "Authentication Required" : step === 'code' ? "Connect with Your Class Batch" : "Complete Batch Registration"} 
-        maxWidth="md"
+        title={!isSignedIn ? undefined : step === 'code' ? "Connect with Your Class Batch" : "Complete Batch Registration"} 
+        maxWidth={isSignedIn ? 'md' : 'sm'}
+        showCloseButton={isSignedIn}
       >
         <div className="flex flex-col gap-5 text-left pt-1 font-sans">
           
           {/* CASE 1: USER IS NOT SIGNED IN */}
           {!isSignedIn ? (
-            <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-line bg-surface-2 rounded-none">
-              <div className="w-14 h-14 border border-line bg-surface rounded-none flex items-center justify-center shadow-xs">
-                <User className="w-7 h-7 text-fg stroke-[1.8]" />
-              </div>
-              <div>
-                <span className="text-[12px] font-bold font-mono text-amber-600 dark:text-amber-400">
-                  Login compulsory
-                </span>
-                <h3 className="text-[18px] font-bold text-fg mt-1">
-                  Sign In Required to Join Batch
-                </h3>
-                <p className="text-[13px] text-muted mt-1.5 max-w-sm leading-relaxed">
-                  Please sign in with your student account before entering a batch code. This connects your schedule, enables live class cancellation alerts, and adds you to your batch roster.
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs mt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (inviteCodeInput.trim()) {
-                      try {
-                        localStorage.setItem('pending_join_invite', inviteCodeInput.trim());
-                      } catch (_) {}
-                    }
-                    handleModalClose();
-                    router.push('/sign-in');
-                  }}
-                  className="btn btn-primary flex-1"
-                >
-                  <User className="w-4 h-4" />
-                  <span>Sign In Now</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleModalClose}
-                  className="px-5 h-11 border border-line text-fg text-[14px] font-semibold hover:bg-surface-2 transition-colors rounded-none cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
+            <SignInPanel
+              bare
+              title="Sign in to join your class"
+              body="Joining puts you on your class list, so your timetable arrives ready and every change your CR makes reaches you."
+              perks={['Your class timetable, ready-made', 'Cancelled and moved classes, live', 'Works on every device you use']}
+              beforeSignIn={() => {
+                if (inviteCodeInput.trim()) localStorage.setItem('pending_join_invite', inviteCodeInput.trim());
+              }}
+              onNavigate={handleModalClose}
+              onCancel={handleModalClose}
+            />
           ) : step === 'code' ? (
             /* STEP 1: ENTER BATCH CODE */
             <form onSubmit={handleVerifyCode} className="flex flex-col gap-4">

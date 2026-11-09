@@ -16,6 +16,8 @@ export interface ModalProps {
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl';
   showCloseButton?: boolean;
   mobileFullSheet?: boolean;
+  /** Pinned below the scrolling body (always visible), e.g. the main actions */
+  footer?: ReactNode;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -27,6 +29,7 @@ export const Modal: React.FC<ModalProps> = ({
   maxWidth = 'md',
   showCloseButton = true,
   mobileFullSheet = false,
+  footer,
 }) => {
   const [mounted, setMounted] = useState(false);
 
@@ -92,7 +95,9 @@ export const Modal: React.FC<ModalProps> = ({
               clsx(
                 'relative bg-surface border-line z-10 text-left shadow-2xl dark:shadow-[0_16px_50px_rgba(0,0,0,0.6)] flex flex-col',
                 mobileFullSheet 
-                  ? 'w-full min-h-[100dvh] sm:min-h-0 sm:max-h-[88vh] sm:my-auto border-0 sm:border sm:rounded-none overflow-hidden' 
+                  ? footer
+                    ? 'w-full h-[100dvh] sm:h-auto sm:max-h-[88vh] sm:my-auto border-0 sm:border sm:rounded-none overflow-hidden'
+                    : 'w-full min-h-[100dvh] sm:min-h-0 sm:max-h-[88vh] sm:my-auto border-0 sm:border sm:rounded-none overflow-hidden' 
                   : 'w-full border my-auto max-h-[90dvh] sm:rounded-none overflow-hidden',
                 maxWClasses[maxWidth]
               )
@@ -139,6 +144,7 @@ export const Modal: React.FC<ModalProps> = ({
                 {children}
               </div>
             </div>
+            {footer && <div className="shrink-0 border-t border-line bg-surface">{footer}</div>}
           </motion.div>
         </div>
       )}

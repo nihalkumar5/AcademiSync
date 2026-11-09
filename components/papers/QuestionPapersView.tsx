@@ -1,5 +1,6 @@
 'use client';
 
+import { SignInPanel } from '@/components/auth/SignInPrompt';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import { useApp } from '@/context/AppContext';
@@ -582,12 +583,11 @@ export const QuestionPapersView: React.FC = () => {
   let body: React.ReactNode;
   if (!user?.id) {
     body = (
-      <section className="border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
-        <Illustration name="exam" className="h-[150px] w-auto" />
-        <h3 className="mt-4 text-[18px] font-semibold text-fg">Sign in to see question papers</h3>
-        <p className="mt-1.5 text-[14px] text-muted max-w-sm">Papers are shared within your college and branch, so you need to be signed in.</p>
-        <button type="button" onClick={() => setActiveView('settings')} className="btn btn-primary mt-5">Go to Profile</button>
-      </section>
+      <SignInPanel
+        title="Sign in to see question papers"
+        body="Papers are shared only within your college and branch, so we need to know which one is yours."
+        perks={['Past papers from your own branch', 'Search by subject, year or exam', 'Add papers to help your juniors']}
+      />
     );
   } else if (loading && !data) {
     body = (
@@ -607,7 +607,7 @@ export const QuestionPapersView: React.FC = () => {
     const needsProfile = error.code === 'no-college' || error.code === 'no-branch';
     body = (
       <section className="border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
-        <Illustration name="exam" className="h-[150px] w-auto" />
+        <Illustration name={needsProfile ? 'setup' : 'error'} className="h-[150px] w-auto" />
         <h3 className="mt-4 text-[18px] font-semibold text-fg">{needsProfile ? 'One detail missing' : "Couldn't load papers"}</h3>
         <p className="mt-1.5 text-[14px] text-muted max-w-sm">{error.message}</p>
         <button type="button" onClick={() => (needsProfile ? setActiveView('settings') : load())} className="btn btn-primary mt-5">
@@ -618,7 +618,7 @@ export const QuestionPapersView: React.FC = () => {
   } else if (papers.length === 0) {
     body = (
       <section className="border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
-        <Illustration name="exam" className="h-[160px] w-auto" />
+        <Illustration name="papers" className="h-[150px] w-auto" />
         <h3 className="mt-4 text-[18px] font-semibold text-fg">No papers yet</h3>
         <p className="mt-1.5 text-[14px] text-muted max-w-sm">
           Be the first to add one. Snap the pages of any past paper, and it helps everyone in your branch.
@@ -672,7 +672,7 @@ export const QuestionPapersView: React.FC = () => {
 
         {groups.length === 0 ? (
           <div className="flex flex-col items-center text-center px-6 py-f6 border border-dashed border-line">
-            <Search className="w-5 h-5 text-muted" />
+            <Illustration name="search" className="h-[120px] w-auto" />
             <p className="mt-f3 text-[15px] font-semibold text-fg">No paper matches</p>
             <p className="mt-1 text-[13px] text-muted">Try another word, or clear the filters.</p>
           </div>

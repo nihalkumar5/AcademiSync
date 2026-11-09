@@ -14,7 +14,20 @@ export type IllustrationName =
   | 'calendar'
   | 'notifications'
   | 'subjects'
-  | 'attendance';
+  | 'attendance'
+  | 'launch'
+  | 'papers'
+  | 'trophy'
+  | 'mess'
+  | 'routines'
+  | 'free-day'
+  | 'notes'
+  | 'signin'
+  | 'friends'
+  | 'search'
+  | 'error'
+  | 'setup'
+  | 'pilot';
 
 const ALT: Record<IllustrationName, string> = {
   'no-classes': 'Someone listening to music with headphones',
@@ -26,6 +39,19 @@ const ALT: Record<IllustrationName, string> = {
   notifications: 'Someone making an announcement with a megaphone',
   subjects: 'Someone with an open book and a pencil',
   attendance: 'A teacher presenting to the class',
+  launch: 'Someone launching a paper plane out of a screen',
+  papers: 'Someone reading a long sheet of paper with a coffee',
+  trophy: 'Someone holding a trophy',
+  mess: 'Someone serving two hot drinks',
+  routines: 'Someone looking after potted plants',
+  'free-day': 'Someone playing an electric guitar',
+  notes: 'Someone taking a photo with a camera',
+  signin: 'Someone at a laptop with a new message',
+  friends: 'Someone taking a selfie and making a peace sign',
+  search: 'Someone thinking, with a question mark',
+  error: 'Someone frustrated, with a red cross on their shirt',
+  setup: 'Someone in front of a flowchart',
+  pilot: 'Someone with a microphone reaching out a hand',
 };
 
 export const Illustration: React.FC<{ name: IllustrationName; className?: string; decorative?: boolean }> = ({

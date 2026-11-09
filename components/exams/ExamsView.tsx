@@ -1,5 +1,6 @@
 'use client';
 
+import { requestSignIn } from '@/components/auth/SignInPrompt';
 import { shareLink, PLAY_STORE_URL } from '@/lib/shareUtils';
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
@@ -40,7 +41,7 @@ export const ExamsView: React.FC = () => {
 
   const handleMagicImport = () => {
     if (!isSignedIn) {
-      router.push('/sign-in');
+      requestSignIn({ title: 'Sign in to keep your exams', body: 'Exams are saved to your account, so reminders and countdowns follow you to every device.' });
       return;
     }
     setShowImportModal(true);
@@ -48,7 +49,7 @@ export const ExamsView: React.FC = () => {
 
   const handleAddNewExam = () => {
     if (!isSignedIn) {
-      router.push('/sign-in');
+      requestSignIn({ title: 'Sign in to keep your exams', body: 'Exams are saved to your account, so reminders and countdowns follow you to every device.' });
       return;
     }
     setSelectedExamToEdit(null);
@@ -69,7 +70,7 @@ export const ExamsView: React.FC = () => {
   const handleJoinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isSignedIn) {
-      router.push('/sign-in');
+      requestSignIn({ title: 'Sign in to keep your exams', body: 'Exams are saved to your account, so reminders and countdowns follow you to every device.' });
       return;
     }
 
@@ -367,7 +368,7 @@ export const ExamsView: React.FC = () => {
           </button>
           <button
             onClick={() => {
-              if (!isSignedIn) { router.push('/sign-in'); return; }
+              if (!isSignedIn) { requestSignIn({ title: 'Sign in to keep your exams', body: 'Exams are saved to your account, so reminders and countdowns follow you to every device.' }); return; }
               setShowJoinModal(true);
             }}
             className="btn btn-secondary"
@@ -377,7 +378,7 @@ export const ExamsView: React.FC = () => {
           {exams.length > 0 && isBatchCR && (
             <button
               onClick={async () => {
-                if (!isSignedIn) { router.push('/sign-in'); return; }
+                if (!isSignedIn) { requestSignIn({ title: 'Sign in to keep your exams', body: 'Exams are saved to your account, so reminders and countdowns follow you to every device.' }); return; }
                 try {
                   const key = await shareTimetableWithBatch();
                   const code = currentBatchData?.inviteCode || (profile?.batchKey && profile.batchKey.length <= 8 ? profile.batchKey : key);

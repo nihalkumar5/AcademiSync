@@ -218,6 +218,7 @@ export type ActiveView =
   | 'calendar'
   | 'exams'
   | 'papers'
+  | 'notices'
   | 'friends'
   | 'notifications'
   | 'settings'
@@ -1033,6 +1034,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           if (h.proposalId && approvedIds.has(h.proposalId)) {
             return true;
           }
+          // Classroom work removed in Classroom (or by the pilot): drop it, no fuzzy title matching
+          if (h.proposalId && h.proposalId.startsWith('gc_')) {
+            changed = true;
+            return false;
+          }
 
           const stillApproved = approvedProps.some((p) =>
             areHomeworksSame(h, {
@@ -1087,7 +1093,32 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             createdAt: '',
           };
 
-          const existingIndex = filteredHw.findIndex((h) => areHomeworksSame(h, propHwRep));
+          // Classroom work is matched strictly (two different "Assignment 1"s must never merge)
+          const isGc = typeof prop.id === 'string' && prop.id.startsWith('gc_');
+          const extId = (prop as any).externalId as string | undefined;
+          const sameAsProp = (h: Homework) =>
+            isGc
+              ? h.proposalId === prop.id ||
+                (!!extId && h.externalId === extId) ||
+                (!!prop.attachmentName && (h.externalLink === prop.attachmentName || h.attachmentName === prop.attachmentName)) ||
+                (normalizeHomeworkTitle(h.title) === normalizeHomeworkTitle(prop.title) &&
+                  h.subjectId === prop.subjectId &&
+                  isSameHomeworkDeadline(h.deadline, prop.deadline))
+              : areHomeworksSame(h, propHwRep);
+          // Teacher edits in Classroom (title, due date, subject) flow to everyone's copy
+          const classroomFields = isGc
+            ? {
+                title: prop.title,
+                deadline: prop.deadline,
+                subjectId: prop.subjectId,
+                subjectName: prop.subjectName,
+                externalId: extId,
+                source: 'google_classroom' as const,
+                externalLink: prop.attachmentName || undefined,
+              }
+            : {};
+
+          const existingIndex = filteredHw.findIndex(sameAsProp);
 
           if (existingIndex >= 0) {
             const existing = filteredHw[existingIndex];
@@ -1103,13 +1134,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               readReceipts: prop.readReceipts,
               source: isClassroomProp ? 'google_classroom' : existing.source,
               externalLink: isClassroomProp ? prop.attachmentName : existing.externalLink,
+              ...classroomFields,
+              ...(isGc && prop.description && !existing.description ? { description: prop.description } : {}),
             };
             changed = true;
             return;
           }
 
           // Also check if task already exists in prevHw (e.g. was already completed)
-          const existsInPrev = prevHw.find((h) => areHomeworksSame(h, propHwRep));
+          const existsInPrev = prevHw.find(sameAsProp);
           if (existsInPrev) {
             if (!filteredHw.some((h) => h.id === existsInPrev.id)) {
               const isClassroomProp = prop.attachmentName?.includes('classroom.google.com');
@@ -1124,6 +1157,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 readReceipts: prop.readReceipts,
                 source: isClassroomProp ? 'google_classroom' : existsInPrev.source,
                 externalLink: isClassroomProp ? prop.attachmentName : existsInPrev.externalLink,
+                ...classroomFields,
               });
               changed = true;
             }
@@ -1144,6 +1178,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             attachmentName: prop.attachmentName || '',
             source: isClassroomProp ? 'google_classroom' : undefined,
             externalLink: isClassroomProp ? prop.attachmentName : undefined,
+            ...(isGc ? { externalId: extId } : {}),
             createdAt: nowIso,
             updatedAt: nowIso,
             isBatchShared: true,

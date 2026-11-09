@@ -39,6 +39,11 @@ export interface SharedNote {
   createdAt: string;
 }
 
+/** Stable key for a subject: its name, normalised. Subject ids can change (re-sync, de-dupe),
+ *  names don't, so notes are matched by either. */
+export const subjectKeyOf = (name: string | undefined | null) =>
+  (name || '').toLowerCase().replace(/\(.*?\)/g, ' ').replace(/[^a-z0-9]+/g, ' ').trim().slice(0, 100);
+
 export const MAX_NOTE_CHARS = 1000;
 export const MAX_SHARED_IMAGE_KB = 400;
 

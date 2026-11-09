@@ -132,6 +132,8 @@ export interface Homework {
   status: HomeworkStatus;
   attachmentName?: string;
   attachmentUrl?: string;
+  /** Photos / PDFs saved on the device that added them (lib/taskFiles) */
+  files?: { id: string; name: string; type: string; size: number }[];
   createdAt: string;
   completedAt?: string;
   isBatchShared?: boolean;
@@ -173,6 +175,14 @@ export interface BatchProposedTask {
   approvedAt?: string;
   createdAt: string;
   readReceipts?: Record<string, AssignmentReadReceipt>;
+  // Set when the task came from Google Classroom through the pilot's Classroom bridge
+  source?: 'google_classroom';
+  externalId?: string;
+  externalLink?: string;
+  courseId?: string;
+  courseName?: string;
+  noDueDate?: boolean;
+  updatedAt?: string;
 }
 
 export interface CarryItem {
