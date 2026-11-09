@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { adminDb, adminMessaging } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
+import { sendPush, tokensFromUserDoc } from '@/lib/server/push';
 import { logServerError } from '@/lib/errorUtils';
 import { getVerifiedUser, isVerifiedAdminEmail } from '@/lib/serverAuth';
 
@@ -88,41 +89,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, sent: 0, message: 'No members in batch' });
     }
 
-    // 2. Gather unique FCM tokens
-    const tokens = new Set<string>();
+    // 2. Gather every device of every member (native app + web/PWA), skipping the sender
+    const targets = [] as ReturnType<typeof tokensFromUserDoc>;
     usersSnapshot.forEach((docSnap: any) => {
-      const data = docSnap.data();
-      // Skip sender's own device if requested
-      if (senderId && docSnap.id === senderId) return;
-
-      if (data.fcmToken && typeof data.fcmToken === 'string' && data.fcmToken.trim().length > 10) {
-        tokens.add(data.fcmToken.trim());
-      }
+      if (docSnap.id === senderId) return;
+      targets.push(...tokensFromUserDoc(docSnap.id, docSnap.data()));
     });
 
-    if (tokens.size === 0) {
+    if (targets.length === 0) {
       return NextResponse.json({ success: true, sent: 0, message: 'No registered device tokens found' });
     }
 
-    // 3. Build FCM notification payloads
-    const tokenList = Array.from(tokens);
-    const messages = tokenList.map((token) => ({
-      token,
-      notification: {
-        title,
-        body: messageBody,
-      },
-      android: {
-        priority: 'high' as const,
-        notification: {
-          sound: 'default',
-          channelId: 'class_alerts_v3',
-          icon: 'ic_notification',
-          color: '#000000',
-          priority: 'max' as const,
-          visibility: 'public' as const,
-        },
-      },
+    // 3. Send (native + web push, dead web tokens are pruned)
+    const result = await sendPush(targets, {
+      title,
+      body: messageBody,
       data: {
         batchKey: String(batchKey),
         type: String(type || 'schedule_update'),
@@ -131,17 +112,10 @@ export async function POST(req: Request) {
         senderName: String(senderName || 'Batch Pilot'),
         click_action: 'FLUTTER_NOTIFICATION_CLICK',
       },
-    }));
-
-    // 4. Send all push notifications via Firebase Admin Messaging
-    const response = await adminMessaging.sendEach(messages);
-    console.log(`[BatchBroadcast] Sent ${response.successCount}/${tokenList.length} notifications for batch ${batchKey}`);
-
-    return NextResponse.json({
-      success: true,
-      sent: response.successCount,
-      failed: response.failureCount,
     });
+    console.log(`[BatchBroadcast] Sent ${result.sent}/${targets.length} notifications for batch ${batchKey}`);
+
+    return NextResponse.json({ success: true, sent: result.sent, failed: result.failed });
   } catch (error) {
     logServerError('BatchBroadcastAPI', error);
     return NextResponse.json(

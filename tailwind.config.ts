@@ -9,9 +9,48 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // Golden-ratio rhythm: each step is ~1.618x the last (Fibonacci)
+      spacing: {
+        'f1': '5px',
+        'f2': '8px',
+        'f3': '13px',
+        'f4': '21px',
+        'f5': '34px',
+        'f6': '55px',
+        'f7': '89px',
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        // Design system: one neutral black/white scale. Values live in app/globals.css
+        // (:root for light, .dark for dark), so each token is a single class in both themes.
+        canvas: "rgb(var(--c-canvas) / <alpha-value>)",
+        surface: {
+          DEFAULT: "rgb(var(--c-surface) / <alpha-value>)",
+          2: "rgb(var(--c-surface-2) / <alpha-value>)",
+          3: "rgb(var(--c-surface-3) / <alpha-value>)",
+        },
+        line: {
+          DEFAULT: "rgb(var(--c-line) / <alpha-value>)",
+          soft: "rgb(var(--c-line-soft) / <alpha-value>)",
+          strong: "rgb(var(--c-line-strong) / <alpha-value>)",
+        },
+        fg: {
+          DEFAULT: "rgb(var(--c-fg) / <alpha-value>)",
+          2: "rgb(var(--c-fg-2) / <alpha-value>)",
+        },
+        muted: "rgb(var(--c-muted) / <alpha-value>)",
+        faint: "rgb(var(--c-faint) / <alpha-value>)",
+        ink: "rgb(var(--c-ink) / <alpha-value>)",
+        "on-ink": "rgb(var(--c-on-ink) / <alpha-value>)",
+        danger: {
+          DEFAULT: "rgb(var(--c-danger) / <alpha-value>)",
+          soft: "rgb(var(--c-danger-soft) / <alpha-value>)",
+        },
+        ok: {
+          DEFAULT: "rgb(var(--c-ok) / <alpha-value>)",
+          soft: "rgb(var(--c-ok-soft) / <alpha-value>)",
+        },
         black: "#111111",
         white: "#FFFFFF",
         brand: {

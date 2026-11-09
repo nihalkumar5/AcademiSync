@@ -24,7 +24,8 @@ import {
   Sparkles,
   ArrowRight,
   MoreHorizontal,
-} from 'lucide-react';
+  UserCheck,
+} from '@/components/ui/icons';
 import { clsx } from 'clsx';
 
 export type { AggregatedFacultySession };
@@ -44,7 +45,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
   tomorrowDay,
   onRefresh,
 }) => {
-  const { profile, user, showToast } = useApp();
+  const { profile, user, showToast, setActiveView } = useApp();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -64,14 +65,14 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
     const tomorrowCount = tomorrowSessions.filter((s) => !s.isCancelled).length;
 
     return (
-      <div className="w-full bg-[#FAFAFA] dark:bg-[#121317] border border-[#E0E0E0] dark:border-white/[0.08] rounded-none p-5 flex flex-col text-left">
-        <span className="text-[11px] font-semibold text-[#6B6B6B] dark:text-[#94A3B8] uppercase tracking-[1.4px] leading-none mb-3">
-          SCHEDULE COMPLETE
+      <div className="card w-full p-5 flex flex-col text-left">
+        <span className="text-[12px] font-semibold text-muted leading-none mb-3">
+          Schedule complete
         </span>
-        <h3 className="text-[16px] font-semibold text-[#111111] dark:text-[#F4F4F6] leading-snug mb-2">
+        <h3 className="text-[16px] font-semibold text-fg leading-snug mb-2">
           You&apos;re done for today.
         </h3>
-        <span className="text-[13px] text-[#6B6B6B] dark:text-[#94A3B8] leading-none">
+        <span className="text-[13px] text-muted leading-none">
           {isAfter8PM
             ? (tomorrowCount === 0
                 ? 'No classes scheduled for tomorrow.'
@@ -210,7 +211,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
       `*Status:* ${statusText}`,
       rescheduleMeta?.reason ? `*Note:* ${rescheduleMeta.reason}` : '',
       `━━━━━━━━━━━━━━━━━━`,
-      `Synced via AcademiSync.`,
+      `Synced via Intersemester.`,
     ]
       .filter(Boolean)
       .join('\n');
@@ -245,8 +246,8 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
           <div className="flex items-center justify-between mb-3.5">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#18A889] animate-pulse" />
-              <span className="text-[11px] font-bold text-[#18A889] uppercase tracking-[1.4px] leading-none">
-                LIVE NOW
+              <span className="text-[12px] font-bold text-[#18A889] leading-none">
+                Live now
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -262,7 +263,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                     e.stopPropagation();
                     setMenuOpen((prev) => !prev);
                   }}
-                  className="p-1 rounded-[2px] text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                  className="p-1 rounded-none text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                   title="Class Options" aria-label="Class Options"
                 >
                   <MoreHorizontal className="w-4 h-4" />
@@ -278,10 +279,10 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                       }}
                     />
                     <div
-                      className="absolute right-0 top-full mt-1.5 w-52 bg-white dark:bg-[#18191E] border border-black/10 dark:border-white/[0.1] shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 text-left overflow-hidden rounded-[10px]"
+                      className="absolute right-0 top-full mt-1.5 w-52 bg-surface border border-line shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 text-left overflow-hidden rounded-none"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
+                      <div className="px-3.5 py-1.5 bg-surface-2 border-b border-line-soft text-[12px] font-mono font-bold text-muted flex items-center gap-1.5">
                         <span>🎓</span>
                         <span>Faculty Actions</span>
                       </div>
@@ -309,7 +310,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                               setMenuOpen(false);
                               setIsRescheduleModalOpen(true);
                             }}
-                            className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                            className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-fg hover:bg-surface-2 text-left transition-colors cursor-pointer"
                           >
                             <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
                             <span>Reschedule Class</span>
@@ -352,10 +353,10 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                           setMenuOpen(false);
                           handleShareWhatsAppNotice();
                         }}
-                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-slate-800 dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer border-t border-black/5 dark:border-white/5"
+                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-slate-800 dark:text-[#F4F4F6] hover:bg-surface-2 text-left transition-colors cursor-pointer border-t border-line-soft"
                       >
                         <Share2 className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                        <span>WhatsApp Notice</span>
+                        <span className="flex flex-col leading-tight"><span>Share on WhatsApp</span><span className="text-[12px] font-normal text-muted">Pick your class group</span></span>
                       </button>
                     </div>
                   </>
@@ -375,18 +376,18 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
               {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
             </div>
             {isRescheduled && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] bg-amber-500/20 text-amber-300 text-[11px] font-mono font-bold uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-none bg-amber-500/20 text-amber-300 text-[11px] font-mono font-bold uppercase tracking-wider">
                 <Clock className="w-2.5 h-2.5" />
                 Rescheduled
                 {rescheduleMeta?.originalStartTime ? ` (Was ${formatTime12Hour(rescheduleMeta.originalStartTime)})` : ''}
               </span>
             )}
             {session.isLab && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] bg-[#18A889]/20 text-[#18A889] text-[11px] font-mono font-bold uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-none bg-[#18A889]/20 text-[#18A889] text-[12px] font-mono font-bold ">
                 Lab
               </span>
             )}
-            <span className="px-2 py-0.5 rounded-[2px] bg-white/10 text-[11px] font-mono font-bold uppercase tracking-wider text-white/80">
+            <span className="px-2 py-0.5 rounded-none bg-white/10 text-[11px] font-mono font-bold uppercase tracking-wider text-white/80">
               {pillLabel}
             </span>
           </div>
@@ -412,6 +413,21 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
+
+          {/* The one thing a faculty does mid-lecture: straight into marking */}
+          {!isCancelled && (
+            <button
+              type="button"
+              onClick={() => {
+                setActiveView('attendance');
+                const detail = { batchKey: batch.batchKey, subjectName, startTime: session.startTime, endTime: session.endTime };
+                setTimeout(() => window.dispatchEvent(new CustomEvent('attendance:take', { detail })), 60);
+              }}
+              className="mt-f4 h-11 w-full inline-flex items-center justify-center gap-2 bg-white text-[#111111] text-[14px] font-semibold rounded-none hover:opacity-90 active:scale-[0.99] transition cursor-pointer"
+            >
+              <UserCheck className="w-4 h-4" /> Take attendance
+            </button>
+          )}
         </div>
 
         <FacultyRescheduleModal
@@ -434,65 +450,57 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
     return `Starts in ${hrs}h ${mins.toString().padStart(2, '0')}m`;
   };
 
+  const startsSoon = !isCancelled && minutesUntilStart <= 15;
+  const durationMins = Math.max(0, timeToMinutes(session.endTime) - timeToMinutes(session.startTime));
+  const durationLabel =
+    durationMins >= 60 ? `${Math.floor(durationMins / 60)}h${durationMins % 60 ? ` ${durationMins % 60}m` : ''}` : `${durationMins}m`;
+  const roomLabel = session.room ? session.room.replace(/^room\s*/i, '') : 'TBA';
+  const eyebrow = isCancelled ? 'Cancelled today' : isRescheduled ? 'Rescheduled' : session.isLab ? 'Next lab' : 'Next lecture';
+  const countdown = isCancelled ? 'Students notified' : formatCountdown(minutesUntilStart);
+
   return (
     <>
       <div
         className={clsx(
-          "w-full border shadow-xs rounded-[12px] p-5 flex flex-col relative group transition-all text-left",
-          menuOpen ? "overflow-visible z-30" : "overflow-hidden z-0",
-          isCancelled
-            ? "border-rose-200 dark:border-rose-900/40"
-            : isRescheduled
-            ? "border-amber-200 dark:border-amber-900/40"
-            : "border-black/[0.06] dark:border-[color:var(--card-accent-border)]"
+          'w-full text-left relative border border-[color:var(--card-line)] shadow-[var(--elev-2)]',
+          menuOpen ? 'overflow-visible z-30' : 'overflow-hidden z-0'
         )}
-        style={{
-          ['--card-accent-border' as any]: `${theme.accent}45`,
-        }}
+        style={
+          {
+            '--card-accent': theme.accent,
+            '--card-accent-dark': theme.darkAccent || theme.accent,
+            '--card-line': `${theme.accent}33`,
+          } as React.CSSProperties
+        }
       >
-        {/* Pastel backgrounds: Light mode solid pastel, Dark mode subtle 16% gradient */}
+        {/* Subject colour: solid pastel in light, a soft tinted gradient in dark */}
+        <div className="dark:hidden absolute inset-0 pointer-events-none" style={{ backgroundColor: theme.bg }} aria-hidden="true" />
         <div
-          className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[11px]"
-          style={{ backgroundColor: theme.bg }}
+          className="hidden dark:block absolute inset-0 pointer-events-none"
+          style={{ background: `linear-gradient(135deg, ${theme.accent}2E 0%, ${theme.accent}12 100%), #13151D` }}
+          aria-hidden="true"
         />
-        <div
-          className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[11px]"
-          style={{
-            background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
-          }}
-        />
-
-        <div className="relative z-10 flex flex-col">
-          {/* Header Row */}
-          <div className="flex items-center justify-between mb-3.5 gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <span
-                className="text-[11px] font-bold uppercase tracking-[1.4px] leading-none shrink-0"
-                style={{ color: theme.accent }}
-              >
-                {isCancelled
-                  ? 'CANCELLED TODAY'
-                  : isRescheduled
-                  ? 'RESCHEDULED'
-                  : session.isLab
-                  ? 'NEXT LAB'
-                  : 'NEXT LECTURE'}
-              </span>
-
-              {session.isLab && (
-                <span
-                  className="text-[11px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[2px] bg-black/5 dark:bg-white/10 shrink-0"
-                  style={{ color: theme.accent }}
-                >
-                  LAB
-                </span>
+        <div className="relative">
+        {/* Top: status + countdown */}
+        <div className="flex items-center justify-between gap-3 px-f4 pt-f4">
+          <span className="inline-flex items-center gap-2 text-[13px] font-semibold text-[color:var(--card-accent)] dark:text-[color:var(--card-accent-dark)]">
+            <span className="relative flex w-2 h-2" aria-hidden="true">
+              {startsSoon && <span className="absolute inset-0 rounded-full bg-current opacity-40 animate-ping" />}
+              <span className="relative w-2 h-2 rounded-full bg-current" />
+            </span>
+            {eyebrow}
+          </span>
+          <div className="flex items-center gap-1">
+            <span
+              className={clsx(
+                'tag tabular-nums',
+                startsSoon
+                  ? 'bg-[color:var(--card-accent)] dark:bg-[color:var(--card-accent-dark)] text-white dark:text-[#0A0B0F] border-transparent'
+                  : 'bg-white/70 dark:bg-white/[0.06] text-[color:var(--card-accent)] dark:text-[color:var(--card-accent-dark)] border-[color:var(--card-line)]'
               )}
-
-              <span className="px-2 py-0.5 rounded-[3px] bg-black/5 dark:bg-white/10 text-[11px] font-mono font-bold uppercase tracking-wider text-black/70 dark:text-white/70 whitespace-nowrap">
-                {pillLabel}
-              </span>
-            </div>
-
+            >
+              {countdown}
+            </span>
             {/* 3-Dots Action Menu */}
             <div className="relative shrink-0 flex items-center">
               <button
@@ -501,10 +509,10 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                   e.stopPropagation();
                   setMenuOpen((prev) => !prev);
                 }}
-                className="p-1 rounded-[2px] text-slate-500 hover:text-slate-900 dark:text-[#CBD5E1] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                className="btn btn-ghost btn-sm btn-icon -mr-2"
                 title="Lecture actions" aria-label="Lecture actions"
               >
-                <MoreHorizontal className="w-4 h-4" />
+                <MoreHorizontal className="w-5 h-5" />
               </button>
 
                 {menuOpen && (
@@ -517,10 +525,10 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                       }}
                     />
                     <div
-                      className="absolute right-0 top-full mt-1.5 w-52 bg-white dark:bg-[#16171D] border border-black/10 dark:border-white/10 rounded-[4px] shadow-xl py-1.5 z-40 text-left font-sans flex flex-col"
+                      className="absolute right-0 top-full mt-1.5 w-52 bg-surface border border-line rounded-none shadow-xl py-1.5 z-40 text-left font-sans flex flex-col"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="px-3 py-1 text-[11px] font-mono uppercase tracking-wider text-black/60 dark:text-white/60 border-b border-black/5 dark:border-white/5 mb-1 flex items-center gap-1.5">
+                      <div className="px-3 py-1 text-[12px] font-mono text-muted border-b border-line-soft mb-1 flex items-center gap-1.5">
                         <span>🎓</span>
                         <span>Faculty Actions</span>
                       </div>
@@ -548,7 +556,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                               setMenuOpen(false);
                               setIsRescheduleModalOpen(true);
                             }}
-                            className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                            className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-fg hover:bg-surface-2 text-left transition-colors cursor-pointer"
                           >
                             <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
                             <span>Reschedule Class</span>
@@ -591,75 +599,48 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                           setMenuOpen(false);
                           handleShareWhatsAppNotice();
                         }}
-                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-slate-800 dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer border-t border-black/5 dark:border-white/5"
+                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-slate-800 dark:text-[#F4F4F6] hover:bg-surface-2 text-left transition-colors cursor-pointer border-t border-line-soft"
                       >
                         <Share2 className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                        <span>WhatsApp Notice</span>
+                        <span className="flex flex-col leading-tight"><span>Share on WhatsApp</span><span className="text-[12px] font-normal text-muted">Pick your class group</span></span>
                       </button>
                     </div>
                   </>
                 )}
               </div>
-            </div>
+          </div>
+        </div>
 
-          {/* Subject Title */}
-          <h3 className="text-[19px] sm:text-[21px] font-bold text-[#151515] dark:text-[#F4F4F6] leading-[26px] mb-2 pr-4 tracking-tight line-clamp-2">
+        {/* Subject */}
+        <div className="px-f4 pt-f3">
+          <h3 className={clsx('text-[24px] leading-[1.15] font-semibold tracking-tight text-fg line-clamp-2', isCancelled && 'line-through decoration-1 text-muted')}>
             {subjectName}
           </h3>
-
-          {/* Rescheduled Pill */}
           {isRescheduled && rescheduleMeta?.originalStartTime && (
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] font-mono font-medium mb-3 self-start">
-              <Clock className="w-3 h-3 shrink-0" />
-              <span>
-                Rescheduled from {formatTime12Hour(rescheduleMeta.originalStartTime)} – {formatTime12Hour(rescheduleMeta.originalEndTime)}
-                {rescheduleMeta.reason ? ` · ${rescheduleMeta.reason}` : ''}
-              </span>
-            </div>
+            <p className="mt-f2 text-[13px] text-fg-2">
+              Moved from {formatTime12Hour(rescheduleMeta.originalStartTime)} – {formatTime12Hour(rescheduleMeta.originalEndTime)}
+              {rescheduleMeta.reason ? ` · ${rescheduleMeta.reason}` : ''}
+            </p>
           )}
+        </div>
 
-          {/* Details Row */}
-          <div className="flex items-center gap-2 text-[12px] text-black/60 dark:text-[#A1A1AA] font-mono leading-none mb-4 flex-wrap">
-            <span className="flex items-center gap-1.5 shrink-0 text-black/80 dark:text-white/90 font-medium">
-              <span className="text-[11px] leading-none opacity-80">◉</span>
-              {session.room ? (session.room.toLowerCase().startsWith('room') ? session.room : `Room ${session.room}`) : 'Room TBA'}
-            </span>
-            {subjectCode && (
-              <>
-                <span className="opacity-40 shrink-0">·</span>
-                <span className="px-1.5 py-0.5 bg-black/5 dark:bg-white/10 rounded-[3px] text-[11px] font-mono font-medium">
-                  {subjectCode}
-                </span>
-              </>
-            )}
-            <span className="opacity-40 shrink-0">·</span>
-            <span>
-              {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
-            </span>
+        {/* Facts: time, room, code */}
+        <dl className="mt-f4 grid grid-cols-3 border-t border-[color:var(--card-line)] divide-x divide-[color:var(--card-line)]">
+          <div className="pl-f4 pr-f3 py-f3 min-w-0">
+            <dt className="text-[12px] text-muted whitespace-nowrap">Time · {durationLabel}</dt>
+            <dd className="mt-1 text-[15px] font-semibold text-fg tabular-nums whitespace-nowrap">{formatTime12Hour(session.startTime)}</dd>
           </div>
-
-          {/* Footer Anchor */}
-          <div className="flex items-center justify-between border-t border-black/[0.06] dark:border-white/[0.08] pt-3.5 mt-0.5">
-            <div className="flex items-center gap-2">
-              <span
-                className="w-1.5 h-1.5 rounded-full shrink-0"
-                style={{ backgroundColor: isCancelled ? '#E11D48' : theme.accent }}
-              />
-              <span
-                className="text-[13px] font-bold font-mono tracking-tight leading-none"
-                style={{ color: isCancelled ? '#E11D48' : theme.accent }}
-              >
-                {isCancelled ? 'Cancelled for today' : formatCountdown(minutesUntilStart)}
-              </span>
-            </div>
-            <div
-              style={{ color: isCancelled ? '#E11D48' : theme.accent }}
-              className="flex items-center gap-1 text-[11px] font-mono font-medium opacity-70 group-hover:opacity-100 transition-opacity"
-            >
-              <span>{isCancelled ? 'Notice Sent' : 'Upcoming'}</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-            </div>
+          <div className="px-f3 py-f3 min-w-0">
+            <dt className="text-[12px] text-muted">Room</dt>
+            <dd className="mt-1 text-[15px] font-semibold text-fg truncate">{roomLabel}</dd>
           </div>
+          <div className="px-f3 py-f3 min-w-0">
+            <dt className="text-[12px] text-muted">{subjectCode ? 'Code' : 'Ends'}</dt>
+            <dd className="mt-1 text-[15px] font-semibold text-fg truncate tabular-nums">
+              {subjectCode || formatTime12Hour(session.endTime)}
+            </dd>
+          </div>
+        </dl>
         </div>
       </div>
 

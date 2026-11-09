@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_next_class_label">Next class</string>
+    <string name="widget_next_class_description">Your class now or next, with time and room</string>
+    <color name="widget_bg">#FFFFFF</color>
+    <color name="widget_ink">#111111</color>
+    <color name="widget_fg2">#4A4A4A</color>
+    <color name="widget_muted">#8A8A8A</color>
+</resources>

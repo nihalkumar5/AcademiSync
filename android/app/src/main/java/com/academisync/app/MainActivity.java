@@ -9,11 +9,13 @@ import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import com.getcapacitor.BridgeActivity;
 import com.codetrixstudio.capacitor.GoogleAuth.GoogleAuth;
+import com.academisync.app.widget.WidgetBridgePlugin;
 
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(GoogleAuth.class);
+        registerPlugin(WidgetBridgePlugin.class);
         super.onCreate(savedInstanceState);
 
         CookieManager cookieManager = CookieManager.getInstance();

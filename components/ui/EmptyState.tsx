@@ -2,54 +2,58 @@
 
 import React, { ReactNode } from 'react';
 import { Button } from './Button';
+import { Illustration, IllustrationName } from './Illustration';
 
 export interface EmptyStateProps {
   icon?: ReactNode;
+  /** Hand-drawn spot illustration; shown instead of the icon box */
+  illustration?: IllustrationName;
   title: string;
   description: string;
   actionLabel?: string;
   onAction?: () => void;
   actionIcon?: ReactNode;
   className?: string;
+  /** Short handwritten aside, for warm moments only (e.g. everything done) */
+  note?: string;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
   icon,
+  illustration,
   title,
   description,
   actionLabel,
   onAction,
   actionIcon,
   className = "",
+  note,
 }) => {
   return (
-    <div className={`flex flex-col items-start justify-center p-6 sm:p-8 text-left border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] rounded-none my-4 relative overflow-hidden group shadow-sm ${className}`}>
-      {/* Subtle Aesthetic Glow */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-black/5 dark:bg-white/[0.03] blur-3xl pointer-events-none" />
-      
-      {icon && (
-        <div className="mb-4 text-black/60 dark:text-white/60">
+    <div className={`flex flex-col items-center justify-center text-center px-6 py-10 my-4 border border-dashed border-line ${className}`}>
+      {illustration ? (
+        <Illustration name={illustration} className="mb-f4 h-[180px] w-auto max-w-[260px]" />
+      ) : icon && (
+        <div className="mb-4 w-14 h-14 flex items-center justify-center bg-surface-2 border border-line-soft text-fg">
           {icon}
         </div>
       )}
-      <h3 className="text-sm font-bold text-black dark:text-[#F4F4F6] tracking-wider uppercase">
+      <h3 className="text-[17px] font-semibold text-fg tracking-tight">
         {title}
       </h3>
-      <p className="text-xs text-black/60 dark:text-[#94A3B8] mt-1.5 max-w-sm leading-relaxed font-medium">
+      <p className="mt-1.5 text-[14px] text-muted max-w-[300px] leading-relaxed">
         {description}
       </p>
+      {note && (
+        <p className="mt-3 font-cursive text-[22px] leading-tight font-semibold text-fg -rotate-2">
+          {note}
+        </p>
+      )}
       {actionLabel && onAction && (
-        <div className="mt-5">
-          <Button 
-            variant="primary" 
-            size="sm" 
-            onClick={onAction}
-            className="rounded-none bg-black text-white dark:bg-white dark:text-black hover:opacity-90 transition-opacity shadow-sm"
-          >
-            {actionIcon && <span className="mr-1">{actionIcon}</span>}
-            <span className="uppercase font-bold tracking-wider text-[11px]">{actionLabel}</span>
-          </Button>
-        </div>
+        <Button variant="primary" onClick={onAction} className="mt-5">
+          {actionIcon}
+          {actionLabel}
+        </Button>
       )}
     </div>
   );

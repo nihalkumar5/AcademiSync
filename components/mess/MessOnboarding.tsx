@@ -3,7 +3,7 @@
 import { shareLink, PLAY_STORE_URL } from '@/lib/shareUtils';
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Sparkles, X, ArrowRight, CheckCircle2, Image as ImageIcon, Check } from 'lucide-react';
+import { Upload, Sparkles, X, ArrowRight, CheckCircle2, Image as ImageIcon, Check } from '@/components/ui/icons';
 import { useApp } from '@/context/AppContext';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -204,30 +204,30 @@ ${PLAY_STORE_URL}
           >
             <div className="mb-12 relative">
               {onCancel && (
-                <button onClick={onCancel} className="absolute top-0 right-0 p-2 text-[#6B6B6B] hover:text-black dark:hover:text-white transition-colors">
+                <button onClick={onCancel} className="absolute top-0 right-0 p-2 text-[#6B6B6B] hover:text-fg transition-colors">
                   <X className="w-6 h-6" />
                 </button>
               )}
-              <h2 className="text-[40px] font-normal text-black dark:text-[#F4F4F6] tracking-tight leading-[44px]">
+              <h2 className="page-title">
                 Hostel,<br />
                 Mess,<br />
                 Weekly,<br />
                 Menu
               </h2>
-              <p className="text-[14px] font-normal text-black/60 dark:text-[#94A3B8] leading-[20px] mt-4 max-w-[280px]">
+              <p className="text-[14px] font-normal text-muted leading-[20px] mt-4 max-w-[280px]">
                 Upload the weekly menu once. We'll organise meals, timings and days automatically.
               </p>
 
               <div className="flex items-center gap-3 mt-8">
                 <button
                   onClick={() => setShowJoinInput(true)}
-                  className="flex items-center justify-center h-11 px-5 rounded-none border border-black/10 dark:border-white/[0.1] bg-white dark:bg-white/[0.06] text-black dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-black/5 dark:hover:bg-white/[0.1] transition-colors cursor-pointer shadow-sm"
+                  className="btn btn-secondary"
                 >
                   Join Mess
                 </button>
                 <button
                   onClick={() => setShowImportModal(true)}
-                  className="flex items-center justify-center h-11 px-5 rounded-none bg-black dark:bg-white text-white dark:text-black text-[13px] font-semibold transition-opacity hover:opacity-90 gap-2 cursor-pointer shadow-sm"
+                  className="btn btn-primary"
                 >
                   <Sparkles className="w-4 h-4 text-amber-500" /> Magic Import
                 </button>
@@ -236,13 +236,13 @@ ${PLAY_STORE_URL}
 
             {/* JOIN EXISTING */}
             {showJoinInput && (
-              <div className="mb-12 rounded-none border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] p-5 flex flex-col md:flex-row md:items-center justify-between group gap-4 shadow-sm">
+              <div className="mb-12 rounded-none border border-line bg-surface-2 p-5 flex flex-col md:flex-row md:items-center justify-between group gap-4 shadow-sm">
                 <div className="flex flex-col">
-                  <p className="text-[14px] text-black dark:text-[#F4F4F6] font-medium leading-relaxed">
+                  <p className="text-[14px] text-fg font-medium leading-relaxed">
                     Have an invite code?
                   </p>
-                  <p className="text-[11px] font-bold tracking-[1px] uppercase text-black/60 dark:text-[#A1A1AA] mt-1">
-                    ENTER MESS ID BELOW
+                  <p className="text-[12px] font-bold text-muted mt-1">
+                    Enter mess id below
                   </p>
                 </div>
                 
@@ -250,7 +250,7 @@ ${PLAY_STORE_URL}
                   <input 
                     type="text" 
                     placeholder="e.g. 1a2b3c4d"
-                    className="w-full bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] rounded-none px-3.5 py-2.5 text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors shadow-sm"
+                    className="w-full bg-surface border border-line rounded-none px-3.5 py-2.5 text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors shadow-sm"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && e.currentTarget.value) {
                         executeJoinMess(e.currentTarget.value);
@@ -270,38 +270,38 @@ ${PLAY_STORE_URL}
             exit={{ opacity: 0, y: -10 }}
             className="flex flex-col justify-center flex-1 min-h-[500px] max-w-sm mx-auto w-full"
           >
-            <p className="text-[11px] font-bold tracking-[2px] uppercase text-black/60 dark:text-white/60 mb-10 text-center">
-              READING YOUR MENU
+            <p className="text-[12px] font-bold text-muted mb-10 text-center">
+              Reading your menu
             </p>
 
             <div className="flex flex-col gap-5 mb-12">
               <div className="flex items-center gap-3">
-                {progress > 20 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-black/20 dark:border-white/20" />}
-                <span className={`text-[16px] font-medium ${progress > 20 ? 'text-black dark:text-[#F4F4F6]' : 'text-black/60 dark:text-[#A1A1AA]'}`}>Finding days</span>
+                {progress > 20 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-line" />}
+                <span className={`text-[16px] font-medium ${progress > 20 ? 'text-fg' : 'text-muted'}`}>Finding days</span>
               </div>
               <div className="flex items-center gap-3">
-                {progress > 40 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-black/20 dark:border-white/20" />}
-                <span className={`text-[16px] font-medium ${progress > 40 ? 'text-black dark:text-[#F4F4F6]' : 'text-black/60 dark:text-[#A1A1AA]'}`}>Detecting meals</span>
+                {progress > 40 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-line" />}
+                <span className={`text-[16px] font-medium ${progress > 40 ? 'text-fg' : 'text-muted'}`}>Detecting meals</span>
               </div>
               <div className="flex items-center gap-3">
-                {progress > 60 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-black/20 dark:border-white/20" />}
-                <span className={`text-[16px] font-medium ${progress > 60 ? 'text-black dark:text-[#F4F4F6]' : 'text-black/60 dark:text-[#A1A1AA]'}`}>Reading dishes</span>
+                {progress > 60 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-line" />}
+                <span className={`text-[16px] font-medium ${progress > 60 ? 'text-fg' : 'text-muted'}`}>Reading dishes</span>
               </div>
               <div className="flex items-center gap-3">
-                {progress > 80 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-black/20 dark:border-white/20" />}
-                <span className={`text-[16px] font-medium ${progress > 80 ? 'text-black dark:text-[#F4F4F6]' : 'text-black/60 dark:text-[#A1A1AA]'}`}>Matching timings</span>
+                {progress > 80 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-line" />}
+                <span className={`text-[16px] font-medium ${progress > 80 ? 'text-fg' : 'text-muted'}`}>Matching timings</span>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="h-1.5 bg-black/10 dark:bg-white/[0.08] rounded-full flex-1 overflow-hidden">
+              <div className="h-1.5 bg-surface-3 rounded-full flex-1 overflow-hidden">
                 <motion.div 
                   className="h-full bg-emerald-500 rounded-full" 
                   initial={{ width: '0%' }}
                   animate={{ width: `${progress}%` }}
                 />
               </div>
-              <span className="text-[12px] font-mono text-black/60 dark:text-[#94A3B8]">
+              <span className="text-[12px] font-mono text-muted">
                 {Math.floor(progress)}%
               </span>
             </div>
@@ -316,25 +316,25 @@ ${PLAY_STORE_URL}
             exit={{ opacity: 0, y: -10 }}
             className="flex flex-col h-full py-4 max-h-[80vh]"
           >
-            <p className="text-[11px] font-bold tracking-[2px] uppercase text-black/60 dark:text-white/60 mb-6 text-center">
+            <p className="text-[12px] font-bold text-muted mb-6 text-center">
               {isEditing ? 'EDIT YOUR MENU' : 'YOUR MENU IS READY'}
             </p>
 
             <div className="flex-1 overflow-y-auto mb-8 pr-2 flex flex-col gap-6">
               {/* Meal Timings Card */}
-              <div className="bg-white dark:bg-[#121317] border border-black/10 dark:border-white/[0.08] rounded-none p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-4 border-b border-black/10 dark:border-white/[0.08] pb-3">
-                  <h3 className="text-[13px] font-bold tracking-[1.5px] uppercase text-black dark:text-[#F4F4F6]">
-                    MEAL TIMINGS
+              <div className="bg-surface border border-line rounded-none p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4 border-b border-line pb-3">
+                  <h3 className="text-[13px] font-bold text-fg">
+                    Meal timings
                   </h3>
-                  <span className="text-[11px] text-black/60 dark:text-[#94A3B8]">
+                  <span className="text-[11px] text-muted">
                     Used for live notifications & meal tracker
                   </span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {['Breakfast', 'Lunch', 'Snacks', 'Dinner'].map((meal) => (
                     <div key={meal} className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-black/60 dark:text-[#94A3B8]">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-muted">
                         {meal}
                       </label>
                       {isEditing ? (
@@ -348,10 +348,10 @@ ${PLAY_STORE_URL}
                             })
                           }
                           placeholder="e.g. 8:00 - 10:00"
-                          className="bg-[#F7F7F5] dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] rounded-none px-3.5 py-2 text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30"
+                          className="bg-surface-2 border border-line rounded-none px-3.5 py-2 text-[13px] text-fg focus:outline-none focus:border-line-strong"
                         />
                       ) : (
-                        <p className="text-[14px] font-mono font-medium text-black dark:text-[#F4F4F6]">
+                        <p className="text-[14px] font-mono font-medium text-fg">
                           {extractedTimings[meal] || '8:00 - 10:00'}
                         </p>
                       )}
@@ -366,9 +366,9 @@ ${PLAY_STORE_URL}
                 if (!isEditing && day !== 'Monday') return null;
 
                 return (
-                  <div key={day} className="bg-white dark:bg-[#121317] border border-black/10 dark:border-white/[0.08] rounded-none p-6 shadow-sm">
-                    <h3 className="text-[15px] font-bold text-black dark:text-[#F4F4F6] mb-6 border-b border-black/10 dark:border-white/[0.08] pb-3">
-                      {day.toUpperCase()} {(!isEditing && day === 'Monday') && <span className="text-[11px] text-black/60 dark:text-[#94A3B8] ml-2 font-normal lowercase">(preview)</span>}
+                  <div key={day} className="bg-surface border border-line rounded-none p-6 shadow-sm">
+                    <h3 className="text-[15px] font-bold text-fg mb-6 border-b border-line pb-3">
+                      {day.toUpperCase()} {(!isEditing && day === 'Monday') && <span className="text-[11px] text-muted ml-2 font-normal lowercase">(preview)</span>}
                     </h3>
                     
                     {['Breakfast', 'Lunch', 'Snacks', 'Dinner'].map(meal => {
@@ -377,7 +377,7 @@ ${PLAY_STORE_URL}
                       
                       return (
                         <div key={meal} className="mb-6 last:mb-0">
-                          <h4 className="text-[11px] font-bold tracking-[1px] uppercase text-black/60 dark:text-[#94A3B8] mb-2">
+                          <h4 className="text-[11px] font-bold tracking-[1px] uppercase text-muted mb-2">
                             {meal}
                           </h4>
                           {isEditing ? (
@@ -395,10 +395,10 @@ ${PLAY_STORE_URL}
                                 });
                               }}
                               placeholder="e.g. Aloo Paratha, Curd"
-                              className="w-full bg-[#F7F7F5] dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] rounded-none px-3.5 py-2.5 text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
+                              className="w-full bg-surface-2 border border-line rounded-none px-3.5 py-2.5 text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                             />
                           ) : (
-                            <p className="text-[14px] text-black dark:text-[#F4F4F6] leading-relaxed">
+                            <p className="text-[14px] text-fg leading-relaxed">
                               {Array.isArray(items) ? items.join(' · ') : items}
                             </p>
                           )}
@@ -414,7 +414,7 @@ ${PLAY_STORE_URL}
               {isEditing ? (
                 <button 
                   onClick={() => setIsEditing(false)} 
-                  className="w-full h-12 rounded-none bg-black dark:bg-white text-white dark:text-black text-[14px] font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+                  className="w-full h-11 rounded-none bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
                 >
                   Done Editing
                 </button>
@@ -425,7 +425,7 @@ ${PLAY_STORE_URL}
                   </Button>
                   <button 
                     onClick={() => setIsEditing(true)}
-                    className="w-full h-12 rounded-none border border-black/10 dark:border-white/[0.1] text-[14px] font-bold text-black dark:text-[#F4F4F6] bg-white dark:bg-white/[0.06] hover:bg-black/5 dark:hover:bg-white/[0.1] transition-colors cursor-pointer"
+                    className="w-full h-11 rounded-none border border-line text-[14px] font-semibold text-fg bg-white dark:bg-white/[0.06] hover:bg-black/5 dark:hover:bg-white/[0.1] transition-colors cursor-pointer"
                   >
                     Edit menu
                   </button>
@@ -442,18 +442,18 @@ ${PLAY_STORE_URL}
             animate={{ opacity: 1, scale: 1 }}
             className="flex flex-col items-center justify-center flex-1 min-h-[500px] text-center"
           >
-            <p className="text-[11px] font-bold tracking-[2px] uppercase text-black/60 dark:text-white/60 mb-6">
+            <p className="text-[12px] font-bold text-muted mb-6">
               YOUR MESS IS READY 🎉
             </p>
-            <h2 className="text-[32px] font-semibold leading-[1.1] text-black dark:text-[#F4F4F6] mb-4">
+            <h2 className="text-[32px] font-semibold leading-[1.1] text-fg mb-4">
               Share this link with your hostel mates.
             </h2>
-            <p className="text-black/60 dark:text-[#94A3B8] text-[14px] mb-8">
+            <p className="text-muted text-[14px] mb-8">
               Anyone with this link can join.
             </p>
 
-            <div className="flex items-center justify-between w-full p-4 rounded-none border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] mb-6 shadow-sm">
-              <span className="text-[15px] font-mono font-medium text-black dark:text-[#F4F4F6] truncate mr-4">
+            <div className="flex items-center justify-between w-full p-4 rounded-none border border-line bg-surface-2 mb-6 shadow-sm">
+              <span className="text-[15px] font-mono font-medium text-fg truncate mr-4">
                 intersemester.app/join/{messId}
               </span>
             </div>
@@ -469,7 +469,7 @@ ${PLAY_STORE_URL}
                   if (onCancel) onCancel();
                   setActiveView('mess');
                 }}
-                className="w-full h-12 rounded-none border border-black/10 dark:border-white/[0.1] text-black dark:text-[#F4F4F6] text-[14px] font-semibold hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors cursor-pointer flex items-center justify-center gap-2"
+                className="btn btn-secondary w-full"
               >
                 Go to my mess menu <ArrowRight className="w-4 h-4" />
               </button>
@@ -481,7 +481,7 @@ ${PLAY_STORE_URL}
       
       <Modal isOpen={showJoinInput} onClose={() => setShowJoinInput(false)} title="Join Mess Menu">
         <form onSubmit={handleJoinSubmit} className="flex flex-col gap-4">
-          <p className="text-[13px] text-black/60 dark:text-[#94A3B8]">
+          <p className="text-[13px] text-muted">
             Enter a mess invite code or paste an invite link to view the shared menu.
           </p>
           <div className="flex flex-col gap-2">
@@ -490,14 +490,14 @@ ${PLAY_STORE_URL}
               placeholder="e.g., ext_..."
               value={inviteInput}
               onChange={(e) => setInviteInput(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-none border border-black/10 dark:border-white/[0.1] bg-white dark:bg-[#090A0C] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors shadow-sm"
+              className="w-full px-4 py-2.5 rounded-none border border-line bg-surface text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors shadow-sm"
               required
             />
           </div>
           <button
             type="submit"
             disabled={isJoining}
-            className="h-11 px-5 rounded-none bg-black dark:bg-white text-white dark:text-black text-[13px] font-bold uppercase tracking-wider flex items-center justify-center disabled:opacity-50 hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
+            className="btn btn-primary"
           >
             {isJoining ? 'Joining...' : 'Join'}
           </button>

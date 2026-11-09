@@ -6,7 +6,7 @@ import { Homework, Subject, HomeworkPriority, HomeworkStatus } from '@/lib/types
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { clsx } from 'clsx';
-import { Users, Vote, Search, ChevronDown, Check, Trash2 } from 'lucide-react';
+import { Users, Vote, Search, ChevronDown, Check, Trash2 } from '@/components/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface AddHomeworkModalProps {
@@ -159,29 +159,29 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
         mobileFullSheet
       >
         <div className="-m-5">
-          <form onSubmit={handleSubmit} className="flex flex-col text-left bg-[#F7F7F5] dark:bg-[#121317] min-h-full">
+          <form onSubmit={handleSubmit} className="flex flex-col text-left bg-surface-2 min-h-full">
             <div className="flex flex-col gap-[24px] p-5 pb-24">
               
               {/* SECTION 1: TASK */}
               <div className="flex flex-col gap-[16px]">
-                <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] dark:text-[#A1A1AA] uppercase">TASK</span>
+                <span className="section-label">Task</span>
                 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-semibold text-[#111111] dark:text-[#F4F4F6] uppercase">Subject</label>
+                  <label className="text-[12px] font-semibold text-fg ">Subject</label>
                   <button
                     type="button"
                     onClick={() => setShowSubjectModal(true)}
-                    className="w-full px-3 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D9D9D6] dark:border-white/[0.1] text-[14px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-[#111111] dark:focus:border-white/30 transition-colors text-left flex items-center justify-between h-[44px]"
+                    className="w-full px-3 bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors text-left flex items-center justify-between h-[44px]"
                   >
                     <span className="truncate pr-2">
                       {selectedSubject ? (selectedSubject.code && selectedSubject.code !== 'UNK' ? `[${selectedSubject.code}] ${selectedSubject.name}` : selectedSubject.name) : 'Select Subject...'}
                     </span>
-                    <ChevronDown className="w-4 h-4 shrink-0 text-[#111111] dark:text-[#F4F4F6]" />
+                    <ChevronDown className="w-4 h-4 shrink-0 text-fg" />
                   </button>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-semibold text-[#111111] dark:text-[#F4F4F6] uppercase">Task / Assignment Title</label>
+                  <label className="text-[12px] font-semibold text-fg ">Task / Assignment Title</label>
                   <input
                     type="text"
                     value={title}
@@ -189,80 +189,80 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
                     required
                     autoFocus
                     placeholder="e.g. Assignment 2"
-                    className="w-full px-3 h-[44px] bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D9D9D6] dark:border-white/[0.1] text-[14px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-[#111111] focus:border-[1.5px] dark:focus:border-white/30 transition-colors placeholder:text-[#6F6F6F]/50 dark:placeholder:text-[#64748B]"
+                    className="w-full px-3 h-[44px] bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong focus:border-[1.5px] transition-colors placeholder:text-[#6F6F6F]/50 dark:placeholder:text-[#71717A]"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-semibold text-[#111111] dark:text-[#F4F4F6] uppercase">Description</label>
-                    <span className="text-[11px] font-bold text-[#6F6F6F] dark:text-[#A1A1AA] uppercase tracking-wider">OPTIONAL</span>
+                    <label className="text-[12px] font-semibold text-fg ">Description</label>
+                    <span className="section-label">Optional</span>
                   </div>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Problem details..."
-                    className="w-full p-3 min-h-[76px] bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D9D9D6] dark:border-white/[0.1] text-[14px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-[#111111] focus:border-[1.5px] dark:focus:border-white/30 transition-colors resize-y placeholder:text-[#6F6F6F]/50 dark:placeholder:text-[#64748B]"
+                    className="w-full p-3 min-h-[76px] bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong focus:border-[1.5px] transition-colors resize-y placeholder:text-[#6F6F6F]/50 dark:placeholder:text-[#71717A]"
                   />
                 </div>
               </div>
 
               {/* SECTION 2: DEADLINE */}
               <div className="flex flex-col gap-[16px]">
-                <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] dark:text-[#A1A1AA] uppercase">DEADLINE</span>
+                <span className="section-label">Deadline</span>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-semibold text-[#111111] dark:text-[#F4F4F6] uppercase">Deadline Date</label>
+                    <label className="text-[12px] font-semibold text-fg ">Deadline Date</label>
                     <input
                       type="date"
                       value={deadline.split('T')[0]}
                       onChange={(e) => setDeadline(e.target.value ? `${e.target.value}T23:59` : '')}
                       required
-                      className="w-full px-3 h-[44px] bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D9D9D6] dark:border-white/[0.1] text-[14px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-[#111111] focus:border-[1.5px] dark:focus:border-white/30 transition-colors"
+                      className="w-full px-3 h-[44px] bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong focus:border-[1.5px] transition-colors"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-semibold text-[#111111] dark:text-[#F4F4F6] uppercase">Priority Level</label>
+                    <label className="text-[12px] font-semibold text-fg ">Priority Level</label>
                     <button
                       type="button"
                       onClick={() => setShowPriorityModal(true)}
-                      className="w-full px-3 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D9D9D6] dark:border-white/[0.1] text-[14px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-[#111111] dark:focus:border-white/30 transition-colors text-left flex items-center justify-between h-[44px]"
+                      className="w-full px-3 bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors text-left flex items-center justify-between h-[44px]"
                     >
                       <span className="truncate pr-2">{priority}</span>
-                      <ChevronDown className="w-4 h-4 shrink-0 text-[#111111] dark:text-[#F4F4F6]" />
+                      <ChevronDown className="w-4 h-4 shrink-0 text-fg" />
                     </button>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-semibold text-[#111111] dark:text-[#F4F4F6] uppercase">Status</label>
+                  <label className="text-[12px] font-semibold text-fg ">Status</label>
                   <button
                     type="button"
                     onClick={() => setShowStatusModal(true)}
-                    className="w-full px-3 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D9D9D6] dark:border-white/[0.1] text-[14px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-[#111111] dark:focus:border-white/30 transition-colors text-left flex items-center justify-between h-[44px]"
+                    className="w-full px-3 bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors text-left flex items-center justify-between h-[44px]"
                   >
                     <span className="truncate pr-2">{status}</span>
-                    <ChevronDown className="w-4 h-4 shrink-0 text-[#111111] dark:text-[#F4F4F6]" />
+                    <ChevronDown className="w-4 h-4 shrink-0 text-fg" />
                   </button>
                 </div>
               </div>
 
               {/* SECTION 3: ATTACHMENT */}
               <div className="flex flex-col gap-[16px]">
-                <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] dark:text-[#A1A1AA] uppercase">ATTACHMENT</span>
+                <span className="section-label">Attachment</span>
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-semibold text-[#111111] dark:text-[#F4F4F6] uppercase">Google Drive Link</label>
-                    <span className="text-[11px] font-bold text-[#6F6F6F] dark:text-[#A1A1AA] uppercase tracking-wider">OPTIONAL</span>
+                    <label className="text-[12px] font-semibold text-fg ">Google Drive Link</label>
+                    <span className="section-label">Optional</span>
                   </div>
                   <input
                     type="url"
                     value={attachmentName}
                     onChange={(e) => setAttachmentName(e.target.value)}
                     placeholder="Paste link..."
-                    className="w-full px-3 h-[44px] bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D9D9D6] dark:border-white/[0.1] text-[14px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-[#111111] focus:border-[1.5px] dark:focus:border-white/30 transition-colors placeholder:text-[#6F6F6F]/50 dark:placeholder:text-[#64748B]"
+                    className="w-full px-3 h-[44px] bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong focus:border-[1.5px] transition-colors placeholder:text-[#6F6F6F]/50 dark:placeholder:text-[#71717A]"
                   />
                 </div>
               </div>
@@ -270,23 +270,23 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
               {/* SECTION 4: VISIBILITY */}
               {!homeworkToEdit && profile.isBatchSynced && profile.batchKey && (
                 <div className="flex flex-col gap-[16px]">
-                  <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] dark:text-[#A1A1AA] uppercase">VISIBILITY</span>
+                  <span className="section-label">Visibility</span>
                   <div 
                     onClick={() => setShareWithBatch(!shareWithBatch)}
-                    className="w-full p-4 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D9D9D6] dark:border-white/[0.1] flex items-center justify-between cursor-pointer group"
+                    className="w-full p-4 bg-surface border border-line flex items-center justify-between cursor-pointer group"
                   >
                     <div className="flex items-center gap-3">
                       <div className={clsx(
                         "w-5 h-5 border-[1.5px] flex items-center justify-center shrink-0 transition-colors",
-                        shareWithBatch ? "bg-[#111111] border-[#111111] dark:bg-white dark:border-white" : "border-[#D9D9D6] dark:border-white/[0.2]"
+                        shareWithBatch ? "bg-ink border-line-strong" : "border-line"
                       )}>
-                        {shareWithBatch && <Check className="w-3.5 h-3.5 text-white dark:text-black" strokeWidth={3} />}
+                        {shareWithBatch && <Check className="w-3.5 h-3.5 text-on-ink" strokeWidth={3} />}
                       </div>
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-[13px] font-bold uppercase tracking-wider text-[#111111] dark:text-[#F4F4F6]">
-                          POST TO ENTIRE BATCH
+                        <span className="text-[13px] font-bold text-fg">
+                          Post to entire batch
                         </span>
-                        <span className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8]">
+                        <span className="text-[11px] text-muted">
                           {isBatchCR ? 'Automatically approve & share' : 'Propose to batch for consensus'}
                         </span>
                       </div>
@@ -298,13 +298,13 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
 
             {/* Sticky Footer */}
             <div 
-              className="sticky bottom-0 left-0 right-0 px-5 pt-4 pb-[max(calc(env(safe-area-inset-bottom,0px)+20px),20px)] bg-[#F7F7F5] dark:bg-[#121317] border-t border-[#D9D9D6] dark:border-white/[0.08] flex items-center justify-between z-20"
+              className="sticky bottom-0 left-0 right-0 px-5 pt-4 pb-[max(calc(env(safe-area-inset-bottom,0px)+20px),20px)] bg-surface-2 border-t border-line flex items-center justify-between z-20"
             >
               {homeworkToEdit ? (
                 <button 
                   type="button" 
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="flex items-center gap-1.5 px-3 py-2 text-[13px] font-bold uppercase text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer rounded-none"
+                  className="flex items-center gap-1.5 px-3 h-9 text-[13px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer rounded-none"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>Delete Task</span>
@@ -313,7 +313,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
                 <button 
                   type="button" 
                   onClick={onClose}
-                  className="px-4 py-2.5 text-[13px] font-bold uppercase text-[#111111] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
+                  className="px-4 h-11 text-[14px] font-semibold text-fg hover:bg-surface-2 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -324,14 +324,14 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
                   <button 
                     type="button" 
                     onClick={onClose}
-                    className="px-3 py-2.5 text-[13px] font-bold uppercase text-[#6F6F6F] dark:text-[#94A3B8] hover:text-[#111111] dark:hover:text-[#F4F4F6] transition-colors cursor-pointer"
+                    className="px-3 h-11 text-[14px] font-semibold text-muted hover:text-fg transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
                 )}
                 <button 
                   type="submit"
-                  className="px-6 py-2.5 bg-[#111111] text-[#FFFFFF] dark:bg-white dark:text-black text-[13px] font-bold uppercase hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+                  className="px-6 h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
                 >
                   {homeworkToEdit ? 'Save Changes' : shareWithBatch ? (isBatchCR ? 'Post Task' : 'Propose Task') : 'Create Task'}
                 </button>
@@ -345,11 +345,11 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
       <Modal
         isOpen={showSubjectModal}
         onClose={() => setShowSubjectModal(false)}
-        title="SEARCH SUBJECTS"
+        title="Search subjects"
       >
         <div className="flex flex-col max-h-[60vh] sm:max-h-[50vh] -mx-5 sm:-mx-6 -mb-5 sm:-mb-6">
-          <div className="relative border-b border-[#D9D9D6] dark:border-white/[0.08] shrink-0 bg-white dark:bg-[#121317] px-5 sm:px-6">
-            <span className="absolute left-9 sm:left-10 top-1/2 -translate-y-1/2 text-[#111111] dark:text-[#F4F4F6]">
+          <div className="relative border-b border-line shrink-0 bg-surface px-5 sm:px-6">
+            <span className="absolute left-9 sm:left-10 top-1/2 -translate-y-1/2 text-fg">
               <Search className="w-4 h-4" />
             </span>
             <input 
@@ -357,10 +357,10 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
               placeholder="Search subjects..."
               value={subjectSearch}
               onChange={(e) => setSubjectSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-4 bg-transparent text-[14px] focus:outline-none text-[#111111] dark:text-[#F4F4F6] placeholder:text-[#6F6F6F] dark:placeholder:text-[#64748B]"
+              className="w-full pl-10 pr-4 py-4 bg-transparent text-[14px] focus:outline-none text-fg placeholder:text-[#6F6F6F] dark:placeholder:text-[#71717A]"
             />
           </div>
-          <div className="flex-1 overflow-y-auto bg-[#F7F7F5] dark:bg-[#090A0C]">
+          <div className="flex-1 overflow-y-auto bg-surface-2">
             {filteredSubjects.map(sub => (
               <button
                 key={sub.id}
@@ -371,25 +371,25 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
                   setSubjectSearch('');
                 }}
                 className={clsx(
-                  "w-full text-left p-4 sm:p-5 border-b border-[#D9D9D6] dark:border-white/[0.08] bg-white dark:bg-[#121317] transition-colors flex items-center justify-between",
-                  subjectId === sub.id ? "bg-black/5 dark:bg-white/[0.08]" : "hover:bg-black/5 dark:hover:bg-white/[0.04]"
+                  "w-full text-left p-4 sm:p-5 border-b border-line bg-surface transition-colors flex items-center justify-between",
+                  subjectId === sub.id ? "bg-black/5 dark:bg-white/[0.08]" : "hover:bg-surface-2"
                 )}
               >
                 <div className="flex flex-col pr-4">
                   {sub.code && sub.code !== 'UNK' && (
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] mb-0.5">
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-muted mb-0.5">
                       {sub.code}
                     </span>
                   )}
-                  <span className="text-[14px] font-semibold text-[#111111] dark:text-[#F4F4F6]">
+                  <span className="text-[14px] font-semibold text-fg">
                     {sub.name}
                   </span>
                 </div>
-                {subjectId === sub.id && <Check className="w-5 h-5 shrink-0 text-[#111111] dark:text-[#F4F4F6]" />}
+                {subjectId === sub.id && <Check className="w-5 h-5 shrink-0 text-fg" />}
               </button>
             ))}
             {filteredSubjects.length === 0 && (
-              <div className="p-8 text-center text-[13px] text-[#6F6F6F] dark:text-[#94A3B8]">
+              <div className="p-8 text-center text-[13px] text-muted">
                 No subjects found.
               </div>
             )}
@@ -400,10 +400,10 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
       <Modal
         isOpen={showPriorityModal}
         onClose={() => setShowPriorityModal(false)}
-        title="PRIORITY LEVEL"
+        title="Priority level"
       >
         <div className="flex flex-col -mx-5 sm:-mx-6 -mb-5 sm:-mb-6">
-          <div className="flex-1 bg-[#F7F7F5] dark:bg-[#090A0C]">
+          <div className="flex-1 bg-surface-2">
             {(['High', 'Medium', 'Low'] as HomeworkPriority[]).map(p => (
               <button
                 key={p}
@@ -413,14 +413,14 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
                   setShowPriorityModal(false);
                 }}
                 className={clsx(
-                  "w-full text-left p-4 sm:p-5 border-b border-[#D9D9D6] dark:border-white/[0.08] bg-white dark:bg-[#121317] transition-colors flex items-center justify-between",
-                  priority === p ? "bg-black/5 dark:bg-white/[0.08]" : "hover:bg-black/5 dark:hover:bg-white/[0.04]"
+                  "w-full text-left p-4 sm:p-5 border-b border-line bg-surface transition-colors flex items-center justify-between",
+                  priority === p ? "bg-black/5 dark:bg-white/[0.08]" : "hover:bg-surface-2"
                 )}
               >
-                <span className="text-[14px] font-semibold text-[#111111] dark:text-[#F4F4F6]">
+                <span className="text-[14px] font-semibold text-fg">
                   {p}
                 </span>
-                {priority === p && <Check className="w-5 h-5 shrink-0 text-[#111111] dark:text-[#F4F4F6]" />}
+                {priority === p && <Check className="w-5 h-5 shrink-0 text-fg" />}
               </button>
             ))}
           </div>
@@ -430,10 +430,10 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
       <Modal
         isOpen={showStatusModal}
         onClose={() => setShowStatusModal(false)}
-        title="STATUS"
+        title="Status"
       >
         <div className="flex flex-col -mx-5 sm:-mx-6 -mb-5 sm:-mb-6">
-          <div className="flex-1 bg-[#F7F7F5] dark:bg-[#090A0C]">
+          <div className="flex-1 bg-surface-2">
             {(['Not Started', 'In Progress', 'Completed'] as HomeworkStatus[]).map(s => (
               <button
                 key={s}
@@ -443,14 +443,14 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
                   setShowStatusModal(false);
                 }}
                 className={clsx(
-                  "w-full text-left p-4 sm:p-5 border-b border-[#D9D9D6] dark:border-white/[0.08] bg-white dark:bg-[#121317] transition-colors flex items-center justify-between",
-                  status === s ? "bg-black/5 dark:bg-white/[0.08]" : "hover:bg-black/5 dark:hover:bg-white/[0.04]"
+                  "w-full text-left p-4 sm:p-5 border-b border-line bg-surface transition-colors flex items-center justify-between",
+                  status === s ? "bg-black/5 dark:bg-white/[0.08]" : "hover:bg-surface-2"
                 )}
               >
-                <span className="text-[14px] font-semibold text-[#111111] dark:text-[#F4F4F6]">
+                <span className="text-[14px] font-semibold text-fg">
                   {s}
                 </span>
-                {status === s && <Check className="w-5 h-5 shrink-0 text-[#111111] dark:text-[#F4F4F6]" />}
+                {status === s && <Check className="w-5 h-5 shrink-0 text-fg" />}
               </button>
             ))}
           </div>
@@ -465,20 +465,20 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({
         maxWidth="sm"
       >
         <div className="flex flex-col gap-4 text-left">
-          <p className="text-[14px] text-[#111111] dark:text-[#FFFFFF]">
+          <p className="text-[14px] text-fg">
             Are you sure you want to delete <span className="font-bold">"{title || homeworkToEdit?.title}"</span>?
           </p>
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#D9D9D6] dark:border-[#333333] mt-2">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-line mt-2">
             <button 
               type="button"
-              className="text-[13px] font-bold uppercase text-[#111111] dark:text-[#FFFFFF] px-4 py-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              className="text-[13px] font-semibold text-fg px-4 h-9 hover:bg-surface-2 transition-colors cursor-pointer"
               onClick={() => setShowDeleteConfirm(false)}
             >
               No, Keep
             </button>
             <button 
               type="button"
-              className="text-[13px] font-bold uppercase bg-red-600 hover:bg-red-700 text-[#FFFFFF] px-6 py-2.5 transition-colors cursor-pointer"
+              className="text-[14px] font-semibold bg-red-600 hover:bg-red-700 text-[#FFFFFF] px-6 h-11 transition-colors cursor-pointer"
               onClick={() => {
                 if (homeworkToEdit) {
                   deleteHomework(homeworkToEdit.id);

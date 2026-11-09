@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Modal } from '../ui/Modal';
-import { Upload } from 'lucide-react';
+import { Upload } from '@/components/ui/icons';
 import { useApp } from '@/context/AppContext';
 
 import { processMultipleFilesForAi } from '@/lib/fileCompressor';
@@ -47,7 +47,7 @@ export const MessImportModal: React.FC<MessImportModalProps> = ({ isOpen, onClos
       description="Upload your mess menu photo(s) or PDF and AI will auto-extract dishes, days & timings."
     >
       <div className="flex flex-col text-center w-full mt-2">
-        <div className="relative rounded-none border-2 border-dashed border-black/15 dark:border-white/[0.1] hover:border-black/30 dark:hover:border-white/20 bg-[#F7F7F5]/50 dark:bg-white/[0.02] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-all p-8 flex flex-col items-center justify-center cursor-pointer group">
+        <div className="relative rounded-none border-2 border-dashed border-line hover:border-black/30 dark:hover:border-white/20 bg-surface-2 hover:bg-surface-2 transition-all p-8 flex flex-col items-center justify-center cursor-pointer group">
           <input
             type="file"
             multiple
@@ -55,19 +55,19 @@ export const MessImportModal: React.FC<MessImportModalProps> = ({ isOpen, onClos
             onChange={handleFileUpload}
             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
           />
-          <Upload className="w-6 h-6 mb-3 text-black dark:text-[#F4F4F6] group-hover:-translate-y-0.5 transition-transform" />
-          <h3 className="text-[15px] font-bold text-black dark:text-[#F4F4F6] mb-1">
+          <Upload className="w-6 h-6 mb-3 text-fg group-hover:-translate-y-0.5 transition-transform" />
+          <h3 className="text-[15px] font-bold text-fg mb-1">
             Choose menu file(s)
           </h3>
-          <p className="text-[13px] text-black/60 dark:text-[#94A3B8] mb-4">
+          <p className="text-[13px] text-muted mb-4">
             Photos or PDF document
           </p>
           
-          <div className="px-6 h-[40px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto mb-3 shadow-sm">
+          <div className="px-6 h-[40px] flex items-center justify-center bg-ink text-on-ink font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto mb-3 shadow-sm">
             Choose file
           </div>
 
-          <div className="text-[11px] text-black/40 dark:text-[#64748B] font-medium tracking-[0.5px] uppercase">
+          <div className="text-[12px] text-faint font-medium ">
             JPG · PNG · PDF (Multi-Page Supported)
           </div>
         </div>

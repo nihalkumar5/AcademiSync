@@ -878,18 +878,22 @@ export const calculateTodayFocus = (
     });
   });
 
-  // 2. Check if today has a lab session that requires prep
+  // 2. Labs later today that need prep. Prep only matters before the lab, so once it
+  // starts the item goes away instead of sitting there for the rest of the day.
   const todayDay = getCurrentDayOfWeek();
-  const todayLabs = timetable.filter((s) => s.day === todayDay && s.isLab);
+  const nowDate = new Date();
+  const nowMinutes = nowDate.getHours() * 60 + nowDate.getMinutes();
+  const todayLabs = timetable.filter((s) => s.day === todayDay && s.isLab && timeToMinutes(s.startTime) > nowMinutes);
 
   todayLabs.forEach((lab) => {
     const sub = subjectMap.get(lab.subjectId);
     items.push({
       id: `prep_${lab.id}`,
-      title: `Prepare practicals for ${sub?.name || 'Lab'} (${lab.room})`,
+      title: `Prepare practicals for ${sub?.name || 'Lab'}${lab.room ? ` (${lab.room})` : ''}`,
       type: 'lab',
       urgency: 'medium',
       tag: 'Lab Prep',
+      deadlineText: `Starts ${formatTime12Hour(lab.startTime)}`,
       completed: false,
     });
   });

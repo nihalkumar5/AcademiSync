@@ -3,22 +3,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Bell,
-  Search,
   Plus,
   Calendar,
   CheckSquare,
-  Backpack,
   Upload,
   Sparkles,
-  Sun,
-  Moon,
-  Clock,
-} from 'lucide-react';
+  Users,
+  Repeat,
+  UserCheck,
+} from '@/components/ui/icons';
+import { getAvatarSeed, getAvatarSrc } from '@/lib/avatar';
 import { useApp } from '@/context/AppContext';
-import { Button } from '../ui/Button';
-import { IntersemesterMonogram } from '../ui/IntersemesterLogo';
+import { dedupeNotifications } from '@/lib/notificationDedupe';
 import { AddHomeworkModal } from '../homework/AddHomeworkModal';
-import { AddCustomItemModal } from '../carry/AddCustomItemModal';
 import { TimetableImportModal } from '../timetable/TimetableImportModal';
 import { HomeworkScanModal } from '../homework/HomeworkScanModal';
 import { CalendarImportModal } from '../calendar/CalendarImportModal';
@@ -28,10 +25,10 @@ export const Header: React.FC = () => {
     activeView,
     setActiveView,
     notifications,
-    settings,
-    updateSettings,
     setCommandPaletteOpen,
+    profile,
   } = useApp();
+  const isFacultyUser = profile?.role === 'faculty';
 
     const [addMenuOpen, setAddMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -50,124 +47,151 @@ export const Header: React.FC = () => {
     };
   }, [addMenuOpen]);
   const [showAddHwModal, setShowAddHwModal] = useState(false);
-  const [showAddCarryModal, setShowAddCarryModal] = useState(false);
   const [showTimetableImportModal, setShowTimetableImportModal] = useState(false);
   const [showHwScanModal, setShowHwScanModal] = useState(false);
   const [showCalendarImportModal, setShowCalendarImportModal] = useState(false);
 
-  // Header Real-time live clock
+  // Desktop context line: date and time to the minute (a ticking seconds clock is noise)
   const [currentTime, setCurrentTime] = useState<string>('');
+
+  // The header sits flush on the page at the top and only gets its hairline + soft shadow once content scrolls under it
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   useEffect(() => {
     const updateTime = () => {
       const d = new Date();
-      setCurrentTime(
-        d.toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: true,
-        })
-      );
+      const date = d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+      const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      setCurrentTime(`${date} · ${time}`);
     };
     updateTime();
-    const interval = setInterval(updateTime, 1000);
+    const interval = setInterval(updateTime, 15000);
     return () => clearInterval(interval);
   }, []);
 
-  const unreadNotifs = notifications.filter((n) => !n.read).length;
+  const unreadNotifs = dedupeNotifications(notifications).filter((n) => !n.read).length;
 
+  // Same names as the sidebar, so the header always says where you are
   const viewTitles: Record<string, string> = {
-    home: 'Home Dashboard',
-    timetable: 'Weekly Timetable',
-    exams: 'Exam Timetable',
-    homework: 'Homework & Tasks',
-    carry: "Tomorrow's Schedule & Bag",
-    subjects: 'Subject Directory',
-    calendar: 'Academic Calendar',
-    notifications: 'Notification Inbox',
-    settings: 'Settings & Profile',
+    home: 'Home',
+    timetable: 'Timetable',
+    exams: 'Exams',
+    papers: 'Question papers',
+    friends: 'Friends',
+    homework: isFacultyUser ? 'Assignments' : 'Tasks',
+    carry: isFacultyUser ? 'Batches' : 'Bag',
+    routines: 'Routines',
+    attendance: 'Attendance',
+    faculty: 'Faculty',
+    subjects: 'Subjects',
+    calendar: 'Academic calendar',
+    mess: 'Mess menu',
+    notifications: 'Notifications',
+    settings: 'Profile & settings',
   };
 
-  const toggleTheme = () => {
-    const next = settings.theme === 'dark' ? 'light' : 'dark';
-    updateSettings({ theme: next });
+  // Quick-create menu: grouped (Create / Import), each action with a tinted icon and a one-line hint.
+  const TONE = {
+    indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200/70 dark:bg-indigo-400/10 dark:text-indigo-300 dark:border-indigo-400/20',
+    violet: 'bg-violet-50 text-violet-700 border-violet-200/70 dark:bg-violet-400/10 dark:text-violet-300 dark:border-violet-400/20',
+    teal: 'bg-teal-50 text-teal-700 border-teal-200/70 dark:bg-teal-400/10 dark:text-teal-300 dark:border-teal-400/20',
+    amber: 'bg-amber-50 text-amber-700 border-amber-200/70 dark:bg-amber-400/10 dark:text-amber-300 dark:border-amber-400/20',
+    sky: 'bg-sky-50 text-sky-700 border-sky-200/70 dark:bg-sky-400/10 dark:text-sky-300 dark:border-sky-400/20',
+    rose: 'bg-rose-50 text-rose-700 border-rose-200/70 dark:bg-rose-400/10 dark:text-rose-300 dark:border-rose-400/20',
+    emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200/70 dark:bg-emerald-400/10 dark:text-emerald-300 dark:border-emerald-400/20',
   };
+  const goAndOpen = (view: any, event?: string) => {
+    setActiveView(view);
+    // Let the target screen mount, then ask it to open its sheet
+    if (event) setTimeout(() => window.dispatchEvent(new Event(event)), 60);
+  };
+  type CreateItem = { label: string; hint: string; icon: React.ComponentType<{ className?: string }>; tone: string; run: () => void };
+  const createSections: { title: string; items: CreateItem[] }[] = isFacultyUser
+    ? [
+        {
+          title: 'Create',
+          items: [
+            { label: 'Take attendance', hint: 'Mark present & absent for a class', icon: UserCheck, tone: TONE.emerald, run: () => goAndOpen('attendance') },
+            { label: 'New assignment', hint: 'Post work to your batches', icon: CheckSquare, tone: TONE.indigo, run: () => goAndOpen('homework', 'faculty:new-assignment') },
+            { label: 'New reminder', hint: 'A repeating to-do for yourself', icon: Repeat, tone: TONE.teal, run: () => goAndOpen('routines', 'routines:new') },
+          ],
+        },
+        {
+          title: 'Manage',
+          items: [
+            { label: 'Connect a batch', hint: 'Link a class with its batch code', icon: Users, tone: TONE.violet, run: () => goAndOpen('carry', 'faculty:connect-batch') },
+            { label: 'My timetable', hint: 'See and edit your lectures', icon: Calendar, tone: TONE.sky, run: () => goAndOpen('timetable') },
+          ],
+        },
+      ]
+    : [
+        {
+          title: 'Create',
+          items: [
+            { label: 'New task', hint: 'Homework, project or submission', icon: CheckSquare, tone: TONE.indigo, run: () => setShowAddHwModal(true) },
+            { label: 'Scan homework', hint: 'Snap a photo, AI fills it in', icon: Sparkles, tone: TONE.violet, run: () => setShowHwScanModal(true) },
+            { label: 'New routine', hint: 'Study, gym or sleep reminders', icon: Repeat, tone: TONE.teal, run: () => goAndOpen('routines', 'routines:new') },
+          ],
+        },
+        {
+          title: 'Import',
+          items: [
+            { label: 'Import timetable', hint: 'From a photo or PDF of your schedule', icon: Upload, tone: TONE.sky, run: () => setShowTimetableImportModal(true) },
+            { label: 'Import academic calendar', hint: 'Holidays, exams and breaks', icon: Calendar, tone: TONE.rose, run: () => setShowCalendarImportModal(true) },
+          ],
+        },
+      ];
 
   return (
     <>
       <header
-        className="sticky top-0 z-40 w-full flex items-center justify-center px-4 sm:px-8 bg-white/80 dark:bg-[#090A0C]/80 backdrop-blur-xl border-b border-[#D8D8D8]/40 dark:border-white/[0.07] shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-colors"
+        className={`sticky top-0 z-40 w-full flex items-center justify-center px-4 sm:px-8 md:px-0 md:h-[72px] md:!py-0 bg-canvas/80 backdrop-blur-xl backdrop-saturate-150 border-b md:border-line md:shadow-none transition-[border-color,box-shadow] duration-200 ${
+          scrolled
+            ? 'border-line-soft shadow-[0_1px_0_rgba(17,17,17,0.02),0_8px_24px_-12px_rgba(17,17,17,0.12)] dark:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)]'
+            : 'border-transparent'
+        }`}
         style={{
           paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 12px), 28px)',
           paddingBottom: '12px',
         }}
       >
-        <div className="flex items-center justify-between w-full max-w-6xl mx-auto relative">
+        <div className="flex items-center justify-between w-full max-w-6xl mx-auto relative md:px-f5">
           <div className="flex items-center gap-3 select-none">
           {/* Logo only shown on mobile where sidebar is hidden */}
-          <h1 className="md:hidden text-xl sm:text-2xl text-[#1A1918] dark:text-[#F4F4F6] tracking-tighter font-sans">
+          <h1 className="md:hidden text-[21px] sm:text-2xl leading-none text-fg tracking-tighter font-sans">
             <span className="font-extrabold">inter</span>
             <span className="font-normal opacity-80">semester</span>
           </h1>
 
-          {/* Desktop Breadcrumb indicator so logo is never duplicated */}
-          <div className="hidden md:flex items-center gap-2 font-mono text-xs">
-            <span className="text-black/60 dark:text-white/60 uppercase">Workspace /</span>
-            <span className="font-bold uppercase tracking-wider text-black dark:text-[#F4F4F6]">
-              {viewTitles[activeView] || 'Dashboard'}
-            </span>
-          </div>
+          {/* Desktop: where you are (the logo already lives in the sidebar) */}
+          <h1 className="hidden md:block text-[24px] font-semibold tracking-tight text-fg">
+            {viewTitles[activeView] || 'Home'}
+          </h1>
         </div>
 
-        <div className="flex items-center gap-1 sm:gap-2.5 text-sm font-medium tracking-tight text-black dark:text-white">
-          {/* Live Clock Pill */}
+        <div className="flex items-center gap-2 sm:gap-2.5 text-sm font-medium tracking-tight text-fg">
+          {/* Date and time, quietly */}
           {currentTime && (
-            <div className="hidden lg:flex items-center gap-2 h-8 px-3 border border-[#D9D9D6] dark:border-white/[0.08] bg-black/[0.02] dark:bg-white/[0.03] text-[12px] font-mono text-[#555555] dark:text-[#A1A1AA] rounded-none">
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_6px_#10b981]" />
-              <span className="tracking-wide">{currentTime}</span>
-            </div>
+            <span className="hidden lg:inline mr-f3 text-[15px] text-muted tabular-nums">{currentTime}</span>
           )}
-
-          {/* Quick Search Button: Original clean borderless icon on mobile, refined pill on desktop */}
-          <button
-            type="button"
-            onClick={() => setCommandPaletteOpen(true)}
-            className="w-10 h-10 md:w-auto md:h-8 flex items-center justify-center p-2 md:px-3 md:border md:border-[#D9D9D6] md:dark:border-white/[0.08] md:hover:border-[#111111] md:dark:hover:border-white/20 md:bg-black/[0.02] md:dark:bg-white/[0.03] text-[#111111] dark:text-[#F4F4F6] md:text-[#555555] md:dark:text-[#A1A1AA] md:hover:text-[#111111] md:dark:hover:text-[#FFFFFF] transition-all cursor-pointer rounded-none active:scale-95"
-            title="Search (⌘K)" aria-label="Search (⌘K)"
-          >
-            <Search className="w-4 h-4 md:w-3.5 md:h-3.5 md:mr-1.5 text-[#111111] dark:text-[#F4F4F6]" />
-            <span className="hidden md:inline text-[12px] font-medium">Search</span>
-            <kbd className="hidden md:inline text-[11px] font-mono px-1.5 py-0.5 border border-[#D9D9D6] dark:border-white/10 bg-black/5 dark:bg-white/5 opacity-75 ml-1.5">
-              ⌘K
-            </kbd>
-          </button>
-
-          {/* Quick Theme Switcher - Hidden on mobile as before */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-            className="hidden md:flex items-center justify-center w-8 h-8 border border-[#D9D9D6] dark:border-white/[0.08] hover:border-[#111111] dark:hover:border-white/20 bg-black/[0.02] dark:bg-white/[0.03] text-[#111111] dark:text-[#F4F4F6] transition-all cursor-pointer rounded-none active:scale-95"
-            title={`Switch to ${settings.theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-          >
-            {settings.theme === 'dark' ? (
-              <Sun className="w-3.5 h-3.5 text-amber-400" />
-            ) : (
-              <Moon className="w-3.5 h-3.5" />
-            )}
-          </button>
 
           {/* Notifications Bell: Original clean icon on mobile, styled button on desktop */}
           <button
             type="button"
             onClick={() => setActiveView('notifications')}
-            className="relative w-10 h-10 md:w-8 md:h-8 flex items-center justify-center p-2 md:p-0 md:border md:border-[#D9D9D6] md:dark:border-white/[0.08] md:hover:border-[#111111] md:dark:hover:border-white/20 md:bg-black/[0.02] md:dark:bg-white/[0.03] text-[#111111] dark:text-[#F4F4F6] transition-all cursor-pointer rounded-none active:scale-95"
+            className="relative w-10 h-10 md:w-11 md:h-11 flex items-center justify-center border border-line-soft bg-surface/70 dark:bg-white/[0.04] md:border-transparent md:bg-transparent md:dark:bg-transparent hover:border-line md:hover:bg-black/[0.05] md:dark:hover:bg-white/[0.06] text-fg transition-colors cursor-pointer rounded-none active:scale-95"
             title={`Notifications (${unreadNotifs} unread)`}
+            aria-label={unreadNotifs ? `Notifications, ${unreadNotifs} unread` : 'Notifications'}
           >
-            <Bell className="w-4 h-4 md:w-3.5 md:h-3.5 text-[#111111] dark:text-[#F4F4F6]" />
+            <Bell className="w-[18px] h-[18px] md:w-5 md:h-5 text-fg" strokeWidth={1.75} />
             {unreadNotifs > 0 && (
-              <span className="absolute top-1.5 right-1.5 md:-top-1 md:-right-1 min-w-[14px] h-[14px] md:min-w-[15px] md:h-[15px] px-1 bg-black dark:bg-white text-white dark:text-black font-mono text-[11px] font-bold flex items-center justify-center border border-white dark:border-[#090A0C] leading-none rounded-full">
+              <span className="absolute -top-1.5 -right-1.5 md:top-0.5 md:right-0.5 min-w-[17px] h-[17px] px-1 bg-rose-500 text-white text-[10px] font-bold tabular-nums flex items-center justify-center ring-2 ring-canvas leading-none rounded-full">
                 {unreadNotifs > 99 ? '99+' : unreadNotifs}
               </span>
             )}
@@ -178,83 +202,72 @@ export const Header: React.FC = () => {
             <button
               type="button"
               onClick={() => setAddMenuOpen(!addMenuOpen)}
-              className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-[#111111] dark:text-[#F4F4F6] md:bg-[#111111] md:dark:bg-[#F4F4F6] md:text-[#FFFFFF] md:dark:text-[#090A0C] hover:opacity-80 transition-all cursor-pointer rounded-none active:scale-95 shadow-xs"
-              title="Add New Action" aria-label="Add New Action"
+              className="w-10 h-10 md:w-auto md:h-11 md:px-f4 md:ml-f2 md:gap-f2 flex items-center justify-center bg-ink text-on-ink shadow-[0_4px_12px_-4px_rgba(17,17,17,0.45)] dark:shadow-none hover:opacity-90 transition-all cursor-pointer rounded-none active:scale-95"
+              title="Create" aria-label="Create" aria-expanded={addMenuOpen}
             >
-              <Plus className={`w-5 h-5 md:w-4 md:h-4 stroke-[2.5] transition-transform duration-200 ${addMenuOpen ? 'rotate-45' : ''}`} />
+              <Plus className={`w-[18px] h-[18px] md:w-4 md:h-4 stroke-[2.25] transition-transform duration-200 ${addMenuOpen ? 'rotate-45' : ''}`} />
+              <span className="hidden md:inline text-[15px] font-semibold">New</span>
             </button>
 
             {addMenuOpen && (
               <>
                 <div className="fixed inset-0 z-40 sm:hidden" onClick={() => setAddMenuOpen(false)} />
-                <div className="absolute right-0 mt-2 w-[280px] sm:w-[320px] bg-[#FFFFFF] dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.08] shadow-[0_8px_30px_rgba(0,0,0,0.4)] py-2 z-50 text-left rounded-none">
-                  <button
-                    onClick={() => {
-                      setAddMenuOpen(false);
-                      setShowAddHwModal(true);
-                    }}
-                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-neutral-100 dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
-                  >
-                    <CheckSquare className="w-5 h-5" />
-                    New Homework
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setAddMenuOpen(false);
-                      setShowHwScanModal(true);
-                    }}
-                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-neutral-100 dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
-                  >
-                    <Sparkles className="w-5 h-5" />
-                    Scan Homework
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setAddMenuOpen(false);
-                      setShowAddCarryModal(true);
-                    }}
-                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-neutral-100 dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
-                  >
-                    <Backpack className="w-5 h-5" />
-                    Add Bag Item
-                  </button>
-
-                  <div className="my-2 border-t border-[#D8D8D8] dark:border-white/[0.08] mx-0" />
-
-                  <button
-                    onClick={() => {
-                      setAddMenuOpen(false);
-                      setShowTimetableImportModal(true);
-                    }}
-                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-neutral-100 dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
-                  >
-                    <Upload className="w-5 h-5" />
-                    Import Timetable
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setAddMenuOpen(false);
-                      setShowCalendarImportModal(true);
-                    }}
-                    className="flex items-center gap-4 w-full px-[18px] h-[56px] text-[16px] font-medium text-[#111111] dark:text-[#F4F4F6] hover:bg-neutral-100 dark:hover:bg-white/[0.04] transition-colors text-left cursor-pointer"
-                  >
-                    <Calendar className="w-5 h-5" />
-                    Import Academic Calendar
-                  </button>
+                <div
+                  role="menu"
+                  className="absolute right-0 mt-2 w-[min(320px,calc(100vw-24px))] bg-surface border border-line shadow-[0_24px_60px_-20px_rgba(17,17,17,0.35)] dark:shadow-[0_24px_60px_-16px_rgba(0,0,0,0.75)] z-50 text-left origin-top-right animate-[menuIn_160ms_cubic-bezier(0.16,1,0.3,1)]"
+                >
+                  {createSections.map((section, si) => (
+                    <div key={section.title} className={si > 0 ? 'border-t border-line-soft' : ''}>
+                      <p className="px-4 pt-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-faint">{section.title}</p>
+                      <div className="px-1.5 pb-1.5">
+                        {section.items.map((item) => (
+                          <button
+                            key={item.label}
+                            role="menuitem"
+                            type="button"
+                            onClick={() => {
+                              setAddMenuOpen(false);
+                              item.run();
+                            }}
+                            className="group flex items-center gap-3 w-full px-2.5 py-2 text-left hover:bg-surface-2 active:bg-surface-3 transition-colors cursor-pointer"
+                          >
+                            <span className={`w-9 h-9 shrink-0 flex items-center justify-center border ${item.tone}`}>
+                              <item.icon className="w-[18px] h-[18px]" />
+                            </span>
+                            <span className="flex-1 min-w-0">
+                              <span className="block text-[14px] font-semibold text-fg leading-tight">{item.label}</span>
+                              <span className="block mt-0.5 text-[12px] text-muted leading-tight truncate">{item.hint}</span>
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </>
             )}
           </div>
+
+          {/* Profile: the character the user picked, opens Profile */}
+          <button
+            type="button"
+            onClick={() => setActiveView('settings')}
+            title="Profile" aria-label="Open profile"
+            aria-current={activeView === 'settings' ? 'page' : undefined}
+            className="ml-0.5 w-10 h-10 md:hidden flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
+          >
+            <span className={`w-9 h-9 rounded-full overflow-hidden bg-[#F1EFEA] dark:bg-[#F4F4F6] ring-1 ring-line ${
+              activeView === 'settings' ? 'ring-2 ring-offset-2 ring-[#111111] ring-offset-white dark:ring-[#F4F4F6] dark:ring-offset-[#0A0B0F]' : ''
+            }`}>
+              <img src={getAvatarSrc(getAvatarSeed(profile))} alt="" className="w-full h-full object-cover scale-110 translate-y-[2px]" />
+            </span>
+          </button>
         </div>
         </div>
       </header>
 
       {/* Modals */}
       <AddHomeworkModal isOpen={showAddHwModal} onClose={() => setShowAddHwModal(false)} />
-      <AddCustomItemModal isOpen={showAddCarryModal} onClose={() => setShowAddCarryModal(false)} />
       <TimetableImportModal isOpen={showTimetableImportModal} onClose={() => setShowTimetableImportModal(false)} />
       <HomeworkScanModal isOpen={showHwScanModal} onClose={() => setShowHwScanModal(false)} />
       <CalendarImportModal isOpen={showCalendarImportModal} onClose={() => setShowCalendarImportModal(false)} />

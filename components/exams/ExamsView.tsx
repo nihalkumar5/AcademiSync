@@ -5,8 +5,9 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Sparkles, Calendar, CalendarDays, BookOpen, Clock, AlertCircle, Plus, Share2, UserPlus, Edit2, Trash2, MapPin, Hourglass, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Calendar, CalendarDays, BookOpen, Clock, AlertCircle, Plus, Share2, UserPlus, Edit2, Trash2, MapPin, Hourglass, ChevronDown, ChevronUp, CheckCircle2 } from '@/components/ui/icons';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
+import { Illustration } from '../ui/Illustration';
 import { ExamImportModal } from './ExamImportModal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { AddEditExamModal } from './AddEditExamModal';
@@ -117,8 +118,11 @@ export const ExamsView: React.FC = () => {
     return new Date(ex.date.includes('T') ? ex.date : `${dOnly}T09:30:00`).getTime();
   };
 
+  // Completed exams stay visible on their own day, then disappear the next day
+  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const validExams = exams
     .filter(e => !isGenericExamTitle(e.subjectName))
+    .filter(e => !e.date || e.date.split('T')[0] >= todayKey)
     .map(e => ({
       ...e,
       subjectName: sanitizeExamSubjectName(e.subjectName),
@@ -195,7 +199,7 @@ export const ExamsView: React.FC = () => {
     // 1. Exact Calendar Day: TODAY
     if (dOnly === todayStr) {
       if (diffMs <= 0) {
-        return { label: 'COMPLETED', isPast: true, color: 'bg-zinc-500/10 text-zinc-500 dark:text-zinc-400 border-zinc-500/20' };
+        return { label: 'COMPLETED', isPast: true, color: 'bg-zinc-500/10 text-muted border-zinc-500/20' };
       }
       const hoursLeft = Math.floor(diffMs / (1000 * 60 * 60));
       return {
@@ -216,7 +220,7 @@ export const ExamsView: React.FC = () => {
 
     // Past date
     if (dOnly < todayStr || diffMs <= 0) {
-      return { label: 'COMPLETED', isPast: true, color: 'bg-zinc-500/10 text-zinc-500 dark:text-zinc-400 border-zinc-500/20' };
+      return { label: 'COMPLETED', isPast: true, color: 'bg-zinc-500/10 text-muted border-zinc-500/20' };
     }
 
     // Future days calculation based on midnight-to-midnight day difference
@@ -240,119 +244,106 @@ export const ExamsView: React.FC = () => {
     };
   };
 
+  const formatExamTime = (exam: Exam) =>
+    exam.time || new Date(exam.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+  const formatDuration = (mins?: number) => {
+    if (!mins) return '';
+    if (mins < 60) return `${mins} min`;
+    const h = mins / 60;
+    return `${Number.isInteger(h) ? h : h.toFixed(1)} hr`;
+  };
+
+  // Sentence-case relative label for list rows ("Today", "Tomorrow", "In 5 days", "Done")
+  const getRelativeLabel = (exam: Exam) => {
+    const status = getExamStatusBadge(exam.date, exam.time);
+    if (status.isPast) return 'Done';
+    if (status.label === 'STARTS SOON') return 'Starts soon';
+    if (status.label === 'TODAY') return 'Today';
+    if (status.label === 'TOMORROW') return 'Tomorrow';
+    return status.label.charAt(0) + status.label.slice(1).toLowerCase();
+  };
+
   const renderExamCard = (exam: Exam) => {
     const dateObj = new Date(exam.date);
-    const dateDay = dateObj.getDate();
-    const dateMonth = dateObj.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-    const dateWeekday = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-    const isPast = dateObj.getTime() < now.getTime();
-    const status = getExamStatusBadge(exam.date, exam.time);
+    const isPast = getExactExamTime(exam) <= now.getTime();
     const isExpanded = expandedSyllabus[exam.id];
+    const relative = getRelativeLabel(exam);
+    const isSoon = !isPast && (relative === 'Today' || relative === 'Tomorrow' || relative === 'Starts soon');
 
     return (
-      <div
-        key={exam.id}
-        className={`group relative rounded-[14px] border transition-all duration-200 p-4 sm:p-4.5 flex flex-col gap-3 ${
-          isPast
-            ? 'bg-[#F9F9F8] dark:bg-[#101115] border-black/[0.05] dark:border-white/[0.05] opacity-60'
-            : 'bg-white dark:bg-[#14151B] border-black/[0.08] dark:border-white/[0.08] hover:border-black/20 dark:hover:border-white/20 shadow-xs hover:shadow-sm'
-        }`}
-      >
-        <div className="flex items-start justify-between gap-3 sm:gap-4">
-          {/* Left Calendar Date Ticket Stamp */}
-          <div className="w-[52px] h-[56px] sm:w-[56px] sm:h-[60px] rounded-[10px] bg-black/[0.03] dark:bg-white/[0.04] border border-black/[0.08] dark:border-white/[0.08] flex flex-col items-center justify-center shrink-0 shadow-2xs group-hover:border-amber-500/40 transition-colors">
-            <span className="text-[11px] sm:text-[11px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 leading-none">
-              {dateMonth}
+      <li key={exam.id} className={isPast ? 'opacity-60' : ''}>
+        <div className="flex gap-4 p-4 sm:p-5">
+          <span className="w-12 shrink-0 flex flex-col items-center justify-center py-1.5 border border-line-soft bg-surface-2 leading-none">
+            <span className="text-[11px] font-semibold uppercase tracking-[1px] text-rose-600 dark:text-rose-300">
+              {dateObj.toLocaleDateString('en-US', { month: 'short' })}
             </span>
-            <span className="text-[20px] sm:text-[22px] font-black text-[#111111] dark:text-[#FFFFFF] leading-tight mt-0.5">
-              {dateDay}
+            <span className="mt-1 text-[20px] font-semibold text-fg tabular-nums">{dateObj.getDate()}</span>
+            <span className="mt-1 text-[11px] font-medium text-muted">
+              {dateObj.toLocaleDateString('en-US', { weekday: 'short' })}
             </span>
-            <span className="text-[11px] font-medium text-[#737373] dark:text-[#94A3B8] leading-none">
-              {dateWeekday}
-            </span>
-          </div>
+          </span>
 
-          {/* Center Content */}
-          <div className="flex flex-col flex-1 min-w-0">
+          <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
-              <h4 className="text-[16px] sm:text-[17px] font-bold text-[#111111] dark:text-[#F4F4F6] tracking-tight leading-snug group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate sm:whitespace-normal">
-                {exam.subjectName}
-              </h4>
+              <div className="min-w-0">
+                <h4 className={`text-[16px] font-semibold leading-snug ${isPast ? 'text-muted line-through decoration-1' : 'text-fg'}`}>
+                  {exam.subjectName}
+                </h4>
+                <p className="mt-1 text-[13px] text-muted tabular-nums">
+                  {formatExamTime(exam)}
+                  {exam.durationMinutes ? ` · ${formatDuration(exam.durationMinutes)}` : ''}
+                  {exam.room ? ` · ${exam.room.toLowerCase().startsWith('room') || exam.room.toLowerCase().startsWith('hall') ? exam.room : `Room ${exam.room}`}` : ''}
+                </p>
+              </div>
+              <span className={`shrink-0 text-[12px] whitespace-nowrap ${isSoon ? 'px-2 py-0.5 font-semibold uppercase tracking-[1px] bg-rose-500/15 text-rose-700 dark:text-rose-300' : 'text-muted'}`}>
+                {relative}
+              </span>
             </div>
 
-            {/* Badges and metadata row */}
-            <div className="flex flex-wrap items-center gap-2 mt-1.5">
-              {/* Status Badge */}
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-[4px] text-[11px] font-mono font-bold tracking-wider border ${status.color}`}>
-                {status.label}
-              </span>
-
-              {/* Time Pill */}
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-black/[0.03] dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.06] text-[11px] font-mono text-[#555555] dark:text-[#CBD5E1]">
-                <Clock className="w-3 h-3 text-amber-500 shrink-0" />
-                {exam.time || dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                {exam.durationMinutes ? ` (${exam.durationMinutes}m)` : ''}
-              </span>
-
-              {/* Room Badge */}
-              {exam.room && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
-                  <MapPin className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  Room {exam.room}
-                </span>
-              )}
-
-              {/* Syllabus Toggle Button */}
+            <div className="mt-2.5 flex items-center gap-1 -ml-2">
               {exam.syllabus && (
                 <button
                   type="button"
                   onClick={() => toggleSyllabus(exam.id)}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-black/[0.03] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-[11px] font-medium text-[#6B6B6B] dark:text-[#94A3B8] transition-colors cursor-pointer border border-black/[0.04] dark:border-white/[0.06]"
+                  aria-expanded={!!isExpanded}
+                  className="h-9 px-2 inline-flex items-center gap-1.5 text-[13px] font-medium text-fg hover:bg-surface-2 cursor-pointer"
                 >
-                  <BookOpen className="w-3 h-3 text-blue-500 shrink-0" />
-                  <span>Syllabus</span>
-                  {isExpanded ? <ChevronUp className="w-3 h-3 ml-0.5" /> : <ChevronDown className="w-3 h-3 ml-0.5" />}
+                  <BookOpen className="w-4 h-4" /> Syllabus
+                  {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 </button>
               )}
+              <button
+                onClick={() => handleEditExam(exam)}
+                className="w-9 h-9 flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 cursor-pointer"
+                title={`Edit ${exam.subjectName}`} aria-label={`Edit ${exam.subjectName}`}
+              >
+                <Edit2 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleDeleteExam(exam.id, exam.subjectName)}
+                className="w-9 h-9 flex items-center justify-center text-muted hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-500/10 cursor-pointer"
+                title={`Delete ${exam.subjectName}`} aria-label={`Delete ${exam.subjectName}`}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
-          </div>
 
-          {/* Right Action Buttons */}
-          <div className="flex items-center gap-1 shrink-0 self-start">
-            <button
-              onClick={() => handleEditExam(exam)}
-              className="p-1.5 rounded-[6px] text-[#737373] hover:text-[#111111] dark:text-[#94A3B8] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-              title="Edit Exam" aria-label="Edit Exam"
-            >
-              <Edit2 className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => handleDeleteExam(exam.id, exam.subjectName)}
-              className="p-1.5 rounded-[6px] text-[#737373] hover:text-rose-600 dark:text-[#94A3B8] dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
-              title="Delete Exam" aria-label="Delete Exam"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
+            {exam.syllabus && isExpanded && (
+              <p className="mt-2 p-3 text-[14px] leading-relaxed whitespace-pre-wrap text-fg bg-surface-2 border border-line-soft">
+                {exam.syllabus}
+              </p>
+            )}
           </div>
         </div>
-
-        {/* Expandable Syllabus Drawer */}
-        {exam.syllabus && isExpanded && (
-          <div className="mt-1 pt-3 border-t border-black/[0.06] dark:border-white/[0.08] text-[13px] text-[#444444] dark:text-[#CBD5E1] bg-black/[0.02] dark:bg-white/[0.02] p-3 rounded-lg leading-relaxed whitespace-pre-wrap">
-            <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#6B6B6B] dark:text-[#94A3B8] mb-1 flex items-center gap-1">
-              <BookOpen className="w-3 h-3 text-amber-500" /> Syllabus Breakdown
-            </div>
-            {exam.syllabus}
-          </div>
-        )}
-      </div>
+      </li>
     );
   };
 
   return (
-    <div className="flex flex-col flex-1 max-w-4xl mx-auto w-full pt-2 sm:pt-6 pb-16">
-      <div className="mb-12">
-        <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
+    <div className="flex flex-col flex-1 max-w-4xl mx-auto w-full">
+      <div className="mb-f5 sm:mb-f6">
+        <h2 className="page-title">
           Exam,<br />
           Schedule,<br />
           Countdown
@@ -361,27 +352,27 @@ export const ExamsView: React.FC = () => {
           Track your upcoming exams, syllabus, and preparation time.
         </p>
 
-        <div className="flex flex-wrap items-center gap-3 mt-8">
+        <div className="page-actions mt-8">
+          <button
+            onClick={handleAddNewExam}
+            className="btn btn-primary"
+          >
+            <Plus className="w-4 h-4" /> Add Exam
+          </button>
+          <button
+            onClick={handleMagicImport}
+            className="btn btn-secondary"
+          >
+            <Sparkles className="w-4 h-4" /> Magic Import
+          </button>
           <button
             onClick={() => {
               if (!isSignedIn) { router.push('/sign-in'); return; }
               setShowJoinModal(true);
             }}
-            className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-white/[0.08] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
+            className="btn btn-secondary"
           >
             Join Exams
-          </button>
-          <button
-            onClick={handleMagicImport}
-            className="flex items-center justify-center h-10 px-4 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] text-[13px] font-semibold transition-colors gap-2 cursor-pointer shadow-xs"
-          >
-            <Sparkles className="w-4 h-4" /> Magic Import
-          </button>
-          <button
-            onClick={handleAddNewExam}
-            className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-white/[0.08] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors gap-1.5 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" /> Add Exam
           </button>
           {exams.length > 0 && isBatchCR && (
             <button
@@ -411,7 +402,7 @@ ${PLAY_STORE_URL}
                   if (res === 'copied') showToast('Code Copied', `Batch code copied: ${code}`, 'success');
                 } catch (err) {}
               }}
-              className="flex items-center justify-center h-10 px-4 border border-[#D9D9D6] dark:border-white/[0.08] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors gap-2 cursor-pointer"
+              className="btn btn-secondary"
             >
               <Share2 className="w-4 h-4" /> Share
             </button>
@@ -421,201 +412,163 @@ ${PLAY_STORE_URL}
 
       {nextExam && (() => {
         const cd = getCountdownParts(nextExam.date, nextExam.time);
+        const relative = getRelativeLabel(nextExam);
+        const urgent = relative === 'Starts soon' || relative === 'Today';
         return (
-          <div className="relative mb-10 overflow-hidden rounded-[20px] border border-black/[0.08] dark:border-amber-500/25 bg-white dark:bg-[#121318] p-5 sm:p-7 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_30px_rgba(245,158,11,0.05)] text-left transition-all">
-            {/* Top Ambient Glow */}
-            <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 bg-amber-400/10 dark:bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
-            {/* Top Bar: Badge & Action Cluster */}
-            <div className="flex items-center justify-between gap-3 mb-5">
-              <div className="flex items-center gap-2">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 text-amber-700 dark:text-amber-300 text-[11px] font-mono font-bold tracking-wider uppercase">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-600 dark:bg-amber-400"></span>
-                  </span>
-                  UP NEXT
-                </div>
-                <span className="text-[12px] text-[#71717A] dark:text-[#A1A1AA] font-mono hidden sm:inline-block">
-                  · Target Date: {new Date(nextExam.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          <section
+            aria-label="Next exam"
+            className="sheen-ink mb-f5 sm:mb-f6 w-full bg-[#111111] dark:bg-[#15171D] border border-[#111111] dark:border-white/[0.08] p-5 sm:p-6 text-left text-white"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <span className="inline-flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[1.4px]">
+                <span className="relative flex h-2 w-2">
+                  {urgent && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />}
+                  <span className={`relative inline-flex rounded-full h-2 w-2 ${urgent ? 'bg-rose-400' : 'bg-white/70'}`} />
                 </span>
-              </div>
-
-              <div className="flex items-center gap-1.5">
+                <span className={urgent ? 'text-rose-300' : 'text-white/80'}>{urgent ? relative : 'Next exam'}</span>
+              </span>
+              <div className="flex items-center -mr-2">
                 <button
                   onClick={() => handleEditExam(nextExam)}
-                  className="p-1.5 rounded-lg text-[#71717A] hover:text-[#111111] dark:text-[#A1A1AA] dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
-                  title="Edit Next Exam" aria-label="Edit Next Exam"
+                  className="w-9 h-9 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 cursor-pointer"
+                  title="Edit next exam" aria-label="Edit next exam"
                 >
-                  <Edit2 className="w-3.5 h-3.5" />
+                  <Edit2 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handleDeleteExam(nextExam.id, nextExam.subjectName)}
-                  className="p-1.5 rounded-lg text-[#71717A] hover:text-rose-600 dark:text-[#A1A1AA] dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
-                  title="Delete Next Exam" aria-label="Delete Next Exam"
+                  className="w-9 h-9 flex items-center justify-center text-white/70 hover:text-rose-300 hover:bg-white/10 cursor-pointer"
+                  title="Delete next exam" aria-label="Delete next exam"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* Main Middle Row: Title & Digital Countdown Counter */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-5 pb-5 border-b border-black/[0.06] dark:border-white/[0.06]">
-              <div className="flex flex-col min-w-0">
-                <h3 className="text-[24px] sm:text-[28px] font-black text-[#111111] dark:text-white tracking-tight leading-tight">
-                  {nextExam.subjectName}
-                </h3>
-                <div className="flex flex-wrap items-center gap-2 mt-2 text-[13px] text-[#71717A]">
-                  <span className="inline-flex items-center gap-1 font-medium text-[#111111] dark:text-[#E2E8F0]">
-                    <CalendarDays className="w-3.5 h-3.5 text-amber-500" />
-                    {new Date(nextExam.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
-                  </span>
-                  <span>·</span>
-                  <span className="inline-flex items-center gap-1 font-mono text-[#111111] dark:text-[#E2E8F0]">
-                    <Clock className="w-3.5 h-3.5 text-amber-500" />
-                    {nextExam.time || new Date(nextExam.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                  </span>
-                </div>
-              </div>
+            <h3 className="mt-3 text-[28px] sm:text-[34px] font-semibold leading-tight tracking-tight">
+              {nextExam.subjectName}
+            </h3>
+            <p className="mt-1.5 text-[14px] text-white/70 tabular-nums">
+              {new Date(nextExam.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} · {formatExamTime(nextExam)}
+            </p>
 
-              {/* Digital Flight-Board Countdown Timer */}
-              <div className="flex items-center gap-2 shrink-0 bg-black/[0.02] dark:bg-white/[0.02] p-2 rounded-2xl border border-black/[0.04] dark:border-white/[0.06]">
-                <div className="flex flex-col items-center justify-center bg-white dark:bg-[#1A1B22] border border-black/[0.06] dark:border-white/[0.08] rounded-xl w-14 sm:w-16 h-14 shadow-2xs">
-                  <span className="text-[20px] sm:text-[22px] font-black font-mono leading-none text-[#111111] dark:text-white">
-                    {String(cd.days).padStart(2, '0')}
-                  </span>
-                  <span className="text-[11px] font-mono font-bold uppercase text-[#71717A] tracking-wider mt-1">
-                    DAYS
-                  </span>
+            {/* Countdown */}
+            <div className="mt-5 grid grid-cols-3 border border-white/[0.12] divide-x divide-white/[0.12]" aria-label={`Starts in ${cd.days} days ${cd.hours} hours ${cd.minutes} minutes`}>
+              {[
+                { value: cd.days, label: cd.days === 1 ? 'Day' : 'Days' },
+                { value: cd.hours, label: cd.hours === 1 ? 'Hour' : 'Hours' },
+                { value: cd.minutes, label: 'Min' },
+              ].map((part) => (
+                <div key={part.label} className="py-3 flex flex-col items-center">
+                  <span className="text-[30px] sm:text-[34px] font-semibold leading-none tabular-nums">{String(part.value).padStart(2, '0')}</span>
+                  <span className="mt-1.5 text-[11px] font-semibold uppercase tracking-[1.4px] text-white/60">{part.label}</span>
                 </div>
-                <span className="text-amber-500 font-bold text-lg font-mono leading-none">:</span>
-                <div className="flex flex-col items-center justify-center bg-white dark:bg-[#1A1B22] border border-black/[0.06] dark:border-white/[0.08] rounded-xl w-14 sm:w-16 h-14 shadow-2xs">
-                  <span className="text-[20px] sm:text-[22px] font-black font-mono leading-none text-[#111111] dark:text-white">
-                    {String(cd.hours).padStart(2, '0')}
-                  </span>
-                  <span className="text-[11px] font-mono font-bold uppercase text-[#71717A] tracking-wider mt-1">
-                    HOURS
-                  </span>
-                </div>
-                <span className="text-amber-500 font-bold text-lg font-mono leading-none">:</span>
-                <div className="flex flex-col items-center justify-center bg-white dark:bg-[#1A1B22] border border-black/[0.06] dark:border-white/[0.08] rounded-xl w-14 sm:w-16 h-14 shadow-2xs">
-                  <span className="text-[20px] sm:text-[22px] font-black font-mono leading-none text-[#111111] dark:text-white">
-                    {String(cd.minutes).padStart(2, '0')}
-                  </span>
-                  <span className="text-[11px] font-mono font-bold uppercase text-[#71717A] tracking-wider mt-1">
-                    MINS
-                  </span>
-                </div>
-              </div>
+              ))}
             </div>
 
-            {/* Badges Row */}
-            <div className="flex flex-wrap items-center gap-2">
-              {nextExam.room && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 text-[12px] font-semibold">
-                  <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  Room {nextExam.room}
-                </span>
-              )}
+            <p className="mt-4 font-cursive text-[22px] leading-tight font-semibold text-white/80 -rotate-1">
+              {cd.days === 0
+                ? "It's today. Breathe, you've got this."
+                : cd.days <= 3
+                ? 'Final stretch: revise, rest, repeat.'
+                : 'Plenty of time. A little every day.'}
+            </p>
 
-              {nextExam.durationMinutes && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/25 text-blue-800 dark:text-blue-300 font-mono text-[12px]">
-                  <Hourglass className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                  {nextExam.durationMinutes >= 60
-                    ? `${(nextExam.durationMinutes / 60).toFixed(nextExam.durationMinutes % 60 === 0 ? 0 : 1)} Hours Duration`
-                    : `${nextExam.durationMinutes} Mins Duration`}
-                </span>
-              )}
-
-              {nextExam.syllabus && (
-                <button
-                  type="button"
-                  onClick={() => toggleSyllabus(nextExam.id)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-black/[0.03] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-[12px] font-medium text-[#444444] dark:text-[#E2E8F0] border border-black/[0.06] dark:border-white/[0.08] transition-colors cursor-pointer"
-                >
-                  <BookOpen className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Syllabus Breakdown</span>
-                  {expandedSyllabus[nextExam.id] ? <ChevronUp className="w-3.5 h-3.5 ml-0.5" /> : <ChevronDown className="w-3.5 h-3.5 ml-0.5" />}
-                </button>
-              )}
-            </div>
-
-            {/* Syllabus Box */}
-            {nextExam.syllabus && expandedSyllabus[nextExam.id] && (
-              <div className="mt-4 pt-3.5 border-t border-black/[0.06] dark:border-white/[0.06] flex flex-col gap-1.5">
-                <p className="text-[13px] text-[#333333] dark:text-[#E2E8F0] leading-relaxed bg-black/[0.02] dark:bg-white/[0.02] p-3 rounded-xl border border-black/[0.04] dark:border-white/[0.06] whitespace-pre-wrap font-sans">
-                  {nextExam.syllabus}
-                </p>
+            {(nextExam.room || nextExam.durationMinutes || nextExam.syllabus) && (
+              <div className="mt-5 flex flex-wrap gap-2">
+                {nextExam.room && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[14px] bg-white/[0.08] border border-white/[0.12]">
+                    <MapPin className="w-4 h-4 text-white/70" />
+                    {nextExam.room.toLowerCase().startsWith('room') || nextExam.room.toLowerCase().startsWith('hall') ? nextExam.room : `Room ${nextExam.room}`}
+                  </span>
+                )}
+                {nextExam.durationMinutes ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[14px] bg-white/[0.08] border border-white/[0.12]">
+                    <Hourglass className="w-4 h-4 text-white/70" />
+                    {formatDuration(nextExam.durationMinutes)}
+                  </span>
+                ) : null}
+                {nextExam.syllabus && (
+                  <button
+                    type="button"
+                    onClick={() => toggleSyllabus(nextExam.id)}
+                    aria-expanded={!!expandedSyllabus[nextExam.id]}
+                    className="inline-flex items-center gap-1.5 px-3 h-9 text-[13px] bg-white/[0.08] border border-white/[0.12] hover:bg-white/[0.14] cursor-pointer"
+                  >
+                    <BookOpen className="w-4 h-4 text-white/70" /> Syllabus
+                    {expandedSyllabus[nextExam.id] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                )}
               </div>
             )}
-          </div>
+
+            {nextExam.syllabus && expandedSyllabus[nextExam.id] && (
+              <p className="mt-4 pt-4 border-t border-white/[0.12] text-[14px] text-white/85 leading-relaxed whitespace-pre-wrap">
+                {nextExam.syllabus}
+              </p>
+            )}
+          </section>
         );
       })()}
 
       <div className="flex flex-col">
         {exams.length === 0 ? (
-          <div className="py-12 border border-dashed border-[#D9D9D6] dark:border-white/[0.08] rounded-[16px] flex flex-col items-center justify-center text-center p-6 bg-[#F7F7F5]/30 dark:bg-white/[0.01]">
-            <Calendar className="w-8 h-8 text-[#6F6F6F] dark:text-[#A1A1AA] mb-3" />
-            <h4 className="text-[16px] font-semibold text-[#111111] dark:text-[#F4F4F6]">No exams scheduled</h4>
-            <p className="text-[14px] text-[#6F6F6F] dark:text-[#94A3B8] mt-1 mb-5">
-              Upload your exam timetable using magic scanner or add manually.
+          <div className="py-12 border border-dashed border-line flex flex-col items-center justify-center text-center p-6">
+            <Illustration name="exam" className="mb-f4 h-[180px] w-auto max-w-[260px]" />
+            <h4 className="text-[17px] font-semibold text-fg">No exams scheduled</h4>
+            <p className="text-[14px] text-muted mt-1 mb-5">
+              Scan your exam timetable or add exams one by one.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <button
-                onClick={handleAddNewExam}
-                className="flex items-center justify-center h-9 px-4 border border-[#D9D9D6] dark:border-white/[0.08] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors gap-1.5 cursor-pointer rounded-lg"
+                onClick={handleMagicImport}
+                className="btn btn-primary"
               >
-                <Plus className="w-3.5 h-3.5" /> Add Exam Manually
+                <Sparkles className="w-4 h-4" /> Magic Import
               </button>
               <button
-                onClick={handleMagicImport}
-                className="flex items-center justify-center h-9 px-4 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] text-[13px] font-semibold transition-colors gap-1.5 cursor-pointer shadow-xs rounded-lg"
+                onClick={handleAddNewExam}
+                className="btn btn-secondary"
               >
-                <Sparkles className="w-3.5 h-3.5" /> Magic Import
+                <Plus className="w-4 h-4" /> Add Exam
               </button>
             </div>
           </div>
         ) : (
           <div className="flex flex-col gap-8">
-            {/* 1. Other upcoming exams (excluding nextExam to eliminate redundancy) */}
             {remainingUpcoming.length > 0 && (
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] dark:text-[#A1A1AA]">
-                    {nextExam ? `LATER UPCOMING EXAMS (${remainingUpcoming.length})` : `UPCOMING EXAMS (${remainingUpcoming.length})`}
-                  </p>
+              <section aria-label="Upcoming exams">
+                <div className="flex items-baseline justify-between mb-3">
+                  <h3 className="text-[17px] font-semibold text-fg tracking-tight">
+                    {nextExam ? 'After that' : 'Upcoming'}
+                  </h3>
+                  <span className="text-[13px] text-muted">{remainingUpcoming.length} {remainingUpcoming.length === 1 ? 'exam' : 'exams'}</span>
                 </div>
-                <div className="flex flex-col gap-3">
+                <ol className="border border-line bg-surface divide-y divide-line-soft">
                   {remainingUpcoming.map(renderExamCard)}
-                </div>
-              </div>
+                </ol>
+              </section>
             )}
 
-            {/* 2. When only nextExam is scheduled, avoid duplicate card */}
             {nextExam && remainingUpcoming.length === 0 && pastExams.length === 0 && (
-              <div className="rounded-[14px] border border-black/[0.06] dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.02] p-6 text-center flex flex-col items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mb-1.5" />
-                <p className="text-[14px] font-semibold text-[#111111] dark:text-[#F4F4F6]">
-                  All clear after this!
-                </p>
-                <p className="text-[12px] text-[#6F6F6F] dark:text-[#94A3B8] mt-0.5">
-                  Your upcoming exam is featured in the spotlight card above.
+              <div className="border border-dashed border-line p-5 flex items-center gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-300 shrink-0" />
+                <p className="text-[14px] text-fg">
+                  That&apos;s the last exam on your list. <span className="text-muted">Nothing else is scheduled after it.</span>
                 </p>
               </div>
             )}
 
-            {/* 3. Past / completed exams */}
             {pastExams.length > 0 && (
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-bold tracking-[2px] uppercase text-[#6F6F6F] dark:text-[#A1A1AA]">
-                    COMPLETED EXAMS ({pastExams.length})
-                  </p>
+              <section aria-label="Completed exams">
+                <div className="flex items-baseline justify-between mb-3">
+                  <h3 className="text-[17px] font-semibold text-fg tracking-tight">Completed</h3>
+                  <span className="text-[13px] text-muted">{pastExams.length}</span>
                 </div>
-                <div className="flex flex-col gap-3">
+                <ol className="border border-line bg-surface divide-y divide-line-soft">
                   {pastExams.map(renderExamCard)}
-                </div>
-              </div>
+                </ol>
+              </section>
             )}
           </div>
         )}
@@ -633,7 +586,7 @@ ${PLAY_STORE_URL}
 
       <Modal isOpen={showJoinModal} onClose={() => setShowJoinModal(false)} title="Join Shared Exams">
         <form onSubmit={handleJoinSubmit} className="flex flex-col gap-4">
-          <p className="text-[13px] text-[#6B6B6B] dark:text-[#94A3B8]">
+          <p className="text-[13px] text-muted">
             Enter the 6-character Batch Code to sync exams with your class.
           </p>
           <div className="flex flex-col gap-2">
@@ -642,14 +595,14 @@ ${PLAY_STORE_URL}
               placeholder="e.g. 65SQ9K"
               value={inviteInput}
               onChange={(e) => setInviteInput(e.target.value.toUpperCase())}
-              className="w-full px-4 py-2.5 border border-[#E5E5E5] dark:border-white/[0.1] bg-transparent text-[14px] font-mono font-bold tracking-[2px] focus:outline-none focus:border-[#111111] dark:focus:border-white/30 text-[#111111] dark:text-[#F4F4F6] transition-colors uppercase"
+              className="w-full px-4 py-2.5 border border-line-soft bg-transparent text-[14px] font-mono font-bold tracking-[2px] focus:outline-none focus:border-line-strong text-fg transition-colors uppercase"
               required
             />
           </div>
           <button
             type="submit"
             disabled={isJoining}
-            className="h-10 px-4 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] text-[13px] font-semibold flex items-center justify-center disabled:opacity-50 cursor-pointer"
+            className="btn btn-primary"
           >
             {isJoining ? 'Joining...' : 'Join'}
           </button>

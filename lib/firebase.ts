@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, initializeFirestore, Firestore } from 'firebase/firestore';
 import { getMessaging, isSupported } from 'firebase/messaging';
 import { 
   getAuth, 
@@ -21,7 +21,13 @@ const firebaseConfig = {
 
 // Initialize Firebase only once
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getFirestore(app);
+// Optional fields (attachment, room, reason…) are often undefined; drop them instead of failing the write.
+let db: Firestore;
+try {
+  db = initializeFirestore(app, { ignoreUndefinedProperties: true });
+} catch {
+  db = getFirestore(app); // already initialised (hot reload)
+}
 const auth = getAuth(app);
 
 const isBrowser = typeof window !== 'undefined';

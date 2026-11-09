@@ -2,6 +2,7 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 import { Capacitor } from '@capacitor/core';
 import { ClassSession, Subject, Homework, Exam, UserSettings, AcademicEvent } from './types';
 import { formatTime12Hour, getLocalDateString, isGenericExamTitle } from './timetableUtils';
+import { tomorrowPlanMessage, PlanClass } from './tomorrowPlan';
 
 // Helper to configure a high-importance native Android channel for lockscreen alerts & sound
 const ensureNotificationChannel = async () => {
@@ -127,10 +128,12 @@ export const scheduleTimetableLocalNotifications = async (
     // Ensure high-importance channel exists
     await ensureNotificationChannel();
 
-    // Cancel all existing scheduled notifications first to prevent duplicates
+    // Cancel our previously scheduled class/bag/task alarms to prevent duplicates.
+    // Routine reminders (IDs 20000–29999) are managed by lib/routines.ts and left alone.
     const pending = await LocalNotifications.getPending();
-    if (pending.notifications.length > 0) {
-      await LocalNotifications.cancel(pending);
+    const classAlarms = pending.notifications.filter((n) => n.id < 20000 || n.id > 29999);
+    if (classAlarms.length > 0) {
+      await LocalNotifications.cancel({ notifications: classAlarms.map((n) => ({ id: n.id })) });
     }
 
     const reminderMinutes = typeof settingsParam === 'number' 
@@ -362,22 +365,30 @@ export const scheduleTimetableLocalNotifications = async (
         return true;
       });
 
-      // Check if tomorrow has extra classes
-      let hasExtraClass = false;
+      // Tomorrow's classes: regular ones (rescheduled times win) + extra classes
+      const planClasses: PlanClass[] = tomorrowRegularClasses.map((s) => {
+        const r = rescheduledSessions[`${tomorrowDateStr}_${s.id}`];
+        const sub = subjectMap.get(s.subjectId);
+        return { name: sub?.name || 'Class', startTime: r?.startTime || s.startTime, room: r?.room || s.room, isLab: !!(s.isLab || sub?.isLab) };
+      });
       if (extraSessions && typeof extraSessions === 'object') {
-        hasExtraClass = Object.values(extraSessions).some((extra: any) => extra?.date === tomorrowDateStr);
+        Object.values(extraSessions).forEach((extra: any) => {
+          if (extra?.date !== tomorrowDateStr || !extra.startTime) return;
+          const sub = subjectMap.get(extra.subjectId);
+          planClasses.push({ name: sub?.name || extra.subjectName || 'Extra class', startTime: extra.startTime, room: extra.room });
+        });
       }
 
       // If tomorrow has NO classes at all (blank day / off day / weekend), do NOT schedule!
-      if (tomorrowRegularClasses.length === 0 && !hasExtraClass) continue;
+      const plan = tomorrowPlanMessage(planClasses);
+      if (!plan) continue;
 
-      const totalClassesTomorrow = tomorrowRegularClasses.length + (hasExtraClass ? 1 : 0);
       const notifId = 5000 + dayOffset;
       const eveningDateStr = getLocalDateString(eveningDate);
 
       notificationsToSchedule.push({
-        title: '🎒 Pack Your Bag for Tomorrow',
-        body: `You have ${totalClassesTomorrow} ${totalClassesTomorrow === 1 ? 'class' : 'classes'} scheduled tomorrow. Check your carry bag items.`,
+        title: plan.title,
+        body: plan.body,
         id: notifId,
         schedule: {
           at: eveningDate,
@@ -387,7 +398,7 @@ export const scheduleTimetableLocalNotifications = async (
         channelId: 'class_alerts_v3',
         extra: {
           relatedId: `carry_evening_${eveningDateStr}`,
-          type: 'carry_reminder',
+          type: 'tomorrow_plan',
         },
       });
     }
@@ -474,11 +485,63 @@ export const scheduleTimetableLocalNotifications = async (
       });
     }
 
+    // 5. Holiday alerts — the phone version of the in-app "Campus Holiday" alerts:
+    //    the evening before (at bag time, which is skipped on those evenings) and 7:30 AM on the day.
+    //    IDs 9000–9799. Own relatedIds so the in-app entry is still added when the app opens.
+    if (events && events.length > 0) {
+      const nowMs = Date.now();
+      const horizonMs = nowMs + WEEKS_AHEAD * 7 * 24 * 60 * 60 * 1000;
+      const seenDates = new Set<string>();
+      let holidayIdx = 0;
+      events
+        .filter((ev) => ev && ev.type === 'holiday' && typeof ev.date === 'string' && ev.date)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .forEach((ev) => {
+          const dateStr = ev.date.slice(0, 10);
+          if (seenDates.has(dateStr) || holidayIdx >= 400) return;
+          seenDates.add(dateStr);
+
+          const day = new Date(`${dateStr}T00:00:00`);
+          if (isNaN(day.getTime())) return;
+          const morning = new Date(day);
+          morning.setHours(7, 30, 0, 0);
+          const eveBefore = new Date(day);
+          eveBefore.setDate(day.getDate() - 1);
+          eveBefore.setHours(bagH, bagM, 0, 0);
+          if (morning.getTime() <= nowMs || eveBefore.getTime() > horizonMs) return;
+
+          const baseId = 9000 + holidayIdx * 2;
+          holidayIdx++;
+
+          if (eveBefore.getTime() > nowMs) {
+            notificationsToSchedule.push({
+              title: `🌴 Tomorrow is a Holiday: ${ev.title}`,
+              body: 'All lectures and labs are suspended tomorrow. Enjoy your break!',
+              id: baseId + 1,
+              schedule: { at: eveBefore, allowWhileIdle: true },
+              sound: 'class_bell',
+              channelId: 'class_alerts_v3',
+              extra: { relatedId: `holiday_eve_${dateStr}`, type: 'holiday_alert' },
+            });
+          }
+
+          notificationsToSchedule.push({
+            title: `🌴 Campus Holiday: ${ev.title}`,
+            body: ev.description || 'Today is an official campus holiday. All classes and practicals are suspended!',
+            id: baseId,
+            schedule: { at: morning, allowWhileIdle: true },
+            sound: 'class_bell',
+            channelId: 'class_alerts_v3',
+            extra: { relatedId: `holiday_day_${dateStr}`, type: 'holiday_alert' },
+          });
+        });
+    }
+
     if (notificationsToSchedule.length > 0) {
       await LocalNotifications.schedule({
         notifications: notificationsToSchedule,
       });
-      console.log(`Successfully scheduled ${notificationsToSchedule.length} native background reminders (classes, bag check, tasks).`);
+      console.log(`Successfully scheduled ${notificationsToSchedule.length} native background reminders (classes, bag check, tasks, exams, holidays).`);
     } else {
       console.log('No items to schedule for background notifications.');
     }

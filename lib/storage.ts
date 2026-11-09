@@ -6,6 +6,7 @@ import {
   ClassSession,
   Homework,
   CarryItem,
+  Routine,
   AppNotification,
   AcademicEvent,
   Exam,
@@ -33,6 +34,7 @@ const STORAGE_KEYS = {
   EVENTS: 'iiitnr_events_v2',
   SETTINGS: 'iiitnr_settings_v2',
   EXAMS: 'iiitnr_exams_v2',
+  ROUTINES: 'iiitnr_routines_v1',
 
 
   CANCELLED_SESSIONS: 'iiitnr_cancelled_sessions_v1',
@@ -87,6 +89,8 @@ export const storage = {
   getHomework: (): Homework[] => getStoredItem(STORAGE_KEYS.HOMEWORK, []),
   setHomework: (hw: Homework[]) => setStoredItem(STORAGE_KEYS.HOMEWORK, hw),
 
+  getRoutines: (): Routine[] => getStoredItem(STORAGE_KEYS.ROUTINES, []),
+  setRoutines: (items: Routine[]) => setStoredItem(STORAGE_KEYS.ROUTINES, items),
   getCarryItems: (): CarryItem[] => getStoredItem(STORAGE_KEYS.CARRY_ITEMS, []),
   setCarryItems: (items: CarryItem[]) => setStoredItem(STORAGE_KEYS.CARRY_ITEMS, items),
 
@@ -156,11 +160,22 @@ export const storage = {
       timetable: storage.getTimetable(),
       homework: storage.getHomework(),
       carryItems: storage.getCarryItems(),
+      routines: storage.getRoutines(),
       settings: storage.getSettings(),
       events: storage.getEvents(),
       exams: storage.getExams(),
       cancelledSessions: storage.getCancelledSessions(),
       rescheduledSessions: storage.getRescheduledSessions(),
+      messMenu: (() => {
+        try {
+          const raw = typeof window !== 'undefined' ? window.localStorage.getItem('intersemester_mess_menu_v1') : null;
+          return raw ? JSON.parse(raw) : null;
+        } catch {
+          return null;
+        }
+      })(),
+      app: 'intersemester',
+      version: 1,
       exportedAt: new Date().toISOString(),
     }, null, 2);
   },
@@ -173,6 +188,7 @@ export const storage = {
       if (data.timetable) storage.setTimetable(data.timetable);
       if (data.homework) storage.setHomework(data.homework);
       if (data.carryItems) storage.setCarryItems(data.carryItems);
+      if (Array.isArray(data.routines)) storage.setRoutines(data.routines);
       if (data.settings) storage.setSettings(data.settings);
       if (data.events) storage.setEvents(data.events);
       if (data.exams) storage.setExams(data.exams);

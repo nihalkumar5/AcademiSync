@@ -23,16 +23,14 @@ export const Badge: React.FC<BadgeProps> = ({
     'inline-flex items-center font-medium select-none tracking-tight transition-colors';
 
   const sizes = {
-    sm: 'text-[10.5px] px-1.5 py-0.5 rounded-md gap-1',
-    md: 'text-xs px-2.5 py-0.5 rounded-md gap-1.5',
+    sm: 'text-[12px] h-5 px-1.5 rounded-none gap-1',
+    md: 'text-[12px] h-6 px-2 rounded-none gap-1.5',
   };
 
   const variants = {
-    default:
-      'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700/60',
-    neutral:
-      'bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800',
-    blue: 'bg-[#111111]/10 dark:bg-[#FFFFFF]/20 text-[#111111] dark:text-[#FFFFFF] border border-[#111111]/25 dark:border-[#FFFFFF]/35',
+    default:'bg-surface-2 text-fg-2 border border-line',
+    neutral:'bg-transparent text-muted border border-line',
+    blue: 'bg-ink text-on-ink border border-ink',
     emerald:
       'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60',
     amber:
@@ -45,7 +43,7 @@ export const Badge: React.FC<BadgeProps> = ({
   const dotColors = {
     default: 'bg-zinc-400',
     neutral: 'bg-zinc-400',
-    blue: 'bg-[#111111] dark:bg-[#FFFFFF]',
+    blue: 'bg-ink text-on-ink border border-ink',
     emerald: 'bg-emerald-500',
     amber: 'bg-amber-500',
     rose: 'bg-rose-500',

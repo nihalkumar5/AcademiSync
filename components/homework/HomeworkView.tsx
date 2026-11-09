@@ -15,7 +15,7 @@ import {
 } from '@/lib/googleClassroom';
 import { ProposedBatchTasksVoting } from './ProposedBatchTasksVoting';
 import { EmptyState } from '../ui/EmptyState';
-import { Plus, Sparkles, Search, CheckSquare, X, GraduationCap, ArrowRight, Check } from 'lucide-react';
+import { Plus, Sparkles, Search, CheckSquare, X, GraduationCap, ArrowRight, Check } from '@/components/ui/icons';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Capacitor } from '@capacitor/core';
@@ -250,16 +250,16 @@ export const HomeworkView: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-5 text-left max-w-4xl mx-auto w-full min-h-[70vh] pb-36 sm:pb-28">
+    <div className="flex flex-col gap-f5 sm:gap-f6 text-left max-w-4xl mx-auto w-full min-h-[70vh] pb-f7">
       {/* Editorial Stacked Header — matches Weekly Timetable style */}
-      <div className="flex flex-col gap-4 pt-2 sm:pt-6">
+      <div className="flex flex-col gap-f4">
         {/* Large stacked heading with badge inline */}
         <div>
-          <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[44px]">
+          <h2 className="page-title">
             Tasks,<br />To-Do,<br />Pending
           </h2>
           <div className="flex items-center gap-3 mt-5">
-            <span className="text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-none border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] text-black dark:text-white uppercase tracking-wider">
+            <span className="tag bg-surface">
               {pendingCount} pending
             </span>
           </div>
@@ -269,48 +269,49 @@ export const HomeworkView: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-3 mb-1">
+        <div className="page-actions mb-1">
+          <button
+            onClick={() => {
+              setEditHomework(null);
+              setShowAddModal(true);
+            }}
+            className="btn btn-primary"
+          >
+            <Plus className="w-4 h-4" />
+            New Task
+          </button>
+
           <button
             onClick={() => setShowScanModal(true)}
-            className="flex items-center justify-center h-[36px] px-[14px] rounded-none border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] bg-transparent hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors text-[12px] font-semibold cursor-pointer w-auto gap-2"
+            className="btn btn-secondary"
           >
             <Sparkles className="w-4 h-4" /> Magic Import
           </button>
 
           <button
             onClick={() => setShowClassroomModal(true)}
-            className={`flex items-center justify-center h-[36px] px-[14px] rounded-none border text-[#111111] dark:text-[#F4F4F6] transition-colors text-[12px] font-semibold cursor-pointer w-auto gap-2 ${
-              classroomConnected
-                ? 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10'
-                : 'border-[#D9D9D6] dark:border-white/[0.1] bg-transparent hover:bg-black/5 dark:hover:bg-white/[0.06]'
+            className={`btn btn-secondary ${
+              classroomConnected ? 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10' : ''
             }`}
           >
             {classroomConnected ? (
-              <span className="relative flex h-2 w-2">
+              <span className="relative flex h-2 w-2 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
             ) : (
-              <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <GraduationCap className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
             )}
-            <span>{classroomConnected ? 'Classroom Synced' : 'Classroom Sync'}</span>
+            <span className="truncate">
+              Classroom<span className="hidden sm:inline">{classroomConnected ? ' Synced' : ' Sync'}</span>
+            </span>
             {isPilot && (
-              <span className="text-[11px] font-bold font-mono px-1.5 py-0.2 rounded-none bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30 uppercase">
+              <span className="shrink-0 text-[10px] leading-4 font-bold tracking-wide px-1 bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30">
                 PILOT
               </span>
             )}
           </button>
 
-          <button
-            onClick={() => {
-              setEditHomework(null);
-              setShowAddModal(true);
-            }}
-            className="flex items-center justify-center gap-1.5 h-[36px] px-[14px] rounded-none bg-[#111111] text-[#FFFFFF] dark:bg-white dark:text-[#090A0C] hover:opacity-90 transition-opacity text-[12px] font-semibold cursor-pointer w-auto shadow-sm"
-          >
-            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-            New Task
-          </button>
         </div>
       </div>
 
@@ -323,32 +324,35 @@ export const HomeworkView: React.FC = () => {
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
               </span>
               <div className="min-w-0 flex-1">
-                <p className="font-bold text-[#111111] dark:text-[#FFFFFF] text-[13px] leading-tight truncate">
+                <p className="font-bold text-fg text-[13px] leading-tight truncate">
                   📢 {pilotPendingCount} New Assignment{pilotPendingCount > 1 ? 's' : ''} Detected!
                 </p>
-                <p className="text-[#6B6B6B] dark:text-[#94A3B8] text-[11px] mt-0.5 truncate">
+                <p className="text-muted text-[11px] mt-0.5 truncate">
                   Ready to review and broadcast to your batch.
                 </p>
               </div>
             </div>
             <button
               onClick={() => setShowClassroomModal(true)}
-              className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 cursor-pointer shrink-0 ml-2 shadow-xs"
+              className="flex items-center gap-1.5 text-[12px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 h-9 cursor-pointer shrink-0 ml-2 shadow-xs"
             >
               Review & Push <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         ) : (
-          <div className="flex items-center justify-between p-3 border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-500/10 text-xs w-full overflow-hidden">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <p className="text-[#111111] dark:text-[#F4F4F6] text-[12px] leading-snug">
-                <span className="font-bold">Pilot Bridge:</span> {classroomConnected ? 'Classroom connected. Broadcast assignments to your batch.' : 'Sync and broadcast Classroom assignments to your batch.'}
+          <div className="flex items-center gap-3 p-3.5 border border-line bg-surface w-full">
+            <span className="w-10 h-10 shrink-0 flex items-center justify-center bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+              <GraduationCap className="w-5 h-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[14px] font-semibold text-fg leading-tight">Pilot Bridge</p>
+              <p className="mt-0.5 text-[13px] text-muted leading-snug">
+                {classroomConnected ? 'Classroom connected. Share assignments with your batch.' : 'Sync Classroom assignments and share them with your batch.'}
               </p>
             </div>
             <button
               onClick={() => setShowClassroomModal(true)}
-              className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 px-2.5 py-1 border border-emerald-500/25 cursor-pointer shrink-0 ml-2"
+              className="h-9 px-3.5 shrink-0 text-[13px] font-semibold border border-line-strong text-fg hover:bg-ink hover:text-on-ink transition-colors cursor-pointer"
             >
               Broadcast
             </button>
@@ -360,14 +364,14 @@ export const HomeworkView: React.FC = () => {
 
       {/* AI Deadline Check-in Card (Proactive Prompt) */}
       {dueTodayTask && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.03] gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 border border-line bg-surface-2 gap-3">
           <div className="flex items-center gap-2.5">
             <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <div>
-              <p className="text-[13px] font-semibold text-[#111111] dark:text-[#FFFFFF] leading-tight">
+              <p className="text-[13px] font-semibold text-fg leading-tight">
                 Hey! Did you complete <span className="font-bold underline">"{dueTodayTask.title}"</span>?
               </p>
-              <p className="text-[11px] text-[#6B6B6B] dark:text-[#94A3B8] mt-0.5">
+              <p className="text-[11px] text-muted mt-0.5">
                 Marked due today. Let us know so your timetable stays updated.
               </p>
             </div>
@@ -381,7 +385,7 @@ export const HomeworkView: React.FC = () => {
                 });
                 showToast('Completed', `"${dueTodayTask.title}" marked as complete! 🎉`, 'success');
               }}
-              className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer flex items-center gap-1"
+              className="px-3 h-9 text-[12px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer flex items-center gap-1"
             >
               <Check className="w-3 h-3 stroke-[3]" /> Yes, Done
             </button>
@@ -390,7 +394,7 @@ export const HomeworkView: React.FC = () => {
                 updateHomework(dueTodayTask.id, { status: 'In Progress' });
                 showToast('In Progress', 'Marked as Doing ⏳', 'info');
               }}
-              className="px-2.5 py-1.5 text-[11px] font-semibold border border-black/10 dark:border-white/10 text-[#6B6B6B] dark:text-[#94A3B8] hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
+              className="px-2.5 h-9 text-[13px] font-semibold border border-line text-muted hover:bg-surface-2 cursor-pointer"
             >
               Still Doing
             </button>
@@ -400,19 +404,19 @@ export const HomeworkView: React.FC = () => {
 
       {/* Search Bar */}
       <div className="relative w-full">
-        <div className="flex items-center gap-3 px-4 py-2.5 h-[44px] rounded-none bg-white dark:bg-[#121317] border border-[#D9D9D6] dark:border-white/[0.08] shadow-xs">
-          <Search className="w-4 h-4 text-[#6F6F6F] dark:text-[#94A3B8] shrink-0" />
+        <div className="flex items-center gap-3 px-4 h-12 bg-surface border border-line focus-within:border-line-strong transition-colors">
+          <Search className="w-[18px] h-[18px] text-muted shrink-0" />
           <input
             type="text"
-            placeholder="Search assignments, topics, or notes..."
+            placeholder="Search tasks"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-transparent text-[14px] text-[#111111] dark:text-[#F4F4F6] placeholder:text-[#6F6F6F] dark:placeholder:text-[#64748B] focus:outline-none font-medium"
+            aria-label="Search tasks" className="w-full bg-transparent text-[15px] text-fg placeholder:text-[#6B6B6B] dark:placeholder:text-[#A1A1AA] focus:outline-none"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="p-1 rounded-none text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors"
+              className="p-1 rounded-none text-[#6B6B6B] hover:text-fg transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -421,24 +425,29 @@ export const HomeworkView: React.FC = () => {
       </div>
 
       {/* Filter Tabs (Only 3: TO DO, DOING, DONE) */}
-      <div className="flex items-center w-full mt-4 mb-2 h-[44px] border-b border-[#D9D9D6] dark:border-white/[0.08]">
-        {filterTabs.map((tab) => {
+      <div role="tablist" aria-label="Task status" className="grid grid-cols-3 w-full mt-1 border border-line bg-surface">
+        {filterTabs.map((tab, idx) => {
           const isSelected = statusFilter === tab.id;
           return (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={isSelected}
               onClick={() => setStatusFilter(tab.id as HomeworkStatus)}
-              className={`relative flex-1 flex items-center justify-center gap-1.5 h-full text-[11px] font-semibold tracking-[1px] uppercase transition-colors whitespace-nowrap cursor-pointer ${
+              className={`h-11 flex items-center justify-center gap-2 text-[14px] font-medium whitespace-nowrap cursor-pointer transition-colors ${
+                idx > 0 ? 'border-l border-line-soft' : ''
+              } ${
                 isSelected
-                  ? 'text-[#111111] dark:text-[#F4F4F6]'
-                  : 'text-[#6F6F6F] dark:text-[#94A3B8] hover:text-[#111111] dark:hover:text-white'
+                  ? 'bg-ink text-on-ink font-semibold'
+                  : 'text-fg hover:bg-surface-2'
               }`}
             >
-              <span>{tab.label}</span>
-              <span className="font-mono text-[11px] font-bold">{tab.count}</span>
-              {isSelected && (
-                <span className="absolute bottom-[-1px] left-1/2 -translate-x-1/2 w-[38px] h-[2px] bg-[#111111] dark:bg-[#F4F4F6]" />
-              )}
+              <span className="capitalize">{tab.label.toLowerCase()}</span>
+              <span className={`min-w-[20px] h-5 px-1.5 inline-flex items-center justify-center text-[12px] font-semibold tabular-nums ${
+                isSelected ? 'bg-white/20 dark:bg-black/10' : 'bg-black/[0.05] dark:bg-white/[0.08] text-muted'
+              }`}>
+                {tab.count}
+              </span>
             </button>
           );
         })}
@@ -448,14 +457,15 @@ export const HomeworkView: React.FC = () => {
       {filtered.length === 0 ? (
         <div className="py-12 px-4">
           <EmptyState
-            icon={<MonochromeIllustration type="no-homework" size={48} />}
-            title="All caught up!"
+            illustration="tasks-done"
+            title={searchQuery ? 'No matches' : 'All caught up'}
+            note={!searchQuery && pendingCount === 0 ? 'Nothing pending. Go enjoy your evening!' : undefined}
             description={
               searchQuery
                 ? 'No tasks matched your search query.'
-                : 'You have no pending assignments in this view. Great job!'
+                : 'Nothing here right now. Add a task to keep track of it.'
             }
-            actionLabel="Create Task"
+            actionLabel="Add task"
             onAction={() => {
               setEditHomework(null);
               setShowAddModal(true);

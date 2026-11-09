@@ -1,5 +1,6 @@
 'use client';
 
+import { FacultyPageHeader, FacultyNoBatches, FacultyStatTile } from './FacultyUI';
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ClassSession, DayOfWeek, FacultyLinkedBatch } from '@/lib/types';
@@ -31,7 +32,7 @@ import {
   RotateCcw,
   Ban,
   Share2,
-} from 'lucide-react';
+} from '@/components/ui/icons';
 import { clsx } from 'clsx';
 
 const DAYS: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -151,7 +152,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
         `Day & Time: *${session.day}, ${session.startTime} - ${session.endTime}*\n` +
         `Status: *CANCELLED*\n` +
         `Faculty: *${teacherName}*\n\n` +
-        `Synced via AcademiSync.`;
+        `Synced via Intersemester.`;
     } else if (isRescheduled) {
       text = `⏰ *NOTICE: CLASS RESCHEDULED*\n\n` +
         `Batch: *${batchLabel}*\n` +
@@ -160,7 +161,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
         `Room: *${session.room || 'TBA'}*\n` +
         `Faculty: *${teacherName}*\n` +
         (rescheduleMeta?.reason ? `Note: *${rescheduleMeta.reason}*\n` : '') +
-        `\nUpdated on AcademiSync.`;
+        `\nUpdated on Intersemester.`;
     } else {
       text = `📌 *CLASS UPDATE*\n\n` +
         `Batch: *${batchLabel}*\n` +
@@ -168,7 +169,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
         `Day & Time: *${session.day}, ${session.startTime} - ${session.endTime}*\n` +
         `Room: *${session.room || 'TBA'}*\n` +
         `Faculty: *${teacherName}*\n\n` +
-        `Synced via AcademiSync.`;
+        `Synced via Intersemester.`;
     }
 
     const shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
@@ -218,58 +219,28 @@ export const FacultyWeeklyTimetable: React.FC = () => {
   const sessionsForDay = allWeekSessions[selectedDay] || [];
 
   return (
-    <div className="flex flex-col gap-6 text-left w-full max-w-full">
-      {/* Editorial Header */}
-      <div className="flex flex-col gap-4 mt-6 sm:mt-8 mb-2">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="px-2 py-0.5 text-[11px] font-mono font-bold uppercase tracking-wider bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 rounded-[3px]">
-                FACULTY SCHEDULE
-              </span>
-              <span className="text-[12px] font-mono text-[#6F6F6F] dark:text-[#A1A1AA]">
-                {linkedBatches.length} {linkedBatches.length === 1 ? 'batch' : 'batches'} connected
-              </span>
-            </div>
-            <h2 className="text-[32px] sm:text-[36px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[38px] sm:leading-[42px]">
-              Teaching Timetable
-            </h2>
-            <p className="text-[14px] font-normal text-[#6B6B6B] dark:text-[#A1A1AA] leading-[20px] mt-1.5">
-              View your synchronized teaching slots across all connected batches.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
-            <button
-              type="button"
-              onClick={() => setIsConnectBatchOpen(true)}
-              className="flex items-center justify-center gap-1.5 h-9 px-3.5 bg-[#111111] text-white dark:bg-white dark:text-[#111111] hover:opacity-90 transition-opacity text-[13px] font-semibold cursor-pointer shadow-xs rounded-[3px]"
-            >
-              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Connect Batch</span>
+    <div className="flex flex-col gap-f5 sm:gap-f6 text-left w-full max-w-full">
+      <FacultyPageHeader
+        eyebrow="Teaching timetable"
+        title="Your week"
+        description="Only the subjects you teach, across every batch you've linked."
+        action={
+          linkedBatches.length > 0 && (
+            <button type="button" onClick={() => setIsConnectBatchOpen(true)} className="btn btn-secondary btn-sm">
+              <Plus className="w-4 h-4" /> Add batch
             </button>
-          </div>
-        </div>
-      </div>
+          )
+        }
+      />
 
       {/* Main Schedule Container */}
       {linkedBatches.length === 0 ? (
-        <div className="w-full bg-[#FFFFFF] dark:bg-[#121317] border border-black/10 dark:border-white/10 rounded-[4px] p-8 text-center flex flex-col items-center justify-center gap-3">
-          <BookOpen className="w-10 h-10 opacity-30 text-black dark:text-white" />
-          <h3 className="text-base font-bold text-[#111111] dark:text-[#FFFFFF]">
-            No Batches Connected Yet
-          </h3>
-          <p className="text-xs text-[#6F6F6F] dark:text-[#A1A1AA] max-w-md">
-            Enter your 6-digit batch code and select the subjects you teach. Your teaching schedule will sync here instantly.
-          </p>
-          <button
-            type="button"
-            onClick={() => setIsConnectBatchOpen(true)}
-            className="mt-2 h-9 px-4 bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-[13px] font-semibold hover:opacity-90 transition-opacity cursor-pointer rounded-[3px]"
-          >
-            Enter Batch Code
-          </button>
-        </div>
+        <FacultyNoBatches
+          onConnect={() => setIsConnectBatchOpen(true)}
+          title="No lectures yet"
+          body="Link a batch with its code and pick your subjects. Your teaching slots appear here straight away."
+          note="Your week starts here."
+        />
       ) : (
         <div className="flex flex-col gap-5">
           {/* Mobile Day Tabs (< 768px) - Exact match to student theme */}
@@ -288,7 +259,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                     'flex flex-col items-center justify-center min-w-[76px] py-2.5 px-3 rounded-[3px] transition-all border cursor-pointer shrink-0',
                     isSelected
                       ? 'bg-[#111111] text-white border-[#111111] shadow-xs'
-                      : 'bg-white dark:bg-[#16171D] border-[#E5E5E0] dark:border-white/[0.08] text-[#151515] dark:text-[#F4F4F6] hover:bg-neutral-100 dark:hover:bg-white/[0.04]'
+                      : 'bg-surface border-[#E5E5E0] dark:border-white/[0.08] text-fg hover:bg-surface-2'
                   )}
                 >
                   <div className="flex items-center justify-center gap-1">
@@ -300,7 +271,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                   <span
                     className={clsx(
                       'text-[11px] font-normal mt-0.5 tracking-tight',
-                      isSelected ? 'text-white/70' : 'text-[#737373] dark:text-[#94A3B8]'
+                      isSelected ? 'text-white/70' : 'text-muted'
                     )}
                   >
                     {count} {count === 1 ? 'class' : 'classes'}
@@ -314,8 +285,8 @@ export const FacultyWeeklyTimetable: React.FC = () => {
           <div className="flex md:hidden flex-col gap-3.5">
             {sessionsForDay.length === 0 ? (
               <EmptyState
-                icon={<MonochromeIllustration type="no-classes" size={48} />}
-                title={`NO LECTURES ON ${selectedDay.toUpperCase()}`}
+                illustration="no-classes"
+                title={`No lectures on ${selectedDay}`}
                 description="No teaching sessions scheduled for this day."
                 actionLabel="Connect Another Batch"
                 onAction={() => setIsConnectBatchOpen(true)}
@@ -375,11 +346,11 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                     {!isLive && (
                       <>
                         <div
-                          className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[11px]"
+                          className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-none"
                           style={{ backgroundColor: theme.bg }}
                         />
                         <div
-                          className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[11px]"
+                          className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-none"
                           style={{
                             background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
                           }}
@@ -391,7 +362,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                       <div className="flex items-center justify-between gap-2 mb-2.5">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-[11px] font-bold uppercase tracking-[1.4px] leading-none">
-                            <span className="dark:hidden inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] bg-white/80 text-slate-800 text-[11px] font-bold tracking-wider font-mono border border-black/[0.05] shadow-xs">
+                            <span className="dark:hidden inline-flex items-center gap-1.5 px-2 py-0.5 rounded-none bg-white/80 text-slate-800 text-[11px] font-bold tracking-wider font-mono border border-black/[0.05] shadow-xs">
                               <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isLive ? '#18A889' : theme.accent }} />
                               {categoryLabel}
                             </span>
@@ -401,7 +372,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                           </span>
 
                           {session.isLab && (
-                            <span className="text-[11px] font-bold tracking-widest px-1.5 py-0.5 uppercase rounded-[4px] bg-white/80 dark:bg-[rgba(24,168,137,0.18)] text-emerald-800 dark:text-[#18A889] border border-emerald-600/20 dark:border-transparent shadow-xs dark:shadow-none">
+                            <span className="text-[12px] font-bold px-1.5 py-0.5 rounded-none bg-white/80 dark:bg-[rgba(24,168,137,0.18)] text-emerald-800 dark:text-[#18A889] border border-emerald-600/20 dark:border-transparent shadow-xs dark:shadow-none">
                               LAB
                             </span>
                           )}
@@ -418,7 +389,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                               onClick={() =>
                                 setOpenMenuSessionId(openMenuSessionId === cardKey ? null : cardKey)
                               }
-                              className="p-1 rounded-[6px] text-slate-500 hover:text-slate-900 dark:text-[#CBD5E1] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                              className="p-1 rounded-none text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
                               title="Class Options" aria-label="Class Options"
                             >
                               <MoreHorizontal className="w-4 h-4" />
@@ -430,8 +401,8 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                                   className="fixed inset-0 z-30"
                                   onClick={() => setOpenMenuSessionId(null)}
                                 />
-                                <div className="absolute right-0 top-full mt-1.5 w-52 bg-white dark:bg-[#16171D] border border-black/10 dark:border-white/10 rounded-[8px] shadow-xl py-1.5 z-40 text-left font-sans flex flex-col">
-                                  <div className="px-3 py-1 text-[11px] font-mono uppercase tracking-wider text-black/60 dark:text-white/60 border-b border-black/5 dark:border-white/5 mb-1 flex items-center gap-1.5">
+                                <div className="absolute right-0 top-full mt-1.5 w-52 bg-surface border border-line rounded-none shadow-xl py-1.5 z-40 text-left font-sans flex flex-col">
+                                  <div className="px-3 py-1 text-[12px] font-mono text-muted border-b border-line-soft mb-1 flex items-center gap-1.5">
                                     <span>🎓</span>
                                     <span>Faculty Actions</span>
                                   </div>
@@ -456,7 +427,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                                           setOpenMenuSessionId(null);
                                           setSessionToReschedule(agg);
                                         }}
-                                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-fg hover:bg-surface-2 text-left transition-colors cursor-pointer"
                                       >
                                         <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
                                         <span>Reschedule / Edit</span>
@@ -490,7 +461,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                                     </button>
                                   )}
 
-                                  <div className="h-px bg-black/[0.06] dark:bg-white/[0.08] my-1" />
+                                  <div className="h-px bg-surface-3 my-1" />
 
                                   <button
                                     type="button"
@@ -498,7 +469,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                                       setOpenMenuSessionId(null);
                                       handleShareWhatsAppNotice(agg);
                                     }}
-                                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-fg hover:bg-surface-2 text-left transition-colors cursor-pointer"
                                   >
                                     <Share2 className="w-3.5 h-3.5 opacity-60 shrink-0" />
                                     <span>Share Notice via WhatsApp</span>
@@ -510,12 +481,12 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                         </div>
                       </div>
 
-                      <h4 className={`text-[16px] sm:text-[17px] leading-[22px] font-bold tracking-tight break-words mb-2 ${isCancelled ? 'line-through opacity-70' : ''} ${isLive ? 'text-white' : 'text-[#151515] dark:text-white'}`}>
+                      <h4 className={`text-[16px] sm:text-[17px] leading-[22px] font-bold tracking-tight break-words mb-2 ${isCancelled ? 'line-through opacity-70' : ''} ${isLive ? 'text-white' : 'text-fg'}`}>
                         {subjectName}
                       </h4>
 
                       {isRescheduled && rescheduleMeta?.originalStartTime && (
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] font-mono font-medium mb-2.5 self-start">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] font-mono font-medium mb-2.5 self-start">
                           <Clock className="w-3.5 h-3.5 shrink-0" />
                           <span>
                             Rescheduled from {formatTime12Hour(rescheduleMeta.originalStartTime)} – {formatTime12Hour(rescheduleMeta.originalEndTime)}
@@ -524,12 +495,12 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                         </div>
                       )}
 
-                      <div className={`flex items-center gap-1.5 text-[12px] font-medium truncate ${isLive ? 'text-white/80' : 'text-slate-600 dark:text-[#CBD5E1]'}`}>
+                      <div className={`flex items-center gap-1.5 text-[12px] font-medium truncate ${isLive ? 'text-white/80' : 'text-muted'}`}>
                         <span className="shrink-0 flex items-center gap-1">
-                          <span className="text-[11px] leading-none opacity-80 text-slate-400 dark:text-[#CBD5E1]">◉</span> {session.room || 'Room TBA'}
+                          <span className="text-[11px] leading-none opacity-80 text-muted">◉</span> {session.room || 'Room TBA'}
                         </span>
                         <span className="shrink-0 opacity-40">·</span>
-                        <span className="truncate px-2 py-0.5 rounded-[4px] bg-black/5 dark:bg-white/10 text-[11px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70 inline-flex items-center font-mono border border-black/5 dark:border-white/5">
+                        <span className="truncate px-2 py-0.5 rounded-none bg-black/5 dark:bg-white/10 text-[11px] font-bold uppercase tracking-wider text-fg-2 inline-flex items-center font-mono border border-line-soft">
                           {pillLabel}
                         </span>
                       </div>
@@ -555,23 +526,23 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                   className={clsx(
                     "flex flex-col gap-4 p-4 border transition-all rounded-none",
                     isToday
-                      ? "bg-white dark:bg-[#13151D] border-[#111111] dark:border-emerald-500/40 dark:shadow-[0_0_25px_-5px_rgba(16,185,129,0.12)] shadow-xs"
-                      : "bg-white dark:bg-[#121317] border-[#D9D9D6] dark:border-white/[0.08]"
+                      ? "bg-surface border-[#111111] dark:border-emerald-500/40 dark:shadow-[0_0_25px_-5px_rgba(16,185,129,0.12)] shadow-xs"
+                      : "bg-surface border-line"
                   )}
                 >
-                  <div className="flex items-center justify-between px-1 pb-3 border-b border-[#EEEEEC] dark:border-white/[0.08]">
+                  <div className="flex items-center justify-between px-1 pb-3 border-b border-line-soft">
                     <div className="flex flex-col gap-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-[14px] font-bold tracking-tight text-[#111111] dark:text-[#F4F4F6]">
+                        <span className="text-[14px] font-bold tracking-tight text-fg">
                           {day}
                         </span>
                         {isToday && (
-                          <span className="text-[11px] font-bold text-white dark:text-emerald-400 bg-[#111111] dark:bg-emerald-500/20 dark:border dark:border-emerald-500/30 px-2 py-0.5 uppercase tracking-wider font-mono">
+                          <span className="text-[12px] font-bold text-white dark:text-emerald-400 bg-[#111111] dark:bg-emerald-500/20 dark:border dark:border-emerald-500/30 px-2 py-0.5 font-mono">
                             Today
                           </span>
                         )}
                       </div>
-                      <span className="text-[11px] font-medium text-[#6F6F6F] dark:text-[#94A3B8]">
+                      <span className="text-[11px] font-medium text-muted">
                         {daySessions.length} {daySessions.length === 1 ? 'class' : 'classes'}
                       </span>
                     </div>
@@ -579,9 +550,9 @@ export const FacultyWeeklyTimetable: React.FC = () => {
 
                   <div className="flex flex-col gap-3 min-h-[400px]">
                     {daySessions.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center h-48 text-center bg-black/[0.02] dark:bg-white/[0.02] border border-dashed border-[#D9D9D6] dark:border-white/[0.08]">
+                      <div className="flex flex-col items-center justify-center h-48 text-center bg-surface-2 border border-dashed border-line">
                         <CalendarDays className="w-6 h-6 text-[#6B6B6B] mb-2 opacity-50" />
-                        <span className="text-xs font-semibold text-[#6B6B6B] dark:text-[#A1A1AA]">No Lectures</span>
+                        <span className="text-xs font-semibold text-muted">No Lectures</span>
                       </div>
                     ) : (
                       daySessions.map((agg) => {
@@ -638,11 +609,11 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                             {!isLive && (
                               <>
                                 <div
-                                  className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[9px]"
+                                  className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-none"
                                   style={{ backgroundColor: theme.bg }}
                                 />
                                 <div
-                                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[9px]"
+                                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-none"
                                   style={{
                                     background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
                                   }}
@@ -653,7 +624,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                             <div className="relative z-10 flex flex-col">
                               <div className="flex items-center justify-between gap-1.5 mb-2">
                                 <span className="text-[11px] font-bold uppercase tracking-wider leading-none">
-                                  <span className="dark:hidden inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] bg-white/80 text-slate-800 text-[11px] font-bold font-mono border border-black/[0.05] shadow-xs">
+                                  <span className="dark:hidden inline-flex items-center gap-1 px-1.5 py-0.5 rounded-none bg-white/80 text-slate-800 text-[11px] font-bold font-mono border border-black/[0.05] shadow-xs">
                                     <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isLive ? '#18A889' : theme.accent }} />
                                     {categoryLabel}
                                   </span>
@@ -673,7 +644,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                                       onClick={() =>
                                         setOpenMenuSessionId(openMenuSessionId === cardKey ? null : cardKey)
                                       }
-                                      className="p-1 rounded text-slate-500 hover:text-slate-900 dark:text-[#CBD5E1] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                                      className="p-1 rounded-none text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
                                       title="Class Options" aria-label="Class Options"
                                     >
                                       <MoreHorizontal className="w-3.5 h-3.5" />
@@ -685,7 +656,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                                           className="fixed inset-0 z-30"
                                           onClick={() => setOpenMenuSessionId(null)}
                                         />
-                                        <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-[#16171D] border border-black/10 dark:border-white/10 rounded-[8px] shadow-xl py-1 z-40 text-left font-sans flex flex-col">
+                                        <div className="absolute right-0 top-full mt-1 w-48 bg-surface border border-line rounded-none shadow-xl py-1 z-40 text-left font-sans flex flex-col">
                                           {isRescheduled ? (
                                             <button
                                               type="button"
@@ -706,7 +677,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                                                   setOpenMenuSessionId(null);
                                                   setSessionToReschedule(agg);
                                                 }}
-                                                className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                                                className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] font-semibold text-fg hover:bg-surface-2 text-left transition-colors cursor-pointer"
                                               >
                                                 <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
                                                 <span>Reschedule</span>
@@ -746,7 +717,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                                               setOpenMenuSessionId(null);
                                               handleShareWhatsAppNotice(agg);
                                             }}
-                                            className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                                            className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] font-semibold text-fg hover:bg-surface-2 text-left transition-colors cursor-pointer"
                                           >
                                             <Share2 className="w-3.5 h-3.5 opacity-60 shrink-0" />
                                             <span>WhatsApp</span>
@@ -758,13 +729,13 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                                 </div>
                               </div>
 
-                              <h4 className={`text-[14px] leading-[18px] font-bold tracking-tight break-words mb-1.5 ${isCancelled ? 'line-through opacity-70' : ''} ${isLive ? 'text-white' : 'text-[#151515] dark:text-white'}`}>
+                              <h4 className={`text-[14px] leading-[18px] font-bold tracking-tight break-words mb-1.5 ${isCancelled ? 'line-through opacity-70' : ''} ${isLive ? 'text-white' : 'text-fg'}`}>
                                 {subjectName}
                               </h4>
 
-                              <div className={`flex items-center gap-1.5 text-[11px] font-medium truncate ${isLive ? 'text-white/80' : 'text-slate-600 dark:text-[#CBD5E1]'}`}>
+                              <div className={`flex items-center gap-1.5 text-[11px] font-medium truncate ${isLive ? 'text-white/80' : 'text-muted'}`}>
                                 <span className="shrink-0 flex items-center gap-1">
-                                  <span className="text-[11px] leading-none opacity-80 text-slate-400 dark:text-[#CBD5E1]">◉</span> {session.room || 'TBA'}
+                                  <span className="text-[11px] leading-none opacity-80 text-muted">◉</span> {session.room || 'TBA'}
                                 </span>
                                 <span className="shrink-0 opacity-40">·</span>
                                 <span className="truncate text-[11px] font-mono opacity-80">

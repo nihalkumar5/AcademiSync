@@ -31,7 +31,7 @@ import {
   Key,
   Copy,
   Check
-} from 'lucide-react';
+} from '@/components/ui/icons';
 import { useRouter } from 'next/navigation';
 import { shareLink, PLAY_STORE_URL } from '@/lib/shareUtils';
 
@@ -322,18 +322,18 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
         
         {/* CASE 1: USER IS NOT SIGNED IN */}
         {!user ? (
-          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] rounded-none">
-            <div className="w-14 h-14 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] rounded-none flex items-center justify-center shadow-sm">
-              <User className="w-7 h-7 text-black dark:text-white stroke-[1.8]" />
+          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-line bg-surface-2 rounded-none">
+            <div className="w-14 h-14 border border-line bg-surface rounded-none flex items-center justify-center shadow-sm">
+              <User className="w-7 h-7 text-fg stroke-[1.8]" />
             </div>
             <div>
-              <span className="text-[11px] font-bold font-mono tracking-widest uppercase text-amber-600 dark:text-amber-400">
-                AUTHENTICATION REQUIRED
+              <span className="text-[12px] font-bold font-mono text-amber-600 dark:text-amber-400">
+                Authentication required
               </span>
-              <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF] mt-1">
+              <h3 className="text-[18px] font-bold text-fg mt-1">
                 Please Sign In First
               </h3>
-              <p className="text-[13px] text-[#6F6F6F] dark:text-[#A0A0A0] mt-1.5 max-w-md leading-relaxed">
+              <p className="text-[13px] text-muted mt-1.5 max-w-md leading-relaxed">
                 You need to sign in with your student account before applying for Batch Pilot verification. This keeps schedule permissions verified and secure.
               </p>
             </div>
@@ -344,7 +344,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                   onClose();
                   router.push('/sign-in');
                 }} 
-                className="flex-1 px-6 py-3 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity rounded-none cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+                className="btn btn-primary flex-1"
               >
                 <User className="w-4 h-4" />
                 <span>Sign In Now</span>
@@ -352,7 +352,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
               <button 
                 type="button"
                 onClick={onClose} 
-                className="px-5 py-3 border border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[12px] font-bold uppercase tracking-wider hover:bg-black/5 dark:hover:bg-white/5 transition-colors rounded-none cursor-pointer"
+                className="px-5 h-11 border border-line text-fg text-[14px] font-semibold hover:bg-surface-2 transition-colors rounded-none cursor-pointer"
               >
                 Cancel
               </button>
@@ -360,52 +360,52 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
           </div>
         ) : isSuperAdmin ? (
           /* CASE 2A: USER IS SUPER ADMIN */
-          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] rounded-none">
-            <div className="w-14 h-14 border border-[#D8D8D8] dark:border-[#333333] bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] rounded-none flex items-center justify-center shadow-sm">
+          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-line bg-surface-2 rounded-none">
+            <div className="w-14 h-14 border border-line bg-ink text-on-ink rounded-none flex items-center justify-center shadow-sm">
               <Crown className="w-7 h-7" />
             </div>
             <div>
-              <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF]">
+              <h3 className="text-[18px] font-bold text-fg">
                 You are the Super Admin 👑
               </h3>
-              <p className="text-[13px] text-[#6F6F6F] dark:text-[#A0A0A0] mt-1.5 max-w-md leading-relaxed">
+              <p className="text-[13px] text-muted mt-1.5 max-w-md leading-relaxed">
                 You hold global administrator authority across the entire platform and all campus batches. You have full management capabilities and do not need to apply as a Batch Pilot.
               </p>
             </div>
             <button 
               type="button"
               onClick={onClose} 
-              className="mt-2 px-6 py-2.5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity rounded-none cursor-pointer"
+              className="mt-2 px-6 h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity rounded-none cursor-pointer"
             >
               Back to Dashboard
             </button>
           </div>
         ) : isCR ? (
           /* CASE 2B: USER IS ALREADY A CR */
-          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-5 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] rounded-none">
-            <div className="w-14 h-14 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] rounded-none flex items-center justify-center shadow-sm">
+          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-5 border border-line bg-surface-2 rounded-none">
+            <div className="w-14 h-14 border border-line bg-surface rounded-none flex items-center justify-center shadow-sm">
               <Crown className="w-7 h-7 text-amber-500" />
             </div>
             <div>
-              <span className="text-[11px] font-bold font-mono tracking-widest uppercase text-emerald-600 dark:text-emerald-400">
-                VERIFIED BATCH PILOT
+              <span className="text-[12px] font-bold font-mono text-emerald-600 dark:text-emerald-400">
+                Verified batch pilot
               </span>
-              <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF] mt-1">
+              <h3 className="text-[18px] font-bold text-fg mt-1">
                 You are a Verified Batch Pilot! 🚀
               </h3>
-              <p className="text-[13px] text-[#6F6F6F] dark:text-[#A0A0A0] mt-1.5 max-w-md leading-relaxed">
+              <p className="text-[13px] text-muted mt-1.5 max-w-md leading-relaxed">
                 You have full authority to manage timetables, cancel classes, and broadcast live alerts to {formatBatchDisplayName(profile.branch || branch, profile.semester || semester)}.
               </p>
             </div>
 
             {/* Batch Code Box */}
             {activeBatchCode ? (
-              <div className="w-full max-w-sm p-4 bg-white dark:bg-[#111111] border-2 border-dashed border-amber-500/40 rounded-none flex flex-col items-center text-center">
-                <span className="text-[11px] font-mono uppercase font-bold tracking-wider text-amber-700 dark:text-amber-400 mb-1">
-                  OFFICIAL 6-DIGIT BATCH CODE
+              <div className="w-full max-w-sm p-4 bg-surface border-2 border-dashed border-amber-500/40 rounded-none flex flex-col items-center text-center">
+                <span className="text-[12px] font-mono font-bold text-amber-700 dark:text-amber-400 mb-1">
+                  Official 6-digit batch code
                 </span>
                 <div className="flex items-center gap-3 my-1">
-                  <span className="font-mono text-3xl font-extrabold tracking-widest text-[#111111] dark:text-[#FFFFFF] select-all">
+                  <span className="font-mono text-3xl font-extrabold tracking-widest text-fg select-all">
                     {activeBatchCode}
                   </span>
                   <button
@@ -420,13 +420,13 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                         showToast('Error', 'Failed to copy batch code', 'error');
                       }
                     }}
-                    className="p-2 border border-[#D8D8D8] dark:border-[#333333] hover:bg-black/5 dark:hover:bg-white/5 transition-colors rounded-none cursor-pointer"
+                    className="p-2 border border-line hover:bg-surface-2 transition-colors rounded-none cursor-pointer"
                     title="Copy Code" aria-label="Copy Code"
                   >
                     {copiedCode ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-slate-600 dark:text-zinc-300" />}
                   </button>
                 </div>
-                <p className="text-[11px] text-[#6F6F6F] dark:text-[#A0A0A0] mt-1">
+                <p className="text-[11px] text-muted mt-1">
                   Share this code with your classmates so they can join and view real-time updates!
                 </p>
 
@@ -450,7 +450,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                       console.error(e);
                     }
                   }}
-                  className="mt-3 w-full py-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors rounded-none shadow-sm cursor-pointer"
+                  className="mt-3 w-full h-11 bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold text-[14px] flex items-center justify-center gap-2 transition-colors rounded-none shadow-sm cursor-pointer"
                 >
                   <MessageCircle className="w-4 h-4 fill-white" />
                   <span>Share Code with Class on WhatsApp</span>
@@ -465,14 +465,14 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                   onClose();
                   router.push('/timetable');
                 }} 
-                className="flex-1 px-5 py-2.5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity rounded-none cursor-pointer"
+                className="flex-1 px-5 h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity rounded-none cursor-pointer"
               >
                 Manage Schedule
               </button>
               <button 
                 type="button"
                 onClick={onClose} 
-                className="px-5 py-2.5 border border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[12px] font-bold uppercase tracking-wider hover:bg-black/5 dark:hover:bg-white/5 transition-colors rounded-none cursor-pointer"
+                className="px-5 h-11 border border-line text-fg text-[14px] font-semibold hover:bg-surface-2 transition-colors rounded-none cursor-pointer"
               >
                 Close
               </button>
@@ -485,29 +485,29 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
               <Clock className="w-6 h-6 text-amber-600 dark:text-amber-400" />
             </div>
             <div>
-              <span className="text-[11px] font-bold font-mono uppercase tracking-widest text-amber-600 dark:text-amber-400">
-                APPLICATION UNDER REVIEW
+              <span className="text-[12px] font-bold font-mono text-amber-600 dark:text-amber-400">
+                Application under review
               </span>
-              <h4 className="text-[17px] font-bold text-[#111111] dark:text-[#F4F4F6] mt-1">
+              <h4 className="text-[17px] font-bold text-fg mt-1">
                 Verification in Progress
               </h4>
             </div>
-            <p className="text-[13px] text-[#6F6F6F] dark:text-[#94A3B8] leading-relaxed">
+            <p className="text-[13px] text-muted leading-relaxed">
               Your Batch Pilot request for <strong>{college}</strong> · <strong>{formatBatchDisplayName(branch, semester)}</strong> is currently being reviewed.
             </p>
-            <div className="p-4 bg-white dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.08] rounded-none text-[12px] space-y-1.5 font-mono text-[#111111] dark:text-[#F4F4F6]">
+            <div className="p-4 bg-surface border border-line rounded-none text-[12px] space-y-1.5 font-mono text-fg">
               <div><strong>Roll No:</strong> {existingRequest.rollNumber}</div>
               <div><strong>Email:</strong> {existingRequest.email}</div>
               <div><strong>WhatsApp:</strong> {existingRequest.phone}</div>
               <div><strong>Applied:</strong> {new Date(existingRequest.createdAt).toLocaleDateString()}</div>
             </div>
-            <p className="text-[12px] text-[#6B6B6B] dark:text-[#94A3B8]">
+            <p className="text-[12px] text-muted">
               Once verified by our team, Batch Pilot editing and broadcast tools will unlock immediately.
             </p>
             <button
               type="button"
               onClick={onClose}
-              className="w-full py-3 bg-[#111111] dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity rounded-none cursor-pointer shadow-sm"
+              className="w-full h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity rounded-none cursor-pointer shadow-sm"
             >
               Got it
             </button>
@@ -524,13 +524,13 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                     <AlertCircle className="w-4 h-4 text-amber-700 dark:text-amber-400" />
                   </div>
                   <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-[11px] font-bold font-mono uppercase tracking-widest text-amber-700 dark:text-amber-400">
+                    <span className="text-[12px] font-bold font-mono text-amber-700 dark:text-amber-400">
                       {isBatchFull ? 'BATCH PILOT CAPACITY FULL (3/3) 🔒' : 'BATCH ALREADY CREATED ⚡'}
                     </span>
-                    <h4 className="text-[14px] font-bold text-[#111111] dark:text-white leading-snug">
+                    <h4 className="text-[14px] font-bold text-fg leading-snug">
                       {isBatchFull ? 'Maximum Pilot Limit Reached for this Batch' : 'Official timetable already exists for this batch!'}
                     </h4>
-                    <p className="text-[13px] text-[#555555] dark:text-[#A0A0A0] leading-relaxed mt-0.5">
+                    <p className="text-[13px] text-muted leading-relaxed mt-0.5">
                       {existingBatch.creatorName || existingBatch.crName 
                         ? `Created by ${existingBatch.creatorName || existingBatch.crName}. `
                         : 'A live schedule is already published. '}
@@ -544,7 +544,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                   <button
                     type="button"
                     onClick={handleAskPilotWhatsApp}
-                    className="flex-1 py-2.5 px-4 bg-[#111111] dark:bg-white text-white dark:text-black text-[12px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 transition-opacity rounded-none cursor-pointer shadow-sm"
+                    className="btn btn-primary flex-1"
                   >
                     <MessageCircle className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
                     <span>Ask Batch Pilot on WhatsApp</span>
@@ -557,7 +557,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                     ⚠️ This batch already has maximum capacity (3/3 Batch Pilots). Ask your Pilot for the batch code to join from the app.
                   </p>
                 ) : (
-                  <p className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8]">
+                  <p className="text-[11px] text-muted">
                     💡 <em>Are you an official CR/Pilot for this branch? You can still submit your application below to become an authorized Co-Pilot ({existingPilotsCount}/3 Pilots).</em>
                   </p>
                 )}
@@ -565,13 +565,13 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
             )}
 
             {/* Batch Details Card */}
-            <div className="p-4 sm:p-5 bg-[#F9F9F8] dark:bg-[#121317] border border-[#E5E5E5] dark:border-white/[0.08] rounded-none flex flex-col gap-4">
-              <div className="flex items-center justify-between border-b border-[#E5E5E5] dark:border-white/[0.08] pb-3">
-                <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#6B6B6B] dark:text-[#A1A1AA] flex items-center gap-1.5">
+            <div className="p-4 sm:p-5 bg-surface-2 border border-line-soft rounded-none flex flex-col gap-4">
+              <div className="flex items-center justify-between border-b border-line-soft pb-3">
+                <span className="text-[12px] font-bold text-muted flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5" />
-                  BATCH YOU WILL MANAGE
+                  Batch you will manage
                 </span>
-                <span className="text-[11px] font-mono text-[#6F6F6F] dark:text-[#94A3B8] uppercase">
+                <span className="text-[12px] font-mono text-muted">
                   {isCheckingBatch ? 'Checking availability...' : 'STANDARDIZED FORMAT'}
                 </span>
               </div>
@@ -580,11 +580,11 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                 
                 {/* 1. College Search Input */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-bold tracking-wider uppercase text-[#6F6F6F] dark:text-[#94A3B8]">
+                  <label className="section-label">
                     College / University <span className="text-red-500">*</span>
                   </label>
                   <div className="relative w-full">
-                    <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none focus-within:border-black dark:focus-within:border-white/30 transition-colors">
+                    <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line rounded-none focus-within:border-line-strong transition-colors">
                       <School className="w-4 h-4 text-[#6B6B6B] shrink-0" />
                       <input
                         type="text"
@@ -599,13 +599,13 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                         }}
                         onBlur={() => setTimeout(() => setShowCollegeDropdown(false), 200)}
                         required
-                        className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
+                        className="w-full bg-transparent text-[14px] font-medium text-fg focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#71717A]"
                       />
                     </div>
                     
                     {showCollegeDropdown && (suggestedColleges.length > 0 || isLoadingColleges) && (
-                      <div className="absolute top-full left-0 w-full mt-1.5 max-h-52 overflow-y-auto bg-white dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none shadow-2xl z-50 divide-y divide-[#E5E5E5] dark:divide-white/[0.08]">
-                        <div className="p-2.5 bg-[#F9F9F8] dark:bg-[#090A0C] text-[11px] font-bold uppercase tracking-wider text-[#6B6B6B] dark:text-[#94A3B8] flex items-center justify-between sticky top-0">
+                      <div className="absolute top-full left-0 w-full mt-1.5 max-h-52 overflow-y-auto bg-surface border border-line rounded-none shadow-2xl z-50 divide-y divide-line-soft">
+                        <div className="p-2.5 bg-surface-2 text-[12px] font-bold text-muted flex items-center justify-between sticky top-0">
                           <span>{isLoadingColleges ? 'Searching database...' : 'Select Your College'}</span>
                           <span className="text-[11px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 font-mono font-bold rounded-none">Database Verified</span>
                         </div>
@@ -617,13 +617,13 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                               setCollege(item.name);
                               setShowCollegeDropdown(false);
                             }}
-                            className="w-full px-3.5 py-2.5 hover:bg-black/5 dark:hover:bg-white/5 text-left transition-colors cursor-pointer flex flex-col"
+                            className="w-full px-3.5 py-2.5 hover:bg-surface-2 text-left transition-colors cursor-pointer flex flex-col"
                           >
-                            <span className="text-[13px] font-bold text-[#111111] dark:text-[#F4F4F6] leading-snug">
+                            <span className="text-[13px] font-bold text-fg leading-snug">
                               {item.name}
                             </span>
                             {item.state && (
-                              <span className="text-[11px] text-[#6B6B6B] dark:text-[#94A3B8] mt-0.5">
+                              <span className="text-[11px] text-muted mt-0.5">
                                 {item.state}
                               </span>
                             )}
@@ -639,11 +639,11 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                   
                   {/* Degree / Programme Dropdown */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-bold tracking-wider uppercase text-[#6F6F6F] dark:text-[#94A3B8]">
+                    <label className="section-label">
                       Degree / Programme <span className="text-red-500">*</span>
                     </label>
                     <div className="relative w-full">
-                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none focus-within:border-black dark:focus-within:border-white/30 transition-colors">
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line rounded-none focus-within:border-line-strong transition-colors">
                         <GraduationCap className="w-4 h-4 text-[#6B6B6B] shrink-0" />
                         <input
                           type="text"
@@ -666,25 +666,25 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                           onBlur={() => setTimeout(() => setShowProgrammeDropdown(false), 200)}
                           placeholder="e.g. B.Tech, M.Tech, BCA"
                           required
-                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
+                          className="w-full bg-transparent text-[14px] font-medium text-fg focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#71717A]"
                         />
                         <ChevronDown className="w-4 h-4 text-[#6B6B6B] shrink-0 pointer-events-none" />
                       </div>
 
                       {showProgrammeDropdown && (
-                        <div className="absolute top-full left-0 w-full mt-1.5 max-h-48 overflow-y-auto bg-white dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none shadow-2xl z-50">
+                        <div className="absolute top-full left-0 w-full mt-1.5 max-h-48 overflow-y-auto bg-surface border border-line rounded-none shadow-2xl z-50">
                           {filterProgrammes(programme).length > 0 ? (
                             filterProgrammes(programme).map(p => (
                               <div
                                 key={p}
                                 onMouseDown={() => { setProgramme(p); setShowProgrammeDropdown(false); }}
-                                className="px-3.5 py-2 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] border-b border-[#E5E5E5] dark:border-white/[0.08] last:border-0"
+                                className="px-3.5 py-2 hover:bg-surface-2 cursor-pointer text-[13px] font-medium text-fg border-b border-line-soft last:border-0"
                               >
                                 {p}
                               </div>
                             ))
                           ) : (
-                            <div className="px-3.5 py-2 text-xs text-[#6F6F6F] dark:text-[#94A3B8] font-mono">
+                            <div className="px-3.5 py-2 text-xs text-muted font-mono">
                               Press Tab to use custom degree
                             </div>
                           )}
@@ -695,11 +695,11 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
 
                   {/* Major / Branch Dropdown */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-bold tracking-wider uppercase text-[#6F6F6F] dark:text-[#94A3B8]">
+                    <label className="section-label">
                       Major / Branch <span className="text-red-500">*</span>
                     </label>
                     <div className="relative w-full">
-                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none focus-within:border-black dark:focus-within:border-white/30 transition-colors">
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line rounded-none focus-within:border-line-strong transition-colors">
                         <Building2 className="w-4 h-4 text-[#6B6B6B] shrink-0" />
                         <input
                           type="text"
@@ -722,25 +722,25 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                           onBlur={() => setTimeout(() => setShowBranchDropdown(false), 200)}
                           placeholder="e.g. Computer Science (CSE)"
                           required
-                          className="w-full bg-transparent text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
+                          className="w-full bg-transparent text-[14px] font-medium text-fg focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#71717A]"
                         />
                         <ChevronDown className="w-4 h-4 text-[#6B6B6B] shrink-0 pointer-events-none" />
                       </div>
 
                       {showBranchDropdown && (
-                        <div className="absolute top-full left-0 w-full mt-1.5 max-h-48 overflow-y-auto bg-white dark:bg-[#121317] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none shadow-2xl z-50">
+                        <div className="absolute top-full left-0 w-full mt-1.5 max-h-48 overflow-y-auto bg-surface border border-line rounded-none shadow-2xl z-50">
                           {filterBranches(branch).length > 0 ? (
                             filterBranches(branch).map(b => (
                               <div
                                 key={b}
                                 onMouseDown={() => { setBranch(b); setShowBranchDropdown(false); }}
-                                className="px-3.5 py-2 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] border-b border-[#E5E5E5] dark:border-white/[0.08] last:border-0"
+                                className="px-3.5 py-2 hover:bg-surface-2 cursor-pointer text-[13px] font-medium text-fg border-b border-line-soft last:border-0"
                               >
                                 {b}
                               </div>
                             ))
                           ) : (
-                            <div className="px-3.5 py-2 text-xs text-[#6F6F6F] dark:text-[#94A3B8] font-mono">
+                            <div className="px-3.5 py-2 text-xs text-muted font-mono">
                               Press Tab to use custom branch
                             </div>
                           )}
@@ -756,13 +756,13 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                   
                   {/* Semester Selector */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-bold tracking-wider uppercase text-[#6F6F6F] dark:text-[#94A3B8]">
+                    <label className="section-label">
                       Semester <span className="text-red-500">*</span>
                     </label>
                     <select
                       value={semester}
                       onChange={(e) => setSemester(Number(e.target.value) || 1)}
-                      className="w-full px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none text-[14px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus-border-white/30 transition-colors cursor-pointer"
+                      className="w-full px-3.5 py-2.5 bg-surface border border-line rounded-none text-[14px] font-medium text-fg focus:outline-none focus:border-black dark:focus-border-white/30 transition-colors cursor-pointer"
                     >
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((sem) => (
                         <option key={sem} value={sem} className="dark:bg-[#121317]">
@@ -774,10 +774,10 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
 
                   {/* Roll Number */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-bold tracking-wider uppercase text-[#6F6F6F] dark:text-[#94A3B8]">
+                    <label className="section-label">
                       Roll Number <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex items-center gap-2 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none focus-within:border-black dark:focus-within:border-white/30 transition-colors">
+                    <div className="flex items-center gap-2 px-3.5 py-2.5 bg-surface border border-line rounded-none focus-within:border-line-strong transition-colors">
                       <Hash className="w-3.5 h-3.5 text-[#6B6B6B] shrink-0" />
                       <input
                         type="text"
@@ -785,7 +785,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                         value={rollNumber}
                         onChange={(e) => setRollNumber(e.target.value)}
                         required
-                        className="w-full bg-transparent text-[14px] font-mono font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
+                        className="w-full bg-transparent text-[14px] font-mono font-medium text-fg focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#71717A]"
                       />
                     </div>
                   </div>
@@ -795,9 +795,9 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
               </div>
 
               {/* Batch Preview Pill */}
-              <div className="mt-1 pt-3 border-t border-[#E5E5E5] dark:border-white/[0.08] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 text-[12px]">
-                <span className="text-[#6B6B6B] dark:text-[#94A3B8] font-medium">Batch Key:</span>
-                <span className="font-mono text-[11px] bg-black/5 dark:bg-white/[0.04] border border-[#E5E5E5] dark:border-white/[0.08] px-2.5 py-1 rounded-none text-[#111111] dark:text-[#F4F4F6] truncate max-w-full">
+              <div className="mt-1 pt-3 border-t border-line-soft flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 text-[12px]">
+                <span className="text-muted font-medium">Batch Key:</span>
+                <span className="font-mono text-[11px] bg-surface-2 border border-line-soft px-2.5 py-1 rounded-none text-fg truncate max-w-full">
                   {canonicalBatchKey || 'batch-key-preview'}
                 </span>
               </div>
@@ -806,18 +806,18 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
             {!isBatchFull ? (
               <>
                 {/* Contact Information Card */}
-                <div className="p-4 sm:p-5 bg-[#F9F9F8] dark:bg-[#121317] border border-[#E5E5E5] dark:border-white/[0.08] rounded-none flex flex-col gap-3.5">
-                  <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#6B6B6B] dark:text-[#A1A1AA] flex items-center gap-1.5">
+                <div className="p-4 sm:p-5 bg-surface-2 border border-line-soft rounded-none flex flex-col gap-3.5">
+                  <span className="text-[12px] font-bold text-muted flex items-center gap-1.5">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                     CONTACT &amp; VERIFICATION
                   </span>
 
                   {/* WhatsApp Phone */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-bold tracking-wider uppercase text-[#6F6F6F] dark:text-[#94A3B8]">
+                    <label className="section-label">
                       WhatsApp Phone Number <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none focus-within:border-black dark:focus-within:border-white/30 transition-colors">
+                    <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line rounded-none focus-within:border-line-strong transition-colors">
                       <Phone className="w-4 h-4 text-[#6B6B6B] shrink-0" />
                       <input
                         type="tel"
@@ -825,23 +825,23 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         required
-                        className="w-full bg-transparent text-[14px] font-mono font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B]"
+                        className="w-full bg-transparent text-[14px] font-mono font-medium text-fg focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#71717A]"
                       />
                     </div>
                   </div>
 
                   {/* Proof / Verification Note */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-bold tracking-wider uppercase text-[#6F6F6F] dark:text-[#94A3B8]">
+                    <label className="section-label">
                       Proof / Verification Note (Optional)
                     </label>
-                    <div className="p-3 bg-[#FFFFFF] dark:bg-[#090A0C] border border-[#D8D8D8] dark:border-white/[0.1] rounded-none focus-within:border-black dark:focus-within:border-white/30 transition-colors">
+                    <div className="p-3 bg-surface border border-line rounded-none focus-within:border-line-strong transition-colors">
                       <textarea
                         rows={2}
                         placeholder="e.g. Official Class Representative / Batch Leader for CSE 2024 section A"
                         value={note}
                         onChange={(e) => setNote(e.target.value)}
-                        className="w-full bg-transparent text-[13px] font-medium text-[#111111] dark:text-[#F4F4F6] focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#64748B] resize-none"
+                        className="w-full bg-transparent text-[13px] font-medium text-fg focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#71717A] resize-none"
                       />
                     </div>
                   </div>
@@ -852,7 +852,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full h-12 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-black font-bold text-[13px] uppercase tracking-wider hover:opacity-90 transition-all rounded-none flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-md"
+                    className="btn btn-primary w-full shadow-md"
                   >
                     {isSubmitting ? (
                       <div className="flex items-center gap-2">
@@ -867,7 +867,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                     )}
                   </button>
 
-                  <p className="text-center text-[12px] text-[#888888] dark:text-[#94A3B8]">
+                  <p className="text-center text-[12px] text-[#888888] dark:text-[#A1A1AA]">
                     Applications are typically reviewed by admin within 24 hours.
                   </p>
                 </div>
@@ -877,7 +877,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-full py-3 border border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] text-[12px] font-bold uppercase tracking-wider hover:bg-black/5 dark:hover:bg-white/5 transition-colors rounded-none cursor-pointer text-center"
+                  className="w-full h-11 border border-line text-fg text-[14px] font-semibold hover:bg-surface-2 transition-colors rounded-none cursor-pointer text-center"
                 >
                   Close
                 </button>

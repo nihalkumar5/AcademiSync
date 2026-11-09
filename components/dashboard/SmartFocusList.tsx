@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { calculateTodayFocus } from '@/lib/timetableUtils';
-import { Check, CheckCircle2, Calendar } from 'lucide-react';
+import { Check, CheckCircle2, Calendar } from '@/components/ui/icons';
 import { EmptyState } from '../ui/EmptyState';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
@@ -11,18 +11,24 @@ export const SmartFocusList: React.FC = () => {
   const { homework, timetable, subjects, toggleHomeworkStatus, setActiveView, settings } = useApp();
   const [completingId, setCompletingId] = useState<string | null>(null);
 
+  // Re-check every minute so time-bound items (like lab prep) drop off on their own
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setTick((n) => n + 1), 60000);
+    return () => clearInterval(t);
+  }, []);
   const focusItems = calculateTodayFocus(homework, timetable, subjects, settings.homeworkWarningDays);
 
   if (focusItems.length === 0) {
     return (
       <div className="flex flex-col text-left">
-        <div className="flex items-center justify-between px-1 mb-6">
-          <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
-            TODAY'S FOCUS
+        <div className="flex items-baseline justify-between mb-f3">
+          <h3 className="text-[17px] font-semibold text-fg tracking-tight">
+            Today&apos;s focus
           </h3>
         </div>
         <EmptyState
-          icon={<CheckCircle2 className="w-5 h-5 text-emerald-500" />}
+          illustration="tasks-done"
           title="You're all caught up!"
           description="No pending homework or urgent submissions due today."
           actionLabel="View All Tasks"
@@ -32,27 +38,27 @@ export const SmartFocusList: React.FC = () => {
     );
   }
 
+  const typeLabel = (type: string) =>
+    type === 'homework' ? 'Assignment' : type === 'lab' ? 'Lab prep' : type === 'exam' ? 'Exam prep' : 'Prep';
+
   return (
-    <div className="flex flex-col text-left">
-      {/* Header */}
-      <div className="flex items-center justify-between px-1 mb-6">
-        <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
-          TODAY'S FOCUS
+    <section aria-label="Today's focus" className="flex flex-col text-left">
+      <div className="flex items-baseline justify-between mb-f3">
+        <h3 className="text-[17px] font-semibold text-fg tracking-tight">
+          Today&apos;s focus
         </h3>
-        <span className="text-[11px] font-bold text-[#6B6B6B] uppercase tracking-wider">
-          {focusItems.length} {focusItems.length === 1 ? 'PRIORITY' : 'PRIORITIES'}
+        <span className="text-[13px] text-muted">
+          {focusItems.length} {focusItems.length === 1 ? 'priority' : 'priorities'}
         </span>
       </div>
 
-      {/* Task Items */}
-      <div className="flex flex-col gap-4">
-        <AnimatePresence>
-          {focusItems.map((item, idx) => {
+      <ol className="border border-line bg-surface divide-y divide-line-soft">
+        <AnimatePresence initial={false}>
+          {focusItems.map((item) => {
             const isCompleted = completingId === item.id || item.status === 'Completed';
             const isOverdue = item.urgency === 'high' && item.deadlineText?.toLowerCase().includes('overdue');
             const isUrgent = item.urgency === 'high';
             const isInProgress = item.type === 'homework' && item.status === 'In Progress';
-
             const theme = getTaskCardTheme({
               isDone: isCompleted,
               isOverdue,
@@ -61,113 +67,59 @@ export const SmartFocusList: React.FC = () => {
             });
 
             return (
-              <motion.div
+              <motion.li
                 key={item.id}
                 layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                onClick={() => {
-                  if (item.type === 'homework') {
-                    setActiveView('homework');
-                  }
-                }}
-                className={clsx(
-                  'relative flex flex-col p-4 sm:p-[18px] rounded-[12px] border border-black/[0.05] dark:border-[color:var(--card-accent-border)] w-full overflow-hidden transition-all cursor-pointer group shadow-xs',
-                  isCompleted ? 'opacity-65' : 'opacity-100'
-                )}
-                style={{
-                  ['--card-accent-border' as any]: `${theme.accent}45`,
-                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18 }}
+                className={clsx('relative', isCompleted && 'opacity-60')}
               >
-                {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
-                <div 
-                  className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[11px]"
-                  style={{ backgroundColor: theme.bg }}
-                />
-                <div 
-                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[11px]"
-                  style={{ 
-                    background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
-                  }}
-                />
-
-                <div className="relative z-10 flex flex-col h-full">
-                  {/* Number and Top Right Toolbar */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div 
-                      className="text-[44px] font-bold leading-[40px] tracking-tighter font-mono select-none pointer-events-none text-[var(--num-light)] dark:text-[var(--num-dark)]"
-                      style={{ '--num-light': theme.numberColor, '--num-dark': `${theme.accent}66` } as any}
-                    >
-                      {String(idx + 1).padStart(2, '0')}
-                    </div>
-
-                    <div className="flex items-center gap-1.5 self-start">
+                <button
+                  type="button"
+                  onClick={() => setActiveView('homework')}
+                  className="w-full text-left flex items-start gap-3 p-4 cursor-pointer hover:bg-surface-2 transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] text-muted truncate">
+                      <span className="inline-block w-2 h-2 rounded-full mr-1.5 align-[1px]" style={{ backgroundColor: theme.accent }} aria-hidden="true" />
+                      {typeLabel(item.type)}{item.tag ? ` · ${item.tag}` : ''}
+                    </p>
+                    <h4 className={clsx(
+                      'mt-1 text-[16px] font-semibold leading-snug',
+                      isCompleted ? 'line-through text-muted' : 'text-fg'
+                    )}>
+                      {item.title}
+                    </h4>
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      {item.deadlineText && (
+                        <span className={clsx(
+                          'inline-flex items-center gap-1.5 px-2 py-0.5 text-[12px] font-medium',
+                          isOverdue
+                            ? 'bg-red-500/10 text-red-700 dark:bg-red-500/15 dark:text-red-300'
+                            : isUrgent
+                            ? 'bg-orange-500/10 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300'
+                            : 'bg-surface-2 text-muted'
+                        )}>
+                          <Calendar className="w-3.5 h-3.5 shrink-0" />
+                          {item.deadlineText}
+                        </span>
+                      )}
                       {item.type === 'homework' && item.originalPriority === 'High' && !isCompleted && (
-                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8] text-[#C96B45] text-[11px] font-bold uppercase tracking-wider dark:bg-orange-500/15 dark:text-orange-300">
-                          HIGH
-                        </span>
+                        <span className="px-2 py-0.5 text-[12px] font-medium bg-orange-500/10 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300">High priority</span>
                       )}
-                      {item.type === 'homework' && item.originalPriority === 'Medium' && !isCompleted && (
-                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8]/70 text-[#C96B45]/90 text-[11px] font-bold uppercase tracking-wider dark:bg-orange-500/15 dark:text-orange-300">
-                          MED
-                        </span>
-                      )}
-                      {isInProgress && (
-                        <span className="px-2 py-0.5 rounded-[2px] bg-[#DCE4FF] text-[#334CC4] text-[11px] font-bold uppercase tracking-wider dark:bg-indigo-500/15 dark:text-indigo-300">
-                          DOING
-                        </span>
-                      )}
-                      {isCompleted && (
-                        <span className="px-2 py-0.5 rounded-[2px] bg-[#D2F1E8] text-[#18A889] text-[11px] font-bold uppercase tracking-wider dark:bg-teal-500/15 dark:text-teal-300">
-                          DONE
-                        </span>
+                      {isInProgress && !isCompleted && (
+                        <span className="px-2 py-0.5 text-[12px] font-medium bg-blue-500/10 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">In progress</span>
                       )}
                     </div>
                   </div>
-
-                  {/* Course Name */}
-                  <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-[#737373] dark:text-[#94A3B8] break-words pr-2 mt-3.5">
-                    {item.tag}
-                  </span>
-
-                  {/* Title Row */}
-                  <div className="flex items-start mt-2.5">
-                    <div className="flex flex-col">
-                      <h4 className={clsx(
-                        "text-[16px] sm:text-[17px] font-bold leading-[22px] tracking-tight group-hover:opacity-80 transition-opacity",
-                        isCompleted ? "text-[#737373] dark:text-[#64748B] line-through" : "text-[#151515] dark:text-[#F4F4F6]"
-                      )}>
-                        {item.title}
-                      </h4>
-                    </div>
-                  </div>
-
-                  {/* Bottom row metadata pill */}
-                  <div className="flex items-center justify-between mt-[16px]">
-                    {item.deadlineText ? (
-                      <span className={clsx(
-                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[11px] font-bold font-mono uppercase tracking-wider",
-                        isUrgent
-                          ? "bg-[#FFF0E8] text-[#C96B45] border border-[#F5D8CC] dark:bg-orange-500/15 dark:text-orange-300 dark:border-orange-500/30"
-                          : isOverdue
-                          ? "bg-[#FCEBED] text-[#C94B5C] border border-[#F5CBD1] dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30"
-                          : "bg-black/[0.04] dark:bg-white/[0.05] text-[#737373] dark:text-[#94A3B8] border border-black/[0.04] dark:border-white/[0.06]"
-                      )}>
-                        <Calendar className="w-3 h-3 shrink-0" />
-                        {item.deadlineText.toUpperCase()}
-                      </span>
-                    ) : (
-                      <span />
-                    )}
-                  </div>
-                </div>
-              </motion.div>
+                </button>
+              </motion.li>
             );
           })}
         </AnimatePresence>
-      </div>
-    </div>
+      </ol>
+    </section>
   );
 };

@@ -11,7 +11,7 @@ import {
   Upload,
   ArrowUpRight,
   GraduationCap
-} from 'lucide-react';
+} from '@/components/ui/icons';
 import { useApp } from '@/context/AppContext';
 import { TimetableImportModal } from '@/components/timetable/TimetableImportModal';
 import { SelectBatchModal } from '@/components/batch/SelectBatchModal';
@@ -182,7 +182,7 @@ export const OnboardingModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-white dark:bg-[#111110] text-[#111111] dark:text-[#FFFFFF] flex flex-col font-sans overflow-hidden w-full h-[100dvh]">
+    <div className="fixed inset-0 z-[100] bg-surface text-fg flex flex-col font-sans overflow-hidden w-full h-[100dvh]">
       
       {/* ========================================================================= */}
       {/* 📱 MOBILE VIEW (< 768px): Vertical Flow with Bottom Sheet */}
@@ -190,17 +190,17 @@ export const OnboardingModal = () => {
       <div className="flex md:hidden flex-col w-full h-full overflow-hidden">
         {/* Top Nav Header */}
         <div 
-          className="w-full shrink-0 z-30 border-b border-[#F0F0EE] dark:border-[#262626] bg-white dark:bg-[#111110] px-6 pb-3"
+          className="w-full shrink-0 z-30 border-b border-[#F0F0EE] dark:border-[#262626] bg-surface px-6 pb-3"
           style={{
             paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 12px), 20px)',
           }}
         >
           {currentIndex === 0 ? (
             <div className="w-full flex flex-col items-center justify-center pt-1">
-              <h1 className="text-[24px] font-bold tracking-tighter text-[#111111] dark:text-[#FFFFFF]">
+              <h1 className="text-[24px] font-bold tracking-tighter text-fg">
                 inter<span className="font-normal opacity-80">semester</span>
               </h1>
-              <div className="w-[28px] h-[1.5px] bg-[#111111] dark:bg-[#FFFFFF] mt-2.5 mb-1.5" />
+              <div className="w-[28px] h-[1.5px] bg-ink mt-2.5 mb-1.5" />
               <p className="text-[11px] tracking-[2.5px] font-mono font-bold text-[#111111]/60 dark:text-[#FFFFFF]/60 uppercase whitespace-pre-line text-center">
                 {slides[0].topText}
               </p>
@@ -211,19 +211,19 @@ export const OnboardingModal = () => {
                 <button 
                   type="button"
                   onClick={handlePrev} 
-                  className="p-2 -ml-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+                  className="p-2 -ml-2 hover:bg-surface-2 rounded-full transition-colors cursor-pointer"
                   aria-label="Back"
                 >
-                  <ArrowLeft className="w-5 h-5 text-[#111111] dark:text-[#FFFFFF]" />
+                  <ArrowLeft className="w-5 h-5 text-fg" />
                 </button>
-                <h1 className="text-[20px] font-bold tracking-tighter text-[#111111] dark:text-[#FFFFFF]">
+                <h1 className="text-[20px] font-bold tracking-tighter text-fg">
                   inter<span className="font-normal opacity-80">semester</span>
                 </h1>
               </div>
               <button 
                 type="button"
                 onClick={handleSkip} 
-                className="px-4 py-1.5 -mr-2 text-[14px] font-semibold text-[#6B6B6B] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer uppercase tracking-wider"
+                className="px-4 h-9 -mr-2 text-[13px] font-semibold text-[#6B6B6B] hover:text-fg transition-colors cursor-pointer "
               >
                 Skip
               </button>
@@ -232,7 +232,7 @@ export const OnboardingModal = () => {
         </div>
 
         {/* Mobile Main */}
-        <div className="flex-1 w-full flex flex-col relative overflow-hidden bg-white dark:bg-[#111110]">
+        <div className="flex-1 w-full flex flex-col relative overflow-hidden bg-surface">
           <AnimatePresence custom={direction} initial={false}>
             {currentIndex < 3 ? (
               <motion.div
@@ -242,41 +242,44 @@ export const OnboardingModal = () => {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                className="absolute inset-0 w-full h-full flex flex-col justify-between bg-white dark:bg-[#111110]"
+                className="absolute inset-0 w-full h-full flex flex-col justify-between bg-surface"
               >
                 {/* Image */}
-                <div className="relative flex-1 min-h-0 w-full flex items-end justify-center overflow-visible bg-white dark:bg-[#111110] px-4 pt-2">
+                {/* The crowd scene (slide 2) is meant to sit on the text sheet; the others are centred so no empty band shows above them */}
+                <div className={`relative flex-1 min-h-0 w-full flex justify-center overflow-visible bg-white dark:bg-white px-4 pt-2 ${
+                  currentIndex === 1 ? 'items-end' : 'items-center pb-5'
+                }`}>
                   <img 
                     src={slides[currentIndex].image} 
                     alt="Onboarding" 
-                    className={`relative z-10 max-h-[40vh] w-auto max-w-[85vw] object-contain object-bottom pointer-events-none dark:invert dark:mix-blend-screen ${
-                      currentIndex === 0 ? 'scale-[1.35] translate-y-[2%]' :
+                    className={`relative z-10 max-h-[40vh] w-auto max-w-[85vw] object-contain object-bottom pointer-events-none ${
+                      currentIndex === 0 ? 'scale-[1.35]' :
                       currentIndex === 1 ? 'scale-[1.5] translate-y-[9%]' :
-                      'scale-[1.3] translate-y-[2%]'
+                      'scale-[1.3]'
                     }`}
                   />
                 </div>
 
                 {/* Text Sheet */}
-                <div className="w-full bg-[#F4F4F4] dark:bg-[#121317] shrink-0 z-20 relative rounded-none pt-7 pb-4 -mt-5 border-t border-black/5 dark:border-white/[0.08]">
+                <div className="w-full bg-surface-2 shrink-0 z-20 relative rounded-none pt-7 pb-4 -mt-5 border-t border-line-soft">
                   <div className="w-full px-6 flex flex-col gap-2.5">
-                    <h2 className="text-[28px] sm:text-[32px] leading-[34px] sm:leading-[38px] font-normal text-[#111111] dark:text-[#FFFFFF] whitespace-pre-line text-left tracking-tight">
+                    <h2 className="text-[28px] sm:text-[32px] leading-[34px] sm:leading-[38px] font-normal text-fg whitespace-pre-line text-left tracking-tight">
                       {slides[currentIndex].title}
                     </h2>
-                    <p className="text-[14px] text-[#6B6B6B] dark:text-[#94A3B8] font-normal leading-[20px] whitespace-pre-line mb-1 text-left mt-1">
+                    <p className="text-[14px] text-muted font-normal leading-[20px] whitespace-pre-line mb-1 text-left mt-1">
                       {slides[currentIndex].subtitle}
                     </p>
 
                     {slides[currentIndex].features && (
                       <div className="flex flex-col gap-2 mt-1">
                         {slides[currentIndex].features.map((feat, idx) => (
-                          <div key={idx} className="flex items-center gap-3 py-2 border-b border-black/5 dark:border-white/[0.06] last:border-0">
-                            <div className="w-8 h-8 bg-white dark:bg-white/[0.06] rounded-none border border-black/5 dark:border-white/[0.08] flex items-center justify-center shrink-0 shadow-xs">
-                              <feat.icon className="w-3.5 h-3.5 text-black dark:text-[#F4F4F6]" />
+                          <div key={idx} className="flex items-center gap-3 py-2 border-b border-line-soft last:border-0">
+                            <div className="w-8 h-8 bg-white dark:bg-white/[0.06] rounded-none border border-line-soft flex items-center justify-center shrink-0 shadow-xs">
+                              <feat.icon className="w-3.5 h-3.5 text-fg" />
                             </div>
                             <div className="flex flex-col text-left">
-                              <span className="text-[13px] font-bold text-black dark:text-[#F4F4F6]">{feat.title}</span>
-                              <span className="text-[12px] text-black/60 dark:text-[#94A3B8] leading-snug">{feat.desc}</span>
+                              <span className="text-[13px] font-bold text-fg">{feat.title}</span>
+                              <span className="text-[12px] text-muted leading-snug">{feat.desc}</span>
                             </div>
                           </div>
                         ))}
@@ -287,7 +290,7 @@ export const OnboardingModal = () => {
 
                 {/* Footer Controls */}
                 <div 
-                  className="w-full bg-[#F4F4F4] dark:bg-[#121317] z-20 relative pt-2 pb-6 px-6 flex items-center justify-between"
+                  className="w-full bg-surface-2 z-20 relative pt-2 pb-6 px-6 flex items-center justify-between"
                   style={{
                     paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 16px), 24px)',
                   }}
@@ -298,7 +301,7 @@ export const OnboardingModal = () => {
                         key={i}
                         type="button"
                         onClick={() => { setDirection(i > currentIndex ? 1 : -1); setCurrentIndex(i); }}
-                        className={`h-[5px] rounded-full transition-all duration-300 ${i === currentIndex ? 'w-[20px] bg-black dark:bg-[#F4F4F6]' : 'w-[5px] bg-black/20 dark:bg-white/20'}`}
+                        className={`h-[5px] rounded-full transition-all duration-300 ${i === currentIndex ? 'w-[20px] bg-ink' : 'w-[5px] bg-black/20 dark:bg-white/20'}`}
                         aria-label={`Go to slide ${i + 1}`}
                       />
                     ))}
@@ -307,7 +310,7 @@ export const OnboardingModal = () => {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="h-[46px] px-7 bg-black text-white dark:bg-white dark:text-black rounded-none flex items-center gap-2 font-bold text-[14px] hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm uppercase tracking-wider"
+                    className="btn btn-primary px-6"
                   >
                     {slides[currentIndex].buttonText}
                     <ArrowRight className="w-4 h-4" />
@@ -323,24 +326,24 @@ export const OnboardingModal = () => {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                className="absolute inset-0 w-full h-full flex flex-col overflow-y-auto px-6 py-8 bg-white dark:bg-[#090A0C]"
+                className="absolute inset-0 w-full h-full flex flex-col overflow-y-auto px-6 py-8 bg-surface"
               >
                 <div className="flex flex-col max-w-[460px] mx-auto w-full my-auto pb-10">
                   <div className="flex flex-col mb-6">
-                    <h2 className="text-[36px] sm:text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[40px] sm:leading-[44px]">
+                    <h2 className="page-title">
                       Connect,<br />
                       Batch,<br />
                       Timetable
                     </h2>
-                    <p className="text-[14px] font-normal text-[#6B6B6B] dark:text-[#94A3B8] leading-[20px] mt-4">
+                    <p className="text-[14px] font-normal text-muted leading-[20px] mt-4">
                       Join your classmates and sync your academic schedule.
                     </p>
                   </div>
 
-                  <div className="rounded-none border border-[#D8D8D8] dark:border-white/[0.08] bg-[#F9F9F8] dark:bg-[#121317] p-4 mb-4 shadow-xs">
+                  <div className="rounded-none border border-line bg-surface-2 p-4 mb-4 shadow-xs">
                     <div className="flex items-center gap-1.5 mb-2.5">
-                      <ArrowUpRight className="w-3.5 h-3.5 text-[#111111] dark:text-[#F4F4F6]" />
-                      <span className="text-[11px] font-mono font-bold tracking-[1.5px] uppercase text-[#6B6B6B] dark:text-[#94A3B8]">
+                      <ArrowUpRight className="w-3.5 h-3.5 text-fg" />
+                      <span className="text-[12px] font-mono font-bold text-muted">
                         HAVE AN INVITE?
                       </span>
                     </div>
@@ -353,16 +356,16 @@ export const OnboardingModal = () => {
                           setInviteCode(e.target.value);
                           if (inviteError) setInviteError(false);
                         }}
-                        className={`flex-1 h-11 px-3.5 bg-white dark:bg-[#090A0C] border rounded-none text-[14px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none transition-all shadow-xs ${
+                        className={`flex-1 h-11 px-3.5 bg-surface border rounded-none text-[14px] text-fg focus:outline-none transition-all shadow-xs ${
                           inviteError
                             ? 'border-rose-500 ring-1 ring-rose-500'
-                            : 'border-[#D8D8D8] dark:border-white/[0.1] focus:border-[#111111] dark:focus:border-white/40'
+                            : 'border-line focus:border-line-strong'
                         }`}
                       />
                       <button
                         type="submit"
                         disabled={isJoiningCode}
-                        className="h-11 px-5 bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-[12px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0 shadow-xs"
+                        className="h-11 px-5 bg-ink text-on-ink text-[14px] font-semibold rounded-none hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0 shadow-xs"
                       >
                         {isJoiningCode ? 'Joining...' : 'Join'}
                       </button>
@@ -376,29 +379,29 @@ export const OnboardingModal = () => {
 
                   <div className="flex items-center gap-3 my-1 mb-4">
                     <div className="flex-1 h-[1px] bg-[#E5E5E5] dark:bg-white/[0.08]" />
-                    <span className="text-[11px] font-mono font-bold tracking-[1.5px] text-[#6B6B6B] dark:text-[#A1A1AA] uppercase">
-                      OR FIND YOUR BATCH
+                    <span className="text-[12px] font-mono font-bold text-muted ">
+                      Or find your batch
                     </span>
                     <div className="flex-1 h-[1px] bg-[#E5E5E5] dark:bg-white/[0.08]" />
                   </div>
 
                   <div 
                     onClick={() => setIsSelectBatchModalOpen(true)}
-                    className="relative group w-full p-5 sm:p-6 flex flex-col items-center justify-center rounded-none border border-[#D8D8D8] dark:border-white/[0.1] hover:border-[#111111]/40 dark:hover:border-white/30 bg-[#FAFAF8] dark:bg-[#121317] hover:bg-[#F4F4F2] dark:hover:bg-[#16181E] transition-all cursor-pointer text-center shadow-xs"
+                    className="relative group w-full p-5 sm:p-6 flex flex-col items-center justify-center rounded-none border border-line hover:border-[#111111]/40 dark:hover:border-white/30 bg-[#FAFAF8] dark:bg-[#121317] hover:bg-[#F4F4F2] dark:hover:bg-[#16181E] transition-all cursor-pointer text-center shadow-xs"
                   >
-                    <div className="w-10 h-10 border border-[#E5E5E5] dark:border-white/[0.1] bg-white dark:bg-[#1A1C23] flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform shadow-xs">
-                      <GraduationCap className="w-5 h-5 text-black dark:text-[#F4F4F6]" />
+                    <div className="w-10 h-10 border border-line-soft bg-white dark:bg-[#1A1C23] flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform shadow-xs">
+                      <GraduationCap className="w-5 h-5 text-fg" />
                     </div>
-                    <span className="text-[11px] font-mono font-bold tracking-[1.5px] uppercase text-[#888888] dark:text-[#94A3B8] mb-1">
-                      CLASS DIRECTORY
+                    <span className="text-[12px] font-mono font-bold text-[#888888] dark:text-[#A1A1AA] mb-1">
+                      Class directory
                     </span>
-                    <h3 className="text-[16px] font-bold text-black dark:text-[#F4F4F6] mb-1">
+                    <h3 className="text-[16px] font-bold text-fg mb-1">
                       Select Your College & Batch
                     </h3>
-                    <p className="text-[13px] text-black/60 dark:text-[#94A3B8] max-w-[280px] leading-relaxed mb-3.5">
+                    <p className="text-[13px] text-muted max-w-[280px] leading-relaxed mb-3.5">
                       Select your college, branch, and semester to connect with your classmates and sync your schedule.
                     </p>
-                    <div className="px-6 h-[38px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[12px] pointer-events-none rounded-none w-fit mx-auto shadow-xs uppercase tracking-wider gap-1.5 group-hover:opacity-90 transition-opacity">
+                    <div className="px-6 h-[38px] flex items-center justify-center bg-ink text-on-ink font-bold text-[12px] pointer-events-none rounded-none w-fit mx-auto shadow-xs gap-1.5 group-hover:opacity-90 transition-opacity">
                       <span>Select Batch</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </div>
@@ -408,7 +411,7 @@ export const OnboardingModal = () => {
                     <button
                       type="button"
                       onClick={handleSkip}
-                      className="text-[13px] font-semibold text-black/60 dark:text-[#94A3B8] hover:text-black dark:hover:text-white underline underline-offset-4 cursor-pointer py-2 px-4 inline-block transition-colors active:scale-95"
+                      className="text-[13px] font-semibold text-muted hover:text-fg underline underline-offset-4 cursor-pointer h-9 px-4 inline-block transition-colors active:scale-95"
                     >
                       I'll set up or customize classes manually ➜
                     </button>
@@ -426,10 +429,10 @@ export const OnboardingModal = () => {
       <div className="hidden md:flex flex-row w-full h-full overflow-hidden">
         
         {/* Left Column: Artistic Showcase (Always Pure White Background) */}
-        <div className="w-1/2 h-full bg-white text-[#111111] border-r border-[#EEEEEC] dark:border-white/[0.08] flex flex-col justify-between p-12 lg:p-16 relative overflow-hidden select-none">
+        <div className="w-1/2 h-full bg-white text-[#111111] border-r border-line-soft flex flex-col justify-between p-12 lg:p-16 relative overflow-hidden select-none">
           {/* Subtle Top Badge */}
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono font-bold tracking-[2px] uppercase text-[#111111]/50">
+            <span className="text-[12px] font-mono font-bold text-[#111111]/50">
               INTERSEMESTER · COPILOT
             </span>
           </div>
@@ -449,7 +452,7 @@ export const OnboardingModal = () => {
                 <img 
                   src={currentIndex < 3 ? slides[currentIndex].image : '/onboard-3.png'} 
                   alt="Onboarding Illustration" 
-                  className={`max-h-[54vh] lg:max-h-[58vh] w-auto max-w-[85%] object-contain pointer-events-none drop-shadow-sm dark:drop-shadow-none dark:invert dark:mix-blend-screen transition-all duration-300 ${
+                  className={`max-h-[54vh] lg:max-h-[58vh] w-auto max-w-[85%] object-contain pointer-events-none drop-shadow-sm dark:drop-shadow-none transition-all duration-300 ${
                     currentIndex === 0 ? 'scale-[1.3]' :
                     currentIndex === 1 ? 'scale-[1.45]' :
                     currentIndex === 2 ? 'scale-[1.28]' :
@@ -462,36 +465,36 @@ export const OnboardingModal = () => {
 
           {/* Bottom Left Quote */}
           <div className="flex flex-col gap-1 border-t border-black/10 pt-4">
-            <p className="text-[11px] font-mono tracking-[1.5px] uppercase text-[#111111]/60 font-semibold">
+            <p className="text-[12px] font-mono text-[#111111]/60 font-semibold">
               EVERY ACADEMIC DAY CLEAR & PREDICTABLE.
             </p>
           </div>
         </div>
 
         {/* Right Column: Interaction & Content */}
-        <div className="w-1/2 h-full bg-[#F7F7F5] dark:bg-[#090A0C] flex flex-col justify-between p-10 lg:p-16 relative overflow-y-auto">
+        <div className="w-1/2 h-full bg-surface-2 flex flex-col justify-between p-10 lg:p-16 relative overflow-y-auto">
           
           {/* Top Header */}
-          <div className="w-full flex items-center justify-between pb-6 shrink-0 border-b border-black/10 dark:border-white/[0.08]">
+          <div className="w-full flex items-center justify-between pb-6 shrink-0 border-b border-line">
             <div className="flex items-center gap-3">
               {currentIndex > 0 && (
                 <button 
                   type="button"
                   onClick={handlePrev} 
-                  className="p-2 -ml-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+                  className="p-2 -ml-2 hover:bg-surface-2 rounded-full transition-colors cursor-pointer"
                   aria-label="Back"
                 >
-                  <ArrowLeft className="w-5 h-5 text-black dark:text-[#F4F4F6]" />
+                  <ArrowLeft className="w-5 h-5 text-fg" />
                 </button>
               )}
-              <h1 className="text-[22px] font-bold tracking-tighter text-black dark:text-[#F4F4F6]">
+              <h1 className="text-[22px] font-bold tracking-tighter text-fg">
                 inter<span className="font-normal opacity-80">semester</span>
               </h1>
             </div>
             <button 
               type="button"
               onClick={handleSkip} 
-              className="px-4 py-1.5 -mr-2 text-[14px] font-semibold text-black/60 dark:text-[#94A3B8] hover:text-black dark:hover:text-white transition-colors cursor-pointer uppercase tracking-wider"
+              className="px-4 h-9 -mr-2 text-[13px] font-semibold text-muted hover:text-fg transition-colors cursor-pointer "
             >
               Skip
             </button>
@@ -511,10 +514,10 @@ export const OnboardingModal = () => {
                   className="flex flex-col gap-5"
                 >
                   <div className="flex flex-col gap-2.5">
-                    <h2 className="text-[36px] lg:text-[42px] leading-[44px] lg:leading-[48px] font-normal text-[#111111] dark:text-[#F4F4F6] whitespace-pre-line text-left tracking-tight">
+                    <h2 className="text-[36px] lg:text-[42px] leading-[44px] lg:leading-[48px] font-normal text-fg whitespace-pre-line text-left tracking-tight">
                       {slides[currentIndex].title}
                     </h2>
-                    <p className="text-[15px] text-[#6B6B6B] dark:text-[#94A3B8] font-normal leading-[22px] whitespace-pre-line text-left mt-1">
+                    <p className="text-[15px] text-muted font-normal leading-[22px] whitespace-pre-line text-left mt-1">
                       {slides[currentIndex].subtitle}
                     </p>
                   </div>
@@ -524,14 +527,14 @@ export const OnboardingModal = () => {
                       {slides[currentIndex].features.map((feat, idx) => (
                         <div 
                           key={idx} 
-                          className="flex items-start gap-4 p-4 rounded-none bg-white dark:bg-[#121317] border border-black/10 dark:border-white/[0.08] hover:border-black/20 dark:hover:border-white/[0.14] shadow-xs transition-colors"
+                          className="flex items-start gap-4 p-4 rounded-none bg-surface border border-line hover:border-line shadow-xs transition-colors"
                         >
-                          <div className="w-9 h-9 bg-black/5 dark:bg-white/[0.06] rounded-none border border-black/5 dark:border-white/[0.08] flex items-center justify-center shrink-0 shadow-xs">
-                            <feat.icon className="w-4 h-4 text-black dark:text-[#F4F4F6]" />
+                          <div className="w-9 h-9 bg-surface-2 rounded-none border border-line-soft flex items-center justify-center shrink-0 shadow-xs">
+                            <feat.icon className="w-4 h-4 text-fg" />
                           </div>
                           <div className="flex flex-col text-left">
-                            <span className="text-[14px] font-bold text-black dark:text-[#F4F4F6]">{feat.title}</span>
-                            <span className="text-[13px] text-black/60 dark:text-[#94A3B8] leading-snug mt-0.5">{feat.desc}</span>
+                            <span className="text-[14px] font-bold text-fg">{feat.title}</span>
+                            <span className="text-[13px] text-muted leading-snug mt-0.5">{feat.desc}</span>
                           </div>
                         </div>
                       ))}
@@ -550,18 +553,18 @@ export const OnboardingModal = () => {
                   className="flex flex-col"
                 >
                   <div className="flex flex-col mb-6">
-                    <h2 className="text-[36px] sm:text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[40px] sm:leading-[44px]">
+                    <h2 className="page-title">
                       Connect, Batch, Timetable
                     </h2>
-                    <p className="text-[14px] font-normal text-[#6B6B6B] dark:text-[#94A3B8] leading-[20px] mt-3">
+                    <p className="text-[14px] font-normal text-muted leading-[20px] mt-3">
                       Join your classmates and sync your academic schedule.
                     </p>
                   </div>
 
-                  <div className="rounded-none border border-black/10 dark:border-white/[0.08] bg-white dark:bg-[#121317] p-5 mb-5 shadow-sm">
+                  <div className="rounded-none border border-line bg-surface p-5 mb-5 shadow-sm">
                     <div className="flex items-center gap-1.5 mb-3">
-                      <ArrowUpRight className="w-3.5 h-3.5 text-black dark:text-[#F4F4F6]" />
-                      <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-black dark:text-[#F4F4F6]">
+                      <ArrowUpRight className="w-3.5 h-3.5 text-fg" />
+                      <span className="text-[12px] font-bold text-fg">
                         HAVE AN INVITE?
                       </span>
                     </div>
@@ -574,16 +577,16 @@ export const OnboardingModal = () => {
                           setInviteCode(e.target.value);
                           if (inviteError) setInviteError(false);
                         }}
-                        className={`flex-1 h-11 px-3.5 bg-[#FAFAF8] dark:bg-[#090A0C] border rounded-none text-[14px] text-black dark:text-[#F4F4F6] focus:outline-none transition-all shadow-sm ${
+                        className={`flex-1 h-11 px-3.5 bg-[#FAFAF8] dark:bg-[#090A0C] border rounded-none text-[14px] text-fg focus:outline-none transition-all shadow-sm ${
                           inviteError
                             ? 'border-rose-500 ring-1 ring-rose-500'
-                            : 'border-black/10 dark:border-white/[0.1] focus:border-black dark:focus:border-white/30'
+                            : 'border-line focus:border-line-strong'
                         }`}
                       />
                       <button
                         type="submit"
                         disabled={isJoiningCode}
-                        className="h-11 px-6 bg-black text-white dark:bg-white dark:text-black text-[13px] font-bold uppercase tracking-wider rounded-none hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0 shadow-sm"
+                        className="h-11 px-6 bg-ink text-on-ink text-[14px] font-semibold rounded-none hover:opacity-90 active:scale-95 disabled:opacity-40 transition-all cursor-pointer shrink-0 shadow-sm"
                       >
                         {isJoiningCode ? 'Joining...' : 'Join'}
                       </button>
@@ -596,30 +599,30 @@ export const OnboardingModal = () => {
                   </div>
 
                   <div className="flex items-center gap-3 my-1 mb-5">
-                    <div className="flex-1 h-[1px] bg-black/10 dark:bg-white/[0.08]" />
-                    <span className="text-[11px] font-bold tracking-[1.5px] text-black/60 dark:text-white/60 uppercase font-mono">
-                      OR FIND YOUR BATCH
+                    <div className="flex-1 h-[1px] bg-surface-3" />
+                    <span className="text-[12px] font-bold text-muted font-mono">
+                      Or find your batch
                     </span>
-                    <div className="flex-1 h-[1px] bg-black/10 dark:bg-white/[0.08]" />
+                    <div className="flex-1 h-[1px] bg-surface-3" />
                   </div>
 
                   <div 
                     onClick={() => setIsSelectBatchModalOpen(true)}
-                    className="relative group w-full p-7 flex flex-col items-center justify-center rounded-none border border-black/15 dark:border-white/[0.1] hover:border-black/30 dark:hover:border-white/20 bg-[#FAFAF8] dark:bg-[#121317] hover:bg-[#F5F5F2] dark:hover:bg-[#16181E] transition-all cursor-pointer text-center shadow-sm"
+                    className="relative group w-full p-7 flex flex-col items-center justify-center rounded-none border border-line hover:border-black/30 dark:hover:border-white/20 bg-[#FAFAF8] dark:bg-[#121317] hover:bg-[#F5F5F2] dark:hover:bg-[#16181E] transition-all cursor-pointer text-center shadow-sm"
                   >
-                    <div className="w-11 h-11 border border-black/10 dark:border-white/[0.1] bg-white dark:bg-[#1A1C23] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform shadow-xs">
-                      <GraduationCap className="w-5 h-5 text-black dark:text-[#F4F4F6]" />
+                    <div className="w-11 h-11 border border-line bg-white dark:bg-[#1A1C23] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform shadow-xs">
+                      <GraduationCap className="w-5 h-5 text-fg" />
                     </div>
-                    <span className="text-[11px] font-mono font-bold tracking-[1.5px] uppercase text-black/50 dark:text-[#94A3B8] mb-1">
-                      CLASS DIRECTORY
+                    <span className="text-[12px] font-mono font-bold text-black/50 dark:text-[#A1A1AA] mb-1">
+                      Class directory
                     </span>
-                    <h3 className="text-[17px] font-bold text-black dark:text-[#F4F4F6] mb-1.5">
+                    <h3 className="text-[17px] font-bold text-fg mb-1.5">
                       Select Your College & Batch
                     </h3>
-                    <p className="text-[13px] text-black/60 dark:text-[#94A3B8] max-w-[320px] leading-relaxed mb-4">
+                    <p className="text-[13px] text-muted max-w-[320px] leading-relaxed mb-4">
                       Select your college, branch, and semester to connect with your classmates and sync your schedule.
                     </p>
-                    <div className="px-7 h-[42px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto shadow-sm uppercase tracking-wider gap-2 group-hover:opacity-90 transition-opacity">
+                    <div className="px-7 h-[42px] flex items-center justify-center bg-ink text-on-ink font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto shadow-sm gap-2 group-hover:opacity-90 transition-opacity">
                       <span>Select Batch</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </div>
@@ -629,7 +632,7 @@ export const OnboardingModal = () => {
                     <button
                       type="button"
                       onClick={handleSkip}
-                      className="text-[14px] font-semibold text-black/60 dark:text-[#94A3B8] hover:text-black dark:hover:text-white underline underline-offset-4 cursor-pointer py-2 px-4 inline-block transition-colors active:scale-95"
+                      className="text-[13px] font-semibold text-muted hover:text-fg underline underline-offset-4 cursor-pointer h-9 px-4 inline-block transition-colors active:scale-95"
                     >
                       I'll set up or customize classes manually ➜
                     </button>
@@ -641,14 +644,14 @@ export const OnboardingModal = () => {
 
           {/* Right Bottom Footer (Only rendered on slides 0, 1, 2) */}
           {currentIndex < 3 && (
-            <div className="w-full flex items-center justify-between pt-6 border-t border-black/10 dark:border-white/[0.08] shrink-0">
+            <div className="w-full flex items-center justify-between pt-6 border-t border-line shrink-0">
               <div className="flex items-center gap-2">
                 {[0, 1, 2].map((i) => (
                   <button
                     key={i}
                     type="button"
                     onClick={() => { setDirection(i > currentIndex ? 1 : -1); setCurrentIndex(i); }}
-                    className={`h-[6px] rounded-full transition-all duration-300 ${i === currentIndex ? 'w-[24px] bg-black dark:bg-[#F4F4F6]' : 'w-[6px] bg-black/20 dark:bg-white/20'}`}
+                    className={`h-[6px] rounded-full transition-all duration-300 ${i === currentIndex ? 'w-[24px] bg-ink' : 'w-[6px] bg-black/20 dark:bg-white/20'}`}
                     aria-label={`Go to slide ${i + 1}`}
                   />
                 ))}
@@ -657,7 +660,7 @@ export const OnboardingModal = () => {
               <button
                 type="button"
                 onClick={handleNext}
-                className="h-[50px] px-9 bg-black text-white dark:bg-white dark:text-black rounded-none flex items-center gap-2 font-bold text-[14px] hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm uppercase tracking-wider"
+                className="btn btn-primary btn-lg px-8"
               >
                 {slides[currentIndex].buttonText}
                 <ArrowRight className="w-4 h-4" />

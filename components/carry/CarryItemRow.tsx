@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { CarryItem } from '@/lib/types';
-import { Check, MoreVertical, BookOpen, Tag, Trash2 } from 'lucide-react';
+import { Check, MoreVertical, BookOpen, Tag, Trash2 } from '@/components/ui/icons';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
 
@@ -20,10 +20,10 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
       layout
       onClick={() => onToggle(item.id)}
       className={clsx(
-        'group flex items-center justify-between p-3.5 sm:p-4 rounded-[12px] border transition-all cursor-pointer select-none text-left gap-3 relative',
+        'group flex items-center justify-between p-3.5 sm:p-4 border transition-all cursor-pointer select-none text-left gap-3 relative',
         item.isPacked
-          ? 'bg-black/[0.02] dark:bg-white/[0.02] border-black/[0.05] dark:border-white/[0.05] opacity-65'
-          : 'bg-[#FFFFFF] dark:bg-[#15171E] border-black/[0.08] dark:border-white/[0.08] hover:border-black/20 dark:hover:border-white/20 shadow-xs hover:shadow-sm'
+          ? 'bg-surface-2 border-line-soft opacity-65'
+          : 'bg-[#FFFFFF] dark:bg-[#15171E] border-line-soft hover:border-line shadow-xs hover:shadow-sm'
       )}
     >
       <div className="flex items-center gap-3.5 min-w-0 flex-1">
@@ -35,7 +35,7 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
             onToggle(item.id);
           }}
           className={clsx(
-            'w-[22px] h-[22px] flex items-center justify-center rounded-[6px] border transition-all shrink-0 cursor-pointer',
+            'w-[22px] h-[22px] flex items-center justify-center border transition-all shrink-0 cursor-pointer',
             item.isPacked
               ? 'bg-[#18A889] border-[#18A889] text-white shadow-xs'
               : 'bg-transparent border-[#D1D1D1] dark:border-white/20 hover:border-[#18A889] dark:hover:border-[#18A889]'
@@ -58,27 +58,27 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
             className={clsx(
               'text-[15px] sm:text-[15px] font-bold tracking-tight truncate transition-all leading-snug',
               item.isPacked
-                ? 'line-through text-[#6B6B6B] dark:text-[#A1A1AA]'
-                : 'text-[#151515] dark:text-[#F4F4F6]'
+                ? 'line-through text-muted'
+                : 'text-fg'
             )}
           >
             {item.title}
           </span>
 
-          <div className="flex items-center gap-2 text-[12px] text-[#6F6F6F] dark:text-[#94A3B8] font-medium min-w-0 flex-wrap">
+          <div className="flex items-center gap-2 text-[12px] text-muted font-medium min-w-0 flex-wrap">
             {item.source === 'subject' ? (
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-medium truncate">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-medium truncate">
                 <BookOpen className="w-[12px] h-[12px] shrink-0" />
                 <span className="truncate">{item.subjectName || 'Required Subject Item'}</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] bg-amber-500/10 text-amber-700 dark:text-amber-300 font-medium truncate">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-medium truncate">
                 <Tag className="w-[12px] h-[12px] shrink-0" />
                 <span className="truncate">Custom Item</span>
               </span>
             )}
             {item.reminderNote && (
-              <span className="truncate italic text-zinc-500 dark:text-zinc-400">
+              <span className="truncate italic text-muted">
                 • {item.reminderNote}
               </span>
             )}
@@ -94,7 +94,7 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
             e.stopPropagation();
             setShowMenu(!showMenu);
           }}
-          className="p-1.5 text-[#6B6B6B] hover:text-[#111111] dark:text-[#94A3B8] dark:hover:text-white transition-colors cursor-pointer rounded-[4px] hover:bg-black/5 dark:hover:bg-white/10"
+          className="p-1.5 text-muted hover:text-fg transition-colors cursor-pointer hover:bg-surface-2"
         >
           <MoreVertical className="w-4 h-4" />
         </button>
@@ -106,7 +106,7 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
               onClick={(e) => { e.stopPropagation(); setShowMenu(false); }} 
             />
             <div 
-              className="absolute right-0 top-full mt-1.5 w-44 rounded-[10px] bg-[#FFFFFF] dark:bg-[#18191E] border border-black/10 dark:border-white/[0.1] shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 flex flex-col text-left overflow-hidden"
+              className="absolute right-0 top-full mt-1.5 w-44 rounded-none bg-surface border border-line shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 flex flex-col text-left overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {onDelete && item.source === 'custom' && (

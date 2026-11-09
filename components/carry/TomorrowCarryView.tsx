@@ -16,7 +16,7 @@ import { AddCustomItemModal } from './AddCustomItemModal';
 import { SubjectDetailModal } from './SubjectDetailModal';
 import { ClassSession } from '@/lib/types';
 import { EmptyState } from '../ui/EmptyState';
-import { Backpack, Plus, CalendarDays, Clock, ChevronRight } from 'lucide-react';
+import { Backpack, Plus, CalendarDays, Clock, ChevronRight, PartyPopper } from '@/components/ui/icons';
 import { Subject } from '@/lib/types';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 
@@ -90,33 +90,33 @@ export const TomorrowCarryView: React.FC = () => {
   if (!mounted) return null;
 
   return (
-    <div className="flex flex-col gap-6 text-left max-w-5xl mx-auto w-full pb-16 font-sans">
+    <div className="flex flex-col gap-f5 sm:gap-f6 text-left max-w-5xl mx-auto w-full font-sans">
       {/* Header */}
       <div className="flex flex-col gap-3 pt-2 sm:pt-6">
         <div>
-          <h2 className="text-[36px] sm:text-[40px] font-normal text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-[40px] sm:leading-[44px]">
+          <h2 className="page-title">
             Bag,<br />Carry,<br />Pack
           </h2>
           <div className="flex items-center gap-2.5 mt-4 flex-wrap">
-            <span className="text-[11px] font-bold font-mono px-2.5 py-1 rounded-[6px] border border-black/10 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.04] text-black dark:text-white uppercase tracking-wider">
+            <span className="px-2.5 py-1 text-[12px] font-semibold bg-ink text-on-ink">
               {targetDay}
             </span>
             {targetHoliday ? (
-              <span className="text-[11px] font-bold font-mono px-2.5 py-1 rounded-[6px] border border-rose-500/20 bg-rose-500/10 text-rose-600 dark:text-rose-400 uppercase tracking-wider">
-                Holiday: {targetHoliday.title}
+              <span className="px-2.5 py-1 text-[12px] font-medium bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                Holiday · {targetHoliday.title}
               </span>
             ) : targetExam ? (
-              <span className="text-[11px] font-bold font-mono px-2.5 py-1 rounded-[6px] border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-                Exam Day
+              <span className="px-2.5 py-1 text-[12px] font-medium bg-rose-500/10 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300">
+                Exam day
               </span>
             ) : (
-              <span className="text-[11px] font-bold font-mono px-2.5 py-1 rounded-[6px] border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-                {packedCount}/{totalCount} PACKED
+              <span className="px-2.5 py-1 text-[12px] font-medium tabular-nums border border-line text-fg">
+                {packedCount}/{totalCount} packed
               </span>
             )}
           </div>
-          <p className="text-[14px] font-normal text-[#6B6B6B] dark:text-[#94A3B8] leading-[20px] mt-3 flex items-center gap-1.5">
-            <CalendarDays className="w-4 h-4 shrink-0 text-black/60 dark:text-white/60" />
+          <p className="text-[14px] font-normal text-muted leading-[20px] mt-3 flex items-center gap-1.5">
+            <CalendarDays className="w-4 h-4 shrink-0 text-muted" />
             <span>Packing list for {isAfterReminderTime ? 'tomorrow' : 'today'} · {targetFormatted}</span>
           </p>
         </div>
@@ -127,46 +127,50 @@ export const TomorrowCarryView: React.FC = () => {
         {/* Left Column: Things to Carry List */}
         <div className="lg:col-span-7 flex flex-col gap-4">
           {totalCount === 0 && !targetHoliday ? (
-            <div className="border border-black/[0.06] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] p-6 flex flex-col items-start rounded-[16px] shadow-xs dark:shadow-md">
-              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.4px] font-bold text-[#111111] dark:text-[#F4F4F6]">
-                <Backpack className="w-[18px] h-[18px] stroke-[1.8] text-[#18A889]" />
-                <span>Things to Carry</span>
+            <div className="border border-line bg-surface p-6 flex flex-col items-start">
+              <div className="flex items-center gap-2 text-[17px] font-semibold tracking-tight text-fg">
+                <Backpack className="w-5 h-5 stroke-[1.8]" />
+                <span>Things to carry</span>
               </div>
               <div className="flex flex-col mt-4 mb-5 gap-1">
-                <span className="text-[15px] font-semibold text-[#111111] dark:text-[#FFFFFF]">Nothing packed yet.</span>
-                <span className="text-[14px] text-[#6F6F6F] dark:text-[#94A3B8]">Add what you need for {isAfterReminderTime ? 'tomorrow' : 'today'}.</span>
+                <span className="text-[15px] font-semibold text-fg">Nothing packed yet.</span>
+                <span className="text-[14px] text-muted">Add what you need for {isAfterReminderTime ? 'tomorrow' : 'today'}.</span>
               </div>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="h-[42px] px-5 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] flex items-center justify-center gap-2 font-semibold text-[13px] hover:opacity-90 transition-opacity rounded-[10px] cursor-pointer shadow-sm"
+                className="h-[42px] px-5 bg-ink text-on-ink flex items-center justify-center gap-2 font-semibold text-[13px] hover:opacity-90 transition-opacity cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add item</span>
               </button>
             </div>
           ) : (
-            <div className="border border-black/[0.06] dark:border-white/[0.08] rounded-[16px] flex flex-col p-5 sm:p-6 bg-[#FFFFFF] dark:bg-[#121317] shadow-xs dark:shadow-md">
-              <div className="flex items-center justify-between pb-3.5 border-b border-black/[0.06] dark:border-white/[0.08] mb-4">
-                <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.4px] font-bold text-[#111111] dark:text-[#F4F4F6]">
-                  <Backpack className="w-[18px] h-[18px] stroke-[1.8] text-[#18A889]" />
-                  <span>Things to Carry</span>
+            <div className="border border-line flex flex-col p-5 sm:p-6 bg-surface">
+              <div className="flex items-center justify-between pb-3.5 border-b border-line-soft mb-4">
+                <div className="flex items-center gap-2 text-[17px] font-semibold tracking-tight text-fg">
+                  <Backpack className="w-5 h-5 stroke-[1.8]" />
+                  <span>Things to carry</span>
                 </div>
-                <div className="text-[12px] font-bold font-mono tracking-wider text-[#111111] dark:text-[#F4F4F6] bg-black/[0.04] dark:bg-white/[0.06] px-2.5 py-0.5 rounded-full">
-                  {packedCount} / {totalCount}
+                <div className="text-[13px] tabular-nums text-muted">
+                  {packedCount} of {totalCount}
                 </div>
               </div>
 
               {/* Progress bar */}
               {totalCount > 0 && (
                 <div className="mb-4">
-                  <div className="w-full h-1.5 bg-black/[0.04] dark:bg-white/[0.06] rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-surface-3 overflow-hidden">
                     <div 
-                      className="h-full bg-[#18A889] transition-all duration-300 rounded-full"
+                      className="h-full bg-[#18A889] transition-all duration-300"
                       style={{ width: `${(packedCount / totalCount) * 100}%` }}
                     />
                   </div>
-                  <div className="text-[11px] font-mono text-[#71717A] mt-1.5 flex justify-between">
-                    <span>{packedCount === totalCount ? 'All items packed! 🎒' : `${totalCount - packedCount} items remaining`}</span>
+                  <div className="text-[12px] text-muted mt-1.5 flex justify-between tabular-nums">
+                    {packedCount === totalCount ? (
+                      <span className="font-cursive text-[20px] leading-none font-semibold text-[#18A889] -rotate-1">All packed. You&apos;re good to go!</span>
+                    ) : (
+                      <span>{totalCount - packedCount} items remaining</span>
+                    )}
                     <span>{Math.round((packedCount / totalCount) * 100)}%</span>
                   </div>
                 </div>
@@ -174,9 +178,10 @@ export const TomorrowCarryView: React.FC = () => {
 
               {visibleCarryItems.length === 0 && targetHoliday ? (
                 <EmptyState
-                  icon={<MonochromeIllustration type="holiday" size={48} />}
-                  title="NO PACKING NEEDED — HOLIDAY!"
-                  description={`${targetFormatted} is an official campus holiday (${targetHoliday.title}). Enjoy your break!`}
+                  illustration="holiday"
+                  title="No packing needed"
+                  description={`${targetFormatted} is a campus holiday for ${targetHoliday.title}. Enjoy the break.`}
+                  className="my-0"
                 />
               ) : (
                 <div className="flex flex-col gap-2.5">
@@ -194,7 +199,7 @@ export const TomorrowCarryView: React.FC = () => {
               {visibleCarryItems.length > 0 && (
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-[12px] border border-dashed border-black/15 dark:border-white/15 text-[13px] font-semibold text-[#52525B] dark:text-[#A1A1AA] hover:text-black dark:hover:text-white hover:border-black/30 dark:hover:border-white/30 hover:bg-black/[0.02] dark:hover:bg-white/[0.04] transition-all cursor-pointer mt-4"
+                  className="flex items-center justify-center gap-2 h-11 px-4 border border-dashed border-line text-[14px] font-semibold text-[#52525B] dark:text-[#A1A1AA] hover:text-fg hover:border-black/30 dark:hover:border-white/30 hover:bg-surface-2 transition-all cursor-pointer mt-4"
                 >
                   <Plus className="w-4 h-4 stroke-[2]" />
                   <span>Add another item</span>
@@ -206,33 +211,33 @@ export const TomorrowCarryView: React.FC = () => {
 
         {/* Right Column: Schedule Preview with Color Cards */}
         <div className="lg:col-span-5 flex flex-col gap-3.5 mt-2 lg:mt-0">
-          <div className="flex items-center justify-between pb-3.5 border-b border-black/[0.06] dark:border-white/[0.08]">
-            <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.4px] font-bold text-[#111111] dark:text-[#F4F4F6]">
-              <Clock className="w-4 h-4 stroke-[1.8] text-[#18A889]" />
-              <span>{isAfterReminderTime ? "Tomorrow's Schedule" : "Today's Schedule"}</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-[17px] font-semibold tracking-tight text-fg">
+              <Clock className="w-5 h-5 stroke-[1.8]" />
+              <span>{isAfterReminderTime ? "Tomorrow's schedule" : "Today's schedule"}</span>
             </div>
-            <div className="text-[11px] font-bold font-mono tracking-wider text-[#111111] dark:text-[#F4F4F6] bg-black/[0.04] dark:bg-white/[0.06] px-2.5 py-0.5 rounded-full">
-              {targetHoliday || targetExam ? '0' : targetClasses.length} {targetClasses.length === 1 ? 'CLASS' : 'CLASSES'}
+            <div className="text-[13px] tabular-nums text-muted">
+              {(() => { const n = targetHoliday || targetExam ? 0 : targetClasses.length; return `${n} ${n === 1 ? 'class' : 'classes'}`; })()}
             </div>
           </div>
 
           <div className="flex flex-col gap-3">
             {targetHoliday ? (
-              <div className="py-8 text-center text-[#6F6F6F] dark:text-[#94A3B8] text-[14px] bg-black/[0.02] dark:bg-white/[0.02] rounded-[14px] border border-black/[0.06] dark:border-white/[0.06] p-6">
-                No classes today. Enjoy your holiday!
+              <div className="p-4 border border-dashed border-line text-[14px] text-muted">
+                No classes {isAfterReminderTime ? 'tomorrow' : 'today'}. Campus is closed for <span className="font-medium text-fg">{targetHoliday.title}</span>.
               </div>
             ) : targetExam ? (
-              <div className="p-5 text-left bg-amber-500/5 dark:bg-amber-500/10 rounded-[14px] border border-amber-500/20 flex flex-col gap-2.5">
+              <div className="p-5 text-left bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/20 flex flex-col gap-2.5">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                  <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                  <span className="font-mono text-[12px] font-bold text-amber-700 dark:text-amber-400">
                     Examination Day
                   </span>
                 </div>
-                <h4 className="text-[17px] font-bold text-[#111111] dark:text-white">
+                <h4 className="text-[17px] font-bold text-fg">
                   {(targetExam as any).subjectName || (targetExam as any).title}
                 </h4>
-                <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-[#555555] dark:text-[#CBD5E1]">
+                <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-muted">
                   <span>{(targetExam as any).time || '09:30 AM'}</span>
                   {(targetExam as any).room && <span>· Room {(targetExam as any).room}</span>}
                 </div>
@@ -241,7 +246,7 @@ export const TomorrowCarryView: React.FC = () => {
                 </p>
               </div>
             ) : targetClasses.length === 0 ? (
-              <div className="py-8 text-center text-[#6F6F6F] dark:text-[#94A3B8] text-[14px] bg-black/[0.02] dark:bg-white/[0.02] rounded-[14px] border border-black/[0.06] dark:border-white/[0.06] p-6">
+              <div className="p-4 border border-dashed border-line text-[14px] text-muted">
                 No classes scheduled for {isAfterReminderTime ? 'tomorrow' : 'today'}.
               </div>
             ) : (
@@ -263,18 +268,18 @@ export const TomorrowCarryView: React.FC = () => {
                   <button
                     key={sess.id}
                     onClick={() => setDetailSession(sess)}
-                    className="relative w-full rounded-[14px] p-4 sm:p-[18px] border transition-all text-left group overflow-hidden shadow-xs hover:shadow-md cursor-pointer border-black/[0.06] dark:border-[color:var(--card-accent-border)] hover:scale-[1.008] duration-200"
+                    className="relative w-full p-4 sm:p-[18px] border transition-all text-left group overflow-hidden shadow-xs hover:shadow-md cursor-pointer border-black/[0.06] dark:border-[color:var(--card-accent-border)] hover:scale-[1.008] duration-200"
                     style={{
                       ['--card-accent-border' as any]: `${theme.accent}45`,
                     }}
                   >
                     {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
                     <div 
-                      className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[13px]"
+                      className="dark:hidden absolute inset-0 z-0 pointer-events-none"
                       style={{ backgroundColor: theme.bg }}
                     />
                     <div 
-                      className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[13px]"
+                      className="hidden dark:block absolute inset-0 z-0 pointer-events-none"
                       style={{ 
                         background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
                       }}
@@ -284,15 +289,15 @@ export const TomorrowCarryView: React.FC = () => {
                       {/* Top Row: Subject Name + Lab Badge + Chevron */}
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <h4 className="text-[16px] sm:text-[17px] font-bold text-[#151515] dark:text-[#FFFFFF] leading-snug tracking-tight truncate">
+                          <h4 className="text-[16px] sm:text-[17px] font-bold text-fg leading-snug tracking-tight truncate">
                             {subject?.name || 'Class Session'}
                           </h4>
                           {isLab && (
                             <span 
-                              className="text-[11px] font-bold tracking-wider px-2 py-0.5 rounded-[3px] uppercase font-mono shrink-0"
+                              className="text-[12px] font-bold px-2 py-0.5 font-mono shrink-0"
                               style={{
-                                color: theme.badgeText,
-                                backgroundColor: theme.badgeBg,
+                                color: theme.accent,
+                                border: `1px solid ${theme.accent}55`,
                               }}
                             >
                               LAB
@@ -300,12 +305,12 @@ export const TomorrowCarryView: React.FC = () => {
                           )}
                         </div>
 
-                        <ChevronRight className="w-4 h-4 text-[#6B6B6B] dark:text-[#A1A1AA] group-hover:text-black dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
+                        <ChevronRight className="w-4 h-4 text-muted group-hover:text-fg group-hover:translate-x-0.5 transition-all shrink-0" />
                       </div>
 
                       {/* Carry Requirements Highlight Badge */}
                       {reqs.length > 0 ? (
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-white/80 dark:bg-white/[0.08] border border-black/5 dark:border-white/10 backdrop-blur-xs text-[13px] font-semibold text-[#18181B] dark:text-[#F4F4F6]">
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/80 dark:bg-white/[0.08] border border-black/5 dark:border-white/10 backdrop-blur-xs text-[13px] font-semibold text-fg">
                           <Backpack className="w-3.5 h-3.5 text-[#18A889] shrink-0 stroke-[2.2]" />
                           <span className="truncate">Bring: {reqs.join(', ')}</span>
                         </div>

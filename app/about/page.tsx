@@ -2,34 +2,34 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@/components/ui/icons';
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] py-12 px-4 sm:px-6 max-w-2xl mx-auto font-sans">
+    <div className="min-h-screen bg-surface-2 text-fg py-12 px-4 sm:px-6 max-w-2xl mx-auto font-sans">
       <Link
         href="/"
-        className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors mb-12"
+        className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#6B6B6B] hover:text-fg transition-colors mb-12"
       >
         <ArrowLeft className="w-4 h-4" />
         <span>Back to App</span>
       </Link>
 
       <div className="flex flex-col gap-3 mb-12">
-        <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#6B6B6B]">
+        <span className="text-[12px] font-bold text-[#6B6B6B]">
           Legal & Support
         </span>
-        <h1 className="text-[40px] font-bold tracking-tight leading-none text-[#111111] dark:text-[#FFFFFF]">
+        <h1 className="page-title font-semibold">
           About Intersemester
         </h1>
-        <p className="text-[14px] text-[#6F6F6F] leading-relaxed mt-1">
+        <p className="text-[14px] text-[#6B6B6B] leading-relaxed mt-1">
           Version 1.2.0 • Built for students, by students.
         </p>
       </div>
 
-      <div className="flex flex-col gap-12 text-[#111111] dark:text-[#FFFFFF]">
+      <div className="flex flex-col gap-12 text-fg">
         <section className="flex flex-col">
-          <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D9D9D6] dark:border-[#333333] mb-6">
+          <div className="text-[12px] font-bold text-fg pb-3 border-b border-line mb-6">
             01 The Story
           </div>
           <p className="text-[14px] leading-relaxed">
@@ -38,7 +38,7 @@ export default function AboutPage() {
         </section>
 
         <section className="flex flex-col">
-          <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D9D9D6] dark:border-[#333333] mb-6">
+          <div className="text-[12px] font-bold text-fg pb-3 border-b border-line mb-6">
             02 The Tech
           </div>
           <div className="text-[14px] leading-relaxed flex flex-col gap-4">
@@ -47,7 +47,7 @@ export default function AboutPage() {
         </section>
 
         <section className="flex flex-col">
-          <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D9D9D6] dark:border-[#333333] mb-6">
+          <div className="text-[12px] font-bold text-fg pb-3 border-b border-line mb-6">
             03 Open Source & Community
           </div>
           <div className="text-[14px] leading-relaxed flex flex-col gap-4">

@@ -5,7 +5,7 @@ import { Modal } from '../ui/Modal';
 import { useApp } from '@/context/AppContext';
 import { ClassSession } from '@/lib/types';
 import { CarryItemRow } from './CarryItemRow';
-import { Backpack, Plus, MapPin, Clock } from 'lucide-react';
+import { Backpack, Plus, MapPin, Clock } from '@/components/ui/icons';
 
 export interface SubjectDetailModalProps {
   session: ClassSession | null;
@@ -32,12 +32,12 @@ export const SubjectDetailModal: React.FC<SubjectDetailModalProps> = ({
       <div className="flex flex-col font-sans">
         
         {/* Header */}
-        <div className="flex flex-col gap-3 pb-6 border-b border-[#D8D8D8] dark:border-white/[0.08]">
-          <h2 className="text-[20px] font-bold text-[#111111] dark:text-[#F4F4F6] uppercase tracking-wide leading-tight">
+        <div className="flex flex-col gap-3 pb-6 border-b border-line">
+          <h2 className="text-[20px] font-bold text-fg leading-tight">
             {subject?.name || 'Unknown Subject'}
           </h2>
           
-          <div className="flex flex-col gap-1.5 text-[14px] text-[#6F6F6F] dark:text-[#94A3B8]">
+          <div className="flex flex-col gap-1.5 text-[14px] text-muted">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 shrink-0" />
               <span>{session.startTime} — {session.endTime}</span>
@@ -53,13 +53,13 @@ export const SubjectDetailModal: React.FC<SubjectDetailModalProps> = ({
 
         {/* Packing List */}
         <div className="pt-6 flex flex-col gap-4">
-          <div className="flex items-center gap-2 text-[12px] uppercase tracking-[1.5px] font-bold text-[#111111] dark:text-[#F4F4F6]">
+          <div className="flex items-center gap-2 text-[12px] font-bold text-fg">
             <Backpack className="w-[18px] h-[18px] stroke-[1.5]" />
             <span>Things to Carry</span>
           </div>
 
           {visibleCarryItems.length === 0 ? (
-            <div className="text-[14px] text-[#6F6F6F] dark:text-[#94A3B8] py-2">
+            <div className="text-[14px] text-muted py-2">
               No items specified for this class.
             </div>
           ) : (
@@ -79,7 +79,7 @@ export const SubjectDetailModal: React.FC<SubjectDetailModalProps> = ({
             onClick={() => {
               onOpenAdd();
             }}
-            className="flex items-center gap-2 text-[13px] font-semibold text-[#52525B] dark:text-[#A1A1AA] hover:text-black dark:hover:text-white transition-all w-fit cursor-pointer mt-2 px-3.5 py-1.5 rounded-[8px] border border-dashed border-black/15 dark:border-white/15 hover:border-black/30 dark:hover:border-white/30"
+            className="flex items-center gap-2 text-[13px] font-semibold text-[#52525B] dark:text-[#A1A1AA] hover:text-fg transition-all w-fit cursor-pointer mt-2 px-3.5 h-9 rounded-none border border-dashed border-line hover:border-black/30 dark:hover:border-white/30"
           >
             <Plus className="w-4 h-4 stroke-[2]" />
             <span>Add item</span>

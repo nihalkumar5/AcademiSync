@@ -12,7 +12,7 @@ import {
   ActiveExamItem,
   ActiveExamItemWithTiming
 } from '@/lib/timetableUtils';
-import { Clock, MapPin, BookOpen, ChevronDown, ChevronUp, ArrowRight, Backpack, CheckCircle2, Circle } from 'lucide-react';
+import { Clock, MapPin, BookOpen, ChevronDown, ChevronUp, ArrowRight, Backpack, CheckCircle2, Circle } from '@/components/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const HomeExamAlertCard: React.FC = () => {
@@ -145,7 +145,7 @@ export const HomeExamAlertCard: React.FC = () => {
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
       className="w-full text-left"
     >
-      <div className="relative overflow-hidden border-2 border-black dark:border-white bg-[#FFFFFF] dark:bg-[#121318] p-5 sm:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] flex flex-col gap-4">
+      <div className="relative overflow-hidden border-2 border-line-strong bg-surface p-5 sm:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] flex flex-col gap-4">
         
         {/* Top Header Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -164,8 +164,8 @@ export const HomeExamAlertCard: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className={`px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-wider ${
               isLive 
-                ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-black' 
-                : 'bg-black text-white dark:bg-white dark:text-black'
+                ? 'bg-emerald-600 text-on-ink dark:bg-emerald-500' 
+                : 'bg-ink text-on-ink'
             }`}>
               {countdownText}
             </span>
@@ -175,7 +175,7 @@ export const HomeExamAlertCard: React.FC = () => {
         {/* Live Progress Bar (Active when Exam is Live Now) */}
         {isLive && (
           <div className="w-full flex flex-col gap-1.5 pt-0.5">
-            <div className="w-full h-2 bg-black/[0.08] dark:bg-white/[0.1] border border-black/15 dark:border-white/20 overflow-hidden">
+            <div className="w-full h-2 bg-black/[0.08] dark:bg-white/[0.1] border border-line overflow-hidden">
               <motion.div
                 className="h-full bg-emerald-600 dark:bg-emerald-400"
                 initial={{ width: 0 }}
@@ -183,7 +183,7 @@ export const HomeExamAlertCard: React.FC = () => {
                 transition={{ duration: 0.5, ease: 'easeOut' }}
               />
             </div>
-            <div className="flex items-center justify-between text-[11px] font-mono text-[#555555] dark:text-[#A1A1AA]">
+            <div className="flex items-center justify-between text-[11px] font-mono text-muted">
               <span>Started {activeExam.timing.formattedStart}</span>
               <span className="font-bold text-emerald-700 dark:text-emerald-400">{activeExam.timing.progressPercentage}% Elapsed</span>
               <span>Ends {activeExam.timing.formattedEnd}</span>
@@ -194,10 +194,10 @@ export const HomeExamAlertCard: React.FC = () => {
         {/* Main Subject & Information */}
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex flex-col gap-1.5 min-w-0">
-            <h3 className="text-[22px] sm:text-[26px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-tight">
+            <h3 className="text-[22px] sm:text-[26px] font-bold text-fg tracking-tight leading-tight">
               {activeExam.subjectName}
             </h3>
-            <p className="text-[13px] text-[#555555] dark:text-[#A1A1AA] font-medium leading-relaxed">
+            <p className="text-[13px] text-muted font-medium leading-relaxed">
               {activeExam.room 
                 ? `Reporting Venue: Room ${activeExam.room}` 
                 : isLive 
@@ -209,7 +209,7 @@ export const HomeExamAlertCard: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveView('exams')}
-            className="self-start px-3.5 py-2 border border-black dark:border-white bg-transparent hover:bg-black/5 dark:hover:bg-white/10 text-[#111111] dark:text-[#FFFFFF] text-[11px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+            className="btn btn-secondary btn-sm self-start font-mono"
           >
             <span>Exam Schedule</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -217,8 +217,8 @@ export const HomeExamAlertCard: React.FC = () => {
         </div>
 
         {/* Chips row: Time, Room, Duration */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-black/10 dark:border-white/10">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.08] font-mono text-[12px] text-[#222222] dark:text-[#E2E8F0] font-semibold">
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-line">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-2 border border-line-soft font-mono text-[12px] text-fg font-semibold">
             <Clock className={`w-3.5 h-3.5 shrink-0 ${isLive ? 'text-emerald-500' : 'text-amber-500'}`} />
             {isToday ? 'Today' : 'Tomorrow'} · {activeExam.timing.formattedRange}
             {activeExam.timing.durationMinutes ? ` (${activeExam.timing.durationMinutes}m)` : ''}
@@ -235,7 +235,7 @@ export const HomeExamAlertCard: React.FC = () => {
             <button
               type="button"
               onClick={() => setExpandedSyllabus(!expandedSyllabus)}
-              className="inline-flex items-center gap-1.5 px-3 py-1 bg-black/[0.03] hover:bg-black/[0.07] dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-black/[0.08] dark:border-white/[0.08] font-mono text-[11px] font-medium text-[#444444] dark:text-[#E2E8F0] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-2 hover:bg-black/[0.07] dark:hover:bg-white/[0.08] border border-line-soft font-mono text-[11px] font-medium text-fg-2 transition-colors cursor-pointer"
             >
               <BookOpen className="w-3.5 h-3.5 text-amber-500" />
               <span>Syllabus Peek</span>
@@ -246,7 +246,7 @@ export const HomeExamAlertCard: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowChecklist(!showChecklist)}
-            className="inline-flex items-center gap-1.5 px-3 py-1 bg-black/[0.03] hover:bg-black/[0.07] dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-black/[0.08] dark:border-white/[0.08] font-mono text-[11px] font-medium text-[#444444] dark:text-[#E2E8F0] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-2 hover:bg-black/[0.07] dark:hover:bg-white/[0.08] border border-line-soft font-mono text-[11px] font-medium text-fg-2 transition-colors cursor-pointer"
           >
             <Backpack className="w-3.5 h-3.5 text-blue-500" />
             <span>Exam Kit ({packedCount}/4)</span>
@@ -261,11 +261,11 @@ export const HomeExamAlertCard: React.FC = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden pt-2 border-t border-black/10 dark:border-white/10"
+              className="overflow-hidden pt-2 border-t border-line"
             >
-              <div className="p-3.5 bg-black/[0.02] dark:bg-white/[0.03] border border-black/5 dark:border-white/10 flex flex-col gap-2.5">
+              <div className="p-3.5 bg-surface-2 border border-black/5 dark:border-white/10 flex flex-col gap-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-black/60 dark:text-white/60">
+                  <span className="font-mono text-[12px] font-bold text-muted">
                     Mandatory Hall Essentials
                   </span>
                   <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
@@ -284,21 +284,21 @@ export const HomeExamAlertCard: React.FC = () => {
                         className={`p-2.5 text-left border flex items-center justify-between transition-colors cursor-pointer ${
                           isChecked
                             ? 'bg-emerald-500/10 border-emerald-500/30 dark:bg-emerald-500/15 dark:border-emerald-500/30'
-                            : 'bg-white dark:bg-[#16171D] border-black/10 dark:border-white/10 hover:border-black/25 dark:hover:border-white/25'
+                            : 'bg-surface border-line hover:border-black/25 dark:hover:border-white/25'
                         }`}
                       >
                         <div className="flex flex-col min-w-0 pr-2">
-                          <span className={`text-[12px] font-semibold truncate ${isChecked ? 'line-through text-black/60 dark:text-white/60' : 'text-[#111111] dark:text-[#F4F4F6]'}`}>
+                          <span className={`text-[12px] font-semibold truncate ${isChecked ? 'line-through text-muted' : 'text-fg'}`}>
                             {item.label}
                           </span>
-                          <span className="text-[11px] text-black/60 dark:text-white/60 truncate">
+                          <span className="text-[11px] text-muted truncate">
                             {item.desc}
                           </span>
                         </div>
                         {isChecked ? (
                           <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                         ) : (
-                          <Circle className="w-4 h-4 text-black/60 dark:text-white/60 shrink-0" />
+                          <Circle className="w-4 h-4 text-muted shrink-0" />
                         )}
                       </button>
                     );

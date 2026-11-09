@@ -20,7 +20,7 @@ import {
   X,
   ArrowRight,
   BookOpen
-} from 'lucide-react';
+} from '@/components/ui/icons';
 import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';
 import { getTodayDateString, deduplicateAcademicEvents, isGenericExamTitle } from '@/lib/timetableUtils';
@@ -60,6 +60,7 @@ export const AcademicCalendar: React.FC = () => {
   const [showAddEventModal, setShowAddEventModal] = useState(false);
   const [showImportCalendarModal, setShowImportCalendarModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'holiday' | 'exam' | 'assignment' | 'event'>('all');
+  const [showAllUpcoming, setShowAllUpcoming] = useState(false);
 
   // Form states for manual add
   const [newTitle, setNewTitle] = useState('');
@@ -137,7 +138,7 @@ export const AcademicCalendar: React.FC = () => {
 
   // 2. Process Academic Events & Holidays
   events.forEach((ev) => {
-    if (!ev.date) return;
+    if (!ev.date || ev.type === 'assignment' || ev.type === 'homework') return;
     const dStr = ev.date;
 
     // DEDUPLICATION: If a specific exam exists on this date, suppress generic "MTE" / "Exam" events!
@@ -164,27 +165,6 @@ export const AcademicCalendar: React.FC = () => {
     itemsByDate.set(ev.date, existing);
   });
 
-  // 3. Process Homework / Assignment Deadlines
-  homework.forEach((hw) => {
-    if (!hw.deadline) return;
-    const dStr = hw.deadline.split('T')[0];
-    const sub = subjectMap.get(hw.subjectId);
-    const item: UnifiedCalendarItem = {
-      id: hw.id,
-      title: hw.title,
-      type: 'assignment',
-      dateStr: dStr,
-      subject: sub?.name || sub?.shortName,
-      location: '',
-      time: '11:59 PM',
-      description: hw.description,
-      itemSource: 'homework',
-    };
-    allItems.push(item);
-    const existing = itemsByDate.get(dStr) || [];
-    existing.push(item);
-    itemsByDate.set(dStr, existing);
-  });
 
   // Categorized counts for segmented filters
   const holidaysCount = allItems.filter(i => i.type === 'holiday').length;
@@ -192,59 +172,92 @@ export const AcademicCalendar: React.FC = () => {
   const assignmentsCount = allItems.filter(i => i.type === 'assignment' || i.type === 'homework').length;
   const campusEventsCount = allItems.filter(i => i.type === 'event').length;
 
+  const matchesFilter = (item: UnifiedCalendarItem) => {
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'assignment') return item.type === 'assignment' || item.type === 'homework';
+    return item.type === activeFilter;
+  };
+
   // Upcoming items across semester
   const todayStr = getTodayDateString();
   const allUpcoming = allItems
     .filter(i => i.dateStr >= todayStr)
     .sort((a, b) => a.dateStr.localeCompare(b.dateStr));
 
-  const upcomingSpotlight = allUpcoming.slice(0, 3);
+  // List only the month on screen, and skip the day already shown above it
+  const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}`;
+  const filteredUpcoming = allUpcoming.filter(
+    (i) => matchesFilter(i) && i.dateStr.startsWith(monthPrefix) && i.dateStr !== selectedDate
+  );
+  const upcomingMonthLabel = currentMonth.toLocaleDateString('en-US', { month: 'long' });
+  const UPCOMING_PREVIEW = 6;
+  const visibleUpcoming = showAllUpcoming ? filteredUpcoming : filteredUpcoming.slice(0, UPCOMING_PREVIEW);
+  const weekAheadStr = (() => {
+    const d = new Date(`${todayStr}T00:00:00`);
+    d.setDate(d.getDate() + 7);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  })();
+  const nextHoliday = allUpcoming.find(i => i.type === 'holiday');
+  const nextExam = allUpcoming.find(i => i.type === 'exam');
   const nextEventAfterSelected = allUpcoming.find(i => i.dateStr > selectedDate);
 
-  // Type styling metadata
+  // One semantic colour per type, shared by the legend, day cells, dots and list bars
   const getEventTypeMeta = (type: string) => {
     switch (type.toLowerCase()) {
       case 'holiday':
         return {
-          label: 'HOLIDAY',
+          label: 'Holiday',
           icon: Palmtree,
-          badgeColor: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25',
-          dotColor: 'bg-emerald-500',
+          dot: 'bg-emerald-500',
+          bar: 'bg-emerald-500',
+          cell: 'bg-emerald-500/[0.10] dark:bg-emerald-400/[0.12]',
+          num: 'text-emerald-700 dark:text-emerald-300',
+          text: 'text-emerald-700 dark:text-emerald-300',
         };
       case 'exam':
         return {
-          label: 'EXAM',
+          label: 'Exam',
           icon: GraduationCap,
-          badgeColor: 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/25',
-          dotColor: 'bg-rose-500',
+          dot: 'bg-rose-500',
+          bar: 'bg-rose-500',
+          cell: 'bg-rose-500/[0.10] dark:bg-rose-400/[0.12]',
+          num: 'text-rose-700 dark:text-rose-300',
+          text: 'text-rose-700 dark:text-rose-300',
         };
       case 'assignment':
       case 'homework':
       case 'deadline':
         return {
-          label: 'DEADLINE',
+          label: 'Deadline',
           icon: AlertCircle,
-          badgeColor: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25',
-          dotColor: 'bg-amber-500',
+          dot: 'bg-amber-500',
+          bar: 'bg-amber-500',
+          cell: '',
+          num: '',
+          text: 'text-amber-700 dark:text-amber-300',
         };
       default:
         return {
-          label: 'CAMPUS EVENT',
+          label: 'Event',
           icon: CalendarDays,
-          badgeColor: 'bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/25',
-          dotColor: 'bg-sky-500',
+          dot: 'bg-sky-500',
+          bar: 'bg-sky-500',
+          cell: '',
+          num: '',
+          text: 'text-sky-700 dark:text-sky-300',
         };
     }
   };
 
   const getRelativeDayTag = (dateStr: string) => {
-    if (dateStr === todayStr) return 'TODAY';
+    if (dateStr === todayStr) return 'Today';
     const target = new Date(`${dateStr}T00:00:00`);
     const today = new Date(`${todayStr}T00:00:00`);
     const diffDays = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    if (diffDays === 1) return 'TOMORROW';
-    if (diffDays > 1) return `IN ${diffDays} DAYS`;
-    return 'PAST';
+    if (diffDays === 1) return 'Tomorrow';
+    if (diffDays > 1) return `In ${diffDays} days`;
+    if (diffDays === -1) return 'Yesterday';
+    return `${Math.abs(diffDays)} days ago`;
   };
 
   // Build rectangular 35 or 42 grid cells
@@ -303,202 +316,199 @@ export const AcademicCalendar: React.FC = () => {
     day: 'numeric',
   });
   const rawSelectedItems = itemsByDate.get(selectedDate) || [];
-  const selectedItems = rawSelectedItems.filter((item) => {
-    if (activeFilter === 'all') return true;
-    if (activeFilter === 'holiday') return item.type === 'holiday';
-    if (activeFilter === 'exam') return item.type === 'exam';
-    if (activeFilter === 'assignment') return item.type === 'assignment' || item.type === 'homework';
-    if (activeFilter === 'event') return item.type === 'event';
-    return true;
-  });
+  const selectedItems = rawSelectedItems.filter(matchesFilter);
 
   return (
-    <div className="flex flex-col flex-1 max-w-5xl mx-auto w-full pt-2 sm:pt-6 pb-20">
+    <div className="flex flex-col flex-1 max-w-5xl mx-auto w-full">
       
-      {/* ── 1. Top Header ────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-4 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* ── 1. Header ─────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-f4 mb-f5 sm:mb-f6">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <h2 className="text-[26px] sm:text-[32px] font-black text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-tight">
+            <h2 className="page-title">
               Academic Calendar
             </h2>
-            <p className="text-[13px] text-[#71717A] dark:text-[#94A3B8] mt-0.5">
-              Semester deadlines, examination periods & campus holidays.
+            <p className="text-[14px] text-muted mt-1.5">
+              Holidays, exams and events for your semester.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => {
-                if (!isSignedIn) { router.push('/sign-in'); return; }
-                setShowImportCalendarModal(true);
-              }}
-              className="flex items-center justify-center h-9 px-3.5 rounded-lg border border-[#D9D9D6] dark:border-white/[0.08] text-[#111111] dark:text-[#F4F4F6] text-[13px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-colors gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Magic Import
-            </button>
+          <div className="page-actions">
             <button
               onClick={() => {
                 if (!isSignedIn) { router.push('/sign-in'); return; }
                 setShowAddEventModal(true);
               }}
-              className="flex items-center justify-center h-9 px-3.5 rounded-lg bg-[#111111] dark:bg-white text-white dark:text-[#090A0C] text-[13px] font-semibold transition-colors gap-1.5 cursor-pointer shadow-xs"
+              className="btn btn-primary"
             >
-              <Plus className="w-3.5 h-3.5" /> Add Event
+              <Plus className="w-4 h-4" /> Add Event
+            </button>
+            <button
+              onClick={() => {
+                if (!isSignedIn) { router.push('/sign-in'); return; }
+                setShowImportCalendarModal(true);
+              }}
+              className="btn btn-secondary"
+            >
+              <Sparkles className="w-4 h-4" /> Import PDF
             </button>
             {dupCount > 0 && (
               <button
                 onClick={() => cleanDuplicateEvents()}
-                className="flex items-center justify-center h-9 px-3 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25 text-[11px] font-bold uppercase tracking-wider hover:bg-amber-500/20 transition-colors gap-1 cursor-pointer"
-                title="Clean duplicate events" aria-label="Clean duplicate events"
+                className="btn btn-secondary border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20"
+                title="Remove duplicate events" aria-label="Remove duplicate events"
               >
-                <Sparkles className="w-3 h-3" /> Clean ({dupCount})
+                Clean {dupCount}
               </button>
             )}
           </div>
         </div>
 
-        {/* Category Filter Tabs */}
-        <div className="flex flex-wrap items-center gap-1.5 p-1 bg-black/[0.03] dark:bg-white/[0.04] rounded-xl border border-black/[0.04] dark:border-white/[0.06] w-fit">
-          <button
-            onClick={() => setActiveFilter('all')}
-            className={clsx(
-              "px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer",
-              activeFilter === 'all'
-                ? "bg-white dark:bg-[#1E2028] text-[#111111] dark:text-white shadow-2xs font-bold"
-                : "text-[#71717A] hover:text-[#111111] dark:hover:text-white"
-            )}
-          >
-            All ({allItems.length})
-          </button>
-          <button
-            onClick={() => setActiveFilter('holiday')}
-            className={clsx(
-              "px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer flex items-center gap-1.5",
-              activeFilter === 'holiday'
-                ? "bg-white dark:bg-[#1E2028] text-emerald-700 dark:text-emerald-400 shadow-2xs font-bold"
-                : "text-[#71717A] hover:text-[#111111] dark:hover:text-white"
-            )}
-          >
-            <Palmtree className="w-3.5 h-3.5 text-emerald-600" />
-            Holidays ({holidaysCount})
-          </button>
-          <button
-            onClick={() => setActiveFilter('exam')}
-            className={clsx(
-              "px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer flex items-center gap-1.5",
-              activeFilter === 'exam'
-                ? "bg-white dark:bg-[#1E2028] text-rose-700 dark:text-rose-400 shadow-2xs font-bold"
-                : "text-[#71717A] hover:text-[#111111] dark:hover:text-white"
-            )}
-          >
-            <GraduationCap className="w-3.5 h-3.5 text-rose-600" />
-            Exams ({examsCount})
-          </button>
-          <button
-            onClick={() => setActiveFilter('assignment')}
-            className={clsx(
-              "px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer flex items-center gap-1.5",
-              activeFilter === 'assignment'
-                ? "bg-white dark:bg-[#1E2028] text-amber-700 dark:text-amber-400 shadow-2xs font-bold"
-                : "text-[#71717A] hover:text-[#111111] dark:hover:text-white"
-            )}
-          >
-            <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
-            Deadlines ({assignmentsCount})
-          </button>
-          {campusEventsCount > 0 && (
-            <button
-              onClick={() => setActiveFilter('event')}
-              className={clsx(
-                "px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer flex items-center gap-1.5",
-                activeFilter === 'event'
-                  ? "bg-white dark:bg-[#1E2028] text-sky-700 dark:text-sky-400 shadow-2xs font-bold"
-                  : "text-[#71717A] hover:text-[#111111] dark:hover:text-white"
-              )}
-            >
-              <CalendarDays className="w-3.5 h-3.5 text-sky-600" />
-              Events ({campusEventsCount})
-            </button>
-          )}
+        {/* Coming up: answers "when is the next break / exam?" without scanning the grid */}
+        <div className="grid grid-cols-2 border border-line-soft bg-surface divide-x divide-line-soft">
+          {[
+            { key: 'holiday', label: 'Holiday', item: nextHoliday, empty: 'None ahead' },
+            { key: 'exam', label: 'Exam', item: nextExam, empty: 'None ahead' },
+          ].map(({ key, label, item, empty }) => {
+            const meta = getEventTypeMeta(key);
+            return (
+              <button
+                key={key}
+                type="button"
+                disabled={!item}
+                onClick={() => {
+                  if (!item) return;
+                  const d = new Date(`${item.dateStr}T00:00:00`);
+                  setSelectedDate(item.dateStr);
+                  setCurrentMonth(new Date(d.getFullYear(), d.getMonth(), 1));
+                }}
+                className="text-left p-3 sm:p-4 min-w-0 cursor-pointer disabled:cursor-default hover:bg-surface-2 transition-colors"
+              >
+                <span className="flex items-center gap-1.5 text-[12px] font-medium text-muted whitespace-nowrap">
+                  <span className={clsx('w-2 h-2 shrink-0', meta.dot)} />
+                  {label}
+                </span>
+                <span className="block mt-1.5 text-[16px] sm:text-[18px] font-semibold text-fg leading-tight truncate">
+                  {item ? getRelativeDayTag(item.dateStr) : empty}
+                </span>
+                {item && (
+                  <span className="block mt-0.5 text-[12px] text-muted truncate capitalize">
+                    {item.title.toLowerCase()}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Filters double as the colour legend */}
+        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2 w-max" role="tablist" aria-label="Filter calendar">
+            {([
+              { id: 'all', label: 'All', count: allItems.length, dot: '' },
+              { id: 'holiday', label: 'Holidays', count: holidaysCount, dot: 'bg-emerald-500' },
+              { id: 'exam', label: 'Exams', count: examsCount, dot: 'bg-rose-500' },
+              { id: 'event', label: 'Events', count: campusEventsCount, dot: 'bg-sky-500' },
+            ] as const).map((f) => {
+              const active = activeFilter === f.id;
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setActiveFilter(f.id)}
+                  className={clsx(
+                    'h-9 px-3.5 flex items-center gap-2 border text-[13px] font-medium whitespace-nowrap cursor-pointer transition-colors',
+                    active
+                      ? 'bg-ink border-line-strong text-on-ink'
+                      : 'bg-white dark:bg-transparent border-line text-fg hover:border-line-strong'
+                  )}
+                >
+                  {f.dot && <span className={clsx('w-2 h-2', f.dot)} aria-hidden="true" />}
+                  {f.label}
+                  <span className={clsx('font-mono text-[12px]', active ? 'opacity-70' : 'text-muted')}>
+                    {f.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* ── 2. Dual-Pane Pro Layout ──────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        {/* Left Column: Calendar Card (~58% width) */}
+      {/* ── 2. Month + agenda ────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-f5 sm:gap-f6 items-start">
+
         <div className="lg:col-span-7 flex flex-col gap-4">
-          <div className="rounded-[20px] border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#121318] p-5 sm:p-6 shadow-xs">
-            
-            {/* Month Header & Controls */}
-            <div className="flex items-center justify-between pb-4 mb-3 border-b border-black/[0.06] dark:border-white/[0.06]">
-              <div className="flex items-center gap-2.5">
-                <h3 className="text-[17px] sm:text-[19px] font-bold text-[#111111] dark:text-[#F4F4F6] tracking-tight">
-                  {monthName}
-                </h3>
+          <div className="border border-line-soft bg-surface p-4 sm:p-6">
+
+            {/* Month header */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[19px] sm:text-[21px] font-semibold text-fg tracking-tight">
+                {monthName}
+              </h3>
+              <div className="flex items-center gap-1">
                 <button
                   onClick={jumpToToday}
-                  className="text-[11px] font-semibold px-2.5 py-1 rounded-full border border-black/[0.08] dark:border-white/[0.1] text-[#71717A] hover:text-[#111111] dark:hover:text-white hover:bg-black/[0.03] dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
+                  className="h-9 px-3 text-[13px] font-medium border border-line text-fg hover:bg-surface-2 transition-colors cursor-pointer mr-1"
                 >
                   Today
                 </button>
-              </div>
-
-              <div className="flex items-center gap-1">
                 <button
                   onClick={prevMonth}
-                  className="p-1.5 rounded-lg text-[#71717A] hover:text-[#111111] dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
-                  title="Previous Month" aria-label="Previous Month"
+                  className="w-9 h-9 flex items-center justify-center text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                  title="Previous month" aria-label="Previous month"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button
                   onClick={nextMonth}
-                  className="p-1.5 rounded-lg text-[#71717A] hover:text-[#111111] dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
-                  title="Next Month" aria-label="Next Month"
+                  className="w-9 h-9 flex items-center justify-center text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                  title="Next month" aria-label="Next month"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            {/* Weekday Row */}
-            <div className="grid grid-cols-7 mb-2 text-center">
-              {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((d, i) => (
-                <div key={i} className="py-1">
-                  <span className="text-[11px] font-mono font-bold tracking-wider text-[#6B6B6B] dark:text-[#A1A1AA]">
+            {/* Weekdays */}
+            <div className="grid grid-cols-7 mb-1 text-center">
+              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                <div key={i} className="py-1.5">
+                  <span className={clsx(
+                    'text-[12px] font-semibold',
+                    i === 0 ? 'text-rose-600/80 dark:text-rose-300/80' : 'text-muted'
+                  )}>
                     {d}
                   </span>
                 </div>
               ))}
             </div>
 
-            {/* 35/42 Cell Rectangular Grid */}
-            <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
+            {/* Day grid */}
+            <div className="grid grid-cols-7 gap-1">
               {calendarCells.map((cell) => {
                 const isSelected = selectedDate === cell.dateKey;
                 const isToday = todayStr === cell.dateKey;
                 const dayItems = itemsByDate.get(cell.dateKey) || [];
-                
-                const activeFilterItems = activeFilter === 'all'
-                  ? dayItems
-                  : dayItems.filter(item => {
-                      if (activeFilter === 'holiday') return item.type === 'holiday';
-                      if (activeFilter === 'exam') return item.type === 'exam';
-                      if (activeFilter === 'assignment') return item.type === 'assignment' || item.type === 'homework';
-                      if (activeFilter === 'event') return item.type === 'event';
-                      return true;
-                    });
-
-                const hasActiveEvents = activeFilterItems.length > 0;
-                const hasHoliday = dayItems.some(i => i.type === 'holiday');
-                const hasExam = dayItems.some(i => i.type === 'exam');
+                const visibleItems = dayItems.filter(matchesFilter);
+                const isSunday = cell.dateObj.getDay() === 0;
+                // Whole-day colour for the days that change your routine: exams win over holidays
+                const tintType = visibleItems.some(i => i.type === 'exam') ? 'exam'
+                  : visibleItems.some(i => i.type === 'holiday') ? 'holiday' : null;
+                const tint = tintType ? getEventTypeMeta(tintType) : null;
+                const dotTypes = Array.from(new Set(visibleItems.map(i => (i.type === 'homework' ? 'assignment' : i.type))))
+                  .filter(t => t !== tintType)
+                  .slice(0, 3);
+                const label = `${cell.dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}${visibleItems.length ? `, ${visibleItems.length} ${visibleItems.length === 1 ? 'item' : 'items'}` : ''}`;
 
                 return (
                   <button
                     key={cell.dateKey}
                     type="button"
+                    aria-label={label}
+                    aria-pressed={isSelected}
                     onClick={() => {
                       setSelectedDate(cell.dateKey);
                       if (!cell.isCurrentMonth) {
@@ -506,55 +516,26 @@ export const AcademicCalendar: React.FC = () => {
                       }
                     }}
                     className={clsx(
-                      "h-13 sm:h-15 rounded-xl flex flex-col items-center justify-between p-1.5 transition-all duration-150 cursor-pointer relative group",
-                      !cell.isCurrentMonth && "opacity-30 hover:opacity-60",
-                      isSelected && "bg-[#111111] text-white dark:bg-white dark:text-[#111111] shadow-sm",
-                      !isSelected && isToday && "ring-2 ring-amber-500/70 bg-amber-500/[0.04] text-[#111111] dark:text-white font-bold",
-                      !isSelected && !isToday && "hover:bg-black/[0.03] dark:hover:bg-white/[0.04] text-[#333333] dark:text-[#E2E8F0]"
+                      'relative h-12 sm:h-14 flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors outline-offset-[-2px]',
+                      cell.isCurrentMonth && tint ? tint.cell : 'hover:bg-surface-2',
+                      isSelected && 'outline outline-2 outline-[#111111] dark:outline-[#F4F4F6]'
                     )}
                   >
                     <span className={clsx(
-                      "text-[13px] sm:text-[14px] leading-none transition-colors mt-0.5",
-                      isSelected ? "font-bold text-white dark:text-[#111111]" : isToday ? "font-bold text-amber-600 dark:text-amber-400" : "font-medium"
+                      'w-8 h-8 flex items-center justify-center text-[15px] leading-none',
+                      isToday && 'bg-ink text-on-ink font-semibold rounded-full',
+                      !isToday && !cell.isCurrentMonth && 'text-[#C4C4C0] dark:text-white/20',
+                      !isToday && cell.isCurrentMonth && tint && `font-semibold ${tint.num}`,
+                      !isToday && cell.isCurrentMonth && !tint && (isSunday ? 'text-rose-600/80 dark:text-rose-300/80' : 'text-fg'),
+                      isSelected && !isToday && 'font-semibold'
                     )}>
                       {cell.dayNum}
                     </span>
-
-                    {/* Event Dots */}
-                    {hasActiveEvents ? (
-                      <div className="flex items-center justify-center gap-1 mb-0.5">
-                        {activeFilterItems.slice(0, 3).map((item, idx) => {
-                          const meta = getEventTypeMeta(item.type);
-                          return (
-                            <span
-                              key={idx}
-                              className={clsx(
-                                "w-1.5 h-1.5 rounded-full",
-                                isSelected ? "bg-white/80 dark:bg-black/80" : meta.dotColor
-                              )}
-                            />
-                          );
-                        })}
-                        {activeFilterItems.length > 3 && (
-                          <span className={clsx(
-                            "text-[11px] font-mono leading-none font-bold",
-                            isSelected ? "text-white/80 dark:text-black/80" : "text-[#71717A]"
-                          )}>
-                            +
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="h-1.5 mb-0.5" />
-                    )}
-
-                    {/* Corner Indicators */}
-                    {hasHoliday && !isSelected && (
-                      <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-500" title="Holiday" />
-                    )}
-                    {hasExam && !hasHoliday && !isSelected && (
-                      <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-rose-500" title="Exam" />
-                    )}
+                    <span className="flex items-center gap-1 h-1.5" aria-hidden="true">
+                      {cell.isCurrentMonth && dotTypes.map((t) => (
+                        <span key={t} className={clsx('w-1.5 h-1.5 rounded-full', getEventTypeMeta(t).dot)} />
+                      ))}
+                    </span>
                   </button>
                 );
               })}
@@ -562,37 +543,23 @@ export const AcademicCalendar: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Day Agenda & Upcoming Spotlight (~42% width) */}
-        <div className="lg:col-span-5 flex flex-col gap-5">
-          
-          {/* Selected Date Agenda Card */}
-          <div className="rounded-[20px] border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#121318] p-5 shadow-xs flex flex-col gap-4">
-            
-            <div className="flex items-center justify-between pb-3 border-b border-black/[0.06] dark:border-white/[0.06]">
-              <div>
-                <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#71717A]">
-                  AGENDA FOR
-                </p>
-                <h4 className="text-[16px] font-bold text-[#111111] dark:text-white tracking-tight">
-                  {selectedDateFormatted}
-                </h4>
-              </div>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+        <div className="lg:col-span-5 flex flex-col gap-6">
+
+          {/* Selected day */}
+          <section aria-label="Selected day">
+            <div className="flex items-baseline justify-between mb-3">
+              <h4 className="text-[17px] font-semibold text-fg tracking-tight">
+                {selectedDateFormatted}
+              </h4>
+              <span className="text-[13px] text-muted">
                 {getRelativeDayTag(selectedDate)}
               </span>
             </div>
 
-            {/* Event Items List */}
             {selectedItems.length === 0 ? (
-              <div className="py-8 px-4 rounded-xl border border-dashed border-black/[0.06] dark:border-white/[0.06] bg-black/[0.01] dark:bg-white/[0.01] text-center flex flex-col items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mb-1.5 opacity-80" />
-                <p className="text-[13px] font-semibold text-[#111111] dark:text-[#F4F4F6]">
-                  No items on this date
-                </p>
-                <p className="text-[12px] text-[#71717A] mt-0.5 max-w-[240px]">
-                  No classes, exams or assignment deadlines.
-                </p>
-
+              <div className="border border-dashed border-black/[0.12] dark:border-white/[0.1] p-5 flex flex-col items-start gap-1">
+                <p className="text-[14px] font-medium text-fg">Nothing scheduled</p>
+                <p className="text-[13px] text-muted">No holidays, exams or events on this day.</p>
                 {nextEventAfterSelected && (
                   <button
                     onClick={() => {
@@ -600,69 +567,46 @@ export const AcademicCalendar: React.FC = () => {
                       const d = new Date(`${nextEventAfterSelected.dateStr}T00:00:00`);
                       setCurrentMonth(new Date(d.getFullYear(), d.getMonth(), 1));
                     }}
-                    className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/[0.03] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-[11px] font-medium text-amber-700 dark:text-amber-400 border border-black/[0.04] dark:border-white/[0.06] transition-colors cursor-pointer"
+                    className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-fg underline underline-offset-4 decoration-black/20 dark:decoration-white/30 hover:decoration-current cursor-pointer max-w-full"
                   >
-                    <span>Jump to Next: {nextEventAfterSelected.title.slice(0, 22)}...</span>
-                    <ArrowRight className="w-3 h-3" />
+                    <span className="truncate">Next: {nextEventAfterSelected.title}</span>
+                    <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                   </button>
                 )}
               </div>
             ) : (
-              <div className="flex flex-col gap-3">
+              <ul className="flex flex-col border border-line-soft bg-surface divide-y divide-line-soft">
                 {selectedItems.map((item, idx) => {
                   const meta = getEventTypeMeta(item.type);
                   return (
-                    <div
-                      key={idx}
-                      className="rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-black/[0.01] dark:bg-white/[0.02] p-3.5 flex items-start justify-between gap-3 shadow-2xs group"
-                    >
-                      <div className="flex items-start gap-3 flex-1 min-w-0">
-                        <div className={clsx(
-                          "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border mt-0.5",
-                          meta.badgeColor
-                        )}>
-                          <meta.icon className="w-4 h-4" />
-                        </div>
-
-                        <div className="flex flex-col flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-[4px] text-[11px] font-mono font-bold tracking-wider border ${meta.badgeColor}`}>
-                              {meta.label}
-                            </span>
-                            {item.subject && (
-                              <span className="text-[12px] font-semibold text-amber-700 dark:text-amber-400 truncate">
-                                {item.subject}
-                              </span>
-                            )}
-                          </div>
-
-                          <h5 className="text-[14px] font-bold text-[#111111] dark:text-[#F4F4F6] tracking-tight leading-snug">
-                            {item.title}
-                          </h5>
-
-                          <div className="flex flex-wrap items-center gap-2.5 text-[11px] text-[#71717A] mt-1.5">
+                    <li key={idx} className="relative flex items-start gap-3 p-4">
+                      <div className="flex-1 min-w-0">
+                        <p className={clsx('text-[12px] font-semibold uppercase tracking-[1px]', meta.text)}>
+                          {meta.label}{item.subject ? <span className="text-muted normal-case tracking-normal font-medium"> · {item.subject}</span> : null}
+                        </p>
+                        <h5 className="mt-1 text-[15px] font-semibold text-fg leading-snug">
+                          {item.title}
+                        </h5>
+                        {(item.time || item.location) && (
+                          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
                             {item.time && (
-                              <span className="inline-flex items-center gap-1 font-mono">
-                                <Clock className="w-3 h-3 text-amber-500" />
-                                {item.time}
+                              <span className="inline-flex items-center gap-1">
+                                <Clock className="w-3.5 h-3.5" /> {item.time}
                               </span>
                             )}
                             {item.location && (
-                              <span className="inline-flex items-center gap-1">
-                                <MapPin className="w-3 h-3 text-emerald-500" />
-                                {item.location}
+                              <span className="inline-flex items-center gap-1 min-w-0">
+                                <MapPin className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{item.location}</span>
                               </span>
                             )}
                           </div>
-
-                          {item.description && (
-                            <p className="text-[12px] text-[#555555] dark:text-[#94A3B8] mt-2 bg-black/[0.02] dark:bg-white/[0.03] p-2 rounded-lg border border-black/[0.04] dark:border-white/[0.06] whitespace-pre-wrap leading-relaxed">
-                              {item.description}
-                            </p>
-                          )}
-                        </div>
+                        )}
+                        {item.description && (
+                          <p className="mt-2 text-[13px] text-muted whitespace-pre-wrap leading-relaxed">
+                            {item.description}
+                          </p>
+                        )}
                       </div>
-
                       <button
                         type="button"
                         onClick={() => {
@@ -674,72 +618,81 @@ export const AcademicCalendar: React.FC = () => {
                             deleteEvent(item.id);
                           }
                         }}
-                        title="Delete item" aria-label="Delete item"
-                        className="p-1.5 rounded-lg text-[#6B6B6B] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer shrink-0"
+                        title={`Delete ${item.title}`} aria-label={`Delete ${item.title}`}
+                        className="w-9 h-9 -mr-2 -mt-1.5 flex items-center justify-center text-muted hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-500/10 transition-colors cursor-pointer shrink-0"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
-                    </div>
+                    </li>
                   );
                 })}
-              </div>
+              </ul>
             )}
-          </div>
+          </section>
 
-          {/* Semester Upcoming Spotlight Strip */}
-          {upcomingSpotlight.length > 0 && (
-            <div className="rounded-[20px] border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#121318] p-5 shadow-xs flex flex-col gap-3">
-              <div className="flex items-center justify-between pb-2 border-b border-black/[0.06] dark:border-white/[0.06]">
-                <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#71717A] flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-amber-500" /> NEXT ON SEMESTER TIMELINE
-                </p>
+          {/* Upcoming, grouped by month */}
+          {filteredUpcoming.length > 0 && (
+            <section aria-label="Upcoming">
+              <div className="flex items-baseline justify-between mb-3">
+                <h4 className="text-[17px] font-semibold text-fg tracking-tight">Later in {upcomingMonthLabel}</h4>
+                <span className="text-[13px] text-muted">{filteredUpcoming.length} {filteredUpcoming.length === 1 ? 'day' : 'days'}</span>
               </div>
 
-              <div className="flex flex-col gap-2.5">
-                {upcomingSpotlight.map((item, idx) => {
+              <div className="border border-line-soft bg-surface">
+                {visibleUpcoming.map((item, idx) => {
                   const d = new Date(`${item.dateStr}T00:00:00`);
-                  const monthShort = d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-                  const dayNum = d.getDate();
                   const meta = getEventTypeMeta(item.type);
-                  const relTag = getRelativeDayTag(item.dateStr);
+                  const isSoon = item.dateStr <= weekAheadStr;
 
                   return (
-                    <div
-                      key={idx}
-                      onClick={() => {
-                        setSelectedDate(item.dateStr);
-                        setCurrentMonth(new Date(d.getFullYear(), d.getMonth(), 1));
-                      }}
-                      className="p-2.5 rounded-xl border border-black/[0.05] dark:border-white/[0.06] hover:border-black/20 dark:hover:border-white/20 bg-black/[0.01] dark:bg-white/[0.02] flex items-center justify-between gap-3 transition-colors cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-9 h-10 rounded-lg bg-black/[0.03] dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.06] flex flex-col items-center justify-center shrink-0">
-                          <span className="text-[11px] font-mono font-bold uppercase text-amber-600 dark:text-amber-400 leading-none">
-                            {monthShort}
+                    <React.Fragment key={`${item.itemSource}_${item.id}_${idx}`}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedDate(item.dateStr);
+                          setCurrentMonth(new Date(d.getFullYear(), d.getMonth(), 1));
+                        }}
+                        className={clsx(
+                          'w-full flex items-center gap-3.5 px-4 py-3 text-left cursor-pointer hover:bg-surface-2 transition-colors',
+                          idx > 0 && 'border-t border-line-soft',
+                          selectedDate === item.dateStr && 'bg-surface-2'
+                        )}
+                      >
+                        <span className="w-9 shrink-0 flex flex-col items-center leading-none">
+                          <span className="text-[19px] font-semibold text-fg">{d.getDate()}</span>
+                          <span className="mt-1 text-[11px] font-medium uppercase text-muted">
+                            {d.toLocaleDateString('en-US', { weekday: 'short' })}
                           </span>
-                          <span className="text-[14px] font-black text-[#111111] dark:text-white leading-tight mt-0.5">
-                            {dayNum}
+                        </span>
+                        <span className={clsx('w-2 h-2 mt-1.5 rounded-full shrink-0 self-start', meta.bar)} aria-hidden="true" />
+                        <span className="flex-1 min-w-0">
+                          <span className="block text-[14px] font-semibold text-fg truncate">{item.title}</span>
+                          <span className="block mt-0.5 text-[12px] text-muted truncate">
+                            {meta.label}{item.subject ? ` · ${item.subject}` : ''}{item.location ? ` · ${item.location}` : ''}
                           </span>
-                        </div>
-
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-[13px] font-bold text-[#111111] dark:text-white truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
-                            {item.title}
-                          </span>
-                          <span className="text-[11px] text-[#71717A] truncate">
-                            {item.subject || meta.label} {item.location && `· ${item.location}`}
-                          </span>
-                        </div>
-                      </div>
-
-                      <span className="shrink-0 text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
-                        {relTag}
-                      </span>
-                    </div>
+                        </span>
+                        <span className={clsx(
+                          'shrink-0 text-[12px] whitespace-nowrap',
+                          isSoon ? 'font-semibold text-fg' : 'text-muted'
+                        )}>
+                          {getRelativeDayTag(item.dateStr)}
+                        </span>
+                      </button>
+                    </React.Fragment>
                   );
                 })}
+
+                {filteredUpcoming.length > UPCOMING_PREVIEW && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllUpcoming((v) => !v)}
+                    className="w-full h-11 border-t border-line-soft text-[14px] font-semibold text-fg hover:bg-surface-2 cursor-pointer"
+                  >
+                    {showAllUpcoming ? 'Show less' : `Show all ${filteredUpcoming.length}`}
+                  </button>
+                )}
               </div>
-            </div>
+            </section>
           )}
         </div>
       </div>
@@ -753,18 +706,18 @@ export const AcademicCalendar: React.FC = () => {
       {/* ── 4. Quick Add Event Modal ─────────────────────────────────── */}
       {showAddEventModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#13141A] w-full max-w-md rounded-[20px] border border-black/[0.08] dark:border-white/[0.1] p-6 shadow-2xl relative flex flex-col gap-4">
+          <div className="bg-white dark:bg-[#13141A] w-full max-w-md rounded-[20px] border border-line-soft p-6 shadow-2xl relative flex flex-col gap-4">
             
-            <div className="flex items-center justify-between pb-3 border-b border-black/[0.06] dark:border-white/[0.08]">
+            <div className="flex items-center justify-between pb-3 border-b border-line-soft">
               <div className="flex items-center gap-2">
                 <CalendarIcon className="w-4 h-4 text-amber-500" />
-                <h3 className="text-[16px] font-bold text-[#111111] dark:text-[#F4F4F6] tracking-tight">
+                <h3 className="text-[16px] font-bold text-fg tracking-tight">
                   Add to Calendar
                 </h3>
               </div>
               <button
                 onClick={() => setShowAddEventModal(false)}
-                className="p-1 rounded-lg text-[#71717A] hover:text-[#111111] dark:hover:text-white transition-colors cursor-pointer"
+                className="p-1 rounded-none text-[#71717A] hover:text-fg transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -772,10 +725,10 @@ export const AcademicCalendar: React.FC = () => {
 
             {/* Segmented Category Picker */}
             <div>
-              <label className="text-[11px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1.5 block">
+              <label className="text-[12px] font-bold text-[#71717A] mb-1.5 block">
                 Category
               </label>
-              <div className="grid grid-cols-4 gap-1.5 p-1 bg-black/[0.03] dark:bg-white/[0.04] rounded-xl border border-black/[0.04] dark:border-white/[0.06]">
+              <div className="grid grid-cols-4 gap-1.5 p-1 bg-surface-2 rounded-none border border-line-soft">
                 {(['event', 'holiday', 'exam', 'assignment'] as const).map((t) => (
                   <button
                     key={t}
@@ -784,8 +737,8 @@ export const AcademicCalendar: React.FC = () => {
                     className={clsx(
                       "py-1.5 text-[11px] font-semibold rounded-lg capitalize transition-all cursor-pointer",
                       newType === t
-                        ? "bg-white dark:bg-[#1E2028] text-[#111111] dark:text-white shadow-2xs font-bold"
-                        : "text-[#71717A] hover:text-[#111111] dark:hover:text-white"
+                        ? "bg-white dark:bg-[#1E2028] text-fg shadow-2xs font-bold"
+                        : "text-[#71717A] hover:text-fg"
                     )}
                   >
                     {t}
@@ -797,14 +750,14 @@ export const AcademicCalendar: React.FC = () => {
             {/* Inputs */}
             <div className="flex flex-col gap-3">
               <div>
-                <label className="text-[11px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1 block">
+                <label className="text-[12px] font-bold text-[#71717A] mb-1 block">
                   Title
                 </label>
                 <input
                   type="text"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-[#F7F7F5] dark:bg-[#0A0B0E] border border-[#D9D9D6] dark:border-white/[0.1] rounded-xl px-3.5 py-2.5 text-[13px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-amber-500"
+                  className="w-full bg-surface-2 border border-line rounded-none px-3.5 py-2.5 text-[13px] text-fg focus:outline-none focus:border-amber-500"
                   placeholder="e.g. Campus Placement Drive / Fest"
                   autoFocus
                 />
@@ -812,61 +765,61 @@ export const AcademicCalendar: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-[11px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1 block">
+                  <label className="text-[12px] font-bold text-[#71717A] mb-1 block">
                     Date
                   </label>
                   <input
                     type="date"
                     value={newDate}
                     onChange={(e) => setNewDate(e.target.value)}
-                    className="w-full bg-[#F7F7F5] dark:bg-[#0A0B0E] border border-[#D9D9D6] dark:border-white/[0.1] rounded-xl px-3 py-2 text-[13px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-amber-500 font-mono"
+                    className="w-full bg-surface-2 border border-line rounded-none px-3 py-2 text-[13px] text-fg focus:outline-none focus:border-amber-500 font-mono"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1 block">
+                  <label className="text-[12px] font-bold text-[#71717A] mb-1 block">
                     Time
                   </label>
                   <input
                     type="time"
                     value={newTime}
                     onChange={(e) => setNewTime(e.target.value)}
-                    className="w-full bg-[#F7F7F5] dark:bg-[#0A0B0E] border border-[#D9D9D6] dark:border-white/[0.1] rounded-xl px-3 py-2 text-[13px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-amber-500 font-mono"
+                    className="w-full bg-surface-2 border border-line rounded-none px-3 py-2 text-[13px] text-fg focus:outline-none focus:border-amber-500 font-mono"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1 block">
+                <label className="text-[12px] font-bold text-[#71717A] mb-1 block">
                   Location / Room (Optional)
                 </label>
                 <input
                   type="text"
                   value={newLocation}
                   onChange={(e) => setNewLocation(e.target.value)}
-                  className="w-full bg-[#F7F7F5] dark:bg-[#0A0B0E] border border-[#D9D9D6] dark:border-white/[0.1] rounded-xl px-3.5 py-2 text-[13px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-amber-500"
+                  className="w-full bg-surface-2 border border-line rounded-none px-3.5 py-2 text-[13px] text-fg focus:outline-none focus:border-amber-500"
                   placeholder="e.g. Auditorium / LT-1"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-bold uppercase tracking-[1px] text-[#71717A] mb-1 block">
+                <label className="text-[12px] font-bold text-[#71717A] mb-1 block">
                   Description / Notes (Optional)
                 </label>
                 <textarea
                   rows={2}
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  className="w-full bg-[#F7F7F5] dark:bg-[#0A0B0E] border border-[#D9D9D6] dark:border-white/[0.1] rounded-xl px-3.5 py-2 text-[12px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none focus:border-amber-500 resize-none"
+                  className="w-full bg-surface-2 border border-line rounded-none px-3.5 py-2 text-[12px] text-fg focus:outline-none focus:border-amber-500 resize-none"
                   placeholder="Event details or notes..."
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-black/[0.06] dark:border-white/[0.08]">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-line-soft">
               <button
                 type="button"
                 onClick={() => setShowAddEventModal(false)}
-                className="px-4 py-2 rounded-xl text-[13px] font-medium text-[#71717A] hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
+                className="px-4 h-9 rounded-none text-[13px] font-medium text-[#71717A] hover:bg-surface-2 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -874,7 +827,7 @@ export const AcademicCalendar: React.FC = () => {
                 type="button"
                 onClick={handleSaveEvent}
                 disabled={!newTitle.trim()}
-                className="px-5 py-2 rounded-xl bg-[#111111] dark:bg-white text-white dark:text-[#090A0C] text-[13px] font-semibold disabled:opacity-50 transition-opacity cursor-pointer shadow-xs"
+                className="px-5 h-9 rounded-none bg-ink text-on-ink text-[13px] font-semibold disabled:opacity-50 transition-opacity cursor-pointer shadow-xs"
               >
                 Add Event
               </button>

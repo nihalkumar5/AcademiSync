@@ -11,6 +11,9 @@ import { getShortCollegeName } from '@/lib/timetableUtils';
 import { PLAY_STORE_URL } from '@/lib/shareUtils';
 import { getAuthHeaders } from '@/lib/authHeaders';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { CampaignComposer, CampaignFormState, EMPTY_CAMPAIGN_FORM } from '@/components/admin/CampaignComposer';
+import { isCampaignRunning, getCategoryMeta } from '@/components/ads/CampusSpotlightCard';
+import { btn, surface, divider, muted, strong, PageTitle, SectionHead, Badge, StatTile, Segmented, SearchField, Empty, AttentionRow, timeAgo } from '@/components/admin/AdminUI';
 import {
   Shield,
   Users,
@@ -52,8 +55,15 @@ import {
   Clock,
   Copy,
   Share2,
-  MessageSquare
-} from 'lucide-react';
+  MessageSquare,
+  Inbox,
+  Pause,
+  Play,
+  Wrench,
+  KeyRound,
+  UserCog,
+  Star,
+} from '@/components/ui/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Capacitor } from '@capacitor/core';
@@ -106,25 +116,11 @@ export default function SuperAdminPage() {
   const [activeRoleDropdown, setActiveRoleDropdown] = useState<string | null>(null);
   const [showCampaignModal, setShowCampaignModal] = useState(false);
   const [editingCampaignId, setEditingCampaignId] = useState<string | null>(null);
-  const [campaignForm, setCampaignForm] = useState({
-    title: '',
-    subtitle: '',
-    description: '',
-    imageUrl: '',
-    ctaText: 'Learn More',
-    targetUrl: '',
-    category: 'general' as CampaignCategory,
-    badgeText: '',
-    targetAudienceType: 'all' as 'all' | 'custom',
-    targetColleges: [] as string[],
-    branchTargeting: 'all' as 'all' | 'custom',
-    targetBranches: [] as string[],
-    semesterTargeting: 'all' as 'all' | 'custom',
-    targetSemesters: [] as number[],
-    customCollegeInput: '',
-    customBranchInput: '',
-    isActive: true,
-  });
+  const [campaignForm, setCampaignForm] = useState<CampaignFormState>(EMPTY_CAMPAIGN_FORM);
+  const [campaignFilter, setCampaignFilter] = useState<'all' | 'live' | 'paused' | 'ended'>('all');
+  const [pendingRoleChange, setPendingRoleChange] = useState<{ user: any; role: AdminRole } | null>(null);
+  const [messageToDelete, setMessageToDelete] = useState<any | null>(null);
+  const [expandedMessage, setExpandedMessage] = useState<string | null>(null);
   
   const [collegeSearchQuery, setCollegeSearchQuery] = useState('');
   
@@ -344,6 +340,37 @@ export default function SuperAdminPage() {
   // Handlers for User Role Updates
   const [isCleaningDb, setIsCleaningDb] = useState(false);
 
+  // Firestore rejections get a human reason; permission errors almost always mean rules or account
+  const reportAdminError = (action: string, e: any) => {
+    console.error(`[Control Center] ${action} failed:`, e);
+    const denied = e?.code === 'permission-denied' || /insufficient permissions/i.test(String(e?.message || ''));
+    showToast(
+      `${action} failed`,
+      denied
+        ? 'Firestore blocked it. Sign in with a verified super admin email, and make sure the latest rules are deployed.'
+        : 'Check your connection and try again.',
+      'error'
+    );
+  };
+
+  // Campus admins manage one college (the one on their profile). Done on the server so the scope can't be self-edited.
+  const handleCampusAdminChange = async (u: any, targetRole: AdminRole) => {
+    try {
+      const assign = targetRole === 'campus_admin';
+      const res = await fetch('/api/admin/campus-admins', {
+        method: 'POST',
+        headers: await getAuthHeaders(),
+        body: JSON.stringify({ action: assign ? 'assign' : 'revoke', userId: u.id, linkedDocIds: u.linkedDocIds || [], nextRole: targetRole }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.error || 'Could not update campus admin');
+      if (!assign && targetRole !== 'student') await handleUpdateUserRole(u.id, targetRole, u.linkedDocIds);
+      showToast(assign ? 'Campus admin added' : 'Campus admin removed', assign ? `Manages ${json.college}` : `Now ${roleLabel(targetRole).toLowerCase()}`, 'success');
+    } catch (e: any) {
+      showToast('Could not change role', e.message || 'Please try again.', 'error');
+    }
+  };
+
   const handleUpdateUserRole = async (userId: string, targetRole: AdminRole, linkedDocIds?: string[]) => {
     try {
       const targetUser = usersList.find(u => u.id === userId);
@@ -353,7 +380,7 @@ export default function SuperAdminPage() {
         const userRef = doc(db, 'users', id);
         await updateDoc(userRef, {
           'profile.role': targetRole,
-        }).catch(console.error);
+        });
       }
 
       // If user is synced to a batch, we MUST update the batch document as well
@@ -365,19 +392,18 @@ export default function SuperAdminPage() {
           await updateDoc(batchRef, {
             crUserIds: arrayRemove(...idsToUpdate),
             ...(emailToMatch ? { crEmails: arrayRemove(emailToMatch) } : {}),
-          }).catch(console.error);
+          });
         } else if (targetRole === 'cr' || targetRole === 'super_admin') {
           await updateDoc(batchRef, {
             crUserIds: arrayUnion(...idsToUpdate),
             ...(emailToMatch ? { crEmails: arrayUnion(emailToMatch) } : {}),
-          }).catch(console.error);
+          });
         }
       }
 
-      showToast('Role Updated', `User role changed to ${targetRole.toUpperCase()}`, 'success');
+      showToast('Role updated', `Now ${targetRole === 'cr' ? 'batch pilot' : targetRole.replace('_', ' ')}`, 'success');
     } catch (e) {
-      console.error(e);
-      showToast('Error', 'Failed to update user role', 'error');
+      reportAdminError('Role change', e);
     }
   };
 
@@ -388,19 +414,18 @@ export default function SuperAdminPage() {
         const userRef = doc(db, 'users', id);
         await updateDoc(userRef, {
           'profile.isPro': !currentProStatus,
-        }).catch(console.error);
+        });
       }
-      showToast('Pro Status Toggled', `User is now ${!currentProStatus ? 'PRO MEMBER' : 'FREE USER'}`, 'success');
+      showToast(!currentProStatus ? 'Pro turned on' : 'Pro turned off', '', 'success');
     } catch (e) {
-      console.error(e);
-      showToast('Error', 'Failed to toggle Pro status', 'error');
+      reportAdminError('Pro change', e);
     }
   };
 
   const handleCleanDatabase = async () => {
     if (!isAdmin || isCleaningDb) return;
     const confirmClean = window.confirm(
-      'Clean & Deduplicate Database?\n\nThis will merge multiple logins belonging to the same student (e.g. Google Auth vs Clerk), copy their most recent batch & role into their active profile, delete orphaned duplicate docs, and purge abandoned ghost accounts. Do you want to proceed?'
+      'Clean up accounts?\n\nThis merges duplicate logins of the same student into one profile and deletes empty test accounts. Deleted duplicates cannot be restored.'
     );
     if (!confirmClean) return;
 
@@ -413,6 +438,7 @@ export default function SuperAdminPage() {
       const byKey = new Map<string, any[]>();
       let ghostCount = 0;
       let dupCount = 0;
+      let failedCount = 0;
 
       for (const u of rawList) {
         const p = u.profile || {};
@@ -422,7 +448,7 @@ export default function SuperAdminPage() {
         const college = (p.college || '').trim().toLowerCase();
 
         const hasBatch = !!(p.batchKey || p.batchCode || p.isBatchSynced || u.batchKey);
-        const hasFCM = !!u.fcmToken;
+        const hasFCM = !!u.fcmToken || (Array.isArray(u.webPushTokens) && u.webPushTokens.length > 0);
         const isDemo = college.includes('demo');
         const hasActiveProfile = !!p.onboardingCompleted || (!!college && !isDemo && !!p.branch);
 
@@ -437,8 +463,8 @@ export default function SuperAdminPage() {
         );
 
         if (isGhost) {
-          await deleteDoc(doc(db, 'users', u.id)).catch(console.error);
-          ghostCount++;
+          const removed = await deleteDoc(doc(db, 'users', u.id)).then(() => true, (err) => { failedCount++; console.error('[Control Center] cleanup delete failed:', err); return false; });
+          if (removed) ghostCount++;
           continue;
         }
 
@@ -451,15 +477,7 @@ export default function SuperAdminPage() {
 
       // 2. Duplicate consolidation
       for (const docs of Array.from(byKey.values())) {
-        if (docs.length <= 1) {
-          // Clean obsolete section if present in single doc
-          if (docs[0].profile?.section) {
-            const cleanProfile = { ...docs[0].profile };
-            delete cleanProfile.section;
-            await updateDoc(doc(db, 'users', docs[0].id), { profile: cleanProfile }).catch(console.error);
-          }
-          continue;
-        }
+        if (docs.length <= 1) continue;
 
         // Sort so newest active Firebase doc is first
         docs.sort((a, b) => {
@@ -474,7 +492,6 @@ export default function SuperAdminPage() {
 
         const primary = docs[0];
         const primaryProfile = { ...(primary.profile || {}) };
-        delete primaryProfile.section; // Purge section
 
         for (const d of docs.slice(1)) {
           const p = d.profile || {};
@@ -487,16 +504,20 @@ export default function SuperAdminPage() {
           if (!primaryProfile.branch && p.branch) primaryProfile.branch = p.branch;
           if (!primaryProfile.batchKey && p.batchKey) primaryProfile.batchKey = p.batchKey;
 
-          await deleteDoc(doc(db, 'users', d.id)).catch(console.error);
-          dupCount++;
+          const merged = await deleteDoc(doc(db, 'users', d.id)).then(() => true, (err) => { failedCount++; console.error('[Control Center] cleanup merge failed:', err); return false; });
+          if (merged) dupCount++;
         }
 
         await updateDoc(doc(db, 'users', primary.id), {
           profile: primaryProfile
-        }).catch(console.error);
+        }).catch((err) => { failedCount++; console.error('[Control Center] cleanup update failed:', err); });
       }
 
-      showToast('Hygiene Complete! ✨', `Cleaned ${dupCount} duplicate logins and purged ${ghostCount} ghost accounts.`, 'success');
+      if (failedCount) {
+        showToast('Cleanup partly failed', `${failedCount} changes were blocked. Merged ${dupCount}, removed ${ghostCount}.`, 'warning');
+      } else {
+        showToast('Cleanup done', `Merged ${dupCount} duplicate logins, removed ${ghostCount} empty accounts.`, 'success');
+      }
     } catch (e) {
       console.error('Database hygiene error:', e);
       showToast('Cleanup Failed', 'Could not complete database cleanup.', 'error');
@@ -517,8 +538,7 @@ export default function SuperAdminPage() {
       showToast('Batch Removed', `Batch ${batchToDelete} was deleted`, 'info');
       setBatchToDelete(null);
     } catch (e) {
-      console.error(e);
-      showToast('Error', 'Failed to delete batch', 'error');
+      reportAdminError('Batch delete', e);
     } finally {
       setIsDeletingBatch(false);
     }
@@ -543,8 +563,7 @@ export default function SuperAdminPage() {
       });
       showToast('Code Generated', `Batch code "${code}" assigned to ${batchId}`, 'success');
     } catch (e) {
-      console.error(e);
-      showToast('Error', 'Failed to generate batch code', 'error');
+      reportAdminError('Join code', e);
     }
   };
 
@@ -698,64 +717,52 @@ export default function SuperAdminPage() {
   };
 
   // Handlers for Campaign Management
-  const handleSaveCampaign = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!campaignForm.title || !campaignForm.targetUrl) {
-      showToast('Missing Fields', 'Title and Target Link are required', 'error');
-      return;
+  const handleSaveCampaign = async (publish: boolean): Promise<boolean> => {
+    if (!campaignForm.title.trim()) {
+      showToast('Add a headline', 'Every ad needs a headline.', 'warning');
+      return false;
     }
-
     try {
-      const campaignId = editingCampaignId || `camp_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-      const docRef = doc(db, 'promotional_campaigns', campaignId);
-
+      const existing = editingCampaignId ? campaignsList.find((c) => c.id === editingCampaignId) : undefined;
+      const campaignId = editingCampaignId || `camp_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+      const custom = campaignForm.targetAudienceType === 'custom';
       const payload: PromotionalCampaign = {
         id: campaignId,
-        title: campaignForm.title,
-        subtitle: campaignForm.subtitle,
+        title: campaignForm.title.trim(),
+        subtitle: campaignForm.subtitle.trim(),
         description: campaignForm.description,
         imageUrl: campaignForm.imageUrl,
-        ctaText: campaignForm.ctaText || 'Learn More',
-        targetUrl: campaignForm.targetUrl,
+        ctaText: campaignForm.ctaText.trim() || 'Learn more',
+        targetUrl: campaignForm.targetUrl.trim(),
         category: campaignForm.category,
-        badgeText: campaignForm.badgeText || '',
+        badgeText: campaignForm.badgeText.trim(),
         targetAudienceType: campaignForm.targetAudienceType,
-        targetColleges: campaignForm.targetAudienceType === 'all' ? [] : campaignForm.targetColleges,
-        targetBranches: campaignForm.targetAudienceType === 'all' || campaignForm.branchTargeting === 'all' ? [] : campaignForm.targetBranches,
-        targetSemesters: campaignForm.targetAudienceType === 'all' || campaignForm.semesterTargeting === 'all' ? [] : campaignForm.targetSemesters,
-        isActive: campaignForm.isActive,
-        impressions: editingCampaignId ? (campaignsList.find(c => c.id === editingCampaignId)?.impressions || 0) : 0,
-        clicks: editingCampaignId ? (campaignsList.find(c => c.id === editingCampaignId)?.clicks || 0) : 0,
-        createdAt: editingCampaignId ? (campaignsList.find(c => c.id === editingCampaignId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+        targetColleges: custom ? campaignForm.targetColleges : [],
+        targetBranches: custom && campaignForm.branchTargeting === 'custom' ? campaignForm.targetBranches : [],
+        targetSemesters: custom && campaignForm.semesterTargeting === 'custom' ? campaignForm.targetSemesters : [],
+        isActive: publish,
+        impressions: existing?.impressions || 0,
+        clicks: existing?.clicks || 0,
+        createdAt: existing?.createdAt || new Date().toISOString(),
+        ...(campaignForm.expiresOn ? { expiresAt: new Date(`${campaignForm.expiresOn}T23:59:59`).toISOString() } : {}),
       };
-
-      await setDoc(docRef, payload, { merge: true });
-      showToast('Campaign Saved', 'Promotional campaign is live!', 'success');
-      setShowCampaignModal(false);
+      // Full write (no merge) so clearing the end date really removes it
+      await setDoc(doc(db, 'promotional_campaigns', campaignId), payload);
+      showToast(publish ? 'Ad is live' : 'Ad saved as paused', payload.title, 'success');
       setEditingCampaignId(null);
-      setCampaignForm({
-        title: '',
-        subtitle: '',
-        description: '',
-        imageUrl: '',
-        ctaText: 'Learn More',
-        targetUrl: '',
-        category: 'general',
-        badgeText: '',
-        targetAudienceType: 'all',
-        targetColleges: [],
-        branchTargeting: 'all',
-        semesterTargeting: 'all',
-        targetBranches: [],
-        targetSemesters: [],
-        customCollegeInput: '',
-        customBranchInput: '',
-        isActive: true,
-      });
+      setCampaignForm(EMPTY_CAMPAIGN_FORM);
+      return true;
     } catch (e) {
-      console.error(e);
-      showToast('Error', 'Failed to save campaign', 'error');
+      reportAdminError('Saving the ad', e);
+      return false;
     }
+  };
+
+  const openNewCampaign = () => {
+    setEditingCampaignId(null);
+    setCampaignForm(EMPTY_CAMPAIGN_FORM);
+    setCampaignCollegeQuery('');
+    setShowCampaignModal(true);
   };
 
   const handleToggleCampaignActive = async (campaign: PromotionalCampaign) => {
@@ -764,9 +771,9 @@ export default function SuperAdminPage() {
       await updateDoc(docRef, {
         isActive: !campaign.isActive,
       });
-      showToast('Campaign Status', `Campaign is now ${!campaign.isActive ? 'ACTIVE' : 'PAUSED'}`, 'info');
+      showToast(campaign.isActive ? 'Ad paused' : 'Ad is live', campaign.title, 'info');
     } catch (e) {
-      console.error(e);
+      reportAdminError(campaign.isActive ? 'Pausing the ad' : 'Publishing the ad', e);
     }
   };
 
@@ -782,23 +789,24 @@ export default function SuperAdminPage() {
       showToast('Campaign Deleted', 'Campaign removed permanently', 'info');
       setCampaignToDelete(null);
     } catch (e) {
-      console.error(e);
-      showToast('Error', 'Failed to delete campaign', 'error');
+      reportAdminError('Ad delete', e);
     } finally {
       setIsDeletingCampaign(false);
     }
   };
 
   const openEditCampaign = (camp: PromotionalCampaign) => {
+    const validCategory = getCategoryMeta(camp.category).id === camp.category ? camp.category : 'general';
     setEditingCampaignId(camp.id);
     setCampaignForm({
-      title: camp.title,
+      ...EMPTY_CAMPAIGN_FORM,
+      title: camp.title || '',
       subtitle: camp.subtitle || '',
       description: camp.description || '',
       imageUrl: camp.imageUrl || '',
-      ctaText: camp.ctaText || 'Learn More',
-      targetUrl: camp.targetUrl,
-      category: camp.category || 'general',
+      ctaText: camp.ctaText || 'Learn more',
+      targetUrl: camp.targetUrl || '',
+      category: validCategory,
       badgeText: camp.badgeText || '',
       targetAudienceType: camp.targetAudienceType || (camp.targetColleges?.length || camp.targetBranches?.length || camp.targetSemesters?.length ? 'custom' : 'all'),
       targetColleges: camp.targetColleges || [],
@@ -806,9 +814,8 @@ export default function SuperAdminPage() {
       targetBranches: camp.targetBranches || [],
       semesterTargeting: camp.targetSemesters?.length ? 'custom' : 'all',
       targetSemesters: camp.targetSemesters || [],
-      customCollegeInput: '',
-      customBranchInput: '',
       isActive: camp.isActive,
+      expiresOn: camp.expiresAt ? new Date(camp.expiresAt).toISOString().split('T')[0] : '',
     });
     setShowCampaignModal(true);
   };
@@ -896,7 +903,7 @@ export default function SuperAdminPage() {
       const college = (p.college || '').trim().toLowerCase();
 
       const hasBatch = !!(p.batchKey || p.batchCode || p.isBatchSynced || u.batchKey);
-      const hasFCM = !!u.fcmToken;
+      const hasFCM = !!u.fcmToken || (Array.isArray(u.webPushTokens) && u.webPushTokens.length > 0);
       const isDemo = college.includes('demo');
       const hasActiveProfile = !!p.onboardingCompleted || (!!college && !isDemo && !!p.branch);
 
@@ -1127,6 +1134,63 @@ export default function SuperAdminPage() {
     });
   }, [filteredUsers, selectedCollegeFilter, selectedRoleFilter]);
 
+  const estimatedReach = useMemo(() => {
+    if (campaignForm.targetAudienceType === 'all') return deduplicatedUsersList.length;
+    if (campaignForm.targetColleges.length === 0) return 0;
+    let count = 0;
+    deduplicatedUsersList.forEach((u) => {
+      const p = u.profile || {};
+      const userCollege = (p.college || '').toLowerCase().trim();
+      const userBranch = (p.branch || '').toLowerCase().trim();
+      const userSem = String(p.semester || '').replace(/[^0-9]/g, '');
+      if (!userCollege) return;
+      const cMatch = campaignForm.targetColleges.some((tc) => {
+        const t = tc.toLowerCase().trim();
+        return userCollege === t || userCollege.includes(t) || t.includes(userCollege);
+      });
+      const bMatch =
+        campaignForm.branchTargeting === 'all' ||
+        campaignForm.targetBranches.some((tb) => {
+          const t = tb.toLowerCase().trim();
+          return !!userBranch && (userBranch.includes(t) || t.includes(userBranch));
+        });
+      const sMatch = campaignForm.semesterTargeting === 'all' || campaignForm.targetSemesters.some((ts) => String(ts) === userSem);
+      if (cMatch && bMatch && sMatch) count++;
+    });
+    return count;
+  }, [campaignForm, deduplicatedUsersList]);
+
+  const campaignCollegeOptions = useMemo(() => {
+    const map = new Map<string, number>();
+    deduplicatedUsersList.forEach((u) => {
+      const c = (u.profile?.college || '').trim();
+      if (c && !c.toLowerCase().includes('demo')) map.set(c, (map.get(c) || 0) + 1);
+    });
+    return Array.from(map.entries()).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 12);
+  }, [deduplicatedUsersList]);
+
+  const campaignBranchOptions = useMemo(() => {
+    const set = new Set<string>(availableBranches);
+    deduplicatedUsersList.forEach((u) => {
+      const p = u.profile || {};
+      if (p.branch && (!campaignForm.targetColleges.length || campaignForm.targetColleges.some((c) => (p.college || '').toLowerCase().includes(c.toLowerCase())))) set.add(p.branch);
+    });
+    return Array.from(set).slice(0, 24);
+  }, [deduplicatedUsersList, campaignForm.targetColleges]);
+
+  const requestRoleChange = (u: any, role: AdminRole) => {
+    const current = u.profile?.role || 'student';
+    if (role === current) return;
+    // Campus admin is granted/removed on the server (it scopes them to one college), always with a confirm
+    if (role === 'campus_admin' || current === 'campus_admin') {
+      setPendingRoleChange({ user: u, role });
+      return;
+    }
+    // Super admin can see and change everything, so it always needs a second look
+    if (role === 'super_admin' || current === 'super_admin') setPendingRoleChange({ user: u, role });
+    else handleUpdateUserRole(u.id, role, u.linkedDocIds);
+  };
+
   const filteredBatches = batchesList.filter((b) => {
     const q = searchBatchQuery.toLowerCase();
     return (
@@ -1142,7 +1206,7 @@ export default function SuperAdminPage() {
   if (!isClerkLoaded) {
     return (
       <div 
-        className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex items-center justify-center p-6"
+        className="min-h-screen bg-surface text-fg flex items-center justify-center p-6"
         style={{
           paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 20px), 32px)',
           paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 20px), 32px)',
@@ -1160,21 +1224,21 @@ export default function SuperAdminPage() {
   if (!user) {
     return (
       <div 
-        className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col items-center justify-center p-6 text-center"
+        className="min-h-screen bg-surface text-fg flex flex-col items-center justify-center p-6 text-center"
         style={{
           paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 20px), 32px)',
           paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 20px), 32px)',
         }}
       >
-        <div className="w-14 h-14 border border-black dark:border-white flex items-center justify-center mb-6">
+        <div className="w-14 h-14 border border-line-strong flex items-center justify-center mb-6">
           <Lock className="w-6 h-6" />
         </div>
-        <h1 className="text-xl font-bold uppercase tracking-widest mb-2">Super Admin Access</h1>
-        <p className="text-xs text-black/60 dark:text-white/60 mb-6 max-w-sm">
+        <h1 className="text-xl font-bold mb-2">Super Admin Access</h1>
+        <p className="text-xs text-muted mb-6 max-w-sm">
           Sign in with your master administrator account to manage users, college batches, and direct campaigns.
         </p>
         <Link href="/sign-in">
-          <button className="px-6 py-3 bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-widest border border-black dark:border-white cursor-pointer hover:opacity-90">
+          <button className="px-6 h-11 bg-ink text-on-ink text-[14px] font-semibold border border-line-strong cursor-pointer hover:opacity-90">
             Sign In with Admin Account
           </button>
         </Link>
@@ -1186,7 +1250,7 @@ export default function SuperAdminPage() {
   if (!isAdmin) {
     return (
       <div 
-        className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col items-center justify-center p-6 text-center"
+        className="min-h-screen bg-surface text-fg flex flex-col items-center justify-center p-6 text-center"
         style={{
           paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 20px), 32px)',
           paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 20px), 32px)',
@@ -1195,15 +1259,15 @@ export default function SuperAdminPage() {
         <div className="w-14 h-14 border border-rose-500 text-rose-500 flex items-center justify-center mb-6">
           <AlertTriangle className="w-6 h-6" />
         </div>
-        <h1 className="text-xl font-bold uppercase tracking-widest text-rose-600 dark:text-rose-400 mb-2">
+        <h1 className="text-xl font-bold text-rose-600 dark:text-rose-400 mb-2">
           Access Restricted
         </h1>
-        <p className="text-xs text-black/60 dark:text-white/60 mb-6 max-w-md">
+        <p className="text-xs text-muted mb-6 max-w-md">
           Your account ({userEmail}) is not authorized to access the Super Admin Control Center.
         </p>
         <Link
           href="/"
-          className="flex items-center gap-2 px-6 py-3 border border-black dark:border-white text-xs font-bold uppercase tracking-widest hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+          className="flex items-center gap-2 px-6 h-11 border border-line-strong text-[14px] font-semibold hover:bg-ink hover:text-on-ink transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Return to Student App</span>
@@ -1212,1370 +1276,749 @@ export default function SuperAdminPage() {
     );
   }
 
-  return (
-    <div 
-      className="min-h-screen bg-[#F7F7F5] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] font-sans selection:bg-[#111111] selection:text-[#FFFFFF] dark:selection:bg-[#FFFFFF] dark:selection:text-[#111111]"
-      style={{
-        paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 32px), 48px)',
-      }}
-    >
-      {/* Top Super Admin Header */}
-      <header 
-        className="sticky top-0 z-40 bg-[#F7F7F5] dark:bg-[#111111] border-b border-[#D8D8D8] dark:border-[#333333] shadow-xs"
-        style={{
-          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 14px), 28px)',
-        }}
-      >
-        <div className="px-4 sm:px-8 pb-4">
-          <div className="max-w-7xl w-full mx-auto flex flex-col gap-2.5">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 py-1 px-1.5 -ml-1.5 text-[12px] font-bold text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] uppercase tracking-wider transition-colors w-fit rounded-none active:opacity-70"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <Crown className="w-3.5 h-3.5 ml-1 text-amber-500" />
-              <span>SUPER ADMIN</span>
-            </Link>
-            <h1 className="text-[28px] sm:text-[40px] font-bold tracking-tight leading-none text-[#111111] dark:text-[#FFFFFF]">
-              Control Center
-            </h1>
-          </div>
-        </div>
+  // ---------- Derived numbers for the shell and overview ----------
+  const pendingRequests = crRequestsList.filter((r) => r.status === 'pending');
+  const unreadMessages = messagesList.filter((m) => (m.status || 'unread') === 'unread');
+  const liveCampaigns = campaignsList.filter((c) => isCampaignRunning(c));
+  const weekAgo = Date.now() - 7 * 86400000;
+  const newThisWeek = deduplicatedUsersList.filter((u) => {
+    const t = new Date(u.profile?.createdAt || 0).getTime();
+    return t && t > weekAgo;
+  }).length;
+  const batchesWithoutCode = batchesList.filter((b) => !b.inviteCode).length;
+  const topCampaign = [...campaignsList].sort((a, b) => (b.clicks || 0) - (a.clicks || 0))[0];
+  const adminFirstName = (profile?.name || user?.fullName || 'Admin').split(' ')[0];
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
-        {/* Navigation Tabs */}
-        <div className="border-t border-[#D8D8D8]/60 dark:border-[#333333]/60 bg-[#F7F7F5]/80 dark:bg-[#111111]/80 backdrop-blur-md">
-          <div className="max-w-7xl mx-auto px-4 sm:px-8">
-            <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto no-scrollbar scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-              {(() => {
-                const pendingCRCount = crRequestsList.filter(r => r.status === 'pending').length;
-                const unreadMsgCount = messagesList.filter(m => m.status === 'unread').length;
-                return [
-                  { id: 'overview', label: 'Overview' },
-                  { id: 'cr_requests', label: `👑 CR Requests ${pendingCRCount > 0 ? `(${pendingCRCount})` : ''}` },
-                  { id: 'messages', label: `💬 Messages ${unreadMsgCount > 0 ? `(${unreadMsgCount})` : ''}` },
-                  { id: 'users', label: `Users ${deduplicatedUsersList.length}` },
-                  { id: 'batches', label: `Batches ${batchesList.length}` },
-                  { id: 'campaigns', label: `Campaigns ${campaignsList.length}` },
-                ];
-              })().map(({ id, label }) => (
+  const campaignStatus = (c: PromotionalCampaign): 'live' | 'paused' | 'ended' =>
+    c.expiresAt && new Date(c.expiresAt).getTime() <= Date.now() ? 'ended' : c.isActive ? 'live' : 'paused';
+  const visibleCampaigns = campaignsList.filter((c) => campaignFilter === 'all' || campaignStatus(c) === campaignFilter);
+
+  const roleLabel = (r?: string) => (r === 'super_admin' ? 'Super admin' : r === 'campus_admin' ? 'Campus admin' : r === 'faculty' ? 'Faculty' : r === 'cr' ? 'Batch pilot' : 'Student');
+  const displayName = (p: any) => (p.name && p.name.toLowerCase() !== 'student' ? p.name : p.email ? p.email.split('@')[0] : 'Unnamed student');
+
+  const TABS: { id: AdminTab; label: string; icon: React.ElementType; count?: number; alert?: boolean }[] = [
+    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'cr_requests', label: 'Requests', icon: Crown, count: pendingRequests.length, alert: pendingRequests.length > 0 },
+    { id: 'messages', label: 'Inbox', icon: Inbox, count: unreadMessages.length, alert: unreadMessages.length > 0 },
+    { id: 'campaigns', label: 'Ads', icon: Megaphone, count: liveCampaigns.length },
+    { id: 'users', label: 'Students', icon: Users, count: deduplicatedUsersList.length },
+    { id: 'batches', label: 'Batches', icon: Layers, count: batchesList.length },
+  ];
+
+  return (
+    <div
+      className="min-h-screen bg-canvas text-fg font-sans"
+      style={{ paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 34px), 55px)' }}
+    >
+      {/* ---------- Header + navigation ---------- */}
+      <header
+        className="sheen sticky top-0 z-40 bg-[#FAFAF8]/90 dark:bg-[#0A0B0F]/80 backdrop-blur-xl border-b border-line"
+        style={{ paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 8px), 13px)' }}
+      >
+        <div className="max-w-6xl mx-auto px-f4 sm:px-f5">
+          <div className="flex items-center justify-between gap-3 h-14">
+            <div className="flex items-center gap-2 min-w-0">
+              <Link href="/" className={btn.icon} aria-label="Back to the app">
+                <ArrowLeft className="w-5 h-5" />
+              </Link>
+              <div className="min-w-0">
+                <h1 className={`text-[17px] font-semibold leading-tight ${strong}`}>Control Center</h1>
+                <p className={`text-[12px] leading-tight ${muted}`}>Intersemester admin</p>
+              </div>
+            </div>
+            <Badge tone="amber">
+              <Crown className="w-3.5 h-3.5" /> Super admin
+            </Badge>
+          </div>
+
+          <nav aria-label="Control Center sections" className="-mx-f4 sm:mx-0 px-f4 sm:px-0 flex gap-1 overflow-x-auto no-scrollbar">
+            {TABS.map((t) => {
+              const on = activeTab === t.id;
+              return (
                 <button
-                  key={id}
-                  onClick={() => setActiveTab(id as AdminTab)}
-                  className={`relative py-3.5 sm:py-4 text-[13px] font-medium whitespace-nowrap transition-colors cursor-pointer ${
-                    activeTab === id
-                      ? 'text-[#111111] dark:text-[#FFFFFF] font-bold'
-                      : 'text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
+                  key={t.id}
+                  type="button"
+                  onClick={() => setActiveTab(t.id)}
+                  aria-current={on ? 'page' : undefined}
+                  className={`relative shrink-0 h-11 px-3 inline-flex items-center gap-2 text-[14px] font-medium transition-colors cursor-pointer ${
+                    on ? strong : `${muted} hover:text-fg`
                   }`}
                 >
-                  {label}
-                  {activeTab === id && (
-                    <motion.div layoutId="tab-indicator" className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-[#111111] dark:bg-[#FFFFFF]" />
+                  <t.icon className="w-4 h-4" strokeWidth={1.9} />
+                  {t.label}
+                  {typeof t.count === 'number' && t.count > 0 && (
+                    <span
+                      className={`min-w-[20px] h-5 px-1.5 inline-flex items-center justify-center text-[11px] font-semibold tabular-nums ${
+                        t.alert ? 'bg-rose-500 text-white' : 'bg-surface-3 text-current'
+                      }`}
+                    >
+                      {t.count}
+                    </span>
                   )}
+                  {on && <motion.span layoutId="admin-tab" className="absolute left-2 right-2 -bottom-px h-[2px] bg-ink" />}
                 </button>
-              ))}
-            </div>
-          </div>
+              );
+            })}
+          </nav>
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto p-4 sm:p-8">
-        {/* TAB 1: OVERVIEW & ANALYTICS */}
+      <main className="max-w-6xl mx-auto px-f4 sm:px-f5 pt-f5 sm:pt-f6">
+        {/* ================= OVERVIEW ================= */}
         {activeTab === 'overview' && (
-          <div className="flex flex-col gap-6 text-left">
+          <div className="flex flex-col gap-f5 sm:gap-f6">
             <div>
-              <h2 className="text-[14px] font-bold uppercase tracking-[1.5px] text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#F0F0F0] dark:border-[#333333]">Overview</h2>
-              <p className="text-[12px] text-[#6F6F6F] mt-3 font-medium">
-                Live snapshot of your student network.
+              <p className={`font-cursive text-[19px] leading-none ${muted}`}>
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
               </p>
+              <h2 className={`mt-2 text-[30px] sm:text-[38px] font-semibold tracking-tight leading-tight ${strong}`}>
+                <span className={`font-normal ${muted}`}>{greeting},</span> {adminFirstName}
+              </h2>
             </div>
 
-            {/* Primary Metrics */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col py-2">
-                <div className="text-[32px] font-black leading-none text-[#111111] dark:text-[#FFFFFF]">{deduplicatedUsersList.length}</div>
-                <div className="text-[11px] font-bold text-[#6B6B6B] uppercase tracking-widest mt-2">Total Unique Students</div>
-              </div>
-
-              <div className="flex flex-col py-2">
-                <div className="text-[32px] font-black leading-none text-[#111111] dark:text-[#FFFFFF]">{batchesList.length}</div>
-                <div className="text-[11px] font-bold text-[#6B6B6B] uppercase tracking-widest mt-2">Active Batches</div>
-              </div>
-            </div>
-            
-            {/* Campaign Performance */}
-            <div className="mt-4 border-t border-[#D8D8D8] dark:border-[#333333] pt-6">
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#6B6B6B] mb-4">Campaign Performance</h3>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="flex flex-col">
-                  <div className="text-[20px] font-bold leading-none text-[#111111] dark:text-[#FFFFFF]">{totalImpressions}</div>
-                  <div className="text-[11px] text-[#6F6F6F] mt-1 font-medium uppercase tracking-wider">Impressions</div>
-                </div>
-                <div className="flex flex-col">
-                  <div className="text-[20px] font-bold leading-none text-[#111111] dark:text-[#FFFFFF]">{totalClicks}</div>
-                  <div className="text-[11px] text-[#6F6F6F] mt-1 font-medium uppercase tracking-wider">Clicks</div>
-                </div>
-                <div className="flex flex-col">
-                  <div className="text-[20px] font-bold leading-none text-[#111111] dark:text-[#FFFFFF]">{overallCTR}%</div>
-                  <div className="text-[11px] text-[#6F6F6F] mt-1 font-medium uppercase tracking-wider">CTR</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Admin Actions */}
-            <div className="mt-8">
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#6B6B6B] mb-2 border-b border-[#F0F0F0] dark:border-[#333333] pb-2">Admin Actions</h3>
-              
-              <div className="flex flex-col gap-0">
-                <button
-                  onClick={() => {
-                    setShowCampaignModal(true);
-                    setEditingCampaignId(null);
-                  }}
-                  className="flex items-center justify-between py-4 border-b border-[#F0F0F0] dark:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer text-left group"
-                >
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider">Launch Campaign</span>
-                    <span className="text-[12px] text-[#6F6F6F] font-medium">Target colleges, branches, semesters or individual batches.</span>
+            {/* What needs a decision comes first: the admin's job is triage */}
+            <section>
+              <SectionHead title="Needs attention" meta={pendingRequests.length + unreadMessages.length + batchesWithoutCode === 0 ? undefined : `${pendingRequests.length + unreadMessages.length + (batchesWithoutCode ? 1 : 0)} items`} />
+              {pendingRequests.length + unreadMessages.length + batchesWithoutCode === 0 ? (
+                <div className={`${surface} flex items-center gap-f3 px-f4 py-f4`}>
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                  <div>
+                    <p className={`text-[15px] font-medium ${strong}`}>All clear</p>
+                    <p className={`text-[13px] ${muted}`}>No pending requests or unread messages.</p>
                   </div>
-                  <ArrowRight className="w-[14px] h-[14px] text-[#111111] dark:text-[#FFFFFF] opacity-50 group-hover:opacity-100 transition-opacity" />
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('users')}
-                  className="flex items-center justify-between py-4 border-b border-[#F0F0F0] dark:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer text-left group"
-                >
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider">Manage Users & Roles</span>
-                    <span className="text-[12px] text-[#6F6F6F] font-medium">Assign CRs, manage access and student permissions ({deduplicatedUsersList.length} students).</span>
-                  </div>
-                  <ArrowRight className="w-[14px] h-[14px] text-[#111111] dark:text-[#FFFFFF] opacity-50 group-hover:opacity-100 transition-opacity" />
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('batches')}
-                  className="flex items-center justify-between py-4 border-b border-[#F0F0F0] dark:border-[#333333] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors cursor-pointer text-left group"
-                >
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider">Manage Batches</span>
-                    <span className="text-[12px] text-[#6F6F6F] font-medium">Review active schedules and remove spam entries.</span>
-                  </div>
-                  <ArrowRight className="w-[14px] h-[14px] text-[#111111] dark:text-[#FFFFFF] opacity-50 group-hover:opacity-100 transition-opacity" />
-                </button>
-
-                <button
-                  disabled={isCleaningDb}
-                  onClick={handleCleanDatabase}
-                  className="flex items-center justify-between py-4 border-b border-[#F0F0F0] dark:border-[#333333] hover:bg-amber-500/5 dark:hover:bg-amber-500/10 transition-colors cursor-pointer text-left group"
-                >
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[13px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-2">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      {isCleaningDb ? 'Cleaning Database Hygiene...' : 'Clean & Deduplicate Database'}
-                    </span>
-                    <span className="text-[12px] text-[#6F6F6F] font-medium">Merge multi-device user logins, purge abandoned ghost accounts & remove obsolete sections.</span>
-                  </div>
-                  <ArrowRight className="w-[14px] h-[14px] text-amber-600 dark:text-amber-400 opacity-70 group-hover:opacity-100 transition-opacity" />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 2: USER MANAGEMENT (COLLEGE-WISE GROUPED) */}
-        {activeTab === 'users' && (
-          <div className="flex flex-col gap-6 text-left">
-            {/* Header + Search Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-bold uppercase tracking-tight">Registered Students ({filteredUsers.length})</h2>
-                  <span className="hidden sm:inline-block font-mono text-[11px] px-2 py-0.5 border border-black/10 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.03] rounded-none uppercase">
-                    {allCollegeOptions.length} Colleges
-                  </span>
-                </div>
-                <p className="text-xs text-black/60 dark:text-white/60 mt-1">
-                  Arranged college-wise. Manage student profiles, grant CR permissions, and toggle Pro tier subscriptions.
-                </p>
-              </div>
-
-              {/* Search Box */}
-              <div className="relative w-full md:w-80">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40" />
-                <input
-                  type="text"
-                  placeholder="Search name, email, roll no, college..."
-                  value={searchUserQuery}
-                  onChange={(e) => setSearchUserQuery(e.target.value)}
-                  className="w-full pl-9 pr-8 py-2 border border-black dark:border-white bg-transparent text-xs font-mono focus:outline-none rounded-none"
-                />
-                {searchUserQuery && (
-                  <button
-                    onClick={() => setSearchUserQuery('')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] font-mono opacity-50 hover:opacity-100"
-                    title="Clear search" aria-label="Clear search"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Quick Stats & Role Filter Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 p-3 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111]">
-              {/* Role Filters */}
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#6F6F6F] mr-1 flex items-center gap-1">
-                  <Filter className="w-3 h-3" />
-                  Role Filter:
-                </span>
-                {[
-                  { id: 'ALL', label: `All (${filteredUsers.length})` },
-                  { id: 'faculty', label: `Faculty (${totalFacultyCount})` },
-                  { id: 'cr', label: `CRs (${totalCRsCount})` },
-                  { id: 'pro', label: `Pro (${totalProCount})` },
-                  { id: 'student', label: 'Students' },
-                ].map((f) => (
-                  <button
-                    key={f.id}
-                    onClick={() => setSelectedRoleFilter(f.id as any)}
-                    className={`px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider transition-colors rounded-none cursor-pointer border ${
-                      selectedRoleFilter === f.id
-                        ? 'bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] border-[#111111] dark:border-[#FFFFFF]'
-                        : 'border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
-                    }`}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* View/Collapse All Controls */}
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    const allCollapsed = collegeUserGroups.length > 0 && collegeUserGroups.every(g => !!collapsedColleges[g.key]);
-                    const next: Record<string, boolean> = {};
-                    if (!allCollapsed) {
-                      collegeUserGroups.forEach(g => { next[g.key] = true; });
-                    }
-                    setCollapsedColleges(next);
-                  }}
-                  className="text-[11px] font-mono uppercase tracking-wider text-[#6F6F6F] hover:text-[#111111] dark:hover:text-white transition-colors underline cursor-pointer"
-                >
-                  {collegeUserGroups.length > 0 && collegeUserGroups.every(g => !!collapsedColleges[g.key]) ? 'Expand All Colleges' : 'Collapse All'}
-                </button>
-              </div>
-            </div>
-
-            {/* Horizontal Scrollable College Filter Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-              <button
-                onClick={() => setSelectedCollegeFilter('ALL')}
-                className={`px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-colors rounded-none cursor-pointer border flex items-center gap-1.5 ${
-                  selectedCollegeFilter === 'ALL'
-                    ? 'bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] border-[#111111] dark:border-[#FFFFFF]'
-                    : 'border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
-                }`}
-              >
-                <Building2 className="w-3.5 h-3.5" />
-                <span>All Colleges</span>
-                <span className="font-mono text-[11px] opacity-75">({deduplicatedUsersList.length})</span>
-              </button>
-
-              {allCollegeOptions.map((c) => (
-                <button
-                  key={c.key}
-                  onClick={() => setSelectedCollegeFilter(selectedCollegeFilter === c.key ? 'ALL' : c.key)}
-                  className={`px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider shrink-0 transition-colors rounded-none cursor-pointer border flex items-center gap-1.5 ${
-                    selectedCollegeFilter === c.key
-                      ? 'bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] border-[#111111] dark:border-[#FFFFFF]'
-                      : 'border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
-                  }`}
-                  title={c.displayName} aria-label={c.displayName}
-                >
-                  <span>{c.shortName}</span>
-                  <span className="font-mono text-[11px] px-1.5 py-0.2 border border-current/20 bg-current/5">
-                    {c.count}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* College Groups List */}
-            {collegeUserGroups.length === 0 ? (
-              <div className="p-12 text-center text-[#6F6F6F] border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] flex flex-col items-center justify-center gap-2">
-                <Search className="w-8 h-8 opacity-40 mb-1" />
-                <span className="font-bold text-[14px] text-[#111111] dark:text-[#FFFFFF]">No students match your filter</span>
-                <span className="text-[12px]">Try clearing search query or selecting &quot;All Colleges&quot;</span>
-                <button
-                  onClick={() => { setSearchUserQuery(''); setSelectedCollegeFilter('ALL'); setSelectedRoleFilter('ALL'); }}
-                  className="mt-3 px-4 py-1.5 text-xs font-mono uppercase tracking-wider border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer"
-                >
-                  Reset Filters
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-6">
-                {collegeUserGroups.map((group) => {
-                  const isCollapsed = !!collapsedColleges[group.key];
-
-                  return (
-                    <div
-                      key={group.key}
-                      className="border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#111111] flex flex-col"
-                    >
-                      {/* College Group Header Banner */}
-                      <div
-                        onClick={() => setCollapsedColleges(prev => ({ ...prev, [group.key]: !prev[group.key] }))}
-                        className="px-4 py-3.5 sm:px-5 sm:py-4 bg-[#F7F7F5] dark:bg-[#181818] border-b border-[#D8D8D8] dark:border-[#333333] flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer select-none hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-8 h-8 shrink-0 rounded-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 flex items-center justify-center text-[#111111] dark:text-[#FFFFFF]">
-                            <Building2 className="w-4 h-4" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h3 className="font-bold text-[14px] sm:text-[15px] text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-snug">
-                                {group.displayName}
-                              </h3>
-                              {group.shortName !== 'NOT SET' && (
-                                <span className="font-mono text-[11px] uppercase px-1.5 py-0.5 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-[#6F6F6F] dark:text-[#A0A0A0]">
-                                  {group.shortName}
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[11px] text-[#6F6F6F] block mt-0.5">
-                              {group.students.length} {group.students.length === 1 ? 'registered student' : 'registered students'} in this institute
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                          {group.crCount > 0 && (
-                            <span className="px-2 py-0.5 text-[11px] font-bold font-mono uppercase bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40">
-                              {group.crCount} CR{group.crCount > 1 ? 's' : ''}
-                            </span>
-                          )}
-                          {group.proCount > 0 && (
-                            <span className="px-2 py-0.5 text-[11px] font-bold font-mono uppercase bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-900/40">
-                              {group.proCount} PRO
-                            </span>
-                          )}
-                          <span className="px-2.5 py-1 text-[11px] font-bold font-mono uppercase border border-black/10 dark:border-white/10 bg-white dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF]">
-                            {group.students.length} Students
-                          </span>
-                          <button
-                            type="button"
-                            className="p-1 hover:opacity-75 transition-opacity"
-                            aria-label={isCollapsed ? 'Expand' : 'Collapse'}
-                          >
-                            {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Group Content (when not collapsed) */}
-                      {!isCollapsed && (
-                        <div>
-                          {/* Desktop Table View */}
-                          <div className="hidden sm:block overflow-x-auto">
-                            <table className="w-full text-[12px] text-left border-collapse min-w-[800px]">
-                              <thead>
-                                <tr className="border-b border-[#F0F0F0] dark:border-[#222222] bg-[#FAFAF8] dark:bg-[#141414] font-bold uppercase tracking-[1px] text-[11px] text-[#6B6B6B]">
-                                  <th className="p-3.5 font-bold">Student</th>
-                                  <th className="p-3.5 font-bold">Branch & Semester</th>
-                                  <th className="p-3.5 font-bold">Roll No</th>
-                                  <th className="p-3.5 font-bold">Role</th>
-                                  <th className="p-3.5 font-bold">Pro Tier</th>
-                                  <th className="p-3.5 font-bold text-right">Joined</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-[#F0F0F0] dark:divide-[#222222] font-sans">
-                                {group.students.map((u) => {
-                                  const p = u.profile || {};
-                                  const currentRole = p.role || 'student';
-                                  const isPro = !!p.isPro;
-
-                                  return (
-                                    <tr key={u.id} className="hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors">
-                                      <td className="p-3.5">
-                                        <div className="flex items-center gap-2">
-                                          <div className="font-bold text-[13px] text-[#111111] dark:text-[#FFFFFF]">
-                                            {p.name && p.name.toLowerCase() !== 'student' ? p.name : (!p.email ? 'Student (Guest / No Name)' : (p.name || 'Anonymous'))}
-                                          </div>
-                                          {currentRole === 'cr' && (
-                                            <span className="px-1.5 py-0.2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[11px] font-bold uppercase tracking-wider font-mono">
-                                              CR
-                                            </span>
-                                          )}
-                                        </div>
-                                        <div className="text-[11px] font-mono text-[#6F6F6F]">
-                                          {p.email || (p.batchCode ? `Batch Code: ${p.batchCode}` : u.id)}
-                                        </div>
-                                      </td>
-                                      <td className="p-3.5 max-w-[240px]">
-                                        <div className="font-medium text-[#111111] dark:text-[#FFFFFF] truncate">
-                                          {p.programme || ''} {p.branch ? `- ${p.branch}` : 'Branch not set'}
-                                        </div>
-                                        <div className="text-[11px] text-[#6F6F6F]">
-                                          {p.semester ? `Semester ${p.semester}` : ''}
-                                        </div>
-                                      </td>
-                                      <td className="p-3.5 font-mono text-[#111111] dark:text-[#FFFFFF]">
-                                        {p.rollNumber || '—'}
-                                      </td>
-                                      <td className="p-3.5">
-                                        <div className="relative min-w-[140px]">
-                                          <button
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              setActiveRoleDropdown(activeRoleDropdown === u.id ? null : u.id);
-                                            }}
-                                            className="w-full h-full flex items-center justify-between px-3 py-1.5 border border-[#D8D8D8] dark:border-[#333333] bg-transparent text-[11px] font-bold uppercase cursor-pointer rounded-none focus:outline-none"
-                                          >
-                                            <span>{currentRole === 'super_admin' ? 'Super Admin' : currentRole === 'faculty' ? 'Faculty (Prof)' : currentRole === 'cr' ? 'CR (Class Rep)' : 'Student'}</span>
-                                            <ChevronDown className="w-3.5 h-3.5 opacity-50" />
-                                          </button>
-                                          
-                                          {activeRoleDropdown === u.id && (
-                                            <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] z-50 shadow-[0_20px_40px_rgba(0,0,0,0.1)] flex flex-col rounded-none">
-                                              {['student', 'cr', 'faculty', 'super_admin'].map(role => (
-                                                <button
-                                                  key={role}
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleUpdateUserRole(u.id, role as any, u.linkedDocIds);
-                                                    setActiveRoleDropdown(null);
-                                                  }}
-                                                  className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1px] hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
-                                                >
-                                                  {role === 'super_admin' ? 'Super Admin' : role === 'faculty' ? 'Faculty (Prof)' : role === 'cr' ? 'CR (Class Rep)' : 'Student'}
-                                                </button>
-                                              ))}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </td>
-                                      <td className="p-3.5">
-                                        <button
-                                          onClick={() => handleToggleUserPro(u.id, isPro, u.linkedDocIds)}
-                                          className={`px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider border cursor-pointer rounded-none transition-colors ${
-                                            isPro
-                                              ? 'bg-[#111111] text-[#FFFFFF] border-[#111111] dark:bg-[#FFFFFF] dark:text-[#111111] dark:border-[#FFFFFF]'
-                                              : 'border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
-                                          }`}
-                                        >
-                                          {isPro ? '★ PRO ACTIVE' : 'FREE USER'}
-                                        </button>
-                                      </td>
-                                      <td className="p-3.5 text-right font-mono text-[11px] text-[#6F6F6F]">
-                                        {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}
-                                      </td>
-                                    </tr>
-                                  );
-                                })}
-                              </tbody>
-                            </table>
-                          </div>
-
-                          {/* Mobile Cards View */}
-                          <div className="flex flex-col divide-y divide-[#F0F0F0] dark:divide-[#222222] sm:hidden">
-                            {group.students.map((u) => {
-                              const p = u.profile || {};
-                              const currentRole = p.role || 'student';
-                              const isPro = !!p.isPro;
-
-                              return (
-                                <div key={u.id} className="p-4 flex flex-col gap-3">
-                                  <div className="flex items-start justify-between gap-2">
-                                    <div className="flex flex-col">
-                                      <div className="flex items-center gap-2">
-                                        <span className="font-bold text-[14px] text-[#111111] dark:text-[#FFFFFF]">
-                                          {p.name && p.name.toLowerCase() !== 'student' ? p.name : (!p.email ? 'Student (Guest / No Name)' : (p.name || 'Anonymous'))}
-                                        </span>
-                                        {currentRole === 'cr' && (
-                                          <span className="px-1.5 py-0.2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[11px] font-bold font-mono uppercase">
-                                            CR
-                                          </span>
-                                        )}
-                                      </div>
-                                      <span className="text-[11px] font-mono text-[#6F6F6F]">
-                                        {p.email || (p.batchCode ? `Batch Code: ${p.batchCode}` : u.id)}
-                                      </span>
-                                    </div>
-                                    <div className="text-right">
-                                      <span className="text-[11px] text-[#6B6B6B] font-mono block">Joined {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}</span>
-                                    </div>
-                                  </div>
-
-                                  <div className="flex flex-col gap-0.5 text-[11px]">
-                                    <span className="text-[#111111] dark:text-[#FFFFFF] font-medium">
-                                      {p.programme || ''} {p.branch ? `- ${p.branch}` : ''} {p.semester ? `(Sem ${p.semester})` : ''}
-                                    </span>
-                                    <span className="text-[#6F6F6F] font-mono">
-                                      Roll: {p.rollNumber || '—'}
-                                    </span>
-                                  </div>
-
-                                  <div className="flex items-center gap-2.5 pt-2 border-t border-[#F0F0F0] dark:border-[#222222]">
-                                    <div className="relative flex-1">
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setActiveRoleDropdown(activeRoleDropdown === u.id ? null : u.id);
-                                        }}
-                                        className="w-full h-full flex items-center justify-between px-2.5 py-1.5 border border-[#D8D8D8] dark:border-[#333333] bg-transparent text-[11px] font-bold uppercase cursor-pointer rounded-none focus:outline-none"
-                                      >
-                                        <span>{currentRole === 'super_admin' ? 'Super Admin' : currentRole === 'faculty' ? 'Faculty' : currentRole === 'cr' ? 'CR' : 'Student'}</span>
-                                        <ChevronDown className="w-3 h-3 opacity-50" />
-                                      </button>
-                                      
-                                      {activeRoleDropdown === u.id && (
-                                        <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-[#111111] border border-[#D8D8D8] dark:border-[#333333] z-50 shadow-lg flex flex-col rounded-none">
-                                          {['student', 'cr', 'faculty', 'super_admin'].map(role => (
-                                            <button
-                                              key={role}
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleUpdateUserRole(u.id, role as any, u.linkedDocIds);
-                                                setActiveRoleDropdown(null);
-                                              }}
-                                              className="px-3 py-2 text-left text-[11px] font-bold uppercase hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors"
-                                            >
-                                              {role === 'super_admin' ? 'Super Admin' : role === 'faculty' ? 'Faculty' : role === 'cr' ? 'CR (Class Rep)' : 'Student'}
-                                            </button>
-                                          ))}
-                                        </div>
-                                      )}
-                                    </div>
-
-                                    <button
-                                      onClick={() => handleToggleUserPro(u.id, isPro, u.linkedDocIds)}
-                                      className={`flex-1 px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wider border cursor-pointer rounded-none transition-colors ${
-                                        isPro
-                                          ? 'bg-[#111111] text-[#FFFFFF] border-[#111111] dark:bg-[#FFFFFF] dark:text-[#111111] dark:border-[#FFFFFF]'
-                                          : 'border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF]'
-                                      }`}
-                                    >
-                                      {isPro ? '★ PRO' : 'FREE'}
-                                    </button>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* TAB 3: BATCH MANAGEMENT */}
-        {activeTab === 'batches' && (
-          <div className="flex flex-col gap-6 text-left">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-bold uppercase tracking-tight">Active Batch Timetables ({filteredBatches.length})</h2>
-                <p className="text-xs text-black/60 dark:text-white/60 mt-1">
-                  All shared college batch schedules currently published by class representatives.
-                </p>
-              </div>
-
-              <div className="relative w-full sm:w-72">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-black/60 dark:text-white/60" />
-                <input
-                  type="text"
-                  placeholder="Search college, branch..."
-                  value={searchBatchQuery}
-                  onChange={(e) => setSearchBatchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 border border-black dark:border-white bg-transparent text-xs font-mono focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Mobile Batches List (Cards) */}
-            <div className="flex flex-col gap-4 sm:hidden">
-              {filteredBatches.length === 0 ? (
-                <div className="p-8 text-center text-[#6F6F6F] border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A]">
-                  No shared batches found.
                 </div>
               ) : (
-                filteredBatches.map((b) => (
-                  <div key={b.id} className="border border-[#D8D8D8] dark:border-[#333333] p-4 flex flex-col gap-4 bg-white dark:bg-[#111111]">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex flex-col flex-1">
-                        <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#6B6B6B]">Batch Code</span>
-                        <div className="flex items-center gap-2 mt-1">
-                          {b.inviteCode ? (
-                            <span className="font-mono font-black text-[14px] tracking-wider px-2.5 py-0.5 bg-black/5 dark:bg-white/10 text-black dark:text-white border border-black/10 dark:border-white/20 select-all">
-                              {b.inviteCode}
-                            </span>
-                          ) : (
-                            <span className="text-[12px] font-mono text-[#6B6B6B] italic">No code set</span>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => handleCopyBatchCode(b.inviteCode || b.id)}
-                            className="p-1 text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
-                            title="Copy Batch Code" aria-label="Copy Batch Code"
-                          >
-                            {copiedBatchCode === (b.inviteCode || b.id) ? (
-                              <Check className="w-3.5 h-3.5 text-emerald-500" />
-                            ) : (
-                              <Copy className="w-3.5 h-3.5" />
-                            )}
-                          </button>
-                          {!b.inviteCode && (
-                            <button
-                              type="button"
-                              onClick={() => handleGenerateBatchCode(b.id)}
-                              className="text-[11px] uppercase font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
-                            >
-                              Generate
-                            </button>
-                          )}
-                        </div>
-                        <span className="font-mono text-[11px] text-[#6F6F6F] break-all mt-1">Key: {b.id}</span>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteBatch(b.id)}
-                        className="p-2 border border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer rounded-none shrink-0"
-                        title="Delete Batch" aria-label="Delete Batch"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    <div className="flex flex-col gap-1 pt-3 border-t border-[#F0F0F0] dark:border-[#222222]">
-                      <span className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-tight line-clamp-2" title={b.college}>{b.college}</span>
-                      <span className="text-[11px] text-[#6F6F6F]">
-                        {b.programme} • {b.branch} (Sem {b.semester})
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col gap-2 pt-3 border-t border-[#F0F0F0] dark:border-[#222222]">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[11px] text-[#6B6B6B] uppercase font-bold tracking-[1px]">Creator</span>
-                        <span className="text-[11px] font-medium text-[#111111] dark:text-[#FFFFFF]">{b.creatorName || 'Anonymous'}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[11px] text-[#6B6B6B] uppercase font-bold tracking-[1px]">Data</span>
-                        <span className="text-[11px] font-mono text-[#6F6F6F]">
-                          {b.subjects?.length || 0} Sub • {b.events?.length || 0} Evt
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Desktop Batches Table */}
-            <div className="hidden sm:block border border-[#D8D8D8] dark:border-[#333333] overflow-x-auto bg-white dark:bg-[#111111]">
-              <table className="w-full text-[12px] text-left border-collapse min-w-[950px]">
-                <thead>
-                  <tr className="border-b border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#1A1A1A] font-bold uppercase tracking-[1px] text-[11px] text-[#6B6B6B]">
-                    <th className="p-4 font-bold">Batch Code & Key</th>
-                    <th className="p-4 font-bold">College & Programme</th>
-                    <th className="p-4 font-bold">Branch & Semester</th>
-                    <th className="p-4 font-bold">Creator</th>
-                    <th className="p-4 font-bold">Data</th>
-                    <th className="p-4 font-bold text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#F0F0F0] dark:divide-[#222222] font-sans">
-                  {filteredBatches.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="p-8 text-center text-[#6F6F6F]">
-                        No shared batches found.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredBatches.map((b) => (
-                      <tr key={b.id} className="hover:bg-[#F7F7F5] dark:hover:bg-[#1A1A1A] transition-colors">
-                        <td className="p-4 max-w-[220px]">
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-1.5">
-                              {b.inviteCode ? (
-                                <span className="font-mono font-black text-[13px] tracking-wider px-2 py-0.5 bg-black/5 dark:bg-white/10 text-black dark:text-white border border-black/10 dark:border-white/20 select-all">
-                                  {b.inviteCode}
-                                </span>
-                              ) : (
-                                <span className="text-[11px] font-mono text-[#A0A0A0] italic">No code set</span>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => handleCopyBatchCode(b.inviteCode || b.id)}
-                                className="p-1 text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
-                                title="Copy Batch Code" aria-label="Copy Batch Code"
-                              >
-                                {copiedBatchCode === (b.inviteCode || b.id) ? (
-                                  <Check className="w-3.5 h-3.5 text-emerald-500" />
-                                ) : (
-                                  <Copy className="w-3.5 h-3.5" />
-                                )}
-                              </button>
-                              {!b.inviteCode && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleGenerateBatchCode(b.id)}
-                                  className="text-[11px] uppercase font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
-                                >
-                                  Generate
-                                </button>
-                              )}
-                            </div>
-                            <div className="font-mono text-[11px] text-[#6F6F6F] truncate max-w-[210px]" title={b.id}>
-                              Key: {b.id}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-4 max-w-[250px]">
-                          <div className="font-medium text-[#111111] dark:text-[#FFFFFF] truncate" title={b.college}>{b.college}</div>
-                          <div className="text-[11px] text-[#6F6F6F]">{b.programme}</div>
-                        </td>
-                        <td className="p-4">
-                          <div className="text-[#111111] dark:text-[#FFFFFF] font-medium">{b.branch}</div>
-                          <div className="text-[11px] text-[#6F6F6F]">Semester {b.semester}</div>
-                        </td>
-                        <td className="p-4">
-                          <div className="font-medium text-[#111111] dark:text-[#FFFFFF]">{b.creatorName || 'Anonymous'}</div>
-                          <div className="text-[11px] font-mono text-[#6F6F6F] truncate max-w-[120px]" title={b.creatorId}>{b.creatorId}</div>
-                        </td>
-                        <td className="p-4 font-mono text-[11px] text-[#6F6F6F]">
-                          <div>{b.subjects?.length || 0} Sub</div>
-                          <div>{b.events?.length || 0} Evt</div>
-                        </td>
-                        <td className="p-4 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => handleCopyBatchCode(b.inviteCode || b.id)}
-                              className="p-1.5 border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 text-[#111111] dark:text-[#FFFFFF] transition-colors cursor-pointer rounded-none inline-flex items-center justify-center gap-1 text-[11px] font-mono"
-                              title="Copy Code" aria-label="Copy Code"
-                            >
-                              {copiedBatchCode === (b.inviteCode || b.id) ? (
-                                <Check className="w-3.5 h-3.5 text-emerald-500" />
-                              ) : (
-                                <Copy className="w-3.5 h-3.5" />
-                              )}
-                              <span className="hidden md:inline">Code</span>
-                            </button>
-                            <button
-                              onClick={() => handleDeleteBatch(b.id)}
-                              className="p-1.5 border border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer rounded-none inline-flex items-center justify-center"
-                              title="Delete Batch" aria-label="Delete Batch"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                <div className={`${surface} ${divider}`}>
+                  {pendingRequests.length > 0 && (
+                    <AttentionRow
+                      icon={Crown}
+                      tone="amber"
+                      title={`${pendingRequests.length} batch pilot ${pendingRequests.length === 1 ? 'request' : 'requests'} to review`}
+                      hint={pendingRequests.slice(0, 3).map((r) => r.name).join(', ')}
+                      onClick={() => {
+                        setCrStatusFilter('pending');
+                        setActiveTab('cr_requests');
+                      }}
+                    />
                   )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: CAMPAIGN & AD MANAGER */}
-        {activeTab === 'campaigns' && (
-          <div className="flex flex-col gap-6 text-left">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-bold uppercase tracking-tight">Direct Campaigns & Targeted Ads ({campaignsList.length})</h2>
-                <p className="text-xs text-black/60 dark:text-white/60 mt-1">
-                  Promote movies, merchandise drops, campus events, and student deals to specific colleges, branches, or everyone.
-                </p>
-              </div>
-
-              <button
-                onClick={() => {
-                  setEditingCampaignId(null);
-                  setCampaignForm({
-                    title: '',
-                    subtitle: '',
-                    description: '',
-                    imageUrl: '',
-                    ctaText: 'Learn More',
-                    targetUrl: '',
-                    category: 'general',
-                    badgeText: '',
-                    targetAudienceType: 'all',
-                    targetColleges: [],
-        branchTargeting: 'all',
-        semesterTargeting: 'all',
-                    targetBranches: [],
-                    targetSemesters: [],
-                    customCollegeInput: '',
-                    customBranchInput: '',
-                    isActive: true,
-                  });
-                  setShowCampaignModal(true);
-                }}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-wider border border-black dark:border-white hover:opacity-90 cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Create Campaign</span>
-              </button>
-            </div>
-
-            {/* Campaign Cards / Table */}
-            {campaignsList.length === 0 ? (
-              <div className="border-2 border-dashed border-black/20 dark:border-white/20 p-12 text-center flex flex-col items-center justify-center gap-3">
-                <Megaphone className="w-10 h-10 text-black/40 dark:text-white/40" />
-                <h3 className="text-base font-bold uppercase tracking-wider">No Active Campaigns Yet</h3>
-                <p className="text-xs text-black/60 dark:text-white/60 max-w-sm">
-                  Launch your first targeted sponsor banner, movie promo, or college T-shirt sale.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {campaignsList.map((camp) => {
-                  const ctr = camp.impressions > 0 ? ((camp.clicks / camp.impressions) * 100).toFixed(1) : '0.0';
-                  const isUniversal = camp.targetAudienceType === 'all' || (!camp.targetColleges?.length && !camp.targetBranches?.length && !camp.targetSemesters?.length);
-
-                  return (
-                    <div
-                      key={camp.id}
-                      className={`border p-5 flex flex-col justify-between transition-all ${
-                        camp.isActive
-                          ? 'border-black dark:border-white bg-white dark:bg-zinc-950 shadow-sm'
-                          : 'border-black/30 dark:border-white/30 opacity-60 bg-black/5 dark:bg-white/5'
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-center justify-between pb-3 mb-3 border-b border-black/10 dark:border-white/10">
-                          <div className="flex items-center gap-1.5 px-2 py-0.5 border border-black dark:border-white text-[11px] font-bold uppercase tracking-wider">
-                            {camp.category === 'movie' && <Film className="w-3 h-3" />}
-                            {camp.category === 'merch' && <ShoppingBag className="w-3 h-3" />}
-                            {camp.category === 'event' && <Calendar className="w-3 h-3" />}
-                            {camp.category === 'deal' && <Tag className="w-3 h-3" />}
-                            <span>{camp.category.toUpperCase()}</span>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`text-[11px] font-bold uppercase tracking-widest px-2 py-0.5 border ${
-                                camp.isActive
-                                  ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
-                                  : 'border-rose-500 text-rose-500 bg-rose-500/10'
-                              }`}
-                            >
-                              {camp.isActive ? '● LIVE' : 'PAUSED'}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Banner Image Preview */}
-                        {camp.imageUrl && (
-                          <div className="h-32 w-full overflow-hidden border border-black/20 dark:border-white/20 mb-3 bg-black/5 dark:bg-white/5">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={camp.imageUrl}
-                              alt={camp.title}
-                              className="w-full h-full object-cover object-center"
-                            />
-                          </div>
-                        )}
-
-                        <h3 className="text-base font-bold tracking-tight">{camp.title}</h3>
-                        <p className="text-xs text-black/70 dark:text-white/70 mt-1 line-clamp-2">
-                          {camp.subtitle || camp.description}
-                        </p>
-
-                        {/* Target Scope Badge */}
-                        <div className="mt-3.5 p-2.5 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 flex flex-col gap-1 text-[11px] font-mono">
-                          <div className="flex items-center gap-1.5 font-bold">
-                            {isUniversal ? (
-                              <>
-                                <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                                <span>AUDIENCE: Everyone (All Colleges & Branches)</span>
-                              </>
-                            ) : (
-                              <>
-                                <Crosshair className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                                <span>AUDIENCE: Targeted Selection</span>
-                              </>
-                            )}
-                          </div>
-                          {!isUniversal && (
-                            <div className="text-[11px] text-black/70 dark:text-white/70 flex flex-col gap-0.5 pt-0.5">
-                              <div>Colleges: {camp.targetColleges?.length ? camp.targetColleges.join(', ') : 'All Colleges'}</div>
-                              <div>Branches: {camp.targetBranches?.length ? camp.targetBranches.join(', ') : 'All Branches'}</div>
-                              {camp.targetSemesters?.length ? (
-                                <div>Semesters: {camp.targetSemesters.map(s => `Sem ${s}`).join(', ')}</div>
-                              ) : null}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="mt-2 text-[11px] font-mono text-black/60 dark:text-white/60 truncate">
-                          Link: <a href={camp.targetUrl} target="_blank" rel="noreferrer" className="underline hover:text-black dark:hover:text-white">{camp.targetUrl}</a>
-                        </div>
-                      </div>
-
-                      {/* Analytics Bar & Controls */}
-                      <div className="pt-4 mt-4 border-t border-black/10 dark:border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <div className="flex items-center gap-4 text-xs font-mono">
-                          <div className="flex items-center gap-1" title="Impressions">
-                            <Eye className="w-3.5 h-3.5 opacity-60" />
-                            <span>{camp.impressions || 0}</span>
-                          </div>
-                          <div className="flex items-center gap-1" title="Clicks">
-                            <MousePointer className="w-3.5 h-3.5 opacity-60" />
-                            <span>{camp.clicks || 0}</span>
-                          </div>
-                          <div className="font-bold">
-                            CTR: {ctr}%
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                          <button
-                            onClick={() => handleToggleCampaignActive(camp)}
-                            className="px-3 py-1.5 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer"
-                          >
-                            {camp.isActive ? 'Pause' : 'Activate'}
-                          </button>
-                          <button
-                            onClick={() => openEditCampaign(camp)}
-                            className="p-1.5 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer"
-                            title="Edit" aria-label="Edit"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteCampaign(camp.id)}
-                            className="p-1.5 border border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer"
-                            title="Delete" aria-label="Delete"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* TAB 5: CR VERIFICATION REQUESTS */}
-        {activeTab === 'cr_requests' && (
-          <div className="flex flex-col gap-6 text-left">
-            {/* Tab Header & Filter Row */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#D8D8D8] dark:border-[#333333]">
-              <div>
-                <h2 className="text-xl font-bold tracking-tight text-[#111111] dark:text-[#FFFFFF] flex items-center gap-2">
-                  <Crown className="w-5 h-5 text-amber-500" />
-                  Batch Pilot Requests 🚀
-                </h2>
-                <p className="text-xs text-[#6F6F6F] mt-1">
-                  Approve verified student leaders to create, publish & broadcast official schedules for their college batch (up to 3 Pilots per batch).
-                </p>
-              </div>
-
-              {/* Status Filter Chips */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-                {(['pending', 'all', 'approved', 'rejected'] as const).map((filter) => {
-                  const count = filter === 'all' 
-                    ? crRequestsList.length 
-                    : crRequestsList.filter(r => r.status === filter).length;
-                  return (
-                    <button
-                      key={filter}
-                      onClick={() => setCrStatusFilter(filter)}
-                      className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-none transition-all cursor-pointer ${
-                        crStatusFilter === filter
-                          ? 'bg-[#111111] text-white dark:bg-white dark:text-black shadow-sm'
-                          : 'bg-white dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-white'
-                      }`}
-                    >
-                      {filter} ({count})
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Requests Grid / List */}
-            {(() => {
-              const filteredRequests = crRequestsList.filter((r) => {
-                if (crStatusFilter === 'all') return true;
-                return r.status === crStatusFilter;
-              });
-
-              if (filteredRequests.length === 0) {
-                return (
-                  <div className="p-12 text-center border border-dashed border-[#D8D8D8] dark:border-[#333333] rounded-none flex flex-col items-center justify-center gap-2">
-                    <Crown className="w-8 h-8 text-slate-300 dark:text-zinc-700" />
-                    <span className="text-sm font-medium text-[#6F6F6F]">
-                      No {crStatusFilter === 'all' ? '' : crStatusFilter} CR requests found.
-                    </span>
-                  </div>
-                );
-              }
-
-              return (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {filteredRequests.map((req) => {
-                    const isPending = req.status === 'pending';
-                    const isApproved = req.status === 'approved';
-                    const isRejected = req.status === 'rejected';
-
-                    return (
-                      <div
-                        key={req.id}
-                        className={`p-5 rounded-none border flex flex-col justify-between gap-4 transition-all ${
-                          isPending
-                            ? 'bg-amber-50/40 dark:bg-amber-950/10 border-amber-300 dark:border-amber-900/60 shadow-sm'
-                            : isApproved
-                            ? 'bg-white dark:bg-[#1A1A1A] border-emerald-300 dark:border-emerald-900/50'
-                            : 'bg-white dark:bg-[#1A1A1A] border-slate-200 dark:border-zinc-800 opacity-60'
-                        }`}
-                      >
-                        <div className="flex flex-col gap-3">
-                          {/* Card Header: Name + Status Badge */}
-                          <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                                  {req.name}
-                                </h3>
-                                {req.rollNumber && (
-                                  <span className="text-[11px] font-mono px-2 py-0.5 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 rounded-none">
-                                    {req.rollNumber}
-                                  </span>
-                                )}
-                              </div>
-                              <span className="text-[11px] text-slate-400 font-mono">
-                                Applied: {new Date(req.createdAt).toLocaleDateString()} at {new Date(req.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </span>
-                            </div>
-
-                            <span
-                              className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-none border ${
-                                isPending
-                                  ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800'
-                                  : isApproved
-                                  ? 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800'
-                                  : 'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950 dark:text-rose-200 dark:border-rose-800'
-                              }`}
-                            >
-                              {req.status}
-                            </span>
-                          </div>
-
-                          {/* Academic Target Info */}
-                          <div className="p-3 bg-white/80 dark:bg-zinc-900/80 border border-slate-200/80 dark:border-zinc-800/80 rounded-none flex flex-col gap-1 text-[12px]">
-                            <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
-                              <span>🏛️</span>
-                              <span className="truncate">{req.college}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5 text-slate-600 dark:text-zinc-400 font-medium">
-                              <span>📚</span>
-                              <span>{req.branch} · Sem {req.semester}</span>
-                            </div>
-                            <div className="text-[11px] font-mono text-slate-400 pt-0.5 truncate">
-                              Batch Key: {req.batchKey}
-                            </div>
-                          </div>
-
-                          {/* Contact Details */}
-                          <div className="flex flex-wrap items-center gap-3 text-[12px] font-medium text-slate-600 dark:text-zinc-400">
-                            {req.email && (
-                              <a
-                                href={`mailto:${req.email}`}
-                                className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 underline underline-offset-2"
-                              >
-                                <Mail className="w-3.5 h-3.5" />
-                                <span>{req.email}</span>
-                              </a>
-                            )}
-                            {req.phone && (
-                              <a
-                                href={`https://wa.me/${req.phone.replace(/[^0-9]/g, '')}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline font-mono"
-                              >
-                                <Phone className="w-3.5 h-3.5" />
-                                <span>WhatsApp: {req.phone}</span>
-                              </a>
-                            )}
-                          </div>
-
-                          {/* Reason / Proof Note */}
-                          {req.note && (
-                            <div className="text-[12px] text-slate-700 dark:text-zinc-300 italic bg-slate-50 dark:bg-zinc-900/50 p-2.5 rounded-none border border-slate-100 dark:border-zinc-800/50">
-                              &ldquo;{req.note}&rdquo;
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Action Footer */}
-                        <div className="pt-3 border-t border-slate-200/80 dark:border-zinc-800 flex items-center justify-end gap-2">
-                          {isPending ? (
-                            <>
-                              <button
-                                onClick={() => handleRejectCRRequest(req)}
-                                className="px-3 py-1.5 border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 text-xs font-bold uppercase rounded-none hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
-                              >
-                                Reject
-                              </button>
-                              <button
-                                onClick={() => handleApproveCRRequest(req)}
-                                className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase rounded-none flex items-center gap-1.5 shadow-sm shadow-emerald-600/20 transition-colors cursor-pointer"
-                              >
-                                <CheckCircle2 className="w-3.5 h-3.5" />
-                                Approve as Batch Pilot
-                              </button>
-                            </>
-                          ) : isApproved ? (
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-2">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
-                                  Verified Batch Pilot
-                                </span>
-                                {req.inviteCode && (
-                                  <span className="font-mono text-[11px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 font-bold border border-emerald-500/20">
-                                    CODE: {req.inviteCode}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-3">
-                                {req.inviteCode && (
-                                  <button
-                                    onClick={() => {
-                                      setApprovedSuccessData({
-                                        name: req.name,
-                                        phone: req.phone,
-                                        college: req.college,
-                                        branch: req.branch,
-                                        semester: req.semester,
-                                        batchCode: req.inviteCode,
-                                        batchKey: req.batchKey,
-                                      });
-                                    }}
-                                    className="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline uppercase font-bold cursor-pointer flex items-center gap-1"
-                                  >
-                                    <Share2 className="w-3 h-3" />
-                                    Share Code
-                                  </button>
-                                )}
-                                <button
-                                  onClick={() => handleApproveCRRequest(req)}
-                                  className="text-[11px] text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-white hover:underline uppercase font-bold cursor-pointer"
-                                  title="Force push approved batch details to user profile" aria-label="Force push approved batch details to user profile"
-                                >
-                                  Re-sync
-                                </button>
-                                <button
-                                  onClick={() => handleRejectCRRequest(req)}
-                                  className="text-[11px] text-rose-500 hover:underline uppercase font-bold cursor-pointer"
-                                >
-                                  Revoke Pilot
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => handleApproveCRRequest(req)}
-                              className="text-[11px] text-emerald-600 hover:underline uppercase font-bold cursor-pointer"
-                            >
-                              Re-approve as Batch Pilot
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {unreadMessages.length > 0 && (
+                    <AttentionRow
+                      icon={Inbox}
+                      tone="blue"
+                      title={`${unreadMessages.length} unread ${unreadMessages.length === 1 ? 'message' : 'messages'}`}
+                      hint={unreadMessages[0]?.subject || unreadMessages[0]?.name}
+                      onClick={() => {
+                        setMessageFilter('unread');
+                        setActiveTab('messages');
+                      }}
+                    />
+                  )}
+                  {batchesWithoutCode > 0 && (
+                    <AttentionRow
+                      icon={KeyRound}
+                      tone="neutral"
+                      title={`${batchesWithoutCode} ${batchesWithoutCode === 1 ? 'batch has' : 'batches have'} no join code`}
+                      hint="Students can't join these until a code exists"
+                      onClick={() => setActiveTab('batches')}
+                    />
+                  )}
                 </div>
-              );
-            })()}
+              )}
+            </section>
+
+            {/* Four numbers that describe the network; each opens its detail */}
+            <section>
+              <SectionHead title="At a glance" />
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-f3">
+                <StatTile label="Students" value={deduplicatedUsersList.length.toLocaleString()} hint={newThisWeek ? `+${newThisWeek} this week` : 'No new sign-ups this week'} onClick={() => setActiveTab('users')} />
+                <StatTile label="Batches" value={batchesList.length} hint={`${allCollegeOptions.filter((c) => c.key !== 'not_set').length} colleges`} onClick={() => setActiveTab('batches')} />
+                <StatTile label="Live ads" value={liveCampaigns.length} hint={`${campaignsList.length} total`} onClick={() => setActiveTab('campaigns')} />
+                <StatTile label="Ad click rate" value={`${overallCTR}%`} hint={`${totalClicks.toLocaleString()} clicks · ${totalImpressions.toLocaleString()} views`} onClick={() => setActiveTab('campaigns')} />
+              </div>
+            </section>
+
+            <section className="grid grid-cols-1 lg:grid-cols-2 gap-f5">
+              <div>
+                <SectionHead title="Quick actions" />
+                <div className={`${surface} ${divider}`}>
+                  <AttentionRow icon={Megaphone} tone="neutral" title="Create an ad" hint="Promote an event, deal or drop to chosen colleges" onClick={openNewCampaign} />
+                  <AttentionRow icon={UserCog} tone="neutral" title="Manage students and roles" hint="Batch pilots, faculty and Pro" onClick={() => setActiveTab('users')} />
+                  <AttentionRow icon={Layers} tone="neutral" title="Review batches" hint="Join codes and shared timetables" onClick={() => setActiveTab('batches')} />
+                </div>
+              </div>
+              <div>
+                <SectionHead title="Best performing ad" />
+                {topCampaign ? (
+                  <button type="button" onClick={() => openEditCampaign(topCampaign)} className={`${surface} w-full text-left p-f4 hover:border-line-strong transition-colors cursor-pointer`}>
+                    <div className="flex items-center justify-between gap-3">
+                      <Badge tone={campaignStatus(topCampaign) === 'live' ? 'green' : 'neutral'} dot>
+                        {campaignStatus(topCampaign) === 'live' ? 'Live' : campaignStatus(topCampaign) === 'ended' ? 'Ended' : 'Paused'}
+                      </Badge>
+                      <span className={`text-[13px] ${muted}`}>{getCategoryMeta(topCampaign.category).label}</span>
+                    </div>
+                    <p className={`mt-f3 text-[17px] font-semibold leading-snug ${strong}`}>{topCampaign.title}</p>
+                    <div className="mt-f3 grid grid-cols-3 gap-f3">
+                      {[
+                        { k: 'Views', v: (topCampaign.impressions || 0).toLocaleString() },
+                        { k: 'Clicks', v: (topCampaign.clicks || 0).toLocaleString() },
+                        { k: 'Click rate', v: `${topCampaign.impressions ? (((topCampaign.clicks || 0) / topCampaign.impressions) * 100).toFixed(1) : '0.0'}%` },
+                      ].map((m) => (
+                        <div key={m.k}>
+                          <p className={`text-[12px] ${muted}`}>{m.k}</p>
+                          <p className={`text-[18px] font-semibold tabular-nums ${strong}`}>{m.v}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </button>
+                ) : (
+                  <Empty icon={Megaphone} title="No ads yet" body="Your first ad will show its results here." action={<button type="button" onClick={openNewCampaign} className={btn.primary}><Plus className="w-4 h-4" /> Create an ad</button>} />
+                )}
+              </div>
+            </section>
+
+            {/* Rare, destructive maintenance lives apart from everyday actions */}
+            <section>
+              <SectionHead title="Maintenance" />
+              <div className={`${surface} p-f4 flex flex-col sm:flex-row sm:items-center gap-f3 justify-between`}>
+                <div className="flex items-start gap-f3">
+                  <span className={`w-9 h-9 shrink-0 flex items-center justify-center border border-line-soft ${strong}`}>
+                    <Wrench className="w-4 h-4" />
+                  </span>
+                  <div>
+                    <p className={`text-[15px] font-medium ${strong}`}>Clean up accounts</p>
+                    <p className={`text-[13px] max-w-md ${muted}`}>Merges duplicate logins of the same student and removes empty test accounts. Deleted duplicates can&apos;t be restored.</p>
+                  </div>
+                </div>
+                <button type="button" onClick={handleCleanDatabase} disabled={isCleaningDb} className={`${btn.secondary} shrink-0`}>
+                  {isCleaningDb ? 'Cleaning…' : 'Run cleanup'}
+                </button>
+              </div>
+            </section>
           </div>
         )}
 
-        {/* TAB 6: SUPPORT & CONTACT MESSAGES */}
-        {activeTab === 'messages' && (
-          <div className="flex flex-col gap-6 text-left">
-            {/* Tab Header & Filter Row */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#D8D8D8] dark:border-[#333333]">
-              <div>
-                <h2 className="text-xl font-bold tracking-tight text-[#111111] dark:text-[#FFFFFF] flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5 text-sky-500" />
-                  Support & Contact Messages 💬
-                </h2>
-                <p className="text-xs text-[#6F6F6F] mt-1">
-                  Messages and feedback submitted by users on AcademiSync. Dispatched directly to <span className="font-semibold text-[#111111] dark:text-[#FFFFFF]">nihal88758@gmail.com</span>.
-                </p>
-              </div>
-
-              {/* Status Filter Chips */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-                {(['all', 'unread', 'read'] as const).map((filter) => {
-                  const count = filter === 'all'
-                    ? messagesList.length
-                    : messagesList.filter(m => (m.status || 'unread') === filter).length;
-                  return (
-                    <button
-                      key={filter}
-                      onClick={() => setMessageFilter(filter)}
-                      className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-none transition-all cursor-pointer ${
-                        messageFilter === filter
-                          ? 'bg-[#111111] text-white dark:bg-white dark:text-black shadow-sm'
-                          : 'bg-white dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] text-[#6F6F6F] hover:text-[#111111] dark:hover:text-white'
-                      }`}
-                    >
-                      {filter} ({count})
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Messages Grid / List */}
-            {(() => {
-              const filteredMessages = messagesList.filter((m) => {
-                if (messageFilter === 'all') return true;
-                return (m.status || 'unread') === messageFilter;
-              });
-
-              if (filteredMessages.length === 0) {
-                return (
-                  <div className="p-12 text-center border border-dashed border-[#D8D8D8] dark:border-[#333333] rounded-none flex flex-col items-center justify-center gap-2">
-                    <MessageSquare className="w-8 h-8 text-slate-300 dark:text-zinc-700" />
-                    <span className="text-sm font-medium text-[#6F6F6F]">
-                      No {messageFilter === 'all' ? '' : messageFilter} messages found.
-                    </span>
-                  </div>
-                );
+        {/* ================= ADS ================= */}
+        {activeTab === 'campaigns' && (
+          <div className="flex flex-col gap-f5">
+            <PageTitle
+              title="Ads"
+              description="Sponsored cards on students' home screens. Pro members never see them."
+              action={
+                <button type="button" onClick={openNewCampaign} className={btn.primary}>
+                  <Plus className="w-4 h-4" /> New ad
+                </button>
               }
-
-              return (
-                <div className="grid grid-cols-1 gap-4">
-                  {filteredMessages.map((m) => {
-                    const isUnread = (m.status || 'unread') === 'unread';
-                    return (
-                      <div
-                        key={m.id}
-                        className={`p-5 bg-white dark:bg-[#1A1A1A] border ${
-                          isUnread
-                            ? 'border-sky-500/50 shadow-xs ring-1 ring-sky-500/20'
-                            : 'border-[#D8D8D8] dark:border-[#333333]'
-                        } rounded-none flex flex-col gap-4 transition-all`}
-                      >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 bg-slate-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-sm text-[#111111] dark:text-[#FFFFFF]">
-                              {(m.name || 'U').charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold text-sm text-[#111111] dark:text-[#FFFFFF]">
-                                  {m.name || 'Anonymous User'}
-                                </span>
-                                {isUnread && (
-                                  <span className="text-[11px] font-bold px-1.5 py-0.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 uppercase tracking-widest">
-                                    New
-                                  </span>
-                                )}
-                              </div>
-                              <a
-                                href={`mailto:${m.email}`}
-                                className="text-xs text-[#6F6F6F] hover:text-[#111111] dark:hover:text-[#FFFFFF] underline"
-                              >
-                                {m.email}
-                              </a>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-3">
-                            <span className="text-xs px-2.5 py-1 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-medium rounded-none">
-                              {m.subject || 'General Inquiry'}
-                            </span>
-                            <span className="text-[11px] text-[#6B6B6B]">
-                              {m.createdAt ? new Date(m.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
-                            </span>
-                          </div>
+            />
+            <div className="grid grid-cols-3 gap-f3">
+              <StatTile label="Views" value={totalImpressions.toLocaleString()} />
+              <StatTile label="Clicks" value={totalClicks.toLocaleString()} />
+              <StatTile label="Click rate" value={`${overallCTR}%`} />
+            </div>
+            <Segmented
+              ariaLabel="Filter ads"
+              value={campaignFilter}
+              onChange={setCampaignFilter}
+              options={[
+                { id: 'all', label: 'All', count: campaignsList.length },
+                { id: 'live', label: 'Live', count: campaignsList.filter((c) => campaignStatus(c) === 'live').length },
+                { id: 'paused', label: 'Paused', count: campaignsList.filter((c) => campaignStatus(c) === 'paused').length },
+                { id: 'ended', label: 'Ended', count: campaignsList.filter((c) => campaignStatus(c) === 'ended').length },
+              ]}
+            />
+            {visibleCampaigns.length === 0 ? (
+              <Empty
+                icon={Megaphone}
+                title={campaignsList.length ? 'Nothing here' : 'No ads yet'}
+                body={campaignsList.length ? 'No ads match this filter.' : 'Create a card for an event, deal or merch drop and choose who sees it.'}
+                action={!campaignsList.length && <button type="button" onClick={openNewCampaign} className={btn.primary}><Plus className="w-4 h-4" /> New ad</button>}
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-f3">
+                {visibleCampaigns.map((c) => {
+                  const st = campaignStatus(c);
+                  const meta = getCategoryMeta(c.category);
+                  const ctr = c.impressions ? (((c.clicks || 0) / c.impressions) * 100).toFixed(1) : '0.0';
+                  const universal = c.targetAudienceType === 'all' || (!c.targetColleges?.length && !c.targetBranches?.length && !c.targetSemesters?.length);
+                  const audience = universal
+                    ? 'Everyone'
+                    : [
+                        c.targetColleges?.length ? (c.targetColleges.length === 1 ? getShortCollegeName(c.targetColleges[0]) : `${c.targetColleges.length} colleges`) : null,
+                        c.targetBranches?.length ? c.targetBranches.join(', ') : null,
+                        c.targetSemesters?.length ? `Sem ${c.targetSemesters.join(', ')}` : null,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ');
+                  return (
+                    <article key={c.id} className={`${surface} flex flex-col ${st !== 'live' ? 'opacity-80' : ''}`}>
+                      <div className="flex gap-f3 p-f4">
+                        <div className="w-[88px] h-[64px] shrink-0 bg-[#F1F1EF] dark:bg-white/[0.04] border border-line-soft overflow-hidden flex items-center justify-center">
+                          {c.imageUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={c.imageUrl} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <meta.icon className={`w-6 h-6 ${muted}`} strokeWidth={1.6} />
+                          )}
                         </div>
-
-                        {/* Message Content */}
-                        <div className="bg-[#F7F7F5] dark:bg-[#121317] p-4 border border-[#EBEBEB] dark:border-[#222222] text-sm text-[#222222] dark:text-[#DDDDDD] whitespace-pre-wrap leading-relaxed font-sans">
-                          {m.message}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <Badge tone={st === 'live' ? 'green' : st === 'ended' ? 'red' : 'neutral'} dot>
+                              {st === 'live' ? 'Live' : st === 'ended' ? 'Ended' : 'Paused'}
+                            </Badge>
+                            <span className={`text-[12px] ${muted}`}>{meta.label}</span>
+                          </div>
+                          <h3 className={`mt-1.5 text-[16px] font-semibold leading-snug line-clamp-2 ${strong}`}>{c.title}</h3>
+                          <p className={`mt-0.5 text-[13px] truncate ${muted}`}>
+                            {audience}
+                            {c.expiresAt ? ` · until ${new Date(c.expiresAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}` : ''}
+                          </p>
                         </div>
-
-                        {/* Actions */}
-                        <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-[#EBEBEB] dark:border-[#282828]">
-                          <a
-                            href={`mailto:${m.email}?subject=${encodeURIComponent(`Re: ${m.subject || 'AcademiSync Support'}`)}&body=${encodeURIComponent(`\n\n--- Original Message from ${m.name} ---\n${m.message}`)}`}
-                            className="px-3 py-1.5 bg-[#111111] text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity inline-flex items-center gap-1.5"
-                          >
-                            <Mail className="w-3.5 h-3.5" />
-                            <span>Reply via Email</span>
-                          </a>
-
-                          <button
-                            onClick={async () => {
-                              try {
-                                const newStatus = isUnread ? 'read' : 'unread';
-                                await updateDoc(doc(db, 'contact_messages', m.id), { status: newStatus });
-                                showToast('Updated', `Marked as ${newStatus}.`, 'info');
-                              } catch (err) {
-                                console.error('Error updating status:', err);
-                              }
-                            }}
-                            className="px-3 py-1.5 border border-[#D8D8D8] dark:border-[#333333] text-xs font-bold uppercase tracking-wider text-[#6F6F6F] hover:text-[#111111] dark:hover:text-white transition-colors"
-                          >
-                            {isUnread ? 'Mark as Read' : 'Mark as Unread'}
+                      </div>
+                      <div className="mt-auto grid grid-cols-3 border-t border-line-soft divide-x divide-line-soft">
+                        {[
+                          { k: 'Views', v: (c.impressions || 0).toLocaleString() },
+                          { k: 'Clicks', v: (c.clicks || 0).toLocaleString() },
+                          { k: 'Rate', v: `${ctr}%` },
+                        ].map((m) => (
+                          <div key={m.k} className="px-f4 py-2.5">
+                            <p className={`text-[12px] ${muted}`}>{m.k}</p>
+                            <p className={`text-[15px] font-semibold tabular-nums ${strong}`}>{m.v}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex items-center justify-between gap-2 px-f3 py-2 border-t border-line-soft">
+                        {st !== 'ended' ? (
+                          <button type="button" onClick={() => handleToggleCampaignActive(c)} className={btn.ghost}>
+                            {c.isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                            {c.isActive ? 'Pause' : 'Go live'}
                           </button>
-
-                          <button
-                            onClick={async () => {
-                              if (!confirm('Are you sure you want to delete this message?')) return;
-                              try {
-                                await deleteDoc(doc(db, 'contact_messages', m.id));
-                                showToast('Deleted', 'Message deleted.', 'info');
-                              } catch (err) {
-                                console.error('Error deleting message:', err);
-                              }
-                            }}
-                            className="p-1.5 text-rose-500 hover:text-rose-700 transition-colors"
-                            title="Delete message" aria-label="Delete message"
-                          >
+                        ) : (
+                          <span className={`px-2.5 text-[13px] ${muted}`}>Edit to extend</span>
+                        )}
+                        <div className="flex items-center">
+                          <a href={c.targetUrl} target="_blank" rel="noreferrer" className={btn.icon} aria-label="Open link">
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                          <button type="button" onClick={() => openEditCampaign(c)} className={btn.icon} aria-label={`Edit ${c.title}`}>
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button type="button" onClick={() => handleDeleteCampaign(c.id)} className={`${btn.icon} hover:text-rose-600`} aria-label={`Delete ${c.title}`}>
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ================= REQUESTS ================= */}
+        {activeTab === 'cr_requests' && (() => {
+          const list = crRequestsList.filter((r) => crStatusFilter === 'all' || r.status === crStatusFilter);
+          return (
+            <div className="flex flex-col gap-f5">
+              <PageTitle title="Batch pilot requests" description="Pilots publish the official timetable for their batch. Up to 3 per batch." />
+              <Segmented
+                ariaLabel="Filter requests"
+                value={crStatusFilter}
+                onChange={setCrStatusFilter}
+                options={(['pending', 'approved', 'rejected', 'all'] as const).map((f) => ({
+                  id: f,
+                  label: f === 'all' ? 'All' : f[0].toUpperCase() + f.slice(1),
+                  count: f === 'all' ? crRequestsList.length : crRequestsList.filter((r) => r.status === f).length,
+                }))}
+              />
+              {list.length === 0 ? (
+                <Empty icon={Crown} title={crStatusFilter === 'pending' ? 'No pending requests' : 'Nothing here'} body={crStatusFilter === 'pending' ? 'New requests from students show up here.' : undefined} />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-f3">
+                  {list.map((req) => {
+                    const pending = req.status === 'pending';
+                    const approved = req.status === 'approved';
+                    return (
+                      <article key={req.id} className={`${surface} flex flex-col`}>
+                        <div className="p-f4 flex flex-col gap-f3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <h3 className={`text-[16px] font-semibold leading-snug ${strong}`}>{req.name}</h3>
+                              <p className={`text-[13px] ${muted}`}>
+                                {req.rollNumber ? `${req.rollNumber} · ` : ''}
+                                {timeAgo(req.createdAt)}
+                              </p>
+                            </div>
+                            <Badge tone={pending ? 'amber' : approved ? 'green' : 'red'} dot>
+                              {pending ? 'Pending' : approved ? 'Approved' : 'Rejected'}
+                            </Badge>
+                          </div>
+                          <div className="flex items-start gap-2.5">
+                            <Building2 className={`w-4 h-4 mt-0.5 shrink-0 ${muted}`} />
+                            <div className="min-w-0">
+                              <p className={`text-[14px] leading-snug ${strong}`}>{req.college}</p>
+                              <p className={`text-[13px] ${muted}`}>
+                                {req.branch} · Semester {req.semester}
+                              </p>
+                            </div>
+                          </div>
+                          {req.note && <p className={`text-[14px] leading-relaxed bg-surface-2 px-3 py-2 ${muted}`}>{req.note}</p>}
+                          <div className="flex flex-wrap gap-x-f4 gap-y-1.5 text-[13px]">
+                            {req.email && (
+                              <a href={`mailto:${req.email}`} className={`inline-flex items-center gap-1.5 hover:underline underline-offset-4 ${strong}`}>
+                                <Mail className="w-3.5 h-3.5" /> {req.email}
+                              </a>
+                            )}
+                            {req.phone && (
+                              <a href={`https://wa.me/${req.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 hover:underline underline-offset-4">
+                                <Phone className="w-3.5 h-3.5" /> {req.phone}
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                        <div className="mt-auto flex items-center justify-end gap-2 px-f4 py-f3 border-t border-line-soft">
+                          {pending ? (
+                            <>
+                              <button type="button" onClick={() => handleRejectCRRequest(req)} className={btn.ghost}>
+                                Decline
+                              </button>
+                              <button type="button" onClick={() => handleApproveCRRequest(req)} className={btn.primary}>
+                                <Check className="w-4 h-4" /> Approve
+                              </button>
+                            </>
+                          ) : approved ? (
+                            <>
+                              <button type="button" onClick={() => handleRejectCRRequest(req)} className={`${btn.ghost} hover:text-rose-600 mr-auto`}>
+                                Revoke
+                              </button>
+                              <button type="button" onClick={() => handleApproveCRRequest(req)} className={btn.ghost} title="Push the approved batch details to the student's profile again">
+                                Re-sync
+                              </button>
+                              {req.inviteCode && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setApprovedSuccessData({ name: req.name, phone: req.phone, college: req.college, branch: req.branch, semester: req.semester, batchCode: req.inviteCode, batchKey: req.batchKey })
+                                  }
+                                  className={btn.secondary}
+                                >
+                                  <Share2 className="w-4 h-4" /> Share code
+                                </button>
+                              )}
+                            </>
+                          ) : (
+                            <button type="button" onClick={() => handleApproveCRRequest(req)} className={btn.secondary}>
+                              Approve instead
+                            </button>
+                          )}
+                        </div>
+                      </article>
                     );
                   })}
                 </div>
-              );
-            })()}
+              )}
+            </div>
+          );
+        })()}
+
+        {/* ================= INBOX ================= */}
+        {activeTab === 'messages' && (() => {
+          const list = messagesList.filter((m) => messageFilter === 'all' || (m.status || 'unread') === messageFilter);
+          return (
+            <div className="flex flex-col gap-f5">
+              <PageTitle title="Inbox" description="Messages sent from the Contact page." />
+              <Segmented
+                ariaLabel="Filter messages"
+                value={messageFilter}
+                onChange={setMessageFilter}
+                options={[
+                  { id: 'all' as const, label: 'All', count: messagesList.length },
+                  { id: 'unread' as const, label: 'Unread', count: unreadMessages.length },
+                  { id: 'read' as const, label: 'Read', count: messagesList.length - unreadMessages.length },
+                ]}
+              />
+              {list.length === 0 ? (
+                <Empty icon={Inbox} title={messageFilter === 'unread' ? 'Inbox zero' : 'No messages'} body={messageFilter === 'unread' ? 'Everything has been read.' : undefined} />
+              ) : (
+                <ul className={`${surface} ${divider}`}>
+                  {list.map((m) => {
+                    const unread = (m.status || 'unread') === 'unread';
+                    const open = expandedMessage === m.id;
+                    const toggleRead = async () => {
+                      try {
+                        await updateDoc(doc(db, 'contact_messages', m.id), { status: unread ? 'read' : 'unread' });
+                      } catch (err) {
+                        console.error('Error updating status:', err);
+                      }
+                    };
+                    return (
+                      <li key={m.id}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setExpandedMessage(open ? null : m.id);
+                            if (unread && !open) toggleRead();
+                          }}
+                          aria-expanded={open}
+                          className="w-full flex items-start gap-f3 px-f4 py-f3 text-left hover:bg-surface-2 transition-colors cursor-pointer"
+                        >
+                          <span className={`mt-2 w-2 h-2 shrink-0 rounded-full ${unread ? 'bg-sky-500' : 'bg-transparent'}`} aria-label={unread ? 'Unread' : undefined} />
+                          <span className="flex-1 min-w-0">
+                            <span className="flex items-baseline justify-between gap-3">
+                              <span className={`text-[15px] truncate ${unread ? 'font-semibold' : 'font-medium'} ${strong}`}>{m.name || 'Anonymous'}</span>
+                              <span className={`shrink-0 text-[12px] ${muted}`}>{timeAgo(m.createdAt)}</span>
+                            </span>
+                            <span className={`block text-[14px] truncate ${unread ? strong : muted}`}>{m.subject || 'General question'}</span>
+                            {!open && <span className={`block text-[13px] truncate ${muted}`}>{m.message}</span>}
+                          </span>
+                        </button>
+                        {open && (
+                          <div className="px-f4 pb-f4 sm:pl-[53px]">
+                            <p className={`text-[15px] leading-relaxed whitespace-pre-wrap ${strong}`}>{m.message}</p>
+                            <p className={`mt-2 text-[13px] ${muted}`}>{m.email}</p>
+                            <div className="mt-f3 flex flex-wrap items-center gap-2">
+                              <a
+                                href={`mailto:${m.email}?subject=${encodeURIComponent(`Re: ${m.subject || 'Intersemester support'}`)}&body=${encodeURIComponent(`\n\n--- ${m.name} wrote ---\n${m.message}`)}`}
+                                className={btn.primary}
+                              >
+                                <Mail className="w-4 h-4" /> Reply
+                              </a>
+                              <button type="button" onClick={toggleRead} className={btn.secondary}>
+                                Mark as {unread ? 'read' : 'unread'}
+                              </button>
+                              <button type="button" onClick={() => setMessageToDelete(m)} className={`${btn.ghost} hover:text-rose-600`}>
+                                <Trash2 className="w-4 h-4" /> Delete
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* ================= STUDENTS ================= */}
+        {activeTab === 'users' && (
+          <div className="flex flex-col gap-f5">
+            <PageTitle title="Students" description="Grouped by college. Change roles and Pro access here." />
+            <div className="flex flex-col lg:flex-row gap-f3">
+              <SearchField value={searchUserQuery} onChange={setSearchUserQuery} placeholder="Search name, email, roll no. or batch code" className="flex-1" />
+              <select
+                value={selectedCollegeFilter}
+                onChange={(e) => setSelectedCollegeFilter(e.target.value)}
+                aria-label="College"
+                className="h-11 px-3 lg:w-72 bg-surface border border-line text-[15px] text-fg focus:outline-none focus:border-line-strong cursor-pointer"
+              >
+                <option value="ALL">All colleges ({deduplicatedUsersList.length})</option>
+                {allCollegeOptions.map((c) => (
+                  <option key={c.key} value={c.key}>
+                    {c.shortName} ({c.count})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <Segmented
+                ariaLabel="Filter by role"
+                value={selectedRoleFilter}
+                onChange={setSelectedRoleFilter}
+                options={[
+                  { id: 'ALL' as const, label: 'Everyone', count: filteredUsers.length },
+                  { id: 'cr' as const, label: 'Pilots', count: totalCRsCount },
+                  { id: 'faculty' as const, label: 'Faculty', count: totalFacultyCount },
+                  { id: 'pro' as const, label: 'Pro', count: totalProCount },
+                  { id: 'student' as const, label: 'Students' },
+                ]}
+              />
+              {collegeUserGroups.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const allCollapsed = collegeUserGroups.every((g) => !!collapsedColleges[g.key]);
+                    const next: Record<string, boolean> = {};
+                    if (!allCollapsed) collegeUserGroups.forEach((g) => (next[g.key] = true));
+                    setCollapsedColleges(next);
+                  }}
+                  className={btn.ghost}
+                >
+                  {collegeUserGroups.every((g) => !!collapsedColleges[g.key]) ? 'Expand all' : 'Collapse all'}
+                </button>
+              )}
+            </div>
+
+            {collegeUserGroups.length === 0 ? (
+              <Empty
+                icon={Search}
+                title="No students match"
+                body="Try a different search or filter."
+                action={
+                  <button
+                    type="button"
+                    className={btn.secondary}
+                    onClick={() => {
+                      setSearchUserQuery('');
+                      setSelectedCollegeFilter('ALL');
+                      setSelectedRoleFilter('ALL');
+                    }}
+                  >
+                    Reset filters
+                  </button>
+                }
+              />
+            ) : (
+              <div className="flex flex-col gap-f4">
+                {collegeUserGroups.map((group) => {
+                  const collapsed = !!collapsedColleges[group.key];
+                  return (
+                    <section key={group.key} className={surface}>
+                      <button
+                        type="button"
+                        onClick={() => setCollapsedColleges((p) => ({ ...p, [group.key]: !p[group.key] }))}
+                        aria-expanded={!collapsed}
+                        className="w-full flex items-center gap-f3 px-f4 py-f3 text-left hover:bg-surface-2 transition-colors cursor-pointer"
+                      >
+                        <Building2 className={`w-5 h-5 shrink-0 ${muted}`} strokeWidth={1.75} />
+                        <span className="flex-1 min-w-0">
+                          <span className={`block text-[15px] font-semibold truncate ${strong}`}>{group.displayName}</span>
+                          <span className={`block text-[13px] ${muted}`}>
+                            {group.students.length} {group.students.length === 1 ? 'student' : 'students'}
+                            {group.crCount ? ` · ${group.crCount} ${group.crCount === 1 ? 'pilot' : 'pilots'}` : ''}
+                            {group.proCount ? ` · ${group.proCount} Pro` : ''}
+                          </span>
+                        </span>
+                        <ChevronDown className={`w-4 h-4 shrink-0 transition-transform ${collapsed ? '' : 'rotate-180'} ${muted}`} />
+                      </button>
+                      {!collapsed && (
+                        <ul className={`border-t border-line-soft ${divider}`}>
+                          {group.students.map((u) => {
+                            const p = u.profile || {};
+                            const role = p.role || 'student';
+                            const isPro = !!p.isPro;
+                            return (
+                              <li key={u.id} className="flex flex-col sm:flex-row sm:items-center gap-f3 px-f4 py-f3">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className={`text-[15px] font-medium ${strong}`}>{displayName(p)}</span>
+                                    {role !== 'student' && <Badge tone={role === 'super_admin' ? 'red' : role === 'faculty' ? 'blue' : 'amber'}>{roleLabel(role)}</Badge>}
+                                    {isPro && (
+                                      <Badge tone="violet">
+                                        <Star className="w-3 h-3" /> Pro
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className={`text-[13px] truncate ${muted}`}>
+                                    {[p.email, [p.programme, p.branch].filter(Boolean).join(' '), p.semester ? `Sem ${p.semester}` : '', p.rollNumber].filter(Boolean).join(' · ') || u.id}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <select
+                                    value={role}
+                                    onChange={(e) => requestRoleChange(u, e.target.value as AdminRole)}
+                                    aria-label={`Role for ${displayName(p)}`}
+                                    className="h-9 px-2.5 bg-surface border border-line text-[13px] text-fg cursor-pointer focus:outline-none focus:border-[#111111]"
+                                  >
+                                    {(['student', 'cr', 'faculty', 'campus_admin', 'super_admin'] as const).map((r) => (
+                                      <option key={r} value={r}>
+                                        {roleLabel(r)}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  <button
+                                    type="button"
+                                    role="switch"
+                                    aria-checked={isPro}
+                                    aria-label={`Pro for ${displayName(p)}`}
+                                    onClick={() => handleToggleUserPro(u.id, isPro, u.linkedDocIds)}
+                                    className="inline-flex items-center gap-2 h-9 px-2 text-[13px] cursor-pointer"
+                                  >
+                                    <span className={`relative w-9 h-5 rounded-full transition-colors ${isPro ? 'bg-violet-600' : 'bg-black/15 dark:bg-white/20'}`}>
+                                      <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${isPro ? 'translate-x-4' : ''}`} />
+                                    </span>
+                                    <span className={muted}>Pro</span>
+                                  </button>
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </section>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ================= BATCHES ================= */}
+        {activeTab === 'batches' && (
+          <div className="flex flex-col gap-f5">
+            <PageTitle title="Batches" description="Shared timetables published by batch pilots. Students join with the code." />
+            <SearchField value={searchBatchQuery} onChange={setSearchBatchQuery} placeholder="Search college, branch or code" />
+            {filteredBatches.length === 0 ? (
+              <Empty icon={Layers} title="No batches found" />
+            ) : (
+              <ul className={`${surface} ${divider}`}>
+                {filteredBatches.map((b) => {
+                  const code = b.inviteCode || '';
+                  const copied = copiedBatchCode === (code || b.id);
+                  return (
+                    <li key={b.id} className="flex flex-col sm:flex-row sm:items-center gap-f3 px-f4 py-f3">
+                      <div className="sm:w-36 shrink-0 flex items-center gap-1">
+                        {code ? (
+                          <>
+                            <span className={`text-[18px] font-mono font-semibold tracking-[3px] select-all ${strong}`}>{code}</span>
+                            <button type="button" onClick={() => handleCopyBatchCode(code)} className={btn.icon} aria-label={`Copy code ${code}`}>
+                              {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                            </button>
+                          </>
+                        ) : (
+                          <button type="button" onClick={() => handleGenerateBatchCode(b.id)} className={btn.secondary}>
+                            <KeyRound className="w-4 h-4" /> Create code
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-[15px] font-medium truncate ${strong}`} title={b.college}>
+                          {getShortCollegeName(b.college || '') !== 'COLLEGE' ? getShortCollegeName(b.college || '') : b.college}
+                          <span className={`font-normal ${muted}`}>
+                            {' '}
+                            · {[b.programme, b.branch].filter(Boolean).join(' ')} · Sem {b.semester}
+                          </span>
+                        </p>
+                        <p className={`text-[13px] truncate ${muted}`}>
+                          By {b.creatorName || 'unknown'} · {b.subjects?.length || 0} subjects · {b.events?.length || 0} events
+                        </p>
+                      </div>
+                      <button type="button" onClick={() => handleDeleteBatch(b.id)} className={`${btn.ghost} hover:text-rose-600 self-start sm:self-center`} aria-label={`Delete batch ${code || b.id}`}>
+                        <Trash2 className="w-4 h-4" /> Delete
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
         )}
       </main>
 
-      {/* CR / BATCH PILOT APPROVAL SUCCESS MODAL */}
+      {/* ---------- Pilot approved: hand-off sheet ---------- */}
       <AnimatePresence>
         {approvedSuccessData && (
-          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 font-sans">
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 font-sans">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-[#F7F7F5] dark:bg-[#111111] border border-[#111111] dark:border-[#333333] shadow-2xl max-w-md w-full p-6 relative rounded-none"
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 24 }}
+              className={`${surface} w-full sm:max-w-md p-f4 sm:p-f5 relative`}
+              role="dialog"
+              aria-label="Batch pilot approved"
             >
-              {/* Close Button */}
               <button
                 type="button"
                 onClick={() => {
@@ -2583,123 +2026,62 @@ export default function SuperAdminPage() {
                   setCopiedSuccessCode(false);
                   setCopiedSuccessMessage(false);
                 }}
-                className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+                className={`${btn.icon} absolute top-3 right-3`}
+                aria-label="Close"
               >
                 <X className="w-5 h-5" />
               </button>
-
-              {/* Header Badge & Title */}
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-11 h-11 bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center rounded-none shadow-sm">
-                  <Crown className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="text-[11px] font-bold font-mono tracking-widest uppercase text-emerald-600 dark:text-emerald-400">
-                    Verification Complete
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
-                    Batch Pilot Approved! 👑
-                  </h3>
-                </div>
-              </div>
-
-              {/* Student Details Card */}
-              <div className="p-3 bg-white dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 mb-4 text-xs space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-zinc-400">Pilot:</span>
-                  <span className="font-bold text-slate-900 dark:text-zinc-100">{approvedSuccessData.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-zinc-400">College:</span>
-                  <span className="font-medium text-slate-800 dark:text-zinc-200 text-right truncate max-w-[200px]">{getShortCollegeName(approvedSuccessData.college)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-zinc-400">Batch:</span>
-                  <span className="font-medium text-slate-800 dark:text-zinc-200">{approvedSuccessData.branch} · Sem {approvedSuccessData.semester}</span>
-                </div>
-                {approvedSuccessData.phone && (
-                  <div className="flex justify-between">
-                    <span className="text-slate-500 dark:text-zinc-400">WhatsApp:</span>
-                    <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">{approvedSuccessData.phone}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* 6-digit Batch Code Highlight Box */}
-              <div className="p-4 bg-amber-500/5 dark:bg-amber-500/10 border-2 border-dashed border-amber-500/40 mb-4 flex flex-col items-center text-center">
-                <span className="text-[11px] font-mono uppercase font-bold tracking-wider text-amber-700 dark:text-amber-400 mb-1">
-                  OFFICIAL 6-DIGIT BATCH CODE
-                </span>
-                <div className="flex items-center gap-3 my-1">
-                  <span className="font-mono text-3xl font-extrabold tracking-widest text-slate-900 dark:text-white select-all">
-                    {approvedSuccessData.batchCode}
-                  </span>
+              <Badge tone="green" dot>
+                Approved
+              </Badge>
+              <h3 className={`mt-f3 text-[22px] font-semibold tracking-tight ${strong}`}>{approvedSuccessData.name} is now a batch pilot</h3>
+              <p className={`mt-1 text-[14px] ${muted}`}>
+                {getShortCollegeName(approvedSuccessData.college)} · {approvedSuccessData.branch} · Semester {approvedSuccessData.semester}
+              </p>
+              <div className="mt-f4 p-f4 border border-dashed border-[#CFCFCB] dark:border-white/[0.16] text-center">
+                <p className={`text-[13px] ${muted}`}>Batch join code</p>
+                <div className="mt-1 flex items-center justify-center gap-2">
+                  <span className={`text-[32px] font-mono font-semibold tracking-[6px] select-all ${strong}`}>{approvedSuccessData.batchCode}</span>
                   <button
                     type="button"
+                    className={btn.icon}
+                    aria-label="Copy code"
                     onClick={async () => {
                       try {
                         await navigator.clipboard.writeText(approvedSuccessData.batchCode);
                         setCopiedSuccessCode(true);
-                        showToast('Copied!', `Batch code "${approvedSuccessData.batchCode}" copied`, 'success');
                         setTimeout(() => setCopiedSuccessCode(false), 2000);
                       } catch {
-                        showToast('Error', 'Failed to copy code', 'error');
+                        showToast("Couldn't copy", 'Copy the code by hand.', 'error');
                       }
                     }}
-                    className="p-2 border border-slate-300 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors rounded-none cursor-pointer"
-                    title="Copy Code" aria-label="Copy Code"
                   >
-                    {copiedSuccessCode ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-slate-600 dark:text-zinc-300" />}
+                    {copiedSuccessCode ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </div>
-                <span className="text-[11px] text-slate-500 dark:text-zinc-400">
-                  Students use this code to join & view schedule updates
-                </span>
+                <p className={`mt-1 text-[12px] ${muted}`}>Classmates enter this to join the shared timetable</p>
               </div>
-
-              {/* Actions */}
-              <div className="flex flex-col gap-2.5">
-                {approvedSuccessData.phone ? (
-                  <a
-                    href={getCRWhatsAppShareUrl(approvedSuccessData)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors rounded-none shadow-sm cursor-pointer"
-                  >
-                    <MessageSquare className="w-4 h-4 fill-white" />
-                    <span>Send Batch Code on WhatsApp</span>
+              <div className="mt-f4 flex flex-col gap-2">
+                {approvedSuccessData.phone && (
+                  <a href={getCRWhatsAppShareUrl(approvedSuccessData)} target="_blank" rel="noreferrer" className={`${btn.primary} h-12 bg-[#1DA851] dark:bg-[#1DA851] dark:text-white`}>
+                    <MessageSquare className="w-4 h-4" /> Send on WhatsApp
                   </a>
-                ) : null}
-
+                )}
                 <button
                   type="button"
+                  className={`${btn.secondary} h-12`}
                   onClick={async () => {
                     try {
-                      const msg = getCRWhatsAppMessageText(approvedSuccessData);
-                      await navigator.clipboard.writeText(msg);
+                      await navigator.clipboard.writeText(getCRWhatsAppMessageText(approvedSuccessData));
                       setCopiedSuccessMessage(true);
-                      showToast('Copied!', 'WhatsApp message copied to clipboard', 'success');
                       setTimeout(() => setCopiedSuccessMessage(false), 2000);
                     } catch {
-                      showToast('Error', 'Failed to copy message', 'error');
+                      showToast("Couldn't copy", 'Try again.', 'error');
                     }
                   }}
-                  className="w-full py-2.5 border border-slate-300 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-800 dark:text-zinc-200 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors rounded-none cursor-pointer"
                 >
-                  {copiedSuccessMessage ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                  <span>{copiedSuccessMessage ? 'Message Copied!' : 'Copy Full WhatsApp Message'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setApprovedSuccessData(null);
-                    setCopiedSuccessCode(false);
-                    setCopiedSuccessMessage(false);
-                  }}
-                  className="w-full py-2.5 bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-black font-bold text-xs uppercase tracking-wider transition-colors rounded-none cursor-pointer mt-1"
-                >
-                  Done
+                  {copiedSuccessMessage ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                  {copiedSuccessMessage ? 'Message copied' : 'Copy message'}
                 </button>
               </div>
             </motion.div>
@@ -2707,511 +2089,112 @@ export default function SuperAdminPage() {
         )}
       </AnimatePresence>
 
-      {/* CREATE / EDIT CAMPAIGN MODAL */}
+      {/* ---------- Ad composer ---------- */}
       <AnimatePresence>
         {showCampaignModal && (
-          <div className="fixed inset-0 z-50 bg-[#F7F7F5] dark:bg-[#111111] overflow-y-auto font-sans">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="min-h-screen flex flex-col max-w-4xl mx-auto"
-            >
-              {/* Header */}
-              <div 
-                className="flex items-center justify-between pb-6 px-4 sm:px-8 border-b border-[#D8D8D8] dark:border-[#333333] sticky top-0 bg-[#F7F7F5] dark:bg-[#111111] z-20 shadow-xs"
-                style={{
-                  paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 16px), 24px)',
-                }}
-              >
-                <div>
-                  <h3 className="text-[24px] sm:text-[32px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-none">
-                    {editingCampaignId ? 'Edit Campaign' : 'Launch Campaign'}
-                  </h3>
-                  <p className="text-[14px] text-[#6F6F6F] mt-2">
-                    Configure your promo banner, link, and target audience.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowCampaignModal(false)}
-                  className="inline-flex items-center gap-1.5 py-1.5 px-2 text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider hover:opacity-70 transition-opacity cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                  <span>Close</span>
-                </button>
-              </div>
-
-              <form onSubmit={handleSaveCampaign} className="flex flex-col flex-1 px-4 sm:px-8 py-8 gap-12">
-                
-                {/* 1. CAMPAIGN DETAILS */}
-                <section className="flex flex-col gap-6">
-                  <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D9D9D6] dark:border-[#333333]">
-                    01 Campaign Details
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Campaign title <span className="text-red-500">*</span></label>
-                      <input
-                        type="text"
-                        required
-                        value={campaignForm.title}
-                        onChange={(e) => setCampaignForm({ ...campaignForm, title: e.target.value })}
-                        className="w-full px-4 py-3 bg-white dark:bg-[#1A1A1A] border border-[#D9D9D6] dark:border-[#333333] text-[14px] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors rounded-none placeholder:text-[#999999]"
-                        placeholder="Official Batch '26 Hoodie Drop"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Tagline</label>
-                      <input
-                        type="text"
-                        value={campaignForm.subtitle}
-                        onChange={(e) => setCampaignForm({ ...campaignForm, subtitle: e.target.value })}
-                        className="w-full px-4 py-3 bg-white dark:bg-[#1A1A1A] border border-[#D9D9D6] dark:border-[#333333] text-[14px] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors rounded-none placeholder:text-[#999999]"
-                        placeholder="Limited pre-orders open now"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Category</label>
-                      <select
-                        value={campaignForm.category}
-                        onChange={(e) => setCampaignForm({ ...campaignForm, category: e.target.value as any })}
-                        className="w-full px-4 py-3 bg-white dark:bg-[#1A1A1A] border border-[#D9D9D6] dark:border-[#333333] text-[14px] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors rounded-none appearance-none"
-                      >
-                        <option value="General Spotlight">General Spotlight</option>
-                        <option value="Placement Drive">Placement Drive</option>
-                        <option value="Club Recruitment">Club Recruitment</option>
-                        <option value="Event Promotion">Event Promotion</option>
-                        <option value="Academic Notice">Academic Notice</option>
-                      </select>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">CTA button text</label>
-                      <input
-                        type="text"
-                        value={campaignForm.ctaText}
-                        onChange={(e) => setCampaignForm({ ...campaignForm, ctaText: e.target.value })}
-                        className="w-full px-4 py-3 bg-white dark:bg-[#1A1A1A] border border-[#D9D9D6] dark:border-[#333333] text-[14px] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors rounded-none placeholder:text-[#999999]"
-                        placeholder="Learn More"
-                      />
-                    </div>
-                  </div>
-                </section>
-
-                {/* 2. CREATIVE & DESTINATION */}
-                <section className="flex flex-col gap-6">
-                  <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D9D9D6] dark:border-[#333333]">
-                    02 Creative & Destination
-                  </div>
-                  
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Destination link <span className="text-red-500">*</span></label>
-                    <input
-                      type="url"
-                      required
-                      value={campaignForm.targetUrl}
-                      onChange={(e) => setCampaignForm({ ...campaignForm, targetUrl: e.target.value })}
-                      className="w-full px-4 py-3 bg-white dark:bg-[#1A1A1A] border border-[#D9D9D6] dark:border-[#333333] text-[14px] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors rounded-none placeholder:text-[#999999]"
-                      placeholder="https://..."
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Banner image</label>
-                    {campaignForm.imageUrl ? (
-                      <div className="relative w-full aspect-[21/9] bg-black">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={campaignForm.imageUrl} alt="Banner" className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => setCampaignForm({ ...campaignForm, imageUrl: '' })}
-                          className="absolute top-2 right-2 p-2 bg-[#111111] text-[#FFFFFF] hover:bg-black transition-colors cursor-pointer"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        <label className="relative w-full py-12 border-2 border-dashed border-[#D8D8D8] dark:border-[#333333] flex flex-col items-center justify-center gap-3 text-[#6F6F6F] hover:border-[#111111] dark:hover:border-[#FFFFFF] hover:text-[#111111] dark:hover:text-[#FFFFFF] transition-colors cursor-pointer bg-white dark:bg-[#1A1A1A]">
-                          <Upload className="w-6 h-6" />
-                          <span className="text-[13px] font-medium">Click to upload image</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                  setCampaignForm({ ...campaignForm, imageUrl: reader.result as string });
-                                };
-                                reader.readAsDataURL(file);
-                              }
-                            }}
-                            className="opacity-0 absolute inset-0 cursor-pointer w-full h-full"
-                          />
-                        </label>
-                      </div>
-                    )}
-                  </div>
-                </section>
-
-                {/* 3. TARGETING */}
-                <section className="flex flex-col gap-6">
-                  <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#FFFFFF] pb-3 border-b border-[#D9D9D6] dark:border-[#333333]">
-                    03 Audience Targeting
-                  </div>
-
-                  <div className="flex flex-col gap-4">
-                    <label className="flex items-center gap-3 cursor-pointer p-4 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#1A1A1A]">
-                      <input
-                        type="radio"
-                        checked={campaignForm.targetAudienceType === 'all'}
-                        onChange={() => setCampaignForm({ ...campaignForm, targetAudienceType: 'all' })}
-                        className="w-4 h-4 accent-[#111111] dark:accent-[#FFFFFF]"
-                      />
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">Everyone</span>
-                        <span className="text-[12px] text-[#6F6F6F]">Show to all active users on Intersemester</span>
-                      </div>
-                    </label>
-
-                    <label className="flex items-center gap-3 cursor-pointer p-4 border border-[#D8D8D8] dark:border-[#333333] bg-white dark:bg-[#1A1A1A]">
-                      <input
-                        type="radio"
-                        checked={campaignForm.targetAudienceType === 'custom'}
-                        onChange={() => setCampaignForm({ ...campaignForm, targetAudienceType: 'custom' })}
-                        className="w-4 h-4 accent-[#111111] dark:accent-[#FFFFFF]"
-                      />
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF]">Specific Audience</span>
-                        <span className="text-[12px] text-[#6F6F6F]">Filter by college, branch, and semester</span>
-                      </div>
-                    </label>
-                  </div>
-
-                  {campaignForm.targetAudienceType === 'custom' && (
-                    <div className="flex flex-col gap-6 p-6 border border-[#D8D8D8] dark:border-[#333333] bg-[#F7F7F5] dark:bg-[#111111]">
-                      
-                      {/* Colleges */}
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-center justify-between">
-                          <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Target Colleges</label>
-                          <span className="text-[11px] text-[#6F6F6F]">
-                            {campaignForm.targetColleges.length} selected
-                          </span>
-                        </div>
-
-                        {/* Search and Add College */}
-                        <div className="relative">
-                          <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-[#1A1A1A] border border-[#D9D9D6] dark:border-[#333333]">
-                            <Search className="w-4 h-4 text-[#6B6B6B] shrink-0" />
-                            <input
-                              type="text"
-                              value={campaignCollegeQuery}
-                              onChange={(e) => {
-                                setCampaignCollegeQuery(e.target.value);
-                                setShowCampaignCollegeDropdown(true);
-                              }}
-                              onFocus={() => setShowCampaignCollegeDropdown(true)}
-                              placeholder="Search verified college (e.g. SRM, IIT, IIIT, VIT) to target..."
-                              className="w-full bg-transparent text-[13px] focus:outline-none placeholder:text-[#888888]"
-                            />
-                            {campaignCollegeQuery && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  toggleCollegeSelection(campaignCollegeQuery.trim());
-                                  setCampaignCollegeQuery('');
-                                  setShowCampaignCollegeDropdown(false);
-                                }}
-                                className="px-2 py-1 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[11px] font-bold uppercase shrink-0"
-                              >
-                                Add
-                              </button>
-                            )}
-                          </div>
-
-                          {showCampaignCollegeDropdown && (suggestedCampaignColleges.length > 0 || isSearchingColleges) && (
-                            <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] shadow-xl z-50 divide-y divide-[#E5E5E5] dark:divide-[#2C2C2C]">
-                              <div className="p-2 bg-[#F9F9F8] dark:bg-[#161616] text-[11px] font-bold uppercase tracking-wider text-[#6B6B6B] flex items-center justify-between sticky top-0">
-                                <span>{isSearchingColleges ? 'Searching SheerID...' : 'Search Results'}</span>
-                                <span className="text-[11px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 font-mono font-bold">SheerID Verified</span>
-                              </div>
-                              {suggestedCampaignColleges.map((item) => (
-                                <button
-                                  key={item.id}
-                                  type="button"
-                                  onMouseDown={() => {
-                                    toggleCollegeSelection(item.name);
-                                    setCampaignCollegeQuery('');
-                                    setShowCampaignCollegeDropdown(false);
-                                  }}
-                                  className="w-full px-3 py-2 hover:bg-black/5 dark:hover:bg-white/5 text-left transition-colors cursor-pointer flex flex-col"
-                                >
-                                  <span className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug">
-                                    {item.name}
-                                  </span>
-                                  {item.state && (
-                                    <span className="text-[11px] text-[#6B6B6B]">
-                                      {item.state}
-                                    </span>
-                                  )}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Selected & Quick College Badges */}
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          {allAvailableColleges.map((college) => {
-                            const isSelected = campaignForm.targetColleges.includes(college);
-                            return (
-                              <button
-                                key={college}
-                                type="button"
-                                onClick={() => toggleCollegeSelection(college)}
-                                className={`px-3 py-1.5 text-[12px] font-medium border transition-colors flex items-center gap-1.5 cursor-pointer ${
-                                  isSelected
-                                    ? 'border-[#111111] bg-[#111111] text-[#FFFFFF] dark:border-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111]'
-                                    : 'border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-white dark:bg-[#1A1A1A]'
-                                }`}
-                              >
-                                <span>{college}</span>
-                                {isSelected && <Check className="w-3.5 h-3.5" />}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Branches */}
-                      {campaignForm.targetColleges.length > 0 && (
-                        <div className="flex flex-col gap-3">
-                          <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Branches</label>
-                          <div className="flex gap-6">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="radio"
-                                checked={campaignForm.branchTargeting === 'all'}
-                                onChange={() => setCampaignForm({ ...campaignForm, branchTargeting: 'all', targetBranches: [] })}
-                                className="w-3.5 h-3.5 accent-[#111111] dark:accent-[#FFFFFF]"
-                              />
-                              <span className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF]">All branches</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="radio"
-                                checked={campaignForm.branchTargeting === 'custom'}
-                                onChange={() => setCampaignForm({ ...campaignForm, branchTargeting: 'custom' })}
-                                className="w-3.5 h-3.5 accent-[#111111] dark:accent-[#FFFFFF]"
-                              />
-                              <span className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF]">Specific branches</span>
-                            </label>
-                          </div>
-
-                          {campaignForm.branchTargeting === 'custom' && (
-                            <div className="flex flex-col gap-3">
-                              <div className="flex flex-wrap gap-2">
-                                {Array.from(new Set([
-                                  ...availableBranches,
-                                  ...usersList
-                                    .filter(u => campaignForm.targetColleges.includes(u.profile?.college || u.college))
-                                    .map(u => u.profile?.branch || u.branch)
-                                    .filter(Boolean),
-                                  ...batchesList
-                                    .filter(b => campaignForm.targetColleges.includes(b.college))
-                                    .map(b => b.branch)
-                                    .filter(Boolean)
-                                ])).map(branch => {
-                                  const isSelected = campaignForm.targetBranches.includes(branch);
-                                  return (
-                                    <button
-                                      key={branch}
-                                      type="button"
-                                      onClick={() => toggleBranchSelection(branch)}
-                                      className={`px-3 py-1.5 text-[12px] font-medium border transition-colors flex items-center gap-1.5 cursor-pointer ${
-                                        isSelected
-                                          ? 'border-[#111111] bg-[#111111] text-[#FFFFFF] dark:border-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111]'
-                                          : 'border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-white dark:bg-[#1A1A1A]'
-                                      }`}
-                                    >
-                                      <span>{branch}</span>
-                                      {isSelected && <Check className="w-3.5 h-3.5" />}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Semesters */}
-                      {campaignForm.targetColleges.length > 0 && (
-                        <div className="flex flex-col gap-3">
-                          <label className="text-[12px] font-bold text-[#111111] dark:text-[#FFFFFF]">Semesters</label>
-                          <div className="flex gap-6">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="radio"
-                                checked={campaignForm.semesterTargeting === 'all'}
-                                onChange={() => setCampaignForm({ ...campaignForm, semesterTargeting: 'all', targetSemesters: [] })}
-                                className="w-3.5 h-3.5 accent-[#111111] dark:accent-[#FFFFFF]"
-                              />
-                              <span className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF]">All semesters</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="radio"
-                                checked={campaignForm.semesterTargeting === 'custom'}
-                                onChange={() => setCampaignForm({ ...campaignForm, semesterTargeting: 'custom' })}
-                                className="w-3.5 h-3.5 accent-[#111111] dark:accent-[#FFFFFF]"
-                              />
-                              <span className="text-[13px] font-medium text-[#111111] dark:text-[#FFFFFF]">Specific semesters</span>
-                            </label>
-                          </div>
-
-                          {campaignForm.semesterTargeting === 'custom' && (
-                            <div className="flex flex-wrap gap-2 pt-2">
-                              {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => {
-                                const isSelected = campaignForm.targetSemesters.includes(sem);
-                                return (
-                                  <button
-                                    key={sem}
-                                    type="button"
-                                    onClick={() => toggleSemesterSelection(sem)}
-                                    className={`px-4 py-2 text-[13px] font-medium border transition-colors ${
-                                      isSelected
-                                        ? 'border-[#111111] bg-[#111111] text-[#FFFFFF] dark:border-[#FFFFFF] dark:bg-[#FFFFFF] dark:text-[#111111]'
-                                        : 'border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] hover:border-[#111111] dark:hover:border-[#FFFFFF] bg-white dark:bg-[#1A1A1A]'
-                                    }`}
-                                  >
-                                    Sem {sem}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Reach Estimate */}
-                  <div className="p-6 bg-white dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] mt-2">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#6B6B6B]">Estimated Reach</span>
-                      <span className="text-[24px] font-bold text-[#111111] dark:text-[#FFFFFF]">
-                        {(() => {
-                          if (campaignForm.targetAudienceType === 'all') return `${deduplicatedUsersList.length} students (Everyone)`;
-                          if (campaignForm.targetColleges.length === 0) return '0 students';
-                          
-                          let matchCount = 0;
-                          const matchedUserIds = new Set<string>();
-
-                          deduplicatedUsersList.forEach(u => {
-                            const p = u.profile || u || {};
-                            const userCollege = (p.college || u.college || '').toLowerCase().trim();
-                            const userBranch = (p.branch || u.branch || '').toLowerCase().trim();
-                            const userSem = String(p.semester || u.semester || '').replace(/[^0-9]/g, '');
-
-                            if (!userCollege) return;
-
-                            const cMatch = campaignForm.targetColleges.some(tc => {
-                              const target = tc.toLowerCase().trim();
-                              return (
-                                userCollege === target ||
-                                userCollege.includes(target) ||
-                                target.includes(userCollege) ||
-                                (userCollege.includes('naya raipur') && target.includes('naya raipur')) ||
-                                (userCollege.includes('iiit-nr') && target.includes('naya raipur')) ||
-                                (userCollege.includes('iiit') && target.includes('iiit') && userCollege.includes('raipur') && target.includes('raipur'))
-                              );
-                            });
-
-                            const bMatch = campaignForm.branchTargeting === 'all' || campaignForm.targetBranches.some(tb => {
-                              const targetB = tb.toLowerCase().trim();
-                              return !userBranch || userBranch.includes(targetB) || targetB.includes(userBranch);
-                            });
-
-                            const sMatch = campaignForm.semesterTargeting === 'all' || campaignForm.targetSemesters.some(ts => {
-                              return !userSem || String(ts) === userSem;
-                            });
-
-                            if (cMatch && bMatch && sMatch) {
-                              matchedUserIds.add(u.id);
-                              matchCount++;
-                            }
-                          });
-
-                          return `~${matchCount} students`;
-                        })()}
-                      </span>
-                    </div>
-                  </div>
-                </section>
-
-                <div className="flex flex-col sm:flex-row items-center gap-4 pt-6 border-t border-[#D8D8D8] dark:border-[#333333] mt-4 mb-20">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      campaignForm.isActive = false;
-                      handleSaveCampaign(e as any);
-                    }}
-                    className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-[#1A1A1A] border border-[#D8D8D8] dark:border-[#333333] text-[#111111] dark:text-[#FFFFFF] hover:border-[#111111] dark:hover:border-[#FFFFFF] transition-colors cursor-pointer text-[13px] font-bold uppercase tracking-[1.5px]"
-                  >
-                    Save as Draft
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      campaignForm.isActive = true;
-                      handleSaveCampaign(e as any);
-                    }}
-                    className="w-full sm:w-auto px-12 py-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] font-bold text-[13px] uppercase tracking-[1.5px] hover:opacity-90 transition-opacity cursor-pointer rounded-none"
-                  >
-                    Publish Campaign
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
+          <CampaignComposer
+            editing={!!editingCampaignId}
+            form={campaignForm}
+            setForm={setCampaignForm}
+            onClose={() => {
+              setShowCampaignModal(false);
+              setEditingCampaignId(null);
+            }}
+            onSave={handleSaveCampaign}
+            reach={estimatedReach}
+            totalStudents={deduplicatedUsersList.length}
+            collegeOptions={campaignCollegeOptions}
+            branchOptions={campaignBranchOptions}
+            collegeQuery={campaignCollegeQuery}
+            setCollegeQuery={setCampaignCollegeQuery}
+            collegeSuggestions={suggestedCampaignColleges}
+            isSearchingColleges={isSearchingColleges}
+          />
         )}
       </AnimatePresence>
 
-      {/* Delete Shared Batch Confirmation Modal */}
       <ConfirmModal
         isOpen={!!batchToDelete}
         onClose={() => setBatchToDelete(null)}
         onConfirm={confirmDeleteBatch}
-        title="Delete Shared Batch"
-        description="Are you sure you want to permanently delete this shared timetable batch? All published schedules and student memberships tied to this batch key will be removed."
-        highlightText={batchToDelete ? `Batch ID: ${batchToDelete}` : undefined}
-        confirmLabel="Delete Batch"
+        title="Delete this batch?"
+        description="Its shared timetable is removed and every member loses the synced schedule. This can't be undone."
+        highlightText={batchToDelete ? `Batch ${batchesList.find((b) => b.id === batchToDelete)?.inviteCode || batchToDelete}` : undefined}
+        confirmLabel="Delete batch"
         cancelLabel="Cancel"
         variant="danger"
         isLoading={isDeletingBatch}
       />
 
-      {/* Delete Promotional Campaign Confirmation Modal */}
       <ConfirmModal
         isOpen={!!campaignToDelete}
         onClose={() => setCampaignToDelete(null)}
         onConfirm={confirmDeleteCampaign}
-        title="Delete Campaign"
-        description="Are you sure you want to permanently delete this promotional spotlight campaign? This action cannot be reversed."
-        highlightText={campaignToDelete ? `Campaign ID: ${campaignToDelete}` : undefined}
-        confirmLabel="Delete Campaign"
+        title="Delete this ad?"
+        description="Its views and clicks are deleted with it. Pause it instead if you may run it again."
+        highlightText={campaignToDelete ? campaignsList.find((c) => c.id === campaignToDelete)?.title : undefined}
+        confirmLabel="Delete ad"
         cancelLabel="Cancel"
         variant="danger"
         isLoading={isDeletingCampaign}
+      />
+
+      <ConfirmModal
+        isOpen={!!pendingRoleChange}
+        onClose={() => setPendingRoleChange(null)}
+        onConfirm={async () => {
+          if (!pendingRoleChange) return;
+          const fromCampus = (pendingRoleChange.user.profile?.role || 'student') === 'campus_admin';
+          if (pendingRoleChange.role === 'campus_admin' || fromCampus) {
+            await handleCampusAdminChange(pendingRoleChange.user, pendingRoleChange.role);
+          } else {
+            await handleUpdateUserRole(pendingRoleChange.user.id, pendingRoleChange.role, pendingRoleChange.user.linkedDocIds);
+          }
+          setPendingRoleChange(null);
+        }}
+        title={
+          pendingRoleChange?.role === 'campus_admin'
+            ? 'Make campus admin?'
+            : pendingRoleChange?.user?.profile?.role === 'campus_admin'
+            ? 'Remove campus admin?'
+            : pendingRoleChange?.role === 'super_admin'
+            ? 'Make super admin?'
+            : 'Remove super admin?'
+        }
+        description={
+          pendingRoleChange?.role === 'campus_admin'
+            ? `They will see every student and batch from ${pendingRoleChange.user.profile?.college || 'their college'}, approve batch pilots there, and post notices (with notifications) for that college only.`
+            : pendingRoleChange?.user?.profile?.role === 'campus_admin'
+            ? 'They lose access to the campus admin panel.'
+            : pendingRoleChange?.role === 'super_admin'
+            ? 'Super admins can see every student, change roles, delete batches and run ads.'
+            : 'They lose access to the Control Center.'
+        }
+        highlightText={pendingRoleChange ? `${displayName(pendingRoleChange.user.profile || {})} → ${roleLabel(pendingRoleChange.role)}` : undefined}
+        confirmLabel={pendingRoleChange?.role === 'super_admin' ? 'Make super admin' : pendingRoleChange?.role === 'campus_admin' ? 'Make campus admin' : 'Change role'}
+        cancelLabel="Cancel"
+        variant="danger"
+      />
+
+      <ConfirmModal
+        isOpen={!!messageToDelete}
+        onClose={() => setMessageToDelete(null)}
+        onConfirm={async () => {
+          if (!messageToDelete) return;
+          try {
+            await deleteDoc(doc(db, 'contact_messages', messageToDelete.id));
+            showToast('Message deleted', messageToDelete.subject || '', 'info');
+          } catch (err) {
+            console.error('Error deleting message:', err);
+          }
+          setMessageToDelete(null);
+        }}
+        title="Delete this message?"
+        description="It's removed from the inbox for good."
+        highlightText={messageToDelete ? `${messageToDelete.name || 'Anonymous'}: ${messageToDelete.subject || 'General question'}` : undefined}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
       />
     </div>
   );

@@ -24,7 +24,7 @@ import {
   Check,
   Sparkles,
   Users,
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 export interface GoogleClassroomSyncModalProps {
   isOpen: boolean;
@@ -307,21 +307,21 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
                   Classroom Connected
                 </div>
               )}
-              <h3 className="text-lg font-bold text-[#111111] dark:text-[#F4F4F6]">
+              <h3 className="text-lg font-bold text-fg">
                 {connInfo.isConnected ? 'Sync Course Assignments' : 'Connect Your Google Classroom'}
               </h3>
               {connInfo.email && (
-                <p className="text-xs font-mono font-medium text-[#111111] dark:text-[#F4F4F6] mt-1">
+                <p className="text-xs font-mono font-medium text-fg mt-1">
                   {connInfo.email}
                 </p>
               )}
-              <p className="text-xs text-[#6B6B6B] dark:text-[#94A3B8] mt-1.5 leading-relaxed">
+              <p className="text-xs text-muted mt-1.5 leading-relaxed">
                 {connInfo.isConnected
                   ? 'Fetch new coursework, test submissions, and pending deadlines directly into your schedule.'
                   : 'Connect your student Google account to fetch coursework, pending deadlines, and submission states across all enrolled classrooms.'}
               </p>
               {canBroadcast && (
-                <div className="inline-flex items-center gap-1.5 mt-3 px-2.5 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-[11px] font-bold uppercase tracking-wider">
+                <div className="inline-flex items-center gap-1.5 mt-3 px-2.5 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-[12px] font-bold ">
                   <Users className="w-3 h-3" />
                   Pilot Mode
                 </div>
@@ -351,12 +351,12 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
         {/* STEP 2: SYNCING LOADER */}
         {step === 'syncing' && (
           <div className="flex flex-col items-center justify-center py-12 px-4 gap-4 text-center">
-            <Loader2 className="w-8 h-8 text-black dark:text-white animate-spin stroke-[2]" />
+            <Loader2 className="w-8 h-8 text-fg animate-spin stroke-[2]" />
             <div>
-              <p className="text-sm font-semibold text-[#111111] dark:text-[#F4F4F6]">
+              <p className="text-sm font-semibold text-fg">
                 Syncing with Google Classroom...
               </p>
-              <p className="text-xs text-[#6B6B6B] dark:text-[#94A3B8] mt-1 font-mono">
+              <p className="text-xs text-muted mt-1 font-mono">
                 {progressMsg}
               </p>
             </div>
@@ -392,8 +392,8 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
               </div>
             )}
 
-            <div className="flex items-center justify-between text-xs border-b border-black/10 dark:border-white/10 pb-3">
-              <span className="font-semibold text-[#111111] dark:text-white">
+            <div className="flex items-center justify-between text-xs border-b border-line pb-3">
+              <span className="font-semibold text-fg">
                 Found {fetchedItems.length} assignments ({selectedTotal} selected)
               </span>
               <div className="flex items-center gap-3">
@@ -408,7 +408,7 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
                 <button
                   type="button"
                   onClick={() => toggleSelectAll(false)}
-                  className="text-xs font-medium text-[#6B6B6B] dark:text-[#94A3B8] hover:underline cursor-pointer"
+                  className="text-xs font-medium text-muted hover:underline cursor-pointer"
                 >
                   Clear
                 </button>
@@ -439,15 +439,15 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
                     }
                     className={`flex items-start gap-3 p-3.5 border transition-colors cursor-pointer rounded-none text-left ${
                       isSelected
-                        ? 'border-black dark:border-white bg-black/[0.02] dark:bg-white/[0.04]'
-                        : 'border-[#D9D9D6] dark:border-white/[0.08] bg-transparent opacity-75'
+                        ? 'border-line-strong bg-surface-2'
+                        : 'border-line bg-transparent opacity-75'
                     }`}
                   >
                     <div className="pt-0.5">
                       <div
                         className={`w-4 h-4 border flex items-center justify-center transition-colors rounded-none ${
                           isSelected
-                            ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
+                            ? 'bg-ink text-on-ink border-line-strong'
                             : 'border-[#A0A0A0] bg-transparent'
                         }`}
                       >
@@ -457,36 +457,36 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[11px] font-bold font-mono px-2 py-0.5 rounded-none border border-black/10 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.03] text-black dark:text-white uppercase">
+                        <span className="text-[11px] font-bold font-mono px-2 py-0.5 rounded-none border border-line bg-surface-2 text-fg uppercase">
                           {item.courseName}
                         </span>
                         {item.isTurnedIn ? (
-                          <span className="text-[11px] font-bold px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase">
+                          <span className="text-[12px] font-bold px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 ">
                             Submitted
                           </span>
                         ) : (
-                          <span className="text-[11px] font-bold px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 uppercase">
+                          <span className="text-[12px] font-bold px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 ">
                             Pending
                           </span>
                         )}
                         {isAlreadyPresent && (
-                          <span className="text-[11px] font-mono text-[#6B6B6B] dark:text-[#94A3B8]">
+                          <span className="text-[11px] font-mono text-muted">
                             (Already in tasks)
                           </span>
                         )}
                       </div>
 
-                      <h4 className="text-sm font-bold text-[#111111] dark:text-[#F4F4F6] mt-1 line-clamp-1">
+                      <h4 className="text-sm font-bold text-fg mt-1 line-clamp-1">
                         {item.courseWork.title}
                       </h4>
 
                       {item.courseWork.description && (
-                        <p className="text-xs text-[#6B6B6B] dark:text-[#94A3B8] mt-0.5 line-clamp-2">
+                        <p className="text-xs text-muted mt-0.5 line-clamp-2">
                           {item.courseWork.description}
                         </p>
                       )}
 
-                      <div className="flex items-center gap-4 mt-2 text-[11px] text-[#6B6B6B] dark:text-[#94A3B8]">
+                      <div className="flex items-center gap-4 mt-2 text-[11px] text-muted">
                         <span className="flex items-center gap-1 font-mono">
                           <Calendar className="w-3 h-3" /> Due {dueText}
                         </span>
@@ -508,7 +508,7 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
               })}
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-black/10 dark:border-white/10">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-line">
               <Button variant="ghost" onClick={handleClose} disabled={isSubmitting} className="text-xs">
                 Cancel
               </Button>
@@ -548,10 +548,10 @@ export const GoogleClassroomSyncModal: React.FC<GoogleClassroomSyncModalProps> =
             </div>
 
             <div>
-              <h3 className="text-lg font-bold text-[#111111] dark:text-[#F4F4F6]">
+              <h3 className="text-lg font-bold text-fg">
                 {broadcastToBatch && canBroadcast ? 'Broadcast Successful!' : 'Sync Completed!'}
               </h3>
-              <p className="text-xs text-[#6B6B6B] dark:text-[#94A3B8] mt-1.5">
+              <p className="text-xs text-muted mt-1.5">
                 {broadcastToBatch && canBroadcast
                   ? `Delivered ${importedCount} assignments to all students in batch ${profile?.batchKey}.`
                   : `Added ${importedCount} new assignments to your schedule.`}

@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   CalendarDays,
   CheckSquare,
-  Backpack,
   BookOpen,
   Calendar,
   Bell,
@@ -19,7 +18,9 @@ import {
   Command,
   GraduationCap,
   Users,
-} from 'lucide-react';
+  Repeat,
+  UserCheck,
+} from '@/components/ui/icons';
 import { useApp, ActiveView } from '@/context/AppContext';
 
 export const CommandPalette: React.FC = () => {
@@ -79,17 +80,51 @@ export const CommandPalette: React.FC = () => {
         setCommandPaletteOpen(false);
       },
     },
+    ...(profile?.role === 'faculty'
+      ? [
+          {
+            id: 'nav_carry',
+            title: 'My Batches & Classes',
+            category: 'Navigation',
+            icon: <Users className="w-[18px] h-[18px]" strokeWidth={1.5} />,
+            action: () => {
+              setActiveView('carry');
+              setCommandPaletteOpen(false);
+            },
+          },
+        ]
+      : []),
     {
-      id: 'nav_carry',
-      title: profile?.role === 'faculty' ? 'My Batches & Classes' : "Tomorrow's Carry Bag",
+      id: 'nav_attendance',
+      title: profile?.role === 'faculty' ? 'Take Attendance' : 'My Attendance',
       category: 'Navigation',
-      icon: profile?.role === 'faculty' ? (
-        <Users className="w-[18px] h-[18px]" strokeWidth={1.5} />
-      ) : (
-        <Backpack className="w-[18px] h-[18px]" strokeWidth={1.5} />
-      ),
+      icon: <UserCheck className="w-[18px] h-[18px]" strokeWidth={1.5} />,
       action: () => {
-        setActiveView('carry');
+        setActiveView('attendance');
+        setCommandPaletteOpen(false);
+      },
+    },
+    ...(profile?.role === 'faculty'
+      ? []
+      : [
+          {
+            id: 'nav_faculty',
+            title: 'Campus Faculty',
+            category: 'Navigation',
+            icon: <GraduationCap className="w-[18px] h-[18px]" strokeWidth={1.5} />,
+            action: () => {
+              setActiveView('faculty');
+              setCommandPaletteOpen(false);
+            },
+          },
+        ]),
+    {
+      id: 'nav_routines',
+      title: 'Routines & Reminders',
+      category: 'Navigation',
+      icon: <Repeat className="w-[18px] h-[18px]" strokeWidth={1.5} />,
+      action: () => {
+        setActiveView('routines');
         setCommandPaletteOpen(false);
       },
     },
@@ -204,10 +239,10 @@ export const CommandPalette: React.FC = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98, y: -8 }}
             transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-[560px] bg-[#FCFCFA] dark:bg-[#121317] border border-[#EAEAE6] dark:border-white/[0.08] rounded-[3px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.18)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] overflow-hidden z-10 text-left flex flex-col"
+            className="relative w-full max-w-[560px] bg-[#FCFCFA] dark:bg-[#121317] border border-[#EAEAE6] dark:border-white/[0.08] rounded-none shadow-[0_20px_60px_-15px_rgba(0,0,0,0.18)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] overflow-hidden z-10 text-left flex flex-col"
           >
             {/* Search Input Bar */}
-            <div className="flex items-center gap-3 px-4 h-[48px] sm:h-[50px] border-b border-[#EEEEEC] dark:border-white/[0.06] bg-[#FCFCFA] dark:bg-[#121317]">
+            <div className="flex items-center gap-3 px-4 h-[48px] sm:h-[50px] border-b border-line-soft bg-[#FCFCFA] dark:bg-[#121317]">
               <Search className="w-[18px] h-[18px] text-[#8A8A88] dark:text-[#A1A1AA] shrink-0" strokeWidth={1.5} />
               
               <input
@@ -220,11 +255,11 @@ export const CommandPalette: React.FC = () => {
                   setSelectedIndex(0);
                 }}
                 onKeyDown={handleKeyDown}
-                className="w-full bg-transparent text-[15px] font-medium text-[#111111] dark:text-[#F4F4F6] placeholder:text-[#8A8A88] dark:placeholder:text-[#71717A] focus:outline-none tracking-tight"
+                className="w-full bg-transparent text-[15px] font-medium text-fg placeholder:text-[#8A8A88] dark:placeholder:text-[#71717A] focus:outline-none tracking-tight"
               />
 
               <div className="flex items-center gap-1.5 shrink-0">
-                <kbd className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-[3px] border border-[#E2E2DC] dark:border-white/10 bg-[#F2F2EE] dark:bg-white/[0.06] text-[#6E6E6A] dark:text-[#A1A1AA] shadow-2xs">
+                <kbd className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-none border border-[#E2E2DC] dark:border-white/10 bg-[#F2F2EE] dark:bg-white/[0.06] text-[#6E6E6A] dark:text-[#A1A1AA] shadow-2xs">
                   ESC
                 </kbd>
               </div>
@@ -245,7 +280,7 @@ export const CommandPalette: React.FC = () => {
                       key={cmd.id}
                       onClick={cmd.action}
                       onMouseEnter={() => setSelectedIndex(idx)}
-                      className={`flex items-center justify-between w-full min-h-[48px] sm:min-h-[50px] px-3.5 py-2.5 rounded-[3px] text-xs font-semibold transition-all group cursor-pointer ${
+                      className={`flex items-center justify-between w-full min-h-[48px] sm:min-h-[50px] px-3.5 py-2.5 rounded-none text-xs font-semibold transition-all group cursor-pointer ${
                         isSelected
                           ? 'bg-[#111111] text-white shadow-xs'
                           : 'bg-transparent text-[#202020] dark:text-[#F4F4F6] hover:bg-[#F3F3F0] dark:hover:bg-white/[0.04]'
@@ -256,7 +291,7 @@ export const CommandPalette: React.FC = () => {
                           className={`w-6 h-6 flex items-center justify-center shrink-0 transition-colors ${
                             isSelected
                               ? 'text-white'
-                              : 'text-[#6E6E6A] dark:text-[#94A3B8]'
+                              : 'text-[#6E6E6A] dark:text-[#A1A1AA]'
                           }`}
                         >
                           {cmd.icon}
@@ -268,10 +303,10 @@ export const CommandPalette: React.FC = () => {
 
                       <div className="flex items-center gap-2.5 shrink-0 ml-3">
                         <span
-                          className={`text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-[2px] border ${
+                          className={`text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-none border ${
                             isSelected
                               ? 'border-white/25 bg-white/10 text-white/80'
-                              : 'border-black/10 dark:border-white/10 text-[#787874] dark:text-[#94A3B8] font-normal'
+                              : 'border-line text-muted font-normal'
                           }`}
                         >
                           {cmd.category}
@@ -289,27 +324,27 @@ export const CommandPalette: React.FC = () => {
             </div>
 
             {/* Bottom Keyboard Hint Bar */}
-            <div className="flex items-center justify-between px-4 h-[36px] bg-[#F3F3F1] dark:bg-[#16171B] border-t border-[#E8E8E4] dark:border-white/[0.06] text-[#787874] dark:text-[#94A3B8]">
+            <div className="flex items-center justify-between px-4 h-[36px] bg-[#F3F3F1] dark:bg-[#16171B] border-t border-[#E8E8E4] dark:border-white/[0.06] text-muted">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5 text-[11px] font-medium">
-                  <kbd className="font-mono text-[11px] bg-white dark:bg-[#1E1F24] px-1.5 py-0.5 rounded-[2px] border border-[#D8D8D2] dark:border-white/15 text-[#555552] dark:text-[#CBD5E1] shadow-2xs">
+                  <kbd className="font-mono text-[11px] bg-surface px-1.5 py-0.5 rounded-none border border-line text-muted shadow-2xs">
                     ↑
                   </kbd>
-                  <kbd className="font-mono text-[11px] bg-white dark:bg-[#1E1F24] px-1.5 py-0.5 rounded-[2px] border border-[#D8D8D2] dark:border-white/15 text-[#555552] dark:text-[#CBD5E1] shadow-2xs">
+                  <kbd className="font-mono text-[11px] bg-surface px-1.5 py-0.5 rounded-none border border-line text-muted shadow-2xs">
                     ↓
                   </kbd>
                   <span>Navigate</span>
                 </span>
                 <span className="flex items-center gap-1.5 text-[11px] font-medium">
-                  <kbd className="font-mono text-[11px] bg-white dark:bg-[#1E1F24] px-1.5 py-0.5 rounded-[2px] border border-[#D8D8D2] dark:border-white/15 text-[#555552] dark:text-[#CBD5E1] shadow-2xs">
+                  <kbd className="font-mono text-[11px] bg-surface px-1.5 py-0.5 rounded-none border border-line text-muted shadow-2xs">
                     ↵
                   </kbd>
                   <span>Open</span>
                 </span>
               </div>
 
-              <div className="flex items-center gap-1.5 font-mono text-[11px] text-[#787874] dark:text-[#94A3B8]">
-                <kbd className="text-[11px] bg-white dark:bg-[#1E1F24] px-1.5 py-0.5 rounded-[2px] border border-[#D8D8D2] dark:border-white/15 text-[#555552] dark:text-[#CBD5E1] shadow-2xs flex items-center gap-0.5">
+              <div className="flex items-center gap-1.5 font-mono text-[11px] text-muted">
+                <kbd className="text-[11px] bg-surface px-1.5 py-0.5 rounded-none border border-line text-muted shadow-2xs flex items-center gap-0.5">
                   <Command className="w-2.5 h-2.5" strokeWidth={2} />
                 </kbd>
                 <span>Spotlight</span>

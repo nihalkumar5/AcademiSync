@@ -1,4 +1,5 @@
 'use client';
+import { getCurrentDayOfWeek } from '@/lib/timetableUtils';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
@@ -7,7 +8,7 @@ import { BatchProposedTask } from '@/lib/types';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { getTaskCardTheme } from '@/lib/cardColors';
-import { Check, CheckCircle2, Calendar } from 'lucide-react';
+import { Check, CheckCircle2, Calendar } from '@/components/ui/icons';
 import { EmptyState } from '../ui/EmptyState';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
@@ -143,7 +144,8 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
 
     // 2. Practical Labs scheduled today/tomorrow (high prep priority)
     targetSessions
-      .filter((s) => s.session.isLab && !s.isCancelled)
+      // Today's labs drop off once they've ended; tomorrow's (after 8 PM) always show
+      .filter((s) => s.session.isLab && !s.isCancelled && (s.isLive || s.isUpcoming || s.session.day !== getCurrentDayOfWeek()))
       .forEach((lab) => {
         const { pillLabel } = formatFacultyCombinedBatchLabel(lab.linkedBatches, lab.batch);
         items.push({
@@ -179,12 +181,12 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
     return (
       <div className="flex flex-col text-left">
         <div className="flex items-center justify-between px-1 mb-6">
-          <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
+          <h3 className="text-[13px] font-bold text-fg tracking-widest uppercase">
             {headerTitle}
           </h3>
         </div>
         <EmptyState
-          icon={<CheckCircle2 className="w-5 h-5 text-emerald-500" />}
+          illustration="tasks-done"
           title="You're all caught up!"
           description={
             isAfter8PM
@@ -193,6 +195,7 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
           }
           actionLabel="View All Tasks"
           onAction={() => setActiveView('homework')}
+          note={isAfter8PM ? 'Tomorrow looks calm. Rest well!' : 'A calm day. Time for a chai ☕'}
         />
       </div>
     );
@@ -202,7 +205,7 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
     <div className="flex flex-col text-left">
       {/* Header */}
       <div className="flex items-center justify-between px-1 mb-6">
-        <h3 className="text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
+        <h3 className="text-[13px] font-bold text-fg tracking-widest uppercase">
           {headerTitle}
         </h3>
         <span className="text-[11px] font-bold text-[#6B6B6B] uppercase tracking-wider">
@@ -250,11 +253,11 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
               >
                 {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
                 <div
-                  className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[11px]"
+                  className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-none"
                   style={{ backgroundColor: theme.bg }}
                 />
                 <div
-                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[11px]"
+                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-none"
                   style={{
                     background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
                   }}
@@ -272,17 +275,17 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
 
                     <div className="flex items-center gap-1.5 self-start">
                       {item.originalPriority === 'High' && !isCompleted && (
-                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8] text-[#C96B45] text-[11px] font-bold uppercase tracking-wider dark:bg-orange-500/15 dark:text-orange-300">
+                        <span className="px-2 py-0.5 rounded-none bg-[#FFF0E8] text-[#C96B45] text-[12px] font-bold dark:bg-orange-500/15 dark:text-orange-300">
                           HIGH
                         </span>
                       )}
                       {item.originalPriority === 'Medium' && !isCompleted && (
-                        <span className="px-2 py-0.5 rounded-[2px] bg-[#FFF0E8]/70 text-[#C96B45]/90 text-[11px] font-bold uppercase tracking-wider dark:bg-orange-500/15 dark:text-orange-300">
+                        <span className="px-2 py-0.5 rounded-none bg-[#FFF0E8]/70 text-[#C96B45]/90 text-[12px] font-bold dark:bg-orange-500/15 dark:text-orange-300">
                           MED
                         </span>
                       )}
                       {isCompleted && (
-                        <span className="px-2 py-0.5 rounded-[2px] bg-[#D2F1E8] text-[#18A889] text-[11px] font-bold uppercase tracking-wider dark:bg-teal-500/15 dark:text-teal-300">
+                        <span className="px-2 py-0.5 rounded-none bg-[#D2F1E8] text-[#18A889] text-[12px] font-bold dark:bg-teal-500/15 dark:text-teal-300">
                           DONE
                         </span>
                       )}
@@ -295,7 +298,7 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
                           'w-6 h-6 rounded-[4px] border flex items-center justify-center transition-colors cursor-pointer ml-1',
                           isCompleted
                             ? 'bg-[#18A889] border-[#18A889] text-white'
-                            : 'border-black/20 dark:border-white/20 hover:border-black/50 dark:hover:border-white/50 bg-white/40 dark:bg-black/20'
+                            : 'border-line hover:border-black/50 dark:hover:border-white/50 bg-white/40 dark:bg-black/20'
                         )}
                         title={isCompleted ? 'Mark as incomplete' : 'Mark as completed'} aria-label={isCompleted ? 'Mark as incomplete' : 'Mark as completed'}
                       >
@@ -305,7 +308,7 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
                   </div>
 
                   {/* Tag */}
-                  <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-[#737373] dark:text-[#94A3B8] break-words pr-2 mt-3.5">
+                  <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-muted break-words pr-2 mt-3.5">
                     {item.tag}
                   </span>
 
@@ -316,8 +319,8 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
                         className={clsx(
                           'text-[16px] sm:text-[17px] font-bold leading-[22px] tracking-tight group-hover:opacity-80 transition-opacity',
                           isCompleted
-                            ? 'text-[#737373] dark:text-[#64748B] line-through'
-                            : 'text-[#151515] dark:text-[#F4F4F6]'
+                            ? 'text-[#6B6B6B] dark:text-[#71717A] line-through'
+                            : 'text-fg'
                         )}
                       >
                         {item.title}
@@ -335,7 +338,7 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
                             ? 'bg-[#FFF0E8] text-[#C96B45] border border-[#F5D8CC] dark:bg-orange-500/15 dark:text-orange-300 dark:border-orange-500/30'
                             : isOverdue
                             ? 'bg-[#FCEBED] text-[#C94B5C] border border-[#F5CBD1] dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30'
-                            : 'bg-black/[0.04] dark:bg-white/[0.05] text-[#737373] dark:text-[#94A3B8] border border-black/[0.04] dark:border-white/[0.06]'
+                            : 'bg-surface-2 text-muted border border-line-soft'
                         )}
                       >
                         <Calendar className="w-3 h-3 shrink-0" />

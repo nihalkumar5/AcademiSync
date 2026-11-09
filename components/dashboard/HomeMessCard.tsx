@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
-import { ArrowRight, UtensilsCrossed, Clock } from 'lucide-react';
+import { ArrowRight, UtensilsCrossed, Clock } from '@/components/ui/icons';
 import { format } from 'date-fns';
 
 const DEFAULT_TIMINGS: Record<string, string> = {
@@ -182,100 +182,54 @@ export const HomeMessCard: React.FC = () => {
   const isLive = mealInfo.status === 'LIVE';
   const displayItems = Array.isArray(mealInfo.items) ? mealInfo.items : [];
 
+  const statusLabel = isLive ? 'Serving now' : mealInfo.status === 'TOMORROW' ? 'Tomorrow' : 'Up next';
+
   return (
-    <div className="flex flex-col text-left mt-2 sm:mt-3">
-      {/* Section Header */}
-      <div className="flex items-center justify-between px-1 mb-2.5">
-        <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-widest uppercase">
-          MESS MENU
-        </h3>
-        <span className="text-[11px] sm:text-[11px] font-mono font-bold text-[#6B6B6B] uppercase tracking-wider">
-          {isLive ? 'LIVE NOW' : 'NEXT MEAL'}
-        </span>
+    <section aria-label="Mess menu" className="flex flex-col text-left">
+      <div className="flex items-baseline justify-between mb-f3">
+        <h3 className="text-[17px] font-semibold text-fg tracking-tight">Mess menu</h3>
+        <button
+          type="button"
+          onClick={() => setActiveView('mess')}
+          className="inline-flex items-center gap-1 text-[13px] font-medium text-fg hover:underline underline-offset-4 cursor-pointer"
+        >
+          Full menu <ArrowRight className="w-3.5 h-3.5" />
+        </button>
       </div>
 
-      {/* Card */}
-      <div 
+      <button
+        type="button"
         onClick={() => setActiveView('mess')}
-        className={`w-full p-4 sm:p-5 rounded-[12px] cursor-pointer transition-all text-left flex flex-col gap-3 group relative overflow-hidden shadow-sm border ${
-          isLive
-            ? 'bg-[#111111] dark:bg-[#111111] text-[#FFFFFF] border-[#111111] dark:border-emerald-500/30'
-            : 'bg-[#111111] dark:bg-[#111111] text-[#FFFFFF] border-[#111111] dark:border-white/[0.08] hover:border-black/40 dark:hover:border-white/20'
-        }`}
+        className="sheen-ink w-full p-5 bg-[#111111] dark:bg-[#15171D] border border-[#111111] dark:border-white/[0.08] text-white text-left cursor-pointer"
       >
-        {/* Premium Cutlery (Fork & Spoon) Watermark */}
-        <div className="absolute -right-3 -bottom-5 pointer-events-none select-none z-0 text-white/[0.05] group-hover:text-white/[0.08] rotate-[-15deg] group-hover:scale-105 group-hover:rotate-[-10deg] transition-all duration-300">
-          <UtensilsCrossed className="w-24 h-24 sm:w-28 sm:h-28 stroke-[1.2]" />
+        <div className="flex items-center justify-between gap-3">
+          <span className="inline-flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[1.4px]">
+            <span className="relative flex h-2 w-2">
+              {isLive && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />}
+              <span className={`relative inline-flex rounded-full h-2 w-2 ${isLive ? 'bg-emerald-400' : 'bg-white/70'}`} />
+            </span>
+            <span className={isLive ? 'text-emerald-300' : 'text-white/80'}>{statusLabel}</span>
+          </span>
+          <span className="text-[13px] font-medium text-white/80 tabular-nums">{mealInfo.timeLeft}</span>
         </div>
 
-        {/* Row 1: Header Status + Countdown Box */}
-        <div className="flex items-center justify-between gap-2 sm:gap-3 relative z-10 w-full flex-wrap sm:flex-nowrap">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            {isLive ? (
-              <div className="flex items-center gap-1.5 font-mono text-[11px] sm:text-[11px] font-bold uppercase tracking-wider text-[#18A889] min-w-0">
-                <span className="relative flex h-2 w-2 shrink-0">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#18A889] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#18A889]"></span>
-                </span>
-                <span className="truncate">
-                  SERVING NOW · <strong className="text-white font-extrabold">{mealInfo.mealName.toUpperCase()}</strong>
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 font-mono text-[11px] sm:text-[11px] font-bold uppercase tracking-wider text-[#A0A0A0] min-w-0">
-                <span className="text-[#C99A32] text-[11px] shrink-0">●</span>
-                <span className="shrink-0">{mealInfo.status === 'TOMORROW' ? 'TOMORROW' : 'UPCOMING'}</span>
-                <span className="opacity-40 select-none">·</span>
-                <span className="text-white font-extrabold truncate">{mealInfo.mealName.toUpperCase()}</span>
-              </div>
-            )}
-            {mealInfo.timingStr && (
-              <span className="hidden md:inline font-mono text-[11px] text-[#737373] tracking-normal shrink-0">
-                ({mealInfo.timingStr})
+        <div className="mt-3 flex items-end justify-between gap-3">
+          <span className="text-[24px] font-semibold leading-none tracking-tight">{mealInfo.mealName}</span>
+          {mealInfo.timingStr && (
+            <span className="text-[13px] text-white/70 tabular-nums whitespace-nowrap">{resolveMealTimingForDay(mealInfo.timingStr, format(new Date(), 'EEEE'))}</span>
+          )}
+        </div>
+
+        {displayItems.length > 0 && (
+          <span className="mt-4 flex flex-wrap gap-1.5">
+            {displayItems.map((item, idx) => (
+              <span key={idx} className="px-2.5 py-1 text-[14px] text-white bg-white/[0.08] border border-white/[0.12]">
+                {item}
               </span>
-            )}
-          </div>
-
-          {/* Right Time Badge */}
-          <div className={`px-2 py-0.5 sm:px-2.5 sm:py-1 uppercase tracking-wider font-mono font-bold text-[11px] sm:text-[11px] shrink-0 rounded-[3px] border flex items-center gap-1 sm:gap-1.5 ${
-            isLive
-              ? 'bg-[#18A889]/15 text-[#2DD4BF] border-[#18A889]/30'
-              : 'bg-white/[0.08] text-white/90 border-white/10'
-          }`}>
-            <Clock className="w-3 h-3 opacity-70 shrink-0" />
-            <span className="whitespace-nowrap">{mealInfo.timeLeft}</span>
-          </div>
-        </div>
-
-        {/* Row 2: Food Items Inline Text + Full Menu Link */}
-        <div className="flex items-center justify-between gap-4 pt-0.5 relative z-10">
-          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 min-w-0 flex-1">
-            {displayItems.length > 0 ? (
-              displayItems.map((item, idx) => (
-                <span 
-                  key={idx} 
-                  className="text-[14px] sm:text-[15px] font-semibold text-white tracking-tight leading-snug"
-                >
-                  {item}
-                  {idx < displayItems.length - 1 && (
-                    <span className="text-white/60 ml-2.5 font-normal select-none">·</span>
-                  )}
-                </span>
-              ))
-            ) : (
-              <span className="text-[14px] font-medium text-[#737373]">
-                Menu items updating soon
-              </span>
-            )}
-          </div>
-
-          {/* Action Link Arrow */}
-          <div className="flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-widest text-[#A0A0A0] group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0">
-            <span>FULL MENU</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </div>
-        </div>
-      </div>
-    </div>
+            ))}
+          </span>
+        )}
+      </button>
+    </section>
   );
 };

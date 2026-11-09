@@ -18,7 +18,7 @@ import {
   GraduationCap,
   Building2,
   IdCard,
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 export const OverviewHeader: React.FC = () => {
   const { profile, timetable, homework, carryItems, events, exams, setActiveView, extraSessions, isSessionCancelled, cancelledSessions } = useApp();
@@ -94,54 +94,67 @@ export const OverviewHeader: React.FC = () => {
   const seconds = time ? time.getSeconds().toString().padStart(2, '0') : '00';
 
   return (
-    <div className="flex flex-col gap-4 mt-4 sm:mt-8 mb-2">
-      {/* Greeting: compact on phones so the live/next class card stays above the fold */}
+    <div className="flex flex-col gap-f5">
+      {/* Greeting: date strip, two-tone greeting, and wrapping profile chips */}
       <div>
-        <h2 className="text-[28px] leading-[34px] sm:text-[40px] sm:leading-[44px] text-[#111111] dark:text-[#FFFFFF] tracking-tight">
-          <span className="font-normal">{greeting},</span>{' '}
-          <span className="font-medium">
-            {(profile?.name || 'Student').split(' ')[0]}
+        <div className="flex items-baseline justify-between gap-3 font-cursive text-[19px] leading-none font-semibold text-muted">
+          <span>{dateFormatted}</span>
+          <span className="tabular-nums">{timeFormatted}</span>
+        </div>
+
+        <h2 className="mt-3 tracking-tight">
+          <span className="block text-[34px] leading-[40px] sm:text-[44px] sm:leading-[50px] font-normal text-muted">{greeting},</span>
+          <span className="block mt-0.5 text-[44px] leading-[50px] sm:text-[56px] sm:leading-[62px] font-semibold text-fg break-words">
+            {(profile?.name || 'Student').split(' ')[0]}{' '}
+            <span aria-hidden="true" className="inline-block origin-[70%_70%] animate-[wave_1.8s_ease-in-out_1]">👋</span>
           </span>
         </h2>
 
-        <p className="mt-1.5 text-[14px] font-normal text-[#6B6B6B] dark:text-[#A1A1AA] leading-[20px]">
-          {dateFormatted} · {timeFormatted}
-        </p>
-
-        {(profile?.programme || profile?.branch) && (
-          <p className="mt-1 text-[13px] leading-[18px] uppercase tracking-wide truncate">
-            <span className="font-semibold text-[#111111] dark:text-[#FFFFFF]">
-              Sem {profile?.semester || 1} · {profile?.programme || ''}{profile?.branch ? ` · ${profile.branch.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')}` : ''}
-            </span>
-            {(profile?.rollNumber || profile?.college) && (
-              <span className="font-normal text-[#6B6B6B] dark:text-[#A1A1AA]">
-                {' · '}{profile?.rollNumber ? `${profile.rollNumber} · ` : ''}{getShortCollegeName(profile?.college || '')}
-              </span>
-            )}
-          </p>
+        {(profile?.programme || profile?.branch || profile?.rollNumber) && (
+          <ul className="mt-f4 flex flex-wrap gap-f2" aria-label="Your profile">
+            {[
+              profile?.semester ? `Sem ${profile.semester}` : null,
+              [profile?.programme, profile?.branch?.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')]
+                .filter(Boolean)
+                .join(' · ') || null,
+              profile?.rollNumber || null,
+              profile?.college ? getShortCollegeName(profile.college) : null,
+            ]
+              .filter(Boolean)
+              .map((chip, i) => (
+                <li
+                  key={i}
+                  className={i === 0
+                    ? 'px-2.5 py-1 text-[12px] font-semibold bg-ink text-on-ink'
+                    : 'px-2.5 py-1 text-[12px] font-medium text-fg border border-line bg-white/70 dark:bg-white/[0.03]'}
+                >
+                  {chip}
+                </li>
+              ))}
+          </ul>
         )}
       </div>
 
       {/* Brutalist Stats Grid */}
-      <div className="grid grid-cols-3 gap-0 py-3 sm:py-4 mt-2 sm:mt-5 border-y border-black/10 dark:border-white/[0.08] relative">
+      <div className="grid grid-cols-3 gap-0 py-f4 border-y border-line relative">
         {/* Vertical dividers (~70% height) */}
-        <div className="absolute left-1/3 top-[15%] bottom-[15%] w-px bg-black/10 dark:bg-white/[0.08]" />
-        <div className="absolute left-[66.666%] top-[15%] bottom-[15%] w-px bg-black/10 dark:bg-white/[0.08]" />
+        <div className="absolute left-1/3 top-[15%] bottom-[15%] w-px bg-surface-3" />
+        <div className="absolute left-[66.666%] top-[15%] bottom-[15%] w-px bg-surface-3" />
 
         {/* Classes or Exams */}
         <button
           onClick={() => setActiveView(hasActiveExamToday ? 'exams' : 'timetable')}
           className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center cursor-pointer"
         >
-          <span className="text-[28px] sm:text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
+          <span className="text-[28px] sm:text-[32px] font-medium text-fg tracking-tighter leading-none mb-1">
             {hasActiveExamToday ? todayExamsList.length : todayClasses.length}
           </span>
           <div className="flex flex-col items-center">
-            <span className="text-[14px] font-medium text-black/60 dark:text-[#A1A1AA] leading-tight">
+            <span className="text-[14px] font-medium text-muted leading-tight">
               {hasActiveExamToday ? (todayExamsList.length === 1 ? 'Exam' : 'Exams') : 'Classes'}
             </span>
             {todayHoliday ? (
-              <span className="text-[13px] text-black/60 dark:text-[#A1A1AA] leading-tight">
+              <span className="text-[13px] text-muted leading-tight">
                 Holiday
               </span>
             ) : hasActiveExamToday ? (
@@ -161,11 +174,11 @@ export const OverviewHeader: React.FC = () => {
           onClick={() => setActiveView('homework')}
           className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center cursor-pointer"
         >
-          <span className="text-[28px] sm:text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
+          <span className="text-[28px] sm:text-[32px] font-medium text-fg tracking-tighter leading-none mb-1">
             {pendingHw.length}
           </span>
           <div className="flex flex-col items-center">
-            <span className="text-[14px] font-medium text-black/60 dark:text-[#A1A1AA] leading-tight">
+            <span className="text-[14px] font-medium text-muted leading-tight">
               Tasks Due
             </span>
             <span className="text-[13px] text-transparent leading-tight select-none" aria-hidden="true">
@@ -179,11 +192,11 @@ export const OverviewHeader: React.FC = () => {
           onClick={() => setActiveView('homework')}
           className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center cursor-pointer"
         >
-          <span className="text-[28px] sm:text-[32px] font-medium text-black dark:text-[#F4F4F6] tracking-tighter leading-none mb-1">
+          <span className="text-[28px] sm:text-[32px] font-medium text-fg tracking-tighter leading-none mb-1">
             {upcomingDeadlines.length}
           </span>
           <div className="flex flex-col items-center">
-            <span className="text-[14px] font-medium text-black/60 dark:text-[#A1A1AA] leading-tight">
+            <span className="text-[14px] font-medium text-muted leading-tight">
               Deadlines
             </span>
             <span className="text-[13px] text-transparent leading-tight select-none" aria-hidden="true">

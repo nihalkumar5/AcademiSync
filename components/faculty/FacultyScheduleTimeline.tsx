@@ -35,7 +35,7 @@ import {
   CheckCircle,
   MoreVertical,
   Ban,
-} from 'lucide-react';
+} from '@/components/ui/icons';
 import { clsx } from 'clsx';
 
 interface FacultyScheduleTimelineProps {
@@ -173,7 +173,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
         `Time: *${session.startTime} - ${session.endTime}*\n` +
         `Status: *CANCELLED*\n` +
         `Faculty: *${teacherName}*\n\n` +
-        `Synced via AcademiSync.`;
+        `Synced via Intersemester.`;
     } else if (isRescheduled) {
       text = `⏰ *NOTICE: CLASS RESCHEDULED*\n\n` +
         `Batch: *${batchLabel}*\n` +
@@ -183,7 +183,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
         `Room: *${session.room || 'TBA'}*\n` +
         `Faculty: *${teacherName}*\n` +
         (rescheduleMeta?.reason ? `Note: *${rescheduleMeta.reason}*\n` : '') +
-        `\nUpdated on AcademiSync.`;
+        `\nUpdated on Intersemester.`;
     } else {
       text = `📌 *CLASS UPDATE*\n\n` +
         `Batch: *${batchLabel}*\n` +
@@ -192,7 +192,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
         `Time: *${session.startTime} - ${session.endTime}*\n` +
         `Room: *${session.room || 'TBA'}*\n` +
         `Faculty: *${teacherName}*\n\n` +
-        `Synced via AcademiSync.`;
+        `Synced via Intersemester.`;
     }
 
     const shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
@@ -206,7 +206,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
       {/* Header */}
       <div className="flex items-center justify-between gap-3 px-1 mb-6">
         <div className="flex flex-col min-w-0">
-          <h3 className="text-[12px] sm:text-[13px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-[1.5px] uppercase truncate">
+          <h3 className="text-[12px] sm:text-[13px] font-bold text-fg truncate">
             {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
           </h3>
           <span className="text-[11px] sm:text-[11px] font-mono font-medium text-[#6B6B6B] uppercase tracking-wider mt-0.5">
@@ -217,7 +217,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
         <button
           type="button"
           onClick={() => setActiveView('timetable')}
-          className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-[#111111] text-white dark:bg-[#FFFFFF] dark:text-[#111111] text-[11px] font-mono font-bold uppercase tracking-wider rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
+          className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-ink text-on-ink text-[12px] font-mono font-bold rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
         >
           <span>+ EXTRA CLASS</span>
         </button>
@@ -225,7 +225,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
 
       {sessionsForTarget.length === 0 ? (
         <EmptyState
-          icon={<MonochromeIllustration type="no-classes" size={48} />}
+          illustration="no-classes"
           title={
             isAfter8PM
               ? "No classes tomorrow"
@@ -290,7 +290,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                       </div>
                     ) : (
                       <span className={`text-[13px] font-bold tracking-tighter font-mono ${
-                        isCancelled ? 'line-through text-zinc-400 dark:text-zinc-600' : 'text-[#151515] dark:text-zinc-100'
+                        isCancelled ? 'line-through text-zinc-400 dark:text-zinc-600' : 'text-fg'
                       }`}>
                         {formatTime12Hour(session.startTime)}
                       </span>
@@ -336,30 +336,30 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                         <div className="flex items-start gap-2 flex-wrap">
                           <h4 
                             className={`text-[16px] sm:text-[17px] leading-[22px] font-bold tracking-tight line-clamp-2 ${
-                              isLive ? 'text-white' : 'text-[#151515] dark:text-white'
+                              isLive ? 'text-white' : 'text-fg'
                             } ${isCancelled ? 'line-through opacity-70' : ''}`}
                           >
                             {subjectName}
                           </h4>
 
                           {isCancelled ? (
-                            <span className="px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#FAD3D9] text-[#C94B5C] rounded-[2px] shrink-0 dark:bg-red-500/15 dark:text-red-300">
+                            <span className="px-2 py-0.5 text-[12px] font-bold bg-[#FAD3D9] text-[#C94B5C] rounded-none shrink-0 dark:bg-red-500/15 dark:text-red-300">
                               Cancelled
                             </span>
                           ) : isLive ? (
-                            <span className="px-2 py-0.5 rounded-[2px] bg-[#18A889]/20 text-[#18A889] text-[11px] font-bold uppercase tracking-wider animate-pulse border border-[#18A889]/40 shrink-0">
+                            <span className="px-2 py-0.5 rounded-none bg-[#18A889]/20 text-[#18A889] text-[12px] font-bold animate-pulse border border-[#18A889]/40 shrink-0">
                               Live
                             </span>
                           ) : isRescheduled ? (
-                            <span className="px-2 py-0.5 rounded-[2px] text-[11px] font-bold uppercase tracking-wider bg-[#FCE0D5] text-[#C85F3D] shrink-0 dark:bg-orange-500/15 dark:text-orange-300">
+                            <span className="px-2 py-0.5 rounded-none text-[12px] font-bold bg-[#FCE0D5] text-[#C85F3D] shrink-0 dark:bg-orange-500/15 dark:text-orange-300">
                               Rescheduled
                             </span>
                           ) : session.isLab ? (
-                            <span className="px-2 py-0.5 rounded-[2px] text-[11px] font-bold uppercase tracking-wider bg-[#D2F1E8] text-[#18A889] shrink-0 dark:bg-teal-500/15 dark:text-teal-300">
+                            <span className="px-2 py-0.5 rounded-none text-[12px] font-bold bg-[#D2F1E8] text-[#18A889] shrink-0 dark:bg-teal-500/15 dark:text-teal-300">
                               Lab
                             </span>
                           ) : agg.isUpcoming && agg.minutesUntilStart !== undefined && agg.minutesUntilStart > 0 ? (
-                            <span className="px-2 py-0.5 rounded-[2px] bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 text-[11px] font-mono font-bold uppercase tracking-wider shrink-0">
+                            <span className="px-2 py-0.5 rounded-none bg-black/5 dark:bg-white/10 text-fg-2 text-[11px] font-mono font-bold uppercase tracking-wider shrink-0">
                               in {agg.minutesUntilStart < 60 ? `${agg.minutesUntilStart}m` : `${Math.floor(agg.minutesUntilStart / 60)}h ${agg.minutesUntilStart % 60}m`}
                             </span>
                           ) : null}
@@ -368,7 +368,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                         {/* Metadata row: ◉ Room No 319 · M.TECH · DS & AI */}
                         <div 
                           className={`flex items-center gap-1.5 text-[12px] font-medium flex-wrap mt-1 ${
-                            isLive ? 'text-[#6B6B6B]' : 'text-[#737373] dark:text-[#CBD5E1]'
+                            isLive ? 'text-[#6B6B6B]' : 'text-muted'
                           }`}
                         >
                           <span className="flex items-center gap-1 shrink-0">
@@ -376,7 +376,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                             {session.room ? (session.room.toLowerCase().startsWith('room') ? session.room : `Room No ${session.room}`) : 'Room TBA'}
                           </span>
                           <span className="opacity-40">·</span>
-                          <span className="font-semibold text-black/80 dark:text-white/80">
+                          <span className="font-semibold text-fg-2">
                             {pillLabel}
                           </span>
                           {session.isLab && (
@@ -404,7 +404,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                             e.stopPropagation();
                             setOpenMenuSessionId(openMenuSessionId === cardKey ? null : cardKey);
                           }}
-                          className="p-1.5 text-[#6B6B6B] hover:text-[#151515] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer rounded-[4px]"
+                          className="p-1.5 text-[#6B6B6B] hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer rounded-none"
                           title="Options" aria-label="Options"
                         >
                           <MoreVertical className="w-4 h-4" />
@@ -420,10 +420,10 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                               }}
                             />
                             <div
-                              className="absolute right-0 top-full mt-1.5 w-52 rounded-[10px] bg-white dark:bg-[#18191E] border border-black/10 dark:border-white/[0.1] shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 text-left overflow-hidden"
+                              className="absolute right-0 top-full mt-1.5 w-52 rounded-none bg-surface border border-line shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 text-left overflow-hidden"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <div className="px-3.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/[0.06] dark:border-white/[0.08] text-[11px] font-mono font-bold uppercase tracking-wider text-black/60 dark:text-[#A1A1AA] flex items-center gap-1.5">
+                              <div className="px-3.5 py-1.5 bg-surface-2 border-b border-line-soft text-[12px] font-mono font-bold text-muted flex items-center gap-1.5">
                                 <span>🎓</span>
                                 <span>Faculty Actions</span>
                               </div>
@@ -455,7 +455,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                                 </button>
                               )}
 
-                              <div className="h-px bg-black/[0.06] dark:bg-white/[0.08] my-1" />
+                              <div className="h-px bg-surface-3 my-1" />
 
                               {/* Reschedule / Revert Action */}
                               {isRescheduled ? (
@@ -478,7 +478,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                                       setOpenMenuSessionId(null);
                                       setSessionToReschedule(agg);
                                     }}
-                                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-fg hover:bg-surface-2 text-left transition-colors cursor-pointer"
                                   >
                                     <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
                                     <span>Reschedule Class</span>
@@ -486,7 +486,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                                 )
                               )}
 
-                              <div className="h-px bg-black/[0.06] dark:bg-white/[0.08] my-1" />
+                              <div className="h-px bg-surface-3 my-1" />
 
                               {/* Share Notice via WhatsApp */}
                               <button
@@ -495,7 +495,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                                   setOpenMenuSessionId(null);
                                   handleShareWhatsAppNotice(agg);
                                 }}
-                                className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-[#18181B] dark:text-[#F4F4F6] hover:bg-black/5 dark:hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                                className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-fg hover:bg-surface-2 text-left transition-colors cursor-pointer"
                               >
                                 <Share2 className="w-3.5 h-3.5 opacity-60 shrink-0" />
                                 <span>Share Notice via WhatsApp</span>

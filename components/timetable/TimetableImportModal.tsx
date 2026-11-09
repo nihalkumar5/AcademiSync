@@ -10,7 +10,7 @@ import { validateUploadedFile } from '@/lib/fileSafety';
 import { getAuthHeaders } from '@/lib/authHeaders';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
-import { Upload, Sparkles, Check, Trash2, Plus, ShieldAlert, Bot, X, ChevronDown, Filter, AlertTriangle } from 'lucide-react';
+import { Upload, Sparkles, Check, Trash2, Plus, ShieldAlert, Bot, X, ChevronDown, Filter, AlertTriangle } from '@/components/ui/icons';
 import { useRouter } from 'next/navigation';
 
 export interface TimetableImportModalProps {
@@ -306,7 +306,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-[12px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wide mb-1">
+                  <h4 className="text-[12px] font-bold text-red-600 dark:text-red-400 mb-1">
                     Scan Unsuccessful
                   </h4>
                   <p className="text-[12px] text-red-800 dark:text-red-200 leading-relaxed mb-3">
@@ -317,7 +317,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                       <button
                         type="button"
                         onClick={() => runExtraction(lastUploadedFiles)}
-                        className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold tracking-wide uppercase transition-colors rounded-none cursor-pointer"
+                        className="px-3 h-9 bg-red-600 hover:bg-red-700 text-white text-[12px] font-semibold transition-colors rounded-none cursor-pointer"
                       >
                         Retry Scan
                       </button>
@@ -325,14 +325,14 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                     <button
                       type="button"
                       onClick={handleManualEntry}
-                      className="px-3 py-1.5 border border-red-600/40 text-red-700 dark:text-red-300 hover:bg-red-500/10 text-[11px] font-bold tracking-wide uppercase transition-colors rounded-none cursor-pointer"
+                      className="px-3 h-9 border border-red-600/40 text-red-700 dark:text-red-300 hover:bg-red-500/10 text-[12px] font-semibold transition-colors rounded-none cursor-pointer"
                     >
                       Add Classes Manually
                     </button>
                     <button
                       type="button"
                       onClick={() => setExtractError(null)}
-                      className="text-[11px] text-black/60 dark:text-white/60 hover:underline ml-auto cursor-pointer"
+                      className="text-[11px] text-muted hover:underline ml-auto cursor-pointer"
                     >
                       Dismiss
                     </button>
@@ -343,15 +343,15 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
           )}
 
           {/* Upload Guidance Banner */}
-          <div className="mb-4 p-4 rounded-none border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5]/90 dark:bg-[#121317]/90 text-left">
+          <div className="mb-4 p-4 rounded-none border border-line bg-[#F7F7F5]/90 dark:bg-[#121317]/90 text-left">
             <div className="flex items-center gap-2 mb-2.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-              <span className="text-[11px] font-bold tracking-[1.5px] uppercase text-black/80 dark:text-[#F4F4F6]">
+              <span className="text-[12px] font-bold text-black/80 dark:text-[#F4F4F6]">
                 Upload Guidelines
               </span>
             </div>
 
-            <div className="flex flex-col gap-2 text-[12px] text-black/75 dark:text-[#94A3B8] leading-relaxed">
+            <div className="flex flex-col gap-2 text-[12px] text-black/75 dark:text-[#A1A1AA] leading-relaxed">
               <div className="flex items-start gap-2.5">
                 <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0 mt-0.5 text-[13px]">✓</span>
                 <span>
@@ -367,7 +367,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
             </div>
           </div>
 
-          <div className="relative group w-full h-[180px] sm:h-[190px] flex flex-col items-center justify-center rounded-none border-2 border-dashed border-black/15 dark:border-white/[0.1] bg-[#F7F7F5]/50 dark:bg-white/[0.02] hover:bg-[#F7F7F5] dark:hover:bg-white/[0.04] transition-all cursor-pointer mb-4">
+          <div className="relative group w-full h-[180px] sm:h-[190px] flex flex-col items-center justify-center rounded-none border-2 border-dashed border-line bg-surface-2 hover:bg-surface-2 transition-all cursor-pointer mb-4">
             <input
               type="file"
               multiple
@@ -375,19 +375,19 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
               onChange={handleFileUpload}
               className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
             />
-            <Upload className="w-5 h-5 mb-2.5 text-black dark:text-[#F4F4F6]" />
-            <h3 className="text-[14px] font-bold text-black dark:text-[#F4F4F6] mb-1">
+            <Upload className="w-5 h-5 mb-2.5 text-fg" />
+            <h3 className="text-[14px] font-bold text-fg mb-1">
               Choose a timetable file
             </h3>
-            <p className="text-[12px] text-black/60 dark:text-[#94A3B8] mb-3">
+            <p className="text-[12px] text-muted mb-3">
               Photo or PDF
             </p>
             
-            <div className="px-5 h-[36px] flex items-center justify-center bg-black text-white dark:bg-white dark:text-black font-bold text-[12px] pointer-events-none rounded-none w-fit mx-auto mb-2 shadow-sm">
+            <div className="px-5 h-[36px] flex items-center justify-center bg-ink text-on-ink font-bold text-[12px] pointer-events-none rounded-none w-fit mx-auto mb-2 shadow-sm">
               Choose file
             </div>
 
-            <div className="text-[11px] text-black/40 dark:text-[#64748B] font-medium tracking-[0.5px] uppercase">
+            <div className="text-[12px] text-faint font-medium ">
               JPG · PNG · PDF
             </div>
           </div>
@@ -396,7 +396,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
             <button
               type="button"
               onClick={handleManualEntry}
-              className="text-[12px] font-medium text-black/60 dark:text-[#94A3B8] hover:text-black dark:hover:text-white underline underline-offset-4 cursor-pointer transition-colors"
+              className="text-[12px] font-medium text-muted hover:text-fg underline underline-offset-4 cursor-pointer transition-colors"
             >
               Or create timetable manually without a file
             </button>
@@ -407,21 +407,21 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
       {step === 'extracting' && (
         <div className="flex flex-col items-center justify-center py-6 sm:py-10 text-center w-full">
           <div className="relative mb-6">
-            <div className="w-24 h-24 rounded-full bg-[#F7F7F5] dark:bg-[#121317] border border-black/10 dark:border-white/[0.08] flex items-center justify-center relative">
-              <Bot className="w-12 h-12 text-black dark:text-[#F4F4F6] animate-pulse" />
+            <div className="w-24 h-24 rounded-full bg-surface-2 border border-line flex items-center justify-center relative">
+              <Bot className="w-12 h-12 text-fg animate-pulse" />
               <Sparkles className="w-6 h-6 absolute top-1 right-0 text-amber-500 animate-bounce" />
             </div>
           </div>
           
-          <h4 className="text-[18px] font-bold text-black dark:text-[#F4F4F6]">
+          <h4 className="text-[18px] font-bold text-fg">
             Analyzing your timetable...
           </h4>
-          <p className="text-[14px] text-black/60 dark:text-[#94A3B8] mt-1 mb-8 max-w-[280px]">
+          <p className="text-[14px] text-muted mt-1 mb-8 max-w-[280px]">
             Reading subjects, times, rooms and days.
           </p>
 
           <div className="flex items-center gap-3 w-full max-w-[280px] mx-auto mb-10">
-            <div className="flex-1 h-2 bg-black/10 dark:bg-white/[0.08] rounded-full overflow-hidden">
+            <div className="flex-1 h-2 bg-surface-3 rounded-full overflow-hidden">
               <motion.div 
                 className="h-full bg-emerald-500"
                 initial={{ width: "0%" }}
@@ -431,11 +431,11 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
             </div>
           </div>
 
-          <div className="flex items-start gap-3 p-4 bg-[#F7F7F5] dark:bg-[#121317] text-left border border-black/10 dark:border-white/[0.08] w-full max-w-[320px] rounded-none shadow-sm">
+          <div className="flex items-start gap-3 p-4 bg-surface-2 text-left border border-line w-full max-w-[320px] rounded-none shadow-sm">
             <Sparkles className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
             <div className="flex flex-col">
-              <span className="text-[14px] font-bold text-black dark:text-[#F4F4F6]">AI is working...</span>
-              <span className="text-[13px] text-black/60 dark:text-[#94A3B8] mt-0.5">This usually takes 10–20 seconds.</span>
+              <span className="text-[14px] font-bold text-fg">AI is working...</span>
+              <span className="text-[13px] text-muted mt-0.5">This usually takes 10–20 seconds.</span>
             </div>
           </div>
         </div>
@@ -445,27 +445,27 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         <div className="flex flex-col text-left">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-bold tracking-[0.2em] text-black/60 dark:text-white/60 uppercase">Extracted Sessions</span>
+              <span className="section-label">Extracted Sessions</span>
               
               <div className="flex flex-col gap-4">
                 {extractedSessions.map((session, index) => (
-                  <div key={index} className="flex flex-col gap-3 p-4 rounded-none border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5]/50 dark:bg-[#121317] relative group">
+                  <div key={index} className="flex flex-col gap-3 p-4 rounded-none border border-line bg-surface-2 relative group">
                     <button
                       type="button"
                       onClick={() => removeExtractedRow(index)}
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-none bg-white dark:bg-[#181A20] border border-black/10 dark:border-white/[0.1] flex items-center justify-center text-black/60 dark:text-[#94A3B8] hover:text-rose-500 dark:hover:text-rose-400 transition-colors z-10 shadow-sm"
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-none bg-surface border border-line flex items-center justify-center text-muted hover:text-rose-500 dark:hover:text-rose-400 transition-colors z-10 shadow-sm"
                     >
                       <X className="w-3 h-3" />
                     </button>
                     
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Day</label>
+                        <label className="text-[12px] font-semibold text-muted ">Day</label>
                         <div className="relative">
                           <select
                             value={session.day}
                             onChange={(e) => updateExtractedRow(index, { day: e.target.value as any })}
-                            className="w-full px-3 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors appearance-none"
+                            className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors appearance-none"
                           >
                             <option value="Monday" className="dark:bg-[#121317]">Monday</option>
                             <option value="Tuesday" className="dark:bg-[#121317]">Tuesday</option>
@@ -475,49 +475,49 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                             <option value="Saturday" className="dark:bg-[#121317]">Saturday</option>
                             <option value="Sunday" className="dark:bg-[#121317]">Sunday</option>
                           </select>
-                          <ChevronDown className="w-3 h-3 absolute right-2.5 top-1/2 -translate-y-1/2 text-black/60 dark:text-white/60 pointer-events-none" />
+                          <ChevronDown className="w-3 h-3 absolute right-2.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
                         </div>
                       </div>
                       
                       <div className="flex items-center gap-2">
                         <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                          <label className="text-[11px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase truncate">Start</label>
+                          <label className="text-[12px] font-semibold text-muted truncate">Start</label>
                           <input
                             type="time"
                             value={session.startTime}
                             onChange={(e) => updateExtractedRow(index, { startTime: e.target.value })}
-                            className="w-full px-2.5 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
+                            className="w-full px-2.5 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                           />
                         </div>
                         <span className="text-black/60 dark:text-white/20 mt-5">-</span>
                         <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                          <label className="text-[11px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase truncate">End</label>
+                          <label className="text-[12px] font-semibold text-muted truncate">End</label>
                           <input
                             type="time"
                             value={session.endTime}
                             onChange={(e) => updateExtractedRow(index, { endTime: e.target.value })}
-                            className="w-full px-2.5 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
+                            className="w-full px-2.5 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                           />
                         </div>
                       </div>
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-semibold text-black/60 dark:text-[#94A3B8] uppercase">Subject Details</label>
+                      <label className="text-[12px] font-semibold text-muted ">Subject Details</label>
                       <div className="grid grid-cols-[80px_1fr] sm:grid-cols-[100px_1fr] gap-2">
                         <input
                           type="text"
                           placeholder="Code"
                           value={session.subjectCode}
                           onChange={(e) => updateExtractedRow(index, { subjectCode: e.target.value })}
-                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
+                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                         />
                         <input
                           type="text"
                           placeholder="Subject Name"
                           value={session.subjectName}
                           onChange={(e) => updateExtractedRow(index, { subjectName: e.target.value })}
-                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
+                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                         />
                       </div>
                     </div>
@@ -528,14 +528,14 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                         placeholder="Room / Lab"
                         value={session.room}
                         onChange={(e) => updateExtractedRow(index, { room: e.target.value })}
-                        className="w-full px-3 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
+                        className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                       />
                       <input
                         type="text"
                         placeholder="Faculty"
                         value={session.faculty}
                         onChange={(e) => updateExtractedRow(index, { faculty: e.target.value })}
-                        className="w-full px-3 py-1.5 h-[38px] rounded-none bg-white dark:bg-[#090A0C] border border-black/10 dark:border-white/[0.1] text-[13px] text-black dark:text-[#F4F4F6] focus:outline-none focus:border-black dark:focus:border-white/30 transition-colors"
+                        className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                       />
                     </div>
 
@@ -543,11 +543,11 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                       <button
                         type="button"
                         onClick={() => updateExtractedRow(index, { isLab: !session.isLab })}
-                        className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider transition-colors border ${
-                          session.isLab
-                            ? 'bg-[#18A889] text-white border-[#18A889]'
-                            : 'bg-transparent text-black/60 dark:text-[#94A3B8] border-black/10 dark:border-white/[0.1] hover:border-black/30'
-                        }`}
+                        className={`px-3 py-1 text-[13px] font-bold transition-colors border ${
+ session.isLab
+ ? 'bg-[#18A889] text-white border-[#18A889]'
+ : 'bg-transparent text-muted border-line hover:border-black/30'
+ }`}
                       >
                         {session.isLab ? '✓ Practical / Lab' : '+ Lab'}
                       </button>
@@ -555,11 +555,11 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                       <button
                         type="button"
                         onClick={() => updateExtractedRow(index, { isElective: !session.isElective })}
-                        className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider transition-colors border ${
-                          session.isElective
-                            ? 'bg-[#8067B5] text-white border-[#8067B5]'
-                            : 'bg-transparent text-black/60 dark:text-[#94A3B8] border-black/10 dark:border-white/[0.1] hover:border-[#8067B5]'
-                        }`}
+                        className={`px-3 py-1 text-[13px] font-bold transition-colors border ${
+ session.isElective
+ ? 'bg-[#8067B5] text-white border-[#8067B5]'
+ : 'bg-transparent text-muted border-line hover:border-[#8067B5]'
+ }`}
                       >
                         {session.isElective ? '★ Elective Course' : '+ Mark as Elective'}
                       </button>
@@ -570,7 +570,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                 <button
                   type="button"
                   onClick={addExtractedRow}
-                  className="w-full flex items-center justify-center gap-2 py-2 h-[44px] text-[12px] font-bold uppercase text-black dark:text-[#F4F4F6] rounded-none border border-black/10 dark:border-white/[0.08] bg-[#F7F7F5] dark:bg-[#121317] hover:bg-black/5 dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-2 h-11 text-[14px] font-semibold text-fg rounded-none border border-line bg-surface-2 hover:bg-surface-2 transition-colors cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add Row
                 </button>
@@ -578,18 +578,18 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 mt-6 border-t border-black/10 dark:border-white/[0.08]">
+          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 mt-6 border-t border-line">
             <button 
               type="button" 
               onClick={resetState}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-none text-[13px] font-bold uppercase text-black/70 dark:text-[#94A3B8] hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              className="w-full sm:w-auto px-4 h-11 rounded-none text-[14px] font-semibold text-muted hover:bg-surface-2 transition-colors cursor-pointer"
             >
               Scan Another
             </button>
             <button 
               type="button" 
               onClick={handleSaveConfirmed}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-none bg-black text-white dark:bg-white dark:text-black text-[13px] font-bold uppercase hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
+              className="w-full sm:w-auto px-6 h-11 rounded-none bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
             >
               Save to Timetable
             </button>

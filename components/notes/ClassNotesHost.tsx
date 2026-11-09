@@ -1,0 +1,416 @@
+'use client';
+
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { clsx } from 'clsx';
+import { useApp } from '@/context/AppContext';
+import { Modal } from '@/components/ui/Modal';
+import { AlertTriangle, Camera, ImageIcon, Loader2, Lock, Smartphone, Trash2, Users, X } from '@/components/ui/icons';
+import { formatTime12Hour, getTodayDateString } from '@/lib/timetableUtils';
+import { MAX_NOTE_CHARS, MAX_SHARED_IMAGE_KB, MyNote, NoteSlot, SharedNote, notesApi } from '@/lib/classNotes';
+import { blobToBase64, compressPhoto, deletePhoto, getPhoto, savePhoto } from '@/lib/notePhotos';
+
+// One notes sheet for the whole app. Open it with openClassNotes(slot) from lib/classNotes.
+// The hidden camera / gallery inputs live outside the sheet, so "Snap" can open the camera
+// in the same tap (browsers only allow that during the click itself).
+
+const QUICK = ['Will come in exam', 'Important topic', 'Assignment given', 'Revise this'];
+const dateLabel = (d: string) => {
+  const today = getTodayDateString();
+  if (d === today) return 'Today';
+  const dt = new Date(`${d}T00:00:00`);
+  const y = new Date();
+  y.setDate(y.getDate() - 1);
+  const yKey = `${y.getFullYear()}-${String(y.getMonth() + 1).padStart(2, '0')}-${String(y.getDate()).padStart(2, '0')}`;
+  if (d === yKey) return 'Yesterday';
+  return isNaN(dt.getTime()) ? d : dt.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+};
+const timeOf = (iso: string) => {
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? '' : d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
+};
+
+/** A photo kept on this phone. Shows a placeholder if it was taken on another phone. */
+const LocalPhoto: React.FC<{ id: string; onOpen: (url: string) => void }> = ({ id, onOpen }) => {
+  const [url, setUrl] = useState<string | null | undefined>(undefined);
+  useEffect(() => {
+    let u: string | null = null;
+    let alive = true;
+    getPhoto(id).then((b) => {
+      if (!alive) return;
+      u = b ? URL.createObjectURL(b) : null;
+      setUrl(u);
+    });
+    return () => {
+      alive = false;
+      if (u) URL.revokeObjectURL(u);
+    };
+  }, [id]);
+  if (url === undefined) return <div className="aspect-square bg-surface-2 animate-pulse" />;
+  if (url === null)
+    return (
+      <div className="aspect-square flex flex-col items-center justify-center gap-1 border border-dashed border-line text-muted text-center px-1">
+        <Smartphone className="w-4 h-4" />
+        <span className="text-[10px] leading-tight">On another phone</span>
+      </div>
+    );
+  return (
+    <button type="button" onClick={() => onOpen(url)} className="aspect-square border border-line overflow-hidden cursor-pointer">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={url} alt="Lecture photo" className="w-full h-full object-cover" />
+    </button>
+  );
+};
+
+type Pending = { blob: Blob; url: string };
+
+export const ClassNotesHost: React.FC = () => {
+  const { user, showToast } = useApp() as any;
+  const [slot, setSlot] = useState<NoteSlot | null>(null);
+  const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<'mine' | 'class'>('mine');
+  const [range, setRange] = useState<'slot' | 'all'>('slot');
+  const [mine, setMine] = useState<MyNote[]>([]);
+  const [shared, setShared] = useState<SharedNote[]>([]);
+  const [hasBatch, setHasBatch] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [text, setText] = useState('');
+  const [pending, setPending] = useState<Pending[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [viewer, setViewer] = useState<string | null>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
+  const textRef = useRef<HTMLTextAreaElement>(null);
+
+  const clearPending = useCallback(() => {
+    setPending((p) => {
+      p.forEach((x) => URL.revokeObjectURL(x.url));
+      return [];
+    });
+  }, []);
+
+  // Open requests from anywhere in the app
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      const s = (e as CustomEvent).detail as NoteSlot;
+      if (!s?.subjectId || !s.date) return;
+      setSlot(s);
+      setTab('mine');
+      setRange('slot');
+      setText('');
+      setError('');
+      clearPending();
+      setOpen(true);
+      if (s.focus === 'camera') cameraRef.current?.click(); // same tap, so the camera is allowed to open
+    };
+    window.addEventListener('classnotes:open', onOpen);
+    return () => window.removeEventListener('classnotes:open', onOpen);
+  }, [clearPending]);
+
+  const load = useCallback(async () => {
+    if (!slot || !user?.id) return;
+    setLoading(true);
+    setError('');
+    try {
+      const q = `?subjectId=${encodeURIComponent(slot.subjectId)}${range === 'slot' ? `&date=${slot.date}` : ''}`;
+      const d = await notesApi('GET', q);
+      const byNewest = (a: { createdAt: string }, b: { createdAt: string }) => b.createdAt.localeCompare(a.createdAt);
+      setMine((d.mine || []).sort(byNewest));
+      setShared((d.shared || []).sort(byNewest));
+      setHasBatch(!!d.hasBatch);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [slot, range, user?.id]);
+  useEffect(() => {
+    if (open) load();
+  }, [open, load]);
+
+  useEffect(() => {
+    if (open && slot?.focus === 'text') setTimeout(() => textRef.current?.focus(), 250);
+  }, [open, slot]);
+
+  const addFiles = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setError('');
+    const max = tab === 'class' ? 1 : 6;
+    const list = Array.from(files).slice(0, Math.max(0, max - (tab === 'class' ? 0 : pending.length)));
+    try {
+      const out: Pending[] = [];
+      for (const f of list) {
+        const blob = await compressPhoto(f);
+        out.push({ blob, url: URL.createObjectURL(blob) });
+      }
+      setPending((p) => {
+        if (tab === 'class') {
+          p.forEach((x) => URL.revokeObjectURL(x.url));
+          return out.slice(0, 1);
+        }
+        return [...p, ...out].slice(0, 6);
+      });
+    } catch (e: any) {
+      setError(e.message || "Couldn't add that photo");
+    }
+  };
+
+  const save = async () => {
+    if (!slot || saving) return;
+    const t = text.trim();
+    if (!t && pending.length === 0) return;
+    setSaving(true);
+    setError('');
+    const base = { subjectId: slot.subjectId, subjectName: slot.subjectName, date: slot.date, startTime: slot.startTime || '', text: t };
+    const savedIds: string[] = [];
+    try {
+      if (tab === 'mine') {
+        for (const p of pending) savedIds.push(await savePhoto(p.blob));
+        await notesApi('POST', '', { action: 'addMine', ...base, photos: savedIds });
+        showToast?.('Note saved', `${slot.subjectName} · ${dateLabel(slot.date)}`, 'success');
+      } else {
+        let image: string | undefined;
+        if (pending[0]) {
+          let blob = pending[0].blob;
+          if (blob.size > (MAX_SHARED_IMAGE_KB - 20) * 1024) blob = await compressPhoto(blob, 1280, 0.6);
+          if (blob.size > (MAX_SHARED_IMAGE_KB - 20) * 1024) throw new Error('That photo is too large to share');
+          image = await blobToBase64(blob);
+        }
+        await notesApi('POST', '', { action: 'addShared', ...base, ...(image ? { image } : {}) });
+        showToast?.('Shared with your class', `${slot.subjectName} · ${dateLabel(slot.date)}`, 'success');
+      }
+      setText('');
+      clearPending();
+      load();
+    } catch (e: any) {
+      savedIds.forEach((id) => deletePhoto(id));
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const removeMine = async (n: MyNote) => {
+    try {
+      await notesApi('POST', '', { action: 'deleteMine', id: n.id });
+      n.photos.forEach((id) => deletePhoto(id));
+      setMine((list) => list.filter((x) => x.id !== n.id));
+    } catch (e: any) {
+      setError(e.message);
+    }
+  };
+  const removeShared = async (n: SharedNote) => {
+    try {
+      await notesApi('POST', '', { action: 'deleteShared', id: n.id });
+      setShared((list) => list.filter((x) => x.id !== n.id));
+    } catch (e: any) {
+      setError(e.message);
+    }
+  };
+
+  const close = () => {
+    setOpen(false);
+    setViewer(null);
+    clearPending();
+  };
+
+  const list = tab === 'mine' ? mine : shared;
+  const canSave = !saving && (!!text.trim() || pending.length > 0) && (tab === 'mine' || hasBatch);
+  const subtitle = slot
+    ? [dateLabel(slot.date), slot.startTime ? formatTime12Hour(slot.startTime) : null, slot.room || null].filter(Boolean).join(' · ')
+    : '';
+
+  // Group by date when showing all dates
+  const groups: { date: string; items: (MyNote | SharedNote)[] }[] = [];
+  list.forEach((n) => {
+    const g = groups.find((x) => x.date === n.date);
+    if (g) g.items.push(n);
+    else groups.push({ date: n.date, items: [n] });
+  });
+  groups.sort((a, b) => b.date.localeCompare(a.date));
+
+  return (
+    <>
+      <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }} />
+      <input ref={galleryRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }} />
+
+      <Modal isOpen={open} onClose={close} title={slot?.subjectName || 'Notes'} description={subtitle} maxWidth="lg" mobileFullSheet>
+        {slot && (
+          <div className="flex flex-col gap-f4">
+            {!user?.id ? (
+              <p className="text-[14px] text-muted">Sign in to save notes for your classes.</p>
+            ) : (
+              <>
+                {/* Mine / Class */}
+                <div className="grid grid-cols-2 border border-line" role="tablist">
+                  {(['mine', 'class'] as const).map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      role="tab"
+                      aria-selected={tab === t}
+                      onClick={() => {
+                        setTab(t);
+                        setError('');
+                        if (t === 'class' && pending.length > 1) {
+                          pending.slice(1).forEach((x) => URL.revokeObjectURL(x.url));
+                          setPending(pending.slice(0, 1));
+                        }
+                      }}
+                      className={clsx('h-11 inline-flex items-center justify-center gap-2 text-[14px] font-semibold transition-colors cursor-pointer', tab === t ? 'bg-ink text-on-ink' : 'text-fg-2 hover:bg-surface-2')}
+                    >
+                      {t === 'mine' ? <Lock className="w-4 h-4" /> : <Users className="w-4 h-4" />}
+                      {t === 'mine' ? 'My notes' : 'Class notes'}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Composer */}
+                {tab === 'class' && !hasBatch ? (
+                  <p className="border border-line px-f3 py-3 text-[14px] text-muted">Join your class batch from Profile to share notes with your classmates.</p>
+                ) : (
+                  <div className="border border-line bg-surface">
+                    <textarea
+                      ref={textRef}
+                      value={text}
+                      onChange={(e) => setText(e.target.value.slice(0, MAX_NOTE_CHARS))}
+                      rows={3}
+                      placeholder={tab === 'mine' ? 'Quick note… e.g. "Prof said Unit 3 will come in Mid-Sem"' : 'Share with your class… e.g. "Lab record due Friday"'}
+                      className="w-full resize-none bg-transparent px-f3 pt-3 pb-2 text-[15px] leading-[22px] text-fg placeholder:text-faint focus:outline-none"
+                    />
+                    {tab === 'mine' && !text && (
+                      <div className="flex gap-1.5 overflow-x-auto no-scrollbar px-f3 pb-2">
+                        {QUICK.map((q) => (
+                          <button key={q} type="button" onClick={() => { setText(q + ': '); textRef.current?.focus(); }} className="chip shrink-0">
+                            {q}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {pending.length > 0 && (
+                      <div className="flex gap-2 overflow-x-auto no-scrollbar px-f3 pb-2">
+                        {pending.map((p, i) => (
+                          <div key={p.url} className="relative w-16 h-16 shrink-0 border border-line overflow-hidden">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={p.url} alt="" className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              aria-label="Remove photo"
+                              onClick={() => setPending((list) => { URL.revokeObjectURL(list[i].url); return list.filter((_, j) => j !== i); })}
+                              className="absolute right-0.5 top-0.5 w-5 h-5 flex items-center justify-center bg-surface/90 border border-line cursor-pointer"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1 border-t border-line-soft px-1.5 py-1.5">
+                      <button type="button" onClick={() => cameraRef.current?.click()} className="h-9 px-2.5 inline-flex items-center gap-1.5 text-[13px] font-medium text-fg-2 hover:bg-surface-2 cursor-pointer">
+                        <Camera className="w-4 h-4" /> Photo
+                      </button>
+                      <button type="button" onClick={() => galleryRef.current?.click()} className="h-9 px-2.5 inline-flex items-center gap-1.5 text-[13px] font-medium text-fg-2 hover:bg-surface-2 cursor-pointer">
+                        <ImageIcon className="w-4 h-4" /> Gallery
+                      </button>
+                      <span className="flex-1" />
+                      <button type="button" onClick={save} disabled={!canSave} className="btn btn-primary h-9 px-4 text-[13px]">
+                        {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {tab === 'mine' ? 'Save' : 'Share'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <p className="-mt-2 text-[12px] leading-[17px] text-muted">
+                  {tab === 'mine'
+                    ? 'Only you see these. Photos stay on this phone, notes are backed up to your account.'
+                    : 'Everyone in your batch sees these. One copy for the whole class.'}
+                </p>
+
+                {error && (
+                  <p className="flex items-start gap-2 px-3 py-2.5 border border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-400/10 dark:border-rose-400/20 dark:text-rose-300 text-[14px]">
+                    <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /> {error}
+                  </p>
+                )}
+
+                {/* List */}
+                <div className="flex items-center justify-between gap-3">
+                  <h4 className="text-[15px] font-semibold text-fg">{range === 'slot' ? `${dateLabel(slot.date)}'s notes` : `All ${slot.subjectName} notes`}</h4>
+                  <div className="flex gap-1">
+                    <button type="button" onClick={() => setRange('slot')} className={clsx('chip', range === 'slot' && 'chip-active')}>This class</button>
+                    <button type="button" onClick={() => setRange('all')} className={clsx('chip', range === 'all' && 'chip-active')}>All dates</button>
+                  </div>
+                </div>
+
+                {loading && list.length === 0 ? (
+                  <div className="flex items-center justify-center gap-2 py-f5 text-[14px] text-muted">
+                    <Loader2 className="w-4 h-4 animate-spin" /> Loading notes…
+                  </div>
+                ) : list.length === 0 ? (
+                  <p className="border border-dashed border-line px-f3 py-f4 text-center text-[14px] text-muted">
+                    {tab === 'mine' ? 'No notes yet. Snap the whiteboard or jot down what matters.' : 'No class notes yet. Share something useful with your batch.'}
+                  </p>
+                ) : (
+                  <div className="flex flex-col gap-f3">
+                    {groups.map((g) => (
+                      <section key={g.date}>
+                        {range === 'all' && <p className="mb-1.5 text-[12px] font-semibold text-muted">{dateLabel(g.date)}</p>}
+                        <ul className="border border-line divide-y divide-line-soft">
+                          {g.items.map((n: any) => (
+                            <li key={n.id} className="px-f3 py-3">
+                              <div className="flex items-start gap-3">
+                                <div className="flex-1 min-w-0">
+                                  {n.text && <p className="text-[15px] leading-[22px] text-fg whitespace-pre-wrap break-words">{n.text}</p>}
+                                  <p className="mt-1 text-[12px] text-muted">
+                                    {tab === 'class' ? `${n.mine ? 'You' : n.byName} · ` : ''}
+                                    {timeOf(n.createdAt)}
+                                  </p>
+                                </div>
+                                {(tab === 'mine' || n.canDelete) && (
+                                  <button
+                                    type="button"
+                                    aria-label="Delete note"
+                                    onClick={() => (tab === 'mine' ? removeMine(n) : removeShared(n))}
+                                    className="w-8 h-8 shrink-0 flex items-center justify-center text-muted hover:text-rose-600 cursor-pointer"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                              {tab === 'mine' && n.photos?.length > 0 && (
+                                <div className="mt-2.5 grid grid-cols-3 gap-1.5">
+                                  {n.photos.map((id: string) => (
+                                    <LocalPhoto key={id} id={id} onOpen={setViewer} />
+                                  ))}
+                                </div>
+                              )}
+                              {tab === 'class' && n.imageUrl && (
+                                <button type="button" onClick={() => setViewer(n.imageUrl)} className="mt-2.5 block w-full border border-line overflow-hidden cursor-pointer">
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img src={n.imageUrl} alt="Shared class photo" className="w-full max-h-[320px] object-cover" loading="lazy" />
+                                </button>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </section>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {viewer && (
+        <div className="fixed inset-0 z-[10000] bg-black/90 flex items-center justify-center p-3" onClick={() => setViewer(null)} role="dialog" aria-label="Photo">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={viewer} alt="" className="max-w-full max-h-full object-contain" />
+          <button type="button" aria-label="Close photo" className="absolute right-3 top-[max(env(safe-area-inset-top),12px)] w-10 h-10 flex items-center justify-center bg-white/10 text-white cursor-pointer">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+    </>
+  );
+};

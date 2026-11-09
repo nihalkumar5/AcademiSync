@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Modal } from './Modal';
-import { AlertTriangle, Trash2, AlertCircle } from 'lucide-react';
+import { AlertTriangle, Trash2, AlertCircle } from '@/components/ui/icons';
 import { Button } from './Button';
 
 export interface ConfirmModalProps {
@@ -57,10 +57,10 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           </div>
 
           <div className="min-w-0 flex-1 pt-0.5">
-            <h3 className="text-[16px] sm:text-[17px] font-bold text-[#111111] dark:text-[#FFFFFF] tracking-tight leading-snug">
+            <h3 className="text-[16px] sm:text-[17px] font-bold text-fg tracking-tight leading-snug">
               {title}
             </h3>
-            <p className="mt-1 text-[13px] text-[#6F6F6F] dark:text-[#94A3B8] leading-relaxed">
+            <p className="mt-1 text-[13px] text-muted leading-relaxed">
               {description}
             </p>
           </div>
@@ -68,13 +68,13 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
         {/* Monospace Highlight Box */}
         {highlightText && (
-          <div className="mb-5 p-2.5 bg-black/[0.03] dark:bg-white/[0.03] border border-black/10 dark:border-white/10 text-[12px] font-mono text-[#111111] dark:text-[#F4F4F6] rounded-none break-all select-all">
+          <div className="mb-5 p-2.5 bg-surface-2 border border-line text-[12px] font-mono text-fg rounded-none break-all select-all">
             {highlightText}
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-black/5 dark:border-white/[0.08] mt-2">
+        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-line-soft mt-2">
           <Button
             type="button"
             variant="outline"

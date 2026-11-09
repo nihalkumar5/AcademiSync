@@ -18,7 +18,7 @@ import {
   Share2,
   BookOpen,
   Paperclip,
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 export interface HomeworkDetailModalProps {
   isOpen: boolean;
@@ -117,13 +117,13 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
       <div className="flex flex-col gap-5 py-1 text-left">
         {/* Badges Row */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[11px] font-bold font-mono px-2.5 py-1 rounded-none border border-black/10 dark:border-white/10 bg-black/[0.04] dark:bg-white/[0.04] text-[#111111] dark:text-[#F4F4F6] uppercase">
+          <span className="text-[11px] font-bold font-mono px-2.5 py-1 rounded-none border border-line bg-surface-2 text-fg uppercase">
             <BookOpen className="w-3 h-3 inline mr-1" />
             {subjectName}
           </span>
 
           {homework.source === 'google_classroom' && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold font-mono px-2 py-0.5 rounded-none bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 uppercase">
+            <span className="inline-flex items-center gap-1 text-[12px] font-bold font-mono px-2 py-0.5 rounded-none bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 ">
               <GraduationCap className="w-3 h-3" />
               Classroom
             </span>
@@ -135,7 +135,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
                 ? 'bg-rose-500/10 text-rose-600 border border-rose-500/20'
                 : homework.priority === 'Medium'
                 ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
-                : 'bg-black/5 dark:bg-white/5 text-gray-500 border border-black/10'
+                : 'bg-surface-2 text-gray-500 border border-black/10'
             }`}
           >
             {homework.priority} Priority
@@ -147,7 +147,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
                 ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30'
                 : isInProgress
                 ? 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border border-blue-500/30'
-                : 'bg-black/[0.05] dark:bg-white/[0.05] text-[#6B6B6B] dark:text-[#94A3B8] border border-black/10 dark:border-white/10'
+                : 'bg-black/[0.05] dark:bg-white/[0.05] text-muted border border-line'
             }`}
           >
             {isDone ? 'Completed' : isInProgress ? 'Doing' : 'To Do'}
@@ -156,13 +156,13 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
 
         {/* Title */}
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-[#111111] dark:text-[#FFFFFF] leading-snug tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-bold text-fg leading-snug tracking-tight">
             {homework.title}
           </h2>
 
           {/* Deadline Bar */}
           {isValidDate && (
-            <div className="flex items-center gap-3 mt-3 text-xs text-[#6B6B6B] dark:text-[#94A3B8]">
+            <div className="flex items-center gap-3 mt-3 text-xs text-muted">
               <span className="flex items-center gap-1.5 font-mono">
                 <Calendar className="w-3.5 h-3.5" />
                 {deadlineDate.toLocaleDateString('en-US', {
@@ -182,7 +182,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
                 className={`font-mono font-bold uppercase text-[11px] px-1.5 py-0.2 rounded-none ${
                   isOverdue && !isDone
                     ? 'bg-rose-500/10 text-rose-600 border border-rose-500/20'
-                    : 'bg-black/[0.04] dark:bg-white/[0.05] text-[#111111] dark:text-[#FFFFFF]'
+                    : 'bg-surface-2 text-fg'
                 }`}
               >
                 {deadlineLabel}
@@ -192,13 +192,13 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
         </div>
 
         {/* Description Section */}
-        <div className="flex flex-col gap-1.5 pt-2 border-t border-black/10 dark:border-white/10">
-          <label className="text-[11px] font-bold font-mono uppercase text-[#6B6B6B] dark:text-[#94A3B8] tracking-wider">
+        <div className="flex flex-col gap-1.5 pt-2 border-t border-line">
+          <label className="text-[12px] font-bold font-mono text-muted ">
             Instructions & Details
           </label>
-          <div className="p-3.5 rounded-none bg-black/[0.02] dark:bg-white/[0.03] border border-black/[0.06] dark:border-white/[0.08] max-h-52 overflow-y-auto">
+          <div className="p-3.5 rounded-none bg-surface-2 border border-line-soft max-h-52 overflow-y-auto">
             {homework.description ? (
-              <p className="text-[13px] text-[#111111] dark:text-[#E2E8F0] whitespace-pre-wrap leading-relaxed">
+              <p className="text-[13px] text-fg whitespace-pre-wrap leading-relaxed">
                 {homework.description}
               </p>
             ) : (
@@ -213,7 +213,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
             <button
               type="button"
               onClick={() => openLink(classroomUrl)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-none bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 h-11 px-4 rounded-none bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-[14px] font-semibold transition-colors cursor-pointer"
             >
               <GraduationCap className="w-4 h-4" />
               <span>Open in Google Classroom</span>
@@ -223,7 +223,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
         )}
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between pt-4 border-t border-black/10 dark:border-white/10 gap-2 flex-wrap">
+        <div className="flex items-center justify-between pt-4 border-t border-line gap-2 flex-wrap">
           {/* Status Toggle Action */}
           <Button
             variant={isDone ? 'outline' : 'primary'}
@@ -247,7 +247,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
               <button
                 type="button"
                 onClick={() => onShare(homework)}
-                className="p-2 border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 text-[#6B6B6B] dark:text-[#94A3B8] transition-colors rounded-none cursor-pointer"
+                className="p-2 border border-line hover:bg-surface-2 text-muted transition-colors rounded-none cursor-pointer"
                 title="Share Task" aria-label="Share Task"
               >
                 <Share2 className="w-4 h-4" />
@@ -260,7 +260,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({
                 onClose();
                 onEdit(homework);
               }}
-              className="flex items-center gap-1.5 px-3 py-2 border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 text-[#111111] dark:text-[#F4F4F6] text-xs font-medium rounded-none transition-colors cursor-pointer"
+              className="btn btn-secondary btn-sm"
               title="Edit Task" aria-label="Edit Task"
             >
               <Edit2 className="w-3.5 h-3.5" />

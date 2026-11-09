@@ -5,7 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { BatchProposedTask, FacultyLinkedBatch } from '@/lib/types';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { CheckSquare, Plus, Eye, Calendar, Users, FileText, ExternalLink, Link2 } from 'lucide-react';
+import { CheckSquare, Plus, Eye, Calendar, Users, FileText, ExternalLink, Link2 } from '@/components/ui/icons';
 import { getTaskCardTheme } from '@/lib/cardColors';
 import { formatFacultyBatchDegreeAndBranch } from '@/lib/facultyUtils';
 import { AssignmentReadTrackerModal } from './AssignmentReadTrackerModal';
@@ -83,12 +83,12 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
 
   return (
     <>
-      <div className="w-full bg-white dark:bg-[#13151D] border border-black/[0.06] dark:border-white/[0.08] rounded-[12px] p-5 sm:p-6 text-left flex flex-col gap-5 shadow-xs">
+      <div className="w-full bg-surface border border-line-soft rounded-none p-5 sm:p-6 text-left flex flex-col gap-5 shadow-xs">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-black/[0.06] dark:border-white/[0.08]">
+        <div className="flex items-center justify-between pb-3 border-b border-line-soft">
           <div className="flex items-center gap-2">
-            <CheckSquare className="w-4 h-4 text-[#111111] dark:text-white" />
-            <h3 className="text-sm font-bold uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF]">
+            <CheckSquare className="w-4 h-4 text-fg" />
+            <h3 className="text-sm font-bold text-fg">
               Assignments &amp; Tasks
             </h3>
           </div>
@@ -96,7 +96,7 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
           <button
             type="button"
             onClick={onOpenCreateModal}
-            className="px-3.5 py-1.5 rounded-[8px] bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
+            className="btn btn-primary btn-sm shadow-2xs"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Post Assignment</span>
@@ -106,7 +106,7 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
         {/* Assignments List */}
         <div className="flex flex-col gap-3.5">
           {assignments.length === 0 ? (
-            <div className="py-10 text-center text-xs text-[#6F6F6F] dark:text-[#A1A1AA] flex flex-col items-center justify-center gap-2">
+            <div className="py-10 text-center text-xs text-muted flex flex-col items-center justify-center gap-2">
               <FileText className="w-7 h-7 opacity-30" />
               <span>No assignments posted yet. Tap &quot;Post Assignment&quot; to publish one.</span>
             </div>
@@ -132,18 +132,18 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
               return (
                 <div
                   key={task.id}
-                  className="relative flex flex-col p-4 sm:p-[18px] rounded-[12px] border border-black/[0.05] dark:border-[color:var(--card-accent-border)] transition-all w-full overflow-hidden shadow-xs hover:shadow-md"
+                  className="relative flex flex-col p-4 sm:p-[18px] rounded-none border border-black/[0.05] dark:border-[color:var(--card-accent-border)] transition-all w-full overflow-hidden shadow-xs hover:shadow-md"
                   style={{
                     ['--card-accent-border' as any]: `${theme.accent}45`,
                   }}
                 >
                   {/* Pastel background tints */}
                   <div
-                    className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[11px]"
+                    className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-none"
                     style={{ backgroundColor: theme.bg }}
                   />
                   <div
-                    className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[11px]"
+                    className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-none"
                     style={{
                       background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
                     }}
@@ -160,18 +160,18 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
                       </div>
 
                       <div className="flex items-center gap-1.5 flex-wrap self-start">
-                        <span className="px-2 py-0.5 rounded-[4px] bg-black/5 dark:bg-white/10 text-[11px] font-bold uppercase tracking-wider text-black/70 dark:text-white/70 flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-none bg-black/5 dark:bg-white/10 text-[11px] font-bold uppercase tracking-wider text-fg-2 flex items-center gap-1">
                           <Users className="w-3 h-3" />
                           {batchName}
                         </span>
 
                         {task.priority === 'High' && (
-                          <span className="px-2 py-0.5 rounded-[4px] bg-[#FFF0E8] text-[#C96B45] text-[11px] font-bold uppercase tracking-wider dark:bg-orange-500/15 dark:text-orange-300">
+                          <span className="px-2 py-0.5 rounded-none bg-[#FFF0E8] text-[#C96B45] text-[12px] font-bold dark:bg-orange-500/15 dark:text-orange-300">
                             HIGH
                           </span>
                         )}
 
-                        <span className="px-2 py-0.5 rounded-[4px] bg-black/5 dark:bg-white/5 text-[11px] font-mono text-black/70 dark:text-white/70 flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-none bg-surface-2 text-[11px] font-mono text-fg-2 flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           Due {deadlineDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           {diffDays <= 2 && diffDays >= 0 && (
@@ -187,25 +187,25 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
                     {/* Title & Subject */}
                     <div>
                       <span
-                        className="text-[11px] font-mono font-bold uppercase tracking-wider block"
+                        className="text-[12px] font-mono font-bold block"
                         style={{ color: theme.accent }}
                       >
                         {task.subjectName || 'Subject'}
                       </span>
-                      <h4 className="text-sm sm:text-[15px] font-bold text-black dark:text-white leading-snug mt-0.5">
+                      <h4 className="text-sm sm:text-[15px] font-bold text-fg leading-snug mt-0.5">
                         {task.title}
                       </h4>
                       {task.description && (
-                        <p className="text-xs text-black/70 dark:text-white/70 mt-1 line-clamp-2">
+                        <p className="text-xs text-fg-2 mt-1 line-clamp-2">
                           {task.description}
                         </p>
                       )}
                     </div>
 
                     {/* Bottom: Read Tracker Bar & Action */}
-                    <div className="flex items-center justify-between pt-2.5 border-t border-black/10 dark:border-white/10 mt-1 flex-wrap gap-2">
+                    <div className="flex items-center justify-between pt-2.5 border-t border-line mt-1 flex-wrap gap-2">
                       <div className="flex items-center gap-2">
-                        <div className="px-2.5 py-1 rounded-[6px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-bold flex items-center gap-1.5">
+                        <div className="px-2.5 py-1 rounded-none bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-bold flex items-center gap-1.5">
                           <Eye className="w-3.5 h-3.5" />
                           <span>{readCount} Opened</span>
                         </div>
@@ -215,7 +215,7 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
                             href={task.attachmentUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-2.5 py-1 rounded-[6px] bg-black/5 dark:bg-white/5 text-[11px] font-medium text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10 flex items-center gap-1 transition-colors"
+                            className="px-2.5 py-1 rounded-none bg-surface-2 text-[11px] font-medium text-fg-2 hover:bg-surface-3 flex items-center gap-1 transition-colors"
                           >
                             <Link2 className="w-3 h-3" />
                             <span>Attachment</span>
@@ -226,7 +226,7 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
                       <button
                         type="button"
                         onClick={() => setSelectedTaskForTracking(task)}
-                        className="px-3 py-1.5 rounded-[8px] text-xs font-bold uppercase tracking-wider text-black dark:text-white border border-black/15 dark:border-white/15 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                        className="btn btn-secondary btn-sm shadow-2xs"
                       >
                         <span>Track Reads</span>
                         <ExternalLink className="w-3 h-3 opacity-60" />

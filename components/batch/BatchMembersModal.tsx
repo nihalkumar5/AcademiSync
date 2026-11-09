@@ -11,7 +11,8 @@ import { db } from '@/lib/firebase';
 import { getAuthHeaders } from '@/lib/authHeaders';
 import { Modal } from '@/components/ui/Modal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
-import { Crown, Search, Check, Share2, ArrowRight, MoreVertical, ChevronLeft } from 'lucide-react';
+import { Crown, Search, Check, Share2, MoreVertical, Users, UserMinus } from '@/components/ui/icons';
+import { getAvatarSrc, getAvatarSeed } from '@/lib/avatar';
 
 interface BatchMembersModalProps {
   isOpen: boolean;
@@ -23,7 +24,7 @@ interface BatchMembersModalProps {
 // Filters phantom/anonymous ghost accounts, validates emails, and deduplicates
 // duplicate logins by the SAME person based on UID, Roll Number, or verified Email.
 // Students with the same name but different roll numbers or emails are preserved as distinct students.
-function deduplicateBatchMembers(rawList: any[], currentUserId?: string, currentUserEmail?: string): any[] {
+export function deduplicateBatchMembers(rawList: any[], currentUserId?: string, currentUserEmail?: string): any[] {
   if (!Array.isArray(rawList)) return [];
   // 1. Keep all registered batch members, only filtering out malformed records or joke/fake emails
   const validList = rawList.filter((raw) => {
@@ -441,13 +442,32 @@ ${PLAY_STORE_URL}
     });
   }, [deduplicatedMembers, searchQuery]);
 
-  const crMembers = useMemo(() => {
-    return deduplicatedMembers.filter((m) => checkMemberIsCR(m));
+  const byYouThenName = (a: any, b: any) => {
+    const ya = checkIsCurrentUser(a) ? 0 : 1;
+    const yb = checkIsCurrentUser(b) ? 0 : 1;
+    if (ya !== yb) return ya - yb;
+    return (a.profile?.name || '').localeCompare(b.profile?.name || '');
+  };
+
+  const allPilotCount = useMemo(() => {
+    return deduplicatedMembers.filter((m) => checkMemberIsCR(m)).length;
   }, [deduplicatedMembers, batchData]);
 
-  const normalMembers = useMemo(() => {
-    return filteredMembers.filter((m) => !checkMemberIsCR(m));
+  const crMembers = useMemo(() => {
+    return filteredMembers.filter((m) => checkMemberIsCR(m)).sort(byYouThenName);
   }, [filteredMembers, batchData]);
+
+  const normalMembers = useMemo(() => {
+    return filteredMembers.filter((m) => !checkMemberIsCR(m)).sort(byYouThenName);
+  }, [filteredMembers, batchData]);
+
+  // Only open the action sheet when it has something to offer
+  const hasActions = (m: any) =>
+    !checkMemberIsSuperAdmin(m) &&
+    ((isAuthorizedCR && !checkIsCurrentUser(m) && !checkMemberIsCreator(m)) ||
+      (checkIsCurrentUser(m) && checkMemberIsCR(m) && !checkMemberIsCreator(m)));
+
+  const inviteCode = batchData?.inviteCode || '';
 
   let displayYear = batchData?.year;
   if (!displayYear && batchData?.semester) {
@@ -458,135 +478,150 @@ ${PLAY_STORE_URL}
   }
   displayYear = displayYear || '?';
 
+  const MemberList = ({ members: list, pilot = false }: { members: any[]; pilot?: boolean }) => (
+    <ul className="border border-line bg-surface divide-y divide-line-soft">
+      {list.map((m) => {
+        const p = m.profile || {};
+        const isYou = checkIsCurrentUser(m);
+        const actionable = hasActions(m);
+        const content = (
+          <>
+            <span className="w-10 h-10 shrink-0 rounded-full overflow-hidden bg-[#F1F1EF] dark:bg-[#F4F4F6]">
+              <img src={getAvatarSrc(getAvatarSeed({ avatarUrl: p.avatarUrl, id: m.id, role: p.role }))} alt="" className="w-full h-full object-cover scale-110 translate-y-0.5" loading="lazy" />
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="flex items-center gap-2 min-w-0">
+                <span className="text-[15px] font-medium text-fg truncate">{p.name || 'Student'}</span>
+                {isYou && (
+                  <span className="shrink-0 text-[11px] font-semibold px-1.5 py-0.5 bg-ink text-on-ink">You</span>
+                )}
+              </span>
+              <span className="block mt-0.5 text-[13px] text-muted truncate">
+                {pilot ? 'Batch pilot · ' : ''}
+                {p.rollNumber || p.email || '—'}
+              </span>
+            </span>
+            {actionable && <MoreVertical className="w-4 h-4 shrink-0 text-faint" />}
+          </>
+        );
+        return (
+          <li key={m.id}>
+            {actionable ? (
+              <button
+                type="button"
+                onClick={() => setSelectedMember(m)}
+                aria-label={`Options for ${p.name || 'member'}`}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left cursor-pointer hover:bg-surface-2 transition-colors"
+              >
+                {content}
+              </button>
+            ) : (
+              <div className="flex items-center gap-3 px-4 py-3">{content}</div>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+
   if (!isOpen || !batchKey) return null;
 
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} mobileFullSheet maxWidth="2xl" title="Batch Members">
         <div className="flex flex-col gap-6 font-sans">
-          {/* Programme & Meta */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div className="flex flex-col">
-              <span className="text-[14px] font-bold text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wide">
-                {batchData?.programme || 'PROGRAMME'} · {batchData?.branch || 'BRANCH'}
-              </span>
-              <div className="flex items-center gap-2 text-[12px] text-[#6F6F6F] mt-0.5">
-                <span>SEMESTER {batchData?.semester || '?'}</span>
-                <span>·</span>
-                <span>YEAR {displayYear}</span>
-              </div>
-            </div>
-
-            <div className="text-[11px] font-mono text-[#6F6F6F] dark:text-[#94A3B8] px-2.5 py-1 bg-black/[0.03] dark:bg-white/[0.05] border border-[#D9D9D6] dark:border-white/[0.08] self-start sm:self-auto uppercase tracking-wider">
-              {deduplicatedMembers.length} {deduplicatedMembers.length === 1 ? 'MEMBER' : 'MEMBERS'}
+          {/* Batch summary */}
+          <div className="flex items-start gap-3">
+            <span className="w-11 h-11 shrink-0 flex items-center justify-center bg-ink text-on-ink">
+              <Users className="w-5 h-5" strokeWidth={1.75} />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[17px] font-semibold leading-snug text-fg break-words">
+                {[batchData?.programme, batchData?.branch].filter(Boolean).join(' · ') || 'Your batch'}
+              </p>
+              <p className="mt-0.5 text-[13px] text-muted">
+                Semester {batchData?.semester || '?'} · Year {displayYear} · {deduplicatedMembers.length}{' '}
+                {deduplicatedMembers.length === 1 ? 'member' : 'members'}
+              </p>
             </div>
           </div>
 
-          {/* Invite Button */}
-          <button 
-            onClick={handleCopyInvite}
-            className="flex items-center justify-between py-3.5 px-4 border border-[#D9D9D6] dark:border-white/[0.08] bg-black/[0.01] dark:bg-white/[0.03] hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors text-left group cursor-pointer"
-          >
-            <span className="text-[12px] font-bold tracking-[1px] text-[#111111] dark:text-[#F4F4F6] uppercase">
-              {copiedLink ? 'BATCH CODE COPIED' : 'SHARE BATCH INVITE CODE'}
-            </span>
-            {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <ArrowRight className="w-4 h-4 text-[#111111] dark:text-[#F4F4F6] group-hover:translate-x-1 transition-transform" />}
-          </button>
-
-          {/* Batch Pilot Section */}
-          {crMembers.length > 0 && (
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] dark:text-[#94A3B8] uppercase flex items-center gap-1.5">
-                  <Crown className="w-3.5 h-3.5 text-amber-500" />
-                  BATCH PILOT{crMembers.length > 1 ? `S (${crMembers.length}/3)` : ' (1/3)'}
-                </span>
-              </div>
-              <div className={`grid ${crMembers.length > 2 ? 'grid-cols-1 sm:grid-cols-3' : crMembers.length > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'} gap-3`}>
-                {crMembers.map((cr) => {
-                  const p = cr.profile || {};
-                  const isCurrentUser = checkIsCurrentUser(cr);
-                  return (
-                    <div key={cr.id} className="relative flex flex-col items-center justify-center p-4 sm:p-5 border border-[#D9D9D6] dark:border-white/[0.08] text-center bg-[#FDFDFD] dark:bg-[#121317] group dark:shadow-md">
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center mb-2.5">
-                        <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${p.avatarUrl || cr.id}&backgroundColor=transparent`} alt="avatar" className="w-full h-full object-contain drop-shadow-sm group-hover:scale-105 transition-transform" />
-                      </div>
-                      <span className="text-[14px] font-semibold text-[#111111] dark:text-[#F4F4F6] truncate w-full px-2">
-                        {p.name || 'Pilot'}
-                      </span>
-                      <span className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8] mt-0.5 truncate w-full px-2 font-mono">
-                        Batch Pilot · {p.rollNumber || p.email}
-                      </span>
-                      {isCurrentUser && (
-                        <span className="absolute top-2.5 left-2.5 text-[11px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] border border-[#D9D9D6] dark:border-white/[0.1] px-1.5 py-0.5 uppercase bg-black/[0.02] dark:bg-white/[0.06]">YOU</span>
-                      )}
-                      <button 
-                        onClick={() => setSelectedMember(cr)}
-                        className="absolute top-2.5 right-2.5 p-1.5 text-[#6F6F6F] hover:text-[#111111] dark:text-[#94A3B8] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/[0.06] rounded transition-colors cursor-pointer"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Members Section */}
-          <div className="flex flex-col">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] dark:text-[#94A3B8] uppercase">MEMBERS ({normalMembers.length})</span>
-            </div>
-
-            {/* Search Input */}
-            <div className="relative mb-4">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6F6F6F] dark:text-[#94A3B8]" />
-              <input 
-                placeholder="Search members by name, roll number, email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-black/[0.02] dark:bg-[#090A0C] text-[14px] text-[#111111] dark:text-[#F4F4F6] focus:outline-none border border-[#D9D9D6] dark:border-white/[0.08] transition-colors placeholder:text-[#6F6F6F] dark:placeholder:text-[#64748B]"
-              />
-            </div>
-
-            {loading ? (
-              <div className="py-12 text-center text-[12px] font-mono text-[#6F6F6F] dark:text-[#94A3B8] animate-pulse">
-                Loading members...
-              </div>
-            ) : normalMembers.length === 0 ? (
-              <div className="py-12 text-center text-[13px] text-[#6F6F6F] dark:text-[#94A3B8]">
-                No members found.
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {normalMembers.map((m) => {
-                  const p = m.profile || {};
-                  const isCurrentUser = checkIsCurrentUser(m);
-                  return (
-                    <div 
-                      key={m.id}
-                      onClick={() => setSelectedMember(m)}
-                      className="group flex flex-col items-center text-center border border-[#D9D9D6] dark:border-white/[0.08] p-4 sm:p-5 cursor-pointer hover:border-[#111111] dark:hover:border-white/[0.2] hover:shadow-sm transition-all relative bg-[#FFFFFF] dark:bg-[#121317] dark:shadow-md"
-                    >
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto flex items-center justify-center mb-3">
-                        <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${p.avatarUrl || m.id}&backgroundColor=transparent`} alt="avatar" className="w-full h-full object-contain drop-shadow-sm group-hover:scale-105 transition-transform" />
-                      </div>
-                      <span className="text-[13px] font-semibold text-[#111111] dark:text-[#F4F4F6] leading-tight truncate w-full px-1">
-                        {p.name || 'Student'}
-                      </span>
-                      <span className="text-[11px] text-[#6F6F6F] dark:text-[#94A3B8] mt-1 truncate w-full px-1 font-mono">
-                        {p.rollNumber || p.email}
-                      </span>
-                      {isCurrentUser && (
-                        <span className="absolute top-2 right-2 text-[11px] font-bold tracking-widest text-[#6F6F6F] dark:text-[#94A3B8] border border-[#D9D9D6] dark:border-white/[0.1] px-1 py-0.5 uppercase bg-black/[0.02] dark:bg-white/[0.06]">YOU</span>
-                      )}
-                    </div>
-                  );
-                })}
+          {/* Invite */}
+          <div className="border border-line bg-surface">
+            {inviteCode && (
+              <div className="flex items-center justify-between gap-3 px-4 pt-4">
+                <div>
+                  <p className="text-[13px] text-muted">Batch code</p>
+                  <p className="mt-0.5 text-[22px] font-mono font-semibold tracking-[4px] text-fg select-all">{inviteCode}</p>
+                </div>
               </div>
             )}
+            <div className="p-4 flex gap-2">
+              <button
+                type="button"
+                onClick={handleCopyInvite}
+                className="btn btn-primary flex-1"
+              >
+                {copiedLink ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+                {copiedLink ? 'Copied' : 'Invite batchmates'}
+              </button>
+            </div>
           </div>
+
+          {/* Search */}
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+            <input
+              type="search"
+              placeholder="Search name, roll no. or email"
+              aria-label="Search members"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-12 pl-10 pr-4 bg-surface text-[15px] text-fg border border-line focus:outline-none focus:border-line-strong transition-colors placeholder:text-[#8A8A8A] dark:placeholder:text-[#71717A]"
+            />
+          </div>
+
+          {loading ? (
+            <div className="border border-line divide-y divide-line-soft" aria-busy="true" aria-label="Loading members">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-3 px-4 py-3">
+                  <span className="w-10 h-10 rounded-full bg-black/[0.06] dark:bg-white/[0.06] animate-pulse" />
+                  <span className="flex-1">
+                    <span className="block h-3.5 w-1/2 bg-black/[0.06] dark:bg-white/[0.06] animate-pulse" />
+                    <span className="block mt-2 h-3 w-1/3 bg-surface-2 animate-pulse" />
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              {crMembers.length > 0 && (
+                <section className="flex flex-col gap-3">
+                  <div className="flex items-baseline justify-between">
+                    <h4 className="text-[17px] font-semibold text-fg flex items-center gap-2">
+                      <Crown className="w-4 h-4 text-amber-500" /> Batch pilots
+                    </h4>
+                    <span className="text-[13px] text-muted">{allPilotCount} of 3</span>
+                  </div>
+                  <MemberList members={crMembers} pilot />
+                </section>
+              )}
+
+              <section className="flex flex-col gap-3">
+                <div className="flex items-baseline justify-between">
+                  <h4 className="text-[17px] font-semibold text-fg">Members</h4>
+                  <span className="text-[13px] text-muted">{normalMembers.length}</span>
+                </div>
+                {normalMembers.length === 0 ? (
+                  <div className="border border-dashed border-line px-4 py-8 text-center text-[14px] text-muted">
+                    {searchQuery ? `No one matches "${searchQuery}".` : 'No members yet. Share the code to invite your class.'}
+                  </div>
+                ) : (
+                  <MemberList members={normalMembers} />
+                )}
+              </section>
+            </>
+          )}
         </div>
       </Modal>
 
@@ -598,65 +633,61 @@ ${PLAY_STORE_URL}
       >
         {selectedMember && (
           <div className="-m-5 p-5">
-            <div className="border-b border-[#D9D9D6] dark:border-white/[0.08] pb-4 mb-4">
-              <h3 className="text-[18px] font-bold text-[#111111] dark:text-[#FFFFFF]">
-                {selectedMember.profile?.name || 'Student'}
-              </h3>
-              <p className="text-[13px] text-[#6F6F6F] mt-1">
-                {selectedMember.profile?.rollNumber || selectedMember.profile?.email}
-              </p>
+            <div className="flex items-center gap-3 pb-4 mb-2 border-b border-line-soft">
+              <span className="w-12 h-12 shrink-0 rounded-full overflow-hidden bg-[#F1F1EF] dark:bg-[#F4F4F6]">
+                <img src={getAvatarSrc(getAvatarSeed({ avatarUrl: selectedMember.profile?.avatarUrl, id: selectedMember.id, role: selectedMember.profile?.role }))} alt="" className="w-full h-full object-cover scale-110 translate-y-0.5" />
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-[17px] font-semibold text-fg truncate">
+                  {selectedMember.profile?.name || 'Student'}
+                </h3>
+                <p className="text-[13px] text-muted truncate">
+                  {checkMemberIsCR(selectedMember) ? 'Batch pilot · ' : ''}
+                  {selectedMember.profile?.rollNumber || selectedMember.profile?.email}
+                </p>
+              </div>
             </div>
-            
+
             <div className="flex flex-col">
-              {checkMemberIsSuperAdmin(selectedMember) ? (
-                <div className="py-4 text-[13px] text-[#6F6F6F]">
-                  No administrative actions available for this member.
-                </div>
-              ) : isAuthorizedCR && !checkIsCurrentUser(selectedMember) && !checkMemberIsCreator(selectedMember) ? (
-                 <>
-                   <div className="flex flex-col gap-1 mb-2">
-                     <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-1">BATCH PILOT ROLE</span>
-                     <button 
-                       onClick={() => { 
-                         handleToggleCR(selectedMember, checkMemberIsCR(selectedMember)); 
-                         setSelectedMember(null); 
-                       }} 
-                       className="text-left py-3 text-[14px] font-semibold text-[#111111] dark:text-[#FFFFFF] hover:opacity-70 transition-opacity cursor-pointer"
-                     >
-                       {checkMemberIsCR(selectedMember) ? 'Demote from Batch Pilot' : 'Make Batch Pilot'}
-                     </button>
-                   </div>
-                   
-                   <div className="flex flex-col gap-1 border-t border-[#D9D9D6] dark:border-[#333333] pt-4 mt-2">
-                     <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-1">DANGER ZONE</span>
-                     <button 
-                       onClick={() => { 
-                         handleRemoveMember(selectedMember); 
-                         setSelectedMember(null); 
-                       }} 
-                       className="text-left py-3 text-[14px] font-semibold text-red-600 hover:opacity-70 transition-opacity cursor-pointer"
-                     >
-                       Remove from batch
-                     </button>
-                   </div>
-                 </>
+              {isAuthorizedCR && !checkIsCurrentUser(selectedMember) && !checkMemberIsCreator(selectedMember) && !checkMemberIsSuperAdmin(selectedMember) ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleToggleCR(selectedMember, checkMemberIsCR(selectedMember));
+                      setSelectedMember(null);
+                    }}
+                    className="flex items-center gap-3 h-14 text-left text-[15px] font-medium text-fg hover:opacity-70 transition-opacity cursor-pointer"
+                  >
+                    <Crown className="w-5 h-5 text-amber-500" />
+                    {checkMemberIsCR(selectedMember) ? 'Remove as batch pilot' : 'Make batch pilot'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleRemoveMember(selectedMember);
+                      setSelectedMember(null);
+                    }}
+                    className="flex items-center gap-3 h-14 text-left text-[15px] font-medium text-rose-600 dark:text-rose-400 border-t border-line-soft hover:opacity-70 transition-opacity cursor-pointer"
+                  >
+                    <UserMinus className="w-5 h-5" />
+                    Remove from batch
+                  </button>
+                </>
               ) : checkIsCurrentUser(selectedMember) && checkMemberIsCR(selectedMember) && !checkMemberIsCreator(selectedMember) ? (
-                 <div className="flex flex-col gap-1 mb-2">
-                   <span className="text-[11px] font-bold tracking-[1px] text-[#6F6F6F] uppercase mb-1">BATCH PILOT ROLE</span>
-                   <button 
-                     onClick={() => { 
-                       handleWithdrawSelfAsCR(); 
-                       setSelectedMember(null); 
-                     }} 
-                     className="text-left py-3 text-[14px] font-semibold text-[#111111] dark:text-[#FFFFFF] hover:opacity-70 transition-opacity"
-                   >
-                     Step down as Batch Pilot
-                   </button>
-                 </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleWithdrawSelfAsCR();
+                    setSelectedMember(null);
+                  }}
+                  className="flex items-center gap-3 h-14 text-left text-[15px] font-medium text-fg hover:opacity-70 transition-opacity cursor-pointer"
+                >
+                  <Crown className="w-5 h-5 text-amber-500" />
+                  Step down as batch pilot
+                </button>
               ) : (
-                <div className="py-4 text-[13px] text-[#6F6F6F]">
-                  No administrative actions available for this member.
-                </div>
+                <p className="py-4 text-[14px] text-muted">No actions available for this member.</p>
               )}
             </div>
           </div>

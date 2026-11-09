@@ -54,6 +54,21 @@ service cloud.firestore {
       );
     }
 
+    // Faculty may act only on batches they have linked (profile.facultyBatchKeys mirrors facultyLinkedBatches)
+    function isLinkedFacultyOf(batchKey) {
+      return isAuthenticated() && callerRole() == 'faculty'
+        && batchKey in get(/databases/$(database)/documents/users/$(request.auth.uid)).data
+             .get('profile', {}).get('facultyBatchKeys', []);
+    }
+
+    // A student whose own profile is joined to this batch
+    function isMemberOfBatch(batchKey) {
+      return isAuthenticated()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data
+             .get('profile', {}).get('batchKey', '') == batchKey;
+    }
+
     function isPilotOfBatchKey(batchKey) {
       return batchKey is string && batchKey != ''
         && exists(/databases/$(database)/documents/shared_timetables/$(batchKey))
@@ -97,8 +112,8 @@ service cloud.firestore {
       allow update: if isAuthenticated() && (
         isAdmin() ||
         isPilotOf(resource.data) ||
-        // Faculty cancellations, reschedules, extra classes and the alerts that announce them
-        (callerRole() == 'faculty' && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        // Faculty cancellations, reschedules, extra classes and the alerts that announce them (linked batches only)
+        (isLinkedFacultyOf(batchKey) && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'cancelledSessions', 'cancelledSessionsMeta', 'rescheduledSessions',
           'extraSessions', 'batchAlerts', 'updatedAt'
         ])) ||
@@ -109,10 +124,87 @@ service cloud.firestore {
       );
       allow delete: if isSuperAdmin() || (isAuthenticated() && resource.data.get('creatorId', '') == request.auth.uid);
 
-      // Subcollection for proposed tasks/homework
-      match /proposed_tasks/{taskId} {
-        allow read, write: if isAuthenticated();
+      // Routines shared inside a batch. Only people in the batch (members, linked faculty, pilots, admins)
+      // can see or share them; nobody edits someone else's share, and each person can only mark their own "added".
+      match /shared_routines/{routineId} {
+        function inThisBatch() {
+          return isAdmin() || isPilotOfBatchKey(batchKey) || isLinkedFacultyOf(batchKey) || isMemberOfBatch(batchKey);
+        }
+        allow read: if inThisBatch();
+        allow create: if inThisBatch()
+          && request.resource.data.get('sharedBy', '') == request.auth.uid
+          && request.resource.data.get('title', '') is string
+          && request.resource.data.get('title', '').size() > 0
+          && request.resource.data.get('title', '').size() <= 60
+          && request.resource.data.get('addedBy', {}).size() == 0;
+        allow update: if inThisBatch() && (
+          (resource.data.get('sharedBy', '') == request.auth.uid
+            && request.resource.data.get('sharedBy', '') == request.auth.uid)
+          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['addedBy'])
+            && request.resource.data.get('addedBy', {}).diff(resource.data.get('addedBy', {})).affectedKeys()
+                 .hasOnly([request.auth.uid]))
+        );
+        allow delete: if isAdmin() || isPilotOfBatchKey(batchKey)
+          || (isAuthenticated() && resource.data.get('sharedBy', '') == request.auth.uid);
       }
+
+      // Proposed tasks: student proposals (voted on) and faculty assignments (posted by linked faculty)
+      match /proposed_tasks/{taskId} {
+        function isFacultyTask(data) {
+          return data.get('isFacultyAssignment', false) == true || data.get('creatorRole', '') == 'faculty';
+        }
+        function canManage() {
+          return isAdmin() || isPilotOfBatchKey(batchKey);
+        }
+
+        allow read: if isAuthenticated();
+
+        // Creators sign their own tasks; only linked faculty can post a faculty assignment
+        allow create: if canManage() || (
+          isAuthenticated()
+          && request.resource.data.get('creatorId', '') == request.auth.uid
+          && (!isFacultyTask(request.resource.data) || isLinkedFacultyOf(batchKey))
+        );
+
+        allow update: if canManage()
+          // Creator edits their own task, but can't turn a student proposal into a faculty assignment
+          || (isAuthenticated()
+              && resource.data.get('creatorId', '') == request.auth.uid
+              && request.resource.data.get('creatorId', '') == request.auth.uid
+              && (!isFacultyTask(request.resource.data) || isFacultyTask(resource.data)))
+          // Classmates vote on student proposals (their own vote only)
+          || (isAuthenticated()
+              && !isFacultyTask(resource.data)
+              && request.resource.data.diff(resource.data).affectedKeys()
+                   .hasOnly(['votes', 'approvalsCount', 'rejectionsCount', 'status', 'approvedAt'])
+              && request.resource.data.get('votes', {}).diff(resource.data.get('votes', {})).affectedKeys()
+                   .hasOnly([request.auth.uid]))
+          // Students record that they've read a faculty assignment (their own receipt only)
+          || (isAuthenticated()
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readReceipts'])
+              && request.resource.data.get('readReceipts', {}).diff(resource.data.get('readReceipts', {})).affectedKeys()
+                   .hasOnly([request.auth.uid]));
+
+        allow delete: if canManage()
+          || (isAuthenticated() && resource.data.get('creatorId', '') == request.auth.uid);
+      }
+    }
+
+    // Attendance is sensitive student data, so it is server-only: every read and write goes
+    // through /api/attendance (Admin SDK, which bypasses these rules) where the caller's token,
+    // faculty role and batch link are checked, versions are enforced and each change is logged.
+    // No client — not even the owning faculty or an admin — can touch these documents directly.
+    match /attendance/{rosterId} {
+      allow read, write: if false;
+      match /{rest=**} {
+        allow read, write: if false;
+      }
+    }
+    match /attendance_limits/{uid} {
+      allow read, write: if false;
+    }
+    match /attendance_exports/{token} {
+      allow read, write: if false;
     }
 
     // 3. Batch Pilot & CR Requests: students submit their own request as 'pending';
@@ -177,10 +269,18 @@ service cloud.firestore {
 
     // 7. Promotional Campaigns:
     // Read: Public (to display target banners to students)
-    // Write: Super Admin only
+    // Write: Super Admin only, except signed-in students may bump the view/click counters by exactly 1
     match /promotional_campaigns/{campaignId} {
       allow read: if true;
-      allow write: if isSuperAdmin();
+      allow create, delete: if isSuperAdmin();
+      allow update: if isSuperAdmin() || (
+        request.auth != null &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['impressions', 'clicks']) &&
+        request.resource.data.get('impressions', 0) is int &&
+        request.resource.data.get('clicks', 0) is int &&
+        request.resource.data.get('impressions', 0) - resource.data.get('impressions', 0) in [0, 1] &&
+        request.resource.data.get('clicks', 0) - resource.data.get('clicks', 0) in [0, 1]
+      );
     }
 
     // 8. Contact & Support Messages:
@@ -189,6 +289,13 @@ service cloud.firestore {
     match /contact_messages/{messageId} {
       allow create: if false;
       allow read, update, delete: if isSuperAdmin();
+    }
+
+    // 9. Campus admins: which college each campus admin manages. Written only by the server
+    // (/api/admin/campus-admins, super admins). The owner and super admins can read it.
+    match /campus_admins/{uid} {
+      allow read: if isOwner(uid) || isSuperAdmin();
+      allow write: if false;
     }
 
     // Default catch-all: Deny all other collections

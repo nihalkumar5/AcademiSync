@@ -9,3 +9,9 @@ build/
 .vercel
 .env*
 *.tsbuildinfo
+.claude/
+Claude outputs/
+_to_delete/
+scratch/
+android/app/src/main/java/com/academisync/app/probe.txt
+

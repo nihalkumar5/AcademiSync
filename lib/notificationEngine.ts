@@ -1,6 +1,7 @@
 import { AppNotification, ClassSession, Homework, Subject, UserSettings, AcademicEvent, Exam } from './types';
 import { getCurrentDayOfWeek, getTomorrowDayOfWeek, timeToMinutes, formatTime12Hour, getTodayDateString, getTomorrowDateString, isGenericExamTitle, getLiveExamSchedule, sanitizeExamSubjectName } from './timetableUtils';
 import { getDeliveredNotificationKeysFromStorage } from './localNotifications';
+import { tomorrowPlanMessage } from './tomorrowPlan';
 
 export const checkAndGenerateSmartNotifications = (
   timetable: ClassSession[] = [],
@@ -193,11 +194,19 @@ export const checkAndGenerateSmartNotifications = (
           relatedId: carryCheckKey,
         });
       } else if (tomorrowClasses.length > 0) {
-        newNotifications.push({
-          id: `notif_${Date.now()}_carry`,
-          title: `🎒 Pack Your Bag for Tomorrow`,
-          message: `You have ${tomorrowClasses.length} ${tomorrowClasses.length === 1 ? 'class' : 'classes'} tomorrow. Check your carry bag items and lab requirements.`,
-          category: 'carry',
+        // Tomorrow's plan: first class, where, and any labs (rescheduled times win)
+        const plan = tomorrowPlanMessage(
+          tomorrowClasses.map((s) => {
+            const r = safeRescheduled[`${dateTomorrowStr}_${s.id}`];
+            const sub = subjectMap.get(s.subjectId);
+            return { name: sub?.name || (s as any).subjectName || 'Class', startTime: r?.startTime || s.startTime || '', room: r?.room || s.room, isLab: !!(s.isLab || sub?.isLab) };
+          })
+        );
+        if (plan) newNotifications.push({
+          id: `notif_${Date.now()}_plan`,
+          title: plan.title,
+          message: plan.body,
+          category: 'classes',
           timestamp: new Date().toISOString(),
           read: false,
           relatedId: carryCheckKey,
@@ -244,6 +253,10 @@ export const checkAndGenerateSmartNotifications = (
     if (!ev || !ev.id) return;
     // Skip generic placeholder exam events like "MTE" or "Mid Term Examination"
     if (ev.type === 'exam' && isGenericExamTitle(ev.title)) return;
+    // Already covered elsewhere, so they'd show up twice: today's holiday has its own alert (step 0)
+    // and real exam events are part of todayRealExams (step 6)
+    if (ev.type === 'holiday' && todayHoliday && ev.id === todayHoliday.id) return;
+    if (ev.type === 'exam') return;
 
     const eventKey = `event_today_${ev.id}_${dateTodayStr}`;
     if (!existingIds.has(eventKey)) {
@@ -253,9 +266,6 @@ export const checkAndGenerateSmartNotifications = (
       if (ev.type === 'holiday') {
         emoji = '🌴';
         titlePrefix = "Today is a Holiday";
-      } else if (ev.type === 'exam') {
-        emoji = '📝';
-        titlePrefix = "Exam Today";
       } else if (ev.type === 'assignment') {
         emoji = '🚨';
         titlePrefix = "Assignment Due";

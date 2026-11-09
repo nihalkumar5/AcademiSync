@@ -16,7 +16,7 @@ import { Modal } from '@/components/ui/Modal';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
-import { Copy, Download, ExternalLink } from 'lucide-react';
+import { Copy, Download, ExternalLink } from '@/components/ui/icons';
 
 // Views
 import { OverviewHeader } from '@/components/dashboard/OverviewHeader';
@@ -30,6 +30,11 @@ import { WeeklyTimetable } from '@/components/timetable/WeeklyTimetable';
 import { ExamsView } from '@/components/exams/ExamsView';
 import { HomeworkView } from '@/components/homework/HomeworkView';
 import { TomorrowCarryView } from '@/components/carry/TomorrowCarryView';
+import { RoutinesView } from '@/components/routines/RoutinesView';
+import { AttendanceView } from '@/components/attendance/AttendanceView';
+import { StudentAttendanceView } from '@/components/attendance/StudentAttendanceView';
+import { HomeRoutinesCard } from '@/components/routines/HomeRoutinesCard';
+import { FacultyDirectoryView } from '@/components/faculty/FacultyDirectoryView';
 import { SubjectListView } from '@/components/subjects/SubjectListView';
 import { AcademicCalendar } from '@/components/calendar/AcademicCalendar';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
@@ -40,6 +45,12 @@ import { CampusSpotlightCard } from '@/components/ads/CampusSpotlightCard';
 import { ProposedBatchTasksVoting } from '@/components/homework/ProposedBatchTasksVoting';
 import { IOSAppGate } from '@/components/pwa/IOSAppGate';
 import { AndroidAppGate } from '@/components/pwa/AndroidAppGate';
+import { WebPushPrompt } from '@/components/pwa/WebPushPrompt';
+import { WidgetSync } from '@/components/widget/WidgetSync';
+import { QuestionPapersView } from '@/components/papers/QuestionPapersView';
+import { ClassNotesHost } from '@/components/notes/ClassNotesHost';
+import { FriendsView } from '@/components/friends/FriendsView';
+import { FriendsFreeNowCard, FriendLinkHost } from '@/components/friends/FriendsHome';
 import { FacultyHomeView } from '@/components/faculty/FacultyHomeView';
 import { FacultyWeeklyTimetable } from '@/components/faculty/FacultyWeeklyTimetable';
 import { FacultyTasksView } from '@/components/faculty/FacultyTasksView';
@@ -108,6 +119,13 @@ export default function AppHome() {
         const calendarParam = extractParam(url, 'calendar_invite');
         const examsParam = extractParam(url, 'exams_invite');
         const taskParam = extractParam(url, 'task');
+        const friendParam = extractParam(url, 'friend');
+
+        // Friend QR / link: open Friends and send the request
+        if (friendParam) {
+          window.dispatchEvent(new CustomEvent('friends:link', { detail: friendParam }));
+          return;
+        }
 
         if (taskParam) {
           // If we receive a task intent, switch to homework view and append to URL so HomeworkView picks it up
@@ -356,11 +374,11 @@ export default function AppHome() {
       <div className="flex flex-col flex-1 min-w-0 pb-32 md:pb-8">
         <Header />
 
-        <main className="flex-1 px-4 sm:px-8 py-6 max-w-6xl mx-auto w-full relative">
+        <main className="flex-1 px-f4 sm:px-f5 pt-f4 sm:pt-f5 pb-f6 max-w-6xl mx-auto w-full relative">
           {!Capacitor.isNativePlatform() && isAndroid && isSignedIn && (
-            <div className="mb-6 p-4 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] flex items-center justify-between rounded-none">
+            <div className="mb-f5 p-f4 bg-ink text-on-ink flex items-center justify-between rounded-none">
               <div className="flex flex-col pr-4">
-                <span className="text-[11px] font-bold uppercase tracking-widest opacity-70 mb-1">
+                <span className="text-[12px] font-bold opacity-70 mb-1">
                   Intersemester App
                 </span>
                 <span className="text-[14px] font-medium leading-snug">
@@ -369,9 +387,9 @@ export default function AppHome() {
               </div>
               <a
                 href={typeof window !== 'undefined' ? `intent://open#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end` : 'https://play.google.com/store/apps/details?id=com.intersemester.app'}
-                className="px-4 py-2 bg-[#FFFFFF] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] uppercase tracking-wider font-bold text-[11px] shrink-0 flex items-center justify-center text-center"
+                className="px-4 h-9 bg-surface text-fg font-semibold text-[12px] shrink-0 flex items-center justify-center text-center"
               >
-                OPEN APP
+                Open app
               </a>
             </div>
           )}
@@ -380,17 +398,20 @@ export default function AppHome() {
               profile?.role === 'faculty' ? (
                 <FacultyHomeView />
               ) : (
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-f5 sm:gap-f6">
                   <OverviewHeader />
                   <HomeExamAlertCard />
                   <LiveClassCard />
+                  <FriendsFreeNowCard />
                   <ProposedBatchTasksVoting />
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mt-2 sm:mt-3">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-f5 sm:gap-f6 items-start">
                     <TodayTimeline />
                     <SmartFocusList />
                   </div>
-                  <div className="mt-1"><InviteBatchmatesCard /></div>
+                  <HomeRoutinesCard />
+                  <InviteBatchmatesCard />
                   <HomeMessCard />
+                  <CampusSpotlightCard />
                 </div>
               )
             )}
@@ -402,9 +423,14 @@ export default function AppHome() {
               profile?.role === 'faculty' ? <FacultyTasksView /> : <HomeworkView />
             )}
             {activeView === 'exams' && <ExamsView />}
+            {activeView === 'papers' && <QuestionPapersView />}
+            {activeView === 'friends' && <FriendsView />}
             {activeView === 'carry' && (
               profile?.role === 'faculty' ? <FacultyBatchesView /> : <TomorrowCarryView />
             )}
+            {activeView === 'routines' && <RoutinesView />}
+            {activeView === 'attendance' && (profile?.role === 'faculty' ? <AttendanceView /> : <StudentAttendanceView />)}
+            {activeView === 'faculty' && <FacultyDirectoryView />}
             {activeView === 'subjects' && <SubjectListView />}
             {activeView === 'calendar' && <AcademicCalendar />}
             {activeView === 'notifications' && <NotificationCenter />}
@@ -421,6 +447,10 @@ export default function AppHome() {
       <CommandPalette />
       <OnboardingModal />
       <BatchApprovedModal />
+      <WebPushPrompt />
+      <WidgetSync />
+      <ClassNotesHost />
+      <FriendLinkHost />
       <Toast />
       {showHolidayAnimation && <HolidayBalloons />}
 
@@ -442,9 +472,9 @@ export default function AppHome() {
           }
         >
           <div className="flex flex-col gap-4 mt-3 text-left font-sans">
-            <div className="p-4 border border-black dark:border-white bg-black/5 dark:bg-white/5 flex flex-col gap-2">
+            <div className="p-4 border border-line-strong bg-surface-2 flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold text-black dark:text-white">
+                <h4 className="text-sm font-bold text-fg">
                   {inviteData.college || 'Academic Batch'}
                 </h4>
               </div>
@@ -462,8 +492,8 @@ export default function AppHome() {
               /* Strictly Web View -> Mobile App Gate Only */
               <div className="flex flex-col gap-4">
                 {/* Prominent 6-Digit Batch Code */}
-                <div className="p-4 bg-[#111111] dark:bg-white text-white dark:text-[#111111] flex flex-col gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-[2px] opacity-70">
+                <div className="p-4 bg-ink text-on-ink flex flex-col gap-2">
+                  <span className="text-[12px] font-bold opacity-70">
                     6-Digit Batch Code
                   </span>
                   <div className="flex items-center justify-between gap-3">
@@ -477,7 +507,7 @@ export default function AppHome() {
                         navigator.clipboard.writeText(codeToCopy);
                         showToast('Code Copied', `Batch code copied: ${codeToCopy}`, 'success');
                       }}
-                      className="px-3 py-1.5 bg-white/20 dark:bg-black/20 hover:bg-white/30 dark:hover:bg-black/30 text-white dark:text-black text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1.5"
+                      className="px-3 h-9 bg-white/20 dark:bg-black/20 hover:bg-white/30 dark:hover:bg-black/30 text-on-ink text-[13px] font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
                     >
                       <Copy className="w-3.5 h-3.5" />
                       <span>Copy</span>
@@ -486,8 +516,8 @@ export default function AppHome() {
                 </div>
 
                 {/* Step-by-Step Instructions */}
-                <div className="p-3.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex flex-col gap-1.5 text-xs text-black/80 dark:text-white/80">
-                  <span className="font-bold text-[11px] uppercase tracking-wider text-black dark:text-white">
+                <div className="p-3.5 bg-surface-2 border border-line flex flex-col gap-1.5 text-xs text-fg-2">
+                  <span className="font-bold text-[12px] text-fg">
                     How to join:
                   </span>
                   <ol className="list-decimal list-inside space-y-1 text-[12px] opacity-90">
@@ -501,7 +531,7 @@ export default function AppHome() {
                 <div className="flex flex-col gap-2 pt-1">
                   <a
                     href={`intent://invite?key=${inviteData.inviteCode || inviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent('https://play.google.com/store/apps/details?id=com.intersemester.app')};end`}
-                    className="w-full py-3 bg-[#111111] dark:bg-white text-white dark:text-black text-xs font-black uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:opacity-90 transition-opacity cursor-pointer"
+                    className="btn btn-primary w-full text-center"
                   >
                     <span>Open in Intersemester App</span>
                     <ExternalLink className="w-4 h-4" />
@@ -511,7 +541,7 @@ export default function AppHome() {
                     href="https://play.google.com/store/apps/details?id=com.intersemester.app"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full py-2.5 border border-black dark:border-white text-black dark:text-white text-xs font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                    className="btn btn-secondary w-full text-center"
                   >
                     <Download className="w-4 h-4" />
                     <span>Download on Google Play</span>
@@ -527,7 +557,7 @@ export default function AppHome() {
                         window.history.replaceState({}, document.title, window.location.pathname);
                       }
                     }}
-                    className="text-xs font-bold uppercase text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white cursor-pointer"
+                    className="text-xs font-bold text-muted hover:text-fg cursor-pointer"
                   >
                     Dismiss
                   </button>
@@ -536,7 +566,7 @@ export default function AppHome() {
             ) : (
               /* Native Mobile App Flow */
               <>
-                <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed">
+                <p className="text-xs text-muted leading-relaxed">
                   Accepting will download the batch subjects and classes, replacing your current timetable. You will stay synced in real-time.
                 </p>
 
@@ -549,7 +579,7 @@ export default function AppHome() {
                         window.history.replaceState({}, document.title, window.location.pathname);
                       }
                     }}
-                    className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
+                    className="px-4 h-9 border border-line-strong text-[13px] font-semibold hover:bg-surface-2 transition-colors cursor-pointer rounded-none"
                   >
                     Dismiss
                   </button>
@@ -562,7 +592,7 @@ export default function AppHome() {
                         window.history.replaceState({}, document.title, window.location.pathname);
                       }
                     }}
-                    className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+                    className="px-4 h-9 bg-ink text-on-ink border border-line-strong text-[13px] font-semibold hover:bg-transparent hover:text-fg transition-colors cursor-pointer rounded-none"
                   >
                     Accept & Sync
                   </button>
@@ -590,8 +620,8 @@ export default function AppHome() {
           }
         >
           <div className="flex flex-col gap-4 mt-3 text-left font-sans">
-            <div className="p-4 border border-black dark:border-white bg-black/5 dark:bg-white/5 flex flex-col gap-2">
-              <h4 className="text-sm font-bold text-black dark:text-white">
+            <div className="p-4 border border-line-strong bg-surface-2 flex flex-col gap-2">
+              <h4 className="text-sm font-bold text-fg">
                 {calendarInviteData.college}
               </h4>
               <p className="text-xs text-black/75 dark:text-white/75 font-medium">
@@ -607,8 +637,8 @@ export default function AppHome() {
             {!Capacitor.isNativePlatform() ? (
               /* Strictly Web View -> Mobile App Gate Only */
               <div className="flex flex-col gap-4">
-                <div className="p-4 bg-[#111111] dark:bg-white text-white dark:text-[#111111] flex flex-col gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-[2px] opacity-70">
+                <div className="p-4 bg-ink text-on-ink flex flex-col gap-2">
+                  <span className="text-[12px] font-bold opacity-70">
                     Calendar Code / ID
                   </span>
                   <div className="flex items-center justify-between gap-3">
@@ -621,7 +651,7 @@ export default function AppHome() {
                         navigator.clipboard.writeText(calendarInviteKey);
                         showToast('Code Copied', `Calendar ID copied to clipboard!`, 'success');
                       }}
-                      className="px-3 py-1.5 bg-white/20 dark:bg-black/20 hover:bg-white/30 dark:hover:bg-black/30 text-white dark:text-black text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
+                      className="px-3 h-9 bg-white/20 dark:bg-black/20 hover:bg-white/30 dark:hover:bg-black/30 text-on-ink text-[13px] font-semibold transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
                     >
                       <Copy className="w-3.5 h-3.5" />
                       <span>Copy</span>
@@ -629,8 +659,8 @@ export default function AppHome() {
                   </div>
                 </div>
 
-                <div className="p-3.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex flex-col gap-1.5 text-xs text-black/80 dark:text-white/80">
-                  <span className="font-bold text-[11px] uppercase tracking-wider text-black dark:text-white">
+                <div className="p-3.5 bg-surface-2 border border-line flex flex-col gap-1.5 text-xs text-fg-2">
+                  <span className="font-bold text-[12px] text-fg">
                     How to import:
                   </span>
                   <ol className="list-decimal list-inside space-y-1 text-[12px] opacity-90">
@@ -643,7 +673,7 @@ export default function AppHome() {
                 <div className="flex flex-col gap-2 pt-1">
                   <a
                     href={`intent://calendar_invite?key=${calendarInviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent('https://play.google.com/store/apps/details?id=com.intersemester.app')};end`}
-                    className="w-full py-3 bg-[#111111] dark:bg-white text-white dark:text-black text-xs font-black uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:opacity-90 transition-opacity cursor-pointer"
+                    className="btn btn-primary w-full text-center"
                   >
                     <span>Open in Intersemester App</span>
                     <ExternalLink className="w-4 h-4" />
@@ -653,7 +683,7 @@ export default function AppHome() {
                     href="https://play.google.com/store/apps/details?id=com.intersemester.app"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full py-2.5 border border-black dark:border-white text-black dark:text-white text-xs font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                    className="btn btn-secondary w-full text-center"
                   >
                     <Download className="w-4 h-4" />
                     <span>Download on Google Play</span>
@@ -669,7 +699,7 @@ export default function AppHome() {
                         window.history.replaceState({}, document.title, window.location.pathname);
                       }
                     }}
-                    className="text-xs font-bold uppercase text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white cursor-pointer"
+                    className="text-xs font-bold text-muted hover:text-fg cursor-pointer"
                   >
                     Dismiss
                   </button>
@@ -678,7 +708,7 @@ export default function AppHome() {
             ) : (
               /* Native Mobile App Flow */
               <>
-                <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed">
+                <p className="text-xs text-muted leading-relaxed">
                   Accepting will download the shared academic calendar events and exams, replacing your current calendar data.
                 </p>
 
@@ -691,7 +721,7 @@ export default function AppHome() {
                         window.history.replaceState({}, document.title, window.location.pathname);
                       }
                     }}
-                    className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
+                    className="px-4 h-9 border border-line-strong text-[13px] font-semibold hover:bg-surface-2 transition-colors cursor-pointer rounded-none"
                   >
                     Dismiss
                   </button>
@@ -711,7 +741,7 @@ export default function AppHome() {
                         window.history.replaceState({}, document.title, window.location.pathname);
                       }
                     }}
-                    className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+                    className="px-4 h-9 bg-ink text-on-ink border border-line-strong text-[13px] font-semibold hover:bg-transparent hover:text-fg transition-colors cursor-pointer rounded-none"
                   >
                     Accept & Import
                   </button>
@@ -739,8 +769,8 @@ export default function AppHome() {
           }
         >
           <div className="flex flex-col gap-4 mt-3 text-left font-sans">
-            <div className="p-4 border border-black dark:border-white bg-black/5 dark:bg-white/5 flex flex-col gap-2">
-              <h4 className="text-sm font-bold text-black dark:text-white">
+            <div className="p-4 border border-line-strong bg-surface-2 flex flex-col gap-2">
+              <h4 className="text-sm font-bold text-fg">
                 {examsInviteData.college}
               </h4>
               <p className="text-xs text-black/75 dark:text-white/75 font-medium">
@@ -756,8 +786,8 @@ export default function AppHome() {
             {!Capacitor.isNativePlatform() ? (
               /* Strictly Web View -> Mobile App Gate Only */
               <div className="flex flex-col gap-4">
-                <div className="p-4 bg-[#111111] dark:bg-white text-white dark:text-[#111111] flex flex-col gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-[2px] opacity-70">
+                <div className="p-4 bg-ink text-on-ink flex flex-col gap-2">
+                  <span className="text-[12px] font-bold opacity-70">
                     Exam Schedule Code / ID
                   </span>
                   <div className="flex items-center justify-between gap-3">
@@ -770,7 +800,7 @@ export default function AppHome() {
                         navigator.clipboard.writeText(examsInviteKey);
                         showToast('Code Copied', `Exam schedule ID copied to clipboard!`, 'success');
                       }}
-                      className="px-3 py-1.5 bg-white/20 dark:bg-black/20 hover:bg-white/30 dark:hover:bg-black/30 text-white dark:text-black text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
+                      className="px-3 h-9 bg-white/20 dark:bg-black/20 hover:bg-white/30 dark:hover:bg-black/30 text-on-ink text-[13px] font-semibold transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
                     >
                       <Copy className="w-3.5 h-3.5" />
                       <span>Copy</span>
@@ -778,8 +808,8 @@ export default function AppHome() {
                   </div>
                 </div>
 
-                <div className="p-3.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex flex-col gap-1.5 text-xs text-black/80 dark:text-white/80">
-                  <span className="font-bold text-[11px] uppercase tracking-wider text-black dark:text-white">
+                <div className="p-3.5 bg-surface-2 border border-line flex flex-col gap-1.5 text-xs text-fg-2">
+                  <span className="font-bold text-[12px] text-fg">
                     How to import:
                   </span>
                   <ol className="list-decimal list-inside space-y-1 text-[12px] opacity-90">
@@ -792,7 +822,7 @@ export default function AppHome() {
                 <div className="flex flex-col gap-2 pt-1">
                   <a
                     href={`intent://exams_invite?key=${examsInviteKey}#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent('https://play.google.com/store/apps/details?id=com.intersemester.app')};end`}
-                    className="w-full py-3 bg-[#111111] dark:bg-white text-white dark:text-black text-xs font-black uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:opacity-90 transition-opacity cursor-pointer"
+                    className="btn btn-primary w-full text-center"
                   >
                     <span>Open in Intersemester App</span>
                     <ExternalLink className="w-4 h-4" />
@@ -802,7 +832,7 @@ export default function AppHome() {
                     href="https://play.google.com/store/apps/details?id=com.intersemester.app"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full py-2.5 border border-black dark:border-white text-black dark:text-white text-xs font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                    className="btn btn-secondary w-full text-center"
                   >
                     <Download className="w-4 h-4" />
                     <span>Download on Google Play</span>
@@ -818,7 +848,7 @@ export default function AppHome() {
                         window.history.replaceState({}, document.title, window.location.pathname);
                       }
                     }}
-                    className="text-xs font-bold uppercase text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white cursor-pointer"
+                    className="text-xs font-bold text-muted hover:text-fg cursor-pointer"
                   >
                     Dismiss
                   </button>
@@ -827,7 +857,7 @@ export default function AppHome() {
             ) : (
               /* Native Mobile App Flow */
               <>
-                <p className="text-xs text-black/60 dark:text-white/60 leading-relaxed">
+                <p className="text-xs text-muted leading-relaxed">
                   Accepting will download the shared exam sessions, replacing your current exam calendar data.
                 </p>
 
@@ -840,7 +870,7 @@ export default function AppHome() {
                         window.history.replaceState({}, document.title, window.location.pathname);
                       }
                     }}
-                    className="px-4 py-2 border border-black dark:border-white text-xs font-bold uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer rounded-none"
+                    className="px-4 h-9 border border-line-strong text-[13px] font-semibold hover:bg-surface-2 transition-colors cursor-pointer rounded-none"
                   >
                     Dismiss
                   </button>
@@ -860,7 +890,7 @@ export default function AppHome() {
                         window.history.replaceState({}, document.title, window.location.pathname);
                       }
                     }}
-                    className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-xs font-bold uppercase hover:bg-transparent hover:text-black dark:hover:text-white transition-colors cursor-pointer rounded-none"
+                    className="px-4 h-9 bg-ink text-on-ink border border-line-strong text-[13px] font-semibold hover:bg-transparent hover:text-fg transition-colors cursor-pointer rounded-none"
                   >
                     Accept & Import
                   </button>

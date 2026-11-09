@@ -56,6 +56,21 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+
+        <!-- Home-screen widget: "Next class" (widget/NextClassWidget.java) -->
+        <receiver
+            android:name=".widget.NextClassWidget"
+            android:exported="false"
+            android:label="@string/widget_next_class_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_next_class_info" />
+        </receiver>
     </application>
 
     <!-- Permissions -->
@@ -67,4 +82,6 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Camera: scanning friend QR codes and lecture snaps -->
+    <uses-permission android:name="android.permission.CAMERA" />
 </manifest>

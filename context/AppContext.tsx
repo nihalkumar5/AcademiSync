@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import {
   StudentProfile,
+  Routine,
   Subject,
   ClassSession,
   Homework,
@@ -40,6 +41,7 @@ import { onAuthStateChanged, getRedirectResult } from 'firebase/auth';
 import { doc, collection, onSnapshot, setDoc, deleteDoc, getDoc, getDocs, query, where, updateDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { registerPushNotifications, broadcastBatchPushNotification } from '@/lib/pushNotifications';
+import { syncWebPushToken } from '@/lib/webPush';
 import { 
   triggerLocalNotification, 
   scheduleTimetableLocalNotifications,
@@ -47,6 +49,8 @@ import {
   setupLocalNotificationListeners,
   markNotificationDeliveredLocally,
 } from '@/lib/localNotifications';
+import { scheduleRoutineNotifications, dueRoutineReminders, reminderTitle, reminderBody } from '@/lib/routines';
+import { getDeliveredNotificationKeysFromStorage } from '@/lib/localNotifications';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
 import { getHarmonicColorForSubject } from '@/lib/cardColors';
 import { Capacitor } from '@capacitor/core';
@@ -207,9 +211,14 @@ export type ActiveView =
   | 'timetable'
   | 'homework'
   | 'carry'
+  | 'routines'
+  | 'attendance'
+  | 'faculty'
   | 'subjects'
   | 'calendar'
   | 'exams'
+  | 'papers'
+  | 'friends'
   | 'notifications'
   | 'settings'
   | 'mess';
@@ -240,6 +249,11 @@ export interface AppContextType {
   deleteHomework: (id: string) => void;
   toggleHomeworkStatus: (id: string) => void;
   carryItems: CarryItem[];
+  routines: Routine[];
+  addRoutine: (r: Omit<Routine, 'id' | 'createdAt' | 'completions'>) => void;
+  updateRoutine: (r: Routine) => void;
+  deleteRoutine: (id: string) => void;
+  toggleRoutineDone: (id: string, dayKey: string) => void;
   toggleCarryItemPacked: (id: string) => void;
   addCustomCarryItem: (title: string, subjectId?: string, reminderNote?: string) => void;
   deleteCarryItem: (id: string) => void;
@@ -306,6 +320,7 @@ export interface AppContextType {
   deleteBatchProposal: (proposalId: string) => Promise<void>;
   showHolidayAnimation: boolean;
   resetAllData: () => Promise<void>;
+  restoreBackup: (data: any) => void;
   user: any;
   isClerkLoaded: boolean;
 }
@@ -337,6 +352,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [timetable, setTimetableState] = useState<ClassSession[]>(storage.getTimetable());
   const [homework, setHomeworkState] = useState<Homework[]>(storage.getHomework());
   const [carryItems, setCarryItemsState] = useState<CarryItem[]>(storage.getCarryItems());
+  const [routines, setRoutinesState] = useState<Routine[]>(storage.getRoutines());
   const [notifications, setNotificationsState] = useState<AppNotification[]>(storage.getNotifications());
   const [events, setEventsState] = useState<AcademicEvent[]>(storage.getEvents());
   const [exams, setExamsState] = useState<Exam[]>(storage.getExams());
@@ -525,6 +541,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setTimetableState([]);
       setHomeworkState([]);
       setCarryItemsState([]);
+      setRoutinesState([]);
       setNotificationsState([]);
       setEventsState([]);
       setExamsState([]);
@@ -597,8 +614,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     if (!isClerkLoaded || !user) return;
     
-    // Request Push Notification permissions (Android Native)
+    // Push: native app via Capacitor; web/PWA refreshes its token if notifications are already allowed
     registerPushNotifications(user.id, profile.batchKey);
+    syncWebPushToken(user.id);
     
     const userRef = doc(db, 'users', user.id);
     const unsubscribe = onSnapshot(userRef, (docSnap) => {
@@ -659,6 +677,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           });
         }
         if (data.carryItems) { setCarryItemsState(data.carryItems); storage.setCarryItems(data.carryItems); }
+        if (Array.isArray(data.routines) && shouldApplyRemote) { setRoutinesState(data.routines); storage.setRoutines(data.routines); }
         if (data.notifications) { setNotificationsState(data.notifications); storage.setNotifications(data.notifications); }
         if (data.events && Array.isArray(data.events)) {
           const { cleaned: sanitizedEvents } = deduplicateAcademicEvents(data.events);
@@ -724,12 +743,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const requestBatchNotificationPermission = () => {
     if (typeof window === 'undefined') return;
     if (!('Notification' in window)) return;
-    if (Notification.permission === 'default') {
-      // Small delay so the app is fully loaded before the browser prompt appears
-      setTimeout(() => {
-        Notification.requestPermission().catch(() => {});
-      }, 3000);
-    }
+    // Web/PWA permission is asked from a tap in <WebPushPrompt /> (iOS ignores prompts without one).
+    // If it's already granted, make sure this device's push token is saved.
+    if (Notification.permission === 'granted' && user?.id) syncWebPushToken(user.id);
   };
 
   // Firestore Live Sync for Batch Timetables (for synced users)
@@ -1171,6 +1187,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       timetable,
       homework,
       carryItems,
+      routines,
       notifications,
       events,
       exams,
@@ -1211,7 +1228,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }, 100);
 
     return () => clearTimeout(timeout);
-  }, [profile, subjects, timetable, homework, carryItems, notifications, events, exams, settings, cancelledSessions, rescheduledSessions, messMenu, user, isClerkLoaded, isHydrated, isCloudSynced]);
+  }, [profile, subjects, timetable, homework, carryItems, routines, notifications, events, exams, settings, cancelledSessions, rescheduledSessions, messMenu, user, isClerkLoaded, isHydrated, isCloudSynced]);
 
   // Hydration effect
   useEffect(() => {
@@ -1512,6 +1529,55 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [timetable, subjects, homework, exams, settings, events, cancelledSessions, rescheduledSessions, extraSessions, isHydrated]);
 
 
+
+  // Routine reminders on Android: reschedule whenever routines change (own ID range, never clobbers class alarms)
+  useEffect(() => {
+    if (!isHydrated) return;
+    const t = setTimeout(() => {
+      scheduleRoutineNotifications(routines);
+    }, 600);
+    return () => clearTimeout(t);
+  }, [routines, isHydrated]);
+
+  // Routine reminders in the app: adds them to Notifications, and on the web also shows a toast + browser notification
+  useEffect(() => {
+    if (!isHydrated) return;
+    const check = () => {
+      const delivered = getDeliveredNotificationKeysFromStorage();
+      notifications.forEach((n) => n.relatedId && delivered.add(n.relatedId));
+      const due = dueRoutineReminders(routines, delivered);
+      if (!due.length) return;
+      const fresh = due.map(({ routine, relatedId }) => ({
+        id: `notif_${relatedId}`,
+        title: reminderTitle(routine),
+        message: reminderBody(routine),
+        category: 'routines' as const,
+        timestamp: new Date().toISOString(),
+        read: false,
+        relatedId,
+      }));
+      fresh.forEach((n) => markNotificationDeliveredLocally(n.relatedId));
+      setNotificationsState((prev) => {
+        const updated = [...fresh, ...prev];
+        storage.setNotifications(updated);
+        return updated;
+      });
+      // Android already shows the OS notification; only the web needs one from here
+      if (!Capacitor.isNativePlatform()) {
+        showToast(fresh[0].title, fresh[0].message, 'info');
+        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+          fresh.forEach((n) => {
+            try {
+              new Notification(n.title, { body: n.message, icon: '/logo1.png', tag: n.relatedId });
+            } catch (_) {}
+          });
+        }
+      }
+    };
+    check();
+    const interval = setInterval(check, 30000);
+    return () => clearInterval(interval);
+  }, [routines, isHydrated]);
 
   // Keyboard shortcut listener (Cmd+K / Ctrl+K)
   useEffect(() => {
@@ -2446,6 +2512,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     syncCRChangesToBatch(undefined, undefined, undefined, updated);
     showToast('Exam Updated', updatedExam.subjectName, 'success');
   };
+
+  // Firestore rules can't search inside facultyLinkedBatches, so keep a flat list of batch keys beside it.
+  // Runs on link/unlink and back-fills older faculty profiles.
+  useEffect(() => {
+    if (profile.role !== 'faculty') return;
+    const keys = Array.from(new Set((profile.facultyLinkedBatches || []).map((b) => b.batchKey).filter(Boolean))).sort();
+    const current = [...(profile.facultyBatchKeys || [])].sort();
+    if (keys.join('|') !== current.join('|')) updateProfile({ facultyBatchKeys: keys });
+  }, [profile.role, profile.facultyLinkedBatches]);
+
+  // Finished exams drop off the day after. Pruned from this device only; cloud and batch copies are
+  // never rewritten here, so a stale local copy can't overwrite newer data (the UI hides them too).
+  useEffect(() => {
+    const d = new Date();
+    const todayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const fresh = exams.filter((e) => !e.date || e.date.split('T')[0] >= todayKey);
+    if (fresh.length !== exams.length) {
+      setExamsState(fresh);
+      storage.setExams(fresh);
+    }
+  }, [exams]);
 
   const deleteExam = (id: string) => {
     const updated = exams.filter((e) => e.id !== id);
@@ -3895,6 +3982,85 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  // Restore a backup file into state (and storage). For signed-in users the regular up-sync effect
+  // then saves it to their account. Identity and batch links stay as they are on this device.
+  const restoreBackup = (data: any) => {
+    if (!data || typeof data !== 'object') return;
+    const arr = (v: any) => (Array.isArray(v) ? v : undefined);
+
+    if (data.profile && typeof data.profile === 'object') {
+      const merged: StudentProfile = {
+        ...profile,
+        ...data.profile,
+        id: profile.id,
+        email: profile.email || data.profile.email,
+        role: profile.role,
+        isPro: profile.isPro,
+        isBanned: profile.isBanned,
+        batchKey: profile.batchKey,
+        batchCode: profile.batchCode,
+        isBatchSynced: profile.isBatchSynced,
+        onboardingCompleted: true,
+      };
+      setProfileState(merged);
+      storage.setProfile(merged);
+    }
+    const subjects_ = arr(data.subjects);
+    if (subjects_) { setSubjectsState(subjects_); storage.setSubjects(subjects_); }
+    const timetable_ = arr(data.timetable);
+    if (timetable_) { setTimetableState(timetable_); storage.setTimetable(timetable_); }
+    const homework_ = arr(data.homework);
+    if (homework_) { setHomeworkState(homework_); storage.setHomework(homework_); }
+    const carry_ = arr(data.carryItems);
+    if (carry_) { setCarryItemsState(carry_); storage.setCarryItems(carry_); }
+    const routines_ = arr(data.routines);
+    if (routines_) { setRoutinesState(routines_); storage.setRoutines(routines_); }
+    const events_ = arr(data.events);
+    if (events_) { setEventsState(events_); storage.setEvents(events_); }
+    const exams_ = arr(data.exams);
+    if (exams_) { setExamsState(exams_); storage.setExams(exams_); }
+    const cancelled_ = arr(data.cancelledSessions);
+    if (cancelled_) { setCancelledSessionsState(cancelled_); storage.setCancelledSessions(cancelled_); }
+    if (data.rescheduledSessions && typeof data.rescheduledSessions === 'object') {
+      setRescheduledSessionsState(data.rescheduledSessions);
+      storage.setRescheduledSessions(data.rescheduledSessions);
+    }
+    if (data.settings && typeof data.settings === 'object') {
+      const merged = { ...DEFAULT_SETTINGS, ...data.settings };
+      setSettingsState(merged);
+      storage.setSettings(merged);
+    }
+    if (data.messMenu !== undefined) updateMessMenu(data.messMenu);
+  };
+
+  // ---------- Routines (personal scheduled to-dos) ----------
+  const saveRoutines = (next: Routine[]) => {
+    setRoutinesState(next);
+    storage.setRoutines(next);
+  };
+  const addRoutine = (r: Omit<Routine, 'id' | 'createdAt' | 'completions'>) => {
+    const routine: Routine = { ...r, id: `rt_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, createdAt: new Date().toISOString(), completions: [] };
+    saveRoutines([...routines, routine]);
+    showToast('Routine added', routine.title, 'success');
+  };
+  const updateRoutine = (r: Routine) => saveRoutines(routines.map((x) => (x.id === r.id ? r : x)));
+  const deleteRoutine = (id: string) => {
+    const target = routines.find((x) => x.id === id);
+    saveRoutines(routines.filter((x) => x.id !== id));
+    if (target) showToast('Routine deleted', target.title, 'info');
+  };
+  const toggleRoutineDone = (id: string, dayKey: string) => {
+    saveRoutines(
+      routines.map((x) => {
+        if (x.id !== id) return x;
+        const done = x.completions.includes(dayKey);
+        // Keep the last ~400 days so the list never grows without bound
+        const completions = done ? x.completions.filter((d) => d !== dayKey) : [...x.completions, dayKey].sort().slice(-400);
+        return { ...x, completions };
+      })
+    );
+  };
+
   const resetAllData = async () => {
     const userEmail = user?.primaryEmailAddress?.emailAddress || '';
     let defaultName = user?.fullName || user?.firstName || '';
@@ -3930,6 +4096,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimetableState([]);
     setHomeworkState([]);
     setCarryItemsState([]);
+    setRoutinesState([]);
     setNotificationsState([]);
     setEventsState([]);
     setExamsState([]);
@@ -3948,6 +4115,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           timetable: [],
           homework: [],
           carryItems: [],
+          routines: [],
           notifications: [],
           events: [],
           exams: [],
@@ -4335,6 +4503,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         deleteHomework,
         toggleHomeworkStatus,
         carryItems,
+        routines,
+        addRoutine,
+        updateRoutine,
+        deleteRoutine,
+        toggleRoutineDone,
         toggleCarryItemPacked,
         addCustomCarryItem,
         deleteCarryItem,
@@ -4381,6 +4554,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         showToast,
         showHolidayAnimation,
         resetAllData,
+        restoreBackup,
         messMenu,
         updateMessMenu,
         showMessOnboarding,

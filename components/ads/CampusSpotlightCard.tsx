@@ -1,22 +1,149 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { collection, onSnapshot, query, where, doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { PromotionalCampaign } from '@/lib/types';
+import { PromotionalCampaign, CampaignCategory } from '@/lib/types';
+import { collegeKeyOf } from '@/lib/collegeKey';
 import { useApp } from '@/context/AppContext';
-import { Sparkles, ExternalLink, X, Film, ShoppingBag, Calendar, Tag, Megaphone, ChevronRight } from 'lucide-react';
+import { ArrowUpRight, X, Film, ShoppingBag, Calendar, Tag, Megaphone } from '@/components/ui/icons';
+
+// ---------- Shared presentation (used by the student card and the admin live preview) ----------
+
+export const CAMPAIGN_CATEGORIES: { id: CampaignCategory; label: string; badge: string; icon: React.ElementType }[] = [
+  { id: 'general', label: 'Spotlight', badge: 'Campus spotlight', icon: Megaphone },
+  { id: 'event', label: 'Event', badge: 'Campus event', icon: Calendar },
+  { id: 'deal', label: 'Deal', badge: 'Student deal', icon: Tag },
+  { id: 'merch', label: 'Merch', badge: 'Merch drop', icon: ShoppingBag },
+  { id: 'movie', label: 'Movie', badge: 'Movie premiere', icon: Film },
+];
+
+export const getCategoryMeta = (category?: string) =>
+  CAMPAIGN_CATEGORIES.find((c) => c.id === category) || CAMPAIGN_CATEGORIES[0];
+
+/** A campaign is shown only while it is switched on and not past its end date. */
+export const isCampaignRunning = (c: Pick<PromotionalCampaign, 'isActive' | 'expiresAt'>, now = Date.now()) =>
+  !!c.isActive && (!c.expiresAt || new Date(c.expiresAt).getTime() > now);
+
+export interface SpotlightCardViewProps {
+  campaign: Pick<PromotionalCampaign, 'title' | 'subtitle' | 'description' | 'imageUrl' | 'ctaText' | 'category' | 'badgeText'>;
+  onAction?: () => void;
+  onDismiss?: () => void;
+  index?: number;
+  total?: number;
+  onSelect?: (i: number) => void;
+  className?: string;
+}
+
+export const SpotlightCardView: React.FC<SpotlightCardViewProps> = ({
+  campaign,
+  onAction,
+  onDismiss,
+  index = 0,
+  total = 1,
+  onSelect,
+  className = '',
+}) => {
+  const meta = getCategoryMeta(campaign.category);
+  const Icon = meta.icon;
+  const badge = campaign.badgeText?.trim() || meta.badge;
+  const body = campaign.subtitle || campaign.description;
+
+  return (
+    <div className={`relative overflow-hidden border border-line bg-surface text-left ${className}`}>
+      {campaign.imageUrl && (
+        <div className="relative w-full aspect-[16/7] bg-[#F1F1EF] dark:bg-white/[0.04] overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={campaign.imageUrl} alt="" className="w-full h-full object-cover" />
+        </div>
+      )}
+      <div className="p-f4">
+        <div className="flex items-center justify-between gap-3">
+          <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-muted">
+            <Icon className="w-3.5 h-3.5" />
+            {badge}
+            <span aria-hidden="true">·</span>
+            <span>Sponsored</span>
+          </span>
+          {onDismiss && (
+            <button
+              type="button"
+              onClick={onDismiss}
+              className="-m-1.5 p-1.5 text-[#8A8A8A] hover:text-fg transition-colors cursor-pointer"
+              aria-label="Hide this"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+        <h4 className="mt-2 text-[17px] font-semibold leading-snug text-fg break-words">
+          {campaign.title || 'Your headline'}
+        </h4>
+        {body && <p className="mt-1 text-[14px] leading-relaxed text-muted line-clamp-2">{body}</p>}
+        <div className="mt-f3 flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={onAction}
+            className="btn btn-primary"
+          >
+            {campaign.ctaText?.trim() || 'Learn more'}
+            <ArrowUpRight className="w-4 h-4" />
+          </button>
+          {total > 1 && (
+            <div className="flex items-center gap-1.5" role="tablist" aria-label="More from campus">
+              {Array.from({ length: total }).map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  role="tab"
+                  aria-selected={i === index}
+                  aria-label={`Item ${i + 1} of ${total}`}
+                  onClick={() => onSelect?.(i)}
+                  className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                    i === index ? 'w-5 bg-ink' : 'w-1.5 bg-black/20 dark:bg-white/20'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ---------- Student-facing card (data + tracking) ----------
 
 interface CampusSpotlightCardProps {
   placement?: 'home' | 'timetable' | 'calendar';
   className?: string;
 }
 
-export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({
-  placement = 'home',
-  className = '',
-}) => {
+const matchesAudience = (data: PromotionalCampaign, profile: { college?: string; branch?: string; semester?: number }) => {
+  if (data.targetAudienceType === 'all') return true;
+  // Campus-admin notices carry exact college keys; a student outside that college never sees them
+  const keys = Array.isArray(data.targetCollegeKeys) ? data.targetCollegeKeys.filter(Boolean) : [];
+  if (keys.length > 0 && !keys.includes(collegeKeyOf(profile.college))) return false;
+  const userCollege = (profile.college || '').toLowerCase().trim();
+  const userBranch = (profile.branch || '').toLowerCase().trim();
+  const colleges = Array.isArray(data.targetColleges) ? data.targetColleges : [];
+  const branches = Array.isArray(data.targetBranches) ? data.targetBranches : [];
+  const sems = Array.isArray(data.targetSemesters) ? data.targetSemesters : [];
+  const collegeMatch =
+    keys.length > 0 ||
+    colleges.length === 0 ||
+    (!!userCollege &&
+      colleges.some((c) => typeof c === 'string' && (userCollege.includes(c.toLowerCase().trim()) || c.toLowerCase().trim().includes(userCollege))));
+  const branchMatch =
+    branches.length === 0 ||
+    (!!userBranch &&
+      branches.some((b) => typeof b === 'string' && (userBranch.includes(b.toLowerCase().trim()) || b.toLowerCase().trim().includes(userBranch))));
+  const semMatch = sems.length === 0 || (!!profile.semester && sems.includes(profile.semester));
+  return collegeMatch && branchMatch && semMatch;
+};
+
+export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({ className = '' }) => {
   const { profile } = useApp();
   const [campaigns, setCampaigns] = useState<PromotionalCampaign[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -25,207 +152,53 @@ export const CampusSpotlightCard: React.FC<CampusSpotlightCardProps> = ({
 
   useEffect(() => {
     try {
-      const q = query(
-        collection(db, 'promotional_campaigns'),
-        where('isActive', '==', true)
+      const q = query(collection(db, 'promotional_campaigns'), where('isActive', '==', true));
+      const unsubscribe = onSnapshot(
+        q,
+        (snapshot) => {
+          const fetched: PromotionalCampaign[] = [];
+          snapshot.forEach((docSnap) => {
+            const data = { ...(docSnap.data() as PromotionalCampaign), id: docSnap.id };
+            if (isCampaignRunning(data) && matchesAudience(data, profile)) fetched.push(data);
+          });
+          setCampaigns(fetched);
+          setCurrentIndex((i) => (i < fetched.length ? i : 0));
+        },
+        (err) => console.error('Error fetching campaigns:', err)
       );
-
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const fetched: PromotionalCampaign[] = [];
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data() as PromotionalCampaign;
-          
-          // If audience is universal 'all', it matches everyone
-          if (data.targetAudienceType === 'all') {
-            fetched.push({ ...data, id: docSnap.id });
-            return;
-          }
-
-          const userCollege = (profile.college || '').toLowerCase().trim();
-          const userBranch = (profile.branch || '').toLowerCase().trim();
-          const userSemester = profile.semester;
-
-          const targetColleges = Array.isArray(data.targetColleges) ? data.targetColleges : [];
-          const targetBranches = Array.isArray(data.targetBranches) ? data.targetBranches : [];
-          const targetSemesters = Array.isArray(data.targetSemesters) ? data.targetSemesters : [];
-
-          // 1. College Match
-          const collegeMatch =
-            targetColleges.length === 0 ||
-            targetColleges.some((c) => {
-              if (typeof c !== 'string') return false;
-              const target = c.toLowerCase().trim();
-              return userCollege.includes(target) || target.includes(userCollege);
-            });
-
-          // 2. Branch Match
-          const branchMatch =
-            targetBranches.length === 0 ||
-            targetBranches.some((b) => {
-              if (typeof b !== 'string') return false;
-              const target = b.toLowerCase().trim();
-              return userBranch.includes(target) || target.includes(userBranch);
-            });
-
-          // 3. Semester Match
-          const semesterMatch =
-            targetSemesters.length === 0 ||
-            (userSemester && targetSemesters.includes(userSemester));
-
-          if (collegeMatch && branchMatch && semesterMatch) {
-            fetched.push({ ...data, id: docSnap.id });
-          }
-        });
-
-        setCampaigns(fetched);
-      }, (err) => {
-        console.error('Error fetching campaigns:', err);
-      });
-
       return () => unsubscribe();
     } catch (e) {
       console.error('Campaign listener error:', e);
     }
-  }, [profile.college, profile.branch]);
+  }, [profile.college, profile.branch, profile.semester]);
 
   const currentCampaign = campaigns[currentIndex];
 
-  // Track impression once per campaign per session
+  // One impression per campaign per session
   useEffect(() => {
     if (currentCampaign && !trackedImpressions.current.has(currentCampaign.id)) {
       trackedImpressions.current.add(currentCampaign.id);
-      try {
-        const docRef = doc(db, 'promotional_campaigns', currentCampaign.id);
-        updateDoc(docRef, {
-          impressions: increment(1),
-        }).catch(() => {});
-      } catch (e) {}
+      updateDoc(doc(db, 'promotional_campaigns', currentCampaign.id), { impressions: increment(1) }).catch(() => {});
     }
   }, [currentCampaign]);
 
-  if (profile?.isPro || isDismissed || !currentCampaign || campaigns.length === 0) {
-    return null;
-  }
+  if (profile?.isPro || isDismissed || !currentCampaign) return null;
 
   const handleActionClick = () => {
-    try {
-      const docRef = doc(db, 'promotional_campaigns', currentCampaign.id);
-      updateDoc(docRef, {
-        clicks: increment(1),
-      }).catch(() => {});
-    } catch (e) {}
-
-    if (currentCampaign.targetUrl) {
-      window.open(currentCampaign.targetUrl, '_blank', 'noopener,noreferrer');
-    }
+    updateDoc(doc(db, 'promotional_campaigns', currentCampaign.id), { clicks: increment(1) }).catch(() => {});
+    if (currentCampaign.targetUrl) window.open(currentCampaign.targetUrl, '_blank', 'noopener,noreferrer');
   };
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'movie':
-        return <Film className="w-3.5 h-3.5" />;
-      case 'merch':
-        return <ShoppingBag className="w-3.5 h-3.5" />;
-      case 'event':
-        return <Calendar className="w-3.5 h-3.5" />;
-      case 'deal':
-        return <Tag className="w-3.5 h-3.5" />;
-      default:
-        return <Megaphone className="w-3.5 h-3.5" />;
-    }
-  };
-
-  const badgeText = currentCampaign.badgeText || (
-    currentCampaign.category === 'movie' ? 'MOVIE PREMIERE' :
-    currentCampaign.category === 'merch' ? 'MERCH DROP' :
-    currentCampaign.category === 'event' ? 'CAMPUS EVENT' :
-    currentCampaign.category === 'deal' ? 'STUDENT DEAL' : 'CAMPUS SPOTLIGHT'
-  );
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.98 }}
-        className={`relative overflow-hidden border border-black/10 dark:border-white/[0.08] bg-white dark:bg-[#121317] rounded-none p-4 sm:p-5 shadow-sm transition-all text-left ${className}`}
-      >
-        {/* Subtle top banner strip */}
-        <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-black/10 dark:border-white/[0.08]">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-none border border-black/10 dark:border-white/[0.1] bg-black/5 dark:bg-white/[0.06] text-[11px] font-bold tracking-widest uppercase text-black dark:text-[#F4F4F6]">
-            {getCategoryIcon(currentCampaign.category)}
-            <span>{badgeText}</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {campaigns.length > 1 && (
-              <span className="text-[11px] font-mono text-black/60 dark:text-white/60">
-                {currentIndex + 1} / {campaigns.length}
-              </span>
-            )}
-            <button
-              onClick={() => setIsDismissed(true)}
-              className="p-1 rounded-none text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
-              title="Dismiss" aria-label="Dismiss"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Content Layout */}
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          {/* Media image if present */}
-          {currentCampaign.imageUrl && (
-            <div className="relative w-full sm:w-28 h-32 sm:h-24 shrink-0 overflow-hidden rounded-none border border-black/10 dark:border-white/[0.08] bg-black/5 dark:bg-white/[0.04]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={currentCampaign.imageUrl}
-                alt={currentCampaign.title}
-                className="w-full h-full object-cover object-center"
-              />
-            </div>
-          )}
-
-          {/* Text details */}
-          <div className="flex-1 flex flex-col gap-1 min-w-0">
-            <h4 className="text-sm font-bold text-black dark:text-[#F4F4F6] tracking-tight leading-snug">
-              {currentCampaign.title}
-            </h4>
-            <p className="text-xs text-black/70 dark:text-[#94A3B8] font-medium line-clamp-2">
-              {currentCampaign.subtitle || currentCampaign.description}
-            </p>
-          </div>
-
-          {/* CTA Action Button */}
-          <div className="w-full sm:w-auto shrink-0 pt-1 sm:pt-0">
-            <button
-              onClick={handleActionClick}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-none bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-wider hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-sm"
-            >
-              <span>{currentCampaign.ctaText || 'Learn More'}</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Next Campaign dot switcher */}
-        {campaigns.length > 1 && (
-          <div className="flex items-center justify-center gap-1.5 mt-3 pt-2 border-t border-black/5 dark:border-white/[0.06]">
-            {campaigns.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentIndex(i)}
-                className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                  i === currentIndex
-                    ? 'w-5 bg-black dark:bg-[#F4F4F6]'
-                    : 'w-1.5 bg-black/20 dark:bg-white/20 hover:bg-black/40'
-                }`}
-              />
-            ))}
-          </div>
-        )}
-      </motion.div>
-    </AnimatePresence>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={className}>
+      <SpotlightCardView
+        campaign={currentCampaign}
+        onAction={handleActionClick}
+        onDismiss={() => setIsDismissed(true)}
+        index={currentIndex}
+        total={campaigns.length}
+        onSelect={setCurrentIndex}
+      />
+    </motion.div>
   );
 };

@@ -2,7 +2,7 @@ export type Programme = string;
 
 export type Branch = string;
 
-export type AdminRole = 'super_admin' | 'cr' | 'student' | 'faculty';
+export type AdminRole = 'super_admin' | 'cr' | 'student' | 'faculty' | 'campus_admin';
 
 export interface FacultyLinkedBatch {
   id: string; // unique link id (e.g. batch_CSE_4A)
@@ -53,6 +53,7 @@ export interface StudentProfile {
   facultyOfficeRoom?: string;
   facultyEmployeeId?: string;
   facultyLinkedBatches?: FacultyLinkedBatch[];
+  facultyBatchKeys?: string[]; // flat copy of facultyLinkedBatches[].batchKey, read by Firestore rules
 }
 
 export interface Subject {
@@ -186,7 +187,7 @@ export interface CarryItem {
   reminderNote?: string;
 }
 
-export type NotificationCategory = 'classes' | 'events' | 'homework' | 'deadlines' | 'carry' | 'system';
+export type NotificationCategory = 'classes' | 'events' | 'homework' | 'deadlines' | 'carry' | 'routines' | 'system';
 
 export interface AppNotification {
   id: string;
@@ -279,9 +280,60 @@ export interface PromotionalCampaign {
   targetColleges?: string[]; // Empty = All Colleges
   targetBranches?: string[]; // Empty = All Branches
   targetSemesters?: number[]; // Empty = All Semesters
+  targetCollegeKeys?: string[]; // Short college keys (exact match), set for campus-admin notices
+  ownerCollegeKey?: string; // Set when a campus admin owns this notice
+  ownerCollege?: string;
+  ownerUid?: string;
+  ownerRole?: 'campus_admin';
+  pushSentAt?: string;
+  pushRecipients?: number;
+  updatedAt?: string;
   isActive: boolean;
   impressions: number;
   clicks: number;
   createdAt: string;
   expiresAt?: string;
+}
+
+
+// Personal scheduled routine: a repeating (or one-off) to-do with its own reminder.
+export type RoutineCategory = 'study' | 'exam' | 'sports' | 'health' | 'reminder' | 'other';
+export type RoutineRepeat = 'once' | 'daily' | 'weekdays' | 'custom';
+
+export interface Routine {
+  id: string;
+  title: string;
+  category: RoutineCategory;
+  notes?: string;
+  time: string; // 24h "HH:mm"
+  durationMinutes?: number;
+  repeat: RoutineRepeat;
+  days?: number[]; // JS weekdays (0 = Sunday) when repeat === 'custom'
+  date?: string; // yyyy-mm-dd when repeat === 'once'
+  remindBefore: number; // minutes before `time`; 0 = at the time
+  isActive: boolean;
+  completions: string[]; // yyyy-mm-dd dates marked done
+  createdAt: string;
+  sourceSharedId?: string; // set when added from a batch-shared routine
+}
+
+// A routine someone shared with their batch (shared_timetables/{batchKey}/shared_routines/{id})
+export interface SharedRoutine {
+  id: string;
+  batchKey: string;
+  title: string;
+  category: RoutineCategory;
+  notes?: string;
+  time: string;
+  durationMinutes?: number;
+  repeat: RoutineRepeat;
+  days?: number[];
+  date?: string;
+  remindBefore: number;
+  sourceRoutineId: string;
+  sharedBy: string;
+  sharedByName: string;
+  sharedByRole: 'student' | 'faculty' | 'pilot';
+  createdAt: string;
+  addedBy?: Record<string, boolean>;
 }

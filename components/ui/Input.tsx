@@ -16,7 +16,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full flex flex-col gap-1.5 text-left">
         {label && (
-          <label htmlFor={inputId} className="text-xs font-semibold text-zinc-700 dark:text-[#94A3B8]">
+          <label htmlFor={inputId} className="field-label mb-0">
             {label}
           </label>
         )}
@@ -25,17 +25,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           className={twMerge(
             clsx(
-              'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-[#121317] border rounded-none transition-all placeholder:text-zinc-400 dark:placeholder:text-[#64748B] text-zinc-900 dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white/30 shadow-sm',
-              error ? 'border-rose-500 dark:border-rose-500' : 'border-[#D8D8D8] dark:border-white/[0.1]',
+              'field',
+              error && 'border-danger focus:border-danger',
               className
             )
           )}
           {...props}
         />
         {helperText && !error && (
-          <p className="text-[11px] text-zinc-500 dark:text-[#A1A1AA]">{helperText}</p>
+          <p className="field-hint mt-0">{helperText}</p>
         )}
-        {error && <p className="text-[11px] text-rose-500 font-medium">{error}</p>}
+        {error && <p className="field-hint mt-0 text-danger font-medium">{error}</p>}
       </div>
     );
   }
@@ -54,7 +54,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="w-full flex flex-col gap-1.5 text-left">
         {label && (
-          <label htmlFor={inputId} className="text-xs font-semibold text-zinc-700 dark:text-[#94A3B8]">
+          <label htmlFor={inputId} className="field-label mb-0">
             {label}
           </label>
         )}
@@ -63,17 +63,17 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           className={twMerge(
             clsx(
-              'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-[#121317] border rounded-none transition-all placeholder:text-zinc-400 dark:placeholder:text-[#64748B] text-zinc-900 dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white/30 min-h-[80px] shadow-sm',
-              error ? 'border-rose-500 dark:border-rose-500' : 'border-[#D8D8D8] dark:border-white/[0.1]',
+              'field',
+              error && 'border-danger focus:border-danger',
               className
             )
           )}
           {...props}
         />
         {helperText && !error && (
-          <p className="text-[11px] text-zinc-500 dark:text-[#A1A1AA]">{helperText}</p>
+          <p className="field-hint mt-0">{helperText}</p>
         )}
-        {error && <p className="text-[11px] text-rose-500 font-medium">{error}</p>}
+        {error && <p className="field-hint mt-0 text-danger font-medium">{error}</p>}
       </div>
     );
   }
@@ -92,7 +92,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="w-full flex flex-col gap-1.5 text-left">
         {label && (
-          <label htmlFor={inputId} className="text-xs font-semibold text-zinc-700 dark:text-[#94A3B8]">
+          <label htmlFor={inputId} className="field-label mb-0">
             {label}
           </label>
         )}
@@ -101,8 +101,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           className={twMerge(
             clsx(
-              'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-[#121317] border rounded-none transition-all text-zinc-900 dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white/30 cursor-pointer shadow-sm',
-              error ? 'border-rose-500 dark:border-rose-500' : 'border-[#D8D8D8] dark:border-white/[0.1]',
+              'field cursor-pointer',
+              error && 'border-danger focus:border-danger',
               className
             )
           )}
@@ -111,9 +111,9 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           {children}
         </select>
         {helperText && !error && (
-          <p className="text-[11px] text-zinc-500 dark:text-[#A1A1AA]">{helperText}</p>
+          <p className="field-hint mt-0">{helperText}</p>
         )}
-        {error && <p className="text-[11px] text-rose-500 font-medium">{error}</p>}
+        {error && <p className="field-hint mt-0 text-danger font-medium">{error}</p>}
       </div>
     );
   }

@@ -4,57 +4,57 @@ import React, { ButtonHTMLAttributes, forwardRef } from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+// One button for the whole app. Classes live in app/globals.css (.btn*), so raw
+// <button className="btn btn-secondary btn-sm"> and <Button variant="secondary" size="sm"> look identical.
+//   size  md = 44px (default) · sm = 36px (compact rows, toolbars) · lg = 52px (one hero CTA per screen)
+//   variant primary = ink fill · secondary = outlined · ghost = text only · danger = red fill · danger-quiet = red outline
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'danger-quiet' | 'accent';
+export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon' | 'icon-sm';
+
+const variantCls: Record<ButtonVariant, string> = {
+  primary: 'btn-primary',
+  accent: 'btn-primary',
+  secondary: 'btn-secondary',
+  outline: 'btn-secondary',
+  ghost: 'btn-ghost',
+  danger: 'btn-danger',
+  'danger-quiet': 'btn-danger-quiet',
+};
+const sizeCls: Record<ButtonSize, string> = {
+  sm: 'btn-sm',
+  md: '',
+  lg: 'btn-lg',
+  icon: 'btn-icon',
+  'icon-sm': 'btn-sm btn-icon',
+};
+
+export const buttonClass = (variant: ButtonVariant = 'primary', size: ButtonSize = 'md', className?: string) =>
+  twMerge(clsx('btn', variantCls[variant], sizeCls[size], className));
+
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'accent';
-  size?: 'sm' | 'md' | 'lg' | 'icon';
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   isLoading?: boolean;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', isLoading = false, children, disabled, ...props }, ref) => {
-    const baseStyles =
-      'inline-flex items-center justify-center font-medium transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100 select-none whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#111111] dark:focus-visible:ring-[#FFFFFF] focus-visible:ring-offset-2';
-
-    const variants = {
-      primary:
-        'bg-[#111111] text-white hover:bg-black dark:bg-[#FFFFFF] dark:text-[#111111] dark:hover:bg-white/90 shadow-sm border border-[#111111] dark:border-transparent',
-      secondary:
-        'bg-zinc-100 text-zinc-800 hover:bg-zinc-200 dark:bg-white/[0.08] dark:text-[#F4F4F6] dark:hover:bg-white/[0.12] border border-black/10 dark:border-white/[0.1]',
-      outline:
-        'bg-transparent text-zinc-700 dark:text-[#94A3B8] hover:bg-zinc-100 dark:hover:bg-white/[0.06] border border-zinc-300 dark:border-white/[0.1]',
-      ghost:
-        'bg-transparent text-zinc-600 dark:text-[#94A3B8] hover:text-zinc-900 dark:hover:text-[#F4F4F6] hover:bg-zinc-100 dark:hover:bg-white/[0.06]',
-      danger:
-        'bg-rose-500 text-white hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 shadow-sm',
-      accent:
-        'bg-[#111111] text-white hover:bg-black dark:bg-[#FFFFFF] dark:text-[#111111] dark:hover:bg-white/90 shadow-sm',
-    };
-
-    const sizes = {
-      sm: 'text-xs px-2.5 py-1.5 rounded-none gap-1.5 h-8',
-      md: 'text-sm px-3.5 py-2 rounded-none gap-2 h-9',
-      lg: 'text-base px-4 py-2.5 rounded-none gap-2.5 h-11',
-      icon: 'p-2 rounded-none h-9 w-9 flex items-center justify-center',
-    };
-
-    return (
-      <button
-        ref={ref}
-        type={props.type || "button"}
-        disabled={disabled || isLoading}
-        className={twMerge(clsx(baseStyles, variants[variant], sizes[size], className))}
-        {...props}
-      >
-        {isLoading ? (
-          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-          </svg>
-        ) : null}
-        {children}
-      </button>
-    );
-  }
+  ({ className, variant = 'primary', size = 'md', isLoading = false, children, disabled, ...props }, ref) => (
+    <button
+      ref={ref}
+      type={props.type || 'button'}
+      disabled={disabled || isLoading}
+      className={buttonClass(variant, size, className)}
+      {...props}
+    >
+      {isLoading ? (
+        <svg className="animate-spin h-4 w-4 text-current" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+        </svg>
+      ) : null}
+      {children}
+    </button>
+  )
 );
 
 Button.displayName = 'Button';

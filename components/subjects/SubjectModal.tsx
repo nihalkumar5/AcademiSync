@@ -6,9 +6,10 @@ import { Subject } from '@/lib/types';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { Plus, X, Backpack, Sparkles } from 'lucide-react';
+import { Plus, X, Backpack, Sparkles, Check } from '@/components/ui/icons';
 
-import { PASTEL_THEMES, THEME_KEYS, getSubjectCardTheme } from '@/lib/cardColors';
+import { PASTEL_THEMES, THEME_KEYS } from '@/lib/cardColors';
+import { ClassCard } from '../timetable/ClassCard';
 
 export interface SubjectModalProps {
   isOpen: boolean;
@@ -164,7 +165,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-left">
         {isReadOnlyOfficial && (
-          <div className="p-3 bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900/40 rounded-[3px] flex items-start gap-2.5 text-xs text-blue-900 dark:text-blue-200">
+          <div className="p-3 bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900/40 rounded-none flex items-start gap-2.5 text-xs text-blue-900 dark:text-blue-200">
             <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
             <div className="flex flex-col gap-0.5">
               <span className="font-bold">Official Batch Course</span>
@@ -267,132 +268,121 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
           onChange={(e) => setNotes(e.target.value)}
         />
 
-        {/* Color Picker */}
-        <div className="flex flex-col gap-2.5">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold text-[#151515] dark:text-zinc-200">
-              Subject Pastel Theme & Accent
-            </label>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-zinc-400">Custom Shade:</span>
-              <input
-                type="color"
-                value={color && color.startsWith('#') ? color : '#334CC4'}
-                onChange={(e) => setColor(e.target.value)}
-                className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent p-0"
-                title="Choose custom shade"
-              />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-            {defaultColors.map((c) => {
-              const curCol = (color || '').toLowerCase().trim();
-              const isSelected =
-                curCol === c.value.toLowerCase() ||
-                curCol === c.key.toLowerCase() ||
-                curCol === c.bg.toLowerCase() ||
-                (PASTEL_THEMES[c.key] && PASTEL_THEMES[c.key].accent.toLowerCase() === curCol);
-              return (
-                <button
-                  key={c.key}
-                  type="button"
-                  onClick={() => setColor(c.value)}
-                  className="flex items-center gap-2 px-2.5 py-2 rounded-[3px] border transition-all cursor-pointer text-xs font-semibold text-left"
+        {/* Colour: swatch row + preview that mirrors the subject card */}
+        {(() => {
+          const curCol = (color || '').toLowerCase().trim();
+          const selected = defaultColors.find((c) =>
+            curCol === c.value.toLowerCase() ||
+            curCol === c.key.toLowerCase() ||
+            curCol === c.bg.toLowerCase()
+          );
+          const isCustom = !selected;
+          return (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-[13px] font-semibold text-fg">Colour</span>
+                <span className="text-[13px] text-muted">
+                  {isCustom ? 'Custom' : selected!.name}
+                </span>
+              </div>
+
+              <div role="radiogroup" aria-label="Subject colour" className="flex flex-wrap gap-2.5">
+                {defaultColors.map((c) => {
+                  const on = selected?.key === c.key;
+                  return (
+                    <button
+                      key={c.key}
+                      type="button"
+                      role="radio"
+                      aria-checked={on}
+                      aria-label={c.name}
+                      title={c.name}
+                      onClick={() => setColor(c.value)}
+                      className={`relative w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-transform active:scale-95 ring-offset-2 ring-offset-white dark:ring-offset-[#121317] ${
+                        on ? 'ring-2' : 'hover:scale-105'
+                      }`}
+                      style={{ backgroundColor: c.value, ['--tw-ring-color' as any]: c.value }}
+                    >
+                      {on && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
+                    </button>
+                  );
+                })}
+
+                {/* Custom colour: native picker behind a rainbow swatch */}
+                <label
+                  title="Custom colour"
+                  className={`relative w-9 h-9 rounded-full flex items-center justify-center cursor-pointer ring-offset-2 ring-offset-white dark:ring-offset-[#121317] ${
+                    isCustom ? 'ring-2' : 'hover:scale-105'
+                  } transition-transform`}
                   style={{
-                    backgroundColor: c.bg,
-                    borderColor: isSelected ? c.value : 'transparent',
-                    color: c.value,
-                    boxShadow: isSelected ? `0 0 0 2px ${c.value}` : 'none',
-                    transform: isSelected ? 'scale(1.02)' : 'none',
+                    background: isCustom
+                      ? color
+                      : 'conic-gradient(#ef4444, #f59e0b, #22c55e, #06b6d4, #6366f1, #d946ef, #ef4444)',
+                    ['--tw-ring-color' as any]: isCustom ? color : 'transparent',
                   }}
                 >
-                  <span 
-                    className="w-3.5 h-3.5 rounded-full shrink-0 shadow-xs" 
-                    style={{ backgroundColor: c.value }}
+                  {isCustom ? (
+                    <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                  ) : (
+                    <span className="w-6 h-6 rounded-full bg-surface flex items-center justify-center">
+                      <Plus className="w-3.5 h-3.5 text-fg" />
+                    </span>
+                  )}
+                  <input
+                    type="color"
+                    aria-label="Custom colour"
+                    value={color && color.startsWith('#') ? color : '#334CC4'}
+                    onChange={(e) => setColor(e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
                   />
-                  <span className="truncate">{c.name}</span>
-                </button>
-              );
-            })}
-          </div>
+                </label>
+              </div>
 
-          {/* Live Interactive Preview Card */}
-          {(() => {
-            const previewTheme = getSubjectCardTheme({
-              subjectName: name || 'Subject Preview',
-              subjectCode: code || 'CODE',
-              subjectColor: color,
-              isLab,
-            });
-            return (
-              <div
-                className="p-3.5 rounded-[6px] border transition-all flex flex-col gap-2 mt-1 relative overflow-hidden"
-                style={{
-                  borderColor: `${previewTheme.accent}45`,
-                  borderWidth: '1px',
-                  borderStyle: 'solid',
-                }}
-              >
-                <div 
-                  className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-[5px]"
-                  style={{ backgroundColor: previewTheme.bg }}
-                />
-                <div 
-                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-[5px]"
-                  style={{ 
-                    background: `linear-gradient(135deg, ${previewTheme.accent}2A 0%, ${previewTheme.accent}14 100%), #13151D`,
-                  }}
-                />
-                <div className="relative z-10 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span 
-                      className="text-[11px] font-bold uppercase tracking-wider font-mono"
-                      style={{ color: previewTheme.darkAccent || previewTheme.accent }}
-                    >
-                      {previewTheme.name}
-                    </span>
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-[3px] bg-black/5 dark:bg-white/10 text-slate-700 dark:text-zinc-300">
-                      {credits || 3} Credits
-                    </span>
-                    {isLab && (
-                      <span 
-                        className="text-[11px] font-bold px-1.5 py-0.5 rounded-[3px]"
-                        style={{
-                          backgroundColor: previewTheme.badgeBg,
-                          color: previewTheme.badgeText,
-                        }}
-                      >
-                        LAB
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 dark:text-zinc-500">
-                    Live Theme Preview
-                  </span>
-                </div>
-                <div className="relative z-10">
-                  <h5 className="text-[14px] font-bold text-slate-900 dark:text-white">
-                    {name.trim() || 'Subject Name'}
-                  </h5>
-                  <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5">
-                    Room: <strong className="text-slate-800 dark:text-zinc-200">{room.trim() || 'LT-1'}</strong> · Faculty: <strong className="text-slate-800 dark:text-zinc-200">{facultyName.trim() || 'Faculty Member'}</strong>
-                  </p>
+              {/* Preview: the real timetable card, so it always matches */}
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[12px] font-semibold text-muted">
+                  Preview in timetable
+                </span>
+                <div className="pointer-events-none">
+                  <ClassCard
+                    canModify={false}
+                    onEdit={() => {}}
+                    onDelete={() => {}}
+                    session={{
+                      id: 'preview',
+                      subjectId: 'preview',
+                      day: 'Monday',
+                      startTime: '09:00',
+                      endTime: isLab ? '10:55' : '09:55',
+                      room: (isLab && labRoom.trim()) || room.trim() || 'LT-1',
+                      isLab,
+                    } as any}
+                    subject={{
+                      id: 'preview',
+                      name: name.trim() || 'Subject name',
+                      code: code.trim() || 'CODE',
+                      color,
+                      isLab,
+                      facultyName: facultyName.trim() || 'Faculty',
+                      room: room.trim() || 'LT-1',
+                      labRoom,
+                    } as any}
+                  />
                 </div>
               </div>
-            );
-          })()}
-        </div>
+            </div>
+          );
+        })()}
 
         {/* Lab Toggle */}
-        <div className="flex flex-col gap-2 p-3 rounded-[3px] bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/80">
+        <div className="flex flex-col gap-2 p-3 rounded-none bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/80">
           <div className="flex items-center gap-2.5">
             <input
               type="checkbox"
               id="subIsLab"
               checked={isLab}
               onChange={(e) => setIsLab(e.target.checked)}
-              className="w-4 h-4 rounded-[2px] accent-black dark:accent-white cursor-pointer"
+              className="w-4 h-4 rounded-none accent-black dark:accent-white cursor-pointer"
             />
             <label htmlFor="subIsLab" className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 cursor-pointer">
               Includes Practical Lab Sessions
@@ -409,18 +399,18 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
         </div>
 
         {/* Elective Course Toggle */}
-        <div className="flex flex-col gap-1.5 p-3 rounded-[3px] bg-[#8067B5]/10 border border-[#8067B5]/30">
+        <div className="flex flex-col gap-1.5 p-3 rounded-none bg-[#8067B5]/10 border border-[#8067B5]/30">
           <div className="flex items-center gap-2.5">
             <input
               type="checkbox"
               id="subIsElective"
               checked={isElective}
               onChange={(e) => setIsElective(e.target.checked)}
-              className="w-4 h-4 rounded-[2px] accent-[#8067B5] cursor-pointer"
+              className="w-4 h-4 rounded-none accent-[#8067B5] cursor-pointer"
             />
-            <label htmlFor="subIsElective" className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 cursor-pointer flex items-center gap-1.5">
+            <label htmlFor="subIsElective" className="text-xs font-semibold text-fg cursor-pointer flex items-center gap-1.5">
               <span>Elective Course (Department / Open / Minor)</span>
-              <span className="text-[11px] px-1.5 py-0.5 bg-[#8067B5]/20 text-[#8067B5] dark:text-[#C084FC] font-bold uppercase tracking-wider">Elective</span>
+              <span className="text-[12px] px-1.5 py-0.5 bg-[#8067B5]/20 text-[#8067B5] dark:text-[#C084FC] font-bold ">Elective</span>
             </label>
           </div>
           <p className="text-[11px] text-zinc-600 dark:text-zinc-400 pl-6">
@@ -429,20 +419,20 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
         </div>
 
         {/* Things to Carry Requirements */}
-        <div className="flex flex-col gap-2 p-3.5 rounded-[3px] bg-[#111111]/[0.03] dark:bg-white/[0.03] border border-black/10 dark:border-white/10">
+        <div className="flex flex-col gap-2 p-3.5 rounded-none bg-[#111111]/[0.03] dark:bg-white/[0.03] border border-line">
           <div className="flex items-center gap-1.5">
             <Backpack className="w-4 h-4 text-[#18A889]" />
-            <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+            <h4 className="text-xs font-bold text-fg">
               Required Things to Carry for this Subject
             </h4>
           </div>
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[11px] text-muted">
             These items will automatically appear in your &quot;Carry Bag&quot; whenever this subject is scheduled.
           </p>
 
           {/* Quick Presets */}
           <div className="flex flex-wrap gap-1.5 mt-1">
-            <span className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 self-center mr-1">
+            <span className="text-[11px] font-bold text-faint self-center mr-1">
               Quick Add:
             </span>
             {carryPresets.map((preset) => (
@@ -450,7 +440,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
                 key={preset}
                 type="button"
                 onClick={() => handleAddCarryItem(preset)}
-                className="text-[11px] font-medium px-2 py-0.5 rounded-[2px] bg-white dark:bg-[#1E1F24] border border-zinc-200 dark:border-zinc-700 hover:border-black/30 dark:hover:border-white/30 text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
+                className="text-[11px] font-medium px-2 py-0.5 rounded-none bg-surface border border-zinc-200 dark:border-zinc-700 hover:border-black/30 dark:hover:border-white/30 text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
               >
                 + {preset}
               </button>
@@ -469,7 +459,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
                   handleAddCarryItem();
                 }
               }}
-              className="flex-1 px-3 py-1.5 text-xs bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-[2px] text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none"
+              className="flex-1 px-3 py-1.5 text-xs bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-none text-fg placeholder:text-zinc-400 focus:outline-none"
             />
             <Button type="button" size="sm" variant="secondary" onClick={() => handleAddCarryItem()}>
               <Plus className="w-3.5 h-3.5 mr-1" />
@@ -481,7 +471,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
             {carryReqs.map((req, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-[2px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 font-medium"
+                className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-none bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 font-medium"
               >
                 <span>{req}</span>
                 <button

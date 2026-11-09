@@ -5,7 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import { BatchProposedTask, AssignmentReadReceipt } from '@/lib/types';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Eye, CheckCircle2, Clock, Users, Copy, Share2, AlertCircle } from 'lucide-react';
+import { Eye, CheckCircle2, Clock, Users, Copy, Share2, AlertCircle } from '@/components/ui/icons';
 import { useApp } from '@/context/AppContext';
 
 interface AssignmentReadTrackerModalProps {
@@ -79,51 +79,51 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
     >
       <div className="flex flex-col gap-4 text-left font-sans mt-2">
         {/* Progress & Stat Header */}
-        <div className="p-4 rounded-[12px] bg-black/5 dark:bg-white/5 border border-black/[0.06] dark:border-white/[0.08] flex flex-col gap-3">
+        <div className="p-4 rounded-none bg-surface-2 border border-line-soft flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-black/70 dark:text-white/70">
+            <span className="text-xs font-bold text-fg-2">
               Read Percentage
             </span>
-            <span className="text-xl font-bold font-mono text-black dark:text-white">
+            <span className="text-xl font-bold font-mono text-fg">
               {percentage}%
             </span>
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full h-2.5 bg-black/10 dark:bg-white/10 overflow-hidden rounded-full">
+          <div className="w-full h-2.5 bg-surface-3 overflow-hidden rounded-full">
             <div
               className="h-full bg-emerald-500 transition-all duration-500"
               style={{ width: `${Math.min(100, Math.max(0, percentage))}%` }}
             />
           </div>
 
-          <div className="flex items-center justify-between text-xs text-black/60 dark:text-white/60 font-mono pt-1">
+          <div className="flex items-center justify-between text-xs text-muted font-mono pt-1">
             <span>Opened: <strong>{openedList.length}</strong> students</span>
             <span>Batch Total: <strong>{totalBatchCount}</strong> students</span>
           </div>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex border-b border-black/[0.06] dark:border-white/[0.08]">
+        <div className="flex border-b border-line-soft">
           <button
             type="button"
             onClick={() => setActiveTab('opened')}
-            className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 cursor-pointer ${
-              activeTab === 'opened'
-                ? 'border-black dark:border-white text-black dark:text-white'
-                : 'border-transparent text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white'
-            }`}
+            className={`flex-1 py-2 text-xs font-bold transition-colors border-b-2 cursor-pointer ${
+ activeTab === 'opened'
+ ? 'border-line-strong text-fg'
+ : 'border-transparent text-muted hover:text-fg'
+ }`}
           >
             Opened ({openedList.length})
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('unopened')}
-            className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 cursor-pointer ${
-              activeTab === 'unopened'
-                ? 'border-black dark:border-white text-black dark:text-white'
-                : 'border-transparent text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white'
-            }`}
+            className={`flex-1 py-2 text-xs font-bold transition-colors border-b-2 cursor-pointer ${
+ activeTab === 'unopened'
+ ? 'border-line-strong text-fg'
+ : 'border-transparent text-muted hover:text-fg'
+ }`}
           >
             Not Opened Yet ({unopenedMembers.length > 0 ? unopenedMembers.length : Math.max(0, totalBatchCount - openedList.length)})
           </button>
@@ -133,7 +133,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
         <div className="max-h-64 overflow-y-auto flex flex-col gap-1.5 p-1">
           {activeTab === 'opened' ? (
             openedList.length === 0 ? (
-              <div className="py-8 text-center text-xs text-black/60 dark:text-white/60 flex flex-col items-center justify-center gap-1.5">
+              <div className="py-8 text-center text-xs text-muted flex flex-col items-center justify-center gap-1.5">
                 <Eye className="w-6 h-6 opacity-30" />
                 <span>No students have opened this assignment yet.</span>
               </div>
@@ -141,14 +141,14 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
               openedList.map((st, i) => (
                 <div
                   key={`${st.studentId}_${i}`}
-                  className="p-2.5 rounded-[8px] bg-white dark:bg-[#121317] border border-black/[0.06] dark:border-white/[0.08] flex items-center justify-between gap-2 shadow-2xs"
+                  className="p-2.5 rounded-none bg-surface border border-line-soft flex items-center justify-between gap-2 shadow-2xs"
                 >
                   <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-bold text-black dark:text-white truncate">
+                    <span className="text-xs font-bold text-fg truncate">
                       {st.studentName || 'Student'}
                     </span>
                     {st.rollNumber && (
-                      <span className="text-[11px] font-mono text-black/60 dark:text-white/60">
+                      <span className="text-[11px] font-mono text-muted">
                         Roll: {st.rollNumber}
                       </span>
                     )}
@@ -163,7 +163,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
           ) : (
             /* Unopened Tab */
             unopenedMembers.length === 0 ? (
-              <div className="py-8 text-center text-xs text-black/60 dark:text-white/60 flex flex-col items-center justify-center gap-1.5">
+              <div className="py-8 text-center text-xs text-muted flex flex-col items-center justify-center gap-1.5">
                 <CheckCircle2 className="w-6 h-6 text-emerald-500 opacity-60" />
                 <span>All registered batch members have opened this assignment!</span>
               </div>
@@ -171,14 +171,14 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
               unopenedMembers.map((m, i) => (
                 <div
                   key={`${m.id || i}`}
-                  className="p-2.5 rounded-[8px] bg-white dark:bg-[#121317] border border-black/[0.06] dark:border-white/[0.08] flex items-center justify-between gap-2 opacity-75 shadow-2xs"
+                  className="p-2.5 rounded-none bg-surface border border-line-soft flex items-center justify-between gap-2 opacity-75 shadow-2xs"
                 >
                   <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-medium text-black dark:text-white truncate">
+                    <span className="text-xs font-medium text-fg truncate">
                       {m.name || m.email || 'Student'}
                     </span>
                     {m.rollNumber && (
-                      <span className="text-[11px] font-mono text-black/60 dark:text-white/60">
+                      <span className="text-[11px] font-mono text-muted">
                         Roll: {m.rollNumber}
                       </span>
                     )}
@@ -194,12 +194,12 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
         </div>
 
         {/* Footer actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-black/[0.06] dark:border-white/[0.08] mt-1">
+        <div className="flex items-center justify-between pt-3 border-t border-line-soft mt-1">
           {activeTab === 'unopened' && unopenedMembers.length > 0 && (
             <button
               type="button"
               onClick={handleCopyUnopenedList}
-              className="text-xs font-bold uppercase tracking-wider text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white flex items-center gap-1 cursor-pointer"
+              className="text-xs font-bold text-fg-2 hover:text-fg flex items-center gap-1 cursor-pointer"
             >
               <Copy className="w-3 h-3" />
               <span>Copy Unopened List</span>
@@ -209,7 +209,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-1.5 rounded-[8px] bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-xs font-bold uppercase tracking-wider hover:opacity-85 transition-opacity cursor-pointer shadow-2xs"
+              className="px-4 h-9 rounded-none bg-ink text-on-ink text-[13px] font-semibold hover:opacity-85 transition-opacity cursor-pointer shadow-2xs"
             >
               Close
             </button>

@@ -17,17 +17,139 @@
 }
 
 :root {
-  /* Crisp clean white background */
-  --background: #FFFFFF; 
-  /* Stark charcoal/black text */
-  --foreground: #111111; 
+  --background: #FFFFFF;
+  --foreground: #111111;
+
+  /* ── Design system: neutral scale (light) ─────────────────────────────
+     Black and white only. Colour is reserved for meaning (danger / ok).
+     canvas < surface < surface-2 < surface-3 is the elevation / fill order. */
+  --c-canvas: 255 255 255;     /* #FFFFFF  page: clean white */
+  --c-surface: 255 255 255;    /* #FFFFFF  cards, sheets, inputs */
+  --c-surface-2: 247 247 245;  /* #F7F7F5  quiet fill, hover, chips */
+  --c-surface-3: 234 234 231;  /* #EAEAE7  pressed, selected-soft, tracks */
+  --c-line: 226 226 223;       /* #E2E2DF  borders */
+  --c-line-soft: 238 238 236;  /* #EEEEEC  dividers inside cards */
+  --c-line-strong: 17 17 17;   /* #111111  focus, hover, active outline */
+  --c-fg: 17 17 17;            /* #111111  primary text */
+  --c-fg-2: 61 61 59;          /* #3D3D3B  secondary text */
+  --c-muted: 107 107 107;      /* #6B6B6B  meta, labels */
+  --c-faint: 155 155 152;      /* #9B9B98  placeholder, disabled */
+  --c-ink: 17 17 17;           /* primary button fill */
+  --c-on-ink: 255 255 255;     /* text on ink */
+  --c-danger: 220 38 38;       /* red-600: absent, below 75%, destructive */
+  --c-danger-soft: 254 242 242;
+  --c-ok: 21 128 61;           /* green-700: done, OK */
+  --c-ok-soft: 240 253 244;
+
+  /* Elevation: cards lift off the paper with a hairline plus a soft, wide shadow. */
+  --elev-1: 0 1px 0 rgba(17, 17, 17, 0.03), 0 1px 2px rgba(17, 17, 17, 0.04);
+  --elev-2: 0 1px 2px rgba(17, 17, 17, 0.04), 0 8px 24px -16px rgba(17, 17, 17, 0.14);
 }
 
 .dark {
-  /* Luxury Obsidian Noir dark mode background */
-  --background: #090A0C;
+  --background: #0C0C0D;
   --foreground: #F4F4F6;
   color-scheme: dark;
+
+  /* ── Design system: neutral scale (dark) ── */
+  --c-canvas: 12 12 13;        /* #0C0C0D  neutral ink black (no blue cast) */
+  --c-surface: 21 21 23;       /* #151517 */
+  --c-surface-2: 28 28 30;     /* #1C1C1E */
+  --c-surface-3: 38 38 41;     /* #262629 */
+  --c-line: 46 46 49;          /* #2E2E31  ≈ white 10% on surface */
+  --c-line-soft: 32 32 35;     /* #202023 */
+  --c-line-strong: 244 244 246;/* #F4F4F6 */
+  --c-fg: 244 244 246;         /* #F4F4F6 */
+  --c-fg-2: 212 212 216;       /* #D4D4D8 */
+  --c-muted: 161 161 170;      /* #A1A1AA */
+  --c-faint: 113 113 122;      /* #71717A */
+  --c-ink: 244 244 246;
+  --c-on-ink: 12 12 13;
+  --c-danger: 248 113 113;     /* red-400 */
+  --c-danger-soft: 69 10 10;
+  --c-ok: 74 222 128;          /* green-400 */
+  --c-ok-soft: 5 46 22;
+
+  /* Dark: a faint top highlight reads as a lit edge; the drop shadow sinks into the ink. */
+  --elev-1: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --elev-2: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 16px 32px -16px rgba(0, 0, 0, 0.7);
+}
+
+/* ── Design system: shared control classes ───────────────────────────────
+   Sizes: 44px default control, 36px compact, 52px hero CTA. Sharp corners.
+   Type: 14px default, 13px compact, 15px hero. One weight for actions (600).
+   Use via className (".btn btn-primary") or components/ui/{Button,Chip,Input,Card}. */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 h-11 px-4 shrink-0 select-none whitespace-nowrap
+      border border-transparent rounded-none text-[14px] font-semibold leading-none
+      transition-[background-color,border-color,color,opacity,transform] duration-150 cursor-pointer
+      active:scale-[0.98] disabled:opacity-45 disabled:cursor-not-allowed disabled:active:scale-100
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-line-strong focus-visible:ring-offset-2 focus-visible:ring-offset-canvas;
+  }
+  .btn > svg { @apply w-4 h-4 shrink-0; }
+  .btn-sm { @apply h-9 px-3 gap-1.5 text-[13px]; }
+  .btn-lg { @apply h-[52px] px-5 text-[15px]; }
+  .btn-icon { @apply w-11 px-0; }
+  .btn-sm.btn-icon { @apply w-9; }
+  .btn-primary { @apply bg-ink text-on-ink border-ink hover:opacity-90; }
+  .btn-secondary { @apply bg-surface text-fg border-line hover:border-line-strong; }
+  .btn-ghost { @apply bg-transparent text-muted hover:text-fg hover:bg-surface-2; }
+  .btn-danger { @apply bg-danger text-white border-danger hover:opacity-90; }
+  .dark .btn-danger { @apply text-canvas; }
+  .btn-danger-quiet { @apply bg-transparent text-danger border-danger/40 hover:bg-danger-soft; }
+
+  /* Page header actions, the same on every screen: the primary (create) action always comes first.
+     Phones: primary spans the full row, secondaries share the row(s) below in equal columns.
+     sm and up: one row of natural-width buttons. */
+  .page-actions { @apply flex flex-wrap items-center gap-2; }
+  .page-actions > .btn { flex: 1 1 calc(50% - 0.25rem); min-width: 0; }
+  .page-actions > .btn-primary { flex-basis: 100%; order: -1; }
+  @media (min-width: 640px) {
+    .page-actions > .btn, .page-actions > .btn-primary { flex: 0 0 auto; }
+  }
+
+  /* Chip: filters, tags, segmented choices. 32px tall, never caps. */
+  .chip {
+    @apply inline-flex items-center justify-center gap-1.5 h-8 px-3 shrink-0 whitespace-nowrap rounded-none
+      border border-line bg-surface text-[13px] font-medium text-muted transition-colors cursor-pointer
+      hover:text-fg hover:border-line-strong;
+  }
+  .chip-active { @apply bg-ink text-on-ink border-ink hover:text-on-ink; }
+  /* Tag: static label (status, count, code). 24px, not interactive. */
+  .tag {
+    @apply inline-flex items-center gap-1 h-6 px-2 shrink-0 whitespace-nowrap rounded-none
+      border border-line text-[12px] font-medium text-fg-2;
+  }
+  .tag-danger { @apply border-danger/40 text-danger bg-danger-soft; }
+  .tag-ok { @apply border-ok/40 text-ok bg-ok-soft; }
+
+  /* Field: input / select / textarea. 44px, 16px text so iOS never zooms. */
+  .field {
+    @apply w-full h-11 px-3.5 rounded-none border border-line bg-surface text-[16px] text-fg
+      placeholder:text-faint transition-colors focus:outline-none focus:border-line-strong
+      disabled:opacity-50;
+  }
+  textarea.field { @apply h-auto min-h-[96px] py-3 leading-relaxed; }
+  .field-label { @apply block mb-1.5 text-[13px] font-semibold text-fg; }
+  .field-hint { @apply mt-1.5 text-[12px] text-muted; }
+
+  /* Surfaces */
+  .card { @apply bg-surface border border-line rounded-none; box-shadow: var(--elev-2); }
+  .card-pad { @apply p-f4; }
+  .card-quiet { @apply bg-surface-2 border border-line-soft rounded-none; }
+
+  /* List row: 56px minimum, 21px side padding, soft divider. */
+  .list-row {
+    @apply flex items-center gap-3 min-h-[56px] px-f4 py-f3 border-b border-line-soft last:border-b-0 text-left;
+  }
+  button.list-row, a.list-row { @apply w-full transition-colors hover:bg-surface-2 cursor-pointer; }
+
+  /* Type */
+  .page-title { @apply text-[34px] sm:text-[40px] leading-[1.08] font-normal tracking-tight text-fg; }
+  .section-title { @apply text-[17px] font-semibold tracking-tight text-fg; }
+  .section-label { @apply text-[13px] font-semibold text-muted; }
+  .meta { @apply text-[13px] text-muted; }
 }
 
 html {
@@ -45,9 +167,13 @@ body {
   -webkit-overflow-scrolling: touch;
   -webkit-tap-highlight-color: transparent;
   color: var(--foreground);
-  background-color: #FFFFFF;
-  background-image: radial-gradient(rgba(0, 0, 0, 0.065) 1px, transparent 1px);
-  background-size: 24px 24px;
+  /* Light: clean white page with a barely-there grid. Cards separate by border + soft shadow. */
+  background-color: rgb(var(--c-canvas));
+  background-image:
+    linear-gradient(rgba(17, 17, 17, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 17, 17, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px, 32px 32px;
+  background-position: -1px -1px, -1px -1px;
   background-attachment: fixed;
   font-feature-settings: "rlig" 1, "calt" 1;
   -webkit-font-smoothing: antialiased;
@@ -55,29 +181,33 @@ body {
 }
 
 .dark body, body.dark {
-  background-color: #090A0C;
-  background-image: 
-    radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.05), transparent 70%),
-    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(56, 189, 248, 0.025), transparent 60%);
-  background-size: 24px 24px, auto, auto;
+  /* Neutral ink black. The top glow is warm (not blue) so dark mode belongs to the same warm-paper
+     family as light mode; fine grid and a soft edge vignette give depth. */
+  background-color: rgb(var(--c-canvas));
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.032) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.032) 1px, transparent 1px),
+    radial-gradient(ellipse 90% 50% at 50% -12%, rgba(255, 232, 205, 0.075), transparent 70%),
+    radial-gradient(ellipse 120% 100% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.45) 100%);
+  background-size: 32px 32px, 32px 32px, auto, auto;
+  background-position: -1px -1px, -1px -1px, 0 0, 0 0;
   background-attachment: fixed;
 }
 
 /* Card surfaces with subtle modern elevation */
 .bento-card, .glass-card, .hero-mesh-card {
-  background: #FFFFFF;
-  border: 1px solid #E5E5E2;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+  background: rgb(var(--c-surface));
+  border: 1px solid rgb(var(--c-line));
+  box-shadow: var(--elev-2);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark .bento-card, .dark .glass-card, .dark .hero-mesh-card,
 html.dark .bento-card, html.dark .glass-card, html.dark .hero-mesh-card {
-  background: #121317 !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: rgb(var(--c-surface)) !important;
+  border-color: rgb(var(--c-line)) !important;
   color: #F4F4F6 !important;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--elev-2);
 }
 
 /* Custom subtle scrollbars */
@@ -108,4 +238,54 @@ html.dark .bento-card, html.dark .glass-card, html.dark .hero-mesh-card {
 body.modal-open header,
 body.modal-open #mobile-nav {
   display: none !important;
+}
+
+/* Greeting hand: waves once on load */
+@keyframes wave {
+  0%, 60%, 100% { transform: rotate(0deg); }
+  10%, 30% { transform: rotate(14deg); }
+  20% { transform: rotate(-8deg); }
+  40% { transform: rotate(-4deg); }
+  50% { transform: rotate(10deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-[wave"] { animation: none !important; }
+}
+
+/* Sheen: a soft overhead light on key surfaces (header, nav, sheet headers).
+   Light surfaces get a grey shade in light mode and a white highlight in dark mode. */
+/* Light: sheen cards stay plain white (the warm ivory canvas already gives them lift).
+   Dark keeps its soft white light-reflection. */
+.sheen {
+  background-image: none;
+}
+.dark .sheen {
+  background-image:
+    radial-gradient(ellipse 70% 140% at 28% -45%, rgba(255, 255, 255, 0.18), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 70%);
+}
+/* Ink surfaces (black hero cards) are dark in both themes, so they always get the white highlight */
+.sheen-ink {
+  background-image:
+    radial-gradient(ellipse 70% 140% at 28% -45%, rgba(255, 255, 255, 0.16), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0) 70%);
+}
+
+
+/* Every surface panel built from tokens (bg-surface + a line border) gets card elevation,
+   so screens read as paper with cards on it, not white on white. Controls stay flat. */
+:where(div, section, article, aside, ul, ol, li, a, details).bg-surface:is(.border, .border-line) {
+  box-shadow: var(--elev-2);
+}
+:where(button).bg-surface:is(.border, .border-line), .btn-secondary {
+  box-shadow: var(--elev-1);
+}
+:where(div, section, article, li).bg-surface:is(.border, .border-line) :where(div, section, article, li).bg-surface:is(.border, .border-line) {
+  box-shadow: none; /* nested panels don't stack shadows */
+}
+
+/* Dropdown entry: a short scale + fade from the corner it opens from */
+@keyframes menuIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }

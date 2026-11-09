@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#FFFFFF] dark:bg-[#090A0C] text-[#111111] dark:text-[#FFFFFF] p-6">
+    <div className="min-h-screen w-full flex items-center justify-center bg-surface text-fg p-6">
       <div className="max-w-md w-full p-8 bg-white dark:bg-[#181817] border border-[#E5E5E3] dark:border-[#2C2C2C] shadow-sm text-center flex flex-col items-center">
         <span className="text-4xl font-mono font-bold text-[#111111]/30 dark:text-[#FFFFFF]/30 mb-2">
           404
@@ -16,7 +16,7 @@ export default function NotFound() {
         </p>
         <Link
           href="/"
-          className="h-11 px-6 bg-[#111111] dark:bg-[#FFFFFF] text-white dark:text-[#111111] text-xs font-bold uppercase tracking-wider flex items-center justify-center hover:opacity-90 active:scale-95 transition-all"
+          className="btn btn-primary"
         >
           Return to Dashboard
         </Link>

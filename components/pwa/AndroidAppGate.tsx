@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, ExternalLink, Sparkles, Bell, Calendar, Smartphone } from 'lucide-react';
+import { Download, ExternalLink, Sparkles, Bell, Calendar, Smartphone } from '@/components/ui/icons';
 import { Capacitor } from '@capacitor/core';
 
 export const AndroidAppGate: React.FC = () => {
@@ -75,7 +75,7 @@ export const AndroidAppGate: React.FC = () => {
               inter<span className="font-normal opacity-80">semester</span>
             </h1>
             <div className="w-[24px] h-[1.5px] bg-[#111111] mt-2.5 mb-1.5" />
-            <p className="text-[11px] tracking-[2.5px] font-mono font-bold text-[#111111]/60 uppercase whitespace-pre-line text-center">
+            <p className="text-[12px] font-mono font-bold text-[#111111]/60 whitespace-pre-line text-center">
               EVERY ACADEMIC DAY{"\n"}CLEAR & PREDICTABLE.
             </p>
           </div>
@@ -93,7 +93,7 @@ export const AndroidAppGate: React.FC = () => {
           </div>
 
           {/* Bottom Card */}
-          <div className="w-full px-7 sm:px-8 flex flex-col gap-2 pb-5 bg-[#F4F4F4] shrink-0 z-10 relative rounded-t-[36px] pt-6 -mt-6 dark:bg-white/[0.05]">
+          <div className="w-full px-7 sm:px-8 flex flex-col gap-2 pb-5 bg-surface-2 shrink-0 z-10 relative rounded-t-[36px] pt-6 -mt-6">
             <h2 className="text-[26px] sm:text-[28px] leading-[1.1] font-bold text-[#111111]">
               Get the Android App.
             </h2>
@@ -104,7 +104,7 @@ export const AndroidAppGate: React.FC = () => {
             {/* 3 Feature Highlights */}
             <div className="flex flex-col gap-1.5 my-1">
               <div className="flex items-center gap-3 py-1.5 border-b border-black/5">
-                <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center shrink-0 shadow-sm border border-black/5">
+                <div className="w-7 h-7 bg-white rounded-none flex items-center justify-center shrink-0 shadow-sm border border-black/5">
                   <Calendar className="w-3.5 h-3.5 text-[#111111]" />
                 </div>
                 <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111111]">
@@ -114,7 +114,7 @@ export const AndroidAppGate: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-3 py-1.5 border-b border-black/5">
-                <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center shrink-0 shadow-sm border border-black/5">
+                <div className="w-7 h-7 bg-white rounded-none flex items-center justify-center shrink-0 shadow-sm border border-black/5">
                   <Bell className="w-3.5 h-3.5 text-[#111111]" />
                 </div>
                 <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111111]">
@@ -124,7 +124,7 @@ export const AndroidAppGate: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-3 py-1.5">
-                <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center shrink-0 shadow-sm border border-black/5">
+                <div className="w-7 h-7 bg-white rounded-none flex items-center justify-center shrink-0 shadow-sm border border-black/5">
                   <Sparkles className="w-3.5 h-3.5 text-[#111111]" />
                 </div>
                 <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111111]">
@@ -137,14 +137,14 @@ export const AndroidAppGate: React.FC = () => {
 
           {/* Action Buttons Footer */}
           <div 
-            className="w-full px-6 sm:px-8 pt-3 pb-6 flex flex-col gap-2 shrink-0 bg-[#F7F7F5] z-10 relative dark:bg-white/[0.05]"
+            className="w-full px-6 sm:px-8 pt-3 pb-6 flex flex-col gap-2 shrink-0 bg-surface-2 z-10 relative"
             style={{
               paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 16px), 24px)',
             }}
           >
             <a
               href={intentUrl}
-              className="w-full py-3.5 bg-[#111111] text-white text-[13px] font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:opacity-90 transition-opacity cursor-pointer shadow-sm rounded-none"
+              className="w-full py-3.5 bg-[#111111] text-white text-[13px] font-bold text-center flex items-center justify-center gap-2 hover:opacity-90 transition-opacity cursor-pointer shadow-sm rounded-none"
             >
               <span>Open in Intersemester App</span>
               <ExternalLink className="w-4 h-4" />
@@ -154,7 +154,7 @@ export const AndroidAppGate: React.FC = () => {
               href={playStoreUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full py-3 bg-white border-2 border-black text-black text-[12px] font-black uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:bg-black/5 transition-colors cursor-pointer shadow-sm rounded-none"
+              className="w-full h-11 bg-white border-2 border-black text-black text-[14px] font-semibold text-center flex items-center justify-center gap-2 hover:bg-black/5 transition-colors cursor-pointer shadow-sm rounded-none"
             >
               <Download className="w-4 h-4" />
               <span>Download on Google Play</span>
@@ -163,7 +163,7 @@ export const AndroidAppGate: React.FC = () => {
             <button
               type="button"
               onClick={handleBypass}
-              className="w-full py-1.5 text-center text-[12px] font-semibold text-black/60 hover:text-black transition-colors cursor-pointer uppercase tracking-wider underline underline-offset-4"
+              className="w-full h-9 text-center text-[13px] font-semibold text-black/60 hover:text-black transition-colors cursor-pointer underline underline-offset-4"
             >
               Continue on Web
             </button>

@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { MessOnboarding } from './MessOnboarding';
 import { format } from 'date-fns';
-import { Share, Sparkles, Clock, Edit3, X, Check, ArrowRight, UtensilsCrossed } from 'lucide-react';
+import { Share, Sparkles, Clock, Edit3, X, Check, ArrowRight, UtensilsCrossed, Coffee, Sun, Cookie, Moon, Pencil } from '@/components/ui/icons';
 import { Modal } from '../ui/Modal';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -72,119 +72,177 @@ function parseTimeToMinutes(timeStr: string, defaultStart: number, defaultEnd: n
   };
 }
 
-const LiveMealCard = ({ 
-  todayMenu, 
+const MEAL_ORDER = ['Breakfast', 'Lunch', 'Snacks', 'Dinner'] as const;
+const MEAL_ICONS: Record<string, React.ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>> = {
+  Breakfast: Coffee,
+  Lunch: Sun,
+  Snacks: Cookie,
+  Dinner: Moon,
+};
+const MEAL_DEFAULTS: Record<string, [number, number]> = {
+  Breakfast: [8 * 60, 10 * 60],
+  Lunch: [12 * 60 + 30, 14 * 60 + 30],
+  Snacks: [16 * 60 + 30, 17 * 60 + 30],
+  Dinner: [19 * 60 + 30, 21 * 60 + 30],
+};
+
+function getMealWindows(timings: Record<string, string>, day: string) {
+  return MEAL_ORDER.map((name) => ({
+    name,
+    ...parseTimeToMinutes(resolveMealTimingForDay(timings?.[name], day), MEAL_DEFAULTS[name][0], MEAL_DEFAULTS[name][1]),
+  }));
+}
+
+function formatMinutes(mins: number) {
+  const h24 = Math.floor(mins / 60) % 24;
+  const m = mins % 60;
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  return `${h12}:${String(m).padStart(2, '0')} ${h24 < 12 ? 'AM' : 'PM'}`;
+}
+
+function formatDuration(mins: number) {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+// Which of today's meals is being served, and which comes next (minute precision)
+function useMealClock(timings: Record<string, string>, today: string) {
+  const [now, setNow] = React.useState<number | null>(null);
+  React.useEffect(() => {
+    const tick = () => {
+      const d = new Date();
+      setNow(d.getHours() * 60 + d.getMinutes());
+    };
+    tick();
+    const interval = setInterval(tick, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const windows = getMealWindows(timings, today);
+  if (now === null) return { now: null, windows, serving: null, next: null };
+  const serving = windows.find((w) => now >= w.start && now < w.end) || null;
+  const next = windows.find((w) => w.start > now) || null;
+  return { now, windows, serving, next };
+}
+
+const LiveMealCard = ({
+  todayMenu,
   timings,
-  today 
-}: { 
-  todayMenu: any; 
+  today,
+}: {
+  todayMenu: any;
   timings: Record<string, string>;
   today: string;
 }) => {
-  const [timeState, setTimeState] = React.useState<{ status: string; meal: string; timeLeft: string; items: string[] } | null>(null);
+  const { now, windows, serving, next } = useMealClock(timings, today);
+  if (now === null) return null;
 
-  React.useEffect(() => {
-    const activeTimings = [
-      { name: 'Breakfast', ...parseTimeToMinutes(resolveMealTimingForDay(timings?.Breakfast, today), 8 * 60, 10 * 60) },
-      { name: 'Lunch', ...parseTimeToMinutes(resolveMealTimingForDay(timings?.Lunch, today), 12 * 60 + 30, 14 * 60 + 30) },
-      { name: 'Snacks', ...parseTimeToMinutes(resolveMealTimingForDay(timings?.Snacks, today), 16 * 60 + 30, 17 * 60 + 30) },
-      { name: 'Dinner', ...parseTimeToMinutes(resolveMealTimingForDay(timings?.Dinner, today), 19 * 60 + 30, 21 * 60 + 30) },
-    ];
+  const tomorrowBreakfast = !serving && !next;
+  const focus = serving || next || windows[0];
+  const items: string[] = (todayMenu?.[focus.name] || []) as string[];
+  const total = Math.max(1, focus.end - focus.start);
+  const progress = serving ? Math.min(100, Math.max(0, ((now - serving.start) / total) * 100)) : 0;
+  const status = serving ? 'Serving now' : tomorrowBreakfast ? 'Tomorrow' : 'Up next';
+  const countdown = serving
+    ? `Ends in ${formatDuration(serving.end - now)}`
+    : tomorrowBreakfast
+    ? `Starts in ${formatDuration(24 * 60 - now + windows[0].start)}`
+    : `Starts in ${formatDuration(focus.start - now)}`;
+  const after = serving ? windows.find((w) => w.start >= serving.end) : null;
 
-    const update = () => {
-      const now = new Date();
-      const currentMins = now.getHours() * 60 + now.getMinutes();
-
-      const serving = activeTimings.find(m => currentMins >= m.start && currentMins < m.end);
-      if (serving) {
-        const diff = serving.end - currentMins;
-        const h = Math.floor(diff / 60);
-        const m = diff % 60;
-        const items = todayMenu?.[serving.name] || [];
-        setTimeState({
-          status: 'SERVING NOW',
-          meal: serving.name,
-          timeLeft: h > 0 ? `Ends in ${h}h ${m}m` : `Ends in ${m}m`,
-          items: items,
-        });
-        return;
-      }
-
-      const upcoming = activeTimings.find(m => m.start > currentMins);
-      if (upcoming) {
-        const diff = upcoming.start - currentMins;
-        const h = Math.floor(diff / 60);
-        const m = diff % 60;
-        const items = todayMenu?.[upcoming.name] || [];
-        setTimeState({
-          status: 'UPCOMING MEAL',
-          meal: upcoming.name,
-          timeLeft: h > 0 ? `Starts in ${h}h ${m}m` : `Starts in ${m}m`,
-          items: items,
-        });
-        return;
-      }
-
-      const nextBreakfast = activeTimings[0];
-      const diff = (24 * 60 - currentMins) + nextBreakfast.start;
-      const h = Math.floor(diff / 60);
-      const m = diff % 60;
-      setTimeState({
-        status: 'NEXT MEAL TOMORROW',
-        meal: 'Breakfast',
-        timeLeft: `Starts in ${h}h ${m}m`,
-        items: todayMenu?.['Breakfast'] || [],
-      });
-    };
-
-    update();
-    const interval = setInterval(update, 60000);
-    return () => clearInterval(interval);
-  }, [todayMenu, timings, today]);
-
-  if (!timeState) return null;
+  // Each meal gets its own time-of-day mood; colour stays in the glow, not the text
+  const mood = {
+    Breakfast: { base: '#14110B', glow: 'rgba(251,191,36,0.22)', accent: '#FBBF24', grid: 'rgba(251,191,36,0.07)' },
+    Lunch: { base: '#14100C', glow: 'rgba(251,146,60,0.22)', accent: '#FB923C', grid: 'rgba(251,146,60,0.07)' },
+    Snacks: { base: '#140C10', glow: 'rgba(244,114,182,0.20)', accent: '#F472B6', grid: 'rgba(244,114,182,0.07)' },
+    Dinner: { base: '#0C0D17', glow: 'rgba(129,140,248,0.24)', accent: '#818CF8', grid: 'rgba(129,140,248,0.07)' },
+  }[focus.name as 'Breakfast' | 'Lunch' | 'Snacks' | 'Dinner'] || { base: '#111111', glow: 'rgba(255,255,255,0.08)', accent: '#34D399', grid: 'rgba(255,255,255,0.05)' };
+  const FocusIcon = MEAL_ICONS[focus.name] || UtensilsCrossed;
+  const AfterIcon = after ? MEAL_ICONS[after.name] || UtensilsCrossed : null;
 
   return (
-    <div className="w-full bg-[#111111] dark:bg-gradient-to-br dark:from-[#13151D] dark:to-[#0C0E12] border border-[#111111] dark:border-white/[0.08] rounded-none p-5 sm:p-6 flex flex-col relative overflow-hidden text-left text-white shadow-lg dark:shadow-[0_8px_30px_-6px_rgba(0,0,0,0.5)] mb-2 group">
-      {/* Premium Cutlery Watermark */}
-      <div className="absolute -right-4 -bottom-6 pointer-events-none select-none z-0 text-white/[0.05] group-hover:text-white/[0.08] rotate-[-15deg] group-hover:scale-105 group-hover:rotate-[-10deg] transition-all duration-300">
-        <UtensilsCrossed className="w-32 h-32 sm:w-36 sm:h-36 stroke-[1.2]" />
+    <section
+      aria-label="Current meal"
+      className="relative w-full overflow-hidden border border-white/[0.08] text-left text-white"
+      style={{ backgroundColor: mood.base }}
+    >
+      {/* Atmosphere: fading grid, a meal-coloured glow and a large icon watermark */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `linear-gradient(${mood.grid} 1px, transparent 1px), linear-gradient(90deg, ${mood.grid} 1px, transparent 1px)`,
+          backgroundSize: '24px 24px',
+          WebkitMaskImage: 'radial-gradient(ellipse 85% 80% at 100% 0%, black 15%, transparent 70%)',
+          maskImage: 'radial-gradient(ellipse 85% 80% at 100% 0%, black 15%, transparent 70%)',
+        }}
+      />
+      <div aria-hidden="true" className="absolute -top-24 -right-16 w-72 h-72 rounded-full blur-3xl pointer-events-none" style={{ backgroundColor: mood.glow }} />
+      <div aria-hidden="true" className="absolute -bottom-5 -right-4 pointer-events-none select-none opacity-[0.08] rotate-[-10deg]">
+        <FocusIcon className="w-[96px] h-[96px]" aria-hidden="true" />
       </div>
 
-      <div className="relative z-10 flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-3.5 gap-2 flex-wrap">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="relative flex h-2.5 w-2.5 shrink-0">
-              {timeState.status === 'SERVING NOW' && (
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              )}
-              <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${timeState.status === 'SERVING NOW' ? 'bg-emerald-400' : 'bg-white'}`}></span>
+      <div className="relative p-4 sm:p-5">
+        <div className="flex items-center justify-between gap-3">
+          <span
+            className="inline-flex items-center gap-2 h-6 px-2 text-[12px] font-semibold uppercase tracking-[1.2px] border"
+            style={{ color: serving ? '#6EE7B7' : 'rgba(255,255,255,0.85)', borderColor: serving ? 'rgba(52,211,153,0.35)' : 'rgba(255,255,255,0.18)', backgroundColor: serving ? 'rgba(52,211,153,0.10)' : 'rgba(255,255,255,0.05)' }}
+          >
+            <span className="relative flex h-2 w-2">
+              {serving && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />}
+              <span className={`relative inline-flex rounded-full h-2 w-2 ${serving ? 'bg-emerald-400' : 'bg-white/70'}`} />
             </span>
-            <span className="text-[11px] font-bold tracking-[1.4px] uppercase text-[#FFFFFF] leading-none truncate">
-              {timeState.status}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[12px] font-mono font-semibold text-[#FFFFFF] bg-white/10 px-2.5 py-1 border border-white/20 whitespace-nowrap">
-              {timeState.timeLeft}
-            </span>
-          </div>
+            {status}
+          </span>
+          <span className="text-[13px] font-semibold text-white tabular-nums">{countdown}</span>
         </div>
 
-        {/* Meal Name */}
-        <h3 className="text-[26px] sm:text-[28px] font-bold text-[#FFFFFF] leading-tight tracking-tight mb-2">
-          {timeState.meal}
-        </h3>
+        <div className="mt-3 flex items-baseline justify-between gap-3">
+          <h3 className="flex items-center gap-2 text-[26px] font-semibold leading-none tracking-tight">
+            <span style={{ color: mood.accent }}><FocusIcon className="w-5 h-5 shrink-0" aria-hidden="true" /></span>
+            {focus.name}
+          </h3>
+          <span className="text-[13px] text-white/70 tabular-nums whitespace-nowrap">
+            {formatMinutes(focus.start)} – {formatMinutes(focus.end)}
+          </span>
+        </div>
 
-        {/* Dishes */}
-        {timeState.items.length > 0 && (
-          <p className="text-[15px] font-normal text-[#D1D1D1] dark:text-[#CBD5E1] leading-relaxed">
-            {timeState.items.join(' · ')}
-          </p>
+        {serving && (
+          <div className="mt-3">
+            <div className="h-1 w-full bg-white/[0.12] overflow-hidden" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100} aria-label="Serving time elapsed">
+              <div
+                className="h-full transition-[width] duration-700"
+                style={{ width: `${progress}%`, background: `linear-gradient(90deg, ${mood.accent}99, ${mood.accent})`, boxShadow: `0 0 12px ${mood.accent}80` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {items.length > 0 ? (
+          <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5" aria-label="On the menu">
+            {items.map((dish, idx) => (
+              <li key={idx} className="flex items-center gap-2 text-[15px] font-medium text-white">
+                <span className="w-1.5 h-1.5 shrink-0 rotate-45" style={{ backgroundColor: mood.accent }} aria-hidden="true" />
+                {dish}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-4 text-[14px] text-white/70">Menu not added for this meal yet.</p>
+        )}
+
+        {after && AfterIcon && (
+          <div className="mt-4 pt-3 border-t border-white/[0.10] flex items-center justify-between gap-3 text-[13px]">
+            <span className="flex items-center gap-2 text-white/70">
+              <AfterIcon className="w-4 h-4" aria-hidden="true" />
+              Next up: <span className="text-white font-semibold">{after.name}</span>
+            </span>
+            <span className="text-white/70 tabular-nums">{formatMinutes(after.start)}</span>
+          </div>
         )}
       </div>
-    </div>
+    </section>
   );
 };
 
@@ -217,6 +275,18 @@ export const MessView: React.FC = () => {
 
   const today = format(new Date(), 'EEEE');
   const [selectedDay, setSelectedDay] = useState(today);
+  const mealClock = useMealClock({ ...DEFAULT_TIMINGS, ...(messMenu?.timings || {}) }, today);
+  // Dates of this week's Monday..Sunday for the day picker
+  const weekDates = (() => {
+    const now = new Date();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    return days.map((_, i) => {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      return d;
+    });
+  })();
   const [isImporting, setIsImporting] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showEditTimingsModal, setShowEditTimingsModal] = useState(false);
@@ -363,36 +433,36 @@ ${PLAY_STORE_URL}
   };
 
   return (
-    <div className="flex flex-col gap-6 text-left max-w-4xl mx-auto w-full pb-16 font-sans">
+    <div className="flex flex-col gap-f5 sm:gap-f6 text-left max-w-4xl mx-auto w-full font-sans">
       {/* Header */}
       <div className="flex flex-col gap-4 pt-2 sm:pt-6">
         <div>
-          <h2 className="text-[40px] font-normal text-[#111111] dark:text-[#F4F4F6] tracking-tight leading-[44px]">
+          <h2 className="page-title">
             Mess,<br />Hostel,<br />Food,<br />Menu
           </h2>
-          <p className="text-[14px] font-normal text-[#6B6B6B] dark:text-[#94A3B8] leading-[20px] mt-4">
+          <p className="text-[14px] font-normal text-muted leading-[20px] mt-4">
             Weekly breakfast, lunch, snacks, and dinner menu with live meal countdowns.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 mt-2">
+        <div className="page-actions mt-2">
           <button
             onClick={handleShare}
-            className="flex items-center justify-center h-9 px-3.5 border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] text-[12px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] transition-colors gap-1.5 cursor-pointer"
+            className="btn btn-secondary"
           >
-            <Share className="w-3.5 h-3.5" /> Share
+            <Share className="w-4 h-4" /> Share
           </button>
           <button
             onClick={() => setShowJoinModal(true)}
-            className="flex items-center justify-center h-9 px-3.5 border border-[#D9D9D6] dark:border-white/[0.1] text-[#111111] dark:text-[#F4F4F6] text-[12px] font-semibold hover:bg-[#F7F7F5] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+            className="btn btn-secondary"
           >
             Join Mess
           </button>
           <button
             onClick={() => setIsImporting(true)}
-            className="flex items-center justify-center h-9 px-4 bg-[#111111] dark:bg-white text-[#FFFFFF] dark:text-[#090A0C] text-[12px] font-semibold transition-colors gap-2 cursor-pointer shadow-sm"
+            className="btn btn-primary"
           >
-            <Sparkles className="w-3.5 h-3.5" /> Magic Import
+            <Sparkles className="w-4 h-4" /> Magic Import
           </button>
         </div>
       </div>
@@ -403,94 +473,126 @@ ${PLAY_STORE_URL}
         today={today}
       />
 
-      {/* DAY PICKER (Matching Timetable Style) */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-3 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
-        {days.map((day) => {
+      {/* Day picker: the whole week fits on one row, today is marked */}
+      <div role="tablist" aria-label="Day of week" className="grid grid-cols-7 border border-line bg-surface">
+        {days.map((day, idx) => {
           const isSelected = selectedDay === day;
           const isToday = today === day;
-
+          const date = weekDates[idx];
           return (
             <button
               key={day}
+              type="button"
+              role="tab"
+              aria-selected={isSelected}
+              aria-label={`${day}${isToday ? ', today' : ''}`}
               onClick={() => setSelectedDay(day)}
-              className={`flex flex-col items-center justify-center px-4 py-2.5 rounded-none text-xs font-semibold shrink-0 transition-all border cursor-pointer ${
+              className={`relative flex flex-col items-center justify-center gap-1 py-2.5 cursor-pointer transition-colors ${
+                idx > 0 ? 'border-l border-line-soft' : ''
+              } ${
                 isSelected
-                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/20'
-                  : 'glass-card border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-[#94A3B8] hover:bg-white/50 dark:hover:bg-white/[0.06]'
+                  ? 'bg-ink text-on-ink'
+                  : 'text-fg hover:bg-surface-2'
               }`}
             >
-              <div className="flex items-center gap-1.5">
-                <span className={isSelected ? 'font-bold' : 'font-semibold'}>{day.slice(0, 3)}</span>
-                {isToday && (
-                  <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-indigo-500'}`} />
-                )}
-              </div>
-              <span
-                className={`text-[11px] font-medium mt-0.5 ${
-                  isSelected ? 'text-indigo-100' : 'text-slate-400 dark:text-zinc-500'
-                }`}
-              >
-                {isToday ? 'Today' : 'Meals'}
+              <span className={`text-[11px] font-semibold uppercase tracking-[1px] ${isSelected ? 'opacity-80' : 'text-muted'}`}>
+                {day.slice(0, 3)}
               </span>
+              <span className="text-[17px] font-semibold leading-none tabular-nums">{date.getDate()}</span>
+              <span className={`h-1 w-1 rounded-full ${isToday ? (isSelected ? 'bg-surface' : 'bg-ink') : 'bg-transparent'}`} />
             </button>
           );
         })}
       </div>
 
-      {/* MENU CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {['Breakfast', 'Lunch', 'Snacks', 'Dinner'].map((meal) => {
-          const items = selectedMenu[meal];
-          if (!items || items.length === 0) return null;
+      {/* Meals for the selected day */}
+      <section aria-label={`${selectedDay} menu`}>
+        <div className="flex items-baseline justify-between mb-3">
+          <h3 className="text-[17px] font-semibold text-fg tracking-tight">
+            {selectedDay === today ? "Today's menu" : `${selectedDay}'s menu`}
+          </h3>
+          <span className="text-[13px] text-muted">
+            Code <span className="font-mono font-semibold text-fg">{messMenu.id}</span>
+          </span>
+        </div>
 
-          const rawTiming = effectiveTimings[meal] || '';
-          const displayTiming = resolveMealTimingForDay(rawTiming, selectedDay);
+        <ol className="border border-line bg-surface divide-y divide-line-soft">
+          {MEAL_ORDER.map((meal) => {
+            const items: string[] = Array.isArray(selectedMenu[meal]) ? selectedMenu[meal] : (selectedMenu[meal] ? [selectedMenu[meal]] : []);
+            const rawTiming = effectiveTimings[meal] || '';
+            const window = getMealWindows(effectiveTimings, selectedDay).find((w) => w.name === meal)!;
+            const MealIcon = MEAL_ICONS[meal];
+            const isTodaySelected = selectedDay === today && mealClock.now !== null;
+            const state = !isTodaySelected
+              ? null
+              : mealClock.serving?.name === meal
+              ? 'now'
+              : mealClock.now! >= window.end
+              ? 'done'
+              : mealClock.next?.name === meal
+              ? 'next'
+              : null;
 
-          return (
-            <div key={meal} className="flex flex-col p-5 border border-[#D9D9D6] dark:border-white/[0.08] bg-[#FFFFFF] dark:bg-[#121317] hover:bg-[#F7F7F5] dark:hover:bg-[#161820] transition-colors dark:shadow-md relative overflow-hidden group">
-              {/* Premium Fork & Spoon Cutlery Watermark */}
-              <div className="absolute -right-3 -bottom-4 pointer-events-none select-none z-0 text-black/[0.035] dark:text-white/[0.04] group-hover:scale-105 group-hover:rotate-[-8deg] rotate-[-12deg] transition-all duration-300">
-                <UtensilsCrossed className="w-20 h-20 stroke-[1.2]" />
-              </div>
+            return (
+              <li key={meal} className={`flex gap-4 p-4 sm:p-5 ${state === 'done' ? 'opacity-60' : ''}`}>
+                <span className={`w-10 h-10 shrink-0 flex items-center justify-center border ${
+                  state === 'now'
+                    ? 'bg-ink border-line-strong text-on-ink'
+                    : 'bg-surface-2 border-line-soft text-fg'
+                }`}>
+                  <MealIcon className="w-5 h-5" aria-hidden="true" />
+                </span>
 
-              <div className="relative z-10 flex flex-col h-full">
-                <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-[#EAEAEA] dark:border-white/[0.08]">
-                  <h4 className="text-[13px] font-bold tracking-[1.5px] uppercase text-[#111111] dark:text-[#F4F4F6]">
-                    {meal}
-                  </h4>
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-[12px] text-[#777777] dark:text-[#94A3B8] font-mono font-medium">
-                      {displayTiming}
-                    </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="text-[16px] font-semibold text-fg leading-tight">{meal}</h4>
+                        {state === 'now' && (
+                          <span className="px-2 py-0.5 text-[12px] font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">Serving now</span>
+                        )}
+                        {state === 'next' && (
+                          <span className="px-2 py-0.5 text-[12px] font-semibold bg-surface-3 text-fg">Up next</span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-[13px] text-muted tabular-nums">
+                        {formatMinutes(window.start)} – {formatMinutes(window.end)}
+                      </p>
+                    </div>
                     <button
                       type="button"
                       onClick={() => {
                         setQuickEditMeal({
                           day: selectedDay,
                           meal,
-                          dishes: Array.isArray(items) ? items.join(', ') : items,
+                          dishes: items.join(', '),
                           timing: rawTiming,
                         });
                       }}
-                      className="text-[11px] font-bold tracking-wider uppercase text-[#666666] hover:text-black dark:text-[#94A3B8] dark:hover:text-white px-2 py-0.5 border border-[#D9D9D6] dark:border-white/[0.1] hover:bg-[#F0F0ED] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                      title={`Edit ${meal}`} aria-label={`Edit ${selectedDay} ${meal}`}
+                      className="w-9 h-9 -mr-2 -mt-1.5 shrink-0 flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
                     >
-                      Edit
+                      <Pencil className="w-4 h-4" />
                     </button>
                   </div>
+
+                  {items.length > 0 ? (
+                    <ul className="mt-3 flex flex-wrap gap-1.5">
+                      {items.map((dish, idx) => (
+                        <li key={idx} className="px-2.5 py-1 text-[14px] text-fg bg-surface-2 border border-line-soft">
+                          {dish}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-3 text-[14px] text-muted">Not added yet. Tap edit to add dishes.</p>
+                  )}
                 </div>
-                <ul className="flex flex-col gap-2">
-                  {items.map((item: string, idx: number) => (
-                    <li key={idx} className="flex items-center gap-2 text-[14px] text-[#444444] dark:text-[#E2E8F0] font-normal">
-                      <span className="w-1.5 h-1.5 bg-[#111111] dark:bg-emerald-400 shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
 
       {/* QUICK SINGLE MEAL & TIMING EDIT MODAL */}
       <Modal 
@@ -501,7 +603,7 @@ ${PLAY_STORE_URL}
         {quickEditMeal && (
           <form onSubmit={handleSaveQuickMeal} className="flex flex-col gap-4 text-left">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF]">
+              <label className="text-[12px] font-bold text-fg">
                 Serving Hours
               </label>
               <input
@@ -514,7 +616,7 @@ ${PLAY_STORE_URL}
                   })
                 }
                 placeholder="e.g. 8:00 - 10:00 or 08:00 - 09:30 (Mon-Fri) / 08:00 - 10:00 (Sat-Sun)"
-                className="w-full px-3.5 py-2 border border-[#D9D9D6] dark:border-[#333333] bg-transparent text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                className="w-full px-3.5 py-2 border border-line bg-transparent text-[13px] text-fg focus:outline-none"
                 required
               />
               <p className="text-[11px] text-[#6B6B6B]">
@@ -523,7 +625,7 @@ ${PLAY_STORE_URL}
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF]">
+              <label className="text-[12px] font-bold text-fg">
                 Dishes (comma-separated)
               </label>
               <textarea
@@ -536,7 +638,7 @@ ${PLAY_STORE_URL}
                   })
                 }
                 placeholder="e.g. Dosa, Sambar, Coconut Chutney"
-                className="w-full px-3.5 py-2 border border-[#D9D9D6] dark:border-[#333333] bg-transparent text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                className="w-full px-3.5 py-2 border border-line bg-transparent text-[13px] text-fg focus:outline-none"
                 required
               />
             </div>
@@ -545,13 +647,13 @@ ${PLAY_STORE_URL}
               <button
                 type="button"
                 onClick={() => setQuickEditMeal(null)}
-                className="h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[13px] font-semibold text-[#111111] dark:text-[#FFFFFF] cursor-pointer"
+                className="h-11 px-4 border border-line text-[14px] font-semibold text-fg cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="h-10 px-5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold flex items-center justify-center cursor-pointer"
+                className="btn btn-primary"
               >
                 Save Meal
               </button>
@@ -570,7 +672,7 @@ ${PLAY_STORE_URL}
           <div className="grid grid-cols-1 gap-3.5">
             {['Breakfast', 'Lunch', 'Snacks', 'Dinner'].map((meal) => (
               <div key={meal} className="flex flex-col gap-1">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF]">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-fg">
                   {meal} Timing
                 </label>
                 <input
@@ -583,7 +685,7 @@ ${PLAY_STORE_URL}
                     })
                   }
                   placeholder="e.g. 8:00 - 10:00 or 08:00 - 09:30 (Mon-Fri) / 08:00 - 10:00 (Sat-Sun)"
-                  className="w-full px-3.5 py-2 border border-[#D9D9D6] dark:border-[#333333] bg-transparent text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF]"
+                  className="w-full px-3.5 py-2 border border-line bg-transparent text-[13px] text-fg focus:outline-none focus:border-line-strong"
                   required
                 />
               </div>
@@ -594,13 +696,13 @@ ${PLAY_STORE_URL}
             <button
               type="button"
               onClick={() => setShowEditTimingsModal(false)}
-              className="h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[13px] font-semibold text-[#111111] dark:text-[#FFFFFF] cursor-pointer"
+              className="h-11 px-4 border border-line text-[14px] font-semibold text-fg cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="h-10 px-5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold flex items-center justify-center cursor-pointer"
+              className="btn btn-primary"
             >
               Save Timings
             </button>
@@ -619,8 +721,8 @@ ${PLAY_STORE_URL}
             {days.map((day) => {
               const dayData = tempMenu[day] || {};
               return (
-                <div key={day} className="p-4 border border-[#D9D9D6] dark:border-[#333333] bg-[#FAFAFA] dark:bg-[#161616]">
-                  <h4 className="text-[13px] font-bold uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] mb-3 border-b border-[#D8D8D8] dark:border-[#333333] pb-1">
+                <div key={day} className="p-4 border border-line bg-[#FAFAFA] dark:bg-[#161616]">
+                  <h4 className="text-[13px] font-bold uppercase tracking-wider text-fg mb-3 border-b border-line pb-1">
                     {day}
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -646,7 +748,7 @@ ${PLAY_STORE_URL}
                               });
                             }}
                             placeholder="e.g. Roti, Dal, Rice"
-                            className="w-full px-3 py-1.5 border border-[#D9D9D6] dark:border-[#333333] bg-white dark:bg-[#111111] text-[12px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                            className="w-full px-3 py-1.5 border border-line bg-surface text-[12px] text-fg focus:outline-none"
                           />
                         </div>
                       );
@@ -657,17 +759,17 @@ ${PLAY_STORE_URL}
             })}
           </div>
 
-          <div className="flex items-center justify-end gap-2 mt-4 sticky bottom-0 bg-[#FFFFFF] dark:bg-[#111111] pt-3 border-t border-[#D9D9D6] dark:border-[#333333]">
+          <div className="flex items-center justify-end gap-2 mt-4 sticky bottom-0 bg-surface pt-3 border-t border-line">
             <button
               type="button"
               onClick={() => setShowEditMenuModal(false)}
-              className="h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[13px] font-semibold text-[#111111] dark:text-[#FFFFFF] cursor-pointer"
+              className="h-11 px-4 border border-line text-[14px] font-semibold text-fg cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="h-10 px-5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold flex items-center justify-center cursor-pointer"
+              className="btn btn-primary"
             >
               Save Menu Changes
             </button>
@@ -687,7 +789,7 @@ ${PLAY_STORE_URL}
               placeholder="e.g., ext_... or 4-digit code"
               value={inviteInput}
               onChange={(e) => setInviteInput(e.target.value)}
-              className="w-full px-4 py-2.5 border border-[#E5E5E5] dark:border-[#333333] bg-transparent text-[13px] text-[#111111] dark:text-[#FFFFFF] focus:outline-none focus:border-[#111111] dark:focus:border-[#FFFFFF] transition-colors"
+              className="w-full px-4 py-2.5 border border-[#ECECEA] dark:border-[#333333] bg-transparent text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
               required
               autoFocus
             />
@@ -696,14 +798,14 @@ ${PLAY_STORE_URL}
             <button
               type="button"
               onClick={() => setShowJoinModal(false)}
-              className="h-10 px-4 border border-[#D9D9D6] dark:border-[#333333] text-[13px] font-semibold text-[#111111] dark:text-[#FFFFFF] cursor-pointer"
+              className="h-11 px-4 border border-line text-[14px] font-semibold text-fg cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isJoining}
-              className="h-10 px-5 bg-[#111111] dark:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#111111] text-[13px] font-semibold flex items-center justify-center disabled:opacity-50 cursor-pointer"
+              className="btn btn-primary"
             >
               {isJoining ? 'Joining...' : 'Join & Overwrite'}
             </button>
