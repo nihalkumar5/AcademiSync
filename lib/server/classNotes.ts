@@ -90,6 +90,12 @@ export async function listMine(uid: string, subjectId: string, date?: string, su
   return docs.map((d: any) => toMine(d.id, d.data()));
 }
 
+/** All of my notes, newest first (for the Notes page). */
+export async function listAllMine(uid: string, max = 400) {
+  const snap = await mine(uid).orderBy('createdAt', 'desc').limit(max).get();
+  return snap.docs.map((d: any) => toMine(d.id, d.data()));
+}
+
 export async function addMine(uid: string, input: any) {
   const slot = slotOf(input);
   const text = textOf(input?.text);
@@ -122,37 +128,44 @@ const canModerate = async (who: Who, batchKey: string) => {
   return false;
 };
 
+const toShared = async (doc: any, who: Who, mod: boolean, expires: number): Promise<SharedNote> => {
+  const d = doc.data();
+  let imageUrl: string | null = null;
+  if (d.imagePath) {
+    try {
+      [imageUrl] = await bucket().file(d.imagePath).getSignedUrl({ version: 'v4', action: 'read', expires });
+    } catch {
+      imageUrl = null;
+    }
+  }
+  return {
+    id: doc.id,
+    subjectId: d.subjectId,
+    subjectName: d.subjectName || '',
+    date: d.date,
+    startTime: d.startTime || '',
+    text: d.text || '',
+    imageUrl,
+    byName: d.byName || 'A classmate',
+    mine: d.by === who.uid,
+    canDelete: d.by === who.uid || mod,
+    createdAt: d.createdAt || '',
+  };
+};
+
 export async function listShared(who: Who, subjectId: string, date?: string, subjectKey?: string, subjectName?: string): Promise<SharedNote[]> {
   if (!who.batchKey) return [];
   const [docs, mod] = await Promise.all([findBy(shared(who.batchKey), subjectId, subjectKey, date, 200, subjectName), canModerate(who, who.batchKey)]);
-  const snap = { docs };
   const expires = Date.now() + 60 * 60 * 1000;
-  return Promise.all(
-    snap.docs.map(async (doc: any) => {
-      const d = doc.data();
-      let imageUrl: string | null = null;
-      if (d.imagePath) {
-        try {
-          [imageUrl] = await bucket().file(d.imagePath).getSignedUrl({ version: 'v4', action: 'read', expires });
-        } catch {
-          imageUrl = null;
-        }
-      }
-      return {
-        id: doc.id,
-        subjectId: d.subjectId,
-        subjectName: d.subjectName || '',
-        date: d.date,
-        startTime: d.startTime || '',
-        text: d.text || '',
-        imageUrl,
-        byName: d.byName || 'A classmate',
-        mine: d.by === who.uid,
-        canDelete: d.by === who.uid || mod,
-        createdAt: d.createdAt || '',
-      };
-    })
-  );
+  return Promise.all(docs.map((doc: any) => toShared(doc, who, mod, expires)));
+}
+
+/** Every class note of the caller's batch, newest first (for the Notes page). */
+export async function listRecentShared(who: Who, max = 150): Promise<SharedNote[]> {
+  if (!who.batchKey) return [];
+  const [snap, mod] = await Promise.all([shared(who.batchKey).orderBy('createdAt', 'desc').limit(max).get(), canModerate(who, who.batchKey)]);
+  const expires = Date.now() + 60 * 60 * 1000;
+  return Promise.all(snap.docs.map((doc: any) => toShared(doc, who, mod, expires)));
 }
 
 export async function addShared(who: Who, input: any) {

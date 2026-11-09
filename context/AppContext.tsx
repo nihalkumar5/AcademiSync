@@ -219,6 +219,7 @@ export type ActiveView =
   | 'exams'
   | 'papers'
   | 'notices'
+  | 'notes'
   | 'friends'
   | 'notifications'
   | 'settings'

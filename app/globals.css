@@ -289,3 +289,49 @@ body.modal-open #mobile-nav {
   from { opacity: 0; transform: translateY(-4px) scale(0.97); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* Live class glass: water level = class progress. The subject's colour fills it
+   (--w1 light top, --w2 deep bottom); the surface drifts, bubbles rise. */
+@keyframes liquidDrift { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes bubbleUp {
+  0% { transform: translateY(0) scale(.5); opacity: 0; }
+  12% { opacity: .9; }
+  100% { transform: translateY(-190px) scale(1); opacity: .2; }
+}
+.glass {
+  border: 1px solid rgba(255,255,255,.16);
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.10) 0, rgba(255,255,255,.02) 22%, transparent 45%),
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+.liquid {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  transition: height 1.4s cubic-bezier(.2,.7,.2,1);
+}
+.liquid-front { position: absolute; inset: 0; opacity: .92; }
+.liquid-body {
+  position: absolute; left: 0; right: 0; top: 9px; bottom: 0; overflow: hidden;
+  background: linear-gradient(180deg, var(--w1) 0%, var(--w2) 100%);
+}
+.liquid-wave {
+  position: absolute; left: 0; top: 0; width: 200%; height: 10px; overflow: visible;
+  fill: var(--w1);
+  animation: liquidDrift 4.5s linear infinite;
+}
+.liquid-wave-back { top: -3px; opacity: .4; animation-duration: 7s; animation-direction: reverse; }
+.liquid-crest {
+  fill: none; stroke: rgba(255,255,255,.85); stroke-width: 1.5; vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 4px var(--w1));
+}
+.bubble {
+  position: absolute; bottom: 6px; border-radius: 9999px;
+  border: 1px solid rgba(255,255,255,.7); background: rgba(255,255,255,.18);
+  animation: bubbleUp 3.6s ease-in infinite;
+}
+.glass-level { transition: bottom 1.4s cubic-bezier(.2,.7,.2,1); text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+@media (prefers-reduced-motion: reduce) {
+  .liquid-wave, .bubble { animation: none; }
+  .bubble { display: none; }
+  .liquid, .glass-level { transition: none; }
+}

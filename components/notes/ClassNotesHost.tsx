@@ -15,7 +15,7 @@ import { blobToBase64, compressPhoto, deletePhoto, getPhoto, savePhoto } from '@
 // The hidden camera / gallery inputs live outside the sheet, so "Snap" can open the camera
 // in the same tap (browsers only allow that during the click itself).
 
-const QUICK = ['Will come in exam', 'Important topic', 'Assignment given', 'Revise this'];
+const QUICK = ['Exam', 'Important', 'Assignment', 'Revise'];
 const dateLabel = (d: string) => {
   const today = getTodayDateString();
   if (d === today) return 'Today';
@@ -28,11 +28,11 @@ const dateLabel = (d: string) => {
 };
 const timeOf = (iso: string) => {
   const d = new Date(iso);
-  return isNaN(d.getTime()) ? '' : d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
+  return isNaN(d.getTime()) ? '' : d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 };
 
 /** A photo kept on this phone. Shows a placeholder if it was taken on another phone. */
-const LocalPhoto: React.FC<{ id: string; onOpen: (url: string) => void }> = ({ id, onOpen }) => {
+export const LocalPhoto: React.FC<{ id: string; onOpen: (url: string) => void }> = ({ id, onOpen }) => {
   const [url, setUrl] = useState<string | null | undefined>(undefined);
   useEffect(() => {
     let u: string | null = null;
@@ -65,7 +65,7 @@ const LocalPhoto: React.FC<{ id: string; onOpen: (url: string) => void }> = ({ i
 
 // Small copy of my notes on this phone, so they still show if the server can't be reached.
 const cacheKey = (uid: string) => `classnotes_mine_v1_${uid}`;
-const readMineCache = (uid: string): MyNote[] => {
+export const readMineCache = (uid: string): MyNote[] => {
   try {
     const v = JSON.parse(localStorage.getItem(cacheKey(uid)) || '[]');
     return Array.isArray(v) ? v : [];
@@ -78,12 +78,12 @@ const writeMineCache = (uid: string, list: MyNote[]) => {
     localStorage.setItem(cacheKey(uid), JSON.stringify(list.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 300)));
   } catch {}
 };
-const cacheMine = (uid: string, notes: MyNote[]) => {
+export const cacheMine = (uid: string, notes: MyNote[]) => {
   const map = new Map(readMineCache(uid).map((n) => [n.id, n]));
   notes.forEach((n) => map.set(n.id, n));
   writeMineCache(uid, Array.from(map.values()));
 };
-const uncacheMine = (uid: string, id: string) => writeMineCache(uid, readMineCache(uid).filter((n) => n.id !== id));
+export const uncacheMine = (uid: string, id: string) => writeMineCache(uid, readMineCache(uid).filter((n) => n.id !== id));
 
 type Pending = { blob: Blob; url: string };
 
@@ -213,6 +213,7 @@ export const ClassNotesHost: React.FC = () => {
       setText('');
       clearPending();
       load();
+      window.dispatchEvent(new Event('classnotes:changed'));
     } catch (e: any) {
       savedIds.forEach((id) => deletePhoto(id));
       setError(e.message);
@@ -227,6 +228,7 @@ export const ClassNotesHost: React.FC = () => {
       if (user?.id) uncacheMine(user.id, n.id);
       n.photos.forEach((id) => deletePhoto(id));
       setMine((list) => list.filter((x) => x.id !== n.id));
+      window.dispatchEvent(new Event('classnotes:changed'));
     } catch (e: any) {
       setError(e.message);
     }
@@ -235,6 +237,7 @@ export const ClassNotesHost: React.FC = () => {
     try {
       await notesApi('POST', '', { action: 'deleteShared', id: n.id });
       setShared((list) => list.filter((x) => x.id !== n.id));
+      window.dispatchEvent(new Event('classnotes:changed'));
     } catch (e: any) {
       setError(e.message);
     }
@@ -279,90 +282,102 @@ export const ClassNotesHost: React.FC = () => {
               />
             ) : (
               <>
-                {/* Mine / Class */}
-                <div className="grid grid-cols-2 border border-line" role="tablist">
-                  {(['mine', 'class'] as const).map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      role="tab"
-                      aria-selected={tab === t}
-                      onClick={() => {
-                        setTab(t);
-                        setError('');
-                        if (t === 'class' && pending.length > 1) {
-                          pending.slice(1).forEach((x) => URL.revokeObjectURL(x.url));
-                          setPending(pending.slice(0, 1));
-                        }
-                      }}
-                      className={clsx('h-11 inline-flex items-center justify-center gap-2 text-[14px] font-semibold transition-colors cursor-pointer', tab === t ? 'bg-ink text-on-ink' : 'text-fg-2 hover:bg-surface-2')}
-                    >
-                      {t === 'mine' ? <Lock className="w-4 h-4" /> : <Users className="w-4 h-4" />}
-                      {t === 'mine' ? 'My notes' : 'Class notes'}
-                    </button>
-                  ))}
+                {/* Mine / Class: quiet underline tabs */}
+                <div className="-mt-1 flex items-end gap-f4 border-b border-line" role="tablist">
+                  {(['mine', 'class'] as const).map((t) => {
+                    const count = t === 'mine' ? mine.length : shared.length;
+                    return (
+                      <button
+                        key={t}
+                        type="button"
+                        role="tab"
+                        aria-selected={tab === t}
+                        onClick={() => {
+                          setTab(t);
+                          setError('');
+                          if (t === 'class' && pending.length > 1) {
+                            pending.slice(1).forEach((x) => URL.revokeObjectURL(x.url));
+                            setPending(pending.slice(0, 1));
+                          }
+                        }}
+                        className={clsx(
+                          '-mb-px h-10 inline-flex items-center gap-1.5 border-b-2 text-[14px] font-semibold transition-colors cursor-pointer',
+                          tab === t ? 'border-fg text-fg' : 'border-transparent text-muted hover:text-fg'
+                        )}
+                      >
+                        {t === 'mine' ? 'My notes' : 'Class'}
+                        {count > 0 && <span className="text-[12px] font-medium text-faint tabular-nums">{count}</span>}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* Composer */}
                 {tab === 'class' && !hasBatch ? (
-                  <p className="border border-line px-f3 py-3 text-[14px] text-muted">Join your class batch from Profile to share notes with your classmates.</p>
+                  <p className="bg-surface-2 px-f3 py-3 text-[14px] text-muted">Join your class batch from Profile to share notes with your classmates.</p>
                 ) : (
-                  <div className="border border-line bg-surface">
-                    <textarea
-                      ref={textRef}
-                      value={text}
-                      onChange={(e) => setText(e.target.value.slice(0, MAX_NOTE_CHARS))}
-                      rows={3}
-                      placeholder={tab === 'mine' ? 'Quick note… e.g. "Prof said Unit 3 will come in Mid-Sem"' : 'Share with your class… e.g. "Lab record due Friday"'}
-                      className="w-full resize-none bg-transparent px-f3 pt-3 pb-2 text-[15px] leading-[22px] text-fg placeholder:text-faint focus:outline-none"
-                    />
-                    {tab === 'mine' && !text && (
-                      <div className="flex gap-1.5 overflow-x-auto no-scrollbar px-f3 pb-2">
+                  <div>
+                    <div className="border border-line bg-surface focus-within:border-fg transition-colors">
+                      <textarea
+                        ref={textRef}
+                        value={text}
+                        onChange={(e) => setText(e.target.value.slice(0, MAX_NOTE_CHARS))}
+                        rows={3}
+                        placeholder={tab === 'mine' ? 'What did the prof say?' : 'Share something with your class'}
+                        className="w-full resize-none bg-transparent px-f3 pt-3 pb-1 text-[16px] leading-[24px] text-fg placeholder:text-faint focus:outline-none"
+                      />
+                      {pending.length > 0 && (
+                        <div className="flex gap-2 overflow-x-auto no-scrollbar px-f3 pb-2">
+                          {pending.map((p, i) => (
+                            <div key={p.url} className="relative w-16 h-16 shrink-0 border border-line overflow-hidden">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={p.url} alt="" className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                aria-label="Remove photo"
+                                onClick={() => setPending((list) => { URL.revokeObjectURL(list[i].url); return list.filter((_, j) => j !== i); })}
+                                className="absolute right-0.5 top-0.5 w-5 h-5 flex items-center justify-center bg-surface/90 border border-line cursor-pointer"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-0.5 px-1.5 pb-1.5">
+                        <button type="button" onClick={() => cameraRef.current?.click()} aria-label="Take photo" title="Take photo" className="w-9 h-9 inline-flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 cursor-pointer">
+                          <Camera className="w-[18px] h-[18px]" />
+                        </button>
+                        <button type="button" onClick={() => galleryRef.current?.click()} aria-label="Add from gallery" title="Add from gallery" className="w-9 h-9 inline-flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 cursor-pointer">
+                          <ImageIcon className="w-[18px] h-[18px]" />
+                        </button>
+                        <span className="flex-1" />
+                        <button type="button" onClick={save} disabled={!canSave} className="btn btn-primary h-9 px-4 text-[13px]">
+                          {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                          {tab === 'mine' ? 'Save' : 'Share'}
+                        </button>
+                      </div>
+                    </div>
+                    {tab === 'mine' && !text && pending.length === 0 ? (
+                      <div className="mt-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
                         {QUICK.map((q) => (
-                          <button key={q} type="button" onClick={() => { setText(q + ': '); textRef.current?.focus(); }} className="chip shrink-0">
+                          <button
+                            key={q}
+                            type="button"
+                            onClick={() => { setText(q + ': '); textRef.current?.focus(); }}
+                            className="shrink-0 h-7 px-2.5 bg-surface-2 text-[12px] font-medium text-muted hover:text-fg cursor-pointer"
+                          >
                             {q}
                           </button>
                         ))}
                       </div>
-                    )}
-                    {pending.length > 0 && (
-                      <div className="flex gap-2 overflow-x-auto no-scrollbar px-f3 pb-2">
-                        {pending.map((p, i) => (
-                          <div key={p.url} className="relative w-16 h-16 shrink-0 border border-line overflow-hidden">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={p.url} alt="" className="w-full h-full object-cover" />
-                            <button
-                              type="button"
-                              aria-label="Remove photo"
-                              onClick={() => setPending((list) => { URL.revokeObjectURL(list[i].url); return list.filter((_, j) => j !== i); })}
-                              className="absolute right-0.5 top-0.5 w-5 h-5 flex items-center justify-center bg-surface/90 border border-line cursor-pointer"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1 border-t border-line-soft px-1.5 py-1.5">
-                      <button type="button" onClick={() => cameraRef.current?.click()} className="h-9 px-2.5 inline-flex items-center gap-1.5 text-[13px] font-medium text-fg-2 hover:bg-surface-2 cursor-pointer">
-                        <Camera className="w-4 h-4" /> Photo
-                      </button>
-                      <button type="button" onClick={() => galleryRef.current?.click()} className="h-9 px-2.5 inline-flex items-center gap-1.5 text-[13px] font-medium text-fg-2 hover:bg-surface-2 cursor-pointer">
-                        <ImageIcon className="w-4 h-4" /> Gallery
-                      </button>
-                      <span className="flex-1" />
-                      <button type="button" onClick={save} disabled={!canSave} className="btn btn-primary h-9 px-4 text-[13px]">
-                        {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                        {tab === 'mine' ? 'Save' : 'Share'}
-                      </button>
-                    </div>
+                    ) : null}
+                    <p className="mt-2 flex items-center gap-1.5 text-[12px] text-faint">
+                      {tab === 'mine' ? <Lock className="w-3 h-3" /> : <Users className="w-3 h-3" />}
+                      {tab === 'mine' ? 'Only you · photos stay on this phone' : 'Everyone in your batch sees this'}
+                    </p>
                   </div>
                 )}
-                <p className="-mt-2 text-[12px] leading-[17px] text-muted">
-                  {tab === 'mine'
-                    ? 'Only you see these. Photos stay on this phone, notes are backed up to your account.'
-                    : 'Everyone in your batch sees these. One copy for the whole class.'}
-                </p>
 
                 {error && (
                   <p className="flex items-start gap-2 px-3 py-2.5 border border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-400/10 dark:border-rose-400/20 dark:text-rose-300 text-[14px]">
@@ -371,23 +386,31 @@ export const ClassNotesHost: React.FC = () => {
                 )}
 
                 {/* List */}
-                <div className="flex items-center justify-between gap-3">
-                  <h4 className="text-[15px] font-semibold text-fg">{range === 'slot' ? `${dateLabel(slot.date)}'s notes` : `All ${slot.subjectName} notes`}</h4>
-                  <div className="flex gap-1">
-                    <button type="button" onClick={() => setRange('slot')} className={clsx('chip', range === 'slot' && 'chip-active')}>This class</button>
-                    <button type="button" onClick={() => setRange('all')} className={clsx('chip', range === 'all' && 'chip-active')}>All dates</button>
-                  </div>
+                <div className="mt-1 flex items-center justify-between gap-3">
+                  <h4 className="text-[13px] font-semibold text-muted">{range === 'slot' ? dateLabel(slot.date) : 'All dates'}</h4>
+                  <button
+                    type="button"
+                    onClick={() => setRange(range === 'slot' ? 'all' : 'slot')}
+                    className="text-[13px] font-semibold text-fg underline underline-offset-4 decoration-line-strong hover:decoration-fg cursor-pointer"
+                  >
+                    {range === 'slot' ? 'See all dates' : `Only ${dateLabel(slot.date).toLowerCase()}`}
+                  </button>
                 </div>
 
                 {loading && list.length === 0 ? (
-                  <div className="flex items-center justify-center gap-2 py-f5 text-[14px] text-muted">
-                    <Loader2 className="w-4 h-4 animate-spin" /> Loading notes…
+                  <div className="flex flex-col gap-2" aria-label="Loading notes">
+                    {[0, 1].map((i) => (
+                      <div key={i} className="bg-surface-2 px-f3 py-3 animate-pulse">
+                        <div className="h-3 w-3/4 bg-line" />
+                        <div className="mt-2 h-3 w-1/3 bg-line-soft" />
+                      </div>
+                    ))}
                   </div>
                 ) : list.length === 0 ? (
-                  <div className="flex flex-col items-center border border-dashed border-line px-f3 py-f4 text-center">
-                    <Illustration name={tab === 'mine' ? 'notes' : 'friends'} className="h-[110px] w-auto" />
-                    <p className="mt-f3 text-[14px] text-muted max-w-[300px]">
-                      {tab === 'mine' ? 'No notes yet. Snap the whiteboard or jot down what matters.' : 'No class notes yet. Share something useful with your batch.'}
+                  <div className="flex flex-col items-center px-f3 pt-f2 pb-f4 text-center">
+                    <Illustration name={tab === 'mine' ? 'notes' : 'friends'} className="h-[96px] w-auto" />
+                    <p className="mt-f3 text-[14px] text-muted max-w-[260px]">
+                      {tab === 'mine' ? 'Nothing here yet. Snap the board or write one line.' : 'No class notes yet. Be the first to share.'}
                     </p>
                   </div>
                 ) : (

@@ -423,96 +423,159 @@ export const LiveClassCard: React.FC = () => {
       return faculties.join(' / ');
     };
 
+    const liveIsLab = session.isLab || sub?.isLab;
+    const liveIsSpecial = session.isExtra || sub?.name?.toLowerCase().includes('elective') || session.notes?.toLowerCase().includes('elective');
+    const liveTheme = getSubjectCardTheme({
+      subjectName: sub?.name,
+      subjectCode: sub?.code,
+      subjectColor: sub?.color,
+      isLab: liveIsLab,
+      isSpecial: liveIsSpecial,
+    });
+    const pct = Math.min(100, Math.max(0, Math.round(currentClass.progressPercentage)));
+    const left = Math.max(0, currentClass.remainingMinutes);
+    const leftH = Math.floor(left / 60);
+    const leftM = left % 60;
+    const endingSoon = left <= 5;
+    const noteSlot = (focus: 'camera' | 'text') =>
+      openClassNotes({
+        subjectId: sub?.id || session.subjectId,
+        subjectName: sub?.name || 'Class',
+        date: dateTodayStr,
+        startTime: session.startTime,
+        endTime: session.endTime,
+        room: session.room,
+        focus,
+      });
+
     return (
       <>
-        <div className="sheen-ink w-full bg-[#111111] dark:bg-[#15171D] border border-[#111111] dark:border-white/[0.08] p-5 sm:p-6 flex flex-col relative group transition-all">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-3.5">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#18A889] animate-pulse" />
-              <span className="text-[12px] font-bold text-[#18A889] leading-none">
-                Live now
-              </span>
+        <div className="sheen-ink w-full bg-[#111111] dark:bg-[#15171D] border border-[#111111] dark:border-white/[0.08] relative">
+          <div className="flex gap-f4 p-5 sm:p-6">
+            {/* What and when */}
+            <div className="flex-1 min-w-0 flex flex-col">
+              <div className="flex items-center gap-2 h-8 -mt-1.5 text-[13px] leading-none">
+                <span className="relative flex w-2 h-2 shrink-0" aria-hidden="true">
+                  <span className="absolute inset-0 rounded-full bg-[#34D399] opacity-60 animate-ping" />
+                  <span className="relative w-2 h-2 rounded-full bg-[#34D399]" />
+                </span>
+                <span className="font-semibold text-[#34D399]">Live</span>
+                {session.room && (
+                  <>
+                    <span className="text-white/25">·</span>
+                    <span className="font-medium text-white/70 truncate">{session.room}</span>
+                  </>
+                )}
+                <span className="flex-1" />
+                {renderOptionsMenu(session, true)}
+              </div>
+
+              <h3 className="mt-2 text-[21px] sm:text-[22px] font-semibold leading-[1.22] tracking-tight text-white line-clamp-2 break-words">
+                {sub?.name || 'Class Session'}
+              </h3>
+              {session.faculty && <p className="mt-1 text-[13px] text-white/55 truncate">{renderFaculty(session.faculty)}</p>}
+
+              {(currentReschedule || session.isExtra) && (
+                <div className="mt-2.5 flex flex-wrap gap-1.5">
+                  {currentReschedule && (
+                    <span className="inline-flex items-center gap-1 h-6 px-2 bg-amber-400/15 text-amber-300 text-[12px] font-semibold">
+                      <Clock className="w-3 h-3" />
+                      Moved by {currentReschedule.by || 'Pilot'}
+                      {origSession && (origSession.startTime !== session.startTime || origSession.endTime !== session.endTime) ? ` · was ${formatTime12Hour(origSession.startTime)}` : ''}
+                    </span>
+                  )}
+                  {session.isExtra && <span className="inline-flex items-center h-6 px-2 bg-white/10 text-white/80 text-[12px] font-semibold">Extra class</span>}
+                </div>
+              )}
+
+              <div className="mt-auto pt-f4">
+                <p className={clsx('flex items-baseline gap-1 tabular-nums', endingSoon ? 'text-amber-300' : 'text-white')}>
+                  {leftH > 0 && (
+                    <>
+                      <span className="text-[32px] font-semibold leading-none tracking-tight">{leftH}</span>
+                      <span className="text-[15px] font-medium opacity-60 mr-1">h</span>
+                    </>
+                  )}
+                  <span className="text-[32px] font-semibold leading-none tracking-tight">{leftH > 0 ? String(leftM).padStart(2, '0') : leftM}</span>
+                  <span className="text-[15px] font-medium opacity-60">min left</span>
+                </p>
+                <p className="mt-2 text-[13px] text-white/50 tabular-nums">
+                  {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[13px] font-bold text-[#FFFFFF] font-mono leading-none">
-                {currentClass.remainingMinutes}m left
-              </span>
-              {renderOptionsMenu(session, true)}
-            </div>
-          </div>
 
-        {/* Subject */}
-        <h3 className="text-[20px] sm:text-[22px] font-bold text-[#FFFFFF] leading-[26px] mb-2 line-clamp-2 tracking-tight">
-          {sub?.name || 'Class Session'}
-        </h3>
-
-        {/* Time and Reschedule Badge */}
-        <div className="flex items-center gap-2 flex-wrap mb-3">
-          <div className="text-[13px] text-[#FFFFFF]/90 font-mono font-medium leading-none">
-            {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
-          </div>
-          {currentReschedule && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-none bg-amber-500/20 text-amber-300 text-[11px] font-mono font-bold uppercase tracking-wider">
-              <Clock className="w-2.5 h-2.5" />
-              Rescheduled by {currentReschedule.by || 'Pilot'}
-              {origSession && (origSession.startTime !== session.startTime || origSession.endTime !== session.endTime) ? ` (Was ${formatTime12Hour(origSession.startTime)})` : ''}
-            </span>
-          )}
-          {session.isExtra && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-none bg-blue-500/20 text-blue-300 text-[12px] font-mono font-bold ">
-              Extra Class
-            </span>
-          )}
-        </div>
-
-        {/* Metadata */}
-        <div className="flex items-center gap-2 text-[12px] text-[#A8A8A8] leading-none mb-5">
-          <span className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[11px] leading-none opacity-80">◉</span>
-            {session.room}
-          </span>
-          {session.faculty && (
-            <>
-              <span className="opacity-40 shrink-0">·</span>
-              <span className="truncate">{renderFaculty(session.faculty)}</span>
-            </>
-          )}
-        </div>
-
-        {/* Lecture snaps & quick notes, saved straight to this class */}
-        <div className="flex gap-2 mb-5">
-          {(['camera', 'text'] as const).map((focus) => (
-            <button
-              key={focus}
-              type="button"
-              onClick={() =>
-                openClassNotes({
-                  subjectId: sub?.id || session.subjectId,
-                  subjectName: sub?.name || 'Class',
-                  date: dateTodayStr,
-                  startTime: session.startTime,
-                  endTime: session.endTime,
-                  room: session.room,
-                  focus,
-                })
-              }
-              className="flex-1 h-10 inline-flex items-center justify-center gap-2 border border-white/20 text-[13px] font-semibold text-white hover:bg-white/10 transition-colors cursor-pointer"
+            {/* The glass fills with this subject's colour as the class runs */}
+            <div
+              className="glass relative w-[72px] sm:w-[80px] shrink-0 self-stretch min-h-[168px] overflow-hidden"
+              style={{ '--w1': liveTheme.darkAccent || liveTheme.accent, '--w2': liveTheme.accent } as React.CSSProperties}
+              role="progressbar"
+              aria-label={`Class ${pct}% done`}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={pct}
             >
-              {focus === 'camera' ? <Camera className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
-              {focus === 'camera' ? 'Snap board' : 'Add note'}
-            </button>
-          ))}
-        </div>
+              <div className="liquid" style={{ height: `${Math.max(pct, 5)}%` }}>
+                <svg className="liquid-wave liquid-wave-back" viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true">
+                  <path d="M0 10 Q12.5 17 25 10 T50 10 T75 10 T100 10 T125 10 T150 10 T175 10 T200 10 V20 H0 Z" />
+                </svg>
+                <div className="liquid-front">
+                  <svg className="liquid-wave" viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true">
+                    <path d="M0 10 Q12.5 3 25 10 T50 10 T75 10 T100 10 T125 10 T150 10 T175 10 T200 10 V20 H0 Z" />
+                  </svg>
+                  <div className="liquid-body">
+                    {[
+                      [18, 4, 0, 3.4],
+                      [46, 3, 1.3, 4.2],
+                      [70, 5, 2.2, 3.8],
+                      [32, 3, 2.9, 4.6],
+                      [58, 4, 0.7, 3.1],
+                    ].map(([x, size, delay, dur], i) => (
+                      <span
+                        key={i}
+                        className="bubble"
+                        style={{ left: `${x}%`, width: size, height: size, animationDelay: `${delay}s`, animationDuration: `${dur}s` }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <svg className="liquid-wave liquid-crest" viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true">
+                  <path d="M0 10 Q12.5 3 25 10 T50 10 T75 10 T100 10 T125 10 T150 10 T175 10 T200 10" />
+                </svg>
+              </div>
+              {/* scale, like a measuring glass */}
+              {[25, 50, 75].map((t) => (
+                <span key={t} aria-hidden="true" className="absolute right-0 h-px bg-white/30" style={{ bottom: `${t}%`, width: t === 50 ? 12 : 7 }} />
+              ))}
+              {/* level readout rides the water */}
+              <span
+                aria-hidden="true"
+                className="glass-level absolute inset-x-0 text-center text-[13px] font-semibold tabular-nums text-white"
+                style={{ bottom: pct <= 78 ? `calc(${Math.max(pct, 5)}% + 12px)` : `calc(${pct}% - 30px)` }}
+              >
+                {pct}%
+              </span>
+            </div>
+          </div>
 
-        {/* Progress Bar (3px) */}
-        <div className="w-full bg-[#3A3A3A] h-[3px] overflow-hidden rounded-full">
-          <div
-            className="bg-[#18A889] h-full transition-all duration-1000"
-            style={{ width: `${currentClass.progressPercentage}%` }}
-          />
+          {/* Capture the class in one tap */}
+          <div className="grid grid-cols-2 border-t border-white/10">
+            <button
+              type="button"
+              onClick={() => noteSlot('camera')}
+              className="h-12 inline-flex items-center justify-center gap-2 border-r border-white/10 text-[14px] font-medium text-white/85 hover:bg-white/[0.06] hover:text-white transition-colors cursor-pointer"
+            >
+              <Camera className="w-4 h-4" /> Snap board
+            </button>
+            <button
+              type="button"
+              onClick={() => noteSlot('text')}
+              className="h-12 inline-flex items-center justify-center gap-2 text-[14px] font-medium text-white/85 hover:bg-white/[0.06] hover:text-white transition-colors cursor-pointer"
+            >
+              <Pencil className="w-4 h-4" /> Add note
+            </button>
+          </div>
         </div>
-      </div>
       {renderRescheduleModal()}
     </>
   );

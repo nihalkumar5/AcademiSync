@@ -1,5 +1,6 @@
 'use client';
 
+import { HandwrittenText } from '@/components/ui/HandwrittenText';
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Bell, CheckSquare, Clock, GraduationCap, Link as LinkIcon, Loader2, MapPin, Users } from '@/components/ui/icons';
@@ -116,8 +117,9 @@ export const OnboardingModal = () => {
         <p className="text-[13px] font-semibold text-muted">Welcome to Intersemester</p>
         <h1 className="mt-2 text-[34px] sm:text-[42px] leading-[1.06] tracking-tight text-fg">
           Your whole semester,
-          <br />
-          one calm app.
+          <span className="block mt-1.5 -rotate-1 origin-left">
+            <HandwrittenText text="one calm app." playKey="onboarding-welcome" delay={0.45} className="text-[46px] sm:text-[56px] leading-[1] font-semibold text-fg" />
+          </span>
         </h1>
         <p className="mt-4 text-[16px] leading-[24px] text-muted max-w-[420px]">
           Timetable, attendance, tasks and exams in one place that keeps itself up to date.

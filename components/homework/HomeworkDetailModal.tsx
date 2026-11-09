@@ -77,14 +77,14 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({ isOpen
           onClose();
           onDelete(hw.id);
         }}
-        className="btn btn-danger-quiet btn-icon"
+        className="btn btn-danger-quiet btn-icon shrink-0"
         aria-label="Delete assignment"
         title="Delete"
       >
         <Trash2 className="w-4 h-4" />
       </button>
       {onShare && (
-        <button type="button" onClick={() => onShare(hw)} className="btn btn-secondary btn-icon" aria-label="Share" title="Share">
+        <button type="button" onClick={() => onShare(hw)} className="btn btn-secondary btn-icon shrink-0" aria-label="Share" title="Share">
           <Share2 className="w-4 h-4" />
         </button>
       )}
@@ -94,11 +94,12 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({ isOpen
           onClose();
           onEdit(hw);
         }}
-        className="btn btn-secondary"
+        className="btn btn-secondary shrink-0 px-3 sm:px-4"
+        aria-label="Edit assignment"
       >
-        <Edit2 className="w-4 h-4" /> Edit
+        <Edit2 className="w-4 h-4" /> <span className="hidden min-[400px]:inline">Edit</span>
       </button>
-      <button type="button" onClick={() => setStatus(isDone ? 'Not Started' : 'Completed')} className="btn btn-primary btn-lg flex-1">
+      <button type="button" onClick={() => setStatus(isDone ? 'Not Started' : 'Completed')} className="btn btn-primary btn-lg flex-1 min-w-0">
         {isDone ? (
           <>
             <RotateCcw className="w-4 h-4" /> Reopen
@@ -116,7 +117,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({ isOpen
     <Modal isOpen={isOpen} onClose={onClose} title="Assignment" mobileFullSheet footer={footer}>
       <div className="flex flex-col gap-6 text-left" style={{ '--sub': tone.accent, '--sub-dark': tone.darkAccent } as React.CSSProperties}>
         {/* Subject + title */}
-        <header>
+        <div>
           <div className="flex items-center gap-2 text-[13px]">
             <span className="w-2.5 h-2.5 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]" aria-hidden="true" />
             {label.code && <span className="font-bold tracking-wide text-fg">{label.code}</span>}
@@ -132,7 +133,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({ isOpen
               {due.label}
             </span>
           </div>
-        </header>
+        </div>
 
         {/* Status: one tap */}
         <section>

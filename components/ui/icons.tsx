@@ -127,6 +127,7 @@ import {
   Wrench as IoWrench,
   Xmark as IoXmark,
   XmarkCircle as IoXmarkCircle,
+  Notes as IoNotes,
 } from 'iconoir-react';
 
 export interface IconProps extends Omit<React.SVGProps<SVGSVGElement>, 'ref'> {
@@ -271,6 +272,7 @@ export const Paperclip = wrap(IoAttachment, 'Paperclip');
 export const PartyPopper = wrap(IoGift, 'PartyPopper');
 export const Pause = wrap(IoPause, 'Pause');
 export const Pencil = wrap(IoEditPencil, 'Pencil');
+export const NotebookPen = wrap(IoNotes, 'NotebookPen');
 export const Phone = wrap(IoPhone, 'Phone');
 export const Play = wrap(IoPlay, 'Play');
 export const Plus = wrap(IoPlus, 'Plus');

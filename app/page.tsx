@@ -44,6 +44,7 @@ import { SettingsView } from '@/components/settings/SettingsView';
 import { HolidayBalloons } from '@/components/ui/HolidayBalloons';
 import { CampusSpotlightCard } from '@/components/ads/CampusSpotlightCard';
 import { CampusNoticesView } from '@/components/notices/CampusNoticesView';
+import { NotesView } from '@/components/notes/NotesView';
 import { ProposedBatchTasksVoting } from '@/components/homework/ProposedBatchTasksVoting';
 import { IOSAppGate } from '@/components/pwa/IOSAppGate';
 import { AndroidAppGate } from '@/components/pwa/AndroidAppGate';
@@ -429,6 +430,7 @@ export default function AppHome() {
             {activeView === 'exams' && <ExamsView />}
             {activeView === 'papers' && <QuestionPapersView />}
             {activeView === 'notices' && <CampusNoticesView />}
+            {activeView === 'notes' && <NotesView />}
             {activeView === 'friends' && <FriendsView />}
             {activeView === 'carry' && (
               profile?.role === 'faculty' ? <FacultyBatchesView /> : <TomorrowCarryView />

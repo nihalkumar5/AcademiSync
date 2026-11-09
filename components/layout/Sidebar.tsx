@@ -20,6 +20,7 @@ import {
   GraduationCap,
   FileText,
   Megaphone,
+  NotebookPen,
 } from '@/components/ui/icons';
 import { useApp, ActiveView } from '@/context/AppContext';
 import { dedupeNotifications } from '@/lib/notificationDedupe';
@@ -69,6 +70,7 @@ export const Sidebar: React.FC = () => {
             { id: 'home', label: 'Home', icon: House },
             { id: 'timetable', label: 'Timetable', icon: CalendarDays },
             { id: 'homework', label: 'Assignments', icon: CheckSquare, count: pendingTasks || undefined },
+            { id: 'notes', label: 'Notes', icon: NotebookPen },
             { id: 'exams', label: 'Exams', icon: ClipboardList },
             { id: 'papers', label: 'Question papers', icon: FileText },
             { id: 'routines', label: 'Routines', icon: Repeat, count: routinesLeft || undefined },

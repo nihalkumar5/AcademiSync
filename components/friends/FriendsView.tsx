@@ -6,7 +6,7 @@ import { clsx } from 'clsx';
 import { useApp } from '@/context/AppContext';
 import { Modal } from '@/components/ui/Modal';
 import { Illustration } from '@/components/ui/Illustration';
-import { AlertTriangle, Camera, Check, Clock, Copy, EyeOff, Loader2, MoreVertical, Send, Share2, UserPlus, Users, X } from '@/components/ui/icons';
+import { AlertTriangle, Camera, Check, ChevronRight, Clock, Copy, EyeOff, Loader2, MoreVertical, Search, Send, Share2, UserPlus, Users, X } from '@/components/ui/icons';
 import { getAvatarSeed, getAvatarSrc } from '@/lib/avatar';
 import {
   CODE_RE,
@@ -494,8 +494,98 @@ const PlanSheet: React.FC<{ open: boolean; onClose: () => void; friends: Friend[
 };
 
 // ---------- Page ----------
+// ---------- Your class: one card on the page, everyone inside a sheet ----------
+const shortBranch = (b?: string) =>
+  (b || '')
+    .replace(/.*\(([^)]+)\).*/, '$1')
+    .replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI')
+    .replace(/ARTIFICIAL INTELLIGENCE/i, 'AI')
+    .trim();
+
+const ClassmatesSheet: React.FC<{
+  open: boolean;
+  onClose: () => void;
+  classLabel: string;
+  suggestions: PersonLite[];
+  outgoing: PersonLite[];
+  busy: string;
+  onRequest: (p: PersonLite) => void;
+  onUndo: (p: PersonLite) => void;
+}> = ({ open, onClose, classLabel, suggestions, outgoing, busy, onRequest, onUndo }) => {
+  const [q, setQ] = useState('');
+  useEffect(() => {
+    if (!open) setQ('');
+  }, [open]);
+  const requested = new Set(outgoing.map((p) => p.uid));
+  const people = [...outgoing, ...suggestions]
+    .filter((p, i, a) => a.findIndex((x) => x.uid === p.uid) === i)
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const query = q.trim().toLowerCase();
+  const shown = query ? people.filter((p) => p.name.toLowerCase().includes(query)) : people;
+
+  return (
+    <Modal isOpen={open} onClose={onClose} title="Your class" description={`${classLabel} · ${people.length} ${people.length === 1 ? 'classmate' : 'classmates'}`} maxWidth="lg" mobileFullSheet>
+      <div className="flex flex-col gap-f3">
+        {people.length > 8 && (
+          <label className="flex items-center gap-2.5 h-11 px-3 border border-line bg-surface focus-within:border-fg transition-colors">
+            <Search className="w-4 h-4 text-muted shrink-0" />
+            <input
+              type="search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search your class"
+              className="flex-1 min-w-0 bg-transparent text-[15px] text-fg placeholder:text-faint focus:outline-none"
+            />
+          </label>
+        )}
+        {shown.length === 0 ? (
+          <p className="py-f4 text-center text-[14px] text-muted">No one matches &ldquo;{q}&rdquo;.</p>
+        ) : (
+          <ul className="-mx-1">
+            {shown.map((p) => {
+              const sent = requested.has(p.uid);
+              const working = busy === `rq_${p.uid}` || busy === `cx_${p.uid}`;
+              return (
+                <li key={p.uid} className="flex items-center gap-3 px-1 h-14">
+                  <Avatar p={p} size={36} />
+                  <span className="flex-1 min-w-0 text-[15px] font-medium text-fg truncate">{p.name}</span>
+                  {sent ? (
+                    <button
+                      type="button"
+                      disabled={!!busy}
+                      onClick={() => onUndo(p)}
+                      className="group h-9 px-2 inline-flex items-center gap-1.5 text-[13px] font-medium text-muted hover:text-fg cursor-pointer"
+                      aria-label={`Cancel request to ${p.name}`}
+                    >
+                      {working ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                      <span className="group-hover:hidden">Requested</span>
+                      <span className="hidden group-hover:inline">Undo</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={!!busy}
+                      onClick={() => onRequest(p)}
+                      className="h-9 px-3 inline-flex items-center gap-1.5 bg-surface-2 text-[13px] font-semibold text-fg hover:bg-ink hover:text-on-ink transition-colors cursor-pointer disabled:opacity-60"
+                      aria-label={`Send a friend request to ${p.name}`}
+                    >
+                      {working ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />} Add
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        <p className="text-[12px] text-faint">They get a request and see you only once they accept.</p>
+      </div>
+    </Modal>
+  );
+};
+
 export const FriendsView: React.FC = () => {
-  const { user, setActiveView, showToast } = useApp() as any;
+  const { user, setActiveView, showToast, profile } = useApp() as any;
+  const [classOpen, setClassOpen] = useState(false);
   const { data, loading, error, reload } = useFriends(user?.id);
   const [addOpen, setAddOpen] = useState(false);
   const [pendingCode, setPendingCode] = useState<string | undefined>(undefined);
@@ -817,35 +907,56 @@ export const FriendsView: React.FC = () => {
           </>
         )}
 
-        {/* Classmates & sent requests */}
-        {(data.suggestions.length > 0 || data.outgoing.length > 0) && (
-          <section>
-            <div className="flex items-baseline justify-between gap-3 mb-f3">
-              <h3 className="text-[17px] font-semibold text-fg tracking-tight">In your class</h3>
-              <span className="text-[12px] text-muted">They get a request</span>
-            </div>
-            <ul className="border border-line bg-surface divide-y divide-line-soft">
-              {data.outgoing.map((p) => (
-                <li key={p.uid} className="flex items-center gap-3 px-f4 py-3">
-                  <Avatar p={p} size={36} />
-                  <span className="flex-1 min-w-0 text-[15px] font-medium text-fg truncate">{p.name}</span>
-                  <button type="button" disabled={!!busy} onClick={() => act(`cx_${p.uid}`, { action: 'remove', uid: p.uid })} className="text-[12px] font-semibold text-muted hover:text-fg cursor-pointer">
-                    Requested · Undo
-                  </button>
-                </li>
-              ))}
-              {data.suggestions.map((p) => (
-                <li key={p.uid} className="flex items-center gap-3 px-f4 py-3">
-                  <Avatar p={p} size={36} />
-                  <span className="flex-1 min-w-0 text-[15px] font-medium text-fg truncate">{p.name}</span>
-                  <button type="button" disabled={!!busy} onClick={() => act(`rq_${p.uid}`, { action: 'request', uid: p.uid }, ['Request sent', p.name])} className="btn btn-secondary h-9 px-3 text-[13px]">
-                    {busy === `rq_${p.uid}` ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />} Add
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+        {/* Your class: a single card, like the batch card on Timetable */}
+        {(data.suggestions.length > 0 || data.outgoing.length > 0) && (() => {
+          const people = [...data.outgoing, ...data.suggestions].filter((p, i, a) => a.findIndex((x) => x.uid === p.uid) === i);
+          const stack = people.slice(0, 5);
+          const extra = people.length - stack.length;
+          const classLabel = [profile?.programme, shortBranch(profile?.branch), profile?.year ? `Year ${profile.year}` : null].filter(Boolean).join(' · ') || 'Your batch';
+          return (
+            <section>
+              <button
+                type="button"
+                onClick={() => setClassOpen(true)}
+                className="w-full flex items-center gap-f3 p-f4 bg-surface border border-line hover:bg-surface-2 transition-colors text-left cursor-pointer"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-semibold text-muted">Your class</p>
+                  <p className="mt-1 text-[16px] font-semibold text-fg tracking-tight truncate">{classLabel}</p>
+                  <div className="mt-3 flex items-center gap-3">
+                    <div className="flex items-center">
+                      {stack.map((p, i) => (
+                        <span key={p.uid} className={clsx('rounded-full ring-2 ring-surface', i > 0 && '-ml-2.5')}>
+                          <Avatar p={p} size={30} />
+                        </span>
+                      ))}
+                      {extra > 0 && (
+                        <span className="-ml-2.5 w-[30px] h-[30px] rounded-full ring-2 ring-surface bg-surface-2 border border-line flex items-center justify-center text-[11px] font-semibold text-fg-2 tabular-nums">
+                          +{extra}
+                        </span>
+                      )}
+                    </div>
+                    <span className="min-w-0 text-[13px] leading-[17px] text-muted">
+                      <span className="block text-fg font-medium">{people.length} classmates</span>
+                      {data.outgoing.length > 0 && <span className="block">{data.outgoing.length} requested</span>}
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted shrink-0" />
+              </button>
+              <ClassmatesSheet
+                open={classOpen}
+                onClose={() => setClassOpen(false)}
+                classLabel={classLabel}
+                suggestions={data.suggestions}
+                outgoing={data.outgoing}
+                busy={busy}
+                onRequest={(p) => act(`rq_${p.uid}`, { action: 'request', uid: p.uid }, ['Request sent', p.name])}
+                onUndo={(p) => act(`cx_${p.uid}`, { action: 'remove', uid: p.uid })}
+              />
+            </section>
+          );
+        })()}
 
         <p className="text-[12px] leading-[17px] text-muted">
           Friends only see when you&apos;re busy or free, never your attendance or notes. Only students from your campus can add you.

@@ -20,6 +20,7 @@ import {
   GraduationCap,
   FileText,
   Megaphone,
+  NotebookPen,
 } from '@/components/ui/icons';
 import { useApp, ActiveView } from '@/context/AppContext';
 import { dedupeNotifications } from '@/lib/notificationDedupe';
@@ -41,6 +42,7 @@ const MORE_TONES: Record<string, string> = {
   calendar: 'bg-sky-50 text-sky-700 border-sky-200/70 dark:bg-sky-400/10 dark:text-sky-300 dark:border-sky-400/20',
   faculty: 'bg-violet-50 text-violet-700 border-violet-200/70 dark:bg-violet-400/10 dark:text-violet-300 dark:border-violet-400/20',
   subjects: 'bg-emerald-50 text-emerald-700 border-emerald-200/70 dark:bg-emerald-400/10 dark:text-emerald-300 dark:border-emerald-400/20',
+  notes: 'bg-yellow-50 text-yellow-700 border-yellow-200/70 dark:bg-yellow-400/10 dark:text-yellow-300 dark:border-yellow-400/20',
   notices: 'bg-blue-50 text-blue-700 border-blue-200/70 dark:bg-blue-400/10 dark:text-blue-300 dark:border-blue-400/20',
   notifications: 'bg-indigo-50 text-indigo-700 border-indigo-200/70 dark:bg-indigo-400/10 dark:text-indigo-300 dark:border-indigo-400/20',
   settings: 'bg-stone-100 text-stone-700 border-stone-200 dark:bg-white/[0.06] dark:text-stone-300 dark:border-white/10',
@@ -102,7 +104,15 @@ export const MobileNav: React.FC = () => {
           label: 'Studies',
           items: [
             { id: 'attendance', label: 'Attendance', hint: 'See how many classes you can skip', icon: <UserCheck className="w-5 h-5" /> },
+            { id: 'notes', label: 'Notes', hint: 'Everything you saved in class', icon: <NotebookPen className="w-5 h-5" /> },
             { id: 'exams', label: 'Exams', hint: 'Dates, rooms & countdowns', icon: <ClipboardList className="w-5 h-5" />, badge: examsThisWeek || undefined },
+          ],
+        },
+        {
+          label: 'Classes',
+          items: [
+            { id: 'subjects', label: 'Subjects', hint: 'Rooms, teachers & what to carry', icon: <BookOpen className="w-5 h-5" /> },
+            { id: 'faculty', label: 'Faculty', hint: 'Your teachers & campus faculty', icon: <GraduationCap className="w-5 h-5" /> },
             { id: 'papers', label: 'Question papers', short: 'Papers', hint: 'Past papers of your branch', icon: <FileText className="w-5 h-5" /> },
           ],
         },
@@ -115,12 +125,8 @@ export const MobileNav: React.FC = () => {
           ],
         },
         {
-          label: 'People & classes',
-          items: [
-            { id: 'subjects', label: 'Subjects', hint: 'Rooms, teachers & what to carry', icon: <BookOpen className="w-5 h-5" /> },
-            { id: 'faculty', label: 'Faculty', hint: 'Your teachers & campus faculty', icon: <GraduationCap className="w-5 h-5" /> },
-            { id: 'friends', label: 'Friends', hint: "See who's free right now", icon: <Users className="w-5 h-5" /> },
-          ],
+          label: 'People',
+          items: [{ id: 'friends', label: 'Friends', hint: "See who's free right now", icon: <Users className="w-5 h-5" /> }],
         },
       ];
   const moreItems: MoreItem[] = moreGroups.flatMap((g) => g.items);
@@ -208,7 +214,7 @@ export const MobileNav: React.FC = () => {
                 {moreGroups.map((g) => (
                   <section key={g.label} aria-label={g.label}>
                     <p className="mb-[8px] text-[13px] font-semibold text-muted">{g.label}</p>
-                    <ul className="grid grid-cols-3 gap-[8px]">
+                    <ul className={clsx('grid gap-[8px]', g.items.length === 1 ? 'grid-cols-1' : 'grid-cols-3')}>
                       {g.items.map((item) => {
                         const isActive = activeView === item.id;
                         return (
@@ -219,7 +225,8 @@ export const MobileNav: React.FC = () => {
                               aria-current={isActive ? 'page' : undefined}
                               aria-label={`${item.label}: ${item.hint}`}
                               className={clsx(
-                                'relative w-full h-[89px] p-[13px] flex flex-col items-start justify-between text-left border transition-colors cursor-pointer',
+                                'relative w-full text-left border transition-colors cursor-pointer',
+                                g.items.length === 1 ? 'h-[55px] px-[13px] flex items-center gap-[13px]' : 'h-[89px] p-[13px] flex flex-col items-start justify-between',
                                 isActive
                                   ? 'bg-ink text-on-ink border-ink'
                                   : 'bg-surface border-line-soft hover:border-line active:bg-surface-2'
@@ -236,6 +243,9 @@ export const MobileNav: React.FC = () => {
                               <span className={clsx('text-[13px] font-semibold leading-none truncate max-w-full', isActive ? 'text-on-ink' : 'text-fg')}>
                                 {item.short || item.label}
                               </span>
+                              {g.items.length === 1 && (
+                                <span className={clsx('ml-auto text-[12px] truncate', isActive ? 'text-on-ink/70' : 'text-muted')}>{item.hint}</span>
+                              )}
                               {item.badge ? (
                                 <span className="absolute top-[8px] right-[8px] min-w-[21px] h-[21px] px-1 bg-rose-500 text-white text-[11px] font-bold tabular-nums flex items-center justify-center rounded-full">
                                   {item.badge}

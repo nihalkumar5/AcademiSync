@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { logServerError } from '@/lib/errorUtils';
 import { getVerifiedUser } from '@/lib/serverAuth';
 import { subjectKeyOf } from '@/lib/classNotes';
-import { NoteError, addMine, addShared, deleteMine, deleteShared, listMine, listShared, whoIs } from '@/lib/server/classNotes';
+import { NoteError, addMine, addShared, deleteMine, deleteShared, listAllMine, listMine, listRecentShared, listShared, whoIs } from '@/lib/server/classNotes';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +20,12 @@ export async function GET(req: Request) {
     const user = await getVerifiedUser(req);
     if (!user) return NextResponse.json({ success: false, error: 'Sign in to see notes' }, { status: 401, headers: NO_STORE });
     const p = new URL(req.url).searchParams;
+    if (p.get('all') === '1') {
+      // Notes page: everything I saved + my batch's class notes, newest first
+      const who = await whoIs(user.uid);
+      const [mine, shared] = await Promise.all([listAllMine(user.uid), listRecentShared(who)]);
+      return ok({ mine, shared, hasBatch: !!who.batchKey });
+    }
     const subjectId = p.get('subjectId') || '';
     const date = p.get('date') || undefined;
     const subjectName = (p.get('subject') || '').trim().slice(0, 120) || undefined;

@@ -1,5 +1,6 @@
 'use client';
 
+import { HandwrittenText } from '@/components/ui/HandwrittenText';
 import { Illustration } from '@/components/ui/Illustration';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
@@ -468,7 +469,13 @@ export const RoutinesView: React.FC = () => {
               </ul>
             )}
             {isToday && dayList.length > 0 && doneCount === dayList.length && (
-              <p className="mt-f4 font-cursive text-[22px] font-semibold text-emerald-600 dark:text-emerald-400 -rotate-1">All done for today. Proud of you!</p>
+              <p className="mt-f4 -rotate-1">
+                <HandwrittenText
+                  text="All done for today. Proud of you!"
+                  playKey={`routines-done-${new Date().toDateString()}`}
+                  className="text-[27px] leading-tight font-semibold text-emerald-700 dark:text-emerald-400"
+                />
+              </p>
             )}
           </section>
 

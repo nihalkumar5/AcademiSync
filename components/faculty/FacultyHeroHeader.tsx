@@ -57,9 +57,9 @@ export const FacultyHeroHeader: React.FC<FacultyHeroHeaderProps> = ({
   return (
     <div className="flex flex-col gap-f5 text-left">
       <div>
-        <div className="flex items-baseline justify-between gap-3 font-cursive text-[19px] leading-none font-semibold text-muted">
-          <span>{dateFormatted}</span>
-          <span className="tabular-nums">{timeFormatted}</span>
+        <div className="flex items-baseline justify-between gap-3 text-[13px] leading-none">
+          <span className="font-semibold text-fg-2">{dateFormatted}</span>
+          <span className="font-medium text-muted tabular-nums">{timeFormatted}</span>
         </div>
 
         <h2 className="mt-3 tracking-tight">

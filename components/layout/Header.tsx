@@ -84,6 +84,7 @@ export const Header: React.FC = () => {
     exams: 'Exams',
     papers: 'Question papers',
     notices: 'Campus notices',
+    notes: 'Notes',
     friends: 'Friends',
     homework: 'Assignments',
     carry: isFacultyUser ? 'Batches' : 'Bag',

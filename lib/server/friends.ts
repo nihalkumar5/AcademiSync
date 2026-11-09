@@ -64,7 +64,7 @@ async function ensureMeta(uid: string, userData?: any) {
     const code = Array.from({ length: 6 }, () => CODE_CHARS[randomInt(CODE_CHARS.length)]).join('');
     try {
       await adminDb.collection('friend_codes').doc(code).create({ uid, at: now() });
-      const m = { code, collegeKey, ghost: false, showClass: false, hiddenFrom: [], status: null, createdAt: now() };
+      const m = { code, collegeKey, ghost: false, showClass: true, hiddenFrom: [], status: null, createdAt: now() };
       await ref.set(m, { merge: true });
       return m;
     } catch {
@@ -158,7 +158,7 @@ export async function loadFriends(uid: string): Promise<FriendsData> {
     const m: any = metaData.get(id) || {};
     const hidden = !!m.ghost || list(m.hiddenFrom).includes(uid);
     let days = hidden ? [] : scheduleOf(d, await batchOf(d));
-    if (!m.showClass) days = days.map((day) => ({ ...day, classes: day.classes.map((c) => ({ ...c, name: '', room: '' })) }));
+    if (!showsClass(m)) days = days.map((day) => ({ ...day, classes: day.classes.map((c) => ({ ...c, name: '', room: '' })) }));
     friends.push({
       ...lite(id, d, myBatch),
       hidden,
@@ -208,7 +208,7 @@ export async function loadFriends(uid: string): Promise<FriendsData> {
     .sort((a, b) => a.at.localeCompare(b.at));
 
   return {
-    me: { uid, code: meMeta.code, ghost: !!meMeta.ghost, showClass: !!meMeta.showClass, status: statusOf(meMeta), college: meData?.profile?.college || '' },
+    me: { uid, code: meMeta.code, ghost: !!meMeta.ghost, showClass: showsClass(meMeta), status: statusOf(meMeta), college: meData?.profile?.college || '' },
     friends: friends.sort((a, b) => a.name.localeCompare(b.name)),
     incoming: incomingIds.map((id) => lite(id, userData.get(id), myBatch)),
     outgoing: outgoingIds.map((id) => lite(id, userData.get(id), myBatch)),
@@ -302,11 +302,17 @@ export async function removeFriend(uid: string, other: unknown) {
   await metaRef(uid).set({ hiddenFrom: FieldValue.arrayRemove(other) }, { merge: true });
 }
 
+/** Class names are shared by default; only an explicit "off" from the person hides them. */
+const showsClass = (m: any) => (m?.showClassChosen ? !!m.showClass : true);
+
 // ---------- My settings & status ----------
 export async function updateSettings(uid: string, input: any) {
   const patch: Record<string, unknown> = {};
   if (typeof input.ghost === 'boolean') patch.ghost = input.ghost;
-  if (typeof input.showClass === 'boolean') patch.showClass = input.showClass;
+  if (typeof input.showClass === 'boolean') {
+    patch.showClass = input.showClass;
+    patch.showClassChosen = true;
+  }
   if (input.hide && validUid(input.hide.uid) && typeof input.hide.hidden === 'boolean') {
     const { FieldValue } = await import('firebase-admin/firestore');
     patch.hiddenFrom = input.hide.hidden ? FieldValue.arrayUnion(input.hide.uid) : FieldValue.arrayRemove(input.hide.uid);

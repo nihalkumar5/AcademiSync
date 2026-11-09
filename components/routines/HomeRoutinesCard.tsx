@@ -1,5 +1,6 @@
 'use client';
 
+import { HandwrittenText } from '@/components/ui/HandwrittenText';
 import React, { useEffect, useState } from 'react';
 import { Check, ChevronRight, Plus, LayoutTemplate } from '@/components/ui/icons';
 import { useApp } from '@/context/AppContext';
@@ -113,7 +114,13 @@ export const HomeRoutinesCard: React.FC = () => {
                   <span className="text-[17px] font-medium tabular-nums text-faint">/{today.length} done</span>
                 </p>
                 {allDone ? (
-                  <p className="font-cursive text-[21px] font-semibold text-emerald-700 dark:text-emerald-400 -rotate-2">All done ✌</p>
+                  <p className="-rotate-2">
+                    <HandwrittenText
+                      text="All done ✌"
+                      playKey={`home-routines-done-${new Date().toDateString()}`}
+                      className="text-[25px] leading-none font-semibold text-emerald-700 dark:text-emerald-400"
+                    />
+                  </p>
                 ) : nextUp && nextAt ? (
                   <p className="text-[13px] text-muted text-right">
                     Next <span className="font-semibold text-fg">{inLabel(nextAt.getTime() - now.getTime())}</span>

@@ -1370,7 +1370,7 @@ export default function SuperAdminPage() {
         {activeTab === 'overview' && (
           <div className="flex flex-col gap-f5 sm:gap-f6">
             <div>
-              <p className={`font-cursive text-[19px] leading-none ${muted}`}>
+              <p className={`text-[13px] font-semibold leading-none ${muted}`}>
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
               </p>
               <h2 className={`mt-2 text-[30px] sm:text-[38px] font-semibold tracking-tight leading-tight ${strong}`}>
