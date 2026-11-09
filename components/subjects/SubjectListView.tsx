@@ -30,9 +30,10 @@ import {
 } from '@/components/ui/icons';
 import { getSubjectCardTheme } from '@/lib/cardColors';
 import { clsx } from 'clsx';
+import { ElectiveGroupCard, openElectives } from '@/components/electives/Electives';
 
 export const SubjectListView: React.FC = () => {
-  const { subjects, deleteSubject, profile, timetable, showToast, isBatchCR, currentBatchData, toggleElectiveEnrollment } = useApp();
+  const { subjects, deleteSubject, profile, timetable, showToast, isBatchCR, currentBatchData, electiveGroups, chooseElective, canSetUpElectives, isSubjectMine } = useApp();
   const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
 
   const [showModal, setShowModal] = useState(false);
@@ -137,44 +138,28 @@ export const SubjectListView: React.FC = () => {
         ))}
       </div>
 
-      {/* Electives */}
-      {totalElectives > 0 && (
+      {/* Electives: pick one per slot (same sheet as Timetable / Home) */}
+      {(electiveGroups.length > 0 || canSetUpElectives) && profile.role !== 'faculty' && (
         <section aria-label="Electives">
-          <div className="flex items-baseline justify-between mb-3">
+          <div className="flex items-baseline justify-between gap-3 mb-3">
             <h3 className="text-[17px] font-semibold text-fg tracking-tight">Electives</h3>
-            <span className="text-[13px] text-muted">Pick the ones you attend</span>
+            {canSetUpElectives ? (
+              <button type="button" onClick={() => openElectives({ mode: 'setup' })} className="text-[13px] font-semibold text-fg underline underline-offset-4 decoration-line-strong hover:decoration-fg cursor-pointer">
+                {electiveGroups.length ? 'Set up' : 'Set up electives'}
+              </button>
+            ) : (
+              <span className="text-[13px] text-muted">Pick the one you attend</span>
+            )}
           </div>
-          <ul className="border border-line bg-surface divide-y divide-line-soft">
-            {subjects.filter((s) => s.isElective).map((elec) => {
-              const isEnrolled = profile.enrolledElectiveIds === undefined || profile.enrolledElectiveIds.includes(elec.id);
-              return (
-                <li key={elec.id} className="flex items-center gap-3 px-4 py-3">
-                  <div className="flex-1 min-w-0">
-                    <p className={clsx('text-[15px] font-medium truncate', isEnrolled ? 'text-fg' : 'text-muted')}>{elec.name}</p>
-                    {elec.code && elec.code !== 'UNK' && (
-                      <p className="text-[12px] font-mono text-muted">{elec.code}</p>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={isEnrolled}
-                    aria-label={`Attending ${elec.name}`}
-                    onClick={() => toggleElectiveEnrollment(elec.id)}
-                    className={clsx(
-                      'relative w-11 h-6 shrink-0 rounded-full transition-colors cursor-pointer',
-                      isEnrolled ? 'bg-ink' : 'bg-black/15 dark:bg-white/15'
-                    )}
-                  >
-                    <span className={clsx(
-                      'absolute top-0.5 w-5 h-5 rounded-full bg-surface shadow transition-all',
-                      isEnrolled ? 'left-[22px]' : 'left-0.5'
-                    )} />
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          {electiveGroups.length === 0 ? (
+            <p className="border border-dashed border-line px-4 py-3 text-[14px] text-muted">No electives yet. Mark the courses where students pick one, and they choose theirs.</p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {electiveGroups.map((g) => (
+                <ElectiveGroupCard key={g.key} group={g} onChoose={(id) => chooseElective(g.key, id)} />
+              ))}
+            </div>
+          )}
         </section>
       )}
 
@@ -263,7 +248,7 @@ export const SubjectListView: React.FC = () => {
               b.name.trim().toLowerCase() === sub.name.trim().toLowerCase()
             );
             const isReadOnlyOfficial = isBatchSubject && profile.isBatchSynced && !isBatchCR;
-            const isEnrolledElective = profile.enrolledElectiveIds === undefined || profile.enrolledElectiveIds.includes(sub.id);
+            const isEnrolledElective = isSubjectMine(sub.id);
 
             return (
               <article
@@ -406,21 +391,16 @@ export const SubjectListView: React.FC = () => {
                   </div>
                   {sub.isElective && (
                     <div className="flex items-center gap-3">
-                      <span className="w-14 shrink-0 text-[12px] font-medium text-muted">Routine</span>
+                      <span className="w-14 shrink-0 text-[12px] font-medium text-muted">Elective</span>
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleElectiveEnrollment(sub.id);
+                          openElectives({ focus: electiveGroups.find((g) => g.options.some((o) => o.id === sub.id))?.key });
                         }}
-                        className={clsx(
-                          'h-7 px-2.5 text-[12px] font-semibold cursor-pointer transition-colors',
-                          isEnrolledElective
-                            ? 'bg-ink text-on-ink'
-                            : 'border border-line text-fg'
-                        )}
+                        className={clsx('h-7 px-2.5 text-[12px] font-semibold cursor-pointer transition-colors', isEnrolledElective ? 'bg-ink text-on-ink' : 'border border-line text-fg')}
                       >
-                        {isEnrolledElective ? 'Attending' : 'Add to routine'}
+                        {isEnrolledElective ? 'You take this' : 'Not yours · change'}
                       </button>
                     </div>
                   )}

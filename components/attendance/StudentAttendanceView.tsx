@@ -291,7 +291,7 @@ const Hero: React.FC<{ children: React.ReactNode; glow?: string }> = ({ children
 const GLOW: Record<Standing, string> = { safe: '#10b981', edge: '#f59e0b', low: '#f43f5e', none: '#6366f1' };
 
 export const StudentAttendanceView: React.FC = () => {
-  const { user, profile, subjects, setActiveView } = useApp();
+  const { user, profile, subjects, setActiveView, isSubjectMine } = useApp();
   const uid: string | null = user?.id || null;
   const { data, loading, error, at, reload } = useMyAttendance(uid);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -304,9 +304,8 @@ export const StudentAttendanceView: React.FC = () => {
   const min = data?.minPct || MIN_PCT;
 
   const { tracked, off } = useMemo(() => {
-    const enrolled = (subjects || []).filter(
-      (s) => s && (!s.isElective || profile?.enrolledElectiveIds === undefined || profile.enrolledElectiveIds.includes(s.id))
-    );
+    // Core subjects and the electives this student takes (an unpicked slot isn't listed yet)
+    const enrolled = (subjects || []).filter((s) => s && isSubjectMine(s.id));
     const courses = data?.courses || [];
     const { bySubject, leftovers } = matchCourses(enrolled, courses);
     const trackedRows: TrackedRow[] = [];
@@ -333,7 +332,7 @@ export const StudentAttendanceView: React.FC = () => {
     trackedRows.sort((a, b) => ORDER[a.standing] - ORDER[b.standing] || (a.pct || 0) - (b.pct || 0) || a.name.localeCompare(b.name));
     offRows.sort((a, b) => (a.kind === b.kind ? a.name.localeCompare(b.name) : a.kind === 'not-on-list' ? -1 : 1));
     return { tracked: trackedRows, off: offRows };
-  }, [data, subjects, profile?.enrolledElectiveIds, min]);
+  }, [data, subjects, isSubjectMine, min]);
 
   const counted = tracked.filter((r) => r.course.total > 0);
   const attended = counted.reduce((n, r) => n + r.course.attended, 0);

@@ -1,11 +1,11 @@
 'use client';
+import { AiUploadError, prepareAiUpload, readAiResponse } from '@/lib/fileCompressor';
 import { motion } from 'framer-motion';
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { AcademicEvent, CalendarEventType } from '@/lib/types';
 import { getLocalDateString, getTodayDateString } from '@/lib/timetableUtils';
-import { validateUploadedFile } from '@/lib/fileSafety';
 import { getAuthHeaders } from '@/lib/authHeaders';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
@@ -50,23 +50,16 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
       });
 
       if (!res.ok) {
-        let errMsg = 'Server error during extraction';
-        try {
-          const errData = await res.json();
-          errMsg = errData.error || errMsg;
-        } catch {
-          const text = await res.text();
-          errMsg = text.substring(0, 100) || errMsg;
-        }
+        const errData = await readAiResponse(res);
         if (res.status === 429) {
-          showToast('Scan Limit', errMsg, 'error');
+          showToast('Scan Limit', errData.error, 'error');
           resetState();
           return;
         }
-        throw new Error(errMsg);
+        throw new Error(errData.error);
       }
 
-      const data = await res.json();
+      const data = await readAiResponse(res);
       if (data.success && Array.isArray(data.events) && data.events.length > 0) {
         const normalized = data.events.map((ev: any) => {
           const startStr = ev.startDate || ev.date || getTodayDateString();
@@ -99,34 +92,14 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      for (const file of files) {
-        const check = validateUploadedFile({ name: file.name, size: file.size, type: file.type }, 3 * 1024 * 1024);
-        if (!check.valid) {
-          showToast('Invalid File', check.error || 'Please upload an image or PDF under 3MB.', 'error');
-          e.target.value = '';
-          return;
-        }
-      }
-
-      const readers = files.map((file) => {
-        return new Promise<{ name: string; base64: string; mimeType: string }>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            resolve({
-              name: file.name,
-              base64: event.target?.result as string,
-              mimeType: file.type || 'application/pdf',
-            });
-          };
-          reader.readAsDataURL(file);
-        });
-      });
-
-      Promise.all(readers).then((results) => {
-        runExtraction(results);
-      });
-    }
+    e.target.value = '';
+    if (files.length === 0) return;
+    // Photos are shrunk on the phone; everything together stays under the upload limit
+    prepareAiUpload(files, { maxDim: 2000 })
+      .then(runExtraction)
+      .catch((err) =>
+        showToast("Can't send these files", err instanceof AiUploadError ? err.message : 'Could not read the files. Try again.', 'error')
+      );
   };
 
   const updateExtractedRow = (index: number, partial: Partial<Omit<AcademicEvent, 'id'> & { startDate?: string; endDate?: string }>) => {

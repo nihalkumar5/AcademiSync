@@ -47,6 +47,8 @@ export interface StudentProfile {
   isPro?: boolean;
   isBanned?: boolean;
   enrolledElectiveIds?: string[]; // IDs of electives this student has chosen/enrolled in
+  electiveKeys?: string[]; // Same picks by stable keys (name / course code), survive re-imports (lib/electives.ts)
+  electivesSkipped?: string[]; // Keys of electives the student said they don't take
   // Faculty specific fields:
   facultyTitle?: string; // e.g. "Dr." | "Prof." | "Asst. Prof."
   facultyDepartment?: string;
@@ -76,6 +78,7 @@ export interface Subject {
   isCustomRoom?: boolean;
   isPersonal?: boolean;
   isElective?: boolean;
+  /** Elective slot name given by the pilot ("Elective I"); courses with the same name are one pick-one group */
   electiveSlot?: string;
 }
 
@@ -244,6 +247,8 @@ export interface ExtractedClassSession {
   faculty?: string;
   isLab?: boolean;
   isElective?: boolean;
+  /** Elective slot name from the timetable ("Elective I"); same name = students pick one */
+  electiveGroup?: string;
 }
 
 export interface ExtractedHomework {

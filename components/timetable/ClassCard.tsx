@@ -46,7 +46,8 @@ export const ClassCard: React.FC<ClassCardProps> = ({
     return faculties.join(' / ');
   };
 
-  const categoryLabel = isLab ? 'LAB SESSION' : isSpecial ? 'ELECTIVE' : session.isExtra ? 'EXTRA CLASS' : (subject?.code && subject.code !== 'UNK' ? subject.code : 'LECTURE');
+  const electiveLabel = (session as { electiveLabel?: string }).electiveLabel;
+  const categoryLabel = isLab ? 'LAB SESSION' : electiveLabel ? electiveLabel.toUpperCase() : isSpecial || subject?.isElective ? 'ELECTIVE' : session.isExtra ? 'EXTRA CLASS' : (subject?.code && subject.code !== 'UNK' ? subject.code : 'LECTURE');
 
   return (
     <div

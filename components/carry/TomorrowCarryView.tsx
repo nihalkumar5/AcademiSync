@@ -18,11 +18,12 @@ import { ClassSession } from '@/lib/types';
 import { EmptyState } from '../ui/EmptyState';
 import { Backpack, Plus, CalendarDays, Clock, ChevronRight, PartyPopper } from '@/components/ui/icons';
 import { Subject } from '@/lib/types';
+import { surelyMine } from '@/lib/electives';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 
 export const TomorrowCarryView: React.FC = () => {
   const {
-    timetable,
+    myTimetable,
     subjects,
     events,
     exams,
@@ -70,7 +71,7 @@ export const TomorrowCarryView: React.FC = () => {
     events.find((e) => e.date === targetDateStr && e.type === 'exam' && !isGenericExamTitle(e.title));
   const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
-  const rawTargetClasses = timetable
+  const rawTargetClasses = surelyMine(myTimetable)
     .filter((s) => s.day === targetDay)
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 

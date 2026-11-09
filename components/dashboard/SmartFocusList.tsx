@@ -8,7 +8,7 @@ import { clsx } from 'clsx';
 import { getTaskCardTheme } from '@/lib/cardColors';
 
 export const SmartFocusList: React.FC = () => {
-  const { homework, timetable, subjects, toggleHomeworkStatus, setActiveView, settings } = useApp();
+  const { homework, myTimetable: timetable, subjects, toggleHomeworkStatus, setActiveView, settings } = useApp();
   const [completingId, setCompletingId] = useState<string | null>(null);
 
   // Re-check every minute so time-bound items (like lab prep) drop off on their own

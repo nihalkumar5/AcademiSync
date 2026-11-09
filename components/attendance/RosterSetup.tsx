@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { X, Search, Check, Lock, Loader2, AlertTriangle, UserPlus, RefreshCw } from '@/components/ui/icons';
-import { Roster, RosterStudent, MemberCandidate, fetchBatchMembers, saveRoster, byRoll, attendanceErrorText } from '@/lib/attendance';
+import { Roster, RosterStudent, MemberCandidate, fetchBatchMembersInfo, saveRoster, byRoll, attendanceErrorText } from '@/lib/attendance';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 // Step 1: the faculty reviews who is in the batch and locks the class list.
@@ -12,9 +12,11 @@ export const RosterSetup: React.FC<{
   batchKey: string;
   batchLabel: string;
   roster: Roster | null;
+  /** The subjects this teacher teaches in the batch: an elective's teacher starts from the students who picked it */
+  teaches?: { ids: string[]; names: string[] };
   onClose: () => void;
   onSaved: (r: Roster) => void;
-}> = ({ facultyId, batchKey, batchLabel, roster, onClose, onSaved }) => {
+}> = ({ facultyId, batchKey, batchLabel, roster, teaches, onClose, onSaved }) => {
   const editing = !!roster;
   const [members, setMembers] = useState<MemberCandidate[] | null>(null);
   const [loadError, setLoadError] = useState('');
@@ -26,14 +28,28 @@ export const RosterSetup: React.FC<{
   const [confirm, setConfirm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [electiveInfo, setElectiveInfo] = useState<{ names: string[]; picked: number; undecided: number } | null>(null);
 
   const load = async () => {
     setLoadError('');
     try {
-      const list = await fetchBatchMembers(batchKey);
+      const { members: list, electiveSubjects } = await fetchBatchMembersInfo(batchKey);
       setMembers(list);
-      // First time: everyone in the batch starts selected so the faculty only removes strangers
-      if (!roster) setSelected(new Set(list.map((m) => m.key)));
+      // An elective's teacher starts from the students who picked it; everyone else from the whole batch
+      const n = (v: string) => v.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      const ids = teaches?.ids || [];
+      const names = (teaches?.names || []).map(n);
+      const mine = electiveSubjects.filter((e) => ids.includes(e.id) || names.includes(n(e.name)) || (!!e.code && names.includes(n(e.code))));
+      const onlyElectives = mine.length > 0 && mine.length >= Math.max(ids.length, names.length);
+      if (onlyElectives) {
+        const mineIds = new Set(mine.map((e) => e.id));
+        const takers = list.filter((m) => (m.electivePicks || []).some((id) => mineIds.has(id)));
+        setElectiveInfo({ names: mine.map((e) => e.name), picked: takers.length, undecided: list.filter((m) => m.electivesPending && !takers.includes(m)).length });
+        if (!roster) setSelected(new Set(takers.map((m) => m.key)));
+      } else if (!roster) {
+        // First time: everyone in the batch starts selected so the faculty only removes strangers
+        setSelected(new Set(list.map((m) => m.key)));
+      }
     } catch (e: any) {
       setLoadError(e?.message || 'Could not load the batch');
       setMembers([]);
@@ -168,6 +184,14 @@ export const RosterSetup: React.FC<{
               Only students you tick here appear in attendance. Anyone who joins the batch with its code later stays out until you add them.
             </p>
           </div>
+
+          {electiveInfo && (
+            <div className="p-f3 border border-line bg-surface-2 text-[14px] leading-relaxed text-fg">
+              <span className="font-semibold">{electiveInfo.names.join(', ')}</span> {electiveInfo.names.length > 1 ? 'are electives' : 'is an elective'}.
+              {!editing && ` We ticked the ${electiveInfo.picked} ${electiveInfo.picked === 1 ? 'student' : 'students'} who picked it in the app.`}
+              {electiveInfo.undecided > 0 && ` ${electiveInfo.undecided} ${electiveInfo.undecided === 1 ? 'student hasn’t' : 'students haven’t'} picked their elective yet. Tick them if they sit in your class.`}
+            </div>
+          )}
 
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8A8A8A]" />

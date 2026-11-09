@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/icons';
 
 export const OverviewHeader: React.FC = () => {
-  const { profile, timetable, homework, carryItems, events, exams, setActiveView, extraSessions, isSessionCancelled, cancelledSessions } = useApp();
+  const { profile, myTimetable, homework, carryItems, events, exams, setActiveView, myExtraSessions, isSessionCancelled, cancelledSessions } = useApp();
 
   const [time, setTime] = useState<Date | null>(null);
 
@@ -58,8 +58,8 @@ export const OverviewHeader: React.FC = () => {
   const hasActiveExamToday = !todaySchedule.allCompletedToday && (todaySchedule.liveExam !== null || todaySchedule.upcomingExam !== null);
 
   const todayDay = getCurrentDayOfWeek();
-  const regularToday = timetable.filter((s) => s.day === todayDay && !isSessionCancelled(s.id, dateTodayStr));
-  const extraToday = Object.values(extraSessions || {}).filter((ex) => ex && ex.date === dateTodayStr);
+  const regularToday = myTimetable.filter((s) => s.day === todayDay && !isSessionCancelled(s.id, dateTodayStr));
+  const extraToday = Object.values(myExtraSessions || {}).filter((ex) => ex && ex.date === dateTodayStr);
   const todayClasses = (todayHoliday || hasActiveExamToday) ? [] : [...regularToday, ...extraToday];
   const pendingHw = homework.filter((h) => h.status !== 'Completed');
   const upcomingDeadlines = homework.filter((h) => {

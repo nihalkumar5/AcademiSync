@@ -20,6 +20,9 @@ import { BatchDiscoveryModal } from '@/components/batch/BatchDiscoveryModal';
 import { BatchSetupPromptModal } from '@/components/batch/BatchSetupPromptModal';
 import { FacultyWeeklyTimetable } from '@/components/faculty/FacultyWeeklyTimetable';
 import { openClassNotes, dateOfWeekday } from '@/lib/classNotes';
+import { ElectivePendingCard, ElectivesSummary } from '@/components/electives/Electives';
+import { formatTime12Hour } from '@/lib/timetableUtils';
+import type { PersonalSession } from '@/lib/electives';
 
 export const WeeklyTimetable: React.FC = () => {
   const { profile } = useApp();
@@ -28,7 +31,7 @@ export const WeeklyTimetable: React.FC = () => {
 };
 
 const StudentWeeklyTimetable: React.FC = () => {
-  const { timetable, subjects, deleteClassSession, profile, isBatchCR, shareTimetableWithBatch, showToast, joinBatchTimetable, searchBatchTimetable, user, setActiveView } = useApp();
+  const { myTimetable, subjects, deleteClassSession, profile, isBatchCR, shareTimetableWithBatch, showToast, joinBatchTimetable, searchBatchTimetable, user, setActiveView } = useApp();
   const router = useRouter();
   const isSignedIn = !!user;
 
@@ -66,15 +69,8 @@ const StudentWeeklyTimetable: React.FC = () => {
     return undefined;
   };
 
-  const isSessionVisible = (session: ClassSession) => {
-    const sub = getSubjectForSession(session);
-    if (sub?.isElective && profile.enrolledElectiveIds && !profile.enrolledElectiveIds.includes(sub.id)) {
-      return false;
-    }
-    return true;
-  };
-
-  const activeTimetable = deduplicateTimetableSessions(timetable.filter(isSessionVisible)).cleaned;
+  // The student's own week: their electives only; a slot they haven't picked shows once (lib/electives.ts)
+  const activeTimetable = deduplicateTimetableSessions(myTimetable).cleaned as PersonalSession[];
 
   const currentDay = getCurrentDayOfWeek();
   
@@ -243,16 +239,6 @@ const StudentWeeklyTimetable: React.FC = () => {
             >
               <Sparkles className="w-4 h-4" /> Magic Import
             </button>
-            {subjects.some((s) => s.isElective) && (
-              <button
-                type="button"
-                onClick={() => setActiveView('subjects')}
-                className="btn btn-secondary"
-                title="Manage your chosen electives in Subject Directory" aria-label="Manage your chosen electives in Subject Directory"
-              >
-                <span>★ My Electives</span>
-              </button>
-            )}
           </div>
 
           {profile.isBatchSynced && profile.batchKey && (
@@ -274,6 +260,9 @@ const StudentWeeklyTimetable: React.FC = () => {
               </button>
             </div>
           )}
+          <div className={profile.isBatchSynced && profile.batchKey ? 'mt-f3' : ''}>
+            <ElectivesSummary />
+          </div>
         </div>
       </div>
 
@@ -333,7 +322,10 @@ const StudentWeeklyTimetable: React.FC = () => {
             );
           }
 
-          return sessions.map((session) => (
+          return sessions.map((session) =>
+            session.electivePending ? (
+              <ElectivePendingCard key={session.id} mark={session.electivePending} time={`${formatTime12Hour(session.startTime)} – ${formatTime12Hour(session.endTime)}`} />
+            ) : (
             <ClassCard
               key={session.id}
               session={session}
@@ -344,7 +336,8 @@ const StudentWeeklyTimetable: React.FC = () => {
               canModify={canModifySession(session)}
               onNotes={() => notesFor(session, selectedMobileDay)}
             />
-          ));
+            )
+          );
         })()}
       </div>
 
@@ -410,7 +403,10 @@ const StudentWeeklyTimetable: React.FC = () => {
                     </button>
                   </div>
                 ) : (
-                  daySessions.map((session) => (
+                  daySessions.map((session) =>
+                    session.electivePending ? (
+                      <ElectivePendingCard key={session.id} mark={session.electivePending} time={`${formatTime12Hour(session.startTime)} – ${formatTime12Hour(session.endTime)}`} className="p-4" />
+                    ) : (
                     <ClassCard
                       key={session.id}
                       session={session}
@@ -421,7 +417,8 @@ const StudentWeeklyTimetable: React.FC = () => {
                       canModify={canModifySession(session)}
                       onNotes={() => notesFor(session, day)}
                     />
-                  ))
+                    )
+                  )
                 )}
               </div>
             </div>

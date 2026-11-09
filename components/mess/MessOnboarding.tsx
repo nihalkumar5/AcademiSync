@@ -11,7 +11,7 @@ import { db } from '@/lib/firebase';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 import { MessImportModal } from './MessImportModal';
-import { processMultipleFilesForAi } from '@/lib/fileCompressor';
+import { processMultipleFilesForAi, readAiResponse } from '@/lib/fileCompressor';
 import { getAuthHeaders } from '@/lib/authHeaders';
 
 export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: 'join' | 'import' | null }> = ({ onCancel, initialAction }) => {
@@ -112,7 +112,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
           userId: user?.id || (user as any)?.uid || null,
         }),
       });
-      const data = await res.json();
+      const data = await readAiResponse(res);
 
       clearInterval(interval);
       setProgress(100);

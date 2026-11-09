@@ -251,9 +251,13 @@ export const scheduleTimetableLocalNotifications = async (
 
         const notifId = 1000 + (i * WEEKS_AHEAD) + occurrenceCount;
 
+        // An elective slot the student hasn't picked yet reminds by the slot's name
+        const pend = (session as any).electivePending as { label: string } | undefined;
         notificationsToSchedule.push({
-          title: `⏰ Class in ${reminderMinutes} mins: ${sub.name}${reschedule ? ' (Rescheduled)' : ''}`,
-          body: `${session.isLab || sub.isLab ? 'Lab' : 'Lecture'} at ${targetRoom || 'Classroom'} starts at ${formatTime12Hour(cleanTime)}`,
+          title: `⏰ Class in ${reminderMinutes} mins: ${pend ? pend.label : sub.name}${reschedule ? ' (Rescheduled)' : ''}`,
+          body: pend
+            ? `Starts at ${formatTime12Hour(cleanTime)}. Pick your elective in the app to see your room.`
+            : `${session.isLab || sub.isLab ? 'Lab' : 'Lecture'} at ${targetRoom || 'Classroom'} starts at ${formatTime12Hour(cleanTime)}`,
           id: notifId,
           schedule: {
             at: reminderTime,
@@ -369,7 +373,8 @@ export const scheduleTimetableLocalNotifications = async (
       const planClasses: PlanClass[] = tomorrowRegularClasses.map((s) => {
         const r = rescheduledSessions[`${tomorrowDateStr}_${s.id}`];
         const sub = subjectMap.get(s.subjectId);
-        return { name: sub?.name || 'Class', startTime: r?.startTime || s.startTime, room: r?.room || s.room, isLab: !!(s.isLab || sub?.isLab) };
+        const pend = (s as any).electivePending as { label: string } | undefined;
+        return { name: pend ? pend.label : sub?.name || 'Class', startTime: r?.startTime || s.startTime, room: r?.room || s.room, isLab: !!(s.isLab || sub?.isLab) };
       });
       if (extraSessions && typeof extraSessions === 'object') {
         Object.values(extraSessions).forEach((extra: any) => {

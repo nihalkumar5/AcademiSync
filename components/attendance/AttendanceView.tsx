@@ -501,6 +501,7 @@ export const AttendanceView: React.FC = () => {
           batchKey={batch.batchKey}
           batchLabel={batchLabel}
           roster={roster}
+          teaches={{ ids: batch.selectedSubjectIds || [], names: batch.selectedSubjectNames || [] }}
           onClose={() => setSetupOpen(false)}
           onSaved={(r: Roster) => {
             setSetupOpen(false);

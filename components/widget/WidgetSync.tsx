@@ -1,5 +1,7 @@
 'use client';
 
+import { surelyMine } from '@/lib/electives';
+
 import React, { useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { syncWidget } from '@/lib/widget';
@@ -7,7 +9,9 @@ import { syncWidget } from '@/lib/widget';
 // Keeps the Android home-screen widget in step with the timetable. Renders nothing.
 export const WidgetSync: React.FC = () => {
   const app = useApp() as any;
-  const { timetable, subjects, cancelledSessions, rescheduledSessions, extraSessions, events, exams } = app;
+  // The student's own week (their electives only; unpicked slots wait until they pick)
+  const { myTimetable, subjects, cancelledSessions, rescheduledSessions, myExtraSessions: extraSessions, events, exams } = app;
+  const timetable = React.useMemo(() => surelyMine(myTimetable || []), [myTimetable]);
 
   useEffect(() => {
     const run = () =>

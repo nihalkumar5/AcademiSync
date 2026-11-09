@@ -25,6 +25,8 @@ import { MonochromeIllustration } from '../ui/MonochromeIllustration';
 import { Modal } from '../ui/Modal';
 import { getSubjectCardTheme } from '@/lib/cardColors';
 import { clsx } from 'clsx';
+import { ElectivePendingCard } from '@/components/electives/Electives';
+import type { PersonalSession } from '@/lib/electives';
 
 
 
@@ -48,6 +50,8 @@ export const TodayTimeline: React.FC = () => {
     isBatchCR,
     cancelledSessions,
     currentBatchData,
+    myTimetable,
+    myExtraSessions,
   } = useApp();
 
   const [openMenuSessionId, setOpenMenuSessionId] = useState<string | null>(null);
@@ -165,7 +169,7 @@ export const TodayTimeline: React.FC = () => {
   };
 
   // Merge regular timetable slots for targetDay with any extra classes for targetDateStr
-  const extraListForTarget: ClassSession[] = Object.values(extraSessions || {})
+  const extraListForTarget: ClassSession[] = Object.values(myExtraSessions || {})
     .filter((ex) => ex && ex.date === targetDateStr)
     .map((ex) => ({
       id: ex.id,
@@ -181,14 +185,6 @@ export const TodayTimeline: React.FC = () => {
       by: ex.by,
       date: ex.date,
     }));
-
-  const isSessionVisible = (s: ClassSession) => {
-    const sub = subjects.find((subj) => subj.id === s.subjectId);
-    if (sub?.isElective && profile.enrolledElectiveIds && !profile.enrolledElectiveIds.includes(sub.id)) {
-      return false;
-    }
-    return true;
-  };
 
   const getRescheduledForSession = (session: ClassSession, dateStr: string) => {
     const direct = rescheduledSessions[`${dateStr}_${session.id}`];
@@ -210,9 +206,10 @@ export const TodayTimeline: React.FC = () => {
     return null;
   };
 
+  // The student's own day: their electives only; an unpicked elective slot shows once
   const targetSessions = deduplicateTimetableSessions([
-    ...timetable.filter((s) => s.day === targetDay && isSessionVisible(s)),
-    ...extraListForTarget.filter(isSessionVisible),
+    ...myTimetable.filter((s) => s.day === targetDay),
+    ...extraListForTarget,
   ]).cleaned.sort((a, b) => {
     const aResched = getRescheduledForSession(a, targetDateStr);
     const bResched = getRescheduledForSession(b, targetDateStr);
@@ -750,6 +747,18 @@ export const TodayTimeline: React.FC = () => {
         </div>
         <div className="relative flex flex-col gap-0 border-l-[2px] border-slate-200 dark:border-white/[0.08] ml-3">
           {displaySessions.map((session, index) => {
+            const pend = (session as PersonalSession).electivePending;
+            if (pend) {
+              return (
+                <div key={session.id} className="relative pl-6 pb-6 last:pb-0">
+                  <div className="absolute left-[-7px] top-[2px] w-3 h-3 rounded-full border-2 border-white dark:border-[#090A0C] shadow-sm z-10 bg-amber-500" />
+                  <div className="flex flex-col gap-2.5">
+                    <span className="text-[13px] font-bold tracking-tighter font-mono text-fg">{formatTime12Hour(session.startTime)}</span>
+                    <ElectivePendingCard mark={pend} time={`till ${formatTime12Hour(session.endTime)}`} />
+                  </div>
+                </div>
+              );
+            }
             const reschedule = getRescheduledForSession(session, targetDateStr);
             const effectiveSubjectId = reschedule?.subjectId || session.subjectId;
             const sub = subjectMap.get(effectiveSubjectId) || subjects.find(s => 

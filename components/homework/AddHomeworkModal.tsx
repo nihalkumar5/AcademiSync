@@ -1,5 +1,6 @@
 'use client';
 
+import { prepareAiUpload, readAiResponse } from '@/lib/fileCompressor';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Homework, HomeworkPriority, HomeworkStatus } from '@/lib/types';
@@ -180,27 +181,30 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({ isOpen, onCl
   };
 
   // ---------- AI scan: fill the form from a photo / PDF of the sheet ----------
-  const scan = async (file?: File) => {
-    if (!file) return;
+  const scan = async (picked: File[]) => {
+    const files = picked.filter(Boolean).slice(0, 5);
+    if (files.length === 0) return;
     setError('');
-    if (file.size > 5 * 1024 * 1024) {
-      setError('For scanning, use a file under 5 MB');
-      return;
-    }
     setScanning(true);
     try {
-      const [dataUrl] = await Promise.all([readAsDataUrl(file), addFiles([file])]);
+      // Every page goes to the AI (shrunk on the phone); the originals are attached to the assignment
+      const [images] = await Promise.all([prepareAiUpload(files, { maxDim: 2000, maxFiles: 5 }), addFiles(files)]);
       const res = await fetch('/api/extract-homework', {
         method: 'POST',
         headers: await getAuthHeaders(),
-        body: JSON.stringify({ fileName: file.name, imageBase64: dataUrl, mimeType: file.type || 'image/jpeg' }),
+        body: JSON.stringify({
+          fileName: files.length === 1 ? files[0].name : `${files.length} pages`,
+          images,
+          subjects: subjects.map((s) => s.name).filter(Boolean).slice(0, 40),
+        }),
       });
-      const data = await res.json().catch(() => ({}));
+      const data = await readAiResponse(res);
       if (res.status === 429) throw new Error(data.error || 'Too many scans. Try again in a few minutes.');
       if (!data.success || !data.homework) throw new Error(data.error || "Couldn't read that sheet");
       const hw = data.homework;
       const name = String(hw.subjectName || '').toLowerCase().trim();
-      const match = name
+      const exact = subjects.find((s) => s.name?.toLowerCase().trim() === name);
+      const match = exact || (name
         ? subjects.find(
             (s) =>
               s.name?.toLowerCase().includes(name) ||
@@ -208,7 +212,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({ isOpen, onCl
               s.shortName?.toLowerCase() === name ||
               s.code?.toLowerCase() === name
           )
-        : undefined;
+        : undefined);
       if (match) setSubjectId(match.id);
       if (hw.title) setTitle(String(hw.title).slice(0, 140));
       if (hw.description) setDescription(String(hw.description).slice(0, 1000));
@@ -331,9 +335,10 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({ isOpen, onCl
             ref={scanRef}
             type="file"
             accept="image/*,application/pdf"
+            multiple
             className="hidden"
             onChange={(e) => {
-              scan(e.target.files?.[0]);
+              scan(Array.from(e.target.files || []));
               e.target.value = '';
             }}
           />

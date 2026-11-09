@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { logServerError } from '@/lib/errorUtils';
 import { getVerifiedUser, isVerifiedAdminEmail } from '@/lib/serverAuth';
+import { buildElectiveGroups, resolveElectives } from '@/lib/electives';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,6 +75,13 @@ export async function GET(req: Request) {
       .where('profile.isBatchSynced', '==', true)
       .get();
 
+    // Electives: which option each member picked, so an elective's teacher can start from just those students
+    const electiveGroups = buildElectiveGroups(
+      Array.isArray(batchData.subjects) ? batchData.subjects : [],
+      Array.isArray(batchData.timetable) ? batchData.timetable : []
+    );
+    const electiveSubjects = electiveGroups.flatMap((g) => g.options.map((o) => ({ id: o.id, name: o.name, code: o.code || '', slot: g.label })));
+
     const members: any[] = [];
     snapshot.forEach((docSnap: any) => {
       const data = docSnap.data() || {};
@@ -82,14 +90,21 @@ export async function GET(req: Request) {
       for (const field of PUBLIC_PROFILE_FIELDS) {
         if (profile[field] !== undefined) publicProfile[field] = profile[field];
       }
+      const picks = electiveGroups.length ? resolveElectives(electiveGroups, profile) : [];
       members.push({
         id: docSnap.id,
         profile: publicProfile,
         lastUpdated: typeof data.lastUpdated === 'number' ? data.lastUpdated : 0,
+        ...(picks.length
+          ? {
+              electivePicks: picks.filter((g) => g.status === 'chosen' && g.chosen).map((g) => g.chosen!.id),
+              electivesPending: picks.some((g) => g.status === 'pending'),
+            }
+          : {}),
       });
     });
 
-    return NextResponse.json({ success: true, members });
+    return NextResponse.json({ success: true, members, electiveSubjects });
   } catch (error) {
     logServerError('BatchMembersAPI', error);
     return NextResponse.json(

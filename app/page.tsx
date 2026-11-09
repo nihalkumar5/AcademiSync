@@ -52,6 +52,7 @@ import { WebPushPrompt } from '@/components/pwa/WebPushPrompt';
 import { WidgetSync } from '@/components/widget/WidgetSync';
 import { QuestionPapersView } from '@/components/papers/QuestionPapersView';
 import { ClassNotesHost } from '@/components/notes/ClassNotesHost';
+import { ElectivesHost, ElectivesPromptCard } from '@/components/electives/Electives';
 import { AdminProposalsCard } from '@/components/campus/AdminProposalsCard';
 import { FriendsView } from '@/components/friends/FriendsView';
 import { FriendsFreeNowCard, FriendLinkHost } from '@/components/friends/FriendsHome';
@@ -404,6 +405,7 @@ export default function AppHome() {
               ) : (
                 <div className="flex flex-col gap-f5 sm:gap-f6">
                   <OverviewHeader />
+                  <ElectivesPromptCard />
                   <AdminProposalsCard />
                   <HomeExamAlertCard />
                   <LiveClassCard />
@@ -458,6 +460,7 @@ export default function AppHome() {
       <WebPushPrompt />
       <WidgetSync />
       <ClassNotesHost />
+      <ElectivesHost />
       <FriendLinkHost />
       <Toast />
       {showHolidayAnimation && <HolidayBalloons />}

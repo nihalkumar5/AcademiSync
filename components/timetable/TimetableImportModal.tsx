@@ -1,4 +1,5 @@
 'use client';
+import { AiUploadError, prepareAiUpload, readAiResponse } from '@/lib/fileCompressor';
 import { motion } from 'framer-motion';
 
 import React, { useState, useEffect } from 'react';
@@ -6,8 +7,9 @@ import { useApp } from '@/context/AppContext';
 import { ExtractedClassSession, DayOfWeek, ClassSession, Subject } from '@/lib/types';
 import { DAYS_OF_WEEK, mergeConsecutiveSessions, normalizeSection, sanitizeAcademicTime, deduplicateTimetableSessions } from '@/lib/timetableUtils';
 import { autoAssignHarmonicColorsToSubjects, getHarmonicColorForSubject } from '@/lib/cardColors';
-import { validateUploadedFile } from '@/lib/fileSafety';
 import { getAuthHeaders } from '@/lib/authHeaders';
+import { openElectives } from '@/components/electives/Electives';
+import { electivePrefix, prettyLabel } from '@/lib/electives';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Upload, Sparkles, Check, Trash2, Plus, ShieldAlert, Bot, X, ChevronDown, Filter, AlertTriangle } from '@/components/ui/icons';
@@ -17,6 +19,29 @@ export interface TimetableImportModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+
+/** Different courses at the same time can't all be compulsory: mark them electives (students pick one) */
+const markParallelElectives = (rows: ExtractedClassSession[]): { rows: ExtractedClassSession[]; found: number } => {
+  const mins = (t?: string) => {
+    const [h, m] = (t || '').split(':').map((x) => parseInt(x, 10));
+    return isNaN(h) ? NaN : h * 60 + (isNaN(m) ? 0 : m);
+  };
+  const key = (r: ExtractedClassSession) => (r.subjectName || '').trim().toLowerCase();
+  const hit = new Set<number>();
+  rows.forEach((a, i) =>
+    rows.forEach((b, j) => {
+      if (j <= i || a.day !== b.day || !key(a) || key(a) === key(b)) return;
+      const as = mins(a.startTime), ae = mins(a.endTime), bs = mins(b.startTime), be = mins(b.endTime);
+      if ([as, ae, bs, be].some(isNaN) ? a.startTime === b.startTime : as < be && bs < ae) {
+        hit.add(i);
+        hit.add(j);
+      }
+    })
+  );
+  const newly = Array.from(hit).filter((i) => !rows[i].isElective).length;
+  return { rows: rows.map((r, i) => (hit.has(i) ? { ...r, isElective: true } : r)), found: newly };
+};
 
 export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOpen, onClose }) => {
   const { 
@@ -40,6 +65,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
   const [step, setStep] = useState<'upload' | 'extracting' | 'review'>('upload');
   const [fileName, setFileName] = useState('');
   const [extractedSessions, setExtractedSessions] = useState<ExtractedClassSession[]>([]);
+  const [parallelFound, setParallelFound] = useState(0);
   const [extractError, setExtractError] = useState<string | null>(null);
   const [lastUploadedFiles, setLastUploadedFiles] = useState<{ name: string, base64: string, mimeType: string }[] | null>(null);
 
@@ -47,6 +73,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     setStep('upload');
     setFileName('');
     setExtractedSessions([]);
+    setParallelFound(0);
     setExtractError(null);
   };
 
@@ -102,7 +129,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
         }),
       });
 
-      const data = await res.json();
+      const data = await readAiResponse(res);
       if (res.status === 429) {
         const errMsg = data.error || 'Please wait a few minutes before scanning again.';
         setExtractError(errMsg);
@@ -112,7 +139,9 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
       }
 
       if (data.success && Array.isArray(data.sessions) && data.sessions.length > 0) {
-        setExtractedSessions(mergeConsecutiveSessions(data.sessions));
+        const { rows, found } = markParallelElectives(mergeConsecutiveSessions(data.sessions));
+        setParallelFound(found);
+        setExtractedSessions(rows);
         setStep('review');
       } else {
         const errMsg = data.error || 'Could not extract timetable from this document. Please ensure the routine image or PDF is sharp and clear, or enter classes manually.';
@@ -131,34 +160,14 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      for (const file of files) {
-        const check = validateUploadedFile({ name: file.name, size: file.size, type: file.type });
-        if (!check.valid) {
-          showToast('Invalid File', check.error || 'Please upload an image or PDF under 5MB.', 'error');
-          e.target.value = '';
-          return;
-        }
-      }
-
-      const readers = files.map((file) => {
-        return new Promise<{ name: string, base64: string, mimeType: string }>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            resolve({
-              name: file.name,
-              base64: event.target?.result as string,
-              mimeType: file.type || 'image/jpeg',
-            });
-          };
-          reader.readAsDataURL(file);
-        });
-      });
-
-      Promise.all(readers).then((results) => {
-        runExtraction(results);
-      });
-    }
+    e.target.value = '';
+    if (files.length === 0) return;
+    // Photos are shrunk on the phone; everything together stays under the upload limit
+    prepareAiUpload(files, { maxDim: 2200 })
+      .then(runExtraction)
+      .catch((err) =>
+        showToast("Can't send these files", err instanceof AiUploadError ? err.message : 'Could not read the files. Try again.', 'error')
+      );
   };
 
   const updateExtractedRow = (index: number, partial: Partial<ExtractedClassSession>) => {
@@ -244,6 +253,9 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
             : (existingSubject?.carryRequirements || ['Lecture Notebook']),
           isLab: Boolean(extSession.isLab),
           isElective: isExtractedElective,
+          ...(isExtractedElective && (extSession.electiveGroup || electivePrefix(cleanName))
+            ? { electiveSlot: prettyLabel(extSession.electiveGroup || electivePrefix(cleanName)) }
+            : {}),
         };
 
         newSubjects.push(matchedSubject);
@@ -271,21 +283,20 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     const finalHarmonizedSubjects = autoAssignHarmonicColorsToSubjects(newSubjects);
     const cleanSessions = deduplicateTimetableSessions(newSessions).cleaned;
 
-    // If electives are present, ensure student has enrolledElectiveIds tracked
-    const electiveSubjectIds = finalHarmonizedSubjects.filter(s => s.isElective).map(s => s.id);
-    const existingEnrolled = profile?.enrolledElectiveIds || [];
-    const mergedEnrolled = Array.from(new Set([...existingEnrolled, ...electiveSubjectIds]));
+    // Electives: the student picks theirs afterwards (Your electives sheet), nothing is auto-enrolled
+    const electiveCount = finalHarmonizedSubjects.filter((s) => s.isElective).length;
 
     // Save subjects and timetable together atomically with matching IDs
     setFullSubjectsAndTimetable(finalHarmonizedSubjects, cleanSessions);
     updateProfile({ 
       onboardingCompleted: true,
       ...(!isBatchPilot && profile.isBatchSynced ? { isBatchSynced: false, batchKey: '' } : {}),
-      ...(electiveSubjectIds.length > 0 ? { enrolledElectiveIds: mergedEnrolled } : {})
     });
     setShowOnboarding(false);
     showToast('Timetable Sorted!', `Extracted ${finalHarmonizedSubjects.length} subjects & ${cleanSessions.length} weekly classes with optimal aesthetic colors!`, 'success');
     handleClose();
+    // Electives found: pick yours (or, for a pilot, check how they're grouped)
+    if (electiveCount > 0) setTimeout(() => openElectives(), 600);
   };
 
   return (
@@ -446,6 +457,11 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-3">
               <span className="section-label">Extracted Sessions</span>
+              {parallelFound > 0 && (
+                <p className="border border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-200 px-3 py-2.5 text-[13px] leading-[19px]">
+                  {parallelFound} classes run at the same time as another course, so we marked them as electives. Students pick the one they attend. Switch any off that everyone takes.
+                </p>
+              )}
               
               <div className="flex flex-col gap-4">
                 {extractedSessions.map((session, index) => (
@@ -564,6 +580,18 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                         {session.isElective ? '★ Elective Course' : '+ Mark as Elective'}
                       </button>
                     </div>
+                    {session.isElective && (
+                      <label className="flex items-center gap-2">
+                        <span className="text-[12px] font-semibold text-muted shrink-0">Slot</span>
+                        <input
+                          type="text"
+                          placeholder="e.g. Elective I (same name = pick one)"
+                          value={session.electiveGroup || ''}
+                          onChange={(e) => updateExtractedRow(index, { electiveGroup: e.target.value.slice(0, 40) })}
+                          className="flex-1 min-w-0 px-3 py-1.5 h-[34px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                        />
+                      </label>
+                    )}
                   </div>
                 ))}
 

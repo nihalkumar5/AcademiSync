@@ -1,5 +1,6 @@
 'use client';
 
+import { AiUploadError, prepareAiUpload, readAiResponse } from '@/lib/fileCompressor';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Modal } from '@/components/ui/Modal';
@@ -7,7 +8,6 @@ import { Button } from '@/components/ui/Button';
 import { Upload, Bot, X, Sparkles, Check, Trash2, Plus } from '@/components/ui/icons';
 import { useApp } from '@/context/AppContext';
 import { ExtractedExam } from '@/lib/types';
-import { validateUploadedFile } from '@/lib/fileSafety';
 import { getAuthHeaders } from '@/lib/authHeaders';
 
 interface ExamImportModalProps {
@@ -90,7 +90,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
         }),
       });
 
-      const data = await res.json();
+      const data = await readAiResponse(res);
       if (res.status === 429) {
         showToast('Scan Limit', data.error || 'Please wait a few minutes before scanning again.', 'error');
         resetState();
@@ -113,34 +113,14 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      for (const file of files) {
-        const check = validateUploadedFile({ name: file.name, size: file.size, type: file.type });
-        if (!check.valid) {
-          showToast('Invalid File', check.error || 'Please upload an image or PDF under 5MB.', 'error');
-          e.target.value = '';
-          return;
-        }
-      }
-
-      const readers = files.map((file) => {
-        return new Promise<{ name: string, base64: string, mimeType: string }>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            resolve({
-              name: file.name,
-              base64: event.target?.result as string,
-              mimeType: file.type || 'image/jpeg',
-            });
-          };
-          reader.readAsDataURL(file);
-        });
-      });
-
-      Promise.all(readers).then((results) => {
-        runExtraction(results);
-      });
-    }
+    e.target.value = '';
+    if (files.length === 0) return;
+    // Photos are shrunk on the phone; everything together stays under the upload limit
+    prepareAiUpload(files, { maxDim: 2200 })
+      .then(runExtraction)
+      .catch((err) =>
+        showToast("Can't send these files", err instanceof AiUploadError ? err.message : 'Could not read the files. Try again.', 'error')
+      );
   };
 
   const updateExtractedRow = (index: number, partial: Partial<ExtractedExam>) => {

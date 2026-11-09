@@ -242,16 +242,26 @@ export const downloadAttendanceReport = async (req: ReportRequest) => {
 // ---------- Batch members (from the server; users docs are owner-only) ----------
 export interface MemberCandidate extends RosterStudent {
   email?: string;
+  /** Elective options this member picked (subject ids of the batch) */
+  electivePicks?: string[];
+  /** They still have an elective slot to pick */
+  electivesPending?: boolean;
+}
+export interface BatchElectiveSubject {
+  id: string;
+  name: string;
+  code: string;
+  slot: string;
 }
 
-export const fetchBatchMembers = async (batchKey: string): Promise<MemberCandidate[]> => {
+export const fetchBatchMembersInfo = async (batchKey: string): Promise<{ members: MemberCandidate[]; electiveSubjects: BatchElectiveSubject[] }> => {
   const { getAuthHeaders } = await import('./authHeaders');
   const { deduplicateBatchMembers } = await import('@/components/batch/BatchMembersModal');
   const res = await fetch(`/api/batch/members?batchKey=${encodeURIComponent(batchKey)}`, { headers: await getAuthHeaders({}) });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !Array.isArray(data.members)) throw new Error(data.error || 'Could not load batch members');
   const unique = deduplicateBatchMembers(data.members);
-  return unique
+  const members = unique
     .filter((m: any) => m?.profile?.role !== 'faculty')
     .map((m: any) => ({
       key: m.id,
@@ -259,6 +269,11 @@ export const fetchBatchMembers = async (batchKey: string): Promise<MemberCandida
       name: (m.profile?.name || '').trim() || (m.profile?.email || '').split('@')[0] || 'Unnamed',
       roll: (m.profile?.rollNumber || '').trim().toUpperCase(),
       email: m.profile?.email,
+      ...(Array.isArray(m.electivePicks) ? { electivePicks: m.electivePicks as string[] } : {}),
+      ...(m.electivesPending ? { electivesPending: true } : {}),
     }))
     .sort(byRoll);
+  return { members, electiveSubjects: Array.isArray(data.electiveSubjects) ? data.electiveSubjects : [] };
 };
+
+export const fetchBatchMembers = async (batchKey: string): Promise<MemberCandidate[]> => (await fetchBatchMembersInfo(batchKey)).members;

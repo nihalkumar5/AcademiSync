@@ -1,6 +1,7 @@
 import { adminDb } from '@/lib/firebase-admin';
 import { formatTime12Hour, isGenericExamTitle } from '@/lib/timetableUtils';
 import { sendPush, tokensFromUserDoc } from './push';
+import { electiveLens, personalTimetable } from '@/lib/electives';
 
 // Server-side class reminders for web / iPhone PWA users. The native app schedules these on the phone
 // (lib/localNotifications.ts); a PWA can't, so a cron calls this every few minutes and we push instead.
@@ -45,9 +46,14 @@ function remindersFor(userData: any, batchData: any, nowMs: number): Reminder[] 
   if (settings.notificationsEnabled === false) return [];
   const lead = Number(settings.classReminderMinutes ?? 10) || 10;
 
-  const timetable: any[] = Array.isArray(userData.timetable) && userData.timetable.length ? userData.timetable : batchData?.timetable || [];
+  const rawTimetable: any[] = Array.isArray(userData.timetable) && userData.timetable.length ? userData.timetable : batchData?.timetable || [];
   const subjects: any[] = [...(userData.subjects || []), ...(batchData?.subjects || [])];
   const subjectById = new Map(subjects.filter((s) => s?.id).map((s) => [s.id, s]));
+  // Their electives only (lib/electives.ts); a slot they haven't picked reminds by the slot's name
+  const profile = userData.profile || {};
+  const uniqSubjects = Array.from(subjectById.values());
+  const lens = profile.role === 'faculty' ? electiveLens([], [], null) : electiveLens(uniqSubjects, rawTimetable, profile);
+  const timetable: any[] = personalTimetable(rawTimetable, lens);
 
   const cancelled = new Set([...keysOf(userData.cancelledSessions), ...keysOf(batchData?.cancelledSessions)]);
   const rescheduled: Record<string, any> = { ...(batchData?.rescheduledSessions || {}), ...(userData.rescheduledSessions || {}) };
@@ -91,11 +97,14 @@ function remindersFor(userData: any, batchData: any, nowMs: number): Reminder[] 
       const remindAt = istToUtc(dateStr, start - lead);
       if (!inWindow(remindAt)) continue;
       const sub = subjectById.get(s.subjectId);
-      const name = sub?.name || s.subjectName || 'Class';
+      const pend = s.electivePending;
+      const name = pend ? pend.label : sub?.name || s.subjectName || 'Class';
       out.push({
         key: `${dateStr}_${s.id}`,
         title: `⏰ Class in ${lead} mins: ${name}${r ? ' (Rescheduled)' : ''}`,
-        body: `${s.isLab || sub?.isLab ? 'Lab' : 'Lecture'} at ${r?.room || s.room || 'Classroom'} starts at ${formatTime12Hour(startStr)}`,
+        body: pend
+          ? `Starts at ${formatTime12Hour(startStr)}. Pick your elective in the app to see your room.`
+          : `${s.isLab || sub?.isLab ? 'Lab' : 'Lecture'} at ${r?.room || s.room || 'Classroom'} starts at ${formatTime12Hour(startStr)}`,
       });
     }
   }
@@ -124,6 +133,7 @@ function remindersFor(userData: any, batchData: any, nowMs: number): Reminder[] 
 
   for (const e of extras) {
     if (!e?.date || !e?.startTime) continue;
+    if (!lens.isMine(e.subjectId)) continue;
     const start = minutesOf(e.startTime);
     if (start === null) continue;
     const remindAt = istToUtc(String(e.date).slice(0, 10), start - lead);

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef, useMemo } from 'react';
 import {
   StudentProfile,
   Routine,
@@ -53,6 +53,18 @@ import { scheduleRoutineNotifications, dueRoutineReminders, reminderTitle, remin
 import { getDeliveredNotificationKeysFromStorage } from '@/lib/localNotifications';
 import { isUserSuperAdmin } from '@/lib/adminAuth';
 import { getHarmonicColorForSubject } from '@/lib/cardColors';
+import {
+  ElectiveChoice,
+  ElectiveLens,
+  ElectiveSetupPlan,
+  PersonalSession,
+  ResolvedElectiveGroup,
+  applyElectiveChoice,
+  applyElectiveSetup,
+  electiveLens,
+  personalTimetable,
+  surelyMine,
+} from '@/lib/electives';
 import { Capacitor } from '@capacitor/core';
 
 export const syncNativeStatusBar = async (isDark: boolean) => {
@@ -235,6 +247,21 @@ export interface AppContextType {
   isSuperAdmin: boolean;
   updateProfile: (profile: Partial<StudentProfile>) => void;
   toggleElectiveEnrollment: (subjectId: string) => void;
+  /** Elective slots of this batch and where the student stands on each (lib/electives.ts) */
+  electiveGroups: ResolvedElectiveGroup[];
+  /** Elective slots the student still has to pick */
+  pendingElectives: ResolvedElectiveGroup[];
+  /** The student's own week: their electives only; a slot they haven't picked shows once as a placeholder */
+  myTimetable: PersonalSession[];
+  /** Extra classes, minus electives the student doesn't take */
+  myExtraSessions: Record<string, ExtraClassSession>;
+  /** Core subjects and the electives this student takes */
+  isSubjectMine: (subjectId?: string | null) => boolean;
+  /** Pick an option in an elective slot (null = none of these / I don't take it) */
+  chooseElective: (groupKey: string, optionId: string | null) => void;
+  /** The batch pilot, or a student with their own (non-batch) timetable */
+  canSetUpElectives: boolean;
+  saveElectiveSetup: (plan: ElectiveSetupPlan) => void;
   subjects: Subject[];
   addSubject: (subject: Omit<Subject, 'id'>) => Subject;
   updateSubject: (id: string, subject: Partial<Subject>) => void;
@@ -336,7 +363,7 @@ const generateInviteCode = () => {
   }
   return code;
 };
-const AppContext = createContext<AppContextType | undefined>(undefined);
+export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isHydrated, setIsHydrated] = useState(false);
@@ -425,6 +452,29 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     (!!currentBatchData && (isPrimaryCreator || isCoCR))
   );
   const isBatchCR = isBatchPilot;
+
+  // ── Electives: one lens over the batch's elective slots and this student's picks (lib/electives.ts).
+  // Every screen reads the student's week through it, so picks apply everywhere at once.
+  const isFacultyRole = profile.role === 'faculty';
+  const electives = useMemo<ElectiveLens>(
+    () => (isFacultyRole ? electiveLens([], [], null) : electiveLens(subjects, timetable, profile)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isFacultyRole, subjects, timetable, profile.enrolledElectiveIds, profile.electiveKeys, profile.electivesSkipped]
+  );
+  const myTimetable = useMemo(() => personalTimetable(timetable, electives), [timetable, electives]);
+  const myExtraSessions = useMemo(() => {
+    const out: Record<string, ExtraClassSession> = {};
+    Object.entries(extraSessions || {}).forEach(([k, v]) => {
+      if (v && electives.isMine(v.subjectId)) out[k] = v;
+    });
+    return out;
+  }, [extraSessions, electives]);
+  // Batch assignments of an elective the student doesn't take stay out of their list
+  const visibleHomework = useMemo(
+    () => homework.filter((h) => !((h.isBatchShared || h.proposalId) && electives.isHidden(h.subjectId))),
+    [homework, electives]
+  );
+  const canSetUpElectives = !isFacultyRole && (!profile.isBatchSynced || isBatchPilot);
 
   // Auto-heal session timings (migrate legacy 01:00-07:00 morning representations into true 24-hour PM)
   useEffect(() => {
@@ -1546,23 +1596,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (scheduleDebounceRef.current) clearTimeout(scheduleDebounceRef.current);
 
     scheduleDebounceRef.current = setTimeout(async () => {
+      // The student's own week: their electives only (an unpicked slot reminds by its slot name)
       await scheduleTimetableLocalNotifications(
-        timetable,
+        myTimetable,
         subjects,
-        homework,
+        visibleHomework,
         exams,
         settings,
         events,
         cancelledSessions,
         rescheduledSessions,
-        extraSessions
+        myExtraSessions
       );
     }, 500);
 
     return () => {
       if (scheduleDebounceRef.current) clearTimeout(scheduleDebounceRef.current);
     };
-  }, [timetable, subjects, homework, exams, settings, events, cancelledSessions, rescheduledSessions, extraSessions, isHydrated]);
+  }, [myTimetable, subjects, visibleHomework, exams, settings, events, cancelledSessions, rescheduledSessions, myExtraSessions, isHydrated]);
 
 
 
@@ -1715,7 +1766,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     newTimetable?: ClassSession[],
     newSubjects?: Subject[],
     newEvents?: AcademicEvent[],
-    newExams?: Exam[]
+    newExams?: Exam[],
+    notice?: { title: string; body: string }
   ) => {
     // STRICT: Only the verified Batch Pilot of THIS batch can broadcast to shared batch!
     if (profile.isBatchSynced && profile.batchKey && isBatchPilot) {
@@ -1738,8 +1790,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         // Broadcast background push notification to all batch members
         broadcastBatchPushNotification({
           batchKey: profile.batchKey,
-          title: '📅 Batch Schedule Updated',
-          body: `Official timetable was updated by ${profile.name || 'Batch Pilot'}`,
+          title: notice?.title || '📅 Batch Schedule Updated',
+          body: notice?.body || `Official timetable was updated by ${profile.name || 'Batch Pilot'}`,
           type: 'timetable_update',
           senderId: user?.id,
           senderName: profile.name || 'Batch Pilot',
@@ -1772,24 +1824,52 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
 
-  const toggleElectiveEnrollment = (subjectId: string) => {
-    const allElectiveIds = subjects.filter((s) => s.isElective).map((s) => s.id);
-    let currentEnrolled = profile.enrolledElectiveIds;
-    if (currentEnrolled === undefined) {
-      currentEnrolled = [...allElectiveIds];
-    }
-    const isEnrolled = currentEnrolled.includes(subjectId);
-    const updated = isEnrolled
-      ? currentEnrolled.filter((id) => id !== subjectId)
-      : [...currentEnrolled, subjectId];
-
-    updateProfile({ enrolledElectiveIds: updated });
-    refreshCarryItems(timetable, subjects);
+  const chooseElective = (groupKey: string, optionId: string | null) => {
+    const group = electives.groups.find((g) => g.key === groupKey);
+    if (!group) return;
+    const next = applyElectiveChoice(profile, group, optionId);
+    updateProfile(next);
+    refreshCarryItems(timetable, subjects, events, settings, extraSessions, next);
+    const picked = optionId ? group.options.find((o) => o.id === optionId) : null;
     showToast(
-      isEnrolled ? 'Elective Removed' : 'Elective Enrolled',
-      isEnrolled ? 'Classes for this elective are now hidden from your routine.' : 'Classes for this elective are now active in your routine.',
-      'info'
+      picked ? (group.kind === 'pick' ? `${group.label}: ${picked.name}` : `${picked.name} added`) : group.kind === 'pick' ? `${group.label}: none` : `${group.label} removed`,
+      picked ? 'Your timetable, reminders and attendance now follow it.' : 'Those classes are off your timetable.',
+      'success'
     );
+  };
+
+  // Kept for older callers: switch one elective on or off
+  const toggleElectiveEnrollment = (subjectId: string) => {
+    const group = electives.groupOf(subjectId);
+    if (!group) return;
+    chooseElective(group.key, electives.isMine(subjectId) && group.status === 'chosen' ? null : subjectId);
+  };
+
+  /** Pilot: mark courses as electives, name their slots, split combined "A / B" courses into options */
+  const saveElectiveSetup = (plan: ElectiveSetupPlan) => {
+    const { subjects: subs, timetable: tt } = applyElectiveSetup(
+      subjects,
+      timetable,
+      plan,
+      (name, used, isLab) => getHarmonicColorForSubject({ name, code: '', isLab }, used),
+      Array.isArray(currentBatchData?.timetable) ? currentBatchData.timetable : []
+    );
+
+    setSubjectsState(subs);
+    storage.setSubjects(subs);
+    setTimetableState(tt);
+    storage.setTimetable(tt);
+    refreshCarryItems(tt, subs);
+    const now = Date.now();
+    if (typeof window !== 'undefined') window.localStorage.setItem('iiitnr_last_updated', now.toString());
+    if (user?.id) {
+      setDoc(doc(db, 'users', user.id), { subjects: sanitizeForFirestore(subs), timetable: sanitizeForFirestore(tt), lastUpdated: now }, { merge: true }).catch((e) =>
+        console.error('Error saving electives setup:', e)
+      );
+    }
+    const count = subs.filter((s) => s.isElective).length;
+    syncCRChangesToBatch(tt, subs, undefined, undefined, count > 0 ? { title: '🎓 Pick your electives', body: 'Your batch timetable now has electives. Open the app and pick the ones you take.' } : undefined);
+    showToast('Electives saved', count > 0 ? (profile.isBatchSynced ? 'Your class will be asked to pick theirs.' : 'Pick yours to finish your timetable.') : 'No electives in this timetable.', 'success');
   };
 
   const addSubject = (subjectData: Omit<Subject, 'id'>): Subject => {
@@ -1847,8 +1927,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     // If room, labRoom, or faculty was updated in subject, update corresponding timetable sessions too
     let updatedTt = timetable;
+    if (partial.isElective !== undefined) {
+      // Sessions carry the flag too, so parallel electives are never pruned as duplicates
+      updatedTt = updatedTt.map((sess) => (sess.subjectId === id ? { ...sess, isElective: !!partial.isElective } : sess));
+      setTimetableState(updatedTt);
+      storage.setTimetable(updatedTt);
+    }
     if (partial.room !== undefined || partial.labRoom !== undefined || partial.facultyName !== undefined) {
-      updatedTt = timetable.map((sess) => {
+      updatedTt = updatedTt.map((sess) => {
         if (sess.subjectId !== id) return sess;
         const newRoom = sess.isLab 
           ? (partial.labRoom || partial.room || sess.room)
@@ -1941,15 +2027,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     currentSubjects: Subject[],
     currentEvents: AcademicEvent[] = events,
     currentSettings: UserSettings = settings,
-    currentExtra: Record<string, ExtraClassSession> = extraSessions
+    currentExtra: Record<string, ExtraClassSession> = extraSessions,
+    choice: ElectiveChoice = profile
   ) => {
-    // Filter out un-enrolled elective sessions so students only pack items for electives they attend
-    const activeTimetable = currentTimetable.filter((s) => {
-      const sub = currentSubjects.find((subj) => subj.id === s.subjectId);
-      if (sub?.isElective && profile.enrolledElectiveIds && !profile.enrolledElectiveIds.includes(sub.id)) {
-        return false;
-      }
-      return true;
+    // Pack only for classes the student surely attends: their electives, never an unpicked slot
+    const lens = profile.role === 'faculty' ? electiveLens([], [], null) : electiveLens(currentSubjects, currentTimetable, choice);
+    const activeTimetable = surelyMine(personalTimetable(currentTimetable, lens));
+    const mineExtra: Record<string, ExtraClassSession> = {};
+    Object.entries(currentExtra || {}).forEach(([k, v]) => {
+      if (v && lens.isMine(v.subjectId)) mineExtra[k] = v;
     });
 
     const recomputed = calculateTomorrowCarryItems(
@@ -1960,7 +2046,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       undefined,
       currentEvents,
       currentSettings,
-      currentExtra
+      mineExtra
     );
     
     // Only update state if items actually changed to prevent unnecessary re-renders
@@ -4523,6 +4609,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         isSuperAdmin,
         updateProfile,
         toggleElectiveEnrollment,
+        electiveGroups: electives.groups,
+        pendingElectives: electives.pending,
+        myTimetable,
+        myExtraSessions,
+        isSubjectMine: electives.isMine,
+        chooseElective,
+        canSetUpElectives,
+        saveElectiveSetup,
         subjects,
         addSubject,
         updateSubject,
@@ -4533,7 +4627,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         deleteClassSession,
         setFullTimetable,
         setFullSubjectsAndTimetable,
-        homework,
+        homework: visibleHomework,
         addHomework,
         updateHomework,
         deleteHomework,

@@ -13,6 +13,8 @@ import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { ClassSession } from '@/lib/types';
 import { clsx } from 'clsx';
+import { openElectives } from '@/components/electives/Electives';
+import type { PersonalSession } from '@/lib/electives';
 
 export const LiveClassCard: React.FC = () => {
   const { 
@@ -30,6 +32,8 @@ export const LiveClassCard: React.FC = () => {
     profile,
     isBatchCR,
     currentBatchData,
+    myTimetable,
+    myExtraSessions,
   } = useApp();
   
   const now = new Date();
@@ -55,27 +59,21 @@ export const LiveClassCard: React.FC = () => {
 
   const getActiveTimetable = () => {
     if (hasActiveExamToday) return [];
-    return deduplicateTimetableSessions(timetable.filter((s) => {
-      if (isSessionCancelled(s.id, dateTodayStr)) return false;
-      const sub = subjects.find((subj) => subj.id === s.subjectId);
-      if (sub?.isElective && profile.enrolledElectiveIds && !profile.enrolledElectiveIds.includes(sub.id)) {
-        return false;
-      }
-      return true;
-    })).cleaned;
+    // The student's own day: their electives only; an unpicked elective slot shows once
+    return deduplicateTimetableSessions(myTimetable.filter((s) => !isSessionCancelled(s.id, dateTodayStr))).cleaned;
   };
 
   const [status, setStatus] = useState(() => 
-    getLiveClassStatus(getActiveTimetable(), subjects, undefined, dateTodayStr, rescheduledSessions, extraSessions, isSessionCancelled)
+    getLiveClassStatus(getActiveTimetable(), subjects, undefined, dateTodayStr, rescheduledSessions, myExtraSessions, isSessionCancelled)
   );
 
   useEffect(() => {
-    setStatus(getLiveClassStatus(getActiveTimetable(), subjects, undefined, dateTodayStr, rescheduledSessions, extraSessions, isSessionCancelled));
+    setStatus(getLiveClassStatus(getActiveTimetable(), subjects, undefined, dateTodayStr, rescheduledSessions, myExtraSessions, isSessionCancelled));
     const interval = setInterval(() => {
-      setStatus(getLiveClassStatus(getActiveTimetable(), subjects, undefined, dateTodayStr, rescheduledSessions, extraSessions, isSessionCancelled));
+      setStatus(getLiveClassStatus(getActiveTimetable(), subjects, undefined, dateTodayStr, rescheduledSessions, myExtraSessions, isSessionCancelled));
     }, 15000);
     return () => clearInterval(interval);
-  }, [timetable, subjects, isSessionCancelled, rescheduledSessions, extraSessions, cancelledSessions, currentBatchData, profile.enrolledElectiveIds]);
+  }, [myTimetable, subjects, isSessionCancelled, rescheduledSessions, myExtraSessions, cancelledSessions, currentBatchData]);
 
   const [openMenuSessionId, setOpenMenuSessionId] = useState<string | null>(null);
   const [rescheduleTarget, setRescheduleTarget] = useState<ClassSession | null>(null);
@@ -412,6 +410,50 @@ export const LiveClassCard: React.FC = () => {
 
   const { currentClass, nextClass } = status;
 
+  // An elective slot the student hasn't picked yet: say so, and let them pick right here
+  const pendingNow = (currentClass?.session as PersonalSession | undefined)?.electivePending;
+  const pendingNext = !currentClass ? (nextClass?.session as PersonalSession | undefined)?.electivePending : undefined;
+  if (pendingNow || pendingNext) {
+    const mark = (pendingNow || pendingNext)!;
+    const session = (currentClass || nextClass)!.session;
+    const live = !!pendingNow;
+    const mins = live ? currentClass!.remainingMinutes : nextClass!.minutesUntilStart;
+    return (
+      <div className={clsx('w-full border p-5 sm:p-6 flex flex-col', live ? 'sheen-ink bg-[#111111] dark:bg-[#15171D] border-[#111111] dark:border-white/[0.08]' : 'bg-surface border-line')}>
+        <div className="flex items-center gap-2 text-[13px] leading-none">
+          {live ? (
+            <>
+              <span className="relative flex w-2 h-2 shrink-0" aria-hidden="true">
+                <span className="absolute inset-0 rounded-full bg-[#34D399] opacity-60 animate-ping" />
+                <span className="relative w-2 h-2 rounded-full bg-[#34D399]" />
+              </span>
+              <span className="font-semibold text-[#34D399]">Live</span>
+            </>
+          ) : (
+            <span className="font-semibold text-muted">Next class</span>
+          )}
+          <span className={live ? 'text-white/25' : 'text-faint'}>·</span>
+          <span className={clsx('font-semibold', live ? 'text-amber-300' : 'text-amber-700 dark:text-amber-300')}>{mark.kind === 'pick' ? 'Pick your elective' : 'Do you take it?'}</span>
+        </div>
+        <h3 className={clsx('mt-3 text-[21px] sm:text-[22px] font-semibold leading-[1.22] tracking-tight', live ? 'text-white' : 'text-fg')}>{mark.label}</h3>
+        {mark.kind === 'pick' && <p className={clsx('mt-1 text-[14px] line-clamp-2', live ? 'text-white/60' : 'text-muted')}>{mark.options.map((o) => o.name).join(' · ')}</p>}
+        <div className={clsx('mt-f4 pt-3.5 border-t flex items-center justify-between gap-3', live ? 'border-white/10' : 'border-line-soft')}>
+          <span className={clsx('text-[13px] tabular-nums', live ? 'text-white/60' : 'text-muted')}>
+            {live ? `${mins} min left · ` : `In ${mins < 60 ? `${mins} min` : `${Math.floor(mins / 60)}h ${String(mins % 60).padStart(2, '0')}m`} · `}
+            {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
+          </span>
+          <button
+            type="button"
+            onClick={() => openElectives({ focus: mark.groupKey })}
+            className={clsx('shrink-0 inline-flex items-center gap-1 h-9 px-3.5 text-[13px] font-semibold cursor-pointer', live ? 'bg-white text-[#111111]' : 'bg-ink text-on-ink')}
+          >
+            {mark.kind === 'pick' ? 'Choose' : 'Decide'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (currentClass) {
     const sub = currentClass.subject;
     const session = currentClass.session;
@@ -685,15 +727,8 @@ export const LiveClassCard: React.FC = () => {
   }
 
   const currentDay = getCurrentDayOfWeek();
-  const rawTodayRegular = timetable.filter((s) => {
-    if (s.day !== currentDay) return false;
-    const sub = subjects.find((subj) => subj.id === s.subjectId);
-    if (sub?.isElective && profile.enrolledElectiveIds && !profile.enrolledElectiveIds.includes(sub.id)) {
-      return false;
-    }
-    return true;
-  });
-  const extraToday = Object.values(extraSessions || {}).filter((ex) => ex && ex.date === dateTodayStr);
+  const rawTodayRegular = myTimetable.filter((s) => s.day === currentDay);
+  const extraToday = Object.values(myExtraSessions || {}).filter((ex) => ex && ex.date === dateTodayStr);
   const rawTodaySessions = [...rawTodayRegular, ...extraToday];
   const totalToday = rawTodaySessions.length;
   const cancelledToday = rawTodayRegular.filter((s) => isSessionCancelled(s.id, dateTodayStr)).length;

@@ -101,7 +101,7 @@ async function extractTimetableWithOpenAI(
   const content: OpenAI.Chat.Completions.ChatCompletionContentPart[] = [
     {
       type: 'text',
-      text: `${prompt}\n\nCRITICAL JSON SCHEMA REQUIREMENT:\nYou MUST return a JSON object with a "sessions" key containing an array of timetable sessions:\n{\n  "sessions": [\n    {\n      "day": "Monday",\n      "startTime": "09:00",\n      "endTime": "09:55",\n      "subjectName": "Computer Networks",\n      "subjectCode": "CS301",\n      "room": "LA 101",\n      "faculty": "Prof. Sharma",\n      "isLab": false,\n      "isElective": false\n    }\n  ]\n}`,
+      text: `${prompt}\n\nCRITICAL JSON SCHEMA REQUIREMENT:\nYou MUST return a JSON object with a "sessions" key containing an array of timetable sessions:\n{\n  "sessions": [\n    {\n      "day": "Monday",\n      "startTime": "09:00",\n      "endTime": "09:55",\n      "subjectName": "Computer Networks",\n      "subjectCode": "CS301",\n      "room": "LA 101",\n      "faculty": "Prof. Sharma",\n      "isLab": false,\n      "isElective": false,\n      "electiveGroup": ""\n    }\n  ]\n}`,
     },
     ...imageList.map((img) => {
       const mime = img.mimeType || 'image/jpeg';
@@ -283,7 +283,8 @@ CRITICAL INSTRUCTIONS FOR TARGET FILTERING & RESOLUTION:
 
 6. CONSECUTIVE PERIODS & COMBINED SLOTS (AUTO-MERGE CONTINUOUS CLASSES):
 - If two or more consecutive class periods in the timetable belong to the same subject (e.g. Monday 09:00 - 09:55 and 10:00 - 10:55 Music, Tuesday 09:00 - 10:55 Calculus, Tuesday 16:00 - 17:55 Entrepreneurship, or multi-hour labs), MERGE them into a single combined session spanning from the overall start time to the overall end time.
-- If parallel subjects or faculty share a slot with a slash (e.g. "ILC / Yoga"), keep the combined title and faculty (e.g. "Dr. Aruna / GF").
+- ELECTIVE SLOTS: if a cell (or the legend) lists ALTERNATIVE courses for one slot, because different students attend different courses at that time (e.g. "Elective-I: Machine Learning / NLP / Computer Vision", "OE: Yoga / Music", "DE-2 (Cloud / IoT)"), output ONE session per course for that time, each with "isElective": true and the same "electiveGroup" (e.g. "Elective I", "Open Elective", "DE 2"). Use each course's own faculty and room if the legend gives them.
+- Only when a combined cell is NOT a choice (everyone attends it, e.g. a shared activity), keep the combined title and faculty (e.g. "ILC / Yoga", "Dr. Aruna / GF").
 
 7. ACCURATE FACULTY & INSTRUCTOR MAPPING:
 - Read the faculty name or initials written in THAT EXACT session cell, or match the subject code from the faculty reference legend table at the bottom/side.
@@ -292,7 +293,8 @@ CRITICAL INSTRUCTIONS FOR TARGET FILTERING & RESOLUTION:
 
 8. STRICT ELECTIVES VS CORE COURSES:
 - DO NOT mark a course as elective just because its slot code is letter 'E' (like Slot E, Slot A, Slot B). Slot 'E' is frequently used for regular core courses (e.g. Entrepreneurship / Entrepreneruship in engineering first year)!
-- ONLY mark "isElective": true if the timetable explicitly uses words like "Elective", "Open Elective", "Department Elective", "Program Elective", or "OE"/"DE".
+- ONLY mark "isElective": true if the timetable explicitly uses words like "Elective", "Open Elective", "Department Elective", "Program Elective", or "OE"/"DE", OR when different courses are listed for the SAME time slot as alternatives.
+- Put the slot name in "electiveGroup" exactly as the timetable names it ("Elective I", "Elective II", "Open Elective"); courses that students choose between share the same electiveGroup. Leave it "" for non-electives.
 - Regular subjects like Entrepreneurship, Calculus, Digital Electronics, IoT, Music, Yoga are NOT electives: mark "isElective": false!
 
 9. ACADEMIC COMMON SENSE & AUTO-INFERENCE ("USE YOUR BRAIN"):
@@ -316,7 +318,8 @@ For every extracted class session, return:
 - "room": Room / Hall / Venue (e.g. "LA 002", "138", "LT-1")
 - "faculty": Faculty name if visible (e.g. "Dr. Amit", "Dr. Manoj")
 - "isLab": boolean (true for practical/lab sessions, else false)
-- "isElective": boolean (true only if explicitly an Elective course; else false)
+- "isElective": boolean (true only if explicitly an Elective course or one of several alternatives in a slot; else false)
+- "electiveGroup": string (elective slot name like "Elective I"; "" if not an elective)
 `;
 
     let extractedRawSessions: any[] = [];
@@ -420,7 +423,8 @@ For every extracted class session, return:
           room: (s.room || '').trim(),
           faculty: (s.faculty || '').trim(),
           isLab: !!s.isLab || /lab|practical|workshop/i.test(subjectName) || /lab|practical|workshop/i.test(s.subjectCode || ''),
-          isElective,
+          isElective: isElective || (!!s.isElective && typeof s.electiveGroup === 'string' && s.electiveGroup.trim().length > 0),
+          electiveGroup: typeof s.electiveGroup === 'string' ? s.electiveGroup.trim().slice(0, 40) : '',
         };
       });
 

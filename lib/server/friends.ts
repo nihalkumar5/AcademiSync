@@ -11,6 +11,7 @@ import { adminDb } from '@/lib/firebase-admin';
 import { collegeKeyOf } from '@/lib/collegeKey';
 import { buildWidgetDays } from '@/lib/widget';
 import { sendPush, tokensFromUserDoc } from '@/lib/server/push';
+import { electiveLens, personalTimetable } from '@/lib/electives';
 import { CODE_RE, Friend, FriendsData, PersonLite, Plan, Place, PLACES, STATUS_MINUTES } from '@/lib/friends';
 
 export class FriendError extends Error {
@@ -89,20 +90,30 @@ async function bump(uid: string, kind: keyof typeof LIMITS) {
 /** 7 days of classes for one person, from their own data and their batch (same rules as the app). */
 function scheduleOf(data: any, batch: any) {
   const p = data?.profile || {};
-  const enrolled: string[] | undefined = Array.isArray(p.enrolledElectiveIds) ? p.enrolledElectiveIds : undefined;
-  const subjects = [...list(data?.subjects), ...list(batch?.subjects)];
-  const electives = new Set(subjects.filter((s: any) => s?.isElective).map((s: any) => s.id));
+  const seen = new Set<string>();
+  const subjects = [...list(data?.subjects), ...list(batch?.subjects)].filter((s: any) => s?.id && !seen.has(s.id) && seen.add(s.id));
   const own = list(data?.timetable);
-  const timetable = (own.length ? own : list(batch?.timetable)).filter(
-    (s: any) => s && !(electives.has(s.subjectId) && enrolled && !enrolled.includes(s.subjectId))
-  );
+  const raw = own.length ? own : list(batch?.timetable);
+  // Their electives only (lib/electives.ts); a slot they haven't picked shows as the slot's name
+  const lens = p.role === 'faculty' ? electiveLens([], [], null) : electiveLens(subjects, raw, p);
+  const slotSubjects: any[] = [];
+  const timetable = personalTimetable(raw, lens).map((s) => {
+    if (!s.electivePending) return s;
+    const id = `elective_${s.electivePending.groupKey}`;
+    if (!slotSubjects.some((x) => x.id === id)) slotSubjects.push({ id, name: s.electivePending.label });
+    return { ...s, subjectId: id };
+  });
+  const extras: Record<string, any> = {};
+  Object.entries({ ...(batch?.extraSessions || {}), ...(data?.extraSessions || {}) }).forEach(([k, v]: [string, any]) => {
+    if (v && lens.isMine(v.subjectId)) extras[k] = v;
+  });
   const keys = (v: any) => (Array.isArray(v) ? v : v && typeof v === 'object' ? Object.keys(v).filter((k) => v[k]) : []);
   return buildWidgetDays({
     timetable,
-    subjects,
+    subjects: [...subjects, ...slotSubjects],
     cancelled: [...keys(data?.cancelledSessions), ...keys(batch?.cancelledSessions)],
     rescheduled: { ...(batch?.rescheduledSessions || {}), ...(data?.rescheduledSessions || {}) },
-    extras: { ...(batch?.extraSessions || {}), ...(data?.extraSessions || {}) },
+    extras,
     events: [...list(data?.events), ...list(batch?.events)],
     exams: list(data?.exams),
     from: istTodayDate(), // India's today, whatever time zone the server runs in
