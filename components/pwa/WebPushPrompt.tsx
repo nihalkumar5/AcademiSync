@@ -37,7 +37,7 @@ export const WebPushPrompt: React.FC = () => {
 
   const turnOn = async () => {
     setBusy(true);
-    const result = await enableWebPush(user.id);
+    const { result, reason } = await enableWebPush(user.id);
     setBusy(false);
     if (result === 'granted') {
       showToast('Notifications on', "You'll get class changes and batch alerts on this device.", 'success');
@@ -50,7 +50,7 @@ export const WebPushPrompt: React.FC = () => {
       );
       setShow(false);
     } else if (result === 'error') {
-      showToast('Could not turn on notifications', 'Please try again in a moment.', 'error');
+      showToast('Could not turn on notifications', `Please try again in a moment.${reason ? ` (${reason})` : ''}`, 'error');
     } else {
       setShow(false);
     }

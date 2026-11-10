@@ -29,39 +29,83 @@ export const canUseWebPush = () => {
 export const webPushPermission = (): NotificationPermission | 'unsupported' =>
   typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'unsupported';
 
+/** Thrown with a short code so a failure can be shown and reported. */
+class PushSetupError extends Error {
+  constructor(public code: string, message?: string) {
+    super(message || code);
+  }
+}
+
 async function saveToken(userId: string) {
-  if (!(await isSupported())) return false;
-  const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-  await navigator.serviceWorker.ready;
-  const token = await getToken(getMessaging(app), {
-    ...(VAPID_KEY ? { vapidKey: VAPID_KEY } : {}),
-    serviceWorkerRegistration: registration,
-  });
-  if (!token) return false;
-  await setDoc(
-    doc(db, 'users', userId),
-    { webPushTokens: arrayUnion(token), webPushUpdatedAt: new Date().toISOString() },
-    { merge: true }
-  );
+  if (!(await isSupported())) throw new PushSetupError('no-sdk-support');
+  let registration: ServiceWorkerRegistration;
+  try {
+    registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    await navigator.serviceWorker.ready;
+  } catch (e: any) {
+    throw new PushSetupError('sw-register', e?.message);
+  }
+  let token: string;
+  try {
+    token = await getToken(getMessaging(app), {
+      ...(VAPID_KEY ? { vapidKey: VAPID_KEY } : {}),
+      serviceWorkerRegistration: registration,
+    });
+  } catch (e: any) {
+    throw new PushSetupError(e?.code || e?.name || 'get-token', e?.message);
+  }
+  if (!token) throw new PushSetupError('no-token');
+  try {
+    await setDoc(
+      doc(db, 'users', userId),
+      { webPushTokens: arrayUnion(token), webPushUpdatedAt: new Date().toISOString() },
+      { merge: true }
+    );
+  } catch (e: any) {
+    throw new PushSetupError(e?.code || 'save-token', e?.message);
+  }
   try {
     localStorage.setItem('web_push_token', token);
   } catch {}
   return true;
 }
 
+/** Tell the server why setup failed (code + platform only), so it shows up in the logs. */
+async function reportPushFailure(code: string, message: string) {
+  try {
+    const { getAuthHeaders } = await import('./authHeaders');
+    await fetch('/api/push-debug', {
+      method: 'POST',
+      headers: await getAuthHeaders(),
+      body: JSON.stringify({
+        code: code.slice(0, 80),
+        message: message.slice(0, 300),
+        platform: isIOSDevice() ? 'ios' : /Android/i.test(navigator.userAgent) ? 'android' : 'desktop',
+        standalone: isStandalonePWA(),
+        vapid: VAPID_KEY ? 'custom' : 'default',
+      }),
+    });
+  } catch {}
+}
+
 /**
  * Ask for permission and register. Must be called straight from a tap (iOS ignores prompts that
  * don't come from a user gesture), so the permission request happens before any other await.
  */
-export async function enableWebPush(userId: string): Promise<'granted' | 'denied' | 'default' | 'unsupported' | 'error'> {
-  if (!canUseWebPush()) return 'unsupported';
+export type EnablePushResult = 'granted' | 'denied' | 'default' | 'unsupported' | 'error';
+
+export async function enableWebPush(userId: string): Promise<{ result: EnablePushResult; reason?: string }> {
+  if (!canUseWebPush()) return { result: 'unsupported' };
   const permission = await Notification.requestPermission();
-  if (permission !== 'granted') return permission;
+  if (permission !== 'granted') return { result: permission };
   try {
-    return (await saveToken(userId)) ? 'granted' : 'error';
-  } catch (err) {
-    console.warn('Web push registration failed:', err);
-    return 'error';
+    await saveToken(userId);
+    return { result: 'granted' };
+  } catch (err: any) {
+    const code = err instanceof PushSetupError ? err.code : 'unknown';
+    console.warn('Web push registration failed:', code, err?.message);
+    reportPushFailure(code, String(err?.message || ''));
+    return { result: 'error', reason: code };
   }
 }
 
