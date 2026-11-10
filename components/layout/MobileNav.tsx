@@ -54,6 +54,47 @@ const MORE_TONES: Record<string, string> = {
 export const MobileNav: React.FC = () => {
   const { activeView, setActiveView, homework, profile, exams, notifications, routines } = useApp();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+
+  // The floating tab bar steps out of the way so it never sits on a form:
+  // - scrolling down hides it (scrolling up brings it back), so Save buttons at the end of a page show
+  // - typing in a field hides it (it would ride on top of the keyboard)
+  // - an open modal/sheet hides it (Modal locks body scroll)
+  const [scrollHidden, setScrollHidden] = useState(false);
+  const [typing, setTyping] = useState(false);
+  const [locked, setLocked] = useState(false);
+
+  useEffect(() => {
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      const dy = y - lastY;
+      if (Math.abs(dy) < 8) return;
+      setScrollHidden(dy > 0 && y > 80);
+      lastY = y;
+    };
+    const FIELD = 'input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=button]):not([type=submit]):not([type=reset]):not([type=file]), textarea, select, [contenteditable="true"]';
+    const isField = (el: EventTarget | null) => el instanceof Element && el.matches(FIELD) && !el.closest('#mobile-nav');
+    const onFocusIn = (e: FocusEvent) => isField(e.target) && setTyping(true);
+    const onFocusOut = () => setTimeout(() => setTyping(isField(document.activeElement)), 0);
+    const readLock = () => setLocked(document.body.style.overflow === 'hidden');
+    const mo = new MutationObserver(readLock);
+    mo.observe(document.body, { attributes: true, attributeFilter: ['style'] });
+    readLock();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    document.addEventListener('focusin', onFocusIn);
+    document.addEventListener('focusout', onFocusOut);
+    return () => {
+      mo.disconnect();
+      window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('focusin', onFocusIn);
+      document.removeEventListener('focusout', onFocusOut);
+    };
+  }, []);
+
+  // A new screen starts with the bar visible
+  useEffect(() => setScrollHidden(false), [activeView]);
+
+  const navHidden = !isMoreOpen && (scrollHidden || typing || locked);
   const isFaculty = profile?.role === 'faculty';
 
   const pendingHomework = homework.filter((h) => h.status !== 'Completed').length;
@@ -269,8 +310,13 @@ export const MobileNav: React.FC = () => {
       <nav
         id="mobile-nav"
         aria-label="Main"
-        className="lg lg-bar md:hidden fixed z-40 left-3 right-3 mx-auto max-w-[440px] rounded-full px-[3px] select-none"
+        className={clsx(
+          'lg lg-bar md:hidden fixed z-40 left-3 right-3 mx-auto max-w-[440px] rounded-full px-[3px] select-none',
+          'transition-[transform,opacity] duration-300 ease-[cubic-bezier(.2,.8,.2,1)] motion-reduce:transition-none',
+          navHidden ? 'translate-y-[calc(100%+40px)] opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'
+        )}
         style={{ bottom: NAV_BOTTOM }}
+        aria-hidden={navHidden || undefined}
       >
         <div className="flex items-center relative h-[60px]">
           {tabs.map((tab) =>
