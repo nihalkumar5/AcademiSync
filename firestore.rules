@@ -334,12 +334,24 @@ service cloud.firestore {
             || get(/databases/$(database)/documents/friendships/$(chatId)).data.status == 'accepted';
         }
         allow read: if inChat();
+        // A photo lives in Storage under chat_photos/{chatId}/{sender}/…; the message keeps its link.
+        function validImage(img) {
+          return img is map
+            && img.keys().hasOnly(['url', 'path', 'w', 'h'])
+            && img.url is string && img.url.size() < 2000
+            && img.url.matches('https://firebasestorage[.]googleapis[.]com/.*')
+            && img.path is string
+            && img.path.matches('chat_photos/' + chatId + '/' + request.auth.uid + '/[A-Za-z0-9_]+[.](webp|jpg)')
+            && img.w is number && img.h is number;
+        }
         allow create: if inChat() && canStillMessage()
-          && request.resource.data.keys().hasOnly(['by', 'text', 'at'])
+          && request.resource.data.keys().hasOnly(['by', 'text', 'at', 'image'])
           && request.resource.data.by == request.auth.uid
           && request.resource.data.text is string
-          && request.resource.data.text.size() > 0
           && request.resource.data.text.size() <= 1000
+          && (request.resource.data.text.size() > 0
+              || ('image' in request.resource.data && validImage(request.resource.data.image)))
+          && (!('image' in request.resource.data) || validImage(request.resource.data.image))
           && request.resource.data.at == request.time;
         allow update: if inChat()
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])

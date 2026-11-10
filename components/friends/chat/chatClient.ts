@@ -13,7 +13,8 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { app, db } from '@/lib/firebase';
+import { compressPhoto } from '@/lib/notePhotos';
 import { friendsApi } from '@/components/friends/friendsClient';
 
 // Friends chat: DMs and plan group chats, live from Firestore (firestore.rules guard who can do what).
@@ -54,7 +55,20 @@ export interface ChatMessage {
   at: number; // 0 while the server time is pending
   reactions: Record<string, string>;
   pending: boolean;
+  image?: ChatImage;
 }
+
+export interface ChatImage {
+  url: string;
+  path: string;
+  w: number;
+  h: number;
+}
+
+const imageOf = (x: any): ChatImage | undefined =>
+  x && typeof x.url === 'string' && typeof x.path === 'string'
+    ? { url: x.url, path: x.path, w: Number(x.w) || 1, h: Number(x.h) || 1 }
+    : undefined;
 
 /** All my chats, newest activity first, with an unread flag. */
 export function useChats(uid?: string | null) {
@@ -126,6 +140,7 @@ export function useMessages(chatId: string | null) {
               at: ms(m.at),
               reactions: m.reactions || {},
               pending: d.metadata.hasPendingWrites,
+              image: imageOf(m.image),
             } as ChatMessage;
           })
           .reverse();
@@ -188,7 +203,53 @@ export const markRead = (chatId: string, uid: string) =>
 export const reactTo = (chatId: string, messageId: string, uid: string, emoji: string | null) =>
   updateDoc(doc(db, 'chats', chatId, 'messages', messageId), { [`reactions.${uid}`]: emoji ? emoji : deleteField() });
 
-export const deleteMessage = (chatId: string, messageId: string) => deleteDoc(doc(db, 'chats', chatId, 'messages', messageId));
+export const deleteMessage = async (chatId: string, m: { id: string; image?: ChatImage }) => {
+  await deleteDoc(doc(db, 'chats', chatId, 'messages', m.id));
+  if (m.image?.path) {
+    try {
+      const { getStorage, ref, deleteObject } = await import('firebase/storage');
+      await deleteObject(ref(getStorage(app), m.image.path));
+    } catch {}
+  }
+};
+
+const sizeOf = (blob: Blob) =>
+  new Promise<{ w: number; h: number }>((resolve) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      resolve({ w: img.naturalWidth || 1, h: img.naturalHeight || 1 });
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => {
+      resolve({ w: 1, h: 1 });
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  });
+
+/** Shrink, upload and send a photo (with an optional caption). */
+export async function sendPhoto(chatId: string, uid: string, file: Blob, caption = '', onProgress?: (pct: number) => void) {
+  const small = await compressPhoto(file, 1600, 0.75);
+  const { w, h } = await sizeOf(small);
+  const ext = small.type === 'image/webp' ? 'webp' : 'jpg';
+  const path = `chat_photos/${chatId}/${uid}/${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const { getStorage, ref, uploadBytesResumable, getDownloadURL } = await import('firebase/storage');
+  const task = uploadBytesResumable(ref(getStorage(app), path), small, { contentType: small.type });
+  await new Promise<void>((resolve, reject) => {
+    task.on('state_changed', (s) => onProgress?.(s.totalBytes ? Math.round((s.bytesTransferred / s.totalBytes) * 100) : 0), reject, () => resolve());
+  });
+  const url = await getDownloadURL(task.snapshot.ref);
+  const text = caption.trim().slice(0, MAX_CHAT_CHARS);
+  await addDoc(collection(db, 'chats', chatId, 'messages'), { by: uid, text, at: serverTimestamp(), image: { url, path, w, h } });
+  await updateDoc(doc(db, 'chats', chatId), {
+    lastMessage: { by: uid, text: (text ? `📷 ${text}` : '📷 Photo').slice(0, 160), at: serverTimestamp() },
+    updatedAt: serverTimestamp(),
+    [`reads.${uid}`]: serverTimestamp(),
+    [`typing.${uid}`]: deleteField(),
+  }).catch(() => {});
+  friendsApi('POST', { action: 'chatPing', chatId }).catch(() => {});
+}
 
 export const openDmChat = async (otherUid: string): Promise<string> => (await friendsApi('POST', { action: 'openChat', uid: otherUid })).chatId;
 export const openPlanChat = async (planId: string): Promise<string> => (await friendsApi('POST', { action: 'openPlanChat', id: planId })).chatId;

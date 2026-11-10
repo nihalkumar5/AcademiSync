@@ -1,7 +1,8 @@
 rules_version = '2';
 
 // Firebase Storage rules.
-// Only assignment files are allowed, under assignments/{facultyUid}/…
+// Assignment files under assignments/{facultyUid}/…, and chat photos under
+// chat_photos/{chatId}/{senderUid}/… (see the second block).
 // - Write: the signed-in faculty member, only in their own folder, one of the allowed file
 //   types, up to 25 MB. Files can't be overwritten (create only) — re-upload instead.
 // - Read: any signed-in user (students open the file through its link from the assignment).
@@ -23,6 +24,24 @@ service firebase.storage {
         && request.resource.size > 0
         && request.resource.size <= 25 * 1024 * 1024
         && request.resource.contentType.matches('application/pdf|application/msword|application/vnd[.]openxmlformats-officedocument[.].*|application/vnd[.]ms-.*|application/zip|text/plain|image/(png|jpeg|webp)');
+      allow update: if false;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Chat photos: only members of that chat (chats/{chatId}.members) can read them; a member
+    // uploads only into their own folder, images up to 8 MB, and deletes only their own.
+    function chatMembers(chatId) {
+      return firestore.get(/databases/(default)/documents/chats/$(chatId)).data.members;
+    }
+    match /chat_photos/{chatId}/{uid}/{fileName} {
+      allow read: if request.auth != null && request.auth.uid in chatMembers(chatId);
+      allow create: if request.auth != null
+        && resource == null
+        && request.auth.uid == uid
+        && request.auth.uid in chatMembers(chatId)
+        && request.resource.size > 0
+        && request.resource.size <= 8 * 1024 * 1024
+        && request.resource.contentType.matches('image/(webp|jpeg|png)');
       allow update: if false;
       allow delete: if request.auth != null && request.auth.uid == uid;
     }

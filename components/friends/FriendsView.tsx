@@ -3,10 +3,11 @@
 import { SignInPanel } from '@/components/auth/SignInPrompt';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
+import { motion } from 'framer-motion';
 import { useApp } from '@/context/AppContext';
 import { Modal } from '@/components/ui/Modal';
 import { Illustration } from '@/components/ui/Illustration';
-import { AlertTriangle, Ban, Camera, Check, ChevronRight, Clock, Copy, EyeOff, Loader2, MoreVertical, Search, Send, Share2, UserPlus, Users, X } from '@/components/ui/icons';
+import { AlertTriangle, Ban, Camera, Check, ChevronRight, Clock, Copy, EyeOff, Loader2, MessageCircle, MoreVertical, Search, Send, Share2, UserPlus, Users, X } from '@/components/ui/icons';
 import { getAvatarSeed, getAvatarSrc } from '@/lib/avatar';
 import {
   CODE_RE,
@@ -28,7 +29,7 @@ import { QrCode } from './QrCode';
 import { friendsApi, useFriends } from './friendsClient';
 import { ChatSummary, blockPerson, openDmChat, openPlanChat, useChats } from './chat/chatClient';
 import { ChatThread } from './chat/ChatThread';
-import { ChatRowButton, ChatsSection, FreeNowStrip, PlanCard } from './FriendsSocial';
+import { ChatRowButton, ChatsList, FreeNowStrip, PlanCard } from './FriendsSocial';
 
 // Friends (same campus only): add by QR / code / classmates, see who's free now, find time
 // together, make quick plans, and share where you are for an hour. Privacy first: friends only
@@ -586,6 +587,50 @@ const ClassmatesSheet: React.FC<{
   );
 };
 
+/** Pick a friend to message. */
+const NewChatSheet: React.FC<{ open: boolean; onClose: () => void; friends: Friend[]; onPick: (f: Friend) => void }> = ({ open, onClose, friends, onPick }) => {
+  const [q, setQ] = useState('');
+  useEffect(() => {
+    if (!open) setQ('');
+  }, [open]);
+  const query = q.trim().toLowerCase();
+  const list = [...friends].sort((a, b) => a.name.localeCompare(b.name));
+  const shown = query ? list.filter((f) => f.name.toLowerCase().includes(query)) : list;
+  return (
+    <Modal isOpen={open} onClose={onClose} title="New chat" description={`${friends.length} ${friends.length === 1 ? 'friend' : 'friends'}`} maxWidth="lg" mobileFullSheet>
+      <div className="flex flex-col gap-f3">
+        {friends.length > 8 && (
+          <label className="flex items-center gap-2.5 h-11 px-3 border border-line bg-surface focus-within:border-fg transition-colors">
+            <Search className="w-4 h-4 text-muted shrink-0" />
+            <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search friends" className="flex-1 min-w-0 bg-transparent text-[15px] text-fg placeholder:text-faint focus:outline-none" />
+          </label>
+        )}
+        {shown.length === 0 ? (
+          <p className="py-f4 text-center text-[14px] text-muted">{friends.length ? <>No one matches &ldquo;{q}&rdquo;.</> : 'Add a friend first.'}</p>
+        ) : (
+          <ul className="border border-line bg-surface divide-y divide-line-soft">
+            {shown.map((f) => (
+              <li key={f.uid}>
+                <button type="button" onClick={() => onPick(f)} className="w-full flex items-center gap-3 px-f4 py-3 text-left hover:bg-surface-2 transition-colors cursor-pointer">
+                  <Avatar p={f} />
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-[15px] font-medium text-fg truncate">{f.name}</span>
+                    <span className="block text-[12px] text-muted truncate">{[f.branch, f.semester ? `Sem ${f.semester}` : null].filter(Boolean).join(' · ') || 'Friend'}</span>
+                  </span>
+                  <MessageCircle className="w-5 h-5 text-muted shrink-0" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </Modal>
+  );
+};
+
+type FriendsTab = 'friends' | 'chats';
+const TAB_KEY = 'friends_tab';
+
 export const FriendsView: React.FC = () => {
   const { user, setActiveView, showToast, profile } = useApp() as any;
   const [classOpen, setClassOpen] = useState(false);
@@ -598,7 +643,22 @@ export const FriendsView: React.FC = () => {
   const [menu, setMenu] = useState<string | null>(null);
   const [busy, setBusy] = useState<string>('');
   const [, tick] = useState(0);
-  const { chats } = useChats(user?.id);
+  const { chats, unreadCount } = useChats(user?.id);
+  const [tab, setTabState] = useState<FriendsTab>(() => {
+    try {
+      if (typeof window !== 'undefined' && sessionStorage.getItem('pending_chat')) return 'chats';
+      return sessionStorage.getItem(TAB_KEY) === 'chats' ? 'chats' : 'friends';
+    } catch {
+      return 'friends';
+    }
+  });
+  const setTab = (t: FriendsTab) => {
+    setTabState(t);
+    try {
+      sessionStorage.setItem(TAB_KEY, t);
+    } catch {}
+  };
+  const [newChatOpen, setNewChatOpen] = useState(false);
   const [chatStub, setChatStub] = useState<ChatSummary | null>(null);
   const [opening, setOpening] = useState<string | null>(null);
   // The open chat follows its live doc once it exists (new messages, names)
@@ -671,26 +731,43 @@ export const FriendsView: React.FC = () => {
     }
   };
 
-  // A push notification opens its chat: /?view=friends&chat=<id>
-  const deepLinked = useRef(false);
+  // A notification opens its chat: the native app sets sessionStorage.pending_chat (plus an
+  // event), web push links to /?view=friends&chat=<id>. Kept until that chat has loaded.
+  const [pendingChat, setPendingChat] = useState<string | null>(null);
   useEffect(() => {
-    if (deepLinked.current || !chats.length) return;
-    let id: string | null = null;
-    try {
-      id = new URLSearchParams(window.location.search).get('chat');
-    } catch {}
-    if (!id) return;
-    const c = chats.find((x) => x.id === id);
-    if (c) {
-      deepLinked.current = true;
-      setChatStub(c);
+    const take = () => {
+      let id: string | null = null;
+      try {
+        id = sessionStorage.getItem('pending_chat');
+      } catch {}
       try {
         const url = new URL(window.location.href);
-        url.searchParams.delete('chat');
-        window.history.replaceState({}, '', url.toString());
+        const fromUrl = url.searchParams.get('chat');
+        if (fromUrl) {
+          id = fromUrl;
+          url.searchParams.delete('chat');
+          window.history.replaceState({}, '', url.toString());
+        }
       } catch {}
-    }
-  }, [chats]);
+      if (id) {
+        setPendingChat(id);
+        setTab('chats');
+      }
+    };
+    take();
+    window.addEventListener('friends:open-chat', take);
+    return () => window.removeEventListener('friends:open-chat', take);
+  }, []);
+  useEffect(() => {
+    if (!pendingChat) return;
+    const c = chats.find((x) => x.id === pendingChat);
+    if (!c) return;
+    setChatStub(c);
+    setPendingChat(null);
+    try {
+      sessionStorage.removeItem('pending_chat');
+    } catch {}
+  }, [pendingChat, chats]);
 
   const act = async (key: string, body: any, toast?: [string, string]) => {
     setBusy(key);
@@ -729,7 +806,14 @@ export const FriendsView: React.FC = () => {
           {data ? `${data.me.college || 'Your campus'} only · ${friends.length} ${friends.length === 1 ? 'friend' : 'friends'}` : 'See when your friends are free'}
         </p>
       </div>
-      {data && (
+      {data && tab === 'chats' && friends.length > 0 && (
+        <div className="page-actions">
+          <button type="button" onClick={() => setNewChatOpen(true)} className="btn btn-primary">
+            <MessageCircle className="w-4 h-4" /> New chat
+          </button>
+        </div>
+      )}
+      {data && tab === 'friends' && (
         <div className="page-actions">
           <button type="button" onClick={() => { setPendingCode(undefined); setAddOpen(true); }} className="btn btn-primary">
             <UserPlus className="w-4 h-4" /> Add friend
@@ -851,40 +935,10 @@ export const FriendsView: React.FC = () => {
   } else if (data) {
     body = (
       <div className="flex flex-col gap-f5">
-        <FreeNowStrip people={freeNow} onOpen={(f) => openFriendChat(f)} />
-
-        {/* Where am I + privacy */}
-        <section className="border border-line bg-surface">
-          <div className="px-f4 pt-f3 pb-3">
-            <div className="flex items-baseline justify-between gap-3">
-              <h3 className="text-[15px] font-semibold text-fg">Where are you?</h3>
-              {myPlace && me?.status ? (
-                <button type="button" onClick={() => act('place', { action: 'settings', place: null })} className="text-[12px] font-semibold text-muted hover:text-fg cursor-pointer">
-                  Clear
-                </button>
-              ) : (
-                <span className="text-[12px] text-muted">Friends see it for 1 hour</span>
-              )}
-            </div>
-            <div className="mt-2.5 flex gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1">
-              {PLACES.map((p) => (
-                <button key={p.id} type="button" disabled={!!busy} onClick={() => act('place', { action: 'settings', place: p.id })} className={clsx('chip', me?.status?.place === p.id && 'chip-active')}>
-                  {p.emoji} {p.label}
-                </button>
-              ))}
-            </div>
-            {myPlace && me?.status && (
-              <p className="mt-2 text-[12px] text-muted">
-                Showing &ldquo;{myPlace.label}&rdquo; till {new Date(me.status.until).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })}
-              </p>
-            )}
-          </div>
-          <div className="border-t border-line-soft divide-y divide-line-soft">
-            <Switch on={!!me?.ghost} disabled={!!busy} onChange={(v) => act('ghost', { action: 'settings', ghost: v }, v ? ['Ghost mode on', 'Friends see nothing from you'] : ['Ghost mode off', 'Friends can see when you are free'])} label="Ghost mode" hint="Hide your free time and place from everyone" />
-            <Switch on={!!me?.showClass} disabled={!!busy} onChange={(v) => act('showClass', { action: 'settings', showClass: v })} label="Show my class name" hint="Otherwise friends only see busy or free" />
-          </div>
-        </section>
-
+        {tab === 'chats' ? (
+          <ChatsList chats={chats} me={user.id} people={people} onOpen={(c) => setChatStub(c)} onNew={() => setNewChatOpen(true)} canStart={friends.length > 0} />
+        ) : (
+          <>
         {/* Requests */}
         {data.incoming.length > 0 && (
           <section>
@@ -909,7 +963,7 @@ export const FriendsView: React.FC = () => {
           </section>
         )}
 
-        <ChatsSection chats={chats} me={user.id} people={people} onOpen={(c) => setChatStub(c)} />
+        <FreeNowStrip people={freeNow} onOpen={(f) => openFriendChat(f)} />
 
         {/* Plans */}
         {data.plans.length > 0 && (
@@ -958,6 +1012,38 @@ export const FriendsView: React.FC = () => {
             </section>
           </>
         )}
+
+        {/* Where am I + privacy */}
+        <section className="border border-line bg-surface">
+          <div className="px-f4 pt-f3 pb-3">
+            <div className="flex items-baseline justify-between gap-3">
+              <h3 className="text-[15px] font-semibold text-fg">Where are you?</h3>
+              {myPlace && me?.status ? (
+                <button type="button" onClick={() => act('place', { action: 'settings', place: null })} className="text-[12px] font-semibold text-muted hover:text-fg cursor-pointer">
+                  Clear
+                </button>
+              ) : (
+                <span className="text-[12px] text-muted">Friends see it for 1 hour</span>
+              )}
+            </div>
+            <div className="mt-2.5 flex gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1">
+              {PLACES.map((p) => (
+                <button key={p.id} type="button" disabled={!!busy} onClick={() => act('place', { action: 'settings', place: p.id })} className={clsx('chip', me?.status?.place === p.id && 'chip-active')}>
+                  {p.emoji} {p.label}
+                </button>
+              ))}
+            </div>
+            {myPlace && me?.status && (
+              <p className="mt-2 text-[12px] text-muted">
+                Showing &ldquo;{myPlace.label}&rdquo; till {new Date(me.status.until).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })}
+              </p>
+            )}
+          </div>
+          <div className="border-t border-line-soft divide-y divide-line-soft">
+            <Switch on={!!me?.ghost} disabled={!!busy} onChange={(v) => act('ghost', { action: 'settings', ghost: v }, v ? ['Ghost mode on', 'Friends see nothing from you'] : ['Ghost mode off', 'Friends can see when you are free'])} label="Ghost mode" hint="Hide your free time and place from everyone" />
+            <Switch on={!!me?.showClass} disabled={!!busy} onChange={(v) => act('showClass', { action: 'settings', showClass: v })} label="Show my class name" hint="Otherwise friends only see busy or free" />
+          </div>
+        </section>
 
         {/* Your class: a single card, like the batch card on Timetable */}
         {(data.suggestions.length > 0 || data.outgoing.length > 0) && (() => {
@@ -1013,14 +1099,57 @@ export const FriendsView: React.FC = () => {
         <p className="text-[12px] leading-[17px] text-muted">
           Friends only see when you&apos;re busy or free, never your attendance or notes. Only students from your campus can add you.
         </p>
+          </>
+        )}
       </div>
     );
   }
 
+  const tabs = user?.id && data ? (
+    <div role="tablist" aria-label="Friends and chats" className="grid grid-cols-2 border border-line bg-surface p-1 -mt-f2 sm:-mt-f3">
+      {(
+        [
+          ['friends', 'Friends', friends.length ? String(friends.length) : ''],
+          ['chats', 'Chats', unreadCount ? String(unreadCount) : ''],
+        ] as const
+      ).map(([id, label, badge]) => (
+        <button
+          key={id}
+          type="button"
+          role="tab"
+          aria-selected={tab === id}
+          onClick={() => setTab(id)}
+          className={clsx('relative h-10 flex items-center justify-center gap-2 text-[14px] font-semibold cursor-pointer transition-colors', tab === id ? 'text-on-ink' : 'text-muted hover:text-fg')}
+        >
+          {tab === id && <motion.span layoutId="friends-tab" className="absolute inset-0 bg-ink" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
+          <span className="relative">{label}</span>
+          {badge &&
+            (id === 'chats' ? (
+              <motion.span key={badge} initial={{ scale: 0.4 }} animate={{ scale: 1 }} className="relative min-w-[20px] h-5 px-1.5 rounded-full bg-emerald-500 text-white text-[11px] font-bold inline-flex items-center justify-center tabular-nums">
+                {badge}
+              </motion.span>
+            ) : (
+              <span className={clsx('relative text-[12px] tabular-nums', tab === id ? 'text-on-ink/60' : 'text-faint')}>{badge}</span>
+            ))}
+        </button>
+      ))}
+    </div>
+  ) : null;
+
   return (
     <div className="flex flex-col gap-f5 sm:gap-f6 text-left max-w-3xl mx-auto w-full pb-f7">
       {header}
+      {tabs}
       {body}
+      <NewChatSheet
+        open={newChatOpen}
+        onClose={() => setNewChatOpen(false)}
+        friends={friends}
+        onPick={(f) => {
+          setNewChatOpen(false);
+          openFriendChat(f);
+        }}
+      />
       <AddSheet open={addOpen} onClose={() => setAddOpen(false)} me={me} initialCode={pendingCode} onAdded={reload} />
       <TogetherSheet
         open={togetherOpen}

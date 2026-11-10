@@ -616,7 +616,7 @@ export async function pingChat(uid: string, chatId: unknown) {
   if (!mine) return;
   const me = (await users().doc(uid).get()).data() || {};
   const name = lite(uid, me).name;
-  const text = String(mine.text || '').slice(0, 120);
+  const text = (mine.image ? (mine.text ? `📷 ${mine.text}` : '📷 Photo') : String(mine.text || '')).slice(0, 120);
   const title = go.type === 'plan' ? `${name} · ${go.title || 'Plan'}` : name;
   const others = list(go.members).filter((m: string) => m !== uid);
   const snaps = await Promise.all(others.map((o: string) => users().doc(o).get()));

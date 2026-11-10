@@ -3,57 +3,35 @@ import { Capacitor } from '@capacitor/core';
 import { doc, setDoc } from 'firebase/firestore';
 import { db, auth } from './firebase';
 
-export const registerPushNotifications = async (userId: string, batchKey?: string) => {
-  // Only register if running on a native device (Android/iOS)
-  if (!Capacitor.isNativePlatform()) {
-    console.log('Push notifications are only available on native devices.');
-    return;
-  }
+type Handle = { remove: () => Promise<void> };
+const regHandles: Handle[] = [];
+let tapsReady = false;
 
+/** Open a chat from a notification tap: works whether the app was closed, in the background or open. */
+export const requestOpenChat = (chatId?: string) => {
+  if (!chatId) return;
   try {
-    // Request permission to use push notifications
-    let permStatus = await PushNotifications.checkPermissions();
+    sessionStorage.setItem('pending_chat', chatId);
+  } catch {}
+  window.dispatchEvent(new CustomEvent('friends:open-chat', { detail: chatId }));
+};
 
-    if (permStatus.receive === 'prompt' || permStatus.receive === 'prompt-with-rationale') {
-      permStatus = await PushNotifications.requestPermissions();
-    }
-
-    if (permStatus.receive !== 'granted') {
-      console.warn('User denied push notification permission');
-      return;
-    }
-
-    // Register with Apple / Google to receive token
-    await PushNotifications.register();
-
-    // On success, save the token to Firebase Firestore under the user's document
-    PushNotifications.removeAllListeners();
-
-    PushNotifications.addListener('registration', async (token) => {
-      console.log('Push registration success, token: ' + token.value);
-      
-      if (userId && token.value) {
-        try {
-          const userRef = doc(db, 'users', userId);
-          await setDoc(userRef, { 
-            fcmToken: token.value,
-            fcmUpdatedAt: new Date().toISOString(),
-            ...(batchKey ? { 'profile.batchKey': batchKey } : {})
-          }, { merge: true });
-        } catch (err) {
-          console.warn('Could not save FCM token to Firestore:', err);
-        }
-      }
-    });
-
-    // Listeners for handling notifications
-    PushNotifications.addListener('registrationError', (error: any) => {
-      console.warn('Error on push registration: ', error);
+/**
+ * Call once, as early as possible on app start (native only). Android hands the tap that
+ * launched the app to the first listener, so these are added before anything else and kept.
+ */
+export const listenForNotificationTaps = async () => {
+  if (tapsReady || !Capacitor.isNativePlatform()) return;
+  tapsReady = true;
+  try {
+    await PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+      const d: any = action.notification?.data || {};
+      if (d.type === 'chat') requestOpenChat(d.chatId);
     });
 
     // Android shows no banner for a push while the app is open, so show chat messages ourselves
     // (unless that chat is already on screen).
-    PushNotifications.addListener('pushNotificationReceived', async (notification) => {
+    await PushNotifications.addListener('pushNotificationReceived', async (notification) => {
       const d: any = notification.data || {};
       if (d.type !== 'chat' || !d.chatId) return;
       if ((window as any).__openChatId === d.chatId) return;
@@ -75,23 +53,62 @@ export const registerPushNotifications = async (userId: string, batchKey?: strin
       }
     });
 
-    // Tapping a chat notification opens that chat
-    const openChat = (chatId?: string) => {
-      if (!chatId) return;
-      window.location.href = `/?view=friends&chat=${encodeURIComponent(chatId)}`;
-    };
-    PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-      const d: any = action.notification?.data || {};
-      if (d.type === 'chat') openChat(d.chatId);
+    const { LocalNotifications } = await import('@capacitor/local-notifications');
+    await LocalNotifications.addListener('localNotificationActionPerformed', (action) => {
+      requestOpenChat(action.notification?.extra?.chatId);
     });
-    import('@capacitor/local-notifications')
-      .then(({ LocalNotifications }) =>
-        LocalNotifications.addListener('localNotificationActionPerformed', (action) => {
-          openChat(action.notification?.extra?.chatId);
-        })
-      )
-      .catch(() => {});
+  } catch (err) {
+    console.warn('Could not listen for notification taps:', err);
+  }
+};
 
+export const registerPushNotifications = async (userId: string, batchKey?: string) => {
+  // Only register if running on a native device (Android/iOS)
+  if (!Capacitor.isNativePlatform()) {
+    console.log('Push notifications are only available on native devices.');
+    return;
+  }
+
+  try {
+    // Request permission to use push notifications
+    let permStatus = await PushNotifications.checkPermissions();
+
+    if (permStatus.receive === 'prompt' || permStatus.receive === 'prompt-with-rationale') {
+      permStatus = await PushNotifications.requestPermissions();
+    }
+
+    if (permStatus.receive !== 'granted') {
+      console.warn('User denied push notification permission');
+      return;
+    }
+
+    // Replace only this function's own earlier listeners (it runs more than once), never the
+    // tap listeners from listenForNotificationTaps: those must stay to catch the launching tap.
+    await Promise.all(regHandles.splice(0).map((h) => h.remove().catch(() => {})));
+
+    regHandles.push(
+      await PushNotifications.addListener('registration', async (token) => {
+        console.log('Push registration success, token: ' + token.value);
+        if (userId && token.value) {
+          try {
+            const userRef = doc(db, 'users', userId);
+            await setDoc(userRef, {
+              fcmToken: token.value,
+              fcmUpdatedAt: new Date().toISOString(),
+              ...(batchKey ? { 'profile.batchKey': batchKey } : {})
+            }, { merge: true });
+          } catch (err) {
+            console.warn('Could not save FCM token to Firestore:', err);
+          }
+        }
+      }),
+      await PushNotifications.addListener('registrationError', (error: any) => {
+        console.warn('Error on push registration: ', error);
+      })
+    );
+
+    // Register with Apple / Google to receive token
+    await PushNotifications.register();
   } catch (error) {
     console.warn('Push Notification Registration failed', error);
   }

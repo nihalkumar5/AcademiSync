@@ -40,7 +40,7 @@ import confetti from 'canvas-confetti';
 import { onAuthStateChanged, getRedirectResult } from 'firebase/auth';
 import { doc, collection, onSnapshot, setDoc, deleteDoc, getDoc, getDocs, query, where, updateDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
-import { registerPushNotifications, broadcastBatchPushNotification } from '@/lib/pushNotifications';
+import { registerPushNotifications, broadcastBatchPushNotification, listenForNotificationTaps } from '@/lib/pushNotifications';
 import { syncWebPushToken } from '@/lib/webPush';
 import { 
   triggerLocalNotification, 
@@ -366,6 +366,10 @@ const generateInviteCode = () => {
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // First thing on app start: catch the notification tap that opened the app
+  useEffect(() => {
+    listenForNotificationTaps();
+  }, []);
   const [isHydrated, setIsHydrated] = useState(false);
   const [activeView, setActiveView] = useState<ActiveView>('home');
   const [showOnboarding, setShowOnboarding] = useState(false);

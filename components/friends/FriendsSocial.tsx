@@ -6,7 +6,8 @@ import { clsx } from 'clsx';
 import type { Friend, NowStatus, Plan, PersonLite } from '@/lib/friends';
 import { clock, placeOf } from '@/lib/friends';
 import { getAvatarSeed, getAvatarSrc } from '@/lib/avatar';
-import { Check, ChevronRight, Clock, MessageCircle, Users } from '@/components/ui/icons';
+import { Check, ChevronRight, Clock, MessageCircle, Search, Users } from '@/components/ui/icons';
+import { Ticks, receiptFor } from './chat/receipts';
 import type { ChatSummary } from './chat/chatClient';
 
 // The lively parts of the Friends page: who's free right now, recent chats, and plan cards that
@@ -91,74 +92,115 @@ export const FreeNowStrip: React.FC<{
 };
 
 // ---------- Chats ----------
-const ago = (t: number) => {
+
+/** WhatsApp-style time: clock today, "Yesterday", weekday this week, else a date. */
+const listTime = (t: number) => {
   if (!t) return '';
-  const m = Math.round((Date.now() - t) / 60000);
-  if (m < 1) return 'now';
-  if (m < 60) return `${m}m`;
-  const h = Math.round(m / 60);
-  if (h < 24) return `${h}h`;
-  return new Date(t).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  const d = new Date(t);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
+  const y = new Date();
+  y.setDate(now.getDate() - 1);
+  if (d.toDateString() === y.toDateString()) return 'Yesterday';
+  if (now.getTime() - t < 6 * 86400000) return d.toLocaleDateString('en-IN', { weekday: 'short' });
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 };
 
-export const ChatsSection: React.FC<{
+/** The Chats tab: every DM and plan chat, newest first, searchable. */
+export const ChatsList: React.FC<{
   chats: ChatSummary[];
   me: string;
   people: Record<string, PersonLite>;
   onOpen: (c: ChatSummary) => void;
-}> = ({ chats, me, people, onOpen }) => {
-  const [all, setAll] = useState(false);
-  if (!chats.length) return null;
-  const shown = all ? chats : chats.slice(0, 4);
-  const unread = chats.filter((c) => c.unread).length;
-  return (
-    <section aria-label="Chats">
-      <div className="flex items-baseline justify-between gap-3 mb-f3">
-        <h3 className="text-[17px] font-semibold text-fg tracking-tight">
-          Chats
-          {unread > 0 && <span className="ml-2 align-middle inline-flex min-w-[20px] h-5 px-1.5 rounded-full bg-rose-500 text-white text-[11px] font-bold items-center justify-center tabular-nums">{unread}</span>}
-        </h3>
-        {chats.length > 4 && (
-          <button type="button" onClick={() => setAll((v) => !v)} className="text-[13px] font-semibold text-muted hover:text-fg cursor-pointer">
-            {all ? 'Show less' : `See all ${chats.length}`}
+  onNew: () => void;
+  canStart: boolean;
+}> = ({ chats, me, people, onOpen, onNew, canStart }) => {
+  const [q, setQ] = useState('');
+  const nameOf = (c: ChatSummary) => {
+    const other = c.type === 'dm' ? c.members.find((m) => m !== me) || '' : '';
+    return c.type === 'dm' ? people[other]?.name || c.names[other] || 'Friend' : c.title || 'Plan';
+  };
+  const query = q.trim().toLowerCase();
+  const shown = query ? chats.filter((c) => nameOf(c).toLowerCase().includes(query) || (c.lastMessage?.text || '').toLowerCase().includes(query)) : chats;
+
+  if (!chats.length) {
+    return (
+      <section className="border border-line bg-surface px-5 py-f6 flex flex-col items-center text-center">
+        <motion.span className="text-[48px] leading-none" animate={{ rotate: [0, 14, -6, 10, 0] }} transition={{ duration: 1.4, repeat: Infinity, repeatDelay: 2 }}>
+          💬
+        </motion.span>
+        <h3 className="mt-4 text-[18px] font-semibold text-fg">No chats yet</h3>
+        <p className="mt-1.5 text-[14px] text-muted max-w-xs">{canStart ? 'Message a friend, or open a plan to chat with everyone in it.' : 'Add a friend first, then you can chat here.'}</p>
+        {canStart && (
+          <button type="button" onClick={onNew} className="btn btn-primary mt-5">
+            <MessageCircle className="w-4 h-4" /> Start a chat
           </button>
         )}
-      </div>
-      <ul className="border border-line bg-surface divide-y divide-line-soft">
-        <AnimatePresence initial={false}>
-          {shown.map((c) => {
-            const other = c.type === 'dm' ? c.members.find((m) => m !== me) || '' : '';
-            const name = c.type === 'dm' ? people[other]?.name || c.names[other] || 'Friend' : c.title || 'Plan';
-            const last = c.lastMessage;
-            const preview = last ? (last.by === me ? `You: ${last.text}` : last.by === 'system' ? last.text : c.type === 'plan' ? `${(people[last.by]?.name || c.names[last.by] || 'Friend').split(' ')[0]}: ${last.text}` : last.text) : 'Say hi 👋';
-            return (
-              <motion.li key={c.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <button type="button" onClick={() => onOpen(c)} className="w-full flex items-center gap-3 px-f4 py-3 text-left hover:bg-surface-2 transition-colors cursor-pointer">
-                  {c.type === 'dm' ? (
-                    <Face p={{ uid: other, avatarUrl: people[other]?.avatarUrl }} size={44} />
-                  ) : (
-                    <span className="w-11 h-11 shrink-0 rounded-full bg-ink text-on-ink flex items-center justify-center">
-                      <Users className="w-5 h-5" />
+      </section>
+    );
+  }
+
+  return (
+    <section aria-label="Chats" className="flex flex-col gap-f3">
+      {chats.length > 6 && (
+        <label className="flex items-center gap-2.5 h-11 px-3 border border-line bg-surface focus-within:border-fg transition-colors">
+          <Search className="w-4 h-4 text-muted shrink-0" />
+          <input
+            type="search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search chats"
+            className="flex-1 min-w-0 bg-transparent text-[15px] text-fg placeholder:text-faint focus:outline-none"
+          />
+        </label>
+      )}
+      {shown.length === 0 ? (
+        <p className="py-f4 text-center text-[14px] text-muted">No chats match &ldquo;{q}&rdquo;.</p>
+      ) : (
+        <ul className="border border-line bg-surface divide-y divide-line-soft">
+          <AnimatePresence initial={false}>
+            {shown.map((c) => {
+              const other = c.type === 'dm' ? c.members.find((m) => m !== me) || '' : '';
+              const last = c.lastMessage;
+              const mine = last?.by === me;
+              const who = last && !mine && last.by !== 'system' && c.type === 'plan' ? `${(people[last.by]?.name || c.names[last.by] || 'Friend').split(' ')[0]}: ` : '';
+              const preview = last ? `${who}${last.text}` : c.type === 'plan' ? 'Plan chat · say hi 👋' : 'Say hi 👋';
+              return (
+                <motion.li key={c.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  <button type="button" onClick={() => onOpen(c)} className="w-full flex items-center gap-3 px-f4 py-3 text-left hover:bg-surface-2 active:bg-surface-2 transition-colors cursor-pointer">
+                    {c.type === 'dm' ? (
+                      <Face p={{ uid: other, avatarUrl: people[other]?.avatarUrl }} size={48} />
+                    ) : (
+                      <span className="w-12 h-12 shrink-0 rounded-full bg-ink text-on-ink flex items-center justify-center">
+                        <Users className="w-5 h-5" />
+                      </span>
+                    )}
+                    <span className="flex-1 min-w-0">
+                      <span className="flex items-baseline gap-2">
+                        <span className={clsx('flex-1 min-w-0 text-[16px] truncate text-fg', c.unread ? 'font-bold' : 'font-semibold')}>{nameOf(c)}</span>
+                        <span className={clsx('shrink-0 text-[12px] tabular-nums', c.unread ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-faint')}>{listTime(last?.at || c.updatedAt)}</span>
+                      </span>
+                      <span className="mt-0.5 flex items-center gap-2">
+                        <span className={clsx('flex-1 min-w-0 flex items-center text-[14px] truncate', c.unread ? 'text-fg font-medium' : 'text-muted')}>
+                          {mine && (
+                            <span className="shrink-0 -ml-1 mr-0.5 text-muted">
+                              <Ticks state={receiptFor(c, me, last!.at)} />
+                            </span>
+                          )}
+                          <span className="truncate">{preview}</span>
+                        </span>
+                        {c.unread && (
+                          <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="shrink-0 w-[10px] h-[10px] rounded-full bg-emerald-500" aria-label="Unread" />
+                        )}
+                      </span>
                     </span>
-                  )}
-                  <span className="flex-1 min-w-0">
-                    <span className="flex items-baseline gap-2">
-                      <span className={clsx('flex-1 min-w-0 text-[15px] truncate', c.unread ? 'font-bold text-fg' : 'font-semibold text-fg')}>{name}</span>
-                      <span className={clsx('shrink-0 text-[11px] tabular-nums', c.unread ? 'text-rose-600 dark:text-rose-400 font-semibold' : 'text-faint')}>{ago(last?.at || c.updatedAt)}</span>
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <span className={clsx('flex-1 min-w-0 text-[13px] truncate', c.unread ? 'text-fg font-medium' : 'text-muted')}>{preview}</span>
-                      {c.unread && (
-                        <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="shrink-0 w-2.5 h-2.5 rounded-full bg-rose-500" />
-                      )}
-                    </span>
-                  </span>
-                </button>
-              </motion.li>
-            );
-          })}
-        </AnimatePresence>
-      </ul>
+                  </button>
+                </motion.li>
+              );
+            })}
+          </AnimatePresence>
+        </ul>
+      )}
     </section>
   );
 };
