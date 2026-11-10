@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { campusSignatureFor } from '@/lib/campusSignature';
+import { campusSignatureFor, lookupCampusPlace } from '@/lib/campusSignature';
 import { HandwrittenText } from '@/components/ui/HandwrittenText';
 
 // End-of-Home sign-off: the campus draws itself line by line, then the college name is
@@ -37,6 +37,40 @@ const STROKES: { el: 'path' | 'rect' | 'circle'; p: Record<string, string | numb
   { el: 'path', p: { d: 'M226 34 q4.5 -4.5 9 0 q4.5 -4.5 9 0 M248 24 q3.5 -3.5 7 0 q3.5 -3.5 7 0' } },
 ];
 
+// Handwritten name sizing. Caveat averages ~0.34em per character; a little slack on top.
+const MAX_PX = 34;
+const MIN_PX = 20;
+const CHAR_EM = 0.38;
+const SIDE_PAD_PX = 28; // breathing room so a line never kisses the edge
+const PEN_SPEED = 2; // tegaki speed for the name
+const SECONDS_PER_CHAR = 0.06; // rough pen time per letter at PEN_SPEED, for chaining lines
+
+/** 1 line up to 18 letters, 2 up to 36, otherwise 3 — split at spaces so the longest line is as short as possible. */
+function splitName(name: string): string[] {
+  const words = name.split(' ').filter(Boolean);
+  const want = name.length <= 18 ? 1 : name.length <= 36 ? 2 : 3;
+  const k = Math.min(want, words.length);
+  if (k <= 1) return [name];
+  let best: string[] = [name];
+  let bestScore = Infinity;
+  const tryCuts = (cuts: number[]) => {
+    const bounds = [0, ...cuts, words.length];
+    const lines = bounds.slice(1).map((end, i) => words.slice(bounds[i], end).join(' '));
+    const longest = Math.max(...lines.map((l) => l.length));
+    // shortest longest-line wins; ties prefer lines that get shorter towards the end
+    const score = longest * 100 + Math.abs(lines[0].length - lines[lines.length - 1].length);
+    if (score < bestScore) {
+      bestScore = score;
+      best = lines;
+    }
+  };
+  for (let i = 1; i < words.length; i++) {
+    if (k === 2) tryCuts([i]);
+    else for (let j = i + 1; j < words.length; j++) tryCuts([i, j]);
+  }
+  return best;
+}
+
 const STAGGER_MS = 70;
 const DRAW_MS = 900;
 // The pen starts once most of the drawing is on screen
@@ -47,6 +81,35 @@ export const CampusSignature: React.FC = () => {
   const sig = campusSignatureFor(profile?.college);
   const ref = useRef<HTMLElement>(null);
   const [phase, setPhase] = useState<Phase>('waiting');
+  const [width, setWidth] = useState(320);
+
+  // Address under the name: from the college name when it carries one, otherwise looked up once
+  const [lookedUpPlace, setLookedUpPlace] = useState<string | null>(null);
+  useEffect(() => {
+    setLookedUpPlace(null);
+    if (!sig || sig.place || !profile?.college) return;
+    let alive = true;
+    lookupCampusPlace(profile.college, sig.slug).then((p) => alive && setLookedUpPlace(p));
+    return () => {
+      alive = false;
+    };
+  }, [sig?.slug, sig?.place, profile?.college]);
+  const place = sig?.place || lookedUpPlace || undefined;
+
+  // Fit the handwriting to the space we actually have
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(([e]) => setWidth(Math.round(e.contentRect.width)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const lines = sig ? splitName(sig.name) : [];
+  const longest = Math.max(1, ...lines.map((l) => l.length));
+  const fontSize = Math.max(MIN_PX, Math.min(MAX_PX, Math.floor((width - SIDE_PAD_PX) / (longest * CHAR_EM))));
+  const lineDelays = lines.map((_, i) => WRITE_DELAY_S + lines.slice(0, i).reduce((s, l) => s + l.length * SECONDS_PER_CHAR, 0));
+  const placeDelay = WRITE_DELAY_S + lines.reduce((s, l) => s + l.length * SECONDS_PER_CHAR, 0) + 0.2;
 
   useEffect(() => {
     if (!sig) return;
@@ -81,7 +144,7 @@ export const CampusSignature: React.FC = () => {
   return (
     <section
       ref={ref}
-      aria-label={`${sig.name}${sig.place ? `, ${sig.place}` : ''}`}
+      aria-label={`${sig.name}${place ? `, ${place}` : ''}`}
       className={`campus-sig campus-sig--${phase} pt-f4 pb-f2 flex flex-col items-center text-center select-none`}
     >
       {sig.art ? (
@@ -110,17 +173,28 @@ export const CampusSignature: React.FC = () => {
         </svg>
       )}
 
-      {/* Name: written by hand once the drawing is mostly there; plain Caveat otherwise */}
-      <div className="mt-1 min-h-[44px] flex items-center justify-center text-[34px] leading-none text-fg">
-        {phase === 'playing' ? (
-          <HandwrittenText text={sig.name} playKey={`campus-sig-${sig.slug}`} delay={WRITE_DELAY_S} speed={1.25} />
-        ) : phase === 'done' ? (
-          <span className="font-cursive">{sig.name}</span>
-        ) : null}
+      {/* Name: written by hand once the drawing is mostly there; plain Caveat otherwise.
+          Long names go on two balanced lines, and the size shrinks so the longest line always fits. */}
+      <div
+        className="mt-1 w-full flex flex-col items-center justify-center gap-1 leading-[1.05] text-fg"
+        style={{ fontSize, minHeight: lines.length * fontSize * 1.1 + 4 }}
+      >
+        {lines.map((line, i) =>
+          phase === 'playing' ? (
+            <HandwrittenText key={i} text={line} playKey={`campus-sig-${sig.slug}-${i}`} delay={lineDelays[i]} speed={PEN_SPEED} className="whitespace-nowrap" />
+          ) : phase === 'done' ? (
+            <span key={i} className="font-cursive whitespace-nowrap">{line}</span>
+          ) : null
+        )}
       </div>
 
-      {sig.place && (
-        <p className={`campus-sig__place mt-1.5 text-[12px] font-medium text-muted tracking-[0.02em]`}>{sig.place}</p>
+      {place && (
+        <p
+          className="campus-sig__place mt-1.5 text-[12px] font-medium text-muted tracking-[0.02em]"
+          style={phase === 'playing' ? { animationDelay: `${placeDelay}s` } : undefined}
+        >
+          {place}
+        </p>
       )}
     </section>
   );
