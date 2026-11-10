@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
+import { aiBudget, istToday, withTimeout } from '@/lib/server/aiRun';
 import { GoogleGenerativeAI, SchemaType, GenerationConfig } from '@google/generative-ai';
 import { logServerError } from '@/lib/errorUtils';
 import { validateServerUploadPayload } from '@/lib/fileSafety';
 import { guardAiRequest } from '@/lib/aiGuard';
 
+// AI scans can take a while; the model fallbacks share a ~52 s budget (lib/server/aiRun.ts)
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
+  const budget = aiBudget();
   try {
     const body = await req.json().catch(() => ({}));
     const { images, imageBase64, mimeType, fileName, isSample } = body;
@@ -84,6 +89,7 @@ export async function POST(req: Request) {
       };
 
       const prompt = `You are a specialized academic calendar parsing assistant for university students.
+Today is ${istToday().label} (India).
 Analyze the provided academic calendar (which may be page image(s), a PDF, or a text version) and extract all events, examinations, holidays, registrations, and deadlines.
 
 CRITICAL INSTRUCTIONS FOR DATE PROCESSING:
@@ -113,16 +119,15 @@ Many academic calendar rows specify only a month or have a footnote saying date 
       let lastError: any = null;
 
       for (const modelName of candidateModels) {
+        const slot = budget.slot(25000);
+        if (!slot) break;
         try {
           const model = genAI.getGenerativeModel({
             model: modelName,
             generationConfig,
           });
 
-          const result: any = await Promise.race([
-            model.generateContent(contents),
-            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 25000))
-          ]);
+          const result: any = await withTimeout(model.generateContent(contents), slot, modelName);
 
           const responseText = result.response.text();
           let parsed: any;

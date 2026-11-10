@@ -1,159 +1,82 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Share, PlusSquare, Check, ArrowDown } from '@/components/ui/icons';
+import React, { useEffect, useState } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import { Capacitor } from '@capacitor/core';
+import { ArrowDown } from '@/components/ui/icons';
+import { GateShell } from './GateShell';
+import { IOSGateArt, useIOSStep } from './GateArt';
 
+const STEPS = [
+  { title: 'Tap Share', body: 'The square with an arrow, in Safari’s bottom bar.' },
+  { title: 'Choose “Add to Home Screen”', body: 'Scroll down a little if it’s hidden, then tap Add.' },
+  { title: 'Open it from your Home Screen', body: 'Full screen with class alerts, like any app.' },
+];
+
+// iPhone Safari: Intersemester installs from the Home Screen (no App Store needed).
+// The installed app (standalone) skips this.
 export const IOSAppGate: React.FC = () => {
-  const [isIOSBrowser, setIsIOSBrowser] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+  const [show, setShow] = useState(false);
+  const reduce = !!useReducedMotion();
+  const [step, setStep] = useIOSStep(reduce || !show);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
-    // Detect iOS devices (iPhone, iPad, iPod)
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) && !/Macintosh/i.test(navigator.userAgent);
-    
-    // Detect standalone PWA mode or native Capacitor app
-    const isStandalone = 
-      (window.navigator as any).standalone === true || 
-      window.matchMedia('(display-mode: standalone)').matches ||
-      Capacitor.isNativePlatform();
-
-    // Detect preview mode (?preview=ios in URL)
-    const isPreview = new URLSearchParams(window.location.search).get('preview') === 'ios';
-
-    if (isPreview) {
-      setIsIOSBrowser(true);
+    const isStandalone =
+      (window.navigator as any).standalone === true || window.matchMedia('(display-mode: standalone)').matches || Capacitor.isNativePlatform();
+    if (new URLSearchParams(window.location.search).get('preview') === 'ios') {
+      setShow(true);
       return;
     }
-
-    // Auto-bypass on localhost / local development unless preview is requested
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    if (isLocalhost) {
-      return;
-    }
-
-    // Session bypass check
-    const isTempBypassed = sessionStorage.getItem('ios_gate_bypassed') === 'true';
-
-    if (isIOS && !isStandalone && !isTempBypassed) {
-      setIsIOSBrowser(true);
-    }
+    if (isLocalhost) return;
+    if (isIOS && !isStandalone) setShow(true);
   }, []);
 
-  if (!isIOSBrowser || dismissed) return null;
-
-  const handleBypass = () => {
-    try {
-      sessionStorage.setItem('ios_gate_bypassed', 'true');
-    } catch (_) {}
-    setDismissed(true);
-  };
+  if (!show) return null;
+  const s = STEPS[step];
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[99999] bg-white text-[#111111] flex flex-col font-sans overflow-hidden w-full h-[100dvh]"
-      >
-        {/* Top Nav Header - Clean Typography Only (No Icon) */}
-        <div 
-          className="w-full flex items-center justify-center px-6 pb-3 shrink-0 z-30 border-b border-[#F0F0EE] bg-white"
-          style={{
-            paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 12px), 28px)',
-          }}
-        >
-          <div className="w-full flex flex-col items-center justify-center pt-1">
-            <h1 className="text-[24px] font-bold tracking-tighter text-[#111111]">
-              inter<span className="font-normal opacity-80">semester</span>
-            </h1>
-            <div className="w-[24px] h-[1.5px] bg-[#111111] mt-2.5 mb-1.5" />
-            <p className="text-[12px] font-mono font-bold text-[#111111]/60 whitespace-pre-line text-center">
-              EVERY ACADEMIC DAY{"\n"}CLEAR & PREDICTABLE.
-            </p>
-          </div>
-        </div>
+    <GateShell label="Add Intersemester to your Home Screen" art={<IOSGateArt step={step} />}>
+      <h2 className="text-[28px] leading-[1.08] font-semibold tracking-tight text-fg">
+        Install in 3 taps.
+        <br />
+        <span className="text-muted">No App Store needed.</span>
+      </h2>
 
-        {/* Main Content Area */}
-        <div className="flex-1 w-full flex flex-col relative overflow-hidden justify-between bg-white">
-          {/* Slide Image */}
-          <div className="flex-1 min-h-0 w-full flex items-end justify-center overflow-visible bg-white px-4">
-            <img 
-              src="/heroios.png" 
-              alt="Intersemester iOS" 
-              className="w-full h-full object-contain object-bottom pointer-events-none translate-y-[5%] scale-[1.22] sm:scale-[1.28]"
-            />
-          </div>
-
-          {/* Text Card */}
-          <div className="w-full px-8 flex flex-col gap-2 pb-5 bg-surface-2 shrink-0 z-10 relative rounded-t-[40px] pt-6 -mt-6">
-            <h2 className="text-[26px] sm:text-[28px] leading-[1.1] font-bold text-[#111111]">
-              Install on your iPhone.
-            </h2>
-            <p className="text-[13px] text-[#111111]/60 font-medium leading-snug mb-1">
-              Add Intersemester to your Home Screen for live schedule alerts, widgets, and full-screen experience.
-            </p>
-
-            {/* 3 Step List in Intersemester Minimalist Style */}
-            <div className="flex flex-col gap-1.5 my-1">
-              <div className="flex items-center gap-3 py-1.5 border-b border-black/5">
-                <div className="w-7 h-7 bg-white rounded-none flex items-center justify-center shrink-0 shadow-sm border border-black/5">
-                  <Share className="w-3.5 h-3.5 text-[#111111]" />
-                </div>
-                <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111111]">
-                  <span>Step 1:</span>
-                  <span className="font-normal text-[#111111]/80">Tap <span className="font-semibold text-blue-600">Share</span> in Safari bottom bar</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 py-1.5 border-b border-black/5">
-                <div className="w-7 h-7 bg-white rounded-none flex items-center justify-center shrink-0 shadow-sm border border-black/5">
-                  <PlusSquare className="w-3.5 h-3.5 text-[#111111]" />
-                </div>
-                <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111111]">
-                  <span>Step 2:</span>
-                  <span className="font-normal text-[#111111]/80">Select <span className="font-semibold">&quot;Add to Home Screen&quot;</span></span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 py-1.5">
-                <div className="w-7 h-7 bg-white rounded-none flex items-center justify-center shrink-0 shadow-sm border border-black/5">
-                  <Check className="w-3.5 h-3.5 text-[#111111]" />
-                </div>
-                <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111111]">
-                  <span>Step 3:</span>
-                  <span className="font-normal text-[#111111]/80">Tap <span className="font-semibold">&quot;Add&quot;</span> and launch from Home Screen</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Controls Footer */}
-          <div 
-            className="w-full px-6 sm:px-8 pt-2 pb-6 flex flex-col items-center justify-center gap-2 shrink-0 bg-surface-2 z-10 relative"
-            style={{
-              paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 16px), 24px)',
-            }}
+      {/* story-style progress, one bar per step */}
+      <div className="mt-5 grid grid-cols-3 gap-1.5" role="tablist" aria-label="Install steps">
+        {STEPS.map((x, i) => (
+          <button
+            key={x.title}
+            type="button"
+            role="tab"
+            aria-selected={i === step}
+            aria-label={`Step ${i + 1}: ${x.title}`}
+            onClick={() => setStep(i)}
+            className="py-2 cursor-pointer"
           >
-            <div className="flex items-center gap-2 text-[12px] font-medium text-[#111111]/80 animate-bounce">
-              <ArrowDown className="w-4 h-4 text-blue-600" />
-              <span>Tap the <strong className="text-blue-600">Share</strong> button at the bottom of Safari</span>
-            </div>
+            <span className="block h-[3px] bg-line overflow-hidden">
+              <span
+                key={i === step ? `on-${step}` : 'off'}
+                className={`block h-full bg-fg ${i < step ? 'w-full' : i === step ? (reduce ? 'w-full' : 'gate-bar') : 'w-0'}`}
+              />
+            </span>
+          </button>
+        ))}
+      </div>
 
-            <button
-              type="button"
-              onClick={handleBypass}
-              className="w-full pt-2 text-center text-[12px] font-semibold text-black/60 hover:text-black transition-colors cursor-pointer underline underline-offset-4"
-            >
-              Continue on Web
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    </AnimatePresence>
+      <div key={step} className="gate-caption mt-1 min-h-[70px]" aria-live="polite">
+        <p className="text-[12px] font-semibold text-muted tabular-nums">Step {step + 1} of 3</p>
+        <p className="mt-1 text-[18px] font-semibold text-fg leading-snug">{s.title}</p>
+        <p className="mt-0.5 text-[14px] text-muted leading-snug">{s.body}</p>
+      </div>
+
+      <p className="mt-3 flex items-center justify-center gap-1.5 text-[12px] font-medium text-fg-2">
+        <ArrowDown className={`w-4 h-4 text-[#0A84FF] ${reduce ? '' : 'animate-bounce'}`} />
+        Share is in Safari&apos;s bar, right below
+      </p>
+    </GateShell>
   );
 };

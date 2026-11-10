@@ -9,6 +9,7 @@ import { DAYS_OF_WEEK, mergeConsecutiveSessions, normalizeSection, sanitizeAcade
 import { autoAssignHarmonicColorsToSubjects, getHarmonicColorForSubject } from '@/lib/cardColors';
 import { getAuthHeaders } from '@/lib/authHeaders';
 import { openElectives } from '@/components/electives/Electives';
+import { AiScanning, AiUploadPanel } from '@/components/ai/AiScan';
 import { electivePrefix, prettyLabel } from '@/lib/electives';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
@@ -66,6 +67,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
   const [fileName, setFileName] = useState('');
   const [extractedSessions, setExtractedSessions] = useState<ExtractedClassSession[]>([]);
   const [parallelFound, setParallelFound] = useState(0);
+  const [scanFiles, setScanFiles] = useState<File[]>([]);
   const [extractError, setExtractError] = useState<string | null>(null);
   const [lastUploadedFiles, setLastUploadedFiles] = useState<{ name: string, base64: string, mimeType: string }[] | null>(null);
 
@@ -158,11 +160,9 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    e.target.value = '';
-    if (files.length === 0) return;
-    // Photos are shrunk on the phone; everything together stays under the upload limit
+  // Photos are shrunk on the phone; everything together stays under the upload limit
+  const startScan = (files: File[]) => {
+    setScanFiles(files);
     prepareAiUpload(files, { maxDim: 2200 })
       .then(runExtraction)
       .catch((err) =>
@@ -304,153 +304,27 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Import Timetable"
-      description="Upload your timetable image or PDF to automatically generate your weekly routine."
+      title="Import timetable"
+      description={step === 'review' ? 'Check what we found, then save.' : undefined}
       maxWidth={step === 'review' ? '4xl' : 'lg'}
       mobileFullSheet={step === 'review'}
     >
       {step === 'upload' && (
-        <div className="flex flex-col text-center">
-          {/* Error Banner if extraction failed */}
-          {extractError && (
-            <div className="mb-4 p-4 rounded-none border border-red-500/30 bg-red-500/10 text-left">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-[12px] font-bold text-red-600 dark:text-red-400 mb-1">
-                    Scan Unsuccessful
-                  </h4>
-                  <p className="text-[12px] text-red-800 dark:text-red-200 leading-relaxed mb-3">
-                    {extractError}
-                  </p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {lastUploadedFiles && (
-                      <button
-                        type="button"
-                        onClick={() => runExtraction(lastUploadedFiles)}
-                        className="px-3 h-9 bg-red-600 hover:bg-red-700 text-white text-[12px] font-semibold transition-colors rounded-none cursor-pointer"
-                      >
-                        Retry Scan
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={handleManualEntry}
-                      className="px-3 h-9 border border-red-600/40 text-red-700 dark:text-red-300 hover:bg-red-500/10 text-[12px] font-semibold transition-colors rounded-none cursor-pointer"
-                    >
-                      Add Classes Manually
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setExtractError(null)}
-                      className="text-[11px] text-muted hover:underline ml-auto cursor-pointer"
-                    >
-                      Dismiss
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Upload Guidance Banner */}
-          <div className="mb-4 p-4 rounded-none border border-line bg-[#F7F7F5]/90 dark:bg-[#121317]/90 text-left">
-            <div className="flex items-center gap-2 mb-2.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-              <span className="text-[12px] font-bold text-black/80 dark:text-[#F4F4F6]">
-                Upload Guidelines
-              </span>
-            </div>
-
-            <div className="flex flex-col gap-2 text-[12px] text-black/75 dark:text-[#A1A1AA] leading-relaxed">
-              <div className="flex items-start gap-2.5">
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0 mt-0.5 text-[13px]">✓</span>
-                <span>
-                  <strong>Upload your class or batch routine:</strong> For circulars with multiple departments, upload only your specific branch or section pages for an accurate timetable.
-                </span>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0 mt-0.5 text-[13px]">✓</span>
-                <span>
-                  <strong>Multi-page documents supported:</strong> You can upload multi-page PDFs or select multiple timetable images at once.
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative group w-full h-[180px] sm:h-[190px] flex flex-col items-center justify-center rounded-none border-2 border-dashed border-line bg-surface-2 hover:bg-surface-2 transition-all cursor-pointer mb-4">
-            <input
-              type="file"
-              multiple
-              accept="image/*,application/pdf"
-              onChange={handleFileUpload}
-              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-            />
-            <Upload className="w-5 h-5 mb-2.5 text-fg" />
-            <h3 className="text-[14px] font-bold text-fg mb-1">
-              Choose a timetable file
-            </h3>
-            <p className="text-[12px] text-muted mb-3">
-              Photo or PDF
-            </p>
-            
-            <div className="px-5 h-[36px] flex items-center justify-center bg-ink text-on-ink font-bold text-[12px] pointer-events-none rounded-none w-fit mx-auto mb-2 shadow-sm">
-              Choose file
-            </div>
-
-            <div className="text-[12px] text-faint font-medium ">
-              JPG · PNG · PDF
-            </div>
-          </div>
-
-          <div className="mt-2 text-center">
-            <button
-              type="button"
-              onClick={handleManualEntry}
-              className="text-[12px] font-medium text-muted hover:text-fg underline underline-offset-4 cursor-pointer transition-colors"
-            >
-              Or create timetable manually without a file
+        <AiUploadPanel
+          kind="timetable"
+          onScan={startScan}
+          error={extractError}
+          onRetry={lastUploadedFiles ? () => runExtraction(lastUploadedFiles) : undefined}
+          onDismissError={() => setExtractError(null)}
+          footer={
+            <button type="button" onClick={handleManualEntry} className="text-[13px] font-medium text-muted hover:text-fg underline underline-offset-4 cursor-pointer transition-colors">
+              No file? Add classes by hand
             </button>
-          </div>
-        </div>
+          }
+        />
       )}
 
-      {step === 'extracting' && (
-        <div className="flex flex-col items-center justify-center py-6 sm:py-10 text-center w-full">
-          <div className="relative mb-6">
-            <div className="w-24 h-24 rounded-full bg-surface-2 border border-line flex items-center justify-center relative">
-              <Bot className="w-12 h-12 text-fg animate-pulse" />
-              <Sparkles className="w-6 h-6 absolute top-1 right-0 text-amber-500 animate-bounce" />
-            </div>
-          </div>
-          
-          <h4 className="text-[18px] font-bold text-fg">
-            Analyzing your timetable...
-          </h4>
-          <p className="text-[14px] text-muted mt-1 mb-8 max-w-[280px]">
-            Reading subjects, times, rooms and days.
-          </p>
-
-          <div className="flex items-center gap-3 w-full max-w-[280px] mx-auto mb-10">
-            <div className="flex-1 h-2 bg-surface-3 rounded-full overflow-hidden">
-              <motion.div 
-                className="h-full bg-emerald-500"
-                initial={{ width: "0%" }}
-                animate={{ width: "90%" }}
-                transition={{ duration: 15, ease: "easeOut" }}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-4 bg-surface-2 text-left border border-line w-full max-w-[320px] rounded-none shadow-sm">
-            <Sparkles className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-            <div className="flex flex-col">
-              <span className="text-[14px] font-bold text-fg">AI is working...</span>
-              <span className="text-[13px] text-muted mt-0.5">This usually takes 10–20 seconds.</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {step === 'extracting' && <AiScanning kind="timetable" files={scanFiles} />}
 
       {step === 'review' && (
         <div className="flex flex-col text-left">

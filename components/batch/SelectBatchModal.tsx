@@ -4,26 +4,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useApp } from '@/context/AppContext';
 import { searchCollegesAsync, CollegeItem } from '@/lib/collegeDirectory';
-import { STANDARD_PROGRAMMES, STANDARD_BRANCHES, filterProgrammes, filterBranches, getCanonicalProgramme } from '@/lib/colleges';
-import { formatBatchDisplayName, getShortCollegeName } from '@/lib/timetableUtils';
+import { filterProgrammes, filterBranches, getCanonicalProgramme } from '@/lib/colleges';
+import { getShortCollegeName } from '@/lib/timetableUtils';
 import { CRApplicationModal } from '@/components/cr/CRApplicationModal';
-import { 
-  School, 
-  GraduationCap, 
-  Building2, 
-  CalendarDays, 
-  Search, 
-  Users, 
-  CheckCircle2, 
-  ArrowRight, 
-  Crown, 
-  Sparkles, 
-  BookOpen, 
-  Clock, 
-  Loader2, 
-  Check, 
-  AlertCircle 
-} from '@/components/ui/icons';
+import { School, GraduationCap, Building2, Users, ArrowRight, Crown, BookOpen, Loader2, Search } from '@/components/ui/icons';
+import { Illustration } from '@/components/ui/Illustration';
+import { HandwrittenText } from '@/components/ui/HandwrittenText';
 import { useRouter } from 'next/navigation';
 
 interface SelectBatchModalProps {
@@ -208,90 +194,153 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
     onClose();
   };
 
-  const isFormComplete = college.trim() && programme.trim() && branch.trim() && semester;
+  const isFormComplete = !!(college.trim() && programme.trim() && branch.trim() && semester);
+  const filled = [college.trim(), programme.trim(), branch.trim(), semester ? 'x' : ''].filter(Boolean).length;
+  const state: 'idle' | 'searching' | 'found' | 'missing' = isSearchingBatch
+    ? 'searching'
+    : matchedBatch
+      ? 'found'
+      : hasSearched && isFormComplete
+        ? 'missing'
+        : 'idle';
+
+  const shortCollege = getShortCollegeName(matchedBatch?.college || college) || college;
+  const sec = (matchedBatch?.section || section || '').trim();
+  // Real member count for this programme (the stored counter drifts), fetched when a batch is matched
+  const [liveCount, setLiveCount] = useState<{ key: string; n: number } | null>(null);
+  const matchedKey: string = matchedBatch?.id || '';
+  useEffect(() => {
+    if (!matchedKey) return;
+    let alive = true;
+    fetch(`/api/batch/count?batchKey=${encodeURIComponent(matchedKey)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (alive && j?.success && typeof j.count === 'number') setLiveCount({ key: matchedKey, n: j.count });
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [matchedKey]);
+  const counted = liveCount && liveCount.key === matchedKey ? liveCount.n : null;
+  const classmates = counted ?? 0;
+  const subjectNames: string[] = (matchedBatch?.subjects || []).map((x: any) => x?.name).filter(Boolean);
+
+  const field =
+    'w-full h-11 bg-surface border border-line flex items-center gap-2.5 px-3 focus-within:border-fg transition-colors';
+  const input = 'w-full min-w-0 bg-transparent text-[15px] text-fg placeholder:text-faint focus:outline-none';
+  const menu = 'absolute top-full left-0 w-full mt-1 max-h-56 overflow-y-auto bg-surface border border-line shadow-xl z-50';
+
+  const footer =
+    state === 'found' ? (
+      <button type="button" onClick={handleJoinBatch} disabled={isJoining} className="btn btn-primary btn-lg w-full">
+        {isJoining ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" /> Joining your class…
+          </>
+        ) : (
+          <>
+            Join this class <ArrowRight className="w-4 h-4" />
+          </>
+        )}
+      </button>
+    ) : state === 'missing' ? (
+      <div className="flex flex-col-reverse sm:flex-row gap-2 w-full">
+        <button type="button" onClick={handleContinuePersonal} className="btn btn-secondary btn-lg w-full sm:flex-1">
+          Continue on my own
+        </button>
+        <button type="button" onClick={() => setShowPilotModal(true)} className="btn btn-primary btn-lg w-full sm:flex-1">
+          <Crown className="w-4 h-4 text-amber-400" /> Set it up for my class
+        </button>
+      </div>
+    ) : undefined;
 
   return (
     <>
       <Modal
         isOpen={isOpen && !showPilotModal}
         onClose={onClose}
-        title="Find Your Class & Batch"
-        description="Select your college, degree, and semester to connect with your classmates and sync your academic routine."
-        maxWidth="4xl"
+        title="Find your class"
+        description="Tell us where you study. We'll match you to your class's live timetable."
+        maxWidth="2xl"
         mobileFullSheet={true}
+        footer={footer}
       >
-        <div className="flex flex-col gap-6 text-left pt-1">
-          
-          {/* Top Form Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-            
-            {/* College Input (Span 7) */}
-            <div className="md:col-span-7 flex flex-col gap-1.5 relative">
-              <label className="text-[12px] font-bold text-fg flex items-center justify-between">
-                <span>College / University *</span>
+        <div className="flex flex-col gap-f5 text-left pt-1">
+          {/* ── Hero ── */}
+          <div className="flex items-center gap-4 border-b border-line-soft pb-f4">
+            <Illustration name="friends" className="h-[92px] w-auto shrink-0 ai-float" />
+            <div className="min-w-0 -rotate-2">
+              <span className="hl-marker text-[26px] leading-none text-fg" style={{ ['--hl-delay' as any]: '1.3s' }}>
+                <HandwrittenText text="let's find your people." playKey="batch-hero" delay={0.3} />
+              </span>
+              <p className="mt-2 rotate-2 text-[13px] text-muted leading-snug">Same class, same timetable, updated for everyone at once.</p>
+            </div>
+          </div>
+
+          {/* ── Form ── */}
+          <div className="flex flex-col gap-4">
+            {/* College */}
+            <div className="relative">
+              <label htmlFor="sb-college" className="mb-1.5 flex items-center justify-between text-[12px] font-semibold text-muted">
+                <span>College or university</span>
                 {isLoadingColleges && (
-                  <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                    <Loader2 className="w-3 h-3 animate-spin" /> Searching...
+                  <span className="flex items-center gap-1 text-[11px] font-medium">
+                    <Loader2 className="w-3 h-3 animate-spin" /> Searching
                   </span>
                 )}
               </label>
-
-              <div className="relative">
-                <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line focus-within:border-line-strong transition-colors">
-                  <School className="w-4 h-4 text-muted shrink-0" />
-                  <input
-                    type="text"
-                    value={college}
-                    onChange={(e) => {
-                      setCollege(e.target.value);
-                      setShowCollegeDropdown(true);
-                    }}
-                    onFocus={() => setShowCollegeDropdown(true)}
-                    onBlur={() => setTimeout(() => setShowCollegeDropdown(false), 250)}
-                    placeholder="Search your college, institute or university..."
-                    className="w-full bg-transparent text-[14px] text-fg focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#71717A]"
-                  />
-                </div>
-
-                {/* Autocomplete Dropdown */}
-                {showCollegeDropdown && suggestedColleges.length > 0 && (
-                  <div className="absolute top-full left-0 w-full mt-1 max-h-56 overflow-y-auto bg-surface border border-line shadow-2xl z-50">
-                    {suggestedColleges.map((col, idx) => (
-                      <div
-                        key={idx}
-                        onMouseDown={() => {
-                          setCollege(col.name);
-                          setShowCollegeDropdown(false);
-                        }}
-                        className="px-4 py-2.5 hover:bg-surface-2 cursor-pointer text-left border-b border-line-soft last:border-0"
-                      >
-                        <p className="text-[13px] font-semibold text-fg">
-                          {col.name}
-                        </p>
-                        <p className="text-[11px] text-muted flex items-center gap-1.5 mt-0.5">
-                          <span>{col.state || 'India'}</span>
-                          {col.shortName && col.shortName !== col.name && (
-                            <span className="bg-black/5 dark:bg-white/10 px-1.5 py-0.2 rounded-none text-[11px] uppercase font-mono">
-                              {col.shortName}
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className={field}>
+                <School className="w-4 h-4 text-muted shrink-0" />
+                <input
+                  id="sb-college"
+                  type="text"
+                  value={college}
+                  onChange={(e) => {
+                    setCollege(e.target.value);
+                    setShowCollegeDropdown(true);
+                  }}
+                  onFocus={() => setShowCollegeDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowCollegeDropdown(false), 250)}
+                  placeholder="Search your college"
+                  autoComplete="off"
+                  className={input}
+                />
+                {college && <span className="text-[11px] text-muted shrink-0">{getShortCollegeName(college)}</span>}
               </div>
+              {showCollegeDropdown && suggestedColleges.length > 0 && (
+                <div className={menu}>
+                  {suggestedColleges.map((col, idx) => (
+                    <button
+                      type="button"
+                      key={idx}
+                      onMouseDown={() => {
+                        setCollege(col.name);
+                        setShowCollegeDropdown(false);
+                      }}
+                      className="w-full text-left px-3.5 py-2.5 hover:bg-surface-2 cursor-pointer border-b border-line-soft last:border-0"
+                    >
+                      <span className="block text-[14px] font-medium text-fg leading-snug">{col.name}</span>
+                      <span className="mt-0.5 flex items-center gap-1.5 text-[12px] text-muted">
+                        {col.state || 'India'}
+                        {col.shortName && col.shortName !== col.name && <span className="px-1.5 bg-surface-2 border border-line-soft text-[11px] font-semibold">{col.shortName}</span>}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Degree / Programme Input (Span 5) */}
-            <div className="md:col-span-5 flex flex-col gap-1.5 relative">
-              <label className="text-[12px] font-bold text-fg">
-                Degree / Programme *
-              </label>
+            {/* Degree + section */}
+            <div className="grid grid-cols-[minmax(0,1fr)_96px] gap-3">
               <div className="relative">
-                <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line focus-within:border-line-strong transition-colors">
+                <label htmlFor="sb-prog" className="block mb-1.5 text-[12px] font-semibold text-muted">
+                  Degree
+                </label>
+                <div className={field}>
                   <GraduationCap className="w-4 h-4 text-muted shrink-0" />
                   <input
+                    id="sb-prog"
                     type="text"
                     value={programme}
                     onChange={(e) => {
@@ -300,258 +349,235 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                     }}
                     onFocus={() => setShowProgrammeDropdown(true)}
                     onBlur={() => setTimeout(() => setShowProgrammeDropdown(false), 200)}
-                    placeholder="e.g. B.Tech, BCA, MCA"
-                    className="w-full bg-transparent text-[14px] text-fg focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#71717A]"
+                    placeholder="B.Tech, BCA, MCA"
+                    autoComplete="off"
+                    className={input}
                   />
                 </div>
-
                 {showProgrammeDropdown && (
-                  <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-surface border border-line shadow-2xl z-50">
+                  <div className={menu}>
                     {filterProgrammes(programme).map((p) => (
-                      <div
+                      <button
+                        type="button"
                         key={p}
                         onMouseDown={() => {
                           setProgramme(p);
                           setShowProgrammeDropdown(false);
                         }}
-                        className="px-4 py-2 hover:bg-surface-2 cursor-pointer text-[13px] font-medium text-fg border-b border-line-soft last:border-0"
+                        className="w-full text-left px-3.5 py-2.5 hover:bg-surface-2 cursor-pointer text-[14px] text-fg border-b border-line-soft last:border-0"
                       >
                         {p}
-                      </div>
+                      </button>
                     ))}
                   </div>
                 )}
               </div>
-            </div>
-
-            {/* Branch / Major Input (Span 6) */}
-            <div className="md:col-span-6 flex flex-col gap-1.5 relative">
-              <label className="text-[12px] font-bold text-fg">
-                Branch / Major *
-              </label>
-              <div className="relative">
-                <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line focus-within:border-line-strong transition-colors">
-                  <Building2 className="w-4 h-4 text-muted shrink-0" />
+              <div>
+                <label htmlFor="sb-sec" className="block mb-1.5 text-[12px] font-semibold text-muted">
+                  Section
+                </label>
+                <div className={field}>
                   <input
+                    id="sb-sec"
                     type="text"
-                    value={branch}
-                    onChange={(e) => {
-                      setBranch(e.target.value);
-                      setShowBranchDropdown(true);
-                    }}
-                    onFocus={() => setShowBranchDropdown(true)}
-                    onBlur={() => setTimeout(() => setShowBranchDropdown(false), 200)}
-                    placeholder="e.g. Computer Science (CSE)"
-                    className="w-full bg-transparent text-[14px] text-fg focus:outline-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#71717A]"
+                    maxLength={6}
+                    value={section}
+                    onChange={(e) => setSection(e.target.value.toUpperCase())}
+                    placeholder="Optional"
+                    autoComplete="off"
+                    className={`${input} uppercase placeholder:normal-case font-semibold`}
                   />
                 </div>
+              </div>
+            </div>
 
-                {showBranchDropdown && (
-                  <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-surface border border-line shadow-2xl z-50">
-                    {filterBranches(branch).slice(0, 10).map((b) => (
-                      <div
+            {/* Branch */}
+            <div className="relative">
+              <label htmlFor="sb-branch" className="block mb-1.5 text-[12px] font-semibold text-muted">
+                Branch
+              </label>
+              <div className={field}>
+                <Building2 className="w-4 h-4 text-muted shrink-0" />
+                <input
+                  id="sb-branch"
+                  type="text"
+                  value={branch}
+                  onChange={(e) => {
+                    setBranch(e.target.value);
+                    setShowBranchDropdown(true);
+                  }}
+                  onFocus={() => setShowBranchDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowBranchDropdown(false), 200)}
+                  placeholder="Computer Science (CSE)"
+                  autoComplete="off"
+                  className={input}
+                />
+              </div>
+              {showBranchDropdown && (
+                <div className={menu}>
+                  {filterBranches(branch)
+                    .slice(0, 10)
+                    .map((b) => (
+                      <button
+                        type="button"
                         key={b}
                         onMouseDown={() => {
                           setBranch(b);
                           setShowBranchDropdown(false);
                         }}
-                        className="px-4 py-2 hover:bg-surface-2 cursor-pointer text-[13px] font-medium text-fg border-b border-line-soft last:border-0"
+                        className="w-full text-left px-3.5 py-2.5 hover:bg-surface-2 cursor-pointer text-[14px] text-fg border-b border-line-soft last:border-0"
                       >
                         {b}
-                      </div>
+                      </button>
                     ))}
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
-            {/* Semester (Span 3) */}
-            <div className="md:col-span-3 flex flex-col gap-1.5">
-              <label className="text-[12px] font-bold text-fg">
-                Semester *
-              </label>
-              <div className="flex items-center gap-2 px-3 py-2.5 bg-surface border border-line h-[43px]">
-                <CalendarDays className="w-4 h-4 text-muted shrink-0" />
-                <select
-                  value={semester}
-                  onChange={(e) => setSemester(Number(e.target.value))}
-                  className="w-full bg-transparent text-[14px] font-medium text-fg focus:outline-none cursor-pointer"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((sem) => (
-                    <option key={sem} value={sem} className="dark:bg-[#121317] dark:text-white">
-                      Semester {sem}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Section / Group (Span 3) */}
-            <div className="md:col-span-3 flex flex-col gap-1.5">
-              <label className="text-[12px] font-bold text-fg">
-                Section (Optional)
-              </label>
-              <div className="flex items-center gap-2 px-3 py-2.5 bg-surface border border-line h-[43px]">
-                <input
-                  type="text"
-                  maxLength={6}
-                  value={section}
-                  onChange={(e) => setSection(e.target.value.toUpperCase())}
-                  placeholder="e.g. A, B"
-                  className="w-full bg-transparent text-[14px] font-mono font-bold text-fg focus:outline-none placeholder:text-[#A0A0A0] uppercase"
-                />
+            {/* Semester chips */}
+            <div>
+              <p className="mb-1.5 text-[12px] font-semibold text-muted">Semester</p>
+              <div className="grid grid-cols-5 sm:grid-cols-10 gap-1.5" role="radiogroup" aria-label="Semester">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => {
+                  const on = Number(semester) === n;
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      role="radio"
+                      aria-checked={on}
+                      onClick={() => setSemester(n)}
+                      className={`h-10 text-[14px] font-semibold tabular-nums border transition-colors cursor-pointer ${
+                        on ? 'bg-ink text-on-ink border-ink' : 'bg-surface text-fg border-line hover:border-line-strong'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
 
-          {/* Bottom Live Result Section */}
-          <div className="border-t border-line-soft pt-5">
-            {isSearchingBatch ? (
-              <div className="py-12 flex flex-col items-center justify-center text-center">
-                <Loader2 className="w-7 h-7 animate-spin text-fg mb-3" />
-                <p className="text-[14px] font-semibold text-fg">
-                  Searching for your batch timetable...
-                </p>
-                <p className="text-[12px] text-muted mt-0.5">
-                  Checking Firestore records for active class schedules
-                </p>
-              </div>
-            ) : matchedBatch ? (
-              /* CASE 1: BATCH FOUND (SUPER PREMIUM SHOWCASE) */
-              <div className="relative overflow-hidden border border-line bg-surface p-5 sm:p-7 shadow-sm">
-                {/* Live Status & Verified Tag */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-700 dark:text-emerald-400">
-                    <span className="relative flex h-2.5 w-2.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                    </span>
-                    <span className="text-[12px] font-mono font-bold ">
-                      Active batch found
-                    </span>
+          {/* ── Result ── */}
+          <div aria-live="polite">
+            {state === 'searching' && (
+              <div className="border border-line bg-surface p-5 flex items-center gap-4">
+                <div className="relative w-16 h-16 shrink-0 border border-line bg-surface-2 overflow-hidden" aria-hidden="true">
+                  <div className="absolute inset-2 grid grid-cols-3 gap-1">
+                    {Array.from({ length: 9 }).map((_, i) => (
+                      <span key={i} className="bg-line" />
+                    ))}
                   </div>
-
-                  <span className="text-[12px] font-mono text-muted flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>Verified Schedule</span>
-                  </span>
+                  <span className="ai-scanline absolute left-0 right-0 h-6" />
                 </div>
+                <div className="min-w-0">
+                  <p className="text-[15px] font-semibold text-fg">Looking for your class…</p>
+                  <p className="mt-0.5 text-[13px] text-muted">
+                    {shortCollege} · {programme} · Sem {semester}
+                  </p>
+                </div>
+              </div>
+            )}
 
-                {/* Batch Title */}
-                <h3 className="text-[20px] sm:text-[22px] font-bold text-fg tracking-tight">
-                  {matchedBatch.branch || branch}
-                </h3>
-                <p className="text-[14px] text-muted mt-1 font-medium">
-                  {matchedBatch.college || college} • {matchedBatch.programme || programme} • Semester {matchedBatch.semester || semester} {matchedBatch.section ? `• Section ${matchedBatch.section}` : section ? `• Section ${section}` : ''}
-                </p>
-
-                {/* PREMIUM ACTIVE STUDENTS SHOWCASE */}
-                <div className="my-5 p-4 sm:p-5 bg-surface-2 border border-[#EAEAEA] dark:border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3.5">
-                    {/* Overlapping Avatar Stack */}
-                    <div className="flex -space-x-2.5 overflow-hidden">
-                      {['#111111', '#2563EB', '#7C3AED', '#059669'].map((bg, i) => (
-                        <div
-                          key={i}
-                          style={{ backgroundColor: bg }}
-                          className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#121317] flex items-center justify-center text-white text-[11px] font-bold shadow-xs"
-                        >
-                          {String.fromCharCode(65 + i)}
-                        </div>
-                      ))}
-                      <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#121317] bg-[#E5E5E5] dark:bg-white/[0.1] flex items-center justify-center text-fg text-[11px] font-bold font-mono">
-                        +{Math.max(1, (matchedBatch.studentCount || 1) - 4)}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-[19px] sm:text-[21px] font-bold font-mono text-fg leading-none">
-                          {matchedBatch.studentCount || 1}
-                        </span>
-                        <span className="text-[14px] font-semibold text-fg">
-                          classmates connected
-                        </span>
-                      </div>
-                      <span className="text-[12px] text-muted mt-0.5">
-                        Live sync for timetable changes & class cancellations
+            {state === 'found' && (
+              <div>
+                <div className="flex justify-end pr-3 pb-1.5 rotate-[2deg] text-[21px] leading-none text-fg" aria-hidden="true">
+                  <span className="hl-marker" style={{ ['--hl-delay' as any]: '1.1s' }}><HandwrittenText text="found them!" playKey="batch-found" delay={0.3} /></span>
+                </div>
+                <div className="sb-found border border-fg bg-surface">
+                  <div className="sheen-ink bg-ink text-on-ink px-4 py-3 flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-[12px] font-semibold">
+                      <span className="relative flex w-2 h-2">
+                        <span className="absolute inset-0 bg-emerald-400 animate-ping opacity-60" />
+                        <span className="relative w-2 h-2 bg-emerald-400" />
                       </span>
+                      Your class is live
+                    </span>
+                    <span className="text-[12px] opacity-70">Kept up to date by your CR</span>
+                  </div>
+                  <div className="p-4 sm:p-5">
+                    <h3 className="text-[19px] sm:text-[21px] font-semibold text-fg leading-snug tracking-tight">{matchedBatch.branch || branch}</h3>
+                    <p className="mt-1 text-[13px] text-muted">
+                      {shortCollege} · {matchedBatch.programme || programme} · Semester {matchedBatch.semester || semester}
+                      {sec ? ` · Section ${sec}` : ''}
+                    </p>
+
+                    <div className="mt-4 grid grid-cols-2 divide-x divide-line-soft border-y border-line-soft">
+                      <div className="py-3 pr-3 flex items-center gap-2.5">
+                        <Users className="w-4 h-4 text-muted shrink-0" />
+                        {counted === null ? (
+                          <span className="h-3.5 w-24 bg-surface-2 animate-pulse" aria-label="Counting classmates" />
+                        ) : (
+                          <p className="text-[14px] text-fg">
+                            {classmates === 0 ? (
+                              'Be the first here'
+                            ) : (
+                              <>
+                                <span className="font-semibold tabular-nums">{classmates}</span> {classmates === 1 ? 'classmate' : 'classmates'}
+                              </>
+                            )}
+                          </p>
+                        )}
+                      </div>
+                      <div className="py-3 pl-3 flex items-center gap-2.5">
+                        <BookOpen className="w-4 h-4 text-muted shrink-0" />
+                        <p className="text-[14px] text-fg">
+                          <span className="font-semibold tabular-nums">{subjectNames.length || matchedBatch.subjects?.length || 0}</span> subjects
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Scheduled Subjects Count Badge */}
-                  <div className="flex items-center gap-2 sm:self-center text-[12px] font-mono font-medium text-muted bg-white dark:bg-black/30 px-3 py-1.5 border border-line-soft shadow-2xs">
-                    <BookOpen className="w-3.5 h-3.5 text-fg" />
-                    <span>{matchedBatch.subjects?.length || 0} Subjects Live</span>
+                    {subjectNames.length > 0 && (
+                      <ul className="mt-3 flex flex-col gap-2">
+                        {subjectNames.slice(0, 4).map((n, i) => (
+                          <li key={n} className="flex items-center gap-2.5 min-w-0 text-[13px] text-fg-2">
+                            <span className={`w-2 h-2 shrink-0 ${['bg-sky-400', 'bg-orange-300', 'bg-emerald-400', 'bg-violet-400'][i % 4]}`} />
+                            <span className="truncate">{n}</span>
+                          </li>
+                        ))}
+                        {subjectNames.length > 4 && <li className="pl-[18px] text-[12px] font-medium text-muted">+{subjectNames.length - 4} more</li>}
+                      </ul>
+                    )}
                   </div>
                 </div>
-
-                {/* Join CTA Button */}
-                <button
-                  type="button"
-                  onClick={handleJoinBatch}
-                  disabled={isJoining}
-                  className="btn btn-primary w-full"
-                >
-                  {isJoining ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Syncing Batch Timetable...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Join Batch & Sync Schedule</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
               </div>
-            ) : hasSearched && isFormComplete ? (
-              /* CASE 2: BATCH NOT FOUND -> APPLY FOR BATCH PILOT */
-              <div className="border border-dashed border-line bg-[#FAFAF8]/70 dark:bg-[#121317] p-6 sm:p-8 text-center flex flex-col items-center justify-center">
-                <div className="w-13 h-13 border border-line-soft bg-white dark:bg-white/[0.04] flex items-center justify-center mb-3 shadow-xs">
-                  <Crown className="w-6 h-6 text-amber-500" />
+            )}
+
+            {state === 'missing' && (
+              <div className="border-2 border-dashed border-amber-500/40 bg-amber-500/[0.06] p-5 sm:p-6 flex flex-col items-center text-center">
+                <div className="relative">
+                  <Illustration name="pilot" className="h-[120px] w-auto ai-float" />
+                  <div className="absolute -right-16 top-2 rotate-[4deg] text-[21px] leading-none text-fg whitespace-nowrap" aria-hidden="true">
+                    <span className="hl-marker" style={{ ['--hl-delay' as any]: '1.2s' }}><HandwrittenText text="be the first!" playKey="batch-pilot" delay={0.4} /></span>
+                  </div>
                 </div>
-                
-                <span className="text-[12px] font-mono font-bold text-amber-600 dark:text-amber-400 mb-1">
-                  No batch found yet
+                <span className="mt-3 inline-flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/15 border border-amber-500/30 text-[11px] font-semibold text-amber-700 dark:text-amber-400">
+                  <Crown className="w-3.5 h-3.5" /> Batch Pilot spot open
                 </span>
-                
-                <h4 className="text-[17px] font-bold text-fg mb-1.5">
-                  Be the Batch Pilot for your class
-                </h4>
-                
-                <p className="text-[13px] text-muted max-w-md mb-5 leading-relaxed">
-                  Nobody has created the official timetable for <strong>{getShortCollegeName(college)} • {branch} (Sem {semester})</strong> yet. Apply as Batch Pilot to setup the timetable and bring your entire class in sync!
+                <h4 className="mt-2 text-[17px] font-semibold text-fg">Your class isn&apos;t here yet</h4>
+                <p className="mt-1.5 max-w-[42ch] text-[13px] leading-relaxed text-muted">
+                  No one has set up {getShortCollegeName(college)} · {branch} · Sem {semester} yet. Set it up once and everyone in your class
+                  gets the timetable, as Batch Pilot.
                 </p>
-
-                <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md justify-center">
-                  <button
-                    type="button"
-                    onClick={() => setShowPilotModal(true)}
-                    className="btn btn-primary"
-                  >
-                    <Crown className="w-4 h-4 text-amber-400" />
-                    <span>Apply for Batch Pilot</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleContinuePersonal}
-                    className="h-11 px-5 border border-line text-fg text-[14px] font-semibold hover:bg-surface-2 transition-colors cursor-pointer"
-                  >
-                    Continue Personal
-                  </button>
-                </div>
               </div>
-            ) : (
-              /* CASE 3: INCOMPLETE SELECTION PROMPT */
-              <div className="py-8 px-4 text-center text-[#888888] dark:text-[#71717A] flex flex-col items-center">
-                <Search className="w-5 h-5 mb-2 opacity-50" />
-                <p className="text-[13px] font-medium">
-                  Select your college, degree, and branch above to check for your active class batch.
-                </p>
+            )}
+
+            {state === 'idle' && (
+              <div className="border border-line-soft bg-surface-2/60 p-5 flex items-center gap-4">
+                <span className="w-11 h-11 shrink-0 flex items-center justify-center bg-surface border border-line">
+                  <Search className="w-5 h-5 text-muted" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[15px] font-semibold text-fg">Your class shows up here</p>
+                  <p className="mt-0.5 text-[13px] text-muted leading-snug">Fill in the details above. We search as you type.</p>
+                  <div className="mt-2.5 flex items-center gap-1" aria-label={`${filled} of 4 filled`}>
+                    {[0, 1, 2, 3].map((i) => (
+                      <span key={i} className={`h-1 w-6 transition-colors ${i < filled ? 'bg-fg' : 'bg-line'}`} />
+                    ))}
+                    <span className="ml-1.5 text-[11px] font-semibold text-muted tabular-nums">{filled}/4</span>
+                  </div>
+                </div>
               </div>
             )}
           </div>

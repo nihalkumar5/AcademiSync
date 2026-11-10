@@ -194,13 +194,24 @@ export function buildElectiveGroups(subjects: Subject[], timetable: ClassSession
   raw.sort((a, b) => (a.slots[0] && b.slots[0] ? slotSort(a.slots[0], b.slots[0]) : a.slots[0] ? -1 : b.slots[0] ? 1 : 0));
 
   const unnamedPicks = raw.filter((g) => !g.named && g.options.length > 1).length;
+  const namedAny = raw.some((g) => g.named);
+  const taken = new Set(raw.map((g) => norm(g.named)).filter(Boolean));
   let n = 0;
+  const nextFree = () => {
+    while (n < 50) {
+      const l = `Elective ${ROMAN[n] || n + 1}`;
+      n++;
+      if (!taken.has(norm(l))) return l;
+    }
+    return 'Elective';
+  };
   return raw.map((g) => {
     const kind: ElectiveKind = g.options.length > 1 ? 'pick' : 'optional';
     let label = g.named;
     if (!label) {
       if (kind === 'optional') label = g.options[0].name;
-      else label = unnamedPicks === 1 ? 'Elective' : `Elective ${ROMAN[n++] || n}`;
+      // One unnamed slot and nothing else named: just "Elective"; otherwise number them, skipping names in use
+      else label = unnamedPicks === 1 && !namedAny ? 'Elective' : nextFree();
     }
     const key = g.named
       ? `l:${norm(g.named)}`

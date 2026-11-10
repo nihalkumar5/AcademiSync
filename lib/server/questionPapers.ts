@@ -8,6 +8,7 @@
 //
 // Duplicates are blocked twice: the same file (SHA-256 of its bytes) and the same paper
 // (college + branch + subject + exam + year + month), both kept as one-doc-per-key indexes.
+import { aiBudget, withTimeout } from './aiRun';
 import { createHash } from 'crypto';
 import { getStorage } from 'firebase-admin/storage';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -154,13 +155,13 @@ Rules:
 - semester: the semester number if printed ("V Sem" → 5, "3rd Semester" → 3), else null.`;
   const parts = files.map((f) => ({ inlineData: { data: f.base64.replace(/^data:[^;]+;base64,/, ''), mimeType: f.mimeType } }));
   const genAI = new GoogleGenerativeAI(apiKey);
+  const budget = aiBudget(45_000); // the upload itself needs time too (route maxDuration = 60)
   for (const name of MODELS) {
+    const slot = budget.slot(25000);
+    if (!slot) break;
     try {
       const model = genAI.getGenerativeModel({ model: name });
-      const result: any = await Promise.race([
-        model.generateContent([prompt, ...parts]),
-        new Promise((_, reject) => setTimeout(() => reject(new Error(`${name} timeout`)), 25000)),
-      ]);
+      const result: any = await withTimeout(model.generateContent([prompt, ...parts]), slot, name);
       const text = String(result.response.text() || '');
       const a = text.indexOf('{');
       const b = text.lastIndexOf('}');

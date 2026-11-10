@@ -255,8 +255,42 @@ const SetupSheet: React.FC<{ open: boolean; onClose: () => void; onSaved: () => 
     });
   };
 
+  // Names stay put: each slot keeps the name students saw, even when a new slot is added before it
+  const currentNames = useMemo(() => {
+    const m = new Map<string, string>();
+    buildElectiveGroups(subjects || [], timetable || []).forEach((g) => g.options.forEach((o) => m.set(o.id, g.label)));
+    return m;
+  }, [subjects, timetable]);
   const save = () => {
-    if (changed) saveElectiveSetup(plan);
+    if (!changed) return onSaved();
+    const final: ElectiveSetupPlan = { marks: { ...plan.marks }, splits: { ...(plan.splits || {}) } };
+    const taken = new Set(preview.filter((g) => g.named).map((g) => g.label.toLowerCase()));
+    const naming = new Map<string, string>();
+    const unnamed = preview.filter((g) => !g.named && g.kind === 'pick');
+    // 1) Slots students already know keep their name
+    unnamed.forEach((g) => {
+      const keep = g.options.map((o) => currentNames.get(o.id)).find((l) => l && !taken.has(l.toLowerCase()));
+      if (keep) {
+        naming.set(g.key, keep);
+        taken.add(keep.toLowerCase());
+      }
+    });
+    // 2) New slots get the next free name
+    unnamed.forEach((g) => {
+      if (naming.has(g.key)) return;
+      const name = nextSlotName(Array.from(taken).map((l) => ({ electiveSlot: l }) as Subject));
+      naming.set(g.key, name);
+      taken.add(name.toLowerCase());
+    });
+    unnamed.forEach((g) => {
+      const label = naming.get(g.key)!;
+      g.options.forEach((o) => {
+        const splitFrom = Object.keys(final.splits || {}).find((id) => o.id.startsWith(`${id}_opt`));
+        if (splitFrom) final.splits![splitFrom] = { ...final.splits![splitFrom], slot: final.splits![splitFrom].slot || label };
+        else final.marks[o.id] = { isElective: true, slot: label };
+      });
+    });
+    saveElectiveSetup(final);
     onSaved();
   };
 
@@ -363,7 +397,7 @@ const SetupSheet: React.FC<{ open: boolean; onClose: () => void; onSaved: () => 
                           type="button"
                           aria-pressed={!!splits[s.id]}
                           onClick={() => setSplits((p) => ({ ...p, [s.id]: !p[s.id] }))}
-                          className={clsx('self-start ml-12 inline-flex items-center gap-1.5 h-8 px-3 border text-[13px] font-semibold cursor-pointer transition-colors', splits[s.id] ? 'bg-ink text-on-ink border-ink' : 'border-line text-fg hover:bg-surface-2')}
+                          className={clsx('self-start ml-12 inline-flex items-center gap-1.5 min-h-8 py-1.5 px-3 border text-left text-[13px] font-semibold cursor-pointer transition-colors', splits[s.id] ? 'bg-ink text-on-ink border-ink' : 'border-line text-fg hover:bg-surface-2')}
                         >
                           {splits[s.id] ? <Check className="w-4 h-4" /> : <Layers className="w-4 h-4" />}
                           {splits[s.id] ? `Splitting into ${parts.length}: ${parts.join(' · ')}` : `Split into ${parts.length} options`}

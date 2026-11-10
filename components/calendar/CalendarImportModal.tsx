@@ -1,4 +1,5 @@
 'use client';
+import { AiScanning, AiUploadPanel } from '@/components/ai/AiScan';
 import { AiUploadError, prepareAiUpload, readAiResponse } from '@/lib/fileCompressor';
 import { motion } from 'framer-motion';
 
@@ -20,6 +21,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
   const { addEvent, addEvents, showToast, user } = useApp();
 
   const [step, setStep] = useState<'upload' | 'extracting' | 'review'>('upload');
+  const [scanFiles, setScanFiles] = useState<File[]>([]);
   const [fileName, setFileName] = useState('');
   const [extractedEvents, setExtractedEvents] = useState<(Omit<AcademicEvent, 'id'> & { startDate?: string; endDate?: string })[]>([]);
 
@@ -90,11 +92,9 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    e.target.value = '';
-    if (files.length === 0) return;
-    // Photos are shrunk on the phone; everything together stays under the upload limit
+  // Photos are shrunk on the phone; everything together stays under the upload limit
+  const startScan = (files: File[]) => {
+    setScanFiles(files);
     prepareAiUpload(files, { maxDim: 2000 })
       .then(runExtraction)
       .catch((err) =>
@@ -198,77 +198,14 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Import Calendar"
-      description="Upload a photo or PDF and we'll extract key dates and events."
+      title="Import academic calendar"
+      description={step === 'review' ? 'Check what we found, then save.' : undefined}
       maxWidth={step === 'review' ? '4xl' : 'md'}
       mobileFullSheet={step === 'review'}
     >
-      {step === 'upload' && (
-        <div className="flex flex-col text-center">
-          <div className="relative group w-full h-[230px] sm:h-[250px] flex flex-col items-center justify-center rounded-none border-2 border-dashed border-line bg-surface-2 hover:bg-surface-2 transition-all cursor-pointer mb-5">
-            <input
-              type="file"
-              accept="image/*,.pdf" multiple
-              onChange={handleFileUpload}
-              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-            />
-            <Upload className="w-6 h-6 mb-3 text-fg" />
-            <h3 className="text-[15px] font-bold text-fg mb-1">
-              Choose a calendar file
-            </h3>
-            <p className="text-[13px] text-muted mb-2">
-              Photo or PDF document
-            </p>
-            
-            <div className="px-6 h-[40px] flex items-center justify-center bg-ink text-on-ink font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto mb-3 shadow-sm">
-              Choose file
-            </div>
+      {step === 'upload' && <AiUploadPanel kind="calendar" onScan={startScan} />}
 
-            <div className="flex items-center gap-2 text-[11px] text-black/50 dark:text-[#A1A1AA] font-medium tracking-[0.5px]">
-              <span className="">JPG · PNG · PDF</span>
-              <span>·</span>
-              <span className="text-amber-700 dark:text-amber-400 font-semibold bg-amber-500/10 dark:bg-amber-400/10 px-2 py-0.5 border border-amber-500/20">Under 3MB</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {step === 'extracting' && (
-        <div className="flex flex-col items-center justify-center py-6 sm:py-10 text-center w-full">
-          <div className="relative mb-6">
-            <div className="w-24 h-24 rounded-full bg-surface-2 border border-line flex items-center justify-center relative">
-              <Bot className="w-12 h-12 text-fg animate-pulse" />
-              <Sparkles className="w-6 h-6 absolute top-1 right-0 text-amber-500 animate-bounce" />
-            </div>
-          </div>
-          
-          <h4 className="text-[18px] font-bold text-fg">
-            Analyzing your calendar...
-          </h4>
-          <p className="text-[14px] text-muted mt-1 mb-8 max-w-[280px]">
-            Reading holidays, exam dates and important events.
-          </p>
-
-          <div className="flex items-center gap-3 w-full max-w-[280px] mx-auto mb-10">
-            <div className="flex-1 h-2 bg-surface-3 rounded-full overflow-hidden">
-              <motion.div 
-                className="h-full bg-emerald-500"
-                initial={{ width: "0%" }}
-                animate={{ width: "90%" }}
-                transition={{ duration: 15, ease: "easeOut" }}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-4 bg-surface-2 text-left border border-line w-full max-w-[320px] rounded-none shadow-sm">
-            <Sparkles className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-            <div className="flex flex-col">
-              <span className="text-[14px] font-bold text-fg">AI is working...</span>
-              <span className="text-[13px] text-muted mt-0.5">This usually takes 10–20 seconds.</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {step === 'extracting' && <AiScanning kind="calendar" files={scanFiles} />}
 
       {step === 'review' && (
         <div className="flex flex-col text-left">

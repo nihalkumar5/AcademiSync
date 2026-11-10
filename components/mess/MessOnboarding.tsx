@@ -1,5 +1,6 @@
 'use client';
 
+import { AiScanning } from '@/components/ai/AiScan';
 import { Illustration } from '@/components/ui/Illustration';
 import { shareLink, PLAY_STORE_URL } from '@/lib/shareUtils';
 import React, { useState, useRef, useEffect } from 'react';
@@ -11,7 +12,7 @@ import { db } from '@/lib/firebase';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 import { MessImportModal } from './MessImportModal';
-import { processMultipleFilesForAi, readAiResponse } from '@/lib/fileCompressor';
+import { AiUploadError, prepareAiUpload, readAiResponse } from '@/lib/fileCompressor';
 import { getAuthHeaders } from '@/lib/authHeaders';
 
 export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: 'join' | 'import' | null }> = ({ onCancel, initialAction }) => {
@@ -24,6 +25,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [scanImages, setScanImages] = useState<{ name: string; base64: string; mimeType: string }[]>([]);
   const [extractedData, setExtractedData] = useState<any>(null);
   const [extractedTimings, setExtractedTimings] = useState<Record<string, string>>({
     Breakfast: '8:00 - 10:00',
@@ -77,11 +79,11 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
     if (selected.length === 0) return;
 
     try {
-      const results = await processMultipleFilesForAi(selected);
+      const results = await prepareAiUpload(selected, { maxDim: 1800 });
       setStep(2);
       processMenu(results);
     } catch (err) {
-      showToast('File Error', 'Failed to process files. Please try again.', 'error');
+      showToast("Can't send these files", err instanceof AiUploadError ? err.message : 'Failed to process files. Please try again.', 'error');
     }
   };
 
@@ -93,6 +95,7 @@ export const MessOnboarding: React.FC<{ onCancel?: () => void; initialAction?: '
   };
 
   const processMenu = async (files: { name: string; base64: string; mimeType: string }[]) => {
+    setScanImages(files);
     setIsProcessing(true);
     setProgress(0);
 
@@ -272,41 +275,7 @@ ${PLAY_STORE_URL}
             exit={{ opacity: 0, y: -10 }}
             className="flex flex-col justify-center flex-1 min-h-[500px] max-w-sm mx-auto w-full"
           >
-            <p className="text-[12px] font-bold text-muted mb-10 text-center">
-              Reading your menu
-            </p>
-
-            <div className="flex flex-col gap-5 mb-12">
-              <div className="flex items-center gap-3">
-                {progress > 20 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-line" />}
-                <span className={`text-[16px] font-medium ${progress > 20 ? 'text-fg' : 'text-muted'}`}>Finding days</span>
-              </div>
-              <div className="flex items-center gap-3">
-                {progress > 40 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-line" />}
-                <span className={`text-[16px] font-medium ${progress > 40 ? 'text-fg' : 'text-muted'}`}>Detecting meals</span>
-              </div>
-              <div className="flex items-center gap-3">
-                {progress > 60 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-line" />}
-                <span className={`text-[16px] font-medium ${progress > 60 ? 'text-fg' : 'text-muted'}`}>Reading dishes</span>
-              </div>
-              <div className="flex items-center gap-3">
-                {progress > 80 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <div className="w-5 h-5 rounded-full border-2 border-line" />}
-                <span className={`text-[16px] font-medium ${progress > 80 ? 'text-fg' : 'text-muted'}`}>Matching timings</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="h-1.5 bg-surface-3 rounded-full flex-1 overflow-hidden">
-                <motion.div 
-                  className="h-full bg-emerald-500 rounded-full" 
-                  initial={{ width: '0%' }}
-                  animate={{ width: `${progress}%` }}
-                />
-              </div>
-              <span className="text-[12px] font-mono text-muted">
-                {Math.floor(progress)}%
-              </span>
-            </div>
+            <AiScanning kind="mess" images={scanImages} />
           </motion.div>
         )}
 

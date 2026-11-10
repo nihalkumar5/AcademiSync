@@ -5,7 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { ClassSession, DayOfWeek } from '@/lib/types';
 import { DAYS_OF_WEEK, sanitizeAcademicTime } from '@/lib/timetableUtils';
 import { Modal } from '../ui/Modal';
-import { Button } from '../ui/Button';
+import { subjectTone } from '@/lib/assignmentDisplay';
 
 export interface AddEditClassModalProps {
   isOpen: boolean;
@@ -149,169 +149,147 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
 
   const selectedSubject = subjects.find(s => s.id === subjectId);
 
+  const mins = (t: string) => {
+    const [h, m] = (t || '0:0').split(':').map(Number);
+    return (h || 0) * 60 + (m || 0);
+  };
+  const fromMins = (n: number) => `${String(Math.floor((n % 1440) / 60)).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}`;
+  const length = mins(endTime) - mins(startTime);
+  const lengthLabel = length > 0 ? (length >= 60 ? `${Math.floor(length / 60)} hr${length % 60 ? ` ${length % 60} min` : ''}` : `${length} min`) : 'Ends before it starts';
+  const isOfficial = !!sessionToEdit && !sessionToEdit.isPersonal;
+  const tone = selectedSubject ? subjectTone(selectedSubject) : null;
+  const field = 'w-full h-11 px-3 border border-line bg-surface text-[15px] text-fg placeholder:text-faint focus:outline-none focus:border-fg transition-colors';
+  const label = 'block mb-1.5 text-[12px] font-semibold text-muted';
+
+  const footer = (
+    <div className="px-5 sm:px-6 pt-3 pb-[max(calc(env(safe-area-inset-bottom)+8px),12px)] flex items-center gap-2">
+      <button type="button" onClick={onClose} className="btn btn-secondary btn-lg">
+        Cancel
+      </button>
+      <button type="submit" form="class-form" disabled={!subjectId || length <= 0} className="btn btn-primary btn-lg flex-1 min-w-0">
+        {sessionToEdit ? 'Save changes' : 'Add class'}
+      </button>
+    </div>
+  );
+
   return (
     <>
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        title={sessionToEdit ? 'Edit Class' : 'Add Class'}
-        description="Configure scheduled slot..."
-        mobileFullSheet={true}
-      >
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          
-          {/* SECTION 1: CLASS */}
-          <div className="flex flex-col gap-3">
-            <span className="section-label">Class</span>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[12px] font-semibold text-fg ">Subject</label>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowSearchModal(true)}
-                  className="w-full px-3 py-2.5 bg-transparent border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors text-left flex items-center justify-between min-h-[46px]"
-                >
-                  <span className="break-words whitespace-normal pr-2">
-                    {(() => {
-                      if (!selectedSubject) return 'Select Subject...';
-                      return selectedSubject.code && selectedSubject.code !== 'UNK' 
-                        ? `${selectedSubject.code} · ${selectedSubject.name}` 
-                        : selectedSubject.name;
-                    })()}
+      <Modal isOpen={isOpen} onClose={onClose} title={sessionToEdit ? 'Edit class' : 'Add class'} mobileFullSheet footer={footer}>
+        <form id="class-form" onSubmit={handleSubmit} className="flex flex-col gap-f5 text-left">
+          {/* Subject */}
+          <section>
+            <span className={label}>Subject</span>
+            <button
+              type="button"
+              onClick={() => setShowSearchModal(true)}
+              className="w-full flex items-center gap-3 p-f3 border border-line bg-surface hover:bg-surface-2 text-left transition-colors cursor-pointer"
+              style={tone ? ({ '--sub': tone.accent, '--sub-dark': tone.darkAccent } as React.CSSProperties) : undefined}
+            >
+              <span className={tone ? 'w-3 h-3 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]' : 'w-3 h-3 shrink-0 bg-line'} aria-hidden="true" />
+              <span className="flex-1 min-w-0">
+                <span className="block text-[16px] font-semibold text-fg leading-snug">{selectedSubject?.name || 'Pick a subject'}</span>
+                {selectedSubject && (
+                  <span className="block mt-0.5 text-[12px] text-muted truncate">
+                    {[selectedSubject.code && selectedSubject.code !== 'UNK' ? selectedSubject.code : '', selectedSubject.facultyName].filter(Boolean).join(' · ')}
                   </span>
-                  <svg className="w-4 h-4 shrink-0 text-fg" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                )}
+              </span>
+              <span className="shrink-0 text-[13px] font-semibold text-fg-2">Change</span>
+            </button>
+          </section>
+
+          {/* When */}
+          <section className="flex flex-col gap-f3">
+            <div>
+              <span className={label}>Day</span>
+              <div role="radiogroup" aria-label="Day" className="grid grid-cols-7 gap-1">
+                {DAYS_OF_WEEK.map((d) => {
+                  const on = d === day;
+                  return (
+                    <button
+                      key={d}
+                      type="button"
+                      role="radio"
+                      aria-checked={on}
+                      aria-label={d}
+                      onClick={() => setDay(d as DayOfWeek)}
+                      className={`h-11 text-[13px] font-semibold transition-colors cursor-pointer ${on ? 'bg-ink text-on-ink' : 'bg-surface-2 text-fg-2 hover:text-fg'}`}
+                    >
+                      {d.slice(0, 3)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className={label} htmlFor="cls-start">Starts</label>
+                <input id="cls-start" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} required className={`${field} font-semibold tabular-nums`} />
+              </div>
+              <div>
+                <label className={label} htmlFor="cls-end">Ends</label>
+                <input id="cls-end" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} required className={`${field} font-semibold tabular-nums`} />
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className={`mr-1 text-[13px] ${length > 0 ? 'text-muted' : 'text-rose-600 dark:text-rose-300 font-semibold'}`}>{lengthLabel}</span>
+              {[
+                { l: '1 hr', d: 55 },
+                { l: '2 hr lab', d: 115 },
+              ].map((q) => (
+                <button key={q.l} type="button" onClick={() => setEndTime(fromMins(mins(startTime) + q.d))} className="h-7 px-2.5 bg-surface-2 text-[12px] font-medium text-fg-2 hover:text-fg cursor-pointer">
+                  {q.l}
                 </button>
+              ))}
+            </div>
+          </section>
+
+          {/* Where & who */}
+          <section className="flex flex-col gap-f3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label className={label} htmlFor="cls-room">{isLab ? 'Lab' : 'Room'}</label>
+                <input id="cls-room" className={field} placeholder={isLab ? 'e.g. AI Lab' : 'e.g. Room 319'} value={room} onChange={(e) => setRoom(e.target.value)} />
+              </div>
+              <div>
+                <label className={label} htmlFor="cls-fac">Teacher</label>
+                <input id="cls-fac" className={field} placeholder="e.g. Dr. Sharma" value={faculty} onChange={(e) => setFaculty(e.target.value)} />
               </div>
             </div>
-          </div>
+            <button type="button" role="switch" aria-checked={isLab} onClick={() => setIsLab(!isLab)} className="w-full flex items-center gap-3 text-left cursor-pointer">
+              <span className="flex-1 min-w-0 text-[14px] font-medium text-fg">Lab / practical</span>
+              <span className={`relative w-11 h-6 shrink-0 rounded-full transition-colors ${isLab ? 'bg-ink' : 'bg-black/15 dark:bg-white/15'}`}>
+                <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-surface shadow transition-all ${isLab ? 'left-[22px]' : 'left-0.5'}`} />
+              </span>
+            </button>
+          </section>
 
-          {/* SECTION 2: SCHEDULE */}
-          <div className="flex flex-col gap-3">
-            <span className="section-label">Schedule</span>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[12px] font-semibold text-fg ">Day</label>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowDayModal(true)}
-                  className="w-full px-3 py-2.5 bg-transparent border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors text-left flex items-center justify-between"
-                >
-                  <span>{day}</span>
-                  <svg className="w-4 h-4 shrink-0 text-fg ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mt-1">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[12px] font-semibold text-fg ">Start time</label>
-                <input
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  required
-                  className="w-full px-3 py-2.5 bg-transparent border border-line text-[15px] font-semibold text-fg focus:outline-none focus:border-line-strong transition-colors"
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[12px] font-semibold text-fg ">End time</label>
-                <input
-                  type="time"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  required
-                  className="w-full px-3 py-2.5 bg-transparent border border-line text-[15px] font-semibold text-fg focus:outline-none focus:border-line-strong transition-colors"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* SECTION 3: LOCATION & FACULTY */}
-          <div className="flex flex-col gap-3">
-            <span className="section-label">Location &amp; faculty</span>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[12px] font-semibold text-fg ">Room / Lab</label>
-                <input
-                  type="text"
-                  placeholder="e.g. 319"
-                  value={room}
-                  onChange={(e) => setRoom(e.target.value)}
-                  required
-                  className="w-full px-3 py-2.5 bg-transparent border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors placeholder:text-[#6F6F6F]/50 dark:placeholder:text-[#71717A]"
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[12px] font-semibold text-fg ">Faculty</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Dr. Santosh"
-                  value={faculty}
-                  onChange={(e) => setFaculty(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-transparent border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors placeholder:text-[#6F6F6F]/50 dark:placeholder:text-[#71717A]"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5 mt-2">
-              <input
-                type="checkbox"
-                id="isLabCheck"
-                checked={isLab}
-                onChange={(e) => setIsLab(e.target.checked)}
-                className="w-4 h-4 rounded-none text-[#111111] focus:ring-[#111111] border-line bg-transparent cursor-pointer"
-              />
-              <label
-                htmlFor="isLabCheck"
-                className="text-[13px] font-medium text-fg cursor-pointer"
-              >
-                Practical / Lab session
-              </label>
-            </div>
-
-            {isBatchCR && profile.isBatchSynced && (
-              <div className="flex items-start gap-2.5 p-3 mt-1 bg-amber-500/10 border border-amber-500/30 rounded-none">
-                <input
-                  type="checkbox"
-                  id="syncWithBatchCheck"
-                  checked={syncWithBatch}
-                  onChange={(e) => setSyncWithBatch(e.target.checked)}
-                  className="w-4 h-4 mt-0.5 rounded-none text-amber-600 focus:ring-amber-500 border-line bg-transparent cursor-pointer"
-                />
-                <div className="flex flex-col">
-                  <label
-                    htmlFor="syncWithBatchCheck"
-                    className="text-[13px] font-semibold text-fg cursor-pointer flex items-center gap-1.5"
+          {/* Pilot: whole batch or just me */}
+          {isBatchCR && profile.isBatchSynced && (
+            <section className="border-t border-line pt-f4">
+              <span className={label}>Who gets this change</span>
+              <div role="radiogroup" className="grid grid-cols-2 gap-1 p-1 bg-surface-2">
+                {[
+                  { on: true, l: 'Whole batch' },
+                  { on: false, l: 'Only me' },
+                ].map((o) => (
+                  <button
+                    key={o.l}
+                    type="button"
+                    role="radio"
+                    aria-checked={syncWithBatch === o.on}
+                    onClick={() => setSyncWithBatch(o.on)}
+                    className={`h-10 text-[14px] font-semibold transition-colors cursor-pointer ${syncWithBatch === o.on ? 'bg-surface text-fg shadow-sm' : 'text-muted hover:text-fg'}`}
                   >
-                    <span>Broadcast to Entire Batch</span>
-                    <span className="text-[12px] px-1.5 py-0.5 bg-amber-500/20 text-amber-700 dark:text-amber-400 font-bold ">Pilot Only</span>
-                  </label>
-                  <p className="text-[11px] text-muted mt-0.5">
-                    {syncWithBatch 
-                      ? '⚠️ This will update the official timetable for all students in this batch.' 
-                      : 'Unchecked: Changes stay personal to your schedule only (safe for testing).'}
-                  </p>
-                </div>
+                    {o.l}
+                  </button>
+                ))}
               </div>
-            )}
-          </div>
-
-          {/* Footer Actions */}
-          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 mt-2 border-t border-line">
-            <button 
-              type="button" 
-              onClick={onClose}
-              className="w-full sm:w-auto px-4 h-11 text-[14px] font-semibold text-fg hover:bg-surface-2 transition-colors"
-            >
-              Cancel
-            </button>
-            <button 
-              type="submit"
-              className="w-full sm:w-auto px-6 h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity shadow-sm"
-            >
-              {sessionToEdit ? 'Edit Class' : '+ Add Class'}
-            </button>
-          </div>
+              <p className="mt-2 text-[12px] leading-[17px] text-muted">
+                {syncWithBatch ? 'Everyone in your batch gets the new timing, with a notification.' : isOfficial ? 'Your batch keeps the old timing; only your timetable changes.' : 'Only your own timetable changes.'}
+              </p>
+            </section>
+          )}
         </form>
       </Modal>
 

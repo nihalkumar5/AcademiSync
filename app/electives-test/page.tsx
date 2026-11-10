@@ -38,6 +38,8 @@ export default function Page() {
 
 function ElectivesTest() {
   const base = useApp() as any;
+  const [mounted, setMounted] = useState(false);
+  React.useEffect(() => setMounted(true), []);
   const [subs, setSubs] = useState<any[]>(SUBS);
   const [tt, setTt] = useState<any[]>(TT);
   const [choice, setChoice] = useState<ElectiveChoice>({});
@@ -66,9 +68,10 @@ function ElectivesTest() {
       setTt(out.timetable);
     },
   };
+  if (!mounted) return null;
   return (
     <AppContext.Provider value={value}>
-      <div className="max-w-xl mx-auto p-4 flex flex-col gap-6 bg-canvas min-h-screen">
+      <div className="max-w-xl mx-auto p-4 flex flex-col gap-6 bg-canvas min-h-screen overflow-x-hidden">
         <ElectivesPromptCard />
         <ElectivesSummary />
         <TodayTimeline />

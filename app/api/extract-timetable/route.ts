@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { aiBudget, withTimeout } from '@/lib/server/aiRun';
 import OpenAI from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { mergeConsecutiveSessions } from '@/lib/timetableUtils';
@@ -138,7 +139,11 @@ async function extractTimetableWithOpenAI(
   return [];
 }
 
+// AI scans can take a while; the model fallbacks share a ~52 s budget (lib/server/aiRun.ts)
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
+  const budget = aiBudget();
   try {
     const body = await req.json().catch(() => ({}));
     const { images, imageBase64, mimeType, fileName, isSample, studentContext } = body;
@@ -335,11 +340,10 @@ For every extracted class session, return:
     if (openAiApiKey && imageList.length > 0 && !hasPdf) {
       const openAiModels = ['gpt-4o', 'gpt-4o-mini'];
       for (const modelName of openAiModels) {
+        const slot = budget.slot(24000);
+        if (!slot) break;
         try {
-          const raw = await Promise.race([
-            extractTimetableWithOpenAI(openAiApiKey, modelName, prompt, imageList),
-            new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`OpenAI ${modelName} timeout`)), 30000))
-          ]);
+          const raw = await withTimeout(extractTimetableWithOpenAI(openAiApiKey, modelName, prompt, imageList), slot, `OpenAI ${modelName}`);
           if (Array.isArray(raw) && raw.length > 0) {
             extractedRawSessions = raw;
             successfulSource = fileName || `OpenAI Vision (${modelName})`;
@@ -370,12 +374,11 @@ For every extracted class session, return:
       }));
 
       for (const modelName of candidateModels) {
+        const slot = budget.slot(20000);
+        if (!slot) break;
         try {
           const model = genAI.getGenerativeModel({ model: modelName });
-          const result: any = await Promise.race([
-            model.generateContent([prompt, ...imageParts]),
-            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 22000))
-          ]);
+          const result: any = await withTimeout(model.generateContent([prompt, ...imageParts]), slot, modelName);
           const responseText = result.response.text();
           let jsonStr = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
           const firstBracket = jsonStr.indexOf('[');

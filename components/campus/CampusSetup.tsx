@@ -8,7 +8,7 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { btn, surface, divider, muted, strong, PageTitle, SectionHead, Badge, SearchField, Empty } from '@/components/admin/AdminUI';
 import { AlertTriangle, CalendarRange, Copy, Edit2, Layers, Loader2, Plus, Trash2, Upload, X } from '@/components/ui/icons';
-import { processMultipleFilesForAi } from '@/lib/fileCompressor';
+import { prepareAiUpload, readAiResponse } from '@/lib/fileCompressor';
 import { CampusCalendar, CalendarYears, SetupBatch, expandCalendar, yearLabel, yearsLabel } from '@/lib/campusSetup';
 
 // Campus admin → Set up: every batch of the college in one place.
@@ -383,13 +383,13 @@ const TimetableSheet: React.FC<{ batch: SetupBatch | null; college: string; onCl
     setReading(true);
     setError('');
     try {
-      const images = await processMultipleFilesForAi(files);
+      const images = await prepareAiUpload(files, { maxDim: 2200 });
       const res = await fetch('/api/extract-timetable', {
         method: 'POST',
         headers: await getAuthHeaders(),
         body: JSON.stringify({ fileName: files[0]?.name, images, studentContext: { college, programme: batch.programme, branch: batch.branch, semester: batch.semester, year: batch.year } }),
       });
-      const d = await res.json().catch(() => ({}));
+      const d = await readAiResponse(res);
       if (!res.ok || !Array.isArray(d.sessions) || !d.sessions.length) throw new Error(d.error || "Couldn't read that timetable. Try a clearer photo.");
       setRows(d.sessions.map((s: any) => ({ day: s.day, startTime: s.startTime, endTime: s.endTime, subjectName: s.subjectName || '', subjectCode: s.subjectCode || '', room: s.room || '', faculty: s.faculty || '', isLab: !!s.isLab })));
     } catch (e: any) {
@@ -496,9 +496,9 @@ const CalendarSheet: React.FC<{ editing: CampusCalendar | 'new' | null; calendar
     setReading(true);
     setError('');
     try {
-      const images = await processMultipleFilesForAi(files);
+      const images = await prepareAiUpload(files, { maxDim: 2200 });
       const res = await fetch('/api/extract-calendar', { method: 'POST', headers: await getAuthHeaders(), body: JSON.stringify({ fileName: files[0]?.name, images }) });
-      const d = await res.json().catch(() => ({}));
+      const d = await readAiResponse(res);
       if (!res.ok || !Array.isArray(d.events) || !d.events.length) throw new Error(d.error || "Couldn't read that calendar. Try a clearer photo or the PDF.");
       const out = expandCalendar(d.events, `campus_${Date.now().toString(36)}`);
       setEvents(out.map((e: any) => ({ id: e.id, date: e.date, title: e.title, type: TYPES.includes(e.type) ? e.type : 'event' })));

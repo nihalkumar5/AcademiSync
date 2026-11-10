@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { aiBudget, withTimeout } from '@/lib/server/aiRun';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logServerError } from '@/lib/errorUtils';
 import { validateServerUploadPayload } from '@/lib/fileSafety';
@@ -8,6 +9,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
+  const budget = aiBudget();
   try {
     // Check if JSON body (from multi-image/PDF converter) or FormData
     let imageList: { name?: string; base64: string; mimeType: string }[] = [];
@@ -118,12 +120,11 @@ Do not include any markdown backticks or explanations, return ONLY raw JSON.`;
 
       let lastError = null;
       for (const modelName of candidateModels) {
+        const slot = budget.slot(20000);
+        if (!slot) break;
         try {
           const model = genAI.getGenerativeModel({ model: modelName });
-          const result: any = await Promise.race([
-            model.generateContent([prompt, ...imageParts]),
-            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 18000))
-          ]);
+          const result: any = await withTimeout(model.generateContent([prompt, ...imageParts]), slot, modelName);
           let text = result.response.text();
           let jsonStr = text.replace(/```json/gi, '').replace(/```/g, '').trim();
           const firstBrace = jsonStr.indexOf('{');

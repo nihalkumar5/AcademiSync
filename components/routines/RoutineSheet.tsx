@@ -45,7 +45,7 @@ const Chip: React.FC<{ on: boolean; onClick: () => void; children: React.ReactNo
     aria-pressed={on}
     aria-label={ariaLabel}
     onClick={onClick}
-    className={`h-11 px-3 border text-[14px] font-medium transition-colors cursor-pointer ${
+    className={`h-11 px-3 inline-flex items-center justify-center gap-1.5 whitespace-nowrap border text-[14px] font-medium transition-colors cursor-pointer ${
       on
         ? 'bg-ink text-on-ink border-line-strong'
         : 'border-line text-fg hover:border-line-strong'
@@ -129,7 +129,7 @@ export const RoutineSheet: React.FC<{
           <div className="mt-2 grid grid-cols-3 gap-2">
             {ROUTINE_CATEGORIES.map((c) => (
               <Chip key={c.id} on={form.category === c.id} onClick={() => set('category', c.id as RoutineCategory)} className="px-1.5 text-[13px] whitespace-nowrap">
-                <Icon3D name={iconForCategory(c.id)} size={16} className="mr-1.5" />
+                <Icon3D name={iconForCategory(c.id)} size={18} className="shrink-0" />
                 {c.label}
               </Chip>
             ))}
@@ -209,11 +209,11 @@ export const RoutineSheet: React.FC<{
         </div>
 
         <div>
-          <p className={label}>Remind me</p>
+          <p className={label}>Remind me <span className="font-normal text-muted">before it starts</span></p>
           <div className="mt-2 grid grid-cols-3 gap-2">
             {REMIND.map((m) => (
               <Chip key={m} on={form.remindBefore === m} onClick={() => set('remindBefore', m)} className="text-[13px]">
-                {m === 0 ? 'On time' : m === 60 ? '1 hr early' : `${m} min early`}
+                {m === 0 ? 'On time' : m === 60 ? '1 hr' : `${m} min`}
               </Chip>
             ))}
           </div>

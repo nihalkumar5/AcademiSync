@@ -1,5 +1,6 @@
 'use client';
 
+import { AiScanning, AiUploadPanel } from '@/components/ai/AiScan';
 import { AiUploadError, prepareAiUpload, readAiResponse } from '@/lib/fileCompressor';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -44,6 +45,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
   const { exams, setFullExams, showToast, user, profile, subjects } = useApp();
 
   const [step, setStep] = useState<'upload' | 'extracting' | 'review'>('upload');
+  const [scanFiles, setScanFiles] = useState<File[]>([]);
   const [extractedExams, setExtractedExams] = useState<ExtractedExam[]>([]);
   const [fileName, setFileName] = useState<string>('');
 
@@ -111,11 +113,9 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    e.target.value = '';
-    if (files.length === 0) return;
-    // Photos are shrunk on the phone; everything together stays under the upload limit
+  // Photos are shrunk on the phone; everything together stays under the upload limit
+  const startScan = (files: File[]) => {
+    setScanFiles(files);
     prepareAiUpload(files, { maxDim: 2200 })
       .then(runExtraction)
       .catch((err) =>
@@ -191,82 +191,25 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Import Exam Timetable"
-      description="Upload a photo or PDF and we'll extract exam dates and syllabus."
+      title="Import exam schedule"
+      description={step === 'review' ? 'Check what we found, then save.' : undefined}
       maxWidth={step === 'review' ? '4xl' : 'md'}
       mobileFullSheet={step === 'review'}
     >
-      {step === 'upload' && (
-        <div className="flex flex-col text-center">
-          {profile?.branch && (
-            <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 bg-surface-2 border border-line-soft text-[12px] text-muted self-center">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Target: <strong className="text-fg">{profile.branch}</strong>{profile.semester ? ` • Sem ${profile.semester}` : ''}</span>
-            </div>
-          )}
-          <div className="relative group w-full h-[220px] sm:h-[240px] flex flex-col items-center justify-center rounded-none border-2 border-dashed border-line bg-surface-2 hover:bg-surface-2 transition-all cursor-pointer mb-5">
-            <input
-              type="file"
-              multiple
-              accept="image/*,application/pdf"
-              onChange={handleFileUpload}
-              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-            />
-            <Upload className="w-6 h-6 mb-3 text-fg" />
-            <h3 className="text-[15px] font-bold text-fg mb-1">
-              Choose an exam schedule file
-            </h3>
-            <p className="text-[13px] text-muted mb-4">
-              Photo or PDF
-            </p>
-            
-            <div className="px-6 h-[40px] flex items-center justify-center bg-ink text-on-ink font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto mb-3 shadow-sm">
-              Choose file
-            </div>
+      {step === 'upload' && <AiUploadPanel kind="exam" onScan={startScan}
+          context={
+            profile?.branch ? (
+              <p className="flex items-center gap-2 px-f3 py-2.5 bg-surface-2 text-[13px] text-muted">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                <span className="min-w-0">
+                  Only exams for <strong className="font-semibold text-fg">{profile.branch}</strong>
+                  {profile.semester ? ` · Sem ${profile.semester}` : ''}
+                </span>
+              </p>
+            ) : undefined
+          } />}
 
-            <div className="text-[12px] text-faint font-medium ">
-              JPG · PNG · PDF
-            </div>
-          </div>
-        </div>
-      )}
-
-      {step === 'extracting' && (
-        <div className="flex flex-col items-center justify-center py-6 sm:py-10 text-center w-full">
-          <div className="relative mb-6">
-            <div className="w-24 h-24 rounded-full bg-surface-2 border border-line flex items-center justify-center relative">
-              <Bot className="w-12 h-12 text-fg animate-pulse" />
-              <Sparkles className="w-6 h-6 absolute top-1 right-0 text-amber-500 animate-bounce" />
-            </div>
-          </div>
-          
-          <h4 className="text-[18px] font-bold text-fg">
-            Analyzing your schedule...
-          </h4>
-          <p className="text-[14px] text-muted mt-1 mb-8 max-w-[280px]">
-            Reading exam dates, times and syllabus.
-          </p>
-
-          <div className="flex items-center gap-3 w-full max-w-[280px] mx-auto mb-10">
-            <div className="flex-1 h-2 bg-surface-3 rounded-full overflow-hidden">
-              <motion.div 
-                className="h-full bg-emerald-500"
-                initial={{ width: "0%" }}
-                animate={{ width: "90%" }}
-                transition={{ duration: 15, ease: "easeOut" }}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-4 bg-surface-2 text-left border border-line w-full max-w-[320px] rounded-none shadow-sm">
-            <Sparkles className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-            <div className="flex flex-col">
-              <span className="text-[14px] font-bold text-fg">AI is working...</span>
-              <span className="text-[13px] text-muted mt-0.5">This usually takes 10–20 seconds.</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {step === 'extracting' && <AiScanning kind="exam" files={scanFiles} />}
 
       {step === 'review' && (
         <div className="flex flex-col text-left">

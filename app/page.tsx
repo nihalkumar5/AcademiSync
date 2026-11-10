@@ -90,7 +90,10 @@ export default function AppHome() {
   useEffect(() => {
     if (isHydrated && Capacitor.isNativePlatform()) {
       // Programmatically hide native splash only when app state is hydrated/ready
-      SplashScreen.hide().catch((err) => console.error('Splash hide error:', err));
+      // Wait two frames so the first screen is painted, then cross-fade the splash away
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        SplashScreen.hide({ fadeOutDuration: 300 }).catch((err) => console.error('Splash hide error:', err));
+      }));
     }
   }, [isHydrated]);
   // Deep link handler: when app is opened via link (cold launch or while running)
@@ -365,7 +368,7 @@ export default function AppHome() {
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-transparent text-[#181716] dark:text-[#F4F1EA]">
+    <div className="app-enter flex min-h-screen w-full bg-transparent text-[#181716] dark:text-[#F4F1EA]">
       {/* iOS Standalone PWA Installation Gate */}
       <IOSAppGate />
 
@@ -398,7 +401,7 @@ export default function AppHome() {
               </a>
             </div>
           )}
-          <div className="w-full max-w-full min-w-0" key={activeView}>
+          <div className="view-enter w-full max-w-full min-w-0" key={activeView}>
             {activeView === 'home' && (
               profile?.role === 'faculty' ? (
                 <FacultyHomeView />

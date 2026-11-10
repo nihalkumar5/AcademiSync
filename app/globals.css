@@ -335,3 +335,107 @@ body.modal-open #mobile-nav {
   .bubble { display: none; }
   .liquid, .glass-level { transition: none; }
 }
+
+/* AI scan: a scan line sweeps the page being read; the pen sparkle twinkles */
+@keyframes aiScan { 0% { top: -12%; } 100% { top: 100%; } }
+@keyframes aiProgress { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
+@keyframes aiFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes aiTwinkle { 0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; } 50% { transform: scale(.8) rotate(20deg); opacity: .7; } }
+@keyframes aiPulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+.ai-scanline {
+  position: absolute; left: 0; right: 0; height: 14%; pointer-events: none;
+  background: linear-gradient(180deg, rgba(24,168,137,0) 0%, rgba(24,168,137,.28) 70%, rgba(24,168,137,.9) 100%);
+  animation: aiScan 1.8s cubic-bezier(.45,0,.55,1) infinite;
+}
+.ai-progress { animation: aiProgress 1.4s ease-in-out infinite; }
+.ai-float { animation: aiFloat 3s ease-in-out infinite; }
+.ai-twinkle { animation: aiTwinkle 1.6s ease-in-out infinite; }
+.ai-pulse { animation: aiPulse 1s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .ai-scanline, .ai-progress, .ai-float, .ai-twinkle, .ai-pulse { animation: none; }
+  .ai-scanline { top: 40%; }
+}
+
+/* ── App launch + view transitions ───────────────────────────── */
+@keyframes appEnter { from { opacity: 0; } to { opacity: 1; } }
+/* opacity only: a transform here would break position:fixed modals and the bottom nav */
+@keyframes viewEnter { from { opacity: 0; } to { opacity: 1; } }
+.app-enter { animation: appEnter 420ms cubic-bezier(.2,.7,.2,1) both; }
+.view-enter { animation: viewEnter 220ms cubic-bezier(.2,.7,.2,1) both; }
+@media (prefers-reduced-motion: reduce) { .app-enter, .view-enter { animation: none; } }
+
+/* ── 404 scene ───────────────────────────────────────────────── */
+.nf-paper {
+  background-image: radial-gradient(rgb(var(--c-line) / 0.9) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+  background-position: center;
+}
+@keyframes nfPop { 0% { opacity: 0; transform: scale(.6); } 70% { opacity: 1; transform: scale(1.06); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes nfFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes nfMissing { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@keyframes nfDraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes nfTrail { to { stroke-dashoffset: -90; } }
+@keyframes nfRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.nf-pop { transform-box: fill-box; transform-origin: center; opacity: 0; animation: nfPop 420ms cubic-bezier(.2,.8,.2,1) forwards; }
+.nf-float { animation: nfFloat 5s ease-in-out infinite; }
+.nf-missing { animation: nfMissing 1.8s ease-in-out 1s infinite; }
+.nf-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: nfDraw 700ms ease-out 1.6s forwards; }
+.nf-draw-late { animation-delay: 2.2s; animation-duration: 250ms; }
+.nf-trail { animation: nfTrail 6s linear infinite; }
+.nf-rise { opacity: 0; animation: nfRise 520ms cubic-bezier(.2,.7,.2,1) forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .nf-pop, .nf-rise { animation: none; opacity: 1; }
+  .nf-float, .nf-missing, .nf-trail { animation: none; }
+  .nf-draw { animation: none; stroke-dashoffset: 0; }
+}
+
+/* ── Onboarding scenes ───────────────────────────────────────── */
+@keyframes onbArrive { 0%, 70% { opacity: 0; transform: scale(1); } 78% { opacity: .55; } 100% { opacity: 0; transform: scale(1.55); } }
+@keyframes onbPop { 0% { opacity: 0; transform: scale(.3); } 70% { opacity: 1; transform: scale(1.15); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes onbRing { 0%, 84%, 100% { transform: rotate(0); } 87% { transform: rotate(-12deg); } 90% { transform: rotate(10deg); } 93% { transform: rotate(-6deg); } 96% { transform: rotate(3deg); } }
+.onb-arrive { transform-box: fill-box; transform-origin: center; opacity: 0; animation: onbArrive 2.8s ease-out infinite; }
+.onb-pop { transform-box: fill-box; transform-origin: center; opacity: 0; animation: onbPop 420ms cubic-bezier(.2,.8,.2,1) forwards; }
+.onb-ring svg { transform-origin: 50% 10%; animation: onbRing 4s ease-in-out 1.2s infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .onb-arrive { animation: none; opacity: 0; }
+  .onb-pop { animation: none; opacity: 1; }
+  .onb-ring svg { animation: none; }
+}
+
+/* ── Find your class: result card ────────────────────────────── */
+@keyframes sbFound { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: none; } }
+.sb-found { animation: sbFound 420ms cubic-bezier(.2,.8,.2,1) both; }
+@media (prefers-reduced-motion: reduce) { .sb-found { animation: none; } }
+
+
+/* ── Yellow highlighter (same yellow family as the Batch Pilot request) ── */
+@keyframes hlSwipe { from { background-size: 0% 100%; } to { background-size: 100% 100%; } }
+.hl-marker {
+  display: inline-block;
+  padding: 0 .18em;
+  margin: 0 -.18em;
+  background-image: linear-gradient(transparent 38%, rgb(253 224 71 / .75) 38%, rgb(253 224 71 / .75) 88%, transparent 88%);
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  animation: hlSwipe 700ms cubic-bezier(.3,.7,.2,1) var(--hl-delay, 1.2s) forwards;
+}
+.dark .hl-marker { background-image: linear-gradient(transparent 38%, rgb(250 204 21 / .3) 38%, rgb(250 204 21 / .3) 88%, transparent 88%); }
+@media (prefers-reduced-motion: reduce) { .hl-marker { animation: none; background-size: 100% 100%; } }
+
+/* ── App gates (Android / iOS) ───────────────────────────────── */
+@keyframes gateNotif { 0%, 12% { transform: translateY(-140%); opacity: 0; } 20%, 70% { transform: translateY(0); opacity: 1; } 80%, 100% { transform: translateY(-140%); opacity: 0; } }
+@keyframes gateFill { from { width: 0; } to { width: 82%; } }
+@keyframes gatePing { 0% { transform: scale(.8); opacity: .9; } 100% { transform: scale(1.7); opacity: 0; } }
+.gate-notif { animation: gateNotif 5.5s cubic-bezier(.2,.8,.2,1) .8s infinite both; }
+.gate-fill { width: 82%; animation: gateFill 1.2s ease-out .4s both; }
+.gate-ping { animation: gatePing 1.2s ease-out infinite; }
+.gate-pop { transform-box: fill-box; animation: onbPop 420ms cubic-bezier(.2,.8,.2,1) 250ms both; }
+@media (prefers-reduced-motion: reduce) {
+  .gate-notif { animation: none; transform: none; opacity: 1; }
+  .gate-fill, .gate-ping, .gate-pop { animation: none; }
+}
+@keyframes gateBar { from { width: 0; } to { width: 100%; } }
+@keyframes gateCaption { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.gate-bar { width: 0; animation: gateBar 2.6s linear forwards; }
+.gate-caption { animation: gateCaption 260ms ease-out both; }
+@media (prefers-reduced-motion: reduce) { .gate-bar { animation: none; width: 100%; } .gate-caption { animation: none; } }

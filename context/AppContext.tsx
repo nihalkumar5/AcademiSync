@@ -883,6 +883,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               driveLink: bSub.driveLink || local.driveLink,
               syllabusLink: bSub.syllabusLink || local.syllabusLink,
               notes: bSub.notes || local.notes,
+              // Syllabus files live on this phone only
+              syllabusFiles: local.syllabusFiles,
               carryRequirements: (bSub.carryRequirements && bSub.carryRequirements.length > 0) 
                 ? bSub.carryRequirements 
                 : (local.carryRequirements || []),
@@ -1018,8 +1020,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
 
     // Listen to Batch Proposed Tasks for Voting & Auto-Sync
+    // proposed_tasks needs a signed-in reader. The cached profile can start this effect before
+    // Firebase has restored the session; a denied listener dies for good, so wait for the user.
     const proposalsRef = collection(db, 'shared_timetables', profile.batchKey, 'proposed_tasks');
-    const unsubProposals = onSnapshot(proposalsRef, (snapshot) => {
+    const unsubProposals = !user?.id ? () => {} : onSnapshot(proposalsRef, (snapshot) => {
       const fetched: BatchProposedTask[] = [];
       snapshot.forEach((docSnap) => {
         fetched.push({ id: docSnap.id, ...docSnap.data() } as BatchProposedTask);
@@ -1260,7 +1264,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       unsubscribe();
       unsubProposals();
     };
-  }, [profile.isBatchSynced, profile.batchKey]);
+  }, [profile.isBatchSynced, profile.batchKey, user?.id]);
 
   // Firebase Realtime Up-Sync (Saves edits to cloud for logged-in user)
   useEffect(() => {
@@ -1778,7 +1782,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const officialBatchTimetable = sourceTt.filter((s) => !s.isPersonal);
 
         const payload = sanitizeForFirestore({
-          ...(newSubjects !== undefined ? { subjects: newSubjects } : { subjects }),
+          // Syllabus files stay on the pilot's phone
+          subjects: (newSubjects !== undefined ? newSubjects : subjects).map(({ syllabusFiles: _files, ...rest }) => rest),
           timetable: officialBatchTimetable,
           ...(newEvents !== undefined ? { events: newEvents } : { events }),
           ...(newExams !== undefined ? { exams: newExams } : { exams }),

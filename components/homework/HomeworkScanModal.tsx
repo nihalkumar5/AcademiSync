@@ -1,10 +1,11 @@
 'use client';
+import { AiScanning, AiUploadPanel } from '@/components/ai/AiScan';
 import { motion } from 'framer-motion';
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { HomeworkPriority } from '@/lib/types';
-import { validateUploadedFile } from '@/lib/fileSafety';
+import { AiUploadError, prepareAiUpload, readAiResponse } from '@/lib/fileCompressor';
 import { getAuthHeaders } from '@/lib/authHeaders';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
@@ -20,6 +21,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
   const { subjects, addHomework, showToast, user } = useApp();
 
   const [step, setStep] = useState<'upload' | 'scanning' | 'review'>('upload');
+  const [scanFiles, setScanFiles] = useState<File[]>([]);
   const [fileName, setFileName] = useState('');
 
   // Editable review fields
@@ -44,7 +46,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
     onClose();
   };
 
-  const runScan = async (name: string, base64?: string, mimeType?: string) => {
+  const runScan = async (name: string, images: { name: string; base64: string; mimeType: string }[]) => {
     setFileName(name);
     setStep('scanning');
 
@@ -54,13 +56,13 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
         headers: await getAuthHeaders(),
         body: JSON.stringify({
           fileName: name,
-          imageBase64: base64,
-          mimeType,
+          images,
+          subjects: subjects.map((s) => s.name).filter(Boolean).slice(0, 40),
           userId: user?.id || (user as any)?.uid || null,
         }),
       });
 
-      const data = await res.json();
+      const data = await readAiResponse(res);
       if (res.status === 429) {
         showToast('Scan Limit', data.error || 'Please wait a few minutes before scanning again.', 'error');
         resetState();
@@ -112,23 +114,12 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
     setStep('review');
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const check = validateUploadedFile({ name: file.name, size: file.size, type: file.type });
-      if (!check.valid) {
-        showToast('Invalid File', check.error || 'Please upload an image or document under 5MB.', 'error');
-        e.target.value = '';
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64 = event.target?.result as string;
-        runScan(file.name, base64, file.type || 'image/jpeg');
-      };
-      reader.readAsDataURL(file);
-    }
+  // Every page goes to the AI, shrunk on the phone
+  const startScan = (files: File[]) => {
+    setScanFiles(files);
+    prepareAiUpload(files, { maxDim: 2000, maxFiles: 5 })
+      .then((images) => runScan(files.length === 1 ? files[0].name : `${files.length} pages`, images))
+      .catch((err) => showToast("Can't send this file", err instanceof AiUploadError ? err.message : 'Could not read the file. Try again.', 'error'));
   };
 
   const handleConfirmSave = (e: React.FormEvent) => {
@@ -154,72 +145,14 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Scan Homework"
-      description="Upload a photo or PDF and we'll extract the assignment details."
+      title="Scan assignment"
+      description={step === 'review' ? 'Check what we found, then save.' : undefined}
       maxWidth="md"
       mobileFullSheet={step === 'review'}
     >
-      {step === 'upload' && (
-        <div className="flex flex-col text-center">
-          <div className="relative group w-full h-[220px] sm:h-[240px] flex flex-col items-center justify-center rounded-none border-2 border-dashed border-line bg-surface-2 hover:bg-surface-2 transition-all cursor-pointer mb-5">
-            <input
-              type="file"
-              accept="image/*,.pdf"
-              onChange={handleFileUpload}
-              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-            />
-            <Upload className="w-6 h-6 mb-3 text-fg" />
-            <h3 className="text-[15px] font-bold text-fg mb-1">
-              Choose an assignment file
-            </h3>
-            <p className="text-[13px] text-muted mb-4">
-              Photo or PDF
-            </p>
-            
-            <div className="px-6 h-[40px] flex items-center justify-center bg-ink text-on-ink font-bold text-[13px] pointer-events-none rounded-none w-fit mx-auto mb-3 shadow-sm">
-              Choose file
-            </div>
+      {step === 'upload' && <AiUploadPanel kind="assignment" maxFiles={5} onScan={startScan} />}
 
-            <div className="text-[12px] text-faint font-medium ">
-              JPG · PNG · PDF
-            </div>
-          </div>
-        </div>
-      )}
-
-      {step === 'scanning' && (
-        <div className="flex flex-col items-center justify-center py-6 sm:py-10 text-center w-full">
-          <div className="relative mb-6">
-            <div className="w-24 h-24 rounded-full bg-surface-2 border border-line flex items-center justify-center relative">
-              <Bot className="w-12 h-12 text-fg animate-pulse" />
-              <Sparkles className="w-6 h-6 absolute top-1 right-0 text-amber-500 animate-bounce" />
-            </div>
-          </div>
-          
-          <div className="w-full max-w-[280px] flex flex-col gap-2 mb-6">
-            <div className="flex items-center justify-between text-[12px] font-bold text-black/60 dark:text-white/40">
-              <span>Scanning with Gemini</span>
-              <span className="font-mono">AI AUTO-PARSE</span>
-            </div>
-            <div className="flex-1 h-2 bg-surface-3 rounded-full overflow-hidden">
-              <motion.div 
-                className="h-full bg-emerald-500"
-                initial={{ width: "0%" }}
-                animate={{ width: "90%" }}
-                transition={{ duration: 15, ease: "easeOut" }}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-4 bg-surface-2 text-left border border-line w-full max-w-[320px] rounded-none shadow-sm">
-            <Sparkles className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-            <div className="flex flex-col">
-              <span className="text-[14px] font-bold text-fg">AI is reading assignment...</span>
-              <span className="text-[13px] text-muted mt-0.5">Detecting subject, deadline, priority, and problem details.</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {step === 'scanning' && <AiScanning kind="assignment" files={scanFiles} />}
 
       {step === 'review' && (
         <form onSubmit={handleConfirmSave} className="flex flex-col text-left">

@@ -79,7 +79,8 @@ export interface Subject {
   isPersonal?: boolean;
   isElective?: boolean;
   /** Elective slot name given by the pilot ("Elective I"); courses with the same name are one pick-one group */
-  electiveSlot?: string;
+  electiveSlot?: string;  /** Syllabus files kept on this phone (lib/taskFiles.ts); never synced to the batch */
+  syllabusFiles?: { id: string; name: string; type: string; size: number }[];
 }
 
 export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';

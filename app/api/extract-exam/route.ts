@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
+import { aiBudget, istToday, withTimeout } from '@/lib/server/aiRun';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logServerError } from '@/lib/errorUtils';
 import { validateServerUploadPayload } from '@/lib/fileSafety';
 import { guardAiRequest } from '@/lib/aiGuard';
 
+// AI scans can take a while; the model fallbacks share a ~52 s budget (lib/server/aiRun.ts)
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
+  const budget = aiBudget();
   try {
     const body = await req.json().catch(() => ({}));
     const { images, imageBase64, mimeType, fileName, studentContext } = body;
@@ -79,7 +84,7 @@ CRITICAL INSTRUCTIONS FOR TARGET BRANCH CODE & SEMESTER ISOLATION:
 
 4. ACCURATE EXAM DATE & TIMINGS (SEPARATE DATE AND TIME FIELDS):
 - "date": Strict calendar date in "YYYY-MM-DD" format (e.g., "2026-10-25"). Do NOT attach time, 'T', or 'Z' to this field.
-  * Parse Day, Month, and Year from the sheet. If Year is not stated, assume current academic year (${new Date().getFullYear()}).
+  * Parse Day, Month, and Year from the sheet. Today is ${istToday().label}. If the year is not stated, use the year that makes the date the NEXT upcoming one (an exam sheet in November listing January dates means January of next year).
 - "time": Formatted human-readable time string for the exam shift/slot (e.g., "09:30 AM - 12:30 PM", "10:00 AM - 01:00 PM", or "02:00 PM - 05:00 PM").
   * Morning slots (09:00, 09:30, 10:00) are AM. Afternoon slots (01:30, 02:00, 02:30) are PM.
 - "durationMinutes": Calculate duration in minutes (e.g., 180 for a 3-hour exam, 120 for 2 hours, 90 for 1.5 hours).
@@ -107,12 +112,11 @@ Return ONLY a raw JSON array:
       }));
 
       for (const modelName of candidateModels) {
+        const slot = budget.slot(20000);
+        if (!slot) break;
         try {
           const model = genAI.getGenerativeModel({ model: modelName });
-          const result: any = await Promise.race([
-            model.generateContent([prompt, ...imageParts]),
-            new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timeout`)), 18000))
-          ]);
+          const result: any = await withTimeout(model.generateContent([prompt, ...imageParts]), slot, modelName);
           const responseText = result.response.text();
           let jsonStr = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
           const firstBracket = jsonStr.indexOf('[');

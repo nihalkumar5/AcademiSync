@@ -71,14 +71,6 @@ const STATUSES: { id: HomeworkStatus; label: string }[] = [
   { id: 'Completed', label: 'Done' },
 ];
 
-const readAsDataUrl = (f: Blob) =>
-  new Promise<string>((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result || ''));
-    r.onerror = () => reject(r.error);
-    r.readAsDataURL(f);
-  });
-
 export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({ isOpen, onClose, homeworkToEdit, prefilledData }) => {
   const { subjects, addHomework, updateHomework, deleteHomework, profile, proposeBatchTask, isBatchCR, showToast } = useApp();
 

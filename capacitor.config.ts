@@ -29,8 +29,10 @@ const config: CapacitorConfig = {
       forceCodeForRefreshToken: true,
     },
     SplashScreen: {
-      launchShowDuration: 5000,
-      launchAutoHide: false,
+      launchShowDuration: 6000,
+      // Safety cap: if the site is slow or offline the splash still clears; the app hides it sooner once ready
+      launchAutoHide: true,
+      launchFadeOutDuration: 300,
       backgroundColor: '#FFFFFF',
       androidScaleType: 'CENTER_CROP',
       showSpinner: false,
