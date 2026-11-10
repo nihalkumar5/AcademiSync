@@ -205,7 +205,7 @@ export const Header: React.FC = () => {
                 <div className="fixed inset-0 z-40 sm:hidden" onClick={() => setAddMenuOpen(false)} />
                 <div
                   role="menu"
-                  className="lg absolute right-0 mt-2.5 w-[min(320px,calc(100vw-24px))] rounded-[22px] overflow-hidden z-50 text-left origin-top-right animate-[menuIn_160ms_cubic-bezier(0.16,1,0.3,1)] [--lg-tint-a:0.8] dark:[--lg-tint-a:0.82] [--lg-blur:24px]"
+                  className="lg lg-menu absolute right-[-48px] md:right-0 mt-2.5 w-[min(320px,calc(100vw-24px))] rounded-[22px] overflow-hidden z-50 text-left origin-top-right animate-[menuIn_160ms_cubic-bezier(0.16,1,0.3,1)]"
                 >
                   {createSections.map((section, si) => (
                     <div key={section.title} className={si > 0 ? 'border-t border-black/[0.06] dark:border-white/[0.08]' : ''}>

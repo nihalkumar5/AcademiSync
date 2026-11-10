@@ -573,3 +573,22 @@ body.modal-open #mobile-nav {
 }
 .lg-bar .lg-lens { background: rgb(0 0 0 / 0.075); }
 .dark .lg-bar .lg-lens { background: rgb(255 255 255 / 0.14); }
+
+/* Create (+) menu: solid so the page never shows through the list of actions */
+.lg-menu {
+  --lg-tint: var(--c-surface);
+  --lg-tint-a: 1;
+  --lg-blur: 30px;
+  box-shadow:
+    inset 0 1px 0.5px rgb(255 255 255 / 0.9),
+    0 0 0 0.5px rgb(0 0 0 / 0.1),
+    0 24px 60px -20px rgb(0 0 0 / 0.35);
+}
+.dark .lg-menu {
+  --lg-tint: var(--c-surface);
+  --lg-tint-a: 1;
+  box-shadow:
+    inset 0 1px 0.5px rgb(255 255 255 / 0.1),
+    0 0 0 0.5px rgb(255 255 255 / 0.1),
+    0 24px 60px -16px rgb(0 0 0 / 0.8);
+}
