@@ -176,6 +176,9 @@ export const SettingsView: React.FC = () => {
   const [showCollegeDropdown, setShowCollegeDropdown] = useState(false);
   const [showProgrammeDropdown, setShowProgrammeDropdown] = useState(false);
   const [showBranchDropdown, setShowBranchDropdown] = useState(false);
+  // Department search text while the picker is open; null = closed (input shows the chosen department)
+  const [departmentQuery, setDepartmentQuery] = useState<string | null>(null);
+  const departmentBlurTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [rollNumber, setRollNumber] = useState(profile.rollNumber);
   const [email, setEmail] = useState(profile.email);
   const [programme, setProgramme] = useState<string>(
@@ -817,13 +820,57 @@ ${PLAY_STORE_URL}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
                       <label className="section-label">Department</label>
-                      <input
-                        type="text"
-                        value={facultyDepartment}
-                        onChange={(e) => setFacultyDepartment(e.target.value)}
-                        placeholder="e.g. Computer Science &amp; Engineering"
-                        className="px-3.5 py-2.5 bg-surface border border-line text-sm font-medium text-fg focus:outline-none"
-                      />
+                      {/* Pick-only: the same branch list students use (CSE, IT, DS & AI…). Typing only filters it;
+                          leaving without picking keeps the previously chosen department. */}
+                      <div className="relative w-full">
+                        <input
+                          type="text"
+                          value={departmentQuery ?? facultyDepartment}
+                          onChange={(e) => setDepartmentQuery(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              const matches = filterBranches(departmentQuery ?? '');
+                              if (matches.length > 0) setFacultyDepartment(matches[0]);
+                              setDepartmentQuery(null);
+                              e.currentTarget.blur();
+                            } else if (e.key === 'Escape') {
+                              setDepartmentQuery(null);
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          onFocus={() => {
+                            // A quick re-tap must not be closed by the previous blur's timer
+                            if (departmentBlurTimer.current) clearTimeout(departmentBlurTimer.current);
+                            setDepartmentQuery('');
+                          }}
+                          onBlur={() => {
+                            departmentBlurTimer.current = setTimeout(() => setDepartmentQuery(null), 200);
+                          }}
+                          placeholder={facultyDepartment || 'Select your department'}
+                          autoComplete="off"
+                          className="w-full px-3.5 py-2.5 bg-surface border border-line text-sm font-medium text-fg focus:outline-none"
+                        />
+                        {departmentQuery !== null && (
+                          <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-surface border border-line shadow-2xl z-50">
+                            {filterBranches(departmentQuery).length > 0 ? (
+                              filterBranches(departmentQuery).map((b) => (
+                                <div
+                                  key={b}
+                                  onMouseDown={() => { setFacultyDepartment(b); setDepartmentQuery(null); }}
+                                  className={`px-4 py-2 hover:bg-surface-2 cursor-pointer text-[13px] font-medium text-fg border-b border-[#D9D9D6] dark:border-white/[0.06] last:border-0 ${b === facultyDepartment ? 'bg-surface-2' : ''}`}
+                                >
+                                  {b}
+                                </div>
+                              ))
+                            ) : (
+                              <div className="px-4 py-2 text-xs text-muted font-mono">
+                                No matching department
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-1.5">
