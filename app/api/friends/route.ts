@@ -4,6 +4,11 @@ import { getVerifiedUser } from '@/lib/serverAuth';
 import {
   FriendError,
   answerRequest,
+  blockFriend,
+  openChat,
+  openPlanChat,
+  pingChat,
+  reportChat,
   cancelPlan,
   createPlan,
   loadFriends,
@@ -66,6 +71,19 @@ export async function POST(req: Request) {
         return ok({});
       case 'cancelPlan':
         await cancelPlan(uid, b.id);
+        return ok({});
+      case 'openChat':
+        return ok({ chatId: await openChat(uid, b.uid) });
+      case 'openPlanChat':
+        return ok({ chatId: await openPlanChat(uid, b.id) });
+      case 'chatPing':
+        await pingChat(uid, b.chatId);
+        return ok({});
+      case 'reportChat':
+        await reportChat(uid, b.chatId, b.messageId, b.reason);
+        return ok({});
+      case 'block':
+        await blockFriend(uid, b.uid);
         return ok({});
       case 'routineShares':
         return ok({ data: await loadRoutineShares(uid) });

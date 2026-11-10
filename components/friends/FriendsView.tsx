@@ -1,12 +1,12 @@
 'use client';
 
 import { SignInPanel } from '@/components/auth/SignInPrompt';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import { useApp } from '@/context/AppContext';
 import { Modal } from '@/components/ui/Modal';
 import { Illustration } from '@/components/ui/Illustration';
-import { AlertTriangle, Camera, Check, ChevronRight, Clock, Copy, EyeOff, Loader2, MoreVertical, Search, Send, Share2, UserPlus, Users, X } from '@/components/ui/icons';
+import { AlertTriangle, Ban, Camera, Check, ChevronRight, Clock, Copy, EyeOff, Loader2, MoreVertical, Search, Send, Share2, UserPlus, Users, X } from '@/components/ui/icons';
 import { getAvatarSeed, getAvatarSrc } from '@/lib/avatar';
 import {
   CODE_RE,
@@ -26,6 +26,9 @@ import {
 } from '@/lib/friends';
 import { QrCode } from './QrCode';
 import { friendsApi, useFriends } from './friendsClient';
+import { ChatSummary, blockPerson, openDmChat, openPlanChat, useChats } from './chat/chatClient';
+import { ChatThread } from './chat/ChatThread';
+import { ChatRowButton, ChatsSection, FreeNowStrip, PlanCard } from './FriendsSocial';
 
 // Friends (same campus only): add by QR / code / classmates, see who's free now, find time
 // together, make quick plans, and share where you are for an hour. Privacy first: friends only
@@ -595,6 +598,12 @@ export const FriendsView: React.FC = () => {
   const [menu, setMenu] = useState<string | null>(null);
   const [busy, setBusy] = useState<string>('');
   const [, tick] = useState(0);
+  const { chats } = useChats(user?.id);
+  const [chatStub, setChatStub] = useState<ChatSummary | null>(null);
+  const [opening, setOpening] = useState<string | null>(null);
+  // The open chat follows its live doc once it exists (new messages, names)
+  const openChat = chatStub ? chats.find((c) => c.id === chatStub.id) || chatStub : null;
+  const closeChat = useCallback(() => setChatStub(null), []);
 
   // Live clock for "free till…" + friend codes arriving from a QR link
   useEffect(() => {
@@ -637,6 +646,52 @@ export const FriendsView: React.FC = () => {
     }
   };
 
+  const openFriendChat = async (f: PersonLite) => {
+    if (!user?.id || opening) return;
+    setOpening(f.uid);
+    try {
+      const id = await openDmChat(f.uid);
+      setChatStub(chats.find((c) => c.id === id) || { id, type: 'dm', members: [user.id, f.uid], names: { [f.uid]: f.name }, lastMessage: null, updatedAt: 0, unread: false });
+    } catch (e: any) {
+      showToast?.("Couldn't open chat", e?.message || 'Try again.', 'error');
+    } finally {
+      setOpening(null);
+    }
+  };
+  const openPlanThread = async (p: { id: string; title: string; byUid: string; invited: PersonLite[]; at: string }) => {
+    if (!user?.id || opening) return;
+    setOpening(p.id);
+    try {
+      const id = await openPlanChat(p.id);
+      setChatStub(chats.find((c) => c.id === id) || { id, type: 'plan', planId: p.id, title: p.title, at: p.at, members: [p.byUid, ...p.invited.map((x) => x.uid)], names: {}, lastMessage: null, updatedAt: 0, unread: false });
+    } catch (e: any) {
+      showToast?.("Couldn't open chat", e?.message || 'Try again.', 'error');
+    } finally {
+      setOpening(null);
+    }
+  };
+
+  // A push notification opens its chat: /?view=friends&chat=<id>
+  const deepLinked = useRef(false);
+  useEffect(() => {
+    if (deepLinked.current || !chats.length) return;
+    let id: string | null = null;
+    try {
+      id = new URLSearchParams(window.location.search).get('chat');
+    } catch {}
+    if (!id) return;
+    const c = chats.find((x) => x.id === id);
+    if (c) {
+      deepLinked.current = true;
+      setChatStub(c);
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('chat');
+        window.history.replaceState({}, '', url.toString());
+      } catch {}
+    }
+  }, [chats]);
+
   const act = async (key: string, body: any, toast?: [string, string]) => {
     setBusy(key);
     try {
@@ -659,6 +714,12 @@ export const FriendsView: React.FC = () => {
   const hidden = withStatus.filter((x) => x.s.kind === 'hidden');
   const me = data?.me || null;
   const myPlace = placeOf(me?.status?.place);
+  const people = useMemo(() => {
+    const m: Record<string, PersonLite> = {};
+    (data?.friends || []).forEach((f) => (m[f.uid] = f));
+    (data?.plans || []).forEach((p) => p.invited.forEach((x) => (m[x.uid] ??= x)));
+    return m;
+  }, [data]);
 
   const header = (
     <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -708,6 +769,7 @@ export const FriendsView: React.FC = () => {
             </p>
           )}
         </div>
+        <ChatRowButton onClick={() => openFriendChat(f)} label={`Chat with ${f.name}`} />
         <button type="button" aria-label={`Options for ${f.name}`} onClick={() => setMenu(menu === f.uid ? null : f.uid)} className="w-8 h-8 flex items-center justify-center text-muted hover:text-fg cursor-pointer">
           <MoreVertical className="w-4 h-4" />
         </button>
@@ -728,6 +790,22 @@ export const FriendsView: React.FC = () => {
                 className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] font-medium text-rose-600 dark:text-rose-400 hover:bg-surface-2 text-left cursor-pointer"
               >
                 <X className="w-4 h-4" /> Remove friend
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setMenu(null);
+                  try {
+                    await blockPerson(f.uid);
+                    showToast?.('Blocked', `${f.name} can't message or add you.`, 'info');
+                    reload();
+                  } catch (e: any) {
+                    showToast?.("Couldn't block", e?.message || 'Try again.', 'error');
+                  }
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] font-medium text-rose-600 dark:text-rose-400 hover:bg-surface-2 text-left cursor-pointer"
+              >
+                <Ban className="w-4 h-4" /> Block
               </button>
             </div>
           </>
@@ -773,6 +851,8 @@ export const FriendsView: React.FC = () => {
   } else if (data) {
     body = (
       <div className="flex flex-col gap-f5">
+        <FreeNowStrip people={freeNow} onOpen={(f) => openFriendChat(f)} />
+
         {/* Where am I + privacy */}
         <section className="border border-line bg-surface">
           <div className="px-f4 pt-f3 pb-3">
@@ -829,50 +909,26 @@ export const FriendsView: React.FC = () => {
           </section>
         )}
 
+        <ChatsSection chats={chats} me={user.id} people={people} onOpen={(c) => setChatStub(c)} />
+
         {/* Plans */}
         {data.plans.length > 0 && (
           <section>
             <h3 className="mb-f3 text-[17px] font-semibold text-fg tracking-tight">Plans</h3>
             <div className="flex flex-col gap-2.5">
-              {data.plans.map((p) => {
-                const at = new Date(p.at);
-                const mine = myAnswers[p.id] ?? p.responses[data.me.uid];
-                const answerOf = (id: string) => (id === data.me.uid ? mine : p.responses[id]);
-                const going = [p.byUid, ...p.invited.map((x) => x.uid)].filter((id) => answerOf(id) === 'in');
-                const names = (id: string) => (id === data.me.uid ? 'You' : id === p.byUid ? p.byName : p.invited.find((x) => x.uid === id)?.name.split(' ')[0] || 'Friend');
-                return (
-                  <article key={p.id} className="border border-line bg-surface p-f4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-[16px] font-semibold text-fg truncate">{p.title}</p>
-                        <p className="mt-0.5 text-[13px] text-muted">
-                          <Clock className="inline w-3.5 h-3.5 -mt-0.5 mr-1" />
-                          {dayLabel(ymd(at))}, {clock(minutesOf(at))} · by {p.mine ? 'you' : p.byName}
-                        </p>
-                      </div>
-                      {p.mine && (
-                        <button type="button" disabled={!!busy} onClick={() => act(`cp_${p.id}`, { action: 'cancelPlan', id: p.id }, ['Plan cancelled', p.title])} className="text-[12px] font-semibold text-muted hover:text-rose-600 cursor-pointer">
-                          Cancel
-                        </button>
-                      )}
-                    </div>
-                    <p className="mt-2.5 text-[13px] text-fg-2">
-                      <span className="font-semibold text-emerald-700 dark:text-emerald-400">{going.length} in</span>
-                      {going.length > 0 && `: ${going.map(names).join(', ')}`}
-                    </p>
-                    {!p.mine && (
-                      <div className="mt-3 grid grid-cols-2 gap-2">
-                        <button type="button" aria-pressed={mine === 'in'} onClick={() => mine !== 'in' && respondToPlan(p.id, p.title, 'in', mine)} className={clsx('btn h-9 text-[13px]', mine === 'in' ? 'btn-primary' : 'btn-secondary')}>
-                          <Check className="w-4 h-4" /> I&apos;m in
-                        </button>
-                        <button type="button" aria-pressed={mine === 'out'} onClick={() => mine !== 'out' && respondToPlan(p.id, p.title, 'out', mine)} className={clsx('btn h-9 text-[13px]', mine === 'out' ? 'btn-primary' : 'btn-secondary')}>
-                          Can&apos;t
-                        </button>
-                      </div>
-                    )}
-                  </article>
-                );
-              })}
+              {data.plans.map((p) => (
+                <PlanCard
+                  key={p.id}
+                  plan={p}
+                  me={data.me.uid}
+                  myAnswer={myAnswers[p.id]}
+                  busy={!!busy}
+                  onRespond={(answer) => respondToPlan(p.id, p.title, answer, myAnswers[p.id] ?? p.responses[data.me.uid])}
+                  onCancel={() => act(`cp_${p.id}`, { action: 'cancelPlan', id: p.id }, ['Plan cancelled', p.title])}
+                  onChat={() => openPlanThread(p)}
+                  onCelebrate={(names) => showToast?.(`${names.join(', ')} ${names.length > 1 ? 'are' : 'is'} in! 🎉`, p.title, 'success')}
+                />
+              ))}
             </div>
           </section>
         )}
@@ -889,42 +945,17 @@ export const FriendsView: React.FC = () => {
           </section>
         ) : (
           <>
-            {freeNow.length > 0 && (
-              <section>
-                <div className="flex items-baseline justify-between gap-3 mb-f3">
-                  <h3 className="text-[17px] font-semibold text-fg tracking-tight">Free now</h3>
-                  <span className="text-[13px] text-muted tabular-nums">{freeNow.length}</span>
-                </div>
-                <ul className="border border-line bg-surface divide-y divide-line-soft">
-                  {freeNow.map(({ f, s }) => (
-                    <FriendRow key={f.uid} f={f} s={s} />
-                  ))}
-                </ul>
-              </section>
-            )}
-            {inClass.length > 0 && (
-              <section>
-                <div className="flex items-baseline justify-between gap-3 mb-f3">
-                  <h3 className="text-[17px] font-semibold text-fg tracking-tight">In class</h3>
-                  <span className="text-[13px] text-muted tabular-nums">{inClass.length}</span>
-                </div>
-                <ul className="border border-line bg-surface divide-y divide-line-soft">
-                  {inClass.map(({ f, s }) => (
-                    <FriendRow key={f.uid} f={f} s={s} />
-                  ))}
-                </ul>
-              </section>
-            )}
-            {hidden.length > 0 && (
-              <section>
-                <h3 className="mb-f3 text-[17px] font-semibold text-fg tracking-tight">Not sharing</h3>
-                <ul className="border border-line bg-surface divide-y divide-line-soft">
-                  {hidden.map(({ f, s }) => (
-                    <FriendRow key={f.uid} f={f} s={s} />
-                  ))}
-                </ul>
-              </section>
-            )}
+            <section>
+              <div className="flex items-baseline justify-between gap-3 mb-f3">
+                <h3 className="text-[17px] font-semibold text-fg tracking-tight">All friends</h3>
+                <span className="text-[13px] text-muted tabular-nums">{friends.length}</span>
+              </div>
+              <ul className="border border-line bg-surface divide-y divide-line-soft">
+                {[...freeNow, ...inClass, ...hidden].map(({ f, s }) => (
+                  <FriendRow key={f.uid} f={f} s={s} />
+                ))}
+              </ul>
+            </section>
           </>
         )}
 
@@ -1003,6 +1034,25 @@ export const FriendsView: React.FC = () => {
         }}
       />
       <PlanSheet open={planOpen} onClose={() => setPlanOpen(false)} friends={friends} preset={planPreset} onSent={reload} />
+      {user?.id && (
+        <ChatThread
+          chat={openChat}
+          me={user.id}
+          people={people}
+          onClose={closeChat}
+          onBlocked={reload}
+          showToast={showToast}
+          subtitle={
+            openChat?.type === 'dm'
+              ? (() => {
+                  const other = openChat.members.find((m) => m !== user.id) || '';
+                  const f = friends.find((x) => x.uid === other);
+                  return f ? statusLine(f.hidden ? ({ kind: 'hidden' } as NowStatus) : nowStatus(f.days, new Date())) : undefined;
+                })()
+              : undefined
+          }
+        />
+      )}
     </div>
   );
 };

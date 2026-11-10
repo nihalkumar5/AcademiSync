@@ -191,7 +191,7 @@ export async function loadFriends(uid: string): Promise<FriendsData> {
   let suggestions: PersonLite[] = [];
   if (myBatch) {
     const mates = await users().where('profile.batchKey', '==', myBatch).where('profile.isBatchSynced', '==', true).limit(200).get();
-    const known = new Set([uid, ...everyone]);
+    const known = new Set([uid, ...everyone, ...list(meMeta?.blocked)]);
     mates.forEach((doc: any) => {
       if (known.has(doc.id)) return;
       const d = doc.data();
@@ -270,6 +270,9 @@ export async function requestFriend(uid: string, input: { code?: unknown; uid?: 
   if (!mine) throw new FriendError(400, 'Add your college in Profile to use Friends', 'no-college');
   if (collegeKeyOf(them?.profile?.college) !== mine) throw new FriendError(403, 'You can only add friends from your own campus', 'other-campus');
   if (them?.profile?.role === 'faculty') throw new FriendError(400, 'Friends is for students');
+  const [myMeta, theirMeta] = await Promise.all([metaRef(uid).get(), metaRef(target).get()]);
+  if (list(myMeta.data()?.blocked).includes(target)) throw new FriendError(403, 'You blocked this person. Unblock them first.', 'blocked');
+  if (list(theirMeta.data()?.blocked).includes(uid)) throw new FriendError(403, "You can't add this person", 'blocked');
 
   const ref = pairs().doc(pairId(uid, target));
   const result = await adminDb.runTransaction(async (tx: any) => {
@@ -367,6 +370,8 @@ export async function createPlan(uid: string, input: any) {
   await ref.set({ by: uid, byName: myName, title, at: at.toISOString(), invited: ok, responses: { [uid]: 'in' }, createdAt: now() });
   const when = at.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Kolkata' });
   await Promise.all(ok.map((o) => notify(o, `${myName}: ${title} at ${when}?`, "You're free then. Open Intersemester to say you're in.")));
+  await ensurePlanChatDoc(ref.id, { by: uid, invited: ok, title, at: at.toISOString() }).catch(() => {});
+  await postSystemMessage(`plan_${ref.id}`, `${myName} made the plan: ${title} at ${when}`).catch(() => {});
   return ref.id;
 }
 
@@ -376,11 +381,14 @@ export async function respondPlan(uid: string, id: unknown, answer: unknown) {
   const s = await ref.get();
   const p = s.exists ? s.data() : null;
   if (!p || !list(p.invited).includes(uid) || p.cancelled) throw new FriendError(404, 'This plan is no longer there');
+  const before = p.responses?.[uid];
   await ref.update({ [`responses.${uid}`]: answer });
-  if (answer === 'in') {
-    const me = (await users().doc(uid).get()).data() || {};
-    notify(p.by, `${lite(uid, me).name} is in`, `${p.title}`);
-  }
+  if (before === answer) return;
+  const me = (await users().doc(uid).get()).data() || {};
+  const name = lite(uid, me).name;
+  if (answer === 'in') notify(p.by, `${name} is in 🎉`, `${p.title}`);
+  await ensurePlanChatDoc(id, { by: p.by, invited: list(p.invited), title: p.title, at: p.at }).catch(() => {});
+  await postSystemMessage(`plan_${id}`, answer === 'in' ? `${name} is in 🎉` : `${name} can't make it`).catch(() => {});
 }
 
 export async function cancelPlan(uid: string, id: unknown) {
@@ -389,6 +397,7 @@ export async function cancelPlan(uid: string, id: unknown) {
   const s = await ref.get();
   if (!s.exists || s.data()?.by !== uid) throw new FriendError(404, 'This plan is no longer there');
   await ref.update({ cancelled: true });
+  await postSystemMessage(`plan_${id}`, 'This plan was cancelled').catch(() => {});
 }
 
 // ---------- Routines shared with friends ----------
@@ -530,4 +539,115 @@ export async function markFriendRoutine(uid: string, id: unknown, answer: unknow
     const { FieldValue } = await import('firebase-admin/firestore');
     await ref.update({ dismissedBy: FieldValue.arrayUnion(uid) });
   }
+}
+
+// ---------- Chats ----------
+// chats/{chatId}: a DM between two friends (chatId = their friendship id) or a plan's group
+// (chatId = plan_{planId}). The server creates chats and decides members; clients read them and
+// write messages directly, guarded by firestore.rules (members only; DMs only while still friends).
+const chats = () => adminDb.collection('chats');
+const PING_GAP_MS = 20 * 1000;
+
+async function ensurePlanChatDoc(planId: string, p: { by: string; invited: string[]; title: string; at: string }) {
+  const ref = chats().doc(`plan_${planId}`);
+  const members = Array.from(new Set([p.by, ...p.invited]));
+  const snap = await ref.get();
+  if (snap.exists) {
+    await ref.update({ members, title: p.title, at: p.at });
+  } else {
+    const { FieldValue } = await import('firebase-admin/firestore');
+    await ref.set({ type: 'plan', planId, members, title: p.title, at: p.at, lastMessage: null, reads: {}, createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() });
+  }
+  return ref.id;
+}
+
+async function postSystemMessage(chatId: string, text: string) {
+  const { FieldValue } = await import('firebase-admin/firestore');
+  const ref = chats().doc(chatId);
+  await ref.collection('messages').add({ by: 'system', text, at: FieldValue.serverTimestamp() });
+  await ref.update({ lastMessage: { by: 'system', text, at: FieldValue.serverTimestamp() }, updatedAt: FieldValue.serverTimestamp() });
+}
+
+/** Open (or create) the DM with a friend. */
+export async function openChat(uid: string, other: unknown) {
+  if (!validUid(other) || other === uid) throw new FriendError(400, 'Invalid request');
+  const id = pairId(uid, other);
+  const pair = await pairs().doc(id).get();
+  if (!pair.exists || pair.data()?.status !== 'accepted') throw new FriendError(403, 'You can only chat with friends', 'not-friends');
+  const ref = chats().doc(id);
+  const [snap, a, b] = await Promise.all([ref.get(), users().doc(uid).get(), users().doc(other).get()]);
+  const names = { [uid]: lite(uid, a.data()).name, [other]: lite(other, b.data()).name };
+  if (!snap.exists) {
+    const { FieldValue } = await import('firebase-admin/firestore');
+    await ref.set({ type: 'dm', members: [uid, other], names, lastMessage: null, reads: {}, createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() });
+  } else {
+    await ref.update({ names });
+  }
+  return id;
+}
+
+/** Open (or create) a plan's group chat. */
+export async function openPlanChat(uid: string, planId: unknown) {
+  if (typeof planId !== 'string' || !/^[A-Za-z0-9]{10,40}$/.test(planId)) throw new FriendError(400, 'Invalid request');
+  const s = await adminDb.collection('friend_plans').doc(planId).get();
+  const p = s.exists ? s.data() : null;
+  if (!p || (p.by !== uid && !list(p.invited).includes(uid))) throw new FriendError(404, 'This plan is no longer there');
+  return ensurePlanChatDoc(planId, { by: p.by, invited: list(p.invited), title: p.title, at: p.at });
+}
+
+/** After sending a message: push it to the other members (at most once per 20 s per chat). */
+export async function pingChat(uid: string, chatId: unknown) {
+  if (typeof chatId !== 'string' || !/^[A-Za-z0-9_-]{6,300}$/.test(chatId)) throw new FriendError(400, 'Invalid request');
+  const ref = chats().doc(chatId);
+  const go = await adminDb.runTransaction(async (tx: any) => {
+    const s = await tx.get(ref);
+    const c = s.exists ? s.data() : null;
+    if (!c || !list(c.members).includes(uid)) throw new FriendError(404, 'Chat not found');
+    if (c.lastMessage?.by !== uid) return null;
+    const last = typeof c.pingAt === 'number' ? c.pingAt : 0;
+    if (Date.now() - last < PING_GAP_MS) return null;
+    tx.update(ref, { pingAt: Date.now() });
+    return c;
+  });
+  if (!go) return;
+  const me = (await users().doc(uid).get()).data() || {};
+  const name = lite(uid, me).name;
+  const text = String(go.lastMessage?.text || '').slice(0, 120);
+  const title = go.type === 'plan' ? `${name} · ${go.title || 'Plan'}` : name;
+  const others = list(go.members).filter((m: string) => m !== uid);
+  const snaps = await Promise.all(others.map((o: string) => users().doc(o).get()));
+  const targets = snaps.flatMap((s: any) => tokensFromUserDoc(s.id, s.data() || {}));
+  if (targets.length) await sendPush(targets, { title, body: text, data: { type: 'chat', chatId }, link: `/?view=friends&chat=${encodeURIComponent(chatId)}` }).catch(() => {});
+}
+
+/** Report a chat (optionally one message) for review. */
+export async function reportChat(uid: string, chatId: unknown, messageId: unknown, reason: unknown) {
+  if (typeof chatId !== 'string' || !/^[A-Za-z0-9_-]{6,300}$/.test(chatId)) throw new FriendError(400, 'Invalid request');
+  const c = await chats().doc(chatId).get();
+  if (!c.exists || !list(c.data()?.members).includes(uid)) throw new FriendError(404, 'Chat not found');
+  let text = '';
+  let by = '';
+  if (typeof messageId === 'string' && /^[A-Za-z0-9]{6,60}$/.test(messageId)) {
+    const m = await chats().doc(chatId).collection('messages').doc(messageId).get();
+    text = String(m.data()?.text || '').slice(0, 1000);
+    by = String(m.data()?.by || '');
+  }
+  await adminDb.collection('chat_reports').add({
+    chatId,
+    messageId: typeof messageId === 'string' ? messageId : null,
+    reportedBy: uid,
+    messageBy: by || null,
+    text,
+    reason: typeof reason === 'string' ? reason.slice(0, 300) : '',
+    at: now(),
+    status: 'open',
+  });
+}
+
+/** Block: ends the friendship (so DMs stop) and stops new requests either way. */
+export async function blockFriend(uid: string, other: unknown) {
+  if (!validUid(other) || other === uid) throw new FriendError(400, 'Invalid request');
+  const { FieldValue } = await import('firebase-admin/firestore');
+  await pairs().doc(pairId(uid, other)).delete();
+  await metaRef(uid).set({ blocked: FieldValue.arrayUnion(other), hiddenFrom: FieldValue.arrayUnion(other) }, { merge: true });
 }

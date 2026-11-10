@@ -126,6 +126,7 @@ import {
   WarningTriangle as IoWarningTriangle,
   Wrench as IoWrench,
   Xmark as IoXmark,
+  TriangleFlag as IoTriangleFlag,
   XmarkCircle as IoXmarkCircle,
   Notes as IoNotes,
 } from 'iconoir-react';
@@ -310,4 +311,6 @@ export const UtensilsCrossed = wrap(IoCutlery, 'UtensilsCrossed');
 export const Vote = wrap(IoCheckSquare, 'Vote');
 export const Wrench = wrap(IoWrench, 'Wrench');
 export const X = wrap(IoXmark, 'X');
+export const Flag = wrap(IoTriangleFlag, 'Flag');
+export const ShieldOff = wrap(IoProhibition, 'ShieldOff');
 export const XCircle = wrap(IoXmarkCircle, 'XCircle');

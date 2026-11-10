@@ -298,6 +298,52 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // 10. Chats: DMs between friends (chatId = their friendship id) and plan group chats
+    // (chatId = plan_{planId}). Only the server creates chats and sets members. Members read them,
+    // send messages as themselves, react with their own emoji, and bump the preview + their read mark.
+    // A DM only accepts new messages while the two are still friends.
+    match /chats/{chatId} {
+      function isChatMember() {
+        return isAuthenticated() && request.auth.uid in resource.data.members;
+      }
+      allow read: if isChatMember();
+      allow create, delete: if false;
+      allow update: if isChatMember()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastMessage', 'updatedAt', 'reads'])
+        && request.resource.data.get('reads', {}).diff(resource.data.get('reads', {})).affectedKeys().hasOnly([request.auth.uid])
+        && (
+          !('lastMessage' in request.resource.data.diff(resource.data).affectedKeys())
+          || (request.resource.data.lastMessage.by == request.auth.uid
+              && request.resource.data.lastMessage.text is string
+              && request.resource.data.lastMessage.text.size() <= 1000)
+        );
+
+      match /messages/{messageId} {
+        function chatDoc() {
+          return get(/databases/$(database)/documents/chats/$(chatId)).data;
+        }
+        function inChat() {
+          return isAuthenticated() && request.auth.uid in chatDoc().members;
+        }
+        function canStillMessage() {
+          return chatDoc().type != 'dm'
+            || get(/databases/$(database)/documents/friendships/$(chatId)).data.status == 'accepted';
+        }
+        allow read: if inChat();
+        allow create: if inChat() && canStillMessage()
+          && request.resource.data.keys().hasOnly(['by', 'text', 'at'])
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 1000
+          && request.resource.data.at == request.time;
+        allow update: if inChat()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
+          && request.resource.data.get('reactions', {}).diff(resource.data.get('reactions', {})).affectedKeys().hasOnly([request.auth.uid]);
+        allow delete: if isAuthenticated() && resource.data.by == request.auth.uid;
+      }
+    }
+
     // Default catch-all: Deny all other collections
     match /{document=**} {
       allow read, write: if false;
