@@ -6,8 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { clsx } from 'clsx';
 import type { PersonLite } from '@/lib/friends';
 import { getAvatarSeed, getAvatarSrc } from '@/lib/avatar';
-import { ArrowLeft, Flag, ImageIcon, MoreHorizontal, Send, ShieldOff, Trash2, Users, X } from '@/components/ui/icons';
-import { PhotoViewer } from '@/components/ui/PhotoViewer';
+import { ArrowLeft, Flag, MoreHorizontal, Send, ShieldOff, Trash2, Users } from '@/components/ui/icons';
 import { Receipt, Ticks, receiptFor } from './receipts';
 import {
   ChatMessage,
@@ -21,7 +20,6 @@ import {
   reactTo,
   reportChat,
   sendMessage,
-  sendPhoto,
   setTyping,
   useMessages,
 } from './chatClient';
@@ -114,12 +112,6 @@ export const ChatThread: React.FC<{
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pressFired = useRef(false);
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [draft, setDraft] = useState<{ file: File; url: string } | null>(null);
-  const [caption, setCaption] = useState('');
-  const [uploads, setUploads] = useState<{ id: string; url: string; text: string; pct: number }[]>([]);
-  const [viewer, setViewer] = useState<string | null>(null);
   const firstPaint = useRef(true);
 
   useEffect(() => setMounted(true), []);
@@ -187,7 +179,7 @@ export const ChatThread: React.FC<{
       el.scrollTo({ top: el.scrollHeight, behavior: firstPaint.current ? 'auto' : 'smooth' });
       if (messages.length) firstPaint.current = false;
     }
-  }, [messages.length, typingOthers.length, uploads.length]);
+  }, [messages.length, typingOthers.length]);
 
   // Grow the composer with its text (up to 5 lines)
   useLayoutEffect(() => {
@@ -237,46 +229,9 @@ export const ChatThread: React.FC<{
     }
   };
 
-  const pickPhoto = (file?: File | null) => {
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      showToast?.("That's not a photo", 'Pick a JPG, PNG or similar image.', 'error');
-      return;
-    }
-    setCaption(text);
-    setDraft({ file, url: URL.createObjectURL(file) });
-  };
-  const closeDraft = () => {
-    if (draft) URL.revokeObjectURL(draft.url);
-    setDraft(null);
-    setCaption('');
-  };
-  const sendDraft = async () => {
-    if (!draft) return;
-    const { file, url } = draft;
-    const cap = caption;
-    const id = `up_${Date.now()}`;
-    setDraft(null);
-    setCaption('');
-    if (cap.trim() && cap === text) setText('');
-    setUploads((u) => [...u, { id, url, text: cap.trim(), pct: 0 }]);
-    try {
-      await sendPhoto(chat.id, me, file, cap, (pct) => setUploads((u) => u.map((x) => (x.id === id ? { ...x, pct } : x))));
-    } catch (e: any) {
-      showToast?.("Couldn't send the photo", e?.code === 'storage/unauthorized' || e?.code === 'permission-denied' ? "You can't send photos in this chat." : 'Check your connection and try again.', 'error');
-    } finally {
-      setUploads((u) => u.filter((x) => x.id !== id));
-      URL.revokeObjectURL(url);
-    }
-  };
-
   const startPress = (m: ChatMessage) => {
     if (m.by === 'system') return;
-    pressFired.current = false;
-    pressTimer.current = setTimeout(() => {
-      pressFired.current = true;
-      setPicker(m);
-    }, 420);
+    pressTimer.current = setTimeout(() => setPicker(m), 420);
   };
   const endPress = () => {
     if (pressTimer.current) clearTimeout(pressTimer.current);
@@ -435,32 +390,12 @@ export const ChatThread: React.FC<{
                       }}
                       className={clsx(
                         'text-left text-[15px] leading-[21px] whitespace-pre-wrap break-words select-text cursor-default',
-                        m.image ? 'p-1' : 'px-3.5 py-2',
+                        'px-3.5 py-2',
                         mine ? 'bg-ink text-on-ink rounded-[20px] rounded-br-[6px]' : 'bg-surface-2 text-fg rounded-[20px] rounded-bl-[6px]'
                       )}
                     >
-                      {m.image && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={m.image.url}
-                          alt="Photo"
-                          loading="lazy"
-                          draggable={false}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (pressFired.current) {
-                              pressFired.current = false;
-                              return;
-                            }
-                            setViewer(m.image!.url);
-                          }}
-                          className="block rounded-[16px] object-cover bg-black/10 cursor-zoom-in"
-                          style={{ width: 240, maxWidth: '100%', aspectRatio: `${m.image.w} / ${Math.max(m.image.h, m.image.w * 0.5)}`, maxHeight: 320 }}
-                        />
-                      )}
-                      {m.image && m.text && <span className="block px-2.5 pt-1.5">{m.text}</span>}
-                      {!m.image && m.text}
-                      <span className={clsx('align-bottom text-[10px] tabular-nums whitespace-nowrap', m.image ? 'flex justify-end px-2.5 pt-0.5 pb-1' : 'ml-2', mine ? 'text-on-ink/60' : 'text-faint')}>
+                      {m.text}
+                      <span className={clsx('ml-2 align-bottom text-[10px] tabular-nums whitespace-nowrap', mine ? 'text-on-ink/60' : 'text-faint')}>
                         {m.pending ? '' : clock(m.at)}
                         {mine && <Ticks state={receiptOf(m)} />}
                       </span>
@@ -485,34 +420,6 @@ export const ChatThread: React.FC<{
               );
             })}
           </section>
-        ))}
-
-        {uploads.map((u) => (
-          <motion.div key={u.id} initial={{ opacity: 0, y: 14, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} className="flex flex-col items-end mb-1">
-            <div className="relative max-w-[80%] p-1 bg-ink text-on-ink rounded-[20px] rounded-br-[6px]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={u.url} alt="Sending photo" className="block rounded-[16px] object-cover opacity-60" style={{ width: 240, maxWidth: '100%', maxHeight: 320 }} />
-              <span className="absolute inset-0 flex items-center justify-center">
-                <span className="relative w-12 h-12">
-                  <svg viewBox="0 0 36 36" className="w-12 h-12 -rotate-90">
-                    <circle cx="18" cy="18" r="15" fill="rgba(0,0,0,0.45)" stroke="rgba(255,255,255,0.25)" strokeWidth="3" />
-                    <motion.circle
-                      cx="18"
-                      cy="18"
-                      r="15"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeDasharray={94.25}
-                      animate={{ strokeDashoffset: 94.25 * (1 - Math.max(u.pct, 4) / 100) }}
-                    />
-                  </svg>
-                </span>
-              </span>
-              {u.text && <span className="block px-2.5 pt-1.5 pb-1 text-[15px] leading-[21px] whitespace-pre-wrap break-words">{u.text}</span>}
-            </div>
-          </motion.div>
         ))}
 
         <AnimatePresence>
@@ -609,26 +516,6 @@ export const ChatThread: React.FC<{
           </div>
         )}
         <div className="flex items-end gap-2">
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              pickPhoto(e.target.files?.[0]);
-              e.target.value = '';
-            }}
-          />
-          <motion.button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            disabled={closed}
-            whileTap={{ scale: 0.88 }}
-            aria-label="Send a photo"
-            className="w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-fg hover:bg-surface-2 cursor-pointer disabled:opacity-40 disabled:cursor-default"
-          >
-            <ImageIcon className="w-[22px] h-[22px]" />
-          </motion.button>
           <textarea
             ref={inputRef}
             rows={1}
@@ -662,44 +549,6 @@ export const ChatThread: React.FC<{
         </div>
       </div>
 
-      {/* Photo preview before sending */}
-      <AnimatePresence>
-        {draft && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-40 bg-black flex flex-col">
-            <div className="shrink-0 flex items-center px-3" style={{ paddingTop: 'max(calc(env(safe-area-inset-top) + 8px), 14px)' }}>
-              <button type="button" onClick={closeDraft} aria-label="Cancel" className="w-10 h-10 rounded-full flex items-center justify-center text-white hover:bg-white/10 cursor-pointer">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <div className="flex-1 min-h-0 flex items-center justify-center p-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <motion.img initial={{ scale: 0.92 }} animate={{ scale: 1 }} src={draft.url} alt="Photo to send" className="max-w-full max-h-full object-contain rounded-[12px]" />
-            </div>
-            <div className="shrink-0 flex items-end gap-2 px-3 pt-2" style={{ paddingBottom: 'max(calc(env(safe-area-inset-bottom) + 8px), 12px)' }}>
-              <input
-                value={caption}
-                maxLength={MAX_CHAT_CHARS}
-                onChange={(e) => setCaption(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && sendDraft()}
-                placeholder="Add a caption…"
-                className="flex-1 min-w-0 h-11 rounded-[22px] bg-white/10 px-4 text-[16px] text-white placeholder:text-white/50 focus:outline-none"
-              />
-              <motion.button
-                type="button"
-                onClick={sendDraft}
-                whileTap={{ scale: 0.88 }}
-                aria-label="Send photo"
-                className="w-11 h-11 shrink-0 rounded-full bg-white text-black flex items-center justify-center cursor-pointer"
-              >
-                <Send className="w-[18px] h-[18px]" />
-              </motion.button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <PhotoViewer url={viewer} onClose={() => setViewer(null)} alt="Chat photo" />
-
       {/* Delete chat history confirm */}
       <AnimatePresence>
         {confirmClear && (
@@ -707,7 +556,7 @@ export const ChatThread: React.FC<{
             <motion.div initial={{ y: 40 }} animate={{ y: 0 }} exit={{ y: 40 }} onClick={(e) => e.stopPropagation()} className="w-full max-w-sm bg-surface rounded-[22px] p-5">
               <p className="text-[17px] font-semibold text-fg">Delete chat history?</p>
               <p className="mt-1.5 text-[14px] text-muted">
-                All messages and photos here will be removed for you. {chat.type === 'dm' ? title.split(' ')[0] : 'Others in this plan'} will still see them.
+                All messages here will be removed for you. {chat.type === 'dm' ? title.split(' ')[0] : 'Others in this plan'} will still see them.
               </p>
               <div className="mt-5 grid grid-cols-2 gap-2">
                 <button type="button" onClick={() => setConfirmClear(false)} className="h-11 rounded-full border border-line text-[14px] font-semibold text-fg cursor-pointer">

@@ -14,8 +14,8 @@ import {
   where,
 } from 'firebase/firestore';
 import { app, db } from '@/lib/firebase';
-import { compressPhoto } from '@/lib/notePhotos';
 import { friendsApi } from '@/components/friends/friendsClient';
+import { planChatIsOld } from '@/lib/friends';
 
 // Friends chat: DMs and plan group chats, live from Firestore (firestore.rules guard who can do what).
 // The server creates chats (/api/friends openChat / openPlanChat) and sends the push after a message.
@@ -108,8 +108,10 @@ export function useChats(uid?: string | null) {
             cleared: msMap(c.cleared),
           } as ChatSummary;
         });
-        list.sort((a, b) => b.updatedAt - a.updatedAt);
-        setChats(list);
+        // A plan's group chat leaves the list some hours after the plan
+        const fresh = list.filter((c) => c.type !== 'plan' || !planChatIsOld(c.at));
+        fresh.sort((a, b) => b.updatedAt - a.updatedAt);
+        setChats(fresh);
         setReady(true);
       },
       (err) => {
@@ -220,44 +222,6 @@ export const deleteMessage = async (chatId: string, m: { id: string; image?: Cha
     } catch {}
   }
 };
-
-const sizeOf = (blob: Blob) =>
-  new Promise<{ w: number; h: number }>((resolve) => {
-    const url = URL.createObjectURL(blob);
-    const img = new Image();
-    img.onload = () => {
-      resolve({ w: img.naturalWidth || 1, h: img.naturalHeight || 1 });
-      URL.revokeObjectURL(url);
-    };
-    img.onerror = () => {
-      resolve({ w: 1, h: 1 });
-      URL.revokeObjectURL(url);
-    };
-    img.src = url;
-  });
-
-/** Shrink, upload and send a photo (with an optional caption). */
-export async function sendPhoto(chatId: string, uid: string, file: Blob, caption = '', onProgress?: (pct: number) => void) {
-  const small = await compressPhoto(file, 1600, 0.75);
-  const { w, h } = await sizeOf(small);
-  const ext = small.type === 'image/webp' ? 'webp' : 'jpg';
-  const path = `chat_photos/${chatId}/${uid}/${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const { getStorage, ref, uploadBytesResumable, getDownloadURL } = await import('firebase/storage');
-  const task = uploadBytesResumable(ref(getStorage(app), path), small, { contentType: small.type });
-  await new Promise<void>((resolve, reject) => {
-    task.on('state_changed', (s) => onProgress?.(s.totalBytes ? Math.round((s.bytesTransferred / s.totalBytes) * 100) : 0), reject, () => resolve());
-  });
-  const url = await getDownloadURL(task.snapshot.ref);
-  const text = caption.trim().slice(0, MAX_CHAT_CHARS);
-  await addDoc(collection(db, 'chats', chatId, 'messages'), { by: uid, text, at: serverTimestamp(), image: { url, path, w, h } });
-  await updateDoc(doc(db, 'chats', chatId), {
-    lastMessage: { by: uid, text: (text ? `📷 ${text}` : '📷 Photo').slice(0, 160), at: serverTimestamp() },
-    updatedAt: serverTimestamp(),
-    [`reads.${uid}`]: serverTimestamp(),
-    [`typing.${uid}`]: deleteField(),
-  }).catch(() => {});
-  friendsApi('POST', { action: 'chatPing', chatId }).catch(() => {});
-}
 
 export const openDmChat = async (otherUid: string): Promise<string> => (await friendsApi('POST', { action: 'openChat', uid: otherUid })).chatId;
 export const openPlanChat = async (planId: string): Promise<string> => (await friendsApi('POST', { action: 'openPlanChat', id: planId })).chatId;

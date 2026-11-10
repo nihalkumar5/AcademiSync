@@ -16,6 +16,16 @@ export const PLACES: { id: Place; label: string; emoji: string }[] = [
 export const placeOf = (id?: string | null) => PLACES.find((p) => p.id === id) || null;
 export const STATUS_MINUTES = 60;
 
+// ---------- Plan lifecycle ----------
+// A plan shows until an hour after it starts, then leaves everyone's Plans list on its own.
+// Its group chat stays in Chats a while longer, so people can still talk after meeting.
+export const PLAN_LIVE_MINUTES = 60;
+export const PLAN_CHAT_HOURS = 12;
+export const planEndsAt = (at: string | Date) => new Date(new Date(at).getTime() + PLAN_LIVE_MINUTES * 60000);
+export const planIsOver = (at: string | Date, now = Date.now()) => now >= planEndsAt(at).getTime();
+export const planChatIsOld = (at: string | Date | undefined, now = Date.now()) =>
+  !!at && now >= new Date(at).getTime() + PLAN_CHAT_HOURS * 3600000;
+
 export interface PersonLite {
   uid: string;
   name: string;

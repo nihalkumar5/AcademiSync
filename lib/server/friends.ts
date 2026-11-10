@@ -12,7 +12,7 @@ import { collegeKeyOf } from '@/lib/collegeKey';
 import { buildWidgetDays } from '@/lib/widget';
 import { sendPush, tokensFromUserDoc } from '@/lib/server/push';
 import { electiveLens, personalTimetable } from '@/lib/electives';
-import { CODE_RE, Friend, FriendsData, PersonLite, Plan, Place, PLACES, STATUS_MINUTES } from '@/lib/friends';
+import { CODE_RE, Friend, FriendsData, PersonLite, Plan, Place, PLACES, PLAN_LIVE_MINUTES, STATUS_MINUTES } from '@/lib/friends';
 
 export class FriendError extends Error {
   constructor(public status: number, message: string, public code?: string) {
@@ -201,8 +201,8 @@ export async function loadFriends(uid: string): Promise<FriendsData> {
     suggestions = suggestions.sort((a, b) => a.name.localeCompare(b.name)).slice(0, 60);
   }
 
-  // Today's plans I made or was invited to
-  const since = new Date(Date.now() - 3 * 3600 * 1000).toISOString();
+  // Plans I made or was invited to that haven't ended (an hour after they start)
+  const since = new Date(Date.now() - PLAN_LIVE_MINUTES * 60000).toISOString();
   const [mineSnap, invitedSnap] = await Promise.all([
     adminDb.collection('friend_plans').where('by', '==', uid).get(),
     adminDb.collection('friend_plans').where('invited', 'array-contains', uid).get(),
@@ -395,9 +395,14 @@ export async function cancelPlan(uid: string, id: unknown) {
   if (typeof id !== 'string' || !/^[A-Za-z0-9]{10,40}$/.test(id)) throw new FriendError(400, 'Invalid request');
   const ref = adminDb.collection('friend_plans').doc(id);
   const s = await ref.get();
-  if (!s.exists || s.data()?.by !== uid) throw new FriendError(404, 'This plan is no longer there');
+  const p = s.exists ? s.data() : null;
+  if (!p || p.by !== uid) throw new FriendError(404, 'This plan is no longer there');
+  if (p.cancelled) return;
   await ref.update({ cancelled: true });
   await postSystemMessage(`plan_${id}`, 'This plan was cancelled').catch(() => {});
+  // Tell everyone invited, so the plan doesn't just vanish from their screen
+  const by = p.byName || 'Your friend';
+  await Promise.all(list(p.invited).map((o: string) => notify(o, `${by} cancelled: ${p.title}`, 'The plan is off.')));
 }
 
 // ---------- Routines shared with friends ----------
