@@ -5,7 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Routine, RoutineCategory, RoutineRepeat } from '@/lib/types';
 import { ROUTINE_CATEGORIES, dateKey } from '@/lib/routines';
 import { Icon3D, iconForCategory } from './Icon3D';
-import { AlertCircle, Trash2 } from '@/components/ui/icons';
+import { AlertCircle, Trash2, Share2, Users } from '@/components/ui/icons';
 
 export type RoutineDraft = Omit<Routine, 'id' | 'createdAt' | 'completions'>;
 
@@ -61,7 +61,11 @@ export const RoutineSheet: React.FC<{
   initial?: Routine | RoutineDraft | null;
   onSave: (draft: RoutineDraft) => void;
   onDelete?: () => void;
-}> = ({ isOpen, onClose, initial, onSave, onDelete }) => {
+  /** Opens the "Share with your batch" sheet for this saved routine */
+  onShare?: () => void;
+  /** Already shared to at least one batch */
+  isShared?: boolean;
+}> = ({ isOpen, onClose, initial, onSave, onDelete, onShare, isShared }) => {
   const [form, setForm] = useState<RoutineDraft>(EMPTY);
   const [touched, setTouched] = useState(false);
   const editing = !!(initial && 'id' in initial);
@@ -242,6 +246,16 @@ export const RoutineSheet: React.FC<{
           >
             {editing ? 'Save changes' : 'Add routine'}
           </button>
+          {editing && onShare && (
+            <button
+              type="button"
+              onClick={onShare}
+              className="h-12 inline-flex items-center justify-center gap-2 border border-line text-[15px] font-semibold text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+            >
+              {isShared ? <Users className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+              {isShared ? 'Shared with your batch' : 'Share with batch'}
+            </button>
+          )}
           {editing && onDelete && (
             <button
               type="button"

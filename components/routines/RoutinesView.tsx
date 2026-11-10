@@ -30,6 +30,8 @@ import { useSharedRoutines, shareRoutineToBatch, unshareRoutine, markSharedRouti
 import { formatFacultyBatchDegreeAndBranch } from '@/lib/facultyUtils';
 import { broadcastBatchPushNotification } from '@/lib/pushNotifications';
 import { SharedRoutine } from '@/lib/types';
+import type { FriendRoutine } from '@/lib/friends';
+import { useFriendRoutines } from './friendRoutinesClient';
 
 type Permission = 'granted' | 'denied' | 'default' | 'unsupported' | 'checking';
 
@@ -63,6 +65,42 @@ export const RoutinesView: React.FC = () => {
 
   const sharedToFor = (r: Routine) =>
     new Set(sharedItems.filter((x) => x.sharedBy === user?.id && x.sourceRoutineId === r.id).map((x) => x.batchKey));
+
+  // ---------- Sharing with particular friends (students only) ----------
+  const friendShares = useFriendRoutines(!isFaculty ? user?.id : null);
+  const friendsFor = (r: Routine) => friendShares.outgoing[r.id] || [];
+  const isSharedAnywhere = (r: Routine) => sharedToFor(r).size > 0 || friendsFor(r).length > 0;
+
+  const handleShareFriends = async (r: Routine, uids: string[]) => {
+    try {
+      const rec = await friendShares.share(r, uids);
+      showToast(
+        rec.length ? `Shared with ${rec.length} ${rec.length === 1 ? 'friend' : 'friends'}` : 'Stopped sharing with friends',
+        r.title,
+        rec.length ? 'success' : 'info'
+      );
+    } catch (err: any) {
+      showToast("Couldn't share", err?.message || 'Check your connection and try again.', 'error');
+      throw err;
+    }
+  };
+
+  const addFromFriend = (x: FriendRoutine) => {
+    addRoutine({
+      title: x.title,
+      category: x.category,
+      notes: x.notes,
+      time: x.time,
+      durationMinutes: x.durationMinutes,
+      repeat: x.repeat,
+      days: x.days,
+      date: x.date,
+      remindBefore: x.remindBefore,
+      isActive: true,
+      sourceSharedId: `friend:${x.id}`,
+    });
+    friendShares.mark(x.id, 'added');
+  };
 
   const handleShare = async (r: Routine, batchKeys: string[]) => {
     if (!user) return;
@@ -217,6 +255,51 @@ export const RoutinesView: React.FC = () => {
 
   const dayTitle = isToday ? 'Today' : selectedOffset === 1 ? 'Tomorrow' : selectedDay.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'short' });
 
+  // Routines particular friends sent me (added or dismissed ones are gone from the list)
+  const friendsSection = friendShares.incoming.length > 0 && (
+    <section>
+      <div className="flex items-baseline justify-between gap-3 mb-f3">
+        <h3 className="text-[17px] font-semibold text-fg">From friends</h3>
+        <span className="text-[13px] text-muted">{friendShares.incoming.length}</span>
+      </div>
+      <ul className="border border-line bg-surface divide-y divide-line-soft">
+        {friendShares.incoming.map((x) => {
+          const c = getRoutineCategory(x.category);
+          const asRoutine = { ...x, isActive: true, completions: [], createdAt: x.createdAt } as unknown as Routine;
+          return (
+            <li key={x.id} className="flex items-center gap-f3 px-f4 py-f3">
+              <span className="w-10 h-10 shrink-0 flex items-center justify-center" style={{ backgroundColor: `${c.color}14`, boxShadow: `inset 0 0 0 1px ${c.color}1F` }} aria-hidden="true">
+                <Icon3D name={iconForRoutine(x.title, x.category)} size={26} />
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px] font-medium text-fg truncate">{x.title}</p>
+                <p className="text-[13px] text-muted truncate">
+                  {repeatLabel(asRoutine)} · {formatRoutineTime(x.time)}
+                </p>
+                <p className="text-[12px] text-faint truncate">from {x.byName}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => friendShares.mark(x.id, 'dismissed')}
+                aria-label={`Dismiss ${x.title} from ${x.byName}`}
+                className="shrink-0 h-9 px-2 text-[13px] font-semibold text-muted hover:text-fg cursor-pointer"
+              >
+                Not now
+              </button>
+              <button
+                type="button"
+                onClick={() => addFromFriend(x)}
+                className="shrink-0 h-9 px-3 bg-ink text-on-ink text-[13px] font-semibold cursor-pointer hover:opacity-90"
+              >
+                Add
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+
   const sharedSection = sharedItems.length > 0 && (
     <section>
       <div className="flex items-baseline justify-between gap-3 mb-f3">
@@ -344,6 +427,7 @@ export const RoutinesView: React.FC = () => {
             <p className="mt-1.5 text-[14px] text-muted max-w-[300px]">Pick a starting point below or make your own.</p>
             <p className="mt-f3 font-cursive text-[21px] font-semibold text-fg -rotate-2">Small habits, big semester ✌</p>
           </div>
+          {friendsSection && <div className="mt-f5">{friendsSection}</div>}
           {sharedSection && <div className="mt-f5">{sharedSection}</div>}
           <h3 className="mt-f5 mb-f3 text-[17px] font-semibold text-fg">Start with a template</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-f2">
@@ -479,6 +563,8 @@ export const RoutinesView: React.FC = () => {
             )}
           </section>
 
+          {friendsSection}
+
           {sharedSection}
 
           {/* Every routine */}
@@ -539,13 +625,13 @@ export const RoutinesView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setShareFor(r)}
-                      aria-label={`Share ${r.title} with your batch`}
-                      title="Share with batch"
+                      aria-label={`Share ${r.title}`}
+                      title="Share"
                       className={`shrink-0 w-9 h-9 flex items-center justify-center cursor-pointer transition-colors hover:bg-surface-2 ${
-                        sharedToFor(r).size ? 'text-fg' : 'text-faint'
+                        isSharedAnywhere(r) ? 'text-fg' : 'text-muted'
                       }`}
                     >
-                      {sharedToFor(r).size ? <Users className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+                      {isSharedAnywhere(r) ? <Users className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
                     </button>
                     <button
                       type="button"
@@ -586,6 +672,15 @@ export const RoutinesView: React.FC = () => {
         initial={editing}
         onSave={onSave}
         onDelete={editing && 'id' in editing ? () => setToDelete(editing as Routine) : undefined}
+        onShare={
+          editing && 'id' in editing
+            ? () => {
+                setSheetOpen(false);
+                setShareFor(editing as Routine);
+              }
+            : undefined
+        }
+        isShared={!!(editing && 'id' in editing && isSharedAnywhere(editing as Routine))}
       />
 
       <ShareRoutineSheet
@@ -600,6 +695,15 @@ export const RoutinesView: React.FC = () => {
         onGoToProfile={() => {
           setShareFor(null);
           setActiveView('settings');
+        }}
+        showFriends={!isFaculty}
+        friends={friendShares.friends}
+        friendsLoading={friendShares.loading}
+        sharedWithFriends={shareFor ? friendsFor(shareFor) : []}
+        onShareFriends={(uids) => (shareFor ? handleShareFriends(shareFor, uids) : Promise.resolve())}
+        onGoToFriends={() => {
+          setShareFor(null);
+          setActiveView('friends');
         }}
       />
 

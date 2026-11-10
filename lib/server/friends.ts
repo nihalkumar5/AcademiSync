@@ -21,7 +21,7 @@ export class FriendError extends Error {
 }
 
 const IST = 5.5 * 3600 * 1000;
-const LIMITS = { requests: 40, plans: 12 };
+const LIMITS = { requests: 40, plans: 12, routines: 30 };
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const now = () => new Date().toISOString();
 const pairId = (a: string, b: string) => (a < b ? `${a}__${b}` : `${b}__${a}`);
@@ -82,7 +82,15 @@ async function bump(uid: string, kind: keyof typeof LIMITS) {
     const s = await tx.get(ref);
     const d = s.exists ? s.data() || {} : {};
     const n = d.day === today ? d[kind] || 0 : 0;
-    if (n >= LIMITS[kind]) throw new FriendError(429, kind === 'plans' ? 'You have made a lot of plans today. Try again tomorrow.' : 'Too many friend requests today. Try again tomorrow.');
+    if (n >= LIMITS[kind])
+      throw new FriendError(
+        429,
+        kind === 'plans'
+          ? 'You have made a lot of plans today. Try again tomorrow.'
+          : kind === 'routines'
+          ? 'You have shared a lot of routines today. Try again tomorrow.'
+          : 'Too many friend requests today. Try again tomorrow.'
+      );
     tx.set(ref, d.day === today ? { ...d, [kind]: n + 1 } : { day: today, [kind]: 1 });
   });
 }
@@ -381,4 +389,145 @@ export async function cancelPlan(uid: string, id: unknown) {
   const s = await ref.get();
   if (!s.exists || s.data()?.by !== uid) throw new FriendError(404, 'This plan is no longer there');
   await ref.update({ cancelled: true });
+}
+
+// ---------- Routines shared with friends ----------
+// friend_routines/{sharerUid}_{routineId}: one doc per routine, holding who it's shared with.
+// Only accepted friends can be recipients; recipients can add it to their routines or dismiss it.
+const ROUTINE_CATEGORIES = ['study', 'exam', 'sports', 'health', 'reminder', 'other'];
+const ROUTINE_REPEATS = ['once', 'daily', 'weekdays', 'custom'];
+const routineDocs = () => adminDb.collection('friend_routines');
+const validRoutineId = (v: unknown): v is string => typeof v === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(v);
+
+function cleanRoutine(r: any) {
+  if (!r || typeof r !== 'object' || !validRoutineId(r.id)) throw new FriendError(400, 'Invalid routine');
+  const title = typeof r.title === 'string' ? r.title.replace(/\s+/g, ' ').trim().slice(0, 60) : '';
+  if (!title) throw new FriendError(400, 'Give the routine a name first');
+  if (typeof r.time !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(r.time)) throw new FriendError(400, 'Invalid time');
+  const repeat = ROUTINE_REPEATS.includes(r.repeat) ? r.repeat : 'daily';
+  const out: Record<string, unknown> = {
+    sourceRoutineId: r.id,
+    title,
+    category: ROUTINE_CATEGORIES.includes(r.category) ? r.category : 'other',
+    time: r.time,
+    repeat,
+    remindBefore: Number.isFinite(r.remindBefore) ? Math.min(Math.max(Math.round(r.remindBefore), 0), 240) : 10,
+  };
+  if (typeof r.notes === 'string' && r.notes.trim()) out.notes = r.notes.trim().slice(0, 200);
+  if (Number.isFinite(r.durationMinutes) && r.durationMinutes > 0) out.durationMinutes = Math.min(Math.round(r.durationMinutes), 600);
+  if (repeat === 'custom') out.days = list(r.days).filter((d) => Number.isInteger(d) && d >= 0 && d <= 6).slice(0, 7);
+  if (repeat === 'once' && typeof r.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(r.date)) out.date = r.date;
+  return out;
+}
+
+async function acceptedFriendUids(uid: string): Promise<string[]> {
+  const snap = await pairs().where('users', 'array-contains', uid).get();
+  return snap.docs
+    .map((d: any) => d.data())
+    .filter((f: any) => f.status === 'accepted')
+    .map((f: any) => list(f.users).find((u: string) => u !== uid))
+    .filter(validUid);
+}
+
+/** Share (or re-share) one routine with exactly these friends. An empty list stops sharing it. */
+export async function shareRoutineWithFriends(uid: string, input: any) {
+  const routine = cleanRoutine(input?.routine);
+  const wanted = Array.from(new Set(list(input?.to).filter(validUid))).slice(0, 50) as string[];
+  const ref = routineDocs().doc(`${uid}_${routine.sourceRoutineId}`);
+  const before = await ref.get();
+  const prev: string[] = before.exists ? list(before.data()?.recipients) : [];
+
+  if (!wanted.length) {
+    if (before.exists) await ref.delete();
+    return { recipients: [] as string[] };
+  }
+
+  const friends = new Set(await acceptedFriendUids(uid));
+  const recipients = wanted.filter((o) => friends.has(o));
+  if (!recipients.length) throw new FriendError(400, 'You can only share with your friends');
+  const added = recipients.filter((o) => !prev.includes(o));
+  if (added.length) await bump(uid, 'routines');
+
+  const me = (await users().doc(uid).get()).data() || {};
+  const myName = lite(uid, me).name;
+  await ref.set(
+    {
+      ...routine,
+      by: uid,
+      byName: myName,
+      recipients,
+      // someone removed from the list shouldn't keep it hidden as "dismissed" if re-added later
+      dismissedBy: list(before.data()?.dismissedBy).filter((u: string) => recipients.includes(u)),
+      addedBy: before.data()?.addedBy || {},
+      createdAt: before.exists ? before.data()?.createdAt || now() : now(),
+      updatedAt: now(),
+    },
+    { merge: false }
+  );
+  await Promise.all(
+    added.map((o) => notify(o, `${myName} shared a routine`, `${routine.title} at ${routine.time}. Open Routines to add it.`))
+  );
+  return { recipients };
+}
+
+/** Friends to pick from, routines friends shared with me, and who my routines are shared with. */
+export async function loadRoutineShares(uid: string) {
+  const friendUids = await acceptedFriendUids(uid);
+  const [friendSnaps, incomingSnap, outgoingSnap, meSnap] = await Promise.all([
+    Promise.all(friendUids.map((f) => users().doc(f).get())),
+    routineDocs().where('recipients', 'array-contains', uid).get(),
+    routineDocs().where('by', '==', uid).get(),
+    users().doc(uid).get(),
+  ]);
+  const myBatch = meSnap.data()?.profile?.batchKey || null;
+  const friendSet = new Set(friendUids);
+  const friends: PersonLite[] = friendSnaps
+    .filter((s: any) => s.exists)
+    .map((s: any) => lite(s.id, s.data(), myBatch))
+    .sort((a: PersonLite, b: PersonLite) => a.name.localeCompare(b.name));
+
+  const incoming = incomingSnap.docs
+    .map((d: any) => ({ id: d.id, ...d.data() }))
+    // only from people who are still friends, and not ones I already added or waved off
+    .filter((x: any) => friendSet.has(x.by) && !list(x.dismissedBy).includes(uid) && !x.addedBy?.[uid])
+    .map((x: any) => ({
+      id: x.id,
+      title: x.title,
+      category: x.category,
+      ...(x.notes ? { notes: x.notes } : {}),
+      time: x.time,
+      ...(x.durationMinutes ? { durationMinutes: x.durationMinutes } : {}),
+      repeat: x.repeat,
+      ...(x.days ? { days: x.days } : {}),
+      ...(x.date ? { date: x.date } : {}),
+      remindBefore: x.remindBefore ?? 10,
+      by: x.by,
+      byName: x.byName || 'A friend',
+      createdAt: x.updatedAt || x.createdAt || '',
+    }))
+    .sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+  const outgoing: Record<string, string[]> = {};
+  outgoingSnap.docs.forEach((d: any) => {
+    const x = d.data();
+    if (x.sourceRoutineId) outgoing[x.sourceRoutineId] = list(x.recipients).filter((r: string) => friendSet.has(r));
+  });
+
+  return { friends, incoming, outgoing };
+}
+
+/** I added a friend's routine to mine, or dismissed it. */
+export async function markFriendRoutine(uid: string, id: unknown, answer: unknown) {
+  if (typeof id !== 'string' || !/^[A-Za-z0-9_-]{8,200}$/.test(id) || (answer !== 'added' && answer !== 'dismissed')) throw new FriendError(400, 'Invalid request');
+  const ref = routineDocs().doc(id);
+  const s = await ref.get();
+  if (!s.exists || !list(s.data()?.recipients).includes(uid)) throw new FriendError(404, 'This routine is no longer shared with you');
+  if (answer === 'added') {
+    await ref.update({ [`addedBy.${uid}`]: true });
+    const me = (await users().doc(uid).get()).data() || {};
+    notify(s.data()?.by, `${lite(uid, me).name} added your routine`, `${s.data()?.title}`);
+  } else {
+    const { FieldValue } = await import('firebase-admin/firestore');
+    await ref.update({ dismissedBy: FieldValue.arrayUnion(uid) });
+  }
 }

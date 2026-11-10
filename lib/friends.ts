@@ -1,6 +1,7 @@
 // Friends: shared model + pure helpers (free now, free together). Used by the server and the app.
 // Friends only ever see free/busy from each other's timetable (class names only if a friend allows it).
 import type { WidgetDay } from './widget';
+import type { RoutineCategory, RoutineRepeat } from './types';
 
 export type Place = 'library' | 'canteen' | 'hostel' | 'ground' | 'lab' | 'classroom' | 'off_campus';
 export const PLACES: { id: Place; label: string; emoji: string }[] = [
@@ -49,7 +50,32 @@ export interface FriendsData {
   myDays: WidgetDay[];
 }
 
-export const PLAN_TITLES = ['Canteen', 'Chai', 'Library study', 'Lunch', 'Ground', 'Group study'];
+/** A routine a friend sent me (friend_routines/{sharerUid}_{routineId}), read through /api/friends */
+export interface FriendRoutine {
+  id: string;
+  title: string;
+  category: RoutineCategory;
+  notes?: string;
+  time: string;
+  durationMinutes?: number;
+  repeat: RoutineRepeat;
+  days?: number[];
+  date?: string;
+  remindBefore: number;
+  by: string;
+  byName: string;
+  createdAt: string;
+}
+export interface RoutineSharesData {
+  /** Accepted friends I can share with */
+  friends: PersonLite[];
+  /** Routines friends shared with me that I haven't added or dismissed */
+  incoming: FriendRoutine[];
+  /** My routine id → friend uids it's shared with */
+  outgoing: Record<string, string[]>;
+}
+
+export const PLAN_TITLES =['Canteen', 'Chai', 'Library study', 'Lunch', 'Ground', 'Group study'];
 export const friendLink = (code: string) => `https://app.intersemester.com/?friend=${encodeURIComponent(code)}`;
 export const CODE_RE = /^[A-HJ-NP-Z2-9]{6}$/; // no 0/O/1/I so codes are easy to read out
 

@@ -7,7 +7,10 @@ import {
   cancelPlan,
   createPlan,
   loadFriends,
+  loadRoutineShares,
+  markFriendRoutine,
   removeFriend,
+  shareRoutineWithFriends,
   requestFriend,
   respondPlan,
   updateSettings,
@@ -63,6 +66,13 @@ export async function POST(req: Request) {
         return ok({});
       case 'cancelPlan':
         await cancelPlan(uid, b.id);
+        return ok({});
+      case 'routineShares':
+        return ok({ data: await loadRoutineShares(uid) });
+      case 'shareRoutine':
+        return ok(await shareRoutineWithFriends(uid, b));
+      case 'markRoutine':
+        await markFriendRoutine(uid, b.id, b.answer);
         return ok({});
     }
     return NextResponse.json({ success: false, error: 'Invalid request' }, { status: 400, headers: NO_STORE });
