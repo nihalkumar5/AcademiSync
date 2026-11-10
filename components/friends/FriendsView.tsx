@@ -617,6 +617,26 @@ export const FriendsView: React.FC = () => {
     };
   }, []);
 
+  // Plan answers show the moment you tap. The full Friends reload (7-day schedules for everyone) is slow,
+  // so waiting on it made "I'm in / Can't" look like they did nothing. Roll back if the server says no.
+  const [myAnswers, setMyAnswers] = useState<Record<string, 'in' | 'out'>>({});
+  const respondToPlan = async (planId: string, title: string, answer: 'in' | 'out', prev?: 'in' | 'out') => {
+    setMyAnswers((m) => ({ ...m, [planId]: answer }));
+    try {
+      await friendsApi('POST', { action: 'respond', id: planId, answer });
+      if (answer === 'in') showToast?.("You're in", title, 'success');
+      reload(); // refresh in the background; the local answer already shows
+    } catch (e: any) {
+      setMyAnswers((m) => {
+        const next = { ...m };
+        if (prev) next[planId] = prev;
+        else delete next[planId];
+        return next;
+      });
+      showToast?.("Couldn't answer", e?.message || 'Try again.', 'error');
+    }
+  };
+
   const act = async (key: string, body: any, toast?: [string, string]) => {
     setBusy(key);
     try {
@@ -816,8 +836,9 @@ export const FriendsView: React.FC = () => {
             <div className="flex flex-col gap-2.5">
               {data.plans.map((p) => {
                 const at = new Date(p.at);
-                const mine = p.responses[data.me.uid];
-                const going = [p.byUid, ...p.invited.map((x) => x.uid)].filter((id) => p.responses[id] === 'in');
+                const mine = myAnswers[p.id] ?? p.responses[data.me.uid];
+                const answerOf = (id: string) => (id === data.me.uid ? mine : p.responses[id]);
+                const going = [p.byUid, ...p.invited.map((x) => x.uid)].filter((id) => answerOf(id) === 'in');
                 const names = (id: string) => (id === data.me.uid ? 'You' : id === p.byUid ? p.byName : p.invited.find((x) => x.uid === id)?.name.split(' ')[0] || 'Friend');
                 return (
                   <article key={p.id} className="border border-line bg-surface p-f4">
@@ -841,10 +862,10 @@ export const FriendsView: React.FC = () => {
                     </p>
                     {!p.mine && (
                       <div className="mt-3 grid grid-cols-2 gap-2">
-                        <button type="button" disabled={!!busy} onClick={() => act(`in_${p.id}`, { action: 'respond', id: p.id, answer: 'in' })} className={clsx('btn h-9 text-[13px]', mine === 'in' ? 'btn-primary' : 'btn-secondary')}>
+                        <button type="button" aria-pressed={mine === 'in'} onClick={() => mine !== 'in' && respondToPlan(p.id, p.title, 'in', mine)} className={clsx('btn h-9 text-[13px]', mine === 'in' ? 'btn-primary' : 'btn-secondary')}>
                           <Check className="w-4 h-4" /> I&apos;m in
                         </button>
-                        <button type="button" disabled={!!busy} onClick={() => act(`out_${p.id}`, { action: 'respond', id: p.id, answer: 'out' })} className={clsx('btn h-9 text-[13px]', mine === 'out' ? 'btn-primary' : 'btn-secondary')}>
+                        <button type="button" aria-pressed={mine === 'out'} onClick={() => mine !== 'out' && respondToPlan(p.id, p.title, 'out', mine)} className={clsx('btn h-9 text-[13px]', mine === 'out' ? 'btn-primary' : 'btn-secondary')}>
                           Can&apos;t
                         </button>
                       </div>
