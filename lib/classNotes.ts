@@ -39,6 +39,11 @@ export interface SharedNote {
   createdAt: string;
 }
 
+/** A note shared with particular friends (friend_notes/{id}). `sentTo` > 0 when I sent it. */
+export interface FriendNote extends SharedNote {
+  sentTo: number;
+}
+
 /** Stable key for a subject: its name, normalised. Subject ids can change (re-sync, de-dupe),
  *  names don't, so notes are matched by either. */
 export const subjectKeyOf = (name: string | undefined | null) =>

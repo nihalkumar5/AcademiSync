@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { logServerError } from '@/lib/errorUtils';
 import { getVerifiedUser } from '@/lib/serverAuth';
 import { subjectKeyOf } from '@/lib/classNotes';
-import { NoteError, addMine, addShared, deleteMine, deleteShared, listAllMine, listMine, listRecentShared, listShared, whoIs } from '@/lib/server/classNotes';
+import { NoteError, addMine, addShared, deleteMine, deleteShared, listAllMine, listFriendNotes, listMine, listRecentShared, listShared, removeFriendNote, shareNoteWithFriends, whoIs } from '@/lib/server/classNotes';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,8 +23,8 @@ export async function GET(req: Request) {
     if (p.get('all') === '1') {
       // Notes page: everything I saved + my batch's class notes, newest first
       const who = await whoIs(user.uid);
-      const [mine, shared] = await Promise.all([listAllMine(user.uid), listRecentShared(who)]);
-      return ok({ mine, shared, hasBatch: !!who.batchKey });
+      const [mine, shared, friends] = await Promise.all([listAllMine(user.uid), listRecentShared(who), listFriendNotes(user.uid).catch(() => [])]);
+      return ok({ mine, shared, friends, hasBatch: !!who.batchKey });
     }
     const subjectId = p.get('subjectId') || '';
     const date = p.get('date') || undefined;
@@ -54,6 +54,11 @@ export async function POST(req: Request) {
         return ok({});
       case 'addShared':
         return ok({ id: await addShared(await whoIs(user.uid), body) });
+      case 'shareFriends':
+        return ok(await shareNoteWithFriends(await whoIs(user.uid), body));
+      case 'removeFriendNote':
+        await removeFriendNote(user.uid, body.id);
+        return ok({});
       case 'deleteShared':
         await deleteShared(await whoIs(user.uid), body.id);
         return ok({});
