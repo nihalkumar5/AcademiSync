@@ -27,6 +27,9 @@ import { dedupeNotifications } from '@/lib/notificationDedupe';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// The floating tab bar sits this far above the bottom edge (clears the home indicator / gesture bar)
+const NAV_BOTTOM = 'max(calc(env(safe-area-inset-bottom, 0px) + 6px), 14px)';
+
 type MoreItem = { id: ActiveView; label: string; short?: string; hint: string; icon: React.ReactNode; badge?: number };
 
 // Soft tinted tiles for the More sheet: pastel fill + deeper ink of the same hue (dark mode uses a
@@ -154,30 +157,28 @@ export const MobileNav: React.FC = () => {
       aria-label={badge ? `${label}, ${badge} pending` : label}
       aria-current={isActive ? 'page' : undefined}
       className={clsx(
-        'flex flex-col items-center justify-center relative cursor-pointer flex-1 h-full min-w-[56px] select-none gap-1 transition-colors active:scale-95',
-        isActive
-          ? 'text-fg'
-          : 'text-faint hover:text-fg'
+        'flex flex-col items-center justify-center relative cursor-pointer flex-1 h-full min-w-0 select-none gap-[3px] transition-[color,transform] duration-200 active:scale-[0.94]',
+        isActive ? 'text-fg' : 'text-fg/[0.72] hover:text-fg'
       )}
     >
-      {/* Active tab: a soft tile slides behind the icon (shared layoutId animates between tabs) */}
-      <div className="relative w-[52px] h-8 flex items-center justify-center">
-        {isActive && (
-          <motion.div
-            layoutId="mobile-nav-indicator"
-            className="absolute inset-0 bg-ink/[0.07] dark:bg-white/[0.1] ring-1 ring-inset ring-ink/[0.06] dark:ring-white/[0.08]"
-            transition={{ type: 'spring', stiffness: 520, damping: 40 }}
-          />
-        )}
+      {/* Active tab: a drop of lighter glass glides between tabs (shared layoutId) */}
+      {isActive && (
+        <motion.div
+          layoutId="mobile-nav-indicator"
+          className="lg-lens absolute inset-x-[3px] inset-y-[5px] rounded-full"
+          transition={{ type: 'spring', stiffness: 480, damping: 38, mass: 0.8 }}
+        />
+      )}
+      <div className="relative flex items-center justify-center [&>span>svg]:w-[21px] [&>span>svg]:h-[21px]">
         <span className="relative">{icon}</span>
         {badge !== undefined && (
-          <span className="absolute -top-1 right-1 min-w-[17px] h-[17px] px-1 bg-rose-500 text-white text-[10px] font-bold tabular-nums flex items-center justify-center leading-none rounded-full ring-2 ring-surface dark:ring-canvas">
+          <span className="absolute -top-1.5 -right-2.5 min-w-[15px] h-[15px] px-[3px] bg-rose-500 text-white text-[9px] font-bold tabular-nums flex items-center justify-center leading-none rounded-full ring-[1.5px] ring-white/80 dark:ring-black/40">
             {badge > 9 ? '9+' : badge}
           </span>
         )}
       </div>
 
-      <span className={clsx('text-[11px] leading-none transition-colors', isActive ? 'font-semibold text-fg' : 'font-medium')}>
+      <span className={clsx('relative text-[10px] leading-none tracking-[0.01em] transition-colors', isActive ? 'font-semibold' : 'font-medium')}>
         {label}
       </span>
     </button>
@@ -201,8 +202,8 @@ export const MobileNav: React.FC = () => {
               role="dialog"
               aria-modal="true"
               aria-label="More sections"
-              className="md:hidden fixed left-0 right-0 bottom-0 z-[39] bg-surface border-t border-line pt-[13px] px-[21px]"
-              style={{ paddingBottom: 'calc(max(calc(env(safe-area-inset-bottom, 0px) + 8px), 20px) + 68px)' }}
+              className="md:hidden fixed left-0 right-0 bottom-0 z-[39] bg-surface rounded-t-[28px] shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.25)] dark:shadow-[0_-12px_40px_-8px_rgba(0,0,0,0.8)] pt-[13px] px-[21px]"
+              style={{ paddingBottom: `calc(${NAV_BOTTOM} + 60px + 16px)` }}
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
@@ -264,15 +265,14 @@ export const MobileNav: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* Floating Liquid Glass tab bar */}
       <nav
         id="mobile-nav"
         aria-label="Main"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface/85 dark:bg-canvas/85 backdrop-blur-xl backdrop-saturate-150 border-t border-line-soft px-2 pt-1.5 select-none shadow-[0_-10px_30px_-12px_rgba(17,17,17,0.10)] dark:shadow-[0_-10px_30px_-10px_rgba(0,0,0,0.6)]"
-        style={{
-          paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 8px), 20px)',
-        }}
+        className="lg lg-bar md:hidden fixed z-40 left-3 right-3 mx-auto max-w-[440px] rounded-full px-[3px] select-none"
+        style={{ bottom: NAV_BOTTOM }}
       >
-        <div className="flex items-center justify-around max-w-md mx-auto relative h-[58px]">
+        <div className="flex items-center relative h-[60px]">
           {tabs.map((tab) =>
             renderTab(tab.id, tab.label, tab.icon, !isMoreOpen && activeView === tab.id, () => goTo(tab.id), tab.badge)
           )}

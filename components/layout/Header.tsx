@@ -54,15 +54,6 @@ export const Header: React.FC = () => {
   // Desktop context line: date and time to the minute (a ticking seconds clock is noise)
   const [currentTime, setCurrentTime] = useState<string>('');
 
-  // The header sits flush on the page at the top and only gets its hairline + soft shadow once content scrolls under it
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 4);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
   useEffect(() => {
     const updateTime = () => {
       const d = new Date();
@@ -153,16 +144,14 @@ export const Header: React.FC = () => {
   return (
     <>
       <header
-        className={`sticky top-0 z-40 w-full flex items-center justify-center px-4 sm:px-8 md:px-0 md:h-[72px] md:!py-0 bg-canvas/80 backdrop-blur-xl backdrop-saturate-150 border-b md:border-line md:shadow-none transition-[border-color,box-shadow] duration-200 ${
-          scrolled
-            ? 'border-line-soft shadow-[0_1px_0_rgba(17,17,17,0.02),0_8px_24px_-12px_rgba(17,17,17,0.12)] dark:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)]'
-            : 'border-transparent'
-        }`}
+        className="sticky top-0 z-40 w-full isolate flex items-center justify-center px-4 sm:px-8 md:px-0 md:h-[72px] md:!py-0"
         style={{
           paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 12px), 28px)',
           paddingBottom: '12px',
         }}
       >
+        {/* Frosted glass bar (light mode); solid in dark mode — see .lg-header-bar */}
+        <div aria-hidden="true" className="lg-header-bar pointer-events-none absolute inset-0 -z-10" />
         <div className="flex items-center justify-between w-full max-w-6xl mx-auto relative md:px-f5">
           <div className="flex items-center gap-3 select-none">
           {/* Logo only shown on mobile where sidebar is hidden */}
@@ -177,23 +166,23 @@ export const Header: React.FC = () => {
           </h1>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-2.5 text-sm font-medium tracking-tight text-fg">
+        <div className="flex items-center gap-2 text-sm font-medium tracking-tight text-fg">
           {/* Date and time, quietly */}
           {currentTime && (
             <span className="hidden lg:inline mr-f3 text-[15px] text-muted tabular-nums">{currentTime}</span>
           )}
 
-          {/* Notifications Bell: Original clean icon on mobile, styled button on desktop */}
+          {/* Notifications: a small Liquid Glass circle */}
           <button
             type="button"
             onClick={() => setActiveView('notifications')}
-            className="relative w-10 h-10 md:w-11 md:h-11 flex items-center justify-center border border-line-soft bg-surface/70 dark:bg-white/[0.04] md:border-transparent md:bg-transparent md:dark:bg-transparent hover:border-line md:hover:bg-black/[0.05] md:dark:hover:bg-white/[0.06] text-fg transition-colors cursor-pointer rounded-none active:scale-95"
+            className="lg lg-press relative w-[34px] h-[34px] md:w-[38px] md:h-[38px] rounded-full flex items-center justify-center text-fg cursor-pointer"
             title={`Notifications (${unreadNotifs} unread)`}
             aria-label={unreadNotifs ? `Notifications, ${unreadNotifs} unread` : 'Notifications'}
           >
-            <Bell className="w-[18px] h-[18px] md:w-5 md:h-5 text-fg" strokeWidth={1.75} />
+            <Bell className="w-4 h-4 md:w-[17px] md:h-[17px] text-fg" strokeWidth={1.9} />
             {unreadNotifs > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 md:top-0.5 md:right-0.5 min-w-[17px] h-[17px] px-1 bg-rose-500 text-white text-[10px] font-bold tabular-nums flex items-center justify-center ring-2 ring-canvas leading-none rounded-full">
+              <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-[3px] bg-rose-500 text-white text-[9px] font-bold tabular-nums flex items-center justify-center ring-[1.5px] ring-canvas leading-none rounded-full">
                 {unreadNotifs > 99 ? '99+' : unreadNotifs}
               </span>
             )}
@@ -204,11 +193,11 @@ export const Header: React.FC = () => {
             <button
               type="button"
               onClick={() => setAddMenuOpen(!addMenuOpen)}
-              className="w-10 h-10 md:w-auto md:h-11 md:px-f4 md:ml-f2 md:gap-f2 flex items-center justify-center bg-ink text-on-ink shadow-[0_4px_12px_-4px_rgba(17,17,17,0.45)] dark:shadow-none hover:opacity-90 transition-all cursor-pointer rounded-none active:scale-95"
+              className="lg lg-ink lg-press w-[34px] h-[34px] md:w-auto md:h-[38px] md:pl-3 md:pr-4 md:ml-1 md:gap-1.5 rounded-full flex items-center justify-center cursor-pointer"
               title="Create" aria-label="Create" aria-expanded={addMenuOpen}
             >
-              <Plus className={`w-[18px] h-[18px] md:w-4 md:h-4 stroke-[2.25] transition-transform duration-200 ${addMenuOpen ? 'rotate-45' : ''}`} />
-              <span className="hidden md:inline text-[15px] font-semibold">New</span>
+              <Plus className={`w-4 h-4 stroke-[2.25] transition-transform duration-200 ${addMenuOpen ? 'rotate-45' : ''}`} />
+              <span className="hidden md:inline text-[14px] font-semibold">New</span>
             </button>
 
             {addMenuOpen && (
@@ -216,10 +205,10 @@ export const Header: React.FC = () => {
                 <div className="fixed inset-0 z-40 sm:hidden" onClick={() => setAddMenuOpen(false)} />
                 <div
                   role="menu"
-                  className="absolute right-0 mt-2 w-[min(320px,calc(100vw-24px))] bg-surface border border-line shadow-[0_24px_60px_-20px_rgba(17,17,17,0.35)] dark:shadow-[0_24px_60px_-16px_rgba(0,0,0,0.75)] z-50 text-left origin-top-right animate-[menuIn_160ms_cubic-bezier(0.16,1,0.3,1)]"
+                  className="lg absolute right-0 mt-2.5 w-[min(320px,calc(100vw-24px))] rounded-[22px] overflow-hidden z-50 text-left origin-top-right animate-[menuIn_160ms_cubic-bezier(0.16,1,0.3,1)] [--lg-tint-a:0.8] dark:[--lg-tint-a:0.82] [--lg-blur:24px]"
                 >
                   {createSections.map((section, si) => (
-                    <div key={section.title} className={si > 0 ? 'border-t border-line-soft' : ''}>
+                    <div key={section.title} className={si > 0 ? 'border-t border-black/[0.06] dark:border-white/[0.08]' : ''}>
                       <p className="px-4 pt-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-faint">{section.title}</p>
                       <div className="px-1.5 pb-1.5">
                         {section.items.map((item) => (
@@ -231,9 +220,9 @@ export const Header: React.FC = () => {
                               setAddMenuOpen(false);
                               item.run();
                             }}
-                            className="group flex items-center gap-3 w-full px-2.5 py-2 text-left hover:bg-surface-2 active:bg-surface-3 transition-colors cursor-pointer"
+                            className="group flex items-center gap-3 w-full px-2.5 py-2 text-left rounded-[14px] hover:bg-black/[0.05] active:bg-black/[0.08] dark:hover:bg-white/[0.07] dark:active:bg-white/[0.1] transition-colors cursor-pointer"
                           >
-                            <span className={`w-9 h-9 shrink-0 flex items-center justify-center border ${item.tone}`}>
+                            <span className={`w-9 h-9 shrink-0 rounded-[10px] flex items-center justify-center border ${item.tone}`}>
                               <item.icon className="w-[18px] h-[18px]" />
                             </span>
                             <span className="flex-1 min-w-0">
@@ -256,10 +245,10 @@ export const Header: React.FC = () => {
             onClick={() => setActiveView('settings')}
             title="Profile" aria-label="Open profile"
             aria-current={activeView === 'settings' ? 'page' : undefined}
-            className="ml-0.5 w-10 h-10 md:hidden flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
+            className="lg lg-press ml-0.5 w-[38px] h-[38px] p-[2px] md:hidden rounded-full flex items-center justify-center cursor-pointer"
           >
-            <span className={`w-9 h-9 rounded-full overflow-hidden bg-[#F1EFEA] dark:bg-[#F4F4F6] ring-1 ring-line ${
-              activeView === 'settings' ? 'ring-2 ring-offset-2 ring-[#111111] ring-offset-white dark:ring-[#F4F4F6] dark:ring-offset-[#0A0B0F]' : ''
+            <span className={`block w-full h-full rounded-full overflow-hidden bg-[#F1EFEA] dark:bg-[#F4F4F6] ${
+              activeView === 'settings' ? 'ring-[1.5px] ring-fg' : ''
             }`}>
               <img src={getAvatarSrc(getAvatarSeed(profile))} alt="" className="w-full h-full object-cover scale-110 translate-y-[2px]" />
             </span>
