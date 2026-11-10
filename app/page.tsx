@@ -21,6 +21,7 @@ import { Copy, Download, ExternalLink } from '@/components/ui/icons';
 
 // Views
 import { OverviewHeader } from '@/components/dashboard/OverviewHeader';
+import { CampusSignature } from '@/components/dashboard/CampusSignature';
 import { HomeExamAlertCard } from '@/components/dashboard/HomeExamAlertCard';
 import { InviteBatchmatesCard } from '@/components/dashboard/InviteBatchmatesCard';
 import { LiveClassCard } from '@/components/dashboard/LiveClassCard';
@@ -404,7 +405,10 @@ export default function AppHome() {
           <div className="view-enter w-full max-w-full min-w-0" key={activeView}>
             {activeView === 'home' && (
               profile?.role === 'faculty' ? (
-                <FacultyHomeView />
+                <div className="flex flex-col gap-f5 sm:gap-f6">
+                  <FacultyHomeView />
+                  <CampusSignature />
+                </div>
               ) : (
                 <div className="flex flex-col gap-f5 sm:gap-f6">
                   <OverviewHeader />
@@ -422,6 +426,7 @@ export default function AppHome() {
                   <InviteBatchmatesCard />
                   <HomeMessCard />
                   <CampusSpotlightCard />
+                  <CampusSignature />
                 </div>
               )
             )}

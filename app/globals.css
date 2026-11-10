@@ -592,3 +592,26 @@ body.modal-open #mobile-nav {
     0 0 0 0.5px rgb(255 255 255 / 0.1),
     0 24px 60px -16px rgb(0 0 0 / 0.8);
 }
+
+/* ── Campus signature (end of Home) ─────────────────────────────
+   Each stroke has pathLength=1: hidden as a full dash offset, drawn by sliding it to 0.
+   Waiting = not yet scrolled into view; done = already played this session or reduced motion. */
+.campus-sig__line { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.campus-sig--playing .campus-sig__line { animation-name: campusDraw; animation-timing-function: cubic-bezier(.45,0,.2,1); animation-fill-mode: forwards; }
+.campus-sig--done .campus-sig__line { stroke-dashoffset: 0; }
+@keyframes campusDraw { to { stroke-dashoffset: 0; } }
+
+.campus-sig__art { clip-path: inset(0 100% 0 0); }
+.campus-sig--playing .campus-sig__art { animation: campusWipe 1.4s cubic-bezier(.45,0,.2,1) forwards; }
+.campus-sig--done .campus-sig__art { clip-path: none; }
+@keyframes campusWipe { to { clip-path: inset(0 0 0 0); } }
+
+.campus-sig--waiting .campus-sig__place { opacity: 0; }
+.campus-sig--playing .campus-sig__place { opacity: 0; animation: campusFade 600ms ease 2.6s forwards; }
+@keyframes campusFade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .campus-sig__line { stroke-dashoffset: 0; animation: none !important; }
+  .campus-sig__art { clip-path: none; animation: none !important; }
+  .campus-sig__place { opacity: 1 !important; animation: none !important; }
+}
