@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import { useApp } from '@/context/AppContext';
 import { Modal } from '@/components/ui/Modal';
+import { PhotoViewer } from '@/components/ui/PhotoViewer';
 import { AlertTriangle, Camera, ImageIcon, Loader2, Lock, Smartphone, Trash2, Users, X } from '@/components/ui/icons';
 import { formatTime12Hour, getTodayDateString } from '@/lib/timetableUtils';
 import { MAX_NOTE_CHARS, MAX_SHARED_IMAGE_KB, MyNote, NoteSlot, SharedNote, notesApi, subjectKeyOf } from '@/lib/classNotes';
@@ -102,6 +103,7 @@ export const ClassNotesHost: React.FC = () => {
   const [pending, setPending] = useState<Pending[]>([]);
   const [saving, setSaving] = useState(false);
   const [viewer, setViewer] = useState<string | null>(null);
+  const closeViewer = useCallback(() => setViewer(null), []);
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const textRef = useRef<HTMLTextAreaElement>(null);
@@ -466,15 +468,7 @@ export const ClassNotesHost: React.FC = () => {
         )}
       </Modal>
 
-      {viewer && (
-        <div className="fixed inset-0 z-[10000] bg-black/90 flex items-center justify-center p-3" onClick={() => setViewer(null)} role="dialog" aria-label="Photo">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={viewer} alt="" className="max-w-full max-h-full object-contain" />
-          <button type="button" aria-label="Close photo" className="absolute right-3 top-[max(env(safe-area-inset-top),12px)] w-10 h-10 flex items-center justify-center bg-white/10 text-white cursor-pointer">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      )}
+      <PhotoViewer url={viewer} onClose={closeViewer} alt="Lecture photo" />
     </>
   );
 };

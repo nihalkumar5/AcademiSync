@@ -126,6 +126,8 @@ import {
   WarningTriangle as IoWarningTriangle,
   Wrench as IoWrench,
   Xmark as IoXmark,
+  ZoomIn as IoZoomIn,
+  ZoomOut as IoZoomOut,
   XmarkCircle as IoXmarkCircle,
   Notes as IoNotes,
 } from 'iconoir-react';
@@ -310,4 +312,6 @@ export const UtensilsCrossed = wrap(IoCutlery, 'UtensilsCrossed');
 export const Vote = wrap(IoCheckSquare, 'Vote');
 export const Wrench = wrap(IoWrench, 'Wrench');
 export const X = wrap(IoXmark, 'X');
+export const ZoomIn = wrap(IoZoomIn, 'ZoomIn');
+export const ZoomOut = wrap(IoZoomOut, 'ZoomOut');
 export const XCircle = wrap(IoXmarkCircle, 'XCircle');

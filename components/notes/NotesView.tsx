@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { clsx } from 'clsx';
 import { useApp } from '@/context/AppContext';
 import { Modal } from '@/components/ui/Modal';
+import { PhotoViewer } from '@/components/ui/PhotoViewer';
 import { Illustration } from '@/components/ui/Illustration';
 import { SignInPanel } from '@/components/auth/SignInPrompt';
 import { ChevronRight, Plus, Search, Share2, Users, X } from '@/components/ui/icons';
@@ -50,6 +51,7 @@ export const NotesView: React.FC = () => {
   const [subjectFilter, setSubjectFilter] = useState<string>('all');
   const [q, setQ] = useState('');
   const [viewer, setViewer] = useState<string | null>(null);
+  const closeViewer = useCallback(() => setViewer(null), []);
   const [pickOpen, setPickOpen] = useState(false);
 
   const load = useCallback(async () => {
@@ -422,15 +424,7 @@ export const NotesView: React.FC = () => {
         }}
       />
 
-      {viewer && (
-        <div className="fixed inset-0 z-[10000] bg-black/90 flex items-center justify-center p-3" onClick={() => setViewer(null)} role="dialog" aria-label="Photo">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={viewer} alt="" className="max-w-full max-h-full object-contain" />
-          <button type="button" aria-label="Close photo" className="absolute right-3 top-[max(env(safe-area-inset-top),12px)] w-10 h-10 flex items-center justify-center bg-white/10 text-white cursor-pointer">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      )}
+      <PhotoViewer url={viewer} onClose={closeViewer} alt="Note photo" />
     </div>
   );
 };
