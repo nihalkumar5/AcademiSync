@@ -318,8 +318,10 @@ const AddSheet: React.FC<{ open: boolean; onClose: () => void; me: FriendsData['
 const TogetherSheet: React.FC<{ open: boolean; onClose: () => void; friends: Friend[]; myDays: FriendsData['myDays']; onPlan: (at: Date, invite: string[]) => void }> = ({ open, onClose, friends, myDays, onPlan }) => {
   const visible = friends.filter((f) => !f.hidden);
   const [picked, setPicked] = useState<string[]>([]);
+  // Start with the first friend picked, so the sheet opens on real free slots instead of a blank
   useEffect(() => {
-    if (open) setPicked([]);
+    if (open) setPicked(visible[0] ? [visible[0].uid] : []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
   const slots: Slot[] = useMemo(() => (picked.length ? freeTogether([myDays, ...visible.filter((f) => picked.includes(f.uid)).map((f) => f.days)]) : []), [picked, myDays, visible]);
   const byDay = slots.reduce<Record<string, Slot[]>>((acc, s) => ((acc[s.date] ||= []).push(s), acc), {});
@@ -659,6 +661,15 @@ export const FriendsView: React.FC = () => {
     } catch {}
   };
   const [newChatOpen, setNewChatOpen] = useState(false);
+  // The header's Chats button asks for the Chats tab (also when Friends is already open)
+  useEffect(() => {
+    const onTab = (e: Event) => {
+      const t = (e as CustomEvent).detail;
+      if (t === 'chats' || t === 'friends') setTabState(t);
+    };
+    window.addEventListener('friends:tab', onTab);
+    return () => window.removeEventListener('friends:tab', onTab);
+  }, []);
   const [chatStub, setChatStub] = useState<ChatSummary | null>(null);
   const [opening, setOpening] = useState<string | null>(null);
   // The open chat follows its live doc once it exists (new messages, names)
@@ -711,7 +722,7 @@ export const FriendsView: React.FC = () => {
     setOpening(f.uid);
     try {
       const id = await openDmChat(f.uid);
-      setChatStub(chats.find((c) => c.id === id) || { id, type: 'dm', members: [user.id, f.uid], names: { [f.uid]: f.name }, lastMessage: null, updatedAt: 0, unread: false, reads: {}, delivered: {}, typing: {} });
+      setChatStub(chats.find((c) => c.id === id) || { id, type: 'dm', members: [user.id, f.uid], names: { [f.uid]: f.name }, lastMessage: null, updatedAt: 0, unread: false, reads: {}, delivered: {}, typing: {}, cleared: {} });
     } catch (e: any) {
       showToast?.("Couldn't open chat", e?.message || 'Try again.', 'error');
     } finally {
@@ -723,7 +734,7 @@ export const FriendsView: React.FC = () => {
     setOpening(p.id);
     try {
       const id = await openPlanChat(p.id);
-      setChatStub(chats.find((c) => c.id === id) || { id, type: 'plan', planId: p.id, title: p.title, at: p.at, members: [p.byUid, ...p.invited.map((x) => x.uid)], names: {}, lastMessage: null, updatedAt: 0, unread: false, reads: {}, delivered: {}, typing: {} });
+      setChatStub(chats.find((c) => c.id === id) || { id, type: 'plan', planId: p.id, title: p.title, at: p.at, members: [p.byUid, ...p.invited.map((x) => x.uid)], names: {}, lastMessage: null, updatedAt: 0, unread: false, reads: {}, delivered: {}, typing: {}, cleared: {} });
     } catch (e: any) {
       showToast?.("Couldn't open chat", e?.message || 'Try again.', 'error');
     } finally {
@@ -936,7 +947,41 @@ export const FriendsView: React.FC = () => {
     body = (
       <div className="flex flex-col gap-f5">
         {tab === 'chats' ? (
+          <>
+        {/* Where am I + privacy */}
+        <section className="border border-line bg-surface">
+          <div className="px-f4 pt-f3 pb-3">
+            <div className="flex items-baseline justify-between gap-3">
+              <h3 className="text-[15px] font-semibold text-fg">Where are you?</h3>
+              {myPlace && me?.status ? (
+                <button type="button" onClick={() => act('place', { action: 'settings', place: null })} className="text-[12px] font-semibold text-muted hover:text-fg cursor-pointer">
+                  Clear
+                </button>
+              ) : (
+                <span className="text-[12px] text-muted">Friends see it for 1 hour</span>
+              )}
+            </div>
+            <div className="mt-2.5 flex gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1">
+              {PLACES.map((p) => (
+                <button key={p.id} type="button" disabled={!!busy} onClick={() => act('place', { action: 'settings', place: p.id })} className={clsx('chip', me?.status?.place === p.id && 'chip-active')}>
+                  {p.emoji} {p.label}
+                </button>
+              ))}
+            </div>
+            {myPlace && me?.status && (
+              <p className="mt-2 text-[12px] text-muted">
+                Showing &ldquo;{myPlace.label}&rdquo; till {new Date(me.status.until).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })}
+              </p>
+            )}
+          </div>
+          <div className="border-t border-line-soft divide-y divide-line-soft">
+            <Switch on={!!me?.ghost} disabled={!!busy} onChange={(v) => act('ghost', { action: 'settings', ghost: v }, v ? ['Ghost mode on', 'Friends see nothing from you'] : ['Ghost mode off', 'Friends can see when you are free'])} label="Ghost mode" hint="Hide your free time and place from everyone" />
+            <Switch on={!!me?.showClass} disabled={!!busy} onChange={(v) => act('showClass', { action: 'settings', showClass: v })} label="Show my class name" hint="Otherwise friends only see busy or free" />
+          </div>
+        </section>
+
           <ChatsList chats={chats} me={user.id} people={people} onOpen={(c) => setChatStub(c)} onNew={() => setNewChatOpen(true)} canStart={friends.length > 0} />
+          </>
         ) : (
           <>
         {/* Requests */}
@@ -1012,38 +1057,6 @@ export const FriendsView: React.FC = () => {
             </section>
           </>
         )}
-
-        {/* Where am I + privacy */}
-        <section className="border border-line bg-surface">
-          <div className="px-f4 pt-f3 pb-3">
-            <div className="flex items-baseline justify-between gap-3">
-              <h3 className="text-[15px] font-semibold text-fg">Where are you?</h3>
-              {myPlace && me?.status ? (
-                <button type="button" onClick={() => act('place', { action: 'settings', place: null })} className="text-[12px] font-semibold text-muted hover:text-fg cursor-pointer">
-                  Clear
-                </button>
-              ) : (
-                <span className="text-[12px] text-muted">Friends see it for 1 hour</span>
-              )}
-            </div>
-            <div className="mt-2.5 flex gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1">
-              {PLACES.map((p) => (
-                <button key={p.id} type="button" disabled={!!busy} onClick={() => act('place', { action: 'settings', place: p.id })} className={clsx('chip', me?.status?.place === p.id && 'chip-active')}>
-                  {p.emoji} {p.label}
-                </button>
-              ))}
-            </div>
-            {myPlace && me?.status && (
-              <p className="mt-2 text-[12px] text-muted">
-                Showing &ldquo;{myPlace.label}&rdquo; till {new Date(me.status.until).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })}
-              </p>
-            )}
-          </div>
-          <div className="border-t border-line-soft divide-y divide-line-soft">
-            <Switch on={!!me?.ghost} disabled={!!busy} onChange={(v) => act('ghost', { action: 'settings', ghost: v }, v ? ['Ghost mode on', 'Friends see nothing from you'] : ['Ghost mode off', 'Friends can see when you are free'])} label="Ghost mode" hint="Hide your free time and place from everyone" />
-            <Switch on={!!me?.showClass} disabled={!!busy} onChange={(v) => act('showClass', { action: 'settings', showClass: v })} label="Show my class name" hint="Otherwise friends only see busy or free" />
-          </div>
-        </section>
 
         {/* Your class: a single card, like the batch card on Timetable */}
         {(data.suggestions.length > 0 || data.outgoing.length > 0) && (() => {

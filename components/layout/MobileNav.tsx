@@ -123,7 +123,8 @@ export const MobileNav: React.FC = () => {
 
   // Everything that isn't a daily destination lives one tap away under "More".
   // Grouped so the eye finds things by purpose: what's urgent for studies first, then daily campus
-  // life, then people. Notifications and Profile already sit in the header, so they're not repeated.
+  // life, then people. For students the header button is Chats, so Notifications lives here; Profile
+  // sits in the header.
   type MoreGroup = { label: string; items: MoreItem[] };
   const moreGroups: MoreGroup[] = isFaculty
     ? [
@@ -170,7 +171,10 @@ export const MobileNav: React.FC = () => {
         },
         {
           label: 'People',
-          items: [{ id: 'friends', label: 'Friends', hint: "See who's free right now", icon: <Users className="w-5 h-5" /> }],
+          items: [
+            { id: 'friends', label: 'Friends', hint: "See who's free right now", icon: <Users className="w-5 h-5" /> },
+            { id: 'notifications', label: 'Notifications', short: 'Alerts', hint: 'Class alerts & updates', icon: <Bell className="w-5 h-5" />, badge: unreadNotifs || undefined },
+          ],
         },
       ];
   const moreItems: MoreItem[] = moreGroups.flatMap((g) => g.items);

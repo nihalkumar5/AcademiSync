@@ -161,7 +161,7 @@ export const ChatsList: React.FC<{
           <AnimatePresence initial={false}>
             {shown.map((c) => {
               const other = c.type === 'dm' ? c.members.find((m) => m !== me) || '' : '';
-              const last = c.lastMessage;
+              const last = c.lastMessage && c.lastMessage.at > (c.cleared?.[me] || 0) ? c.lastMessage : null;
               const mine = last?.by === me;
               const who = last && !mine && last.by !== 'system' && c.type === 'plan' ? `${(people[last.by]?.name || c.names[last.by] || 'Friend').split(' ')[0]}: ` : '';
               const preview = last ? `${who}${last.text}` : c.type === 'plan' ? 'Plan chat · say hi 👋' : 'Say hi 👋';

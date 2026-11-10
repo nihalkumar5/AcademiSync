@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Bell,
+  MessageCircle,
   Plus,
   Calendar,
   CheckSquare,
@@ -14,6 +15,7 @@ import {
 } from '@/components/ui/icons';
 import { getAvatarSeed, getAvatarSrc } from '@/lib/avatar';
 import { useApp } from '@/context/AppContext';
+import { useChats } from '@/components/friends/chat/chatClient';
 import { dedupeNotifications } from '@/lib/notificationDedupe';
 import { AddHomeworkModal } from '../homework/AddHomeworkModal';
 import { TimetableImportModal } from '../timetable/TimetableImportModal';
@@ -27,8 +29,10 @@ export const Header: React.FC = () => {
     notifications,
     setCommandPaletteOpen,
     profile,
+    user,
   } = useApp();
   const isFacultyUser = profile?.role === 'faculty';
+  const { unreadCount: unreadChats } = useChats(!isFacultyUser ? user?.id : null);
 
     const [addMenuOpen, setAddMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -172,7 +176,30 @@ export const Header: React.FC = () => {
             <span className="hidden lg:inline mr-f3 text-[15px] text-muted tabular-nums">{currentTime}</span>
           )}
 
-          {/* Notifications: a small Liquid Glass circle */}
+          {/* Students: Chats (unread count). Notifications moved to the More menu. */}
+          {!isFacultyUser && user?.id ? (
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  sessionStorage.setItem('friends_tab', 'chats');
+                } catch {}
+                setActiveView('friends');
+                window.dispatchEvent(new CustomEvent('friends:tab', { detail: 'chats' }));
+              }}
+              className="lg lg-press relative w-[34px] h-[34px] md:w-[38px] md:h-[38px] rounded-full flex items-center justify-center text-fg cursor-pointer"
+              title={unreadChats ? `Chats (${unreadChats} unread)` : 'Chats'}
+              aria-label={unreadChats ? `Chats, ${unreadChats} unread` : 'Chats'}
+            >
+              <MessageCircle className="w-4 h-4 md:w-[17px] md:h-[17px] text-fg" />
+              {unreadChats > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-[3px] bg-emerald-500 text-white text-[9px] font-bold tabular-nums flex items-center justify-center ring-[1.5px] ring-canvas leading-none rounded-full">
+                  {unreadChats > 99 ? '99+' : unreadChats}
+                </span>
+              )}
+            </button>
+          ) : (
+            <>
           <button
             type="button"
             onClick={() => setActiveView('notifications')}
@@ -188,6 +215,9 @@ export const Header: React.FC = () => {
             )}
           </button>
           
+            </>
+          )}
+
           {/* Quick Create Dropdown: Original clean icon on mobile */}
           <div className="relative" ref={menuRef}>
             <button

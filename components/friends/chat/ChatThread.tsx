@@ -15,6 +15,7 @@ import {
   MAX_CHAT_CHARS,
   QUICK_REACTIONS,
   blockPerson,
+  clearChat,
   deleteMessage,
   markRead,
   reactTo,
@@ -100,12 +101,16 @@ export const ChatThread: React.FC<{
   showToast?: (title: string, body?: string, kind?: string) => void;
 }> = ({ chat, me, people, subtitle, onClose, onBlocked, showToast }) => {
   const [mounted, setMounted] = useState(false);
-  const { messages, error } = useMessages(chat?.id || null);
+  const { messages: allMessages, error } = useMessages(chat?.id || null);
+  // After "Delete chat history" I only see what came later (pending sends have no time yet)
+  const clearedAt = chat?.cleared?.[me] || 0;
+  const messages = useMemo(() => (clearedAt ? allMessages.filter((m) => !m.at || m.at > clearedAt) : allMessages), [allMessages, clearedAt]);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [picker, setPicker] = useState<ChatMessage | null>(null);
   const [menu, setMenu] = useState(false);
   const [confirmBlock, setConfirmBlock] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -299,7 +304,7 @@ export const ChatThread: React.FC<{
       aria-label={`Chat with ${title}`}
     >
       {/* Header */}
-      <header className="lg-header-bar shrink-0 flex items-center gap-3 px-3 pb-2.5" style={{ paddingTop: 'max(calc(env(safe-area-inset-top) + 8px), 14px)' }}>
+      <header className="lg-header-bar relative z-30 shrink-0 flex items-center gap-3 px-3 pb-2.5" style={{ paddingTop: 'max(calc(env(safe-area-inset-top) + 8px), 14px)' }}>
         <button type="button" onClick={onClose} aria-label="Back" className="w-10 h-10 -ml-1 rounded-full flex items-center justify-center text-fg hover:bg-surface-2 cursor-pointer">
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -348,6 +353,16 @@ export const ChatThread: React.FC<{
                   className="w-full h-11 px-3 flex items-center gap-2.5 rounded-[12px] text-[14px] font-medium text-fg hover:bg-black/[0.05] dark:hover:bg-white/[0.07] cursor-pointer"
                 >
                   <Flag className="w-4 h-4" /> Report chat
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenu(false);
+                    setConfirmClear(true);
+                  }}
+                  className="w-full h-11 px-3 flex items-center gap-2.5 rounded-[12px] text-[14px] font-medium text-fg hover:bg-black/[0.05] dark:hover:bg-white/[0.07] cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" /> Delete chat history
                 </button>
                 {chat.type === 'dm' && (
                   <button
@@ -685,10 +700,44 @@ export const ChatThread: React.FC<{
 
       <PhotoViewer url={viewer} onClose={() => setViewer(null)} alt="Chat photo" />
 
+      {/* Delete chat history confirm */}
+      <AnimatePresence>
+        {confirmClear && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4" onClick={() => setConfirmClear(false)}>
+            <motion.div initial={{ y: 40 }} animate={{ y: 0 }} exit={{ y: 40 }} onClick={(e) => e.stopPropagation()} className="w-full max-w-sm bg-surface rounded-[22px] p-5">
+              <p className="text-[17px] font-semibold text-fg">Delete chat history?</p>
+              <p className="mt-1.5 text-[14px] text-muted">
+                All messages and photos here will be removed for you. {chat.type === 'dm' ? title.split(' ')[0] : 'Others in this plan'} will still see them.
+              </p>
+              <div className="mt-5 grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => setConfirmClear(false)} className="h-11 rounded-full border border-line text-[14px] font-semibold text-fg cursor-pointer">
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setConfirmClear(false);
+                    try {
+                      await clearChat(chat.id, me);
+                      showToast?.('Chat history deleted', 'New messages will still show up here.', 'success');
+                    } catch {
+                      showToast?.("Couldn't delete", 'Check your connection and try again.', 'error');
+                    }
+                  }}
+                  className="h-11 rounded-full bg-rose-600 text-white text-[14px] font-semibold cursor-pointer"
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Block confirm */}
       <AnimatePresence>
         {confirmBlock && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-30 bg-black/50 flex items-end sm:items-center justify-center p-4" onClick={() => setConfirmBlock(false)}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4" onClick={() => setConfirmBlock(false)}>
             <motion.div
               initial={{ y: 40 }}
               animate={{ y: 0 }}

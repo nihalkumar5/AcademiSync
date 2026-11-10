@@ -40,6 +40,8 @@ export interface ChatSummary {
   reads: Record<string, number>;
   delivered: Record<string, number>;
   typing: Record<string, number>;
+  /** uid -> when they cleared their chat history (they see only newer messages) */
+  cleared: Record<string, number>;
 }
 
 const msMap = (o: any): Record<string, number> => {
@@ -88,6 +90,7 @@ export function useChats(uid?: string | null) {
           const c: any = d.data({ serverTimestamps: 'estimate' });
           const last = c.lastMessage ? { by: c.lastMessage.by, text: c.lastMessage.text || '', at: ms(c.lastMessage.at) || Date.now() } : null;
           const readAt = ms(c.reads?.[uid]);
+          const clearedAt = ms(c.cleared?.[uid]);
           return {
             id: d.id,
             type: c.type === 'plan' ? 'plan' : 'dm',
@@ -98,10 +101,11 @@ export function useChats(uid?: string | null) {
             at: c.at,
             lastMessage: last,
             updatedAt: ms(c.updatedAt) || last?.at || 0,
-            unread: !!last && last.by !== uid && last.at > readAt,
+            unread: !!last && last.by !== uid && last.at > readAt && last.at > clearedAt,
             reads: msMap(c.reads),
             delivered: msMap(c.delivered),
             typing: msMap(c.typing),
+            cleared: msMap(c.cleared),
           } as ChatSummary;
         });
         list.sort((a, b) => b.updatedAt - a.updatedAt);
@@ -167,6 +171,10 @@ export async function sendMessage(chatId: string, uid: string, raw: string) {
   }).catch(() => {});
   friendsApi('POST', { action: 'chatPing', chatId }).catch(() => {});
 }
+
+/** Delete chat history for me only: I stop seeing everything sent before now. */
+export const clearChat = (chatId: string, uid: string) =>
+  updateDoc(doc(db, 'chats', chatId), { [`cleared.${uid}`]: serverTimestamp(), [`reads.${uid}`]: serverTimestamp() });
 
 /** Tell the chat I'm typing (true) or stopped (false). */
 export const setTyping = (chatId: string, uid: string, on: boolean) =>
