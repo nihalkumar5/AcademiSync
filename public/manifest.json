@@ -1,5 +1,5 @@
 {
-  "name": "Intersemester — Academic Planner & Timetable",
+  "name": "Intersemester \u2014 Academic Planner & Timetable",
   "short_name": "Intersemester",
   "description": "Smart academic assistant that helps students manage classes, tasks, carry lists and exams.",
   "start_url": "/",
@@ -10,10 +10,22 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/icon.svg",
-      "sizes": "192x192 512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

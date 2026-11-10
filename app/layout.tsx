@@ -21,10 +21,8 @@ export const metadata: Metadata = {
   icons: {
     icon: '/logo51.png',
     shortcut: '/logo51.png',
-    apple: [
-      { url: '/logo51.png', sizes: '180x180', type: 'image/png' },
-      { url: '/logo51.png' },
-    ],
+    // Home Screen icon (iPhone "Add to Home Screen"): white mark on a dark tile, reads well in light and dark
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   appleWebApp: {
     capable: true,
@@ -42,8 +40,6 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-canvas" suppressHydrationWarning>
       <head>
-        <link rel="apple-touch-icon" href="/logo51.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/logo51.png" />
         <meta name="apple-mobile-web-app-title" content="Intersemester" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
