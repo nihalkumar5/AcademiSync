@@ -8,8 +8,9 @@ import { PhotoViewer } from '@/components/ui/PhotoViewer';
 import { Illustration } from '@/components/ui/Illustration';
 import { SignInPanel } from '@/components/auth/SignInPrompt';
 import { ChevronRight, Plus, Search, Share2, Users, X } from '@/components/ui/icons';
-import { FriendNote, MyNote, SharedNote, notesApi, openClassNotes, subjectKeyOf } from '@/lib/classNotes';
-import { ShareNoteSheet } from './ShareNoteSheet';
+import { MyNote, SharedNote, notesApi, openClassNotes, subjectKeyOf } from '@/lib/classNotes';
+import { getPhoto } from '@/lib/notePhotos';
+import { noteShareText, shareNoteExternally } from '@/lib/shareNote';
 import { getTodayDateString } from '@/lib/timetableUtils';
 import { subjectLabel, subjectTone } from '@/lib/assignmentDisplay';
 import { LocalPhoto, cacheMine, readMineCache } from './ClassNotesHost';
@@ -18,8 +19,8 @@ import type { Subject } from '@/lib/types';
 // Notes page: everything saved in class, in one place. Newest first, grouped by day, filter by
 // subject. Tapping a note opens that class's notes sheet, where you can add more or delete.
 
-type Tab = 'mine' | 'class' | 'friends';
-type AnyNote = (MyNote | SharedNote | FriendNote) & { kind: Tab };
+type Tab = 'mine' | 'class';
+type AnyNote = (MyNote | SharedNote) & { kind: Tab };
 
 const dayKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const dayLabel = (date: string) => {
@@ -39,12 +40,11 @@ const timeOf = (iso: string) => {
 };
 
 export const NotesView: React.FC = () => {
-  const { user, subjects = [], showToast, setActiveView } = useApp() as any;
+  const { user, subjects = [], showToast } = useApp() as any;
   const [tab, setTab] = useState<Tab>('mine');
   const [mine, setMine] = useState<MyNote[]>([]);
   const [shared, setShared] = useState<SharedNote[]>([]);
-  const [friendNotes, setFriendNotes] = useState<FriendNote[]>([]);
-  const [shareNote, setShareNote] = useState<MyNote | null>(null);
+  const [sharingId, setSharingId] = useState<string | null>(null);
   const [hasBatch, setHasBatch] = useState(true);
   const [loading, setLoading] = useState(true);
   const [offline, setOffline] = useState(false);
@@ -62,7 +62,6 @@ export const NotesView: React.FC = () => {
       setMine(d.mine || []);
       cacheMine(user.id, d.mine || []);
       setShared(d.shared || []);
-      setFriendNotes(d.friends || []);
       setHasBatch(!!d.hasBatch);
       setOffline(false);
     } catch {
@@ -90,13 +89,8 @@ export const NotesView: React.FC = () => {
   const keyOf = (n: { subjectId: string; subjectName: string }) => subjectKeyOf(n.subjectName) || n.subjectId;
 
   const all: AnyNote[] = useMemo(
-    () =>
-      tab === 'mine'
-        ? mine.map((n) => ({ ...n, kind: 'mine' as Tab }))
-        : tab === 'class'
-        ? shared.map((n) => ({ ...n, kind: 'class' as Tab }))
-        : friendNotes.map((n) => ({ ...n, kind: 'friends' as Tab })),
-    [tab, mine, shared, friendNotes]
+    () => (tab === 'mine' ? mine.map((n) => ({ ...n, kind: 'mine' as Tab })) : shared.map((n) => ({ ...n, kind: 'class' as Tab }))),
+    [tab, mine, shared]
   );
 
   // Subjects that actually have notes, most notes first
@@ -128,14 +122,17 @@ export const NotesView: React.FC = () => {
     else groups.push({ date: n.date, items: [n] });
   });
 
-  const removeFriendNote = async (n: FriendNote) => {
-    setFriendNotes((list) => list.filter((x) => x.id !== n.id));
+  // Send a note out through the phone's share menu (WhatsApp and other apps), photo included
+  const shareOut = async (n: MyNote) => {
+    if (sharingId) return;
+    setSharingId(n.id);
     try {
-      await notesApi('POST', '', { action: 'removeFriendNote', id: n.id });
-      showToast?.(n.mine ? 'Unshared' : 'Removed', n.subjectName, 'info');
-    } catch (e: any) {
-      showToast?.("Couldn't do that", e?.message || 'Try again.', 'error');
-      load();
+      const photo = n.photos[0] ? await getPhoto(n.photos[0]) : null;
+      const result = await shareNoteExternally({ title: n.subjectName || 'Class note', text: noteShareText(n), photo });
+      if (result === 'text-only') showToast?.('Shared the text', "This version of the app can't attach the photo yet.", 'info');
+      else if (result === 'error') showToast?.("Couldn't open sharing", 'Try again.', 'error');
+    } finally {
+      setSharingId(null);
     }
   };
 
@@ -179,8 +176,8 @@ export const NotesView: React.FC = () => {
       <div className="flex flex-col gap-f3">
         {/* Mine / Class */}
         <div className="flex items-end gap-f4 border-b border-line" role="tablist">
-          {(['mine', 'class', 'friends'] as const).map((t) => {
-            const count = t === 'mine' ? mine.length : t === 'class' ? shared.length : friendNotes.filter((n) => !n.mine).length;
+          {(['mine', 'class'] as const).map((t) => {
+            const count = t === 'mine' ? mine.length : shared.length;
             return (
               <button
                 key={t}
@@ -196,7 +193,7 @@ export const NotesView: React.FC = () => {
                   tab === t ? 'border-fg text-fg' : 'border-transparent text-muted hover:text-fg'
                 )}
               >
-                {t === 'mine' ? 'My notes' : t === 'class' ? 'Class notes' : 'Friends'}
+                {t === 'mine' ? 'My notes' : 'Class notes'}
                 {count > 0 && <span className="text-[12px] font-medium text-faint tabular-nums">{count}</span>}
               </button>
             );
@@ -211,7 +208,7 @@ export const NotesView: React.FC = () => {
               type="search"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder={tab === 'mine' ? 'Search your notes' : tab === 'class' ? 'Search class notes' : 'Search notes from friends'}
+              placeholder={tab === 'mine' ? 'Search your notes' : 'Search class notes'}
               className="flex-1 min-w-0 bg-transparent text-[15px] text-fg placeholder:text-faint focus:outline-none"
             />
             {q && (
@@ -281,14 +278,8 @@ export const NotesView: React.FC = () => {
               </button>
             }
           />
-        ) : tab === 'class' ? (
-          <EmptyNotes art="friends" title="No class notes yet" body="When someone shares a note with your batch, it shows up here for everyone." />
         ) : (
-          <EmptyNotes
-            art="friends"
-            title="Nothing from friends yet"
-            body="When a friend shares a note with you, it lands here. Share yours from My notes with the share button."
-          />
+          <EmptyNotes art="friends" title="No class notes yet" body="When someone shares a note with your batch, it shows up here for everyone." />
         )
       ) : shown.length === 0 ? (
         <p className="py-f5 text-center text-[14px] text-muted">No notes match &ldquo;{q}&rdquo;.</p>
@@ -304,10 +295,9 @@ export const NotesView: React.FC = () => {
                   const label = subjectLabel(s, n.subjectName);
                   const photos = n.kind === 'mine' ? (n as MyNote).photos : [];
                   const image = n.kind !== 'mine' ? (n as SharedNote).imageUrl : null;
-                  const fn = n.kind === 'friends' ? (n as FriendNote) : null;
                   return (
                     <li key={n.id} className="bg-surface border border-line" style={{ '--sub': tone.accent, '--sub-dark': tone.darkAccent } as React.CSSProperties}>
-                      <button type="button" onClick={() => (fn ? fn.imageUrl && setViewer(fn.imageUrl) : openSlot(n))} className="group w-full text-left px-f4 pt-f3 pb-f3 cursor-pointer hover:bg-surface-2/60 transition-colors">
+                      <button type="button" onClick={() => openSlot(n)} className="group w-full text-left px-f4 pt-f3 pb-f3 cursor-pointer hover:bg-surface-2/60 transition-colors">
                         <span className="flex items-center gap-2 text-[12px]">
                           <span className="w-2.5 h-2.5 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]" aria-hidden="true" />
                           {label.code && <span className="font-bold tracking-wide text-fg">{label.code}</span>}
@@ -326,32 +316,17 @@ export const NotesView: React.FC = () => {
                             <Users className="w-3 h-3" /> {(n as SharedNote).mine ? 'You' : (n as SharedNote).byName}
                           </span>
                         )}
-                        {fn && (
-                          <span className="mt-1.5 flex items-center gap-1.5 text-[12px] text-muted">
-                            <Users className="w-3 h-3" />
-                            {fn.mine ? `You → ${fn.sentTo} ${fn.sentTo === 1 ? 'friend' : 'friends'}` : `from ${fn.byName}`}
-                          </span>
-                        )}
                       </button>
-                      {(n.kind === 'mine' || fn) && (
+                      {n.kind === 'mine' && (
                         <div className="px-f4 pb-f3 -mt-1 flex justify-end">
-                          {n.kind === 'mine' ? (
-                            <button
-                              type="button"
-                              onClick={() => setShareNote(n as MyNote)}
-                              className="h-8 px-2.5 inline-flex items-center gap-1.5 text-[12px] font-semibold text-muted hover:text-fg hover:bg-surface-2 cursor-pointer"
-                            >
-                              <Share2 className="w-3.5 h-3.5" /> Share with friends
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => removeFriendNote(fn!)}
-                              className="h-8 px-2.5 text-[12px] font-semibold text-muted hover:text-rose-600 cursor-pointer"
-                            >
-                              {fn!.mine ? 'Unshare' : 'Remove'}
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => shareOut(n as MyNote)}
+                            disabled={sharingId === n.id}
+                            className="h-8 px-2.5 inline-flex items-center gap-1.5 text-[12px] font-semibold text-muted hover:text-fg hover:bg-surface-2 cursor-pointer disabled:opacity-50"
+                          >
+                            <Share2 className="w-3.5 h-3.5" /> Share
+                          </button>
                         </div>
                       )}
                       {photos.length > 0 && (
@@ -410,19 +385,6 @@ export const NotesView: React.FC = () => {
           </ul>
         )}
       </Modal>
-
-      <ShareNoteSheet
-        note={shareNote}
-        onClose={() => setShareNote(null)}
-        onShared={(count) => {
-          showToast?.(`Shared with ${count} ${count === 1 ? 'friend' : 'friends'}`, shareNote?.subjectName || '', 'success');
-          load();
-        }}
-        onFindFriends={() => {
-          setShareNote(null);
-          setActiveView?.('friends');
-        }}
-      />
 
       <PhotoViewer url={viewer} onClose={closeViewer} alt="Note photo" />
     </div>

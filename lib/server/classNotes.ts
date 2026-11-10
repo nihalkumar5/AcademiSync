@@ -6,7 +6,7 @@
 //   handed out as 1-hour signed links.
 import { getStorage } from 'firebase-admin/storage';
 import { adminDb } from '@/lib/firebase-admin';
-import { FriendNote, MAX_NOTE_CHARS, MAX_SHARED_IMAGE_KB, MyNote, SharedNote, subjectKeyOf } from '@/lib/classNotes';
+import { MAX_NOTE_CHARS, MAX_SHARED_IMAGE_KB, MyNote, SharedNote, subjectKeyOf } from '@/lib/classNotes';
 
 export class NoteError extends Error {
   constructor(public status: number, message: string, public code?: string) {
@@ -140,6 +140,18 @@ async function bumpShareLimit(uid: string) {
   });
 }
 
+/** Upload the photo; if Storage isn't available, share the text alone (or explain, for photo-only notes). */
+async function savePhotoOrSkip(path: string, buf: Buffer, type: string, hasText: boolean): Promise<{ imagePath: string | null; photoSkipped: boolean }> {
+  try {
+    await bucket().file(path).save(buf, { contentType: type, resumable: false });
+    return { imagePath: path, photoSkipped: false };
+  } catch (err: any) {
+    console.warn('Note photo upload failed:', err?.message || err);
+    if (hasText) return { imagePath: null, photoSkipped: true };
+    throw new NoteError(503, "Photos can't be shared right now. Add some text, or try again later.", 'photo-storage');
+  }
+}
+
 // ---------- Class (batch) notes ----------
 const shared = (batchKey: string) => adminDb.collection('batch_notes').doc(batchKey).collection('items');
 
@@ -205,13 +217,11 @@ export async function addShared(who: Who, input: any) {
   await bumpShareLimit(who.uid);
 
   const ref = shared(who.batchKey).doc();
-  let imagePath: string | null = null;
-  if (buf) {
-    imagePath = `batch_notes/${who.batchKey}/${ref.id}.${type === 'image/webp' ? 'webp' : 'jpg'}`;
-    await bucket().file(imagePath).save(buf, { contentType: type, resumable: false });
-  }
+  const { imagePath, photoSkipped } = buf
+    ? await savePhotoOrSkip(`batch_notes/${who.batchKey}/${ref.id}.${type === 'image/webp' ? 'webp' : 'jpg'}`, buf, type, !!text)
+    : { imagePath: null, photoSkipped: false };
   await ref.set({ ...slot, text, imagePath, by: who.uid, byName: who.name, createdAt: now() });
-  return ref.id;
+  return { id: ref.id, photoSkipped };
 }
 
 export async function deleteShared(who: Who, id: unknown) {
@@ -223,110 +233,4 @@ export async function deleteShared(who: Who, id: unknown) {
   if (d.by !== who.uid && !(await canModerate(who, who.batchKey))) throw new NoteError(403, 'Only the person who shared it or your CR can remove this');
   if (d.imagePath) await bucket().file(d.imagePath).delete().catch(() => {});
   await ref.delete();
-}
-
-// ---------- Notes shared with particular friends ----------
-// friend_notes/{id}: one copy (text + one compressed photo) visible to the sender and the chosen
-// friends. Only accepted friends can be recipients. The sender can unshare (deletes it); a recipient
-// can remove it from their own list. Photo in Storage at friend_notes/{id}.webp, signed for 1 hour.
-const friendNotes = () => adminDb.collection('friend_notes');
-
-const toFriendNote = async (doc: any, uid: string, expires: number): Promise<FriendNote> => {
-  const d = doc.data();
-  let imageUrl: string | null = null;
-  if (d.imagePath) {
-    try {
-      [imageUrl] = await bucket().file(d.imagePath).getSignedUrl({ version: 'v4', action: 'read', expires });
-    } catch {
-      imageUrl = null;
-    }
-  }
-  const mine = d.by === uid;
-  return {
-    id: doc.id,
-    subjectId: d.subjectId,
-    subjectName: d.subjectName || '',
-    date: d.date,
-    startTime: d.startTime || '',
-    text: d.text || '',
-    imageUrl,
-    byName: d.byName || 'A friend',
-    mine,
-    canDelete: true,
-    createdAt: d.createdAt || '',
-    sentTo: mine ? (Array.isArray(d.recipients) ? d.recipients.length : 0) : 0,
-  };
-};
-
-export async function shareNoteWithFriends(who: Who, input: any) {
-  const slot = slotOf(input);
-  const text = textOf(input?.text);
-  const { buf, type } = parseImage(input?.image);
-  if (!text && !buf) throw new NoteError(400, 'Write something or add a photo');
-
-  const wanted = Array.from(new Set((Array.isArray(input?.to) ? input.to : []).filter((v: unknown) => isStr(v, 128) && /^[A-Za-z0-9_-]+$/.test(v as string)))).slice(0, 50) as string[];
-  if (!wanted.length) throw new NoteError(400, 'Pick at least one friend');
-  const { acceptedFriendUids } = await import('@/lib/server/friends');
-  const friends = new Set(await acceptedFriendUids(who.uid));
-  const recipients = wanted.filter((u) => friends.has(u));
-  if (!recipients.length) throw new NoteError(400, 'You can only share with your friends');
-
-  await bumpShareLimit(who.uid);
-  const ref = friendNotes().doc();
-  let imagePath: string | null = null;
-  if (buf) {
-    imagePath = `friend_notes/${ref.id}.${type === 'image/webp' ? 'webp' : 'jpg'}`;
-    await bucket().file(imagePath).save(buf, { contentType: type, resumable: false });
-  }
-  await ref.set({ ...slot, text, imagePath, by: who.uid, byName: who.name, recipients, dismissedBy: [], createdAt: now() });
-
-  // Tell them (best effort)
-  try {
-    const { sendPush, tokensFromUserDoc } = await import('@/lib/server/push');
-    const snaps = await Promise.all(recipients.map((u) => adminDb.collection('users').doc(u).get()));
-    const targets = snaps.flatMap((s: any) => tokensFromUserDoc(s.id, s.data() || {}));
-    if (targets.length)
-      await sendPush(targets, {
-        title: `${who.name} shared a note`,
-        body: `${slot.subjectName}${text ? ` · ${text.slice(0, 80)}` : ' · photo'}`,
-        data: { type: 'friend_note' },
-        link: '/?view=notes',
-      });
-  } catch {}
-  return { id: ref.id, recipients: recipients.length };
-}
-
-/** Notes friends sent me (still friends, not removed) and notes I sent, newest first. */
-export async function listFriendNotes(uid: string, max = 150): Promise<FriendNote[]> {
-  const { acceptedFriendUids } = await import('@/lib/server/friends');
-  const [incoming, sent, friendIds] = await Promise.all([
-    friendNotes().where('recipients', 'array-contains', uid).limit(max).get(),
-    friendNotes().where('by', '==', uid).limit(max).get(),
-    acceptedFriendUids(uid),
-  ]);
-  const friends = new Set(friendIds);
-  const docs = [
-    ...incoming.docs.filter((d: any) => friends.has(d.data().by) && !(d.data().dismissedBy || []).includes(uid)),
-    ...sent.docs,
-  ];
-  const expires = Date.now() + 60 * 60 * 1000;
-  const list = await Promise.all(docs.map((d: any) => toFriendNote(d, uid, expires)));
-  return list.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-}
-
-/** Sender: unshare (deletes it and its photo). Recipient: remove it from my list. */
-export async function removeFriendNote(uid: string, id: unknown) {
-  if (!validKey(id)) throw new NoteError(400, 'Invalid note');
-  const ref = friendNotes().doc(id);
-  const snap = await ref.get();
-  if (!snap.exists) return;
-  const d = snap.data() || {};
-  if (d.by === uid) {
-    if (d.imagePath) await bucket().file(d.imagePath).delete().catch(() => {});
-    await ref.delete();
-    return;
-  }
-  if (!(d.recipients || []).includes(uid)) throw new NoteError(404, 'This note is no longer shared with you');
-  const { FieldValue } = await import('firebase-admin/firestore');
-  await ref.update({ dismissedBy: FieldValue.arrayUnion(uid) });
 }

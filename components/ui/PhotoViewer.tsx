@@ -2,12 +2,12 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ZoomIn, ZoomOut } from '@/components/ui/icons';
+import { X } from '@/components/ui/icons';
 
 // Full-screen photo with its own zoom (the app viewport has pinch-zoom off).
 // - Portaled to <body> above everything, so it also opens on top of sheets/modals.
 // - Two-finger pinch, drag to pan when zoomed, double-tap / double-click to toggle zoom,
-//   mouse wheel on desktop. Close with ✕, Escape, or a tap on the background when not zoomed.
+//   mouse wheel on desktop. Close with the ✕ (white, always visible), Escape, or a tap on the background when not zoomed.
 
 const MIN = 1;
 const MAX = 5;
@@ -150,14 +150,6 @@ export const PhotoViewer: React.FC<{ url: string | null; onClose: () => void; al
     zoomAround(scale * (e.deltaY < 0 ? 1.15 : 1 / 1.15), centreOf(e.clientX, e.clientY));
   };
 
-  const step = (factor: number) => {
-    setAnimate(true);
-    if (scale * factor <= 1.01) {
-      setScale(1);
-      setPos({ x: 0, y: 0 });
-    } else zoomAround(scale * factor, { x: 0, y: 0 });
-  };
-
   if (!mounted || !url) return null;
 
   return createPortal(
@@ -186,16 +178,15 @@ export const PhotoViewer: React.FC<{ url: string | null; onClose: () => void; al
         />
       </div>
 
-      {/* Controls */}
-      <div className="absolute inset-x-0 top-0 flex justify-end gap-2 p-3" style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
-        <button type="button" onClick={() => step(1 / 1.6)} aria-label="Zoom out" className="w-10 h-10 rounded-full flex items-center justify-center bg-white/12 text-white hover:bg-white/20 cursor-pointer">
-          <ZoomOut className="w-5 h-5" />
-        </button>
-        <button type="button" onClick={() => step(1.6)} aria-label="Zoom in" className="w-10 h-10 rounded-full flex items-center justify-center bg-white/12 text-white hover:bg-white/20 cursor-pointer">
-          <ZoomIn className="w-5 h-5" />
-        </button>
-        <button type="button" onClick={onClose} aria-label="Close photo" className="w-10 h-10 rounded-full flex items-center justify-center bg-white/12 text-white hover:bg-white/20 cursor-pointer">
-          <X className="w-5 h-5" />
+      {/* Close: a solid white button so it shows on any photo */}
+      <div className="absolute inset-x-0 top-0 flex justify-end p-3" style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close photo"
+          className="w-11 h-11 rounded-full flex items-center justify-center bg-white text-black shadow-[0_4px_16px_rgba(0,0,0,0.5)] ring-1 ring-black/10 active:scale-95 transition-transform cursor-pointer"
+        >
+          <X className="w-5 h-5" strokeWidth={2.4} />
         </button>
       </div>
       {scale === 1 && (

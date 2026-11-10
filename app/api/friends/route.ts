@@ -7,7 +7,6 @@ import {
   cancelPlan,
   createPlan,
   loadFriends,
-  listAcceptedFriends,
   loadRoutineShares,
   markFriendRoutine,
   removeFriend,
@@ -68,8 +67,6 @@ export async function POST(req: Request) {
       case 'cancelPlan':
         await cancelPlan(uid, b.id);
         return ok({});
-      case 'listFriends':
-        return ok({ friends: await listAcceptedFriends(uid) });
       case 'routineShares':
         return ok({ data: await loadRoutineShares(uid) });
       case 'shareRoutine':

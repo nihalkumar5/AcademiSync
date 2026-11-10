@@ -7,10 +7,11 @@ import { clsx } from 'clsx';
 import { useApp } from '@/context/AppContext';
 import { Modal } from '@/components/ui/Modal';
 import { PhotoViewer } from '@/components/ui/PhotoViewer';
-import { AlertTriangle, Camera, ImageIcon, Loader2, Lock, Smartphone, Trash2, Users, X } from '@/components/ui/icons';
+import { AlertTriangle, Camera, ImageIcon, Loader2, Lock, Share2, Smartphone, Trash2, Users, X } from '@/components/ui/icons';
 import { formatTime12Hour, getTodayDateString } from '@/lib/timetableUtils';
 import { MAX_NOTE_CHARS, MAX_SHARED_IMAGE_KB, MyNote, NoteSlot, SharedNote, notesApi, subjectKeyOf } from '@/lib/classNotes';
-import { blobToBase64, compressPhoto, deletePhoto, getPhoto, savePhoto } from '@/lib/notePhotos';
+import { compressPhoto, deletePhoto, getPhoto, savePhoto } from '@/lib/notePhotos';
+import { noteShareText, shareNoteExternally } from '@/lib/shareNote';
 
 // One notes sheet for the whole app. Open it with openClassNotes(slot) from lib/classNotes.
 // The hidden camera / gallery inputs live outside the sheet, so "Snap" can open the camera
@@ -202,14 +203,8 @@ export const ClassNotesHost: React.FC = () => {
         if (res?.note && user?.id) cacheMine(user.id, [res.note]);
         showToast?.('Note saved', `${slot.subjectName} · ${dateLabel(slot.date)}`, 'success');
       } else {
-        let image: string | undefined;
-        if (pending[0]) {
-          let blob = pending[0].blob;
-          if (blob.size > (MAX_SHARED_IMAGE_KB - 20) * 1024) blob = await compressPhoto(blob, 1280, 0.6);
-          if (blob.size > (MAX_SHARED_IMAGE_KB - 20) * 1024) throw new Error('That photo is too large to share');
-          image = await blobToBase64(blob);
-        }
-        await notesApi('POST', '', { action: 'addShared', ...base, ...(image ? { image } : {}) });
+        // Class notes are text only (no photo storage); photos go out through Share on My notes
+        await notesApi('POST', '', { action: 'addShared', ...base });
         showToast?.('Shared with your class', `${slot.subjectName} · ${dateLabel(slot.date)}`, 'success');
       }
       setText('');
@@ -222,6 +217,14 @@ export const ClassNotesHost: React.FC = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  // My note → the phone's share menu (WhatsApp and other apps), with its first photo
+  const shareOut = async (n: MyNote) => {
+    const photo = n.photos?.[0] ? await getPhoto(n.photos[0]) : null;
+    const result = await shareNoteExternally({ title: n.subjectName || 'Class note', text: noteShareText(n), photo });
+    if (result === 'text-only') showToast?.('Shared the text', "This version of the app can't attach the photo yet.", 'info');
+    else if (result === 'error') showToast?.("Couldn't open sharing", 'Try again.', 'error');
   };
 
   const removeMine = async (n: MyNote) => {
@@ -252,7 +255,7 @@ export const ClassNotesHost: React.FC = () => {
   };
 
   const list = tab === 'mine' ? mine : shared;
-  const canSave = !saving && (!!text.trim() || pending.length > 0) && (tab === 'mine' || hasBatch);
+  const canSave = !saving && (tab === 'mine' ? !!text.trim() || pending.length > 0 : !!text.trim() && hasBatch);
   const subtitle = slot
     ? [dateLabel(slot.date), slot.startTime ? formatTime12Hour(slot.startTime) : null, slot.room || null].filter(Boolean).join(' · ')
     : '';
@@ -297,10 +300,7 @@ export const ClassNotesHost: React.FC = () => {
                         onClick={() => {
                           setTab(t);
                           setError('');
-                          if (t === 'class' && pending.length > 1) {
-                            pending.slice(1).forEach((x) => URL.revokeObjectURL(x.url));
-                            setPending(pending.slice(0, 1));
-                          }
+                          if (t === 'class' && pending.length) clearPending();
                         }}
                         className={clsx(
                           '-mb-px h-10 inline-flex items-center gap-1.5 border-b-2 text-[14px] font-semibold transition-colors cursor-pointer',
@@ -347,12 +347,16 @@ export const ClassNotesHost: React.FC = () => {
                         </div>
                       )}
                       <div className="flex items-center gap-0.5 px-1.5 pb-1.5">
-                        <button type="button" onClick={() => cameraRef.current?.click()} aria-label="Take photo" title="Take photo" className="w-9 h-9 inline-flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 cursor-pointer">
-                          <Camera className="w-[18px] h-[18px]" />
-                        </button>
-                        <button type="button" onClick={() => galleryRef.current?.click()} aria-label="Add from gallery" title="Add from gallery" className="w-9 h-9 inline-flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 cursor-pointer">
-                          <ImageIcon className="w-[18px] h-[18px]" />
-                        </button>
+                        {tab === 'mine' && (
+                          <>
+                            <button type="button" onClick={() => cameraRef.current?.click()} aria-label="Take photo" title="Take photo" className="w-9 h-9 inline-flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 cursor-pointer">
+                              <Camera className="w-[18px] h-[18px]" />
+                            </button>
+                            <button type="button" onClick={() => galleryRef.current?.click()} aria-label="Add from gallery" title="Add from gallery" className="w-9 h-9 inline-flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 cursor-pointer">
+                              <ImageIcon className="w-[18px] h-[18px]" />
+                            </button>
+                          </>
+                        )}
                         <span className="flex-1" />
                         <button type="button" onClick={save} disabled={!canSave} className="btn btn-primary h-9 px-4 text-[13px]">
                           {saving && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -376,7 +380,7 @@ export const ClassNotesHost: React.FC = () => {
                     ) : null}
                     <p className="mt-2 flex items-center gap-1.5 text-[12px] text-faint">
                       {tab === 'mine' ? <Lock className="w-3 h-3" /> : <Users className="w-3 h-3" />}
-                      {tab === 'mine' ? 'Only you · photos stay on this phone' : 'Everyone in your batch sees this'}
+                      {tab === 'mine' ? 'Only you · photos stay on this phone' : 'Everyone in your batch sees this · text only. Send photos with Share on your notes.'}
                     </p>
                   </div>
                 )}
@@ -431,6 +435,17 @@ export const ClassNotesHost: React.FC = () => {
                                     {timeOf(n.createdAt)}
                                   </p>
                                 </div>
+                                {tab === 'mine' && (
+                                  <button
+                                    type="button"
+                                    aria-label="Share note to WhatsApp or other apps"
+                                    title="Share"
+                                    onClick={() => shareOut(n)}
+                                    className="w-8 h-8 shrink-0 flex items-center justify-center text-muted hover:text-fg cursor-pointer"
+                                  >
+                                    <Share2 className="w-4 h-4" />
+                                  </button>
+                                )}
                                 {(tab === 'mine' || n.canDelete) && (
                                   <button
                                     type="button"

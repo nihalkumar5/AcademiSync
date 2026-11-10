@@ -420,7 +420,7 @@ function cleanRoutine(r: any) {
   return out;
 }
 
-export async function acceptedFriendUids(uid: string): Promise<string[]> {
+async function acceptedFriendUids(uid: string): Promise<string[]> {
   const snap = await pairs().where('users', 'array-contains', uid).get();
   return snap.docs
     .map((d: any) => d.data())
@@ -530,15 +530,4 @@ export async function markFriendRoutine(uid: string, id: unknown, answer: unknow
     const { FieldValue } = await import('firebase-admin/firestore');
     await ref.update({ dismissedBy: FieldValue.arrayUnion(uid) });
   }
-}
-
-/** My accepted friends as light cards (for "share with friends" pickers), A to Z. */
-export async function listAcceptedFriends(uid: string): Promise<PersonLite[]> {
-  const ids = await acceptedFriendUids(uid);
-  const [snaps, meSnap] = await Promise.all([Promise.all(ids.map((f) => users().doc(f).get())), users().doc(uid).get()]);
-  const myBatch = meSnap.data()?.profile?.batchKey || null;
-  return snaps
-    .filter((s: any) => s.exists)
-    .map((s: any) => lite(s.id, s.data(), myBatch))
-    .sort((a: PersonLite, b: PersonLite) => a.name.localeCompare(b.name));
 }
