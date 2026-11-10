@@ -135,75 +135,63 @@ export const OverviewHeader: React.FC = () => {
         )}
       </div>
 
-      {/* Brutalist Stats Grid */}
-      <div className="grid grid-cols-3 gap-0 py-f4 border-y border-line relative">
-        {/* Vertical dividers (~70% height) */}
-        <div className="absolute left-1/3 top-[15%] bottom-[15%] w-px bg-surface-3" />
-        <div className="absolute left-[66.666%] top-[15%] bottom-[15%] w-px bg-surface-3" />
+      {/* Today at a glance: big tabular numbers, quiet labels, one-line context.
+          Zero reads muted (nothing to do); urgency gets colour; each stat opens its section. */}
+      <div className="grid grid-cols-3 py-f3 border-y border-line-soft relative">
+        <div aria-hidden="true" className="absolute left-1/3 top-1/4 bottom-1/4 w-px bg-line-soft" />
+        <div aria-hidden="true" className="absolute left-2/3 top-1/4 bottom-1/4 w-px bg-line-soft" />
 
-        {/* Classes or Exams */}
-        <button
-          onClick={() => setActiveView(hasActiveExamToday ? 'exams' : 'timetable')}
-          className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center cursor-pointer"
-        >
-          <span className="text-[28px] sm:text-[32px] font-medium text-fg tracking-tighter leading-none mb-1">
-            {hasActiveExamToday ? todayExamsList.length : todayClasses.length}
-          </span>
-          <div className="flex flex-col items-center">
-            <span className="text-[14px] font-medium text-muted leading-tight">
-              {hasActiveExamToday ? (todayExamsList.length === 1 ? 'Exam' : 'Exams') : 'Classes'}
-            </span>
-            {todayHoliday ? (
-              <span className="text-[13px] text-muted leading-tight">
-                Holiday
+        {(() => {
+          const classCount = hasActiveExamToday ? todayExamsList.length : todayClasses.length;
+          const stats = [
+            {
+              key: 'classes',
+              value: classCount,
+              label: hasActiveExamToday ? (classCount === 1 ? 'Exam' : 'Exams') : classCount === 1 ? 'Class' : 'Classes',
+              caption: todayHoliday ? 'Holiday' : hasActiveExamToday ? 'Exam day' : 'today',
+              tone: hasActiveExamToday ? 'text-amber-600 dark:text-amber-400' : '',
+              captionTone: hasActiveExamToday ? 'text-amber-600 dark:text-amber-400 font-semibold' : '',
+              go: () => setActiveView(hasActiveExamToday ? 'exams' : 'timetable'),
+            },
+            {
+              key: 'assignments',
+              value: pendingHw.length,
+              label: pendingHw.length === 1 ? 'Assignment' : 'Assignments',
+              caption: 'pending',
+              tone: '',
+              captionTone: '',
+              go: () => setActiveView('homework'),
+            },
+            {
+              key: 'deadlines',
+              value: upcomingDeadlines.length,
+              label: upcomingDeadlines.length === 1 ? 'Deadline' : 'Deadlines',
+              caption: 'next 3 days',
+              tone: upcomingDeadlines.length > 0 ? 'text-rose-600 dark:text-rose-400' : '',
+              captionTone: upcomingDeadlines.length > 0 ? 'text-rose-600/80 dark:text-rose-400/80' : '',
+              go: () => setActiveView('homework'),
+            },
+          ];
+          return stats.map((s) => (
+            <button
+              key={s.key}
+              type="button"
+              onClick={s.go}
+              aria-label={`${s.value} ${s.label} ${s.caption}`}
+              className="mx-1.5 py-2.5 flex flex-col items-center justify-center text-center rounded-[14px] cursor-pointer transition-[background-color,transform] duration-150 hover:bg-surface-2 active:scale-[0.96] active:bg-surface-3"
+            >
+              <span
+                className={`text-[30px] sm:text-[34px] font-semibold tabular-nums tracking-[-0.03em] leading-none ${
+                  s.tone || (s.value === 0 ? 'text-fg/30' : 'text-fg')
+                }`}
+              >
+                {s.value}
               </span>
-            ) : hasActiveExamToday ? (
-              <span className="text-[13px] text-amber-600 dark:text-amber-400 font-semibold leading-tight">
-                Exam Day
-              </span>
-            ) : (
-              <span className="text-[13px] text-transparent leading-tight select-none" aria-hidden="true">
-                &nbsp;
-              </span>
-            )}
-          </div>
-        </button>
-
-        {/* Homework */}
-        <button
-          onClick={() => setActiveView('homework')}
-          className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center cursor-pointer"
-        >
-          <span className="text-[28px] sm:text-[32px] font-medium text-fg tracking-tighter leading-none mb-1">
-            {pendingHw.length}
-          </span>
-          <div className="flex flex-col items-center">
-            <span className="text-[14px] font-medium text-muted leading-tight">
-              Assignments
-            </span>
-            <span className="text-[13px] text-transparent leading-tight select-none" aria-hidden="true">
-              &nbsp;
-            </span>
-          </div>
-        </button>
-
-        {/* Exams */}
-        <button
-          onClick={() => setActiveView('homework')}
-          className="flex flex-col items-center justify-center group hover:opacity-70 transition-opacity text-center cursor-pointer"
-        >
-          <span className="text-[28px] sm:text-[32px] font-medium text-fg tracking-tighter leading-none mb-1">
-            {upcomingDeadlines.length}
-          </span>
-          <div className="flex flex-col items-center">
-            <span className="text-[14px] font-medium text-muted leading-tight">
-              Deadlines
-            </span>
-            <span className="text-[13px] text-transparent leading-tight select-none" aria-hidden="true">
-              &nbsp;
-            </span>
-          </div>
-        </button>
+              <span className="mt-2 text-[13px] font-medium text-fg-2 leading-none">{s.label}</span>
+              <span className={`mt-1 text-[11px] leading-none ${s.captionTone || 'text-faint'}`}>{s.caption}</span>
+            </button>
+          ));
+        })()}
       </div>
     </div>
   );
