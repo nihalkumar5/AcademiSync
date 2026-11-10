@@ -22,7 +22,8 @@ self.addEventListener('push', (event) => {
       body: n.body || d.body || '',
       icon: n.icon || '/logo51.png',
       badge: '/logo51.png',
-      tag: d.tag || undefined,
+      tag: n.tag || d.tag || undefined,
+      renotify: !!(n.tag || d.tag),
       data: { link },
     })
   );

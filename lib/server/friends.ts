@@ -546,7 +546,7 @@ export async function markFriendRoutine(uid: string, id: unknown, answer: unknow
 // (chatId = plan_{planId}). The server creates chats and decides members; clients read them and
 // write messages directly, guarded by firestore.rules (members only; DMs only while still friends).
 const chats = () => adminDb.collection('chats');
-const PING_GAP_MS = 20 * 1000;
+const PING_GAP_MS = 3 * 1000;
 
 async function ensurePlanChatDoc(planId: string, p: { by: string; invited: string[]; title: string; at: string }) {
   const ref = chats().doc(`plan_${planId}`);
@@ -595,7 +595,8 @@ export async function openPlanChat(uid: string, planId: unknown) {
   return ensurePlanChatDoc(planId, { by: p.by, invited: list(p.invited), title: p.title, at: p.at });
 }
 
-/** After sending a message: push it to the other members (at most once per 20 s per chat). */
+/** After sending a message: push it to the other members. Each sender has their own short
+ *  spam gap, so a quick reply still notifies; a per-chat tag makes a burst replace one banner. */
 export async function pingChat(uid: string, chatId: unknown) {
   if (typeof chatId !== 'string' || !/^[A-Za-z0-9_-]{6,300}$/.test(chatId)) throw new FriendError(400, 'Invalid request');
   const ref = chats().doc(chatId);
@@ -603,21 +604,32 @@ export async function pingChat(uid: string, chatId: unknown) {
     const s = await tx.get(ref);
     const c = s.exists ? s.data() : null;
     if (!c || !list(c.members).includes(uid)) throw new FriendError(404, 'Chat not found');
-    if (c.lastMessage?.by !== uid) return null;
-    const last = typeof c.pingAt === 'number' ? c.pingAt : 0;
+    const last = typeof c.pings?.[uid] === 'number' ? c.pings[uid] : 0;
     if (Date.now() - last < PING_GAP_MS) return null;
-    tx.update(ref, { pingAt: Date.now() });
+    tx.update(ref, { [`pings.${uid}`]: Date.now() });
     return c;
   });
   if (!go) return;
+  // Read the sender's newest message itself, so a failed preview update can't silence the push
+  const recent = await ref.collection('messages').orderBy('at', 'desc').limit(10).get();
+  const mine = recent.docs.map((d: any) => d.data()).find((m: any) => m.by === uid);
+  if (!mine) return;
   const me = (await users().doc(uid).get()).data() || {};
   const name = lite(uid, me).name;
-  const text = String(go.lastMessage?.text || '').slice(0, 120);
+  const text = String(mine.text || '').slice(0, 120);
   const title = go.type === 'plan' ? `${name} · ${go.title || 'Plan'}` : name;
   const others = list(go.members).filter((m: string) => m !== uid);
   const snaps = await Promise.all(others.map((o: string) => users().doc(o).get()));
   const targets = snaps.flatMap((s: any) => tokensFromUserDoc(s.id, s.data() || {}));
-  if (targets.length) await sendPush(targets, { title, body: text, data: { type: 'chat', chatId }, link: `/?view=friends&chat=${encodeURIComponent(chatId)}` }).catch(() => {});
+  if (targets.length) {
+    await sendPush(targets, {
+      title,
+      body: text,
+      tag: `chat_${chatId}`,
+      data: { type: 'chat', chatId, title, body: text },
+      link: `/?view=friends&chat=${encodeURIComponent(chatId)}`,
+    }).catch((e) => console.warn('chat push failed', e?.message));
+  }
 }
 
 /** Report a chat (optionally one message) for review. */

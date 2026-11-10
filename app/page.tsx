@@ -56,7 +56,7 @@ import { ClassNotesHost } from '@/components/notes/ClassNotesHost';
 import { ElectivesHost, ElectivesPromptCard } from '@/components/electives/Electives';
 import { AdminProposalsCard } from '@/components/campus/AdminProposalsCard';
 import { FriendsView } from '@/components/friends/FriendsView';
-import { FriendsFreeNowCard, FriendLinkHost } from '@/components/friends/FriendsHome';
+import { FriendsFreeNowCard, FriendLinkHost, ChatDeliveryHost } from '@/components/friends/FriendsHome';
 import { FacultyHomeView } from '@/components/faculty/FacultyHomeView';
 import { FacultyWeeklyTimetable } from '@/components/faculty/FacultyWeeklyTimetable';
 import { FacultyTasksView } from '@/components/faculty/FacultyTasksView';
@@ -470,6 +470,7 @@ export default function AppHome() {
       <ClassNotesHost />
       <ElectivesHost />
       <FriendLinkHost />
+      <ChatDeliveryHost />
       <Toast />
       {showHolidayAnimation && <HolidayBalloons />}
 

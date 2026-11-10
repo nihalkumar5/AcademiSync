@@ -18,6 +18,7 @@ import {
   reactTo,
   reportChat,
   sendMessage,
+  setTyping,
   useMessages,
 } from './chatClient';
 
@@ -39,6 +40,72 @@ const dayTitle = (t: number) => {
   return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
 };
 const clock = (t: number) => (t ? new Date(t).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '');
+
+// WhatsApp-style receipt: clock while sending, one tick sent, two grey delivered, two blue read
+type Receipt = 'pending' | 'sent' | 'delivered' | 'read';
+const Ticks: React.FC<{ state: Receipt }> = ({ state }) => {
+  if (state === 'pending')
+    return (
+      <svg viewBox="0 0 16 16" className="inline-block w-[13px] h-[13px] ml-1 -mt-0.5 opacity-70" aria-label="Sending">
+        <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M8 4.8V8l2.2 1.4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    );
+  const double = state !== 'sent';
+  return (
+    <motion.svg
+      key={state}
+      viewBox="0 0 18 11"
+      initial={{ scale: 0.6, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 600, damping: 22 }}
+      className={clsx('inline-block w-[17px] h-[11px] ml-1 -mt-0.5', state === 'read' ? 'text-[#34B7F1]' : 'opacity-70')}
+      aria-label={state === 'read' ? 'Read' : state === 'delivered' ? 'Delivered' : 'Sent'}
+    >
+      <path d="M1.5 6l3 3 6-7.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      {double && <path d="M8.2 8.6l.9.9 6-7.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />}
+    </motion.svg>
+  );
+};
+
+const TypingDots: React.FC = () => (
+  <span className="inline-flex items-center gap-[3px] h-[21px]">
+    {[0, 1, 2].map((i) => (
+      <motion.span
+        key={i}
+        className="w-[7px] h-[7px] rounded-full bg-current opacity-60"
+        animate={{ y: [0, -4, 0], opacity: [0.35, 0.9, 0.35] }}
+        transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.15, ease: 'easeInOut' }}
+      />
+    ))}
+  </span>
+);
+
+/** Who else is typing. Timed from when the change reached us, so phone clocks don't matter. */
+function useTypingOthers(typing: Record<string, number> | undefined, me: string) {
+  const seen = useRef<Record<string, { v: number; at: number }>>({});
+  const [, tick] = useState(0);
+  useEffect(() => {
+    const now = Date.now();
+    const next: Record<string, { v: number; at: number }> = {};
+    Object.entries(typing || {}).forEach(([uid, v]) => {
+      if (uid === me || !v) return;
+      const prev = seen.current[uid];
+      if (prev && prev.v === v) next[uid] = prev;
+      else if (prev || v > now - 15000) next[uid] = { v, at: now };
+    });
+    seen.current = next;
+    tick((n) => n + 1);
+  }, [typing, me]);
+  useEffect(() => {
+    const t = setInterval(() => tick((n) => n + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const now = Date.now();
+  return Object.entries(seen.current)
+    .filter(([, x]) => now - x.at < 6000)
+    .map(([uid]) => uid);
+}
 
 const Avatar: React.FC<{ p?: PersonLite | null; uid: string; size?: number }> = ({ p, uid, size = 36 }) => (
   <span className="shrink-0 rounded-full overflow-hidden bg-[#F1EFEA] dark:bg-[#F4F4F6]" style={{ width: size, height: size }}>
@@ -87,6 +154,39 @@ export const ChatThread: React.FC<{
     };
   }, [chat?.id, onClose]);
 
+  // While this chat is open, an incoming push for it needs no banner
+  useEffect(() => {
+    if (!chat?.id) return;
+    (window as any).__openChatId = chat.id;
+    return () => {
+      if ((window as any).__openChatId === chat.id) (window as any).__openChatId = null;
+    };
+  }, [chat?.id]);
+
+  // Typing: tell others at most every 3 s while I type, and stop when I clear, send or leave
+  const typingSentAt = useRef(0);
+  const chatIdForTyping = chat?.id;
+  const onTyping = (value: string) => {
+    if (!chatIdForTyping) return;
+    if (!value.trim()) {
+      if (typingSentAt.current) setTyping(chatIdForTyping, me, false);
+      typingSentAt.current = 0;
+      return;
+    }
+    if (Date.now() - typingSentAt.current > 3000) {
+      typingSentAt.current = Date.now();
+      setTyping(chatIdForTyping, me, true);
+    }
+  };
+  useEffect(() => {
+    if (!chatIdForTyping) return;
+    return () => {
+      if (typingSentAt.current) setTyping(chatIdForTyping, me, false);
+      typingSentAt.current = 0;
+    };
+  }, [chatIdForTyping, me]);
+  const typingOthers = useTypingOthers(chat?.typing, me);
+
   // Read receipts for myself, and stick to the bottom as messages arrive
   useEffect(() => {
     if (chat?.id) markRead(chat.id, me);
@@ -100,7 +200,7 @@ export const ChatThread: React.FC<{
       el.scrollTo({ top: el.scrollHeight, behavior: firstPaint.current ? 'auto' : 'smooth' });
       if (messages.length) firstPaint.current = false;
     }
-  }, [messages.length]);
+  }, [messages.length, typingOthers.length]);
 
   // Grow the composer with its text (up to 5 lines)
   useLayoutEffect(() => {
@@ -113,6 +213,17 @@ export const ChatThread: React.FC<{
   const other = chat?.type === 'dm' ? chat.members.find((m) => m !== me) || '' : '';
   const title = chat ? (chat.type === 'dm' ? people[other]?.name || chat.names[other] || 'Friend' : chat.title || 'Plan') : '';
   const nameOf = useCallback((uid: string) => (uid === me ? 'You' : people[uid]?.name?.split(' ')[0] || chat?.names[uid]?.split(' ')[0] || 'Friend'), [me, people, chat?.names]);
+
+  const receiptOf = (m: ChatMessage): Receipt => {
+    if (m.pending || !m.at) return 'pending';
+    const others = (chat?.members || []).filter((u) => u !== me);
+    if (!others.length) return 'sent';
+    const r = chat?.reads || {};
+    const d = chat?.delivered || {};
+    if (others.every((u) => (r[u] || 0) >= m.at)) return 'read';
+    if (others.every((u) => Math.max(d[u] || 0, r[u] || 0) >= m.at)) return 'delivered';
+    return 'sent';
+  };
 
   const groups = useMemo(() => {
     const out: { key: string; title: string; items: ChatMessage[] }[] = [];
@@ -132,6 +243,7 @@ export const ChatThread: React.FC<{
     if (!t || sending) return;
     setSending(true);
     setText('');
+    typingSentAt.current = 0;
     try {
       await sendMessage(chat.id, me, t);
     } catch (e: any) {
@@ -191,7 +303,13 @@ export const ChatThread: React.FC<{
         <div className="flex-1 min-w-0">
           <p className="text-[16px] font-semibold text-fg truncate leading-tight">{title}</p>
           <p className="text-[12px] text-muted truncate">
-            {subtitle || (chat.type === 'plan' ? chat.members.map(nameOf).join(', ') : 'Friend')}
+            {typingOthers.length ? (
+              <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                {chat.type === 'dm' ? 'typing…' : `${typingOthers.map(nameOf).join(', ')} ${typingOthers.length > 1 ? 'are' : 'is'} typing…`}
+              </span>
+            ) : (
+              subtitle || (chat.type === 'plan' ? chat.members.map(nameOf).join(', ') : 'Friend')
+            )}
           </p>
         </div>
         <div className="relative">
@@ -296,7 +414,10 @@ export const ChatThread: React.FC<{
                       )}
                     >
                       {m.text}
-                      <span className={clsx('ml-2 align-bottom text-[10px] tabular-nums', mine ? 'text-on-ink/60' : 'text-faint')}>{m.pending ? '…' : clock(m.at)}</span>
+                      <span className={clsx('ml-2 align-bottom text-[10px] tabular-nums whitespace-nowrap', mine ? 'text-on-ink/60' : 'text-faint')}>
+                        {m.pending ? '' : clock(m.at)}
+                        {mine && <Ticks state={receiptOf(m)} />}
+                      </span>
                     </button>
                     {reactions.length > 0 && (
                       <motion.span
@@ -319,6 +440,24 @@ export const ChatThread: React.FC<{
             })}
           </section>
         ))}
+
+        <AnimatePresence>
+          {typingOthers.length > 0 && !closed && (
+            <motion.div
+              key="typing"
+              initial={{ opacity: 0, y: 10, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: 'spring', stiffness: 520, damping: 32 }}
+              className="flex flex-col items-start mb-1"
+            >
+              {chat.type === 'plan' && <span className="ml-3 mb-0.5 text-[11px] font-semibold text-muted">{typingOthers.map(nameOf).join(', ')}</span>}
+              <div className="px-4 py-2 bg-surface-2 text-muted rounded-[20px] rounded-bl-[6px]" aria-label="Typing">
+                <TypingDots />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Reaction picker */}
@@ -402,7 +541,10 @@ export const ChatThread: React.FC<{
             value={text}
             maxLength={MAX_CHAT_CHARS}
             disabled={closed}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => {
+              setText(e.target.value);
+              onTyping(e.target.value);
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey && !('ontouchstart' in window)) {
                 e.preventDefault();

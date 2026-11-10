@@ -300,7 +300,8 @@ service cloud.firestore {
 
     // 10. Chats: DMs between friends (chatId = their friendship id) and plan group chats
     // (chatId = plan_{planId}). Only the server creates chats and sets members. Members read them,
-    // send messages as themselves, react with their own emoji, and bump the preview + their read mark.
+    // send messages as themselves, react with their own emoji, and bump the preview + their own
+    // read / delivered / typing marks.
     // A DM only accepts new messages while the two are still friends.
     match /chats/{chatId} {
       function isChatMember() {
@@ -308,9 +309,12 @@ service cloud.firestore {
       }
       allow read: if isChatMember();
       allow create, delete: if false;
+      function onlyMyKey(field) {
+        return request.resource.data.get(field, {}).diff(resource.data.get(field, {})).affectedKeys().hasOnly([request.auth.uid]);
+      }
       allow update: if isChatMember()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastMessage', 'updatedAt', 'reads'])
-        && request.resource.data.get('reads', {}).diff(resource.data.get('reads', {})).affectedKeys().hasOnly([request.auth.uid])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastMessage', 'updatedAt', 'reads', 'delivered', 'typing'])
+        && onlyMyKey('reads') && onlyMyKey('delivered') && onlyMyKey('typing')
         && (
           !('lastMessage' in request.resource.data.diff(resource.data).affectedKeys())
           || (request.resource.data.lastMessage.by == request.auth.uid

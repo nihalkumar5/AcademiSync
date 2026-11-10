@@ -27,7 +27,7 @@ export function tokensFromUserDoc(uid: string, data: any): Target[] {
 
 export async function sendPush(
   targets: Target[],
-  msg: { title: string; body: string; data?: Record<string, string>; link?: string }
+  msg: { title: string; body: string; data?: Record<string, string>; link?: string; tag?: string }
 ): Promise<{ sent: number; failed: number }> {
   const seen = new Set<string>();
   const list = targets.filter((t) => (seen.has(t.token) ? false : (seen.add(t.token), true)));
@@ -47,12 +47,13 @@ export async function sendPush(
         color: '#000000',
         priority: 'max' as const,
         visibility: 'public' as const,
+        ...(msg.tag ? { tag: msg.tag } : {}),
       },
     },
     // Web + iPhone PWA: icon, urgency and where a tap should open
     webpush: {
       headers: { Urgency: 'high' },
-      notification: { icon: `${APP_URL}/logo51.png`, badge: `${APP_URL}/logo51.png` },
+      notification: { icon: `${APP_URL}/logo51.png`, badge: `${APP_URL}/logo51.png`, ...(msg.tag ? { tag: msg.tag, renotify: true } : {}) },
       fcmOptions: { link },
     },
   }));

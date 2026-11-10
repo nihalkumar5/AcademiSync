@@ -651,7 +651,7 @@ export const FriendsView: React.FC = () => {
     setOpening(f.uid);
     try {
       const id = await openDmChat(f.uid);
-      setChatStub(chats.find((c) => c.id === id) || { id, type: 'dm', members: [user.id, f.uid], names: { [f.uid]: f.name }, lastMessage: null, updatedAt: 0, unread: false });
+      setChatStub(chats.find((c) => c.id === id) || { id, type: 'dm', members: [user.id, f.uid], names: { [f.uid]: f.name }, lastMessage: null, updatedAt: 0, unread: false, reads: {}, delivered: {}, typing: {} });
     } catch (e: any) {
       showToast?.("Couldn't open chat", e?.message || 'Try again.', 'error');
     } finally {
@@ -663,7 +663,7 @@ export const FriendsView: React.FC = () => {
     setOpening(p.id);
     try {
       const id = await openPlanChat(p.id);
-      setChatStub(chats.find((c) => c.id === id) || { id, type: 'plan', planId: p.id, title: p.title, at: p.at, members: [p.byUid, ...p.invited.map((x) => x.uid)], names: {}, lastMessage: null, updatedAt: 0, unread: false });
+      setChatStub(chats.find((c) => c.id === id) || { id, type: 'plan', planId: p.id, title: p.title, at: p.at, members: [p.byUid, ...p.invited.map((x) => x.uid)], names: {}, lastMessage: null, updatedAt: 0, unread: false, reads: {}, delivered: {}, typing: {} });
     } catch (e: any) {
       showToast?.("Couldn't open chat", e?.message || 'Try again.', 'error');
     } finally {

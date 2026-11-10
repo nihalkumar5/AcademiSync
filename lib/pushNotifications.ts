@@ -51,13 +51,46 @@ export const registerPushNotifications = async (userId: string, batchKey?: strin
       console.warn('Error on push registration: ', error);
     });
 
-    PushNotifications.addListener('pushNotificationReceived', (notification) => {
-      console.log('Push received: ', notification);
+    // Android shows no banner for a push while the app is open, so show chat messages ourselves
+    // (unless that chat is already on screen).
+    PushNotifications.addListener('pushNotificationReceived', async (notification) => {
+      const d: any = notification.data || {};
+      if (d.type !== 'chat' || !d.chatId) return;
+      if ((window as any).__openChatId === d.chatId) return;
+      try {
+        const { LocalNotifications } = await import('@capacitor/local-notifications');
+        await LocalNotifications.schedule({
+          notifications: [
+            {
+              id: Math.floor(Math.random() * 2000000000) + 1,
+              title: notification.title || d.title || 'New message',
+              body: notification.body || d.body || '',
+              channelId: 'class_alerts_v3',
+              extra: { chatId: d.chatId },
+            },
+          ],
+        });
+      } catch (err) {
+        console.warn('Could not show chat notification:', err);
+      }
     });
 
-    PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-      console.log('Push action performed: ', notification);
+    // Tapping a chat notification opens that chat
+    const openChat = (chatId?: string) => {
+      if (!chatId) return;
+      window.location.href = `/?view=friends&chat=${encodeURIComponent(chatId)}`;
+    };
+    PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+      const d: any = action.notification?.data || {};
+      if (d.type === 'chat') openChat(d.chatId);
     });
+    import('@capacitor/local-notifications')
+      .then(({ LocalNotifications }) =>
+        LocalNotifications.addListener('localNotificationActionPerformed', (action) => {
+          openChat(action.notification?.extra?.chatId);
+        })
+      )
+      .catch(() => {});
 
   } catch (error) {
     console.warn('Push Notification Registration failed', error);

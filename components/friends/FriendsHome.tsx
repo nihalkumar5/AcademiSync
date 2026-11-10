@@ -6,6 +6,7 @@ import { ChevronRight } from '@/components/ui/icons';
 import { getAvatarSeed, getAvatarSrc } from '@/lib/avatar';
 import { clock, nowStatus } from '@/lib/friends';
 import { useFriends } from './friendsClient';
+import { useMarkDelivered } from './chat/chatClient';
 
 /** Home: which friends are free right now. Hidden until the student has friends. */
 export const FriendsFreeNowCard: React.FC = () => {
@@ -82,5 +83,12 @@ export const FriendLinkHost: React.FC = () => {
     return () => window.removeEventListener('friends:link', onLink);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  return null;
+};
+
+/** Mounted app-wide: marks new chat messages as delivered so senders see the double tick. */
+export const ChatDeliveryHost: React.FC = () => {
+  const { user } = useApp() as any;
+  useMarkDelivered(user?.id);
   return null;
 };
