@@ -735,11 +735,11 @@ export const LiveClassCard: React.FC = () => {
   const completedToday = totalToday - cancelledToday;
   
   return (
-    <div className="card w-full p-5 flex flex-col">
-      <span className="text-[12px] font-semibold text-muted leading-none mb-3">
+    <div className="card w-full p-f4 flex flex-col">
+      <span className="text-[12px] font-semibold text-muted leading-none mb-f3">
         Schedule complete
       </span>
-      <h3 className="text-[16px] font-semibold text-fg leading-snug mb-2">
+      <h3 className="text-[16px] font-semibold text-fg leading-snug mb-f2">
         You&apos;re done for today.
       </h3>
       <span className="text-[13px] text-muted leading-none">

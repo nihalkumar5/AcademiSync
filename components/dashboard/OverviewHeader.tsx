@@ -102,7 +102,7 @@ export const OverviewHeader: React.FC = () => {
           <span className="font-medium text-muted tabular-nums">{timeFormatted}</span>
         </div>
 
-        <h2 className="mt-3 tracking-tight">
+        <h2 className="mt-f3 tracking-tight">
           <span className="block text-[34px] leading-[40px] sm:text-[44px] sm:leading-[50px] font-normal text-muted">{greeting},</span>
           <span className="block mt-0.5 text-[44px] leading-[50px] sm:text-[56px] sm:leading-[62px] font-semibold text-fg break-words">
             {(profile?.name || 'Student').split(' ')[0]}{' '}
@@ -137,11 +137,11 @@ export const OverviewHeader: React.FC = () => {
 
       {/* Today at a glance: three soft tiles, all on the same neutral background. Only the number
           and label take colour, and only for urgency (exam day, a deadline within 3 days). Each tile opens its section. */}
-      <div className="grid grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-3 gap-f3">
         {(() => {
           const classCount = hasActiveExamToday ? todayExamsList.length : todayClasses.length;
           const neutral = {
-            tile: 'bg-surface-2 dark:bg-white/[0.04]',
+            tile: 'bg-surface-2 sheen dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_0_0_1px_rgba(255,255,255,0.05),0_8px_24px_-12px_rgba(0,0,0,0.7)]',
             value: 'text-fg',
             label: 'text-fg-2',
           };
@@ -181,7 +181,7 @@ export const OverviewHeader: React.FC = () => {
               type="button"
               onClick={s.go}
               aria-label={`${s.value} ${s.label} ${s.caption}`}
-              className={`min-w-0 rounded-2xl px-3.5 pt-3.5 pb-3 sm:px-4 sm:pt-4 flex flex-col items-start text-left cursor-pointer transition-[filter,transform] duration-150 hover:brightness-[0.97] dark:hover:brightness-125 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/25 ${s.theme.tile}`}
+              className={`min-w-0 rounded-2xl p-f3 sm:p-f4 flex flex-col items-start text-left cursor-pointer transition-[filter,transform] duration-150 hover:brightness-[0.97] dark:hover:brightness-125 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/25 ${s.theme.tile}`}
             >
               <span
                 className={`text-[30px] sm:text-[34px] font-semibold tabular-nums tracking-[-0.03em] leading-none ${
@@ -190,8 +190,8 @@ export const OverviewHeader: React.FC = () => {
               >
                 {s.value}
               </span>
-              <span className={`mt-2 w-full truncate text-[12.5px] font-medium leading-[16px] ${s.theme.label}`}>{s.label}</span>
-              <span className="w-full truncate text-[11px] leading-[14px] text-muted">{s.caption}</span>
+              <span className={`mt-f2 w-full truncate text-[12.5px] font-medium leading-[16px] ${s.theme.label}`}>{s.label}</span>
+              <span className="mt-0.5 w-full truncate text-[11px] leading-[14px] text-muted">{s.caption}</span>
             </button>
           ));
         })()}

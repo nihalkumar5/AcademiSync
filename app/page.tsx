@@ -383,7 +383,7 @@ export default function AppHome() {
       <div className="flex flex-col flex-1 min-w-0 pb-32 md:pb-8">
         <Header />
 
-        <main className="flex-1 px-f4 sm:px-f5 pt-f4 sm:pt-f5 pb-f6 max-w-6xl mx-auto w-full relative">
+        <main className="flex-1 px-f4 sm:px-f5 pt-f5 pb-f6 max-w-6xl mx-auto w-full relative">
           {!Capacitor.isNativePlatform() && isAndroid && isSignedIn && (
             <div className="mb-f5 p-f4 bg-ink text-on-ink flex items-center justify-between rounded-none">
               <div className="flex flex-col pr-4">
@@ -405,12 +405,12 @@ export default function AppHome() {
           <div className="view-enter w-full max-w-full min-w-0" key={activeView}>
             {activeView === 'home' && (
               profile?.role === 'faculty' ? (
-                <div className="flex flex-col gap-f5 sm:gap-f6">
+                <div className="flex flex-col gap-f6">
                   <FacultyHomeView />
                   <CampusSignature />
                 </div>
               ) : (
-                <div className="flex flex-col gap-f5 sm:gap-f6">
+                <div className="flex flex-col gap-f6">
                   <OverviewHeader />
                   <ElectivesPromptCard />
                   <AdminProposalsCard />
@@ -418,7 +418,7 @@ export default function AppHome() {
                   <LiveClassCard />
                   <FriendsFreeNowCard />
                   <ProposedBatchTasksVoting />
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-f5 sm:gap-f6 items-start">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-f6 items-start">
                     <TodayTimeline />
                     <SmartFocusList />
                   </div>
