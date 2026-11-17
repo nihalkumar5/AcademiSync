@@ -97,27 +97,39 @@ export const clock = (min: number) => {
   return `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
 };
 
+/** "Free" only means something during college hours. Outside them nobody is shown as free. */
+export const COLLEGE_START = 9 * 60; // 9:00 AM
+export const COLLEGE_END = 18 * 60; // 6:00 PM
+export const isCollegeHours = (now = new Date()) => {
+  const t = minutesOf(now);
+  return t >= COLLEGE_START && t < COLLEGE_END;
+};
+
 export type NowStatus =
   | { kind: 'class'; until: number; name: string }
-  | { kind: 'free'; until: number | null } // until the next class, or null = no more classes today
+  | { kind: 'free'; until: number | null } // until the next class or the end of college hours (null only if unknown)
   | { kind: 'off'; label: string } // holiday / exam day
+  | { kind: 'away'; label: string } // outside college hours (before 9 AM / from 6 PM)
   | { kind: 'hidden' };
 
 /** What a friend is doing right now, from their schedule. */
 export function nowStatus(days: WidgetDay[], now = new Date()): NowStatus {
   const today = days.find((d) => d.date === ymd(now));
-  if (!today) return { kind: 'free', until: null };
-  if (today.off) return { kind: 'off', label: today.off };
   const t = minutesOf(now);
-  const cur = today.classes.find((c) => c.start <= t && t < c.end);
-  if (cur) {
+  // A class running outside college hours still shows as a class
+  const cur = today && !today.off ? today.classes.find((c) => c.start <= t && t < c.end) : undefined;
+  if (cur && today) {
     // Back-to-back classes (gap of 10 min or less) count as one busy stretch
     let until = cur.end;
     for (const c of today.classes) if (c.start <= until + 10 && c.end > until) until = c.end;
     return { kind: 'class', until, name: cur.name };
   }
-  const next = today.classes.find((c) => c.start > t);
-  return { kind: 'free', until: next ? next.start : null };
+  if (t < COLLEGE_START) return { kind: 'away', label: 'Before college hours' };
+  if (t >= COLLEGE_END) return { kind: 'away', label: 'After college hours' };
+  if (!today) return { kind: 'free', until: COLLEGE_END };
+  if (today.off) return { kind: 'off', label: today.off };
+  const next = today.classes.find((c) => c.start > t && c.start < COLLEGE_END);
+  return { kind: 'free', until: next ? next.start : COLLEGE_END };
 }
 
 export interface Slot {

@@ -62,7 +62,7 @@ const Switch: React.FC<{ on: boolean; onChange: (v: boolean) => void; label: str
 const statusLine = (s: NowStatus) => {
   if (s.kind === 'class') return `In class till ${clock(s.until)}`;
   if (s.kind === 'free') return s.until === null ? 'Free for the rest of the day' : `Free till ${clock(s.until)}`;
-  if (s.kind === 'off') return s.label;
+  if (s.kind === 'off' || s.kind === 'away') return s.label;
   return 'Not sharing right now';
 };
 const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -799,6 +799,7 @@ export const FriendsView: React.FC = () => {
   const withStatus = friends.map((f) => ({ f, s: (f.hidden ? { kind: 'hidden' } : nowStatus(f.days, now)) as NowStatus }));
   const freeNow = withStatus.filter((x) => x.s.kind === 'free' || x.s.kind === 'off');
   const inClass = withStatus.filter((x) => x.s.kind === 'class').sort((a: any, b: any) => a.s.until - b.s.until);
+  const away = withStatus.filter((x) => x.s.kind === 'away');
   const hidden = withStatus.filter((x) => x.s.kind === 'hidden');
   const me = data?.me || null;
   const myPlace = placeOf(me?.status?.place);
@@ -1050,7 +1051,7 @@ export const FriendsView: React.FC = () => {
                 <span className="text-[13px] text-muted tabular-nums">{friends.length}</span>
               </div>
               <ul className="border border-line bg-surface divide-y divide-line-soft">
-                {[...freeNow, ...inClass, ...hidden].map(({ f, s }) => (
+                {[...freeNow, ...inClass, ...away, ...hidden].map(({ f, s }) => (
                   <FriendRow key={f.uid} f={f} s={s} />
                 ))}
               </ul>

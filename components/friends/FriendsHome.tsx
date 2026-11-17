@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ChevronRight } from '@/components/ui/icons';
 import { getAvatarSeed, getAvatarSrc } from '@/lib/avatar';
-import { clock, nowStatus } from '@/lib/friends';
+import { clock, isCollegeHours, nowStatus } from '@/lib/friends';
 import { useFriends } from './friendsClient';
 import { openDmChat, useMarkDelivered } from './chat/chatClient';
 import { requestOpenChat } from '@/lib/pushNotifications';
@@ -21,7 +21,8 @@ export const FriendsFreeNowCard: React.FC = () => {
     const t = setInterval(() => tick((n) => n + 1), 60000);
     return () => clearInterval(t);
   }, []);
-  if (!isStudent || !data || data.friends.length === 0) return null;
+  // Only during college hours (9 AM to 6 PM); re-checked every minute by the tick above
+  if (!isStudent || !data || data.friends.length === 0 || !isCollegeHours()) return null;
 
   const free = data.friends
     .filter((f) => !f.hidden)
