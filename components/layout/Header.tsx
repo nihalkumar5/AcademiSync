@@ -176,8 +176,10 @@ export const Header: React.FC = () => {
             <span className="hidden lg:inline mr-f3 text-[15px] text-muted tabular-nums">{currentTime}</span>
           )}
 
-          {/* Students: Chats (unread count). Notifications moved to the More menu. */}
-          {!isFacultyUser && user?.id ? (
+          {/* Students: Chats (unread count). Notifications moved to the More menu.
+              Not gated on user?.id: while sign-in loads the bell used to flash first, then swap to Chats.
+              Only confirmed faculty get the bell. */}
+          {!isFacultyUser ? (
             <button
               type="button"
               onClick={() => {

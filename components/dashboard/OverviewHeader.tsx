@@ -135,22 +135,27 @@ export const OverviewHeader: React.FC = () => {
         )}
       </div>
 
-      {/* Today at a glance: big tabular numbers, quiet labels, one-line context.
-          Zero reads muted (nothing to do); urgency gets colour; each stat opens its section. */}
-      <div className="grid grid-cols-3 py-f3 border-y border-line-soft relative">
-        <div aria-hidden="true" className="absolute left-1/3 top-1/4 bottom-1/4 w-px bg-line-soft" />
-        <div aria-hidden="true" className="absolute left-2/3 top-1/4 bottom-1/4 w-px bg-line-soft" />
-
+      {/* Today at a glance: three soft tiles. Neutral by default; a tile only takes colour when it
+          has something for you (classes today, an exam, a deadline close). Each tile opens its section. */}
+      <div className="grid grid-cols-3 gap-2.5">
         {(() => {
           const classCount = hasActiveExamToday ? todayExamsList.length : todayClasses.length;
+          const neutral = {
+            tile: 'bg-surface-2 dark:bg-white/[0.04]',
+            value: 'text-fg',
+            label: 'text-fg-2',
+          };
           const stats = [
             {
               key: 'classes',
               value: classCount,
               label: hasActiveExamToday ? (classCount === 1 ? 'Exam' : 'Exams') : classCount === 1 ? 'Class' : 'Classes',
               caption: todayHoliday ? 'Holiday' : hasActiveExamToday ? 'Exam day' : 'today',
-              tone: hasActiveExamToday ? 'text-amber-600 dark:text-amber-400' : '',
-              captionTone: hasActiveExamToday ? 'text-amber-600 dark:text-amber-400 font-semibold' : '',
+              theme: hasActiveExamToday
+                ? { tile: 'bg-amber-50 dark:bg-amber-400/10', value: 'text-amber-700 dark:text-amber-300', label: 'text-amber-800/80 dark:text-amber-200/80' }
+                : classCount > 0
+                  ? { tile: 'bg-sky-50 dark:bg-sky-400/10', value: 'text-sky-900 dark:text-sky-100', label: 'text-sky-900/70 dark:text-sky-100/70' }
+                  : neutral,
               go: () => setActiveView(hasActiveExamToday ? 'exams' : 'timetable'),
             },
             {
@@ -158,8 +163,7 @@ export const OverviewHeader: React.FC = () => {
               value: pendingHw.length,
               label: pendingHw.length === 1 ? 'Assignment' : 'Assignments',
               caption: 'pending',
-              tone: '',
-              captionTone: '',
+              theme: neutral,
               go: () => setActiveView('homework'),
             },
             {
@@ -167,8 +171,9 @@ export const OverviewHeader: React.FC = () => {
               value: upcomingDeadlines.length,
               label: upcomingDeadlines.length === 1 ? 'Deadline' : 'Deadlines',
               caption: 'next 3 days',
-              tone: upcomingDeadlines.length > 0 ? 'text-rose-600 dark:text-rose-400' : '',
-              captionTone: upcomingDeadlines.length > 0 ? 'text-rose-600/80 dark:text-rose-400/80' : '',
+              theme: upcomingDeadlines.length > 0
+                ? { tile: 'bg-rose-50 dark:bg-rose-400/10', value: 'text-rose-700 dark:text-rose-300', label: 'text-rose-800/80 dark:text-rose-200/80' }
+                : neutral,
               go: () => setActiveView('homework'),
             },
           ];
@@ -178,17 +183,17 @@ export const OverviewHeader: React.FC = () => {
               type="button"
               onClick={s.go}
               aria-label={`${s.value} ${s.label} ${s.caption}`}
-              className="mx-1.5 py-2.5 flex flex-col items-center justify-center text-center rounded-[14px] cursor-pointer transition-[background-color,transform] duration-150 hover:bg-surface-2 active:scale-[0.96] active:bg-surface-3"
+              className={`min-w-0 rounded-2xl px-3.5 pt-3.5 pb-3 sm:px-4 sm:pt-4 flex flex-col items-start text-left cursor-pointer transition-[filter,transform] duration-150 hover:brightness-[0.97] dark:hover:brightness-125 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/25 ${s.theme.tile}`}
             >
               <span
                 className={`text-[30px] sm:text-[34px] font-semibold tabular-nums tracking-[-0.03em] leading-none ${
-                  s.tone || (s.value === 0 ? 'text-fg/30' : 'text-fg')
+                  s.value === 0 ? 'text-fg/35' : s.theme.value
                 }`}
               >
                 {s.value}
               </span>
-              <span className="mt-2 text-[13px] font-medium text-fg-2 leading-none">{s.label}</span>
-              <span className={`mt-1 text-[11px] leading-none ${s.captionTone || 'text-faint'}`}>{s.caption}</span>
+              <span className={`mt-2 w-full truncate text-[12.5px] font-medium leading-[16px] ${s.theme.label}`}>{s.label}</span>
+              <span className="w-full truncate text-[11px] leading-[14px] text-muted">{s.caption}</span>
             </button>
           ));
         })()}
