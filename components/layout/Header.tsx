@@ -189,7 +189,7 @@ export const Header: React.FC = () => {
                 setActiveView('friends');
                 window.dispatchEvent(new CustomEvent('friends:tab', { detail: 'chats' }));
               }}
-              className="lg lg-press relative w-[34px] h-[34px] md:w-[38px] md:h-[38px] rounded-full flex items-center justify-center text-fg cursor-pointer"
+              className="lg-press relative w-[34px] h-[34px] md:w-[38px] md:h-[38px] rounded-full flex items-center justify-center text-fg cursor-pointer bg-surface border border-black/[0.08] dark:bg-surface-2 dark:border-white/[0.08] shadow-[0_1px_1px_rgba(0,0,0,0.04)] hover:bg-surface-2 dark:hover:bg-surface-3 transition-colors"
               title={unreadChats ? `Chats (${unreadChats} unread)` : 'Chats'}
               aria-label={unreadChats ? `Chats, ${unreadChats} unread` : 'Chats'}
             >
@@ -205,7 +205,7 @@ export const Header: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveView('notifications')}
-            className="lg lg-press relative w-[34px] h-[34px] md:w-[38px] md:h-[38px] rounded-full flex items-center justify-center text-fg cursor-pointer"
+            className="lg-press relative w-[34px] h-[34px] md:w-[38px] md:h-[38px] rounded-full flex items-center justify-center text-fg cursor-pointer bg-surface border border-black/[0.08] dark:bg-surface-2 dark:border-white/[0.08] shadow-[0_1px_1px_rgba(0,0,0,0.04)] hover:bg-surface-2 dark:hover:bg-surface-3 transition-colors"
             title={`Notifications (${unreadNotifs} unread)`}
             aria-label={unreadNotifs ? `Notifications, ${unreadNotifs} unread` : 'Notifications'}
           >
@@ -225,10 +225,11 @@ export const Header: React.FC = () => {
             <button
               type="button"
               onClick={() => setAddMenuOpen(!addMenuOpen)}
-              className="lg lg-ink lg-press w-[34px] h-[34px] md:w-auto md:h-[38px] md:pl-3 md:pr-4 md:ml-1 md:gap-1.5 rounded-full flex items-center justify-center cursor-pointer"
+              className="lg-press relative bg-ink text-on-ink shadow-[0_1px_2px_rgba(0,0,0,0.12)] hover:opacity-90 transition-opacity w-[30px] h-[30px] md:w-auto md:h-[38px] md:pl-3 md:pr-4 md:ml-1 md:gap-1.5 rounded-full flex items-center justify-center cursor-pointer before:content-[''] before:absolute before:-inset-[7px] md:before:hidden"
               title="Create" aria-label="Create" aria-expanded={addMenuOpen}
             >
-              <Plus className={`w-4 h-4 stroke-[2.25] transition-transform duration-200 ${addMenuOpen ? 'rotate-45' : ''}`} />
+              {/* 30px visible on phones; the ::before keeps a 44px tap area */}
+              <Plus className={`w-3.5 h-3.5 md:w-4 md:h-4 stroke-[2.25] transition-transform duration-200 ${addMenuOpen ? 'rotate-45' : ''}`} />
               <span className="hidden md:inline text-[14px] font-semibold">New</span>
             </button>
 
@@ -277,12 +278,12 @@ export const Header: React.FC = () => {
             onClick={() => setActiveView('settings')}
             title="Profile" aria-label="Open profile"
             aria-current={activeView === 'settings' ? 'page' : undefined}
-            className="lg lg-press ml-0.5 w-[38px] h-[38px] p-[2px] md:hidden rounded-full flex items-center justify-center cursor-pointer"
+            className="lg-press ml-0.5 w-[34px] h-[34px] md:hidden rounded-full flex items-center justify-center cursor-pointer"
           >
-            <span className={`block w-full h-full rounded-full overflow-hidden bg-[#F1EFEA] dark:bg-[#F4F4F6] ${
-              activeView === 'settings' ? 'ring-[1.5px] ring-fg' : ''
+            <span className={`block w-full h-full rounded-full overflow-hidden bg-[#3A3A3C] dark:bg-[#F4F4F6] ring-1 ${
+              activeView === 'settings' ? 'ring-fg ring-offset-2 ring-offset-canvas' : 'ring-black/[0.08] dark:ring-white/[0.1]'
             }`}>
-              <img src={getAvatarSrc(getAvatarSeed(profile))} alt="" className="w-full h-full object-cover scale-110 translate-y-[2px]" />
+              <img src={getAvatarSrc(getAvatarSeed(profile))} alt="" width={34} height={34} decoding="async" className="w-full h-full object-cover scale-110 translate-y-[2px] [backface-visibility:hidden]" />
             </span>
           </button>
         </div>

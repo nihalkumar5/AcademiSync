@@ -141,7 +141,7 @@ export const OverviewHeader: React.FC = () => {
         {(() => {
           const classCount = hasActiveExamToday ? todayExamsList.length : todayClasses.length;
           const neutral = {
-            tile: 'bg-surface-2 sheen dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_0_0_1px_rgba(255,255,255,0.05),0_8px_24px_-12px_rgba(0,0,0,0.7)]',
+            tile: 'bg-surface-2 dark:bg-gradient-to-b dark:from-white/[0.03] dark:to-transparent dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.07),inset_0_0_0_1px_rgba(255,255,255,0.045)]',
             value: 'text-fg',
             label: 'text-fg-2',
           };
