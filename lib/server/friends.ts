@@ -12,7 +12,7 @@ import { collegeKeyOf } from '@/lib/collegeKey';
 import { buildWidgetDays } from '@/lib/widget';
 import { sendPush, tokensFromUserDoc } from '@/lib/server/push';
 import { electiveLens, personalTimetable } from '@/lib/electives';
-import { CODE_RE, Friend, FriendsData, PersonLite, Plan, Place, PLACES, PLAN_LIVE_MINUTES, STATUS_MINUTES } from '@/lib/friends';
+import { clock, CODE_RE, Friend, FriendsData, PersonLite, Plan, Place, PLACES, PLAN_LIVE_MINUTES, STATUS_MINUTES } from '@/lib/friends';
 
 export class FriendError extends Error {
   constructor(public status: number, message: string, public code?: string) {
@@ -238,15 +238,31 @@ export async function loadFriends(uid: string): Promise<FriendsData> {
 }
 
 // ---------- Requests ----------
-async function notify(uid: string, title: string, body: string) {
+/** Push to one person. `view` is the screen a tap opens; `tag` makes a repeat replace the old banner. */
+async function notify(uid: string, title: string, body: string, opts: { view?: 'friends' | 'routines'; tag?: string } = {}) {
+  const view = opts.view || 'friends';
   try {
     const snap = await users().doc(uid).get();
     const targets = tokensFromUserDoc(uid, snap.data() || {});
-    if (targets.length) await sendPush(targets, { title, body, data: { type: 'friends' }, link: '/?view=friends' });
+    if (targets.length) await sendPush(targets, { title, body, data: { type: view, view }, link: `/?view=${view}`, tag: opts.tag });
   } catch {
     // push is best effort
   }
 }
+
+/** "Every day · 6:00 PM" for a routine, as it reads in the app. */
+const routineWhen = (r: any) => {
+  const [h, m] = String(r.time || '').split(':').map(Number);
+  const at = Number.isFinite(h) && Number.isFinite(m) ? clock(h * 60 + m) : String(r.time || '');
+  const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const rep =
+    r.repeat === 'daily' ? 'Every day'
+    : r.repeat === 'weekdays' ? 'Weekdays'
+    : r.repeat === 'custom' && Array.isArray(r.days) && r.days.length ? r.days.map((d: number) => DAY[d]).filter(Boolean).join(', ')
+    : r.repeat === 'once' && r.date ? new Date(`${r.date}T00:00:00`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+    : '';
+  return [rep, at].filter(Boolean).join(' · ');
+};
 
 export async function requestFriend(uid: string, input: { code?: unknown; uid?: unknown }) {
   let target: string | null = null;
@@ -479,7 +495,12 @@ export async function shareRoutineWithFriends(uid: string, input: any) {
     { merge: false }
   );
   await Promise.all(
-    added.map((o) => notify(o, `${myName} shared a routine`, `${routine.title} at ${routine.time}. Open Routines to add it.`))
+    added.map((o) =>
+      notify(o, `${myName} shared a routine`, `${routine.title} · ${routineWhen(routine)}. Tap to add it to your routines.`, {
+        view: 'routines',
+        tag: `routine_${uid}_${routine.sourceRoutineId}`,
+      })
+    )
   );
   return { recipients };
 }
@@ -539,7 +560,7 @@ export async function markFriendRoutine(uid: string, id: unknown, answer: unknow
   if (answer === 'added') {
     await ref.update({ [`addedBy.${uid}`]: true });
     const me = (await users().doc(uid).get()).data() || {};
-    notify(s.data()?.by, `${lite(uid, me).name} added your routine`, `${s.data()?.title}`);
+    notify(s.data()?.by, `${lite(uid, me).name} added your routine`, `${s.data()?.title}`, { view: 'routines' });
   } else {
     const { FieldValue } = await import('firebase-admin/firestore');
     await ref.update({ dismissedBy: FieldValue.arrayUnion(uid) });

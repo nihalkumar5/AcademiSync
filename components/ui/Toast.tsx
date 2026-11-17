@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { useApp } from '@/context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Info, AlertTriangle, X, type LucideIcon } from '@/components/ui/icons';
+import { haptic } from '@/lib/haptics';
 
 type ToastType = 'info' | 'success' | 'warning' | 'error';
 
@@ -26,6 +27,12 @@ export const Toast: React.FC = () => {
   React.useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Each new toast is felt as well as seen: success, warning or error buzz (info stays silent)
+  React.useEffect(() => {
+    const t = toastMessage?.type;
+    if (t === 'success' || t === 'warning' || t === 'error') haptic(t);
+  }, [toastMessage?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!mounted) return null;
 

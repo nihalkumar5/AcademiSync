@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { X, Search, LayoutGrid, List, Loader2, CornerDownLeft } from '@/components/ui/icons';
 import { Mark, RosterStudent, rollTail } from '@/lib/attendance';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { haptic } from '@/lib/haptics';
 
 // Built for speed: everyone starts present, the faculty only touches the absentees.
 // Tap a tile to mark absent (tap again to undo), or type the absent roll numbers in one go.
@@ -11,11 +12,7 @@ const MARK_STYLE: Record<Mark, string> = {
   P: 'bg-surface border-line text-fg',
   A: 'bg-rose-600 border-rose-600 text-white',
 };
-const buzz = () => {
-  try {
-    navigator.vibrate?.(8);
-  } catch {}
-};
+const buzz = () => haptic('light');
 
 export const TakeAttendance: React.FC<{
   students: RosterStudent[];

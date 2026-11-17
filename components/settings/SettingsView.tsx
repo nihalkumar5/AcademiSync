@@ -37,6 +37,7 @@ import {
   Users,
   Sun,
   Moon,
+  Smartphone,
   Check,
   CalendarDays,
   MoreHorizontal, Download,
@@ -1455,6 +1456,26 @@ ${PLAY_STORE_URL}
                       }`}
                     >
                       {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className={rowBase}>
+                <RowIcon icon={Smartphone} />
+                <RowText label="Haptics" hint="Buzz on tap" />
+                <div role="radiogroup" aria-label="Haptics" className="flex shrink-0 border border-line p-0.5">
+                  {([true, false] as const).map((on) => (
+                    <button
+                      key={String(on)}
+                      type="button"
+                      role="radio"
+                      aria-checked={(settings.hapticsEnabled !== false) === on}
+                      onClick={() => updateSettings({ hapticsEnabled: on })}
+                      className={`h-9 px-3 text-[13px] font-medium cursor-pointer transition-colors ${
+                        (settings.hapticsEnabled !== false) === on ? 'bg-ink text-on-ink' : 'text-muted hover:text-fg'
+                      }`}
+                    >
+                      {on ? 'On' : 'Off'}
                     </button>
                   ))}
                 </div>

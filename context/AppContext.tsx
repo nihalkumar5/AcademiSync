@@ -66,6 +66,7 @@ import {
   surelyMine,
 } from '@/lib/electives';
 import { Capacitor } from '@capacitor/core';
+import { haptic } from '@/lib/haptics';
 
 export const syncNativeStatusBar = async (isDark: boolean) => {
   if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
@@ -2380,6 +2381,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const toggleHomeworkStatus = (id: string) => {
+    // Completing a task is felt everywhere it can be done from (reopening stays a plain tick)
+    if (homework.find((h) => h.id === id && h.status !== 'Completed')) haptic('success');
     setHomeworkState(prev => {
       const target = prev.find((h) => h.id === id);
       if (!target) return prev;
@@ -4181,6 +4184,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (target) showToast('Routine deleted', target.title, 'info');
   };
   const toggleRoutineDone = (id: string, dayKey: string) => {
+    if (routines.find((x) => x.id === id && !x.completions.includes(dayKey))) haptic('success');
     saveRoutines(
       routines.map((x) => {
         if (x.id !== id) return x;

@@ -71,10 +71,10 @@ export const RoutinesView: React.FC = () => {
   const friendsFor = (r: Routine) => friendShares.outgoing[r.id] || [];
   const isSharedAnywhere = (r: Routine) => sharedToFor(r).size > 0 || friendsFor(r).length > 0;
 
-  const handleShareFriends = async (r: Routine, uids: string[]) => {
+  const handleShareFriends = async (r: Routine, uids: string[], quiet = false) => {
     try {
       const rec = await friendShares.share(r, uids);
-      showToast(
+      if (!quiet) showToast(
         rec.length ? `Shared with ${rec.length} ${rec.length === 1 ? 'friend' : 'friends'}` : 'Stopped sharing with friends',
         r.title,
         rec.length ? 'success' : 'info'
@@ -102,13 +102,15 @@ export const RoutinesView: React.FC = () => {
     friendShares.mark(x.id, 'added');
   };
 
-  const handleShare = async (r: Routine, batchKeys: string[]) => {
+  const handleShare = async (r: Routine, batchKeys: string[], friendsAdded = 0) => {
     if (!user) return;
     try {
+      const already = sharedToFor(r);
       for (const bk of batchKeys) {
         await shareRoutineToBatch(r, bk, { uid: user.id, name: myName, role: sharerRole });
-        // Faculty and pilots can notify the batch; classmates' shares just appear in the list
-        if (sharerRole !== 'student') {
+        // Faculty and pilots can notify the batch; classmates' shares just appear in the list.
+        // Only the first share to a batch notifies, so editing and sharing again doesn't spam it.
+        if (sharerRole !== 'student' && !already.has(bk)) {
           broadcastBatchPushNotification({
             batchKey: bk,
             title: `📌 ${myName} shared a routine`,
@@ -116,10 +118,16 @@ export const RoutinesView: React.FC = () => {
             type: 'routine_share',
             senderId: user.id,
             senderName: myName,
+            view: 'routines',
           });
         }
       }
-      showToast('Shared with your batch', r.title, 'success');
+      const where = batchKeys.length > 1 ? `${batchKeys.length} batches` : 'your batch';
+      showToast(
+        friendsAdded > 0 ? `Shared with ${friendsAdded} ${friendsAdded === 1 ? 'friend' : 'friends'} and ${where}` : `Shared with ${where}`,
+        r.title,
+        'success'
+      );
     } catch (err: any) {
       console.error('Share routine failed:', err);
       showToast("Couldn't share", err?.code === 'permission-denied' ? 'Only people in this batch can share here.' : 'Check your connection and try again.', 'error');
@@ -690,7 +698,7 @@ export const RoutinesView: React.FC = () => {
         targets={shareTargets}
         sharedTo={shareFor ? sharedToFor(shareFor) : new Set()}
         notifiesBatch={sharerRole !== 'student'}
-        onShare={(keys) => (shareFor ? handleShare(shareFor, keys) : Promise.resolve())}
+        onShare={(keys, friendsAdded) => (shareFor ? handleShare(shareFor, keys, friendsAdded) : Promise.resolve())}
         onUnshare={(bk) => (shareFor ? handleUnshare(shareFor, bk) : Promise.resolve())}
         onGoToProfile={() => {
           setShareFor(null);
@@ -700,7 +708,7 @@ export const RoutinesView: React.FC = () => {
         friends={friendShares.friends}
         friendsLoading={friendShares.loading}
         sharedWithFriends={shareFor ? friendsFor(shareFor) : []}
-        onShareFriends={(uids) => (shareFor ? handleShareFriends(shareFor, uids) : Promise.resolve())}
+        onShareFriends={(uids, quiet) => (shareFor ? handleShareFriends(shareFor, uids, quiet) : Promise.resolve())}
         onGoToFriends={() => {
           setShareFor(null);
           setActiveView('friends');

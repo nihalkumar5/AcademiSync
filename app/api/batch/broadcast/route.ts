@@ -22,6 +22,8 @@ export async function POST(req: Request) {
 
     const body = await req.json().catch(() => ({}));
     const { batchKey, type, senderName } = body;
+    // Screen a tap opens. Only plain app screens, so a broadcast can't link anywhere else.
+    const view = typeof body.view === 'string' && /^[a-z]{3,20}$/.test(body.view) ? body.view : '';
     const title = typeof body.title === 'string' ? body.title.trim().slice(0, MAX_TITLE_LENGTH) : '';
     const messageBody = typeof body.body === 'string' ? body.body.trim().slice(0, MAX_BODY_LENGTH) : '';
     const senderId = caller.uid;
@@ -111,7 +113,9 @@ export async function POST(req: Request) {
         body: String(messageBody),
         senderName: String(senderName || 'Batch Pilot'),
         click_action: 'FLUTTER_NOTIFICATION_CLICK',
+        ...(view ? { view } : {}),
       },
+      ...(view ? { link: `/?view=${view}` } : {}),
     });
     console.log(`[BatchBroadcast] Sent ${result.sent}/${targets.length} notifications for batch ${batchKey}`);
 

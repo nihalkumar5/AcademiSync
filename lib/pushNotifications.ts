@@ -16,6 +16,25 @@ export const requestOpenChat = (chatId?: string) => {
   window.dispatchEvent(new CustomEvent('friends:open-chat', { detail: chatId }));
 };
 
+export const OPEN_VIEW_EVENT = 'app:open-view';
+export const PENDING_VIEW_KEY = 'pending_view';
+
+/** Open a screen from a notification tap (OpenViewHost does the switch). */
+export const requestOpenView = (view?: string) => {
+  if (!view) return;
+  try {
+    sessionStorage.setItem(PENDING_VIEW_KEY, view);
+  } catch {}
+  window.dispatchEvent(new CustomEvent(OPEN_VIEW_EVENT, { detail: view }));
+};
+
+/** Where a tapped notification should take you: a chat, else the screen it names. */
+const openFromNotification = (d: any) => {
+  if (!d) return;
+  if (d.chatId) requestOpenChat(d.chatId);
+  else if (d.view) requestOpenView(d.view);
+};
+
 /**
  * Call once, as early as possible on app start (native only). Android hands the tap that
  * launched the app to the first listener, so these are added before anything else and kept.
@@ -25,37 +44,37 @@ export const listenForNotificationTaps = async () => {
   tapsReady = true;
   try {
     await PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-      const d: any = action.notification?.data || {};
-      if (d.type === 'chat') requestOpenChat(d.chatId);
+      openFromNotification(action.notification?.data || {});
     });
 
-    // Android shows no banner for a push while the app is open, so show chat messages ourselves
-    // (unless that chat is already on screen).
+    // Android shows no banner for a push while the app is open, so show it ourselves: every push,
+    // not just chats (unless it's a message in the chat that's already on screen).
     await PushNotifications.addListener('pushNotificationReceived', async (notification) => {
       const d: any = notification.data || {};
-      if (d.type !== 'chat' || !d.chatId) return;
-      if ((window as any).__openChatId === d.chatId) return;
+      if (d.type === 'chat' && (!d.chatId || (window as any).__openChatId === d.chatId)) return;
+      const title = notification.title || d.title;
+      if (!title) return;
       try {
         const { LocalNotifications } = await import('@capacitor/local-notifications');
         await LocalNotifications.schedule({
           notifications: [
             {
               id: Math.floor(Math.random() * 2000000000) + 1,
-              title: notification.title || d.title || 'New message',
+              title,
               body: notification.body || d.body || '',
               channelId: 'class_alerts_v3',
-              extra: { chatId: d.chatId },
+              extra: { chatId: d.chatId || undefined, view: d.view || undefined },
             },
           ],
         });
       } catch (err) {
-        console.warn('Could not show chat notification:', err);
+        console.warn('Could not show notification:', err);
       }
     });
 
     const { LocalNotifications } = await import('@capacitor/local-notifications');
     await LocalNotifications.addListener('localNotificationActionPerformed', (action) => {
-      requestOpenChat(action.notification?.extra?.chatId);
+      openFromNotification(action.notification?.extra);
     });
   } catch (err) {
     console.warn('Could not listen for notification taps:', err);
@@ -121,6 +140,8 @@ export const broadcastBatchPushNotification = async (payload: {
   type?: string;
   senderId?: string;
   senderName?: string;
+  /** Screen a tap should open, e.g. 'routines' */
+  view?: string;
 }) => {
   if (!payload.batchKey || !payload.title) return;
   try {

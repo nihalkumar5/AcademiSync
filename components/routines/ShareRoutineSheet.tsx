@@ -34,7 +34,8 @@ export const ShareRoutineSheet: React.FC<{
   targets: ShareTarget[];
   sharedTo: Set<string>; // batch keys this routine is already shared to
   notifiesBatch: boolean; // faculty / pilots also send a push to the batch
-  onShare: (batchKeys: string[]) => Promise<void>;
+  /** friendsAdded: friends newly shared in the same tap, so one toast can say both */
+  onShare: (batchKeys: string[], friendsAdded: number) => Promise<void>;
   onUnshare: (batchKey: string) => Promise<void>;
   onGoToProfile: () => void;
   /** Friends (students only; faculty don't have Friends) */
@@ -42,7 +43,8 @@ export const ShareRoutineSheet: React.FC<{
   friends: PersonLite[];
   friendsLoading: boolean;
   sharedWithFriends: string[]; // friend uids this routine is shared with
-  onShareFriends: (uids: string[]) => Promise<void>;
+  /** quiet: the batch share right after will confirm both in one toast */
+  onShareFriends: (uids: string[], quiet: boolean) => Promise<void>;
   onGoToFriends: () => void;
 }> = ({
   routine,
@@ -103,9 +105,11 @@ export const ShareRoutineSheet: React.FC<{
     if (!changed) return onClose();
     setBusy('share');
     try {
-      if (friendsChanged) await onShareFriends(pickedFriends);
-      if (toShare.length) await onShare(toShare);
+      if (friendsChanged) await onShareFriends(pickedFriends, toShare.length > 0);
+      if (toShare.length) await onShare(toShare, friendsChanged ? newFriends : 0);
       onClose();
+    } catch {
+      // the handler already showed what went wrong; keep the sheet open to try again
     } finally {
       setBusy(null);
     }

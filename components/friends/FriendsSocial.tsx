@@ -9,6 +9,7 @@ import { getAvatarSeed, getAvatarSrc } from '@/lib/avatar';
 import { Check, ChevronRight, Clock, MessageCircle, Search, Users } from '@/components/ui/icons';
 import { Ticks, receiptFor } from './chat/receipts';
 import type { ChatSummary } from './chat/chatClient';
+import { haptic } from '@/lib/haptics';
 
 // The lively parts of the Friends page: who's free right now, recent chats, and plan cards that
 // celebrate when someone's in.
@@ -268,7 +269,7 @@ export const PlanCard: React.FC<{
   const sayIn = () => {
     if (myAnswer === 'in' || plan.responses[me] === 'in') return;
     confettiBurst(inBtn.current);
-    if (typeof navigator !== 'undefined') navigator.vibrate?.(18);
+    haptic('success');
     onRespond('in');
   };
   const iAmIn = answerOf(me) === 'in';

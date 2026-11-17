@@ -57,6 +57,8 @@ import { ElectivesHost, ElectivesPromptCard } from '@/components/electives/Elect
 import { AdminProposalsCard } from '@/components/campus/AdminProposalsCard';
 import { FriendsView } from '@/components/friends/FriendsView';
 import { FriendsFreeNowCard, FriendLinkHost, ChatDeliveryHost } from '@/components/friends/FriendsHome';
+import { OpenViewHost } from '@/components/layout/OpenViewHost';
+import { HapticsHost } from '@/components/layout/HapticsHost';
 import { FacultyHomeView } from '@/components/faculty/FacultyHomeView';
 import { FacultyWeeklyTimetable } from '@/components/faculty/FacultyWeeklyTimetable';
 import { FacultyTasksView } from '@/components/faculty/FacultyTasksView';
@@ -471,6 +473,8 @@ export default function AppHome() {
       <ElectivesHost />
       <FriendLinkHost />
       <ChatDeliveryHost />
+      <OpenViewHost />
+      <HapticsHost />
       <Toast />
       {showHolidayAnimation && <HolidayBalloons />}
 

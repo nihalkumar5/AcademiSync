@@ -101,11 +101,7 @@ export const FriendLinkHost: React.FC = () => {
         window.history.replaceState({}, '', url.toString());
         take(code);
       }
-      if (url.searchParams.get('view') === 'friends') {
-        url.searchParams.delete('view');
-        window.history.replaceState({}, '', url.toString());
-        setActiveView('friends');
-      }
+      // ?view=friends (and every other screen) is handled by OpenViewHost
     } catch {}
     const onLink = (e: Event) => take((e as CustomEvent).detail || null);
     window.addEventListener('friends:link', onLink);
