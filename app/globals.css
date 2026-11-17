@@ -167,8 +167,14 @@ body {
   -webkit-overflow-scrolling: touch;
   -webkit-tap-highlight-color: transparent;
   color: var(--foreground);
-  /* Light: clean, plain canvas. Cards separate by border + soft shadow. */
+  /* Light: clean white page with a barely-there grid. Cards separate by border + soft shadow. */
   background-color: rgb(var(--c-canvas));
+  background-image:
+    linear-gradient(rgba(17, 17, 17, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 17, 17, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px, 32px 32px;
+  background-position: -1px -1px, -1px -1px;
+  background-attachment: fixed;
   font-feature-settings: "rlig" 1, "calt" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -176,13 +182,15 @@ body {
 
 .dark body, body.dark {
   /* Neutral ink black. The top glow is warm (not blue) so dark mode belongs to the same warm-paper
-     family as light mode; a soft edge vignette gives depth. */
+     family as light mode; fine grid and a soft edge vignette give depth. */
   background-color: rgb(var(--c-canvas));
   background-image:
+    linear-gradient(rgba(255, 255, 255, 0.032) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.032) 1px, transparent 1px),
     radial-gradient(ellipse 90% 50% at 50% -12%, rgba(255, 232, 205, 0.075), transparent 70%),
     radial-gradient(ellipse 120% 100% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.45) 100%);
-  background-size: auto, auto;
-  background-position: 0 0, 0 0;
+  background-size: 32px 32px, 32px 32px, auto, auto;
+  background-position: -1px -1px, -1px -1px, 0 0, 0 0;
   background-attachment: fixed;
 }
 
