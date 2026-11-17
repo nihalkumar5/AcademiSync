@@ -135,8 +135,8 @@ export const OverviewHeader: React.FC = () => {
         )}
       </div>
 
-      {/* Today at a glance: three soft tiles. Neutral by default; a tile only takes colour when it
-          has something for you (classes today, an exam, a deadline close). Each tile opens its section. */}
+      {/* Today at a glance: three soft tiles, all on the same neutral background. Only the number
+          and label take colour, and only for urgency (exam day, a deadline within 3 days). Each tile opens its section. */}
       <div className="grid grid-cols-3 gap-2.5">
         {(() => {
           const classCount = hasActiveExamToday ? todayExamsList.length : todayClasses.length;
@@ -152,10 +152,8 @@ export const OverviewHeader: React.FC = () => {
               label: hasActiveExamToday ? (classCount === 1 ? 'Exam' : 'Exams') : classCount === 1 ? 'Class' : 'Classes',
               caption: todayHoliday ? 'Holiday' : hasActiveExamToday ? 'Exam day' : 'today',
               theme: hasActiveExamToday
-                ? { tile: 'bg-amber-50 dark:bg-amber-400/10', value: 'text-amber-700 dark:text-amber-300', label: 'text-amber-800/80 dark:text-amber-200/80' }
-                : classCount > 0
-                  ? { tile: 'bg-sky-50 dark:bg-sky-400/10', value: 'text-sky-900 dark:text-sky-100', label: 'text-sky-900/70 dark:text-sky-100/70' }
-                  : neutral,
+                ? { ...neutral, value: 'text-amber-600 dark:text-amber-400', label: 'text-amber-700 dark:text-amber-300' }
+                : neutral,
               go: () => setActiveView(hasActiveExamToday ? 'exams' : 'timetable'),
             },
             {
@@ -172,7 +170,7 @@ export const OverviewHeader: React.FC = () => {
               label: upcomingDeadlines.length === 1 ? 'Deadline' : 'Deadlines',
               caption: 'next 3 days',
               theme: upcomingDeadlines.length > 0
-                ? { tile: 'bg-rose-50 dark:bg-rose-400/10', value: 'text-rose-700 dark:text-rose-300', label: 'text-rose-800/80 dark:text-rose-200/80' }
+                ? { ...neutral, value: 'text-rose-600 dark:text-rose-400', label: 'text-rose-700 dark:text-rose-300' }
                 : neutral,
               go: () => setActiveView('homework'),
             },
