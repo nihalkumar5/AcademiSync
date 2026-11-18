@@ -29,8 +29,9 @@ const config: CapacitorConfig = {
       forceCodeForRefreshToken: true,
     },
     SplashScreen: {
-      launchShowDuration: 6000,
-      // Safety cap: if the site is slow or offline the splash still clears; the app hides it sooner once ready
+      // The animated splash (logo + wordmark) is drawn natively in MainActivity; the plugin's
+      // static splash leaves at once so the two never overlap.
+      launchShowDuration: 0,
       launchAutoHide: true,
       launchFadeOutDuration: 300,
       backgroundColor: '#FFFFFF',
