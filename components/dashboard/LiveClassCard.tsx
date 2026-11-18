@@ -630,15 +630,7 @@ export const LiveClassCard: React.FC = () => {
     const nextOrigSession = timetable.find(s => s.id === session.id);
     const isLab = session.isLab || sub?.isLab;
     const isSpecial = session.isExtra || sub?.name?.toLowerCase().includes('elective') || session.notes?.toLowerCase().includes('elective');
-    
-    const theme = getSubjectCardTheme({
-      subjectName: sub?.name,
-      subjectCode: sub?.code,
-      subjectColor: sub?.color,
-      isLab,
-      isSpecial,
-    });
-    
+
     const formatCountdown = (minutes: number) => {
       if (minutes <= 0) return "Starting now";
       if (minutes < 60) return `In ${minutes} min`;
@@ -656,71 +648,80 @@ export const LiveClassCard: React.FC = () => {
 
     return (
       <>
-        <div 
-          className={clsx(
-            "w-full border border-line bg-surface p-4 sm:p-5 flex flex-col relative group transition-all",
-            openMenuSessionId === session.id ? "overflow-visible z-40" : "overflow-hidden z-0"
-          )}
-        >
+        {/* The class on top, then the two things you need to get there (time, room) in labelled
+            columns under a quiet hairline. Same neutral surface as the stat tiles, no colour. */}
+        {(() => {
+          const menuOpen = openMenuSessionId === session.id;
+          // Exactly the stat tiles' surface (OverviewHeader)
+          const surface =
+            'bg-surface-2 dark:bg-gradient-to-b dark:from-white/[0.03] dark:to-transparent dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.07),inset_0_0_0_1px_rgba(255,255,255,0.045)]';
+          const soon = nextClass.minutesUntilStart <= 15;
+          // "12:00 – 12:55 PM": say AM/PM once when both ends share it
+          const startT = formatTime12Hour(session.startTime);
+          const endT = session.endTime ? formatTime12Hour(session.endTime) : '';
+          const ampm = (t: string) => t.slice(-2);
+          const startShown = endT && ampm(startT) === ampm(endT) ? startT.replace(/\s?(AM|PM)$/i, '') : startT;
+          return (
+            <div className={clsx('w-full rounded-2xl flex flex-col relative group', surface, menuOpen ? 'z-40' : 'z-0')}>
+              <div className="px-f4 pt-f4 pb-f4">
+                <div className="flex items-center justify-between gap-3 -mt-1">
+                  <span className="text-[12px] font-semibold text-muted">
+                    {typeLabel === 'NEXT LAB' ? 'Next lab' : typeLabel === 'NEXT ELECTIVE' ? 'Next elective' : 'Next class'}
+                  </span>
+                  <div className="flex items-center gap-1 -mr-2">
+                    <span
+                      className={clsx(
+                        'shrink-0 inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full text-[12px] font-semibold tabular-nums',
+                        soon
+                          ? 'bg-amber-500 text-white dark:bg-amber-400 dark:text-[#1a1203]'
+                          : 'bg-surface text-fg shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:bg-white/[0.08] dark:shadow-none'
+                      )}
+                    >
+                      {soon && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse motion-reduce:animate-none" />}
+                      {formatCountdown(nextClass.minutesUntilStart)}
+                    </span>
+                    {renderOptionsMenu(session, false)}
+                  </div>
+                </div>
 
-          <div className="relative z-10 flex flex-col">
-            <div className="flex items-center justify-between gap-3">
-              <span className="inline-flex items-center gap-2 text-[12px] font-semibold text-muted">
-                {typeLabel === 'NEXT LAB' ? 'Next lab' : typeLabel === 'NEXT ELECTIVE' ? 'Next elective' : 'Next class'}
-              </span>
-              {renderOptionsMenu(session, false)}
-            </div>
+                <h3 className="mt-f3 text-[20px] sm:text-[21px] font-semibold text-fg leading-[26px] line-clamp-2 tracking-tight">
+                  {sub?.name || (session as any).subjectName || 'Class Session'}
+                </h3>
+                {session.faculty && <p className="mt-f1 text-[13px] text-fg-2 truncate">{renderFaculty(session.faculty)}</p>}
 
-            <div className="mt-1.5 flex items-start gap-2.5">
-              {/* Subject colour, same as its timetable card */}
-              <span aria-hidden="true" className="mt-[9px] w-2.5 h-2.5 shrink-0" style={{ backgroundColor: theme.accent }} />
-              <h3 className="text-[20px] sm:text-[22px] font-semibold text-fg leading-[28px] line-clamp-2 tracking-tight pr-6">
-                {sub?.name || (session as any).subjectName || 'Class Session'}
-              </h3>
-            </div>
-
-            <div className="mt-1.5 pl-5 flex items-center gap-1.5 text-[13px] text-muted min-w-0">
-              {session.room && (
-                <span className="inline-flex items-center gap-1 shrink-0">
-                  <MapPin className="w-3.5 h-3.5" />
-                  {session.room}
-                </span>
-              )}
-              {session.room && session.faculty && <span className="opacity-50 shrink-0">·</span>}
-              {session.faculty && <span className="truncate">{renderFaculty(session.faculty)}</span>}
-            </div>
-
-            {nextReschedule && (
-              <div className="mt-3 ml-5 inline-flex self-start items-center gap-1.5 h-7 px-2.5 border border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300 text-[12px] font-semibold">
-                <Clock className="w-3.5 h-3.5 shrink-0" />
-                <span>
-                  Moved by {nextReschedule.by || 'your pilot'}
-                  {nextOrigSession && (nextOrigSession.startTime !== session.startTime || nextOrigSession.endTime !== session.endTime)
-                    ? ` · was ${formatTime12Hour(nextOrigSession.startTime)}`
-                    : ''}
-                </span>
-              </div>
-            )}
-
-            <div className="mt-4 pt-3.5 border-t border-line-soft flex items-center justify-between gap-3">
-              <span className="flex items-baseline gap-1.5 min-w-0">
-                <span className="text-[18px] font-semibold text-fg tabular-nums leading-none">{formatTime12Hour(session.startTime)}</span>
-                {session.endTime && <span className="text-[13px] text-muted tabular-nums leading-none truncate">to {formatTime12Hour(session.endTime)}</span>}
-              </span>
-              <span
-                className={clsx(
-                  'shrink-0 inline-flex items-center gap-1.5 h-7 px-2.5 border text-[12px] font-semibold tabular-nums',
-                  nextClass.minutesUntilStart <= 15
-                    ? 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300'
-                    : 'border-line-soft bg-surface-2 text-fg'
+                {nextReschedule && (
+                  <div className="mt-f3 inline-flex self-start items-center gap-1.5 h-7 px-2.5 rounded-full bg-amber-100/80 text-amber-800 dark:bg-amber-400/15 dark:text-amber-300 text-[12px] font-semibold">
+                    <Clock className="w-3.5 h-3.5 shrink-0" />
+                    <span>
+                      Moved by {nextReschedule.by || 'your pilot'}
+                      {nextOrigSession && (nextOrigSession.startTime !== session.startTime || nextOrigSession.endTime !== session.endTime)
+                        ? ` · was ${formatTime12Hour(nextOrigSession.startTime)}`
+                        : ''}
+                    </span>
+                  </div>
                 )}
-              >
-                {nextClass.minutesUntilStart <= 15 && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse motion-reduce:animate-none" />}
-                {formatCountdown(nextClass.minutesUntilStart)}
-              </span>
+              </div>
+
+              <div aria-hidden="true" className="mx-f4 h-px bg-black/[0.07] dark:bg-white/[0.08]" />
+
+              <div className={clsx('px-f4 pt-f3 pb-f4 grid gap-f3', session.room ? 'grid-cols-[1.7fr_1fr]' : 'grid-cols-1')}>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium text-muted leading-none">Time</p>
+                  <p className="mt-f2 text-[15px] font-semibold text-fg tabular-nums leading-none truncate">
+                    {startShown}
+                    {endT && <span className="font-normal text-muted"> – {endT}</span>}
+                  </p>
+                </div>
+                {session.room && (
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-medium text-muted leading-none">Room</p>
+                    <p className="mt-f2 text-[15px] font-semibold text-fg leading-none truncate">{String(session.room).replace(/^room\s*(no\.?)?\s*/i, '')}</p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
+          );
+        })()}
         {renderRescheduleModal()}
       </>
     );
