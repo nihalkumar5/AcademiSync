@@ -9,20 +9,23 @@ import { PENDING_CHECKIN_KEY, ScanAttendanceSheet } from './CheckIn';
 
 // Student Home: when a teacher opens QR check-in for your class, this says so and opens the
 // scanner in one tap. Nothing shows the rest of the time.
-const REFRESH_MS = 20_000;
+// It asks when the app comes to the front (students open it when the teacher says "scan"), and
+// otherwise only now and then, so a whole college with the app open stays light on the server.
+const REFRESH_MS = 45_000;
 
 export const CheckInBanner: React.FC = () => {
   const { user, profile } = useApp();
   const [open, setOpen] = useState<OpenCheckin[]>([]);
   const [scan, setScan] = useState(false);
   const eligible = !!user?.id && profile?.role !== 'faculty' && !!profile?.batchKey;
+  const batchKey = profile?.batchKey;
 
   const refresh = useCallback(() => {
     if (!eligible || document.visibilityState !== 'visible') return;
-    fetchOpenCheckins()
+    fetchOpenCheckins(batchKey)
       .then(setOpen)
       .catch(() => {});
-  }, [eligible]);
+  }, [eligible, batchKey]);
 
   useEffect(() => {
     if (!eligible) return setOpen([]);

@@ -120,7 +120,8 @@ export const deviceId = () => {
 
 export const checkIn = (code: string): Promise<CheckinOk> => call('/api/attendance/checkin', 'POST', { code, device: deviceId() });
 
-export const fetchOpenCheckins = async (): Promise<OpenCheckin[]> => (await call('/api/attendance/checkin', 'GET')).open || [];
+export const fetchOpenCheckins = async (batchKey?: string): Promise<OpenCheckin[]> =>
+  (await call(`/api/attendance/checkin${batchKey ? `?batchKey=${encodeURIComponent(batchKey)}` : ''}`, 'GET')).open || [];
 
 /** Error codes a student can see after scanning. */
 export const checkinErrorCode = (err: unknown): CheckinErrorCode | 'offline' => {

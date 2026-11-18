@@ -15,6 +15,12 @@
 // - One phone marks one student per lecture, so signing in as a friend on your own phone fails.
 // - Every check-in is its own doc (no shared counter), so a whole class scanning at once never
 //   contends on one document.
+//
+// Speed (a whole class scans within seconds): a normal check-in is ONE database write. The
+// lecture doc comes from a per-server cache (one read shared by everyone scanning), the student
+// is found in the class list stored on it (no profile read), and the write creates the student's
+// check-in and the phone's marker together, failing if either exists. Only the rare cases
+// (scanned twice, someone else's phone, not on the list) read anything more.
 // - Scanning only *checks in*. The register changes when the teacher reviews and saves.
 //
 // Imports are relative (no "@/") so this file can be compiled and tested on its own.
@@ -99,18 +105,64 @@ const publicInfo = (id: string, d: LiveDoc, now = Date.now()): LiveInfo => ({
 // A whole class scans within seconds: keep the lecture doc for a moment instead of reading it
 // 60 times. A close or reopen shows up within this window.
 const cache = new Map<string, { at: number; doc: LiveDoc | null }>();
+const inflight = new Map<string, Promise<LiveDoc | null>>();
 const CACHE_MS = 4000;
 const readLive = async (db: Db, id: string, fresh = false): Promise<LiveDoc | null> => {
   const hit = cache.get(id);
   if (!fresh && hit && Date.now() - hit.at < CACHE_MS) return hit.doc;
-  const snap = await db.collection(COL).doc(id).get();
-  const doc = snap.exists ? (snap.data() as LiveDoc) : null;
-  cache.set(id, { at: Date.now(), doc });
-  if (cache.size > 500) cache.delete(cache.keys().next().value as string);
-  return doc;
+  // 200 scans landing on a fresh server at once share one read instead of making 200
+  const pending = inflight.get(id);
+  if (pending) return pending;
+  const p = db
+    .collection(COL)
+    .doc(id)
+    .get()
+    .then((snap: any) => {
+      const doc = snap.exists ? (snap.data() as LiveDoc) : null;
+      cache.set(id, { at: Date.now(), doc });
+      if (cache.size > 500) cache.delete(cache.keys().next().value as string);
+      return doc;
+    })
+    .finally(() => inflight.delete(id));
+  inflight.set(id, p);
+  return p;
 };
+// The same idea for Home's "is attendance open?": a whole batch opening the app at once asks one
+// question, so one query answers all of them for a few seconds.
+type OpenList = { id: string; d: LiveDoc }[];
+const openCache = new Map<string, { at: number; list: OpenList }>();
+const openInflight = new Map<string, Promise<OpenList>>();
+const OPEN_CACHE_MS = 3000;
+const openInBatch = (db: Db, batchKey: string): Promise<OpenList> => {
+  const hit = openCache.get(batchKey);
+  if (hit && Date.now() - hit.at < OPEN_CACHE_MS) return Promise.resolve(hit.list);
+  const pending = openInflight.get(batchKey);
+  if (pending) return pending;
+  const p = db
+    .collection(COL)
+    .where('batchKey', '==', batchKey)
+    .where('status', '==', 'open')
+    .limit(20)
+    .get()
+    .then((snap: any) => {
+      const list: OpenList = [];
+      snap.forEach((x: any) => list.push({ id: x.id, d: x.data() as LiveDoc }));
+      openCache.set(batchKey, { at: Date.now(), list });
+      if (openCache.size > 500) openCache.delete(openCache.keys().next().value as string);
+      return list;
+    })
+    .finally(() => openInflight.delete(batchKey));
+  openInflight.set(batchKey, p);
+  return p;
+};
+
 /** Test hook: forget cached lecture docs. */
-export const _clearLiveCache = () => cache.clear();
+export const _clearLiveCache = () => {
+  cache.clear();
+  inflight.clear();
+  openCache.clear();
+  openInflight.clear();
+};
 
 const ownLive = async (db: Db, caller: Caller, id: unknown) => {
   if (typeof id !== 'string' || !LIVE_ID_RE.test(id)) throw new AttendanceError(400, 'invalid', 'Invalid check-in');
@@ -208,6 +260,7 @@ export const openLive = async (db: Db, caller: Caller, profile: any, batchKey: s
   };
   await ref.set(doc);
   cache.delete(id);
+  openCache.delete(batchKey);
   const lists = await listSince(ref, 0);
   return { live: publicInfo(id, doc, now), secret: doc.secret, serverNow: Date.now(), ...lists };
 };
@@ -229,6 +282,7 @@ export const closeLive = async (db: Db, caller: Caller, id: unknown) => {
     d.status = 'closed';
   }
   cache.delete(id as string);
+  openCache.delete(d.batchKey);
   const lists = await listSince(ref, 0);
   return { live: publicInfo(id as string, d, now), serverNow: now, ...lists };
 };
@@ -262,13 +316,15 @@ export const checkIn = async (db: Db, caller: Caller, rawCode: unknown, device: 
   const age = codeAge(code.tick, now);
   if (age !== 'fresh') throw fail(410, 'expired-code', 'That code has already changed. Scan the QR again.');
 
-  const profileSnap = await db.collection('users').doc(caller.uid).get();
-  const profile = (profileSnap.exists ? profileSnap.data()?.profile : null) || {};
-  if (profile.role === 'faculty') throw fail(403, 'faculty', "Teachers don't need to check in");
+  if (caller.uid === live.facultyId) throw fail(403, 'faculty', "Teachers don't need to check in");
 
   const ref = db.collection(COL).doc(code.liveId);
   const member = live.members?.[caller.uid];
   if (!member) {
+    // Rare path: read who this is, so a teacher is told apart and the list's owner can see who scanned
+    const profileSnap = await db.collection('users').doc(caller.uid).get();
+    const profile = (profileSnap.exists ? profileSnap.data()?.profile : null) || {};
+    if (profile.role === 'faculty') throw fail(403, 'faculty', "Teachers don't need to check in");
     // Tell the teacher someone scanned who isn't on their list (they can add them if they joined the batch)
     const name = str(profile.name, 120) || (caller.email ? caller.email.split('@')[0] : 'Someone');
     const roll = (str(profile.rollNumber, 40) || '').toUpperCase();
@@ -279,31 +335,44 @@ export const checkIn = async (db: Db, caller: Caller, rawCode: unknown, device: 
 
   const cRef = ref.collection('checkins').doc(caller.uid);
   const dRef = ref.collection('devices').doc(deviceHash(code.liveId, device));
-  const result = await db.runTransaction(async (tx: any) => {
-    const [c, dv] = await Promise.all([tx.get(cRef), tx.get(dRef)]);
-    if (c.exists) return { status: 'already' as const, at: Number(c.data()?.at) || now };
-    if (dv.exists && dv.data()?.uid !== caller.uid) {
-      throw fail(409, 'device-used', 'This phone has already checked in another student for this lecture. Each phone can check in one person. Use your own phone.');
-    }
-    tx.create(cRef, { key: member.k, name: member.n, roll: member.r, at: now, tick: code.tick, device: dRef.id });
-    if (!dv.exists) tx.create(dRef, { uid: caller.uid, at: now });
-    return { status: 'marked' as const, at: now };
-  });
-  return { ...result, subjectName: live.subjectName, facultyName: live.facultyName, batchLabel: live.batchLabel, startTime: live.startTime };
+  const about = { subjectName: live.subjectName, facultyName: live.facultyName, batchLabel: live.batchLabel, startTime: live.startTime };
+  // One write: this student's check-in and this phone's marker together. It fails as a whole if
+  // either already exists, which only happens when they scan twice or use someone else's phone.
+  const batch = db.batch();
+  batch.create(cRef, { key: member.k, name: member.n, roll: member.r, at: now, tick: code.tick, device: dRef.id });
+  batch.create(dRef, { uid: caller.uid, at: now });
+  try {
+    await batch.commit();
+    return { status: 'marked', at: now, ...about };
+  } catch (e: any) {
+    if (!alreadyExists(e)) throw e;
+  }
+  const [c, dv] = await Promise.all([cRef.get(), dRef.get()]);
+  if (c.exists) return { status: 'already', at: Number(c.data()?.at) || now, ...about };
+  if (dv.exists && dv.data()?.uid !== caller.uid) {
+    throw fail(409, 'device-used', 'This phone has already checked in another student for this lecture. Each phone can check in one person. Use your own phone.');
+  }
+  throw fail(409, 'error', 'Something went wrong. Scan the QR again.');
 };
 
-/** Check-ins open right now for this student's batch, so Home can say "scan now". */
-export const openForMe = async (db: Db, caller: Caller): Promise<OpenCheckin[]> => {
-  const userSnap = await db.collection('users').doc(caller.uid).get();
-  const profile = (userSnap.exists ? userSnap.data()?.profile : null) || {};
-  if (profile.role === 'faculty' || !validKey(profile.batchKey)) return [];
+/** Firestore's "document already exists" (a create() that lost to an earlier write). */
+const alreadyExists = (e: any) => e?.code === 6 || e?.code === 'already-exists' || /already exists/i.test(String(e?.message || ''));
+
+/**
+ * Check-ins open right now for this student's batch, so Home can say "scan now".
+ * `batchHint` is the batch the app says it's in: it only saves a profile read. Nothing about a
+ * lecture is returned unless this student is on its class list, so a wrong hint shows nothing.
+ */
+export const openForMe = async (db: Db, caller: Caller, batchHint?: unknown): Promise<OpenCheckin[]> => {
+  let batchKey = validKey(batchHint) ? batchHint : null;
+  if (!batchKey) {
+    const userSnap = await db.collection('users').doc(caller.uid).get();
+    const profile = (userSnap.exists ? userSnap.data()?.profile : null) || {};
+    if (profile.role === 'faculty' || !validKey(profile.batchKey)) return [];
+    batchKey = profile.batchKey as string;
+  }
   const now = Date.now();
-  const snap = await db.collection(COL).where('batchKey', '==', profile.batchKey).where('status', '==', 'open').limit(20).get();
-  const mine: { id: string; d: LiveDoc }[] = [];
-  snap.forEach((x: any) => {
-    const d = x.data() as LiveDoc;
-    if (now < d.expiresAt && d.members?.[caller.uid]) mine.push({ id: x.id, d });
-  });
+  const mine = (await openInBatch(db, batchKey)).filter(({ d }) => d.status === 'open' && now < d.expiresAt && d.members?.[caller.uid]);
   return Promise.all(
     mine.map(async ({ id, d }) => {
       const c = await db.collection(COL).doc(id).collection('checkins').doc(caller.uid).get();
