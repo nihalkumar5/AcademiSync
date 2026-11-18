@@ -434,6 +434,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const seenBatchAlertIds = useRef<Set<string>>(new Set());
   // True until the very first snapshot fires — used to silently load existing alerts
   const isFirstBatchSnapshot = useRef(true);
+  // Batches we've already tried to give an invite code this session (see the batch listener)
+  const inviteBackfillTried = useRef<Set<string>>(new Set());
   // Suppress duplicate toasts and alarms on initial app mount and foreground resume
   const isInitialNotificationCheck = useRef(true);
   const isResumingFromBackground = useRef(false);
@@ -825,10 +827,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       const data = snapshot.data();
 
-      // Automatically generate & backfill 6-digit inviteCode if batch doesn't have one
-      if (!data.inviteCode && profile.batchKey) {
+      // Give a batch without one a 6-digit invite code. Only once per batch per session: most members
+      // aren't allowed to write it, and a denied write rolls back and fires this snapshot again, which
+      // used to retry in a tight loop (about 100 denied writes a second on every member's phone).
+      if (!data.inviteCode && profile.batchKey && !inviteBackfillTried.current.has(profile.batchKey)) {
+        inviteBackfillTried.current.add(profile.batchKey);
         const generatedCode = generateInviteCode();
-        data.inviteCode = generatedCode;
         updateDoc(batchDocRef, { inviteCode: generatedCode }).catch((e) => {
           console.warn('Could not backfill invite code to batch doc:', e);
         });
