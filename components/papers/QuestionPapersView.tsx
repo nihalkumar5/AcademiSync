@@ -218,13 +218,19 @@ const UploadSheet: React.FC<{
   onClose: () => void;
   isStaff: boolean;
   branchOptions: string[];
+  /** Student's own branch and semester (from their profile): the default target of an upload */
+  ownBranch: string;
+  ownSemester: number | null;
   onDone: (p: PaperSummary) => void;
   onOpenPaper: (p: PaperSummary) => void;
-}> = ({ open, onClose, isStaff, branchOptions, onDone, onOpenPaper }) => {
+}> = ({ open, onClose, isStaff, branchOptions, ownBranch, ownSemester, onDone, onOpenPaper }) => {
   const { showToast } = useApp() as any;
   const [step, setStep] = useState<'pick' | 'reading' | 'confirm'>('pick');
   const [picked, setPicked] = useState<Picked[]>([]);
-  const [branch, setBranch] = useState('');
+  // Students: their own branch unless they choose another; staff always choose
+  const [branch, setBranch] = useState(isStaff ? '' : ownBranch);
+  const [changingFor, setChangingFor] = useState(false);
+  const forOwnBranch = !isStaff && normKey(branch || ownBranch) === normKey(ownBranch);
   const [error, setError] = useState('');
   const [duplicate, setDuplicate] = useState<PaperSummary | null>(null);
   const [draftId, setDraftId] = useState('');
@@ -239,6 +245,8 @@ const UploadSheet: React.FC<{
     picked.forEach((p) => p.preview && URL.revokeObjectURL(p.preview));
     setStep('pick');
     setPicked([]);
+    setBranch(isStaff ? '' : ownBranch);
+    setChangingFor(false);
     setError('');
     setDuplicate(null);
     setDraftId('');
@@ -282,10 +290,12 @@ const UploadSheet: React.FC<{
     }
     setStep('reading');
     try {
-      const files = await Promise.all(picked.map((p) => processFileForAi(p.file)));
+      // Saved as the stored copy too: 1400px at 72% is sharp enough to read on a phone and for the AI,
+      // about half the size of the default 1600px / 85%
+      const files = await Promise.all(picked.map((p) => processFileForAi(p.file, 1400, 0.72)));
       const rawBytes = files.reduce((n, f) => n + Math.floor((f.base64.length - f.base64.indexOf(',') - 1) * 0.75), 0);
       if (rawBytes > MAX_PAPER_TOTAL_MB * 1024 * 1024) throw new Error(`That's too big. Keep the whole paper under ${MAX_PAPER_TOTAL_MB} MB.`);
-      const d = await api('POST', '', { action: 'scan', files: files.map((f) => ({ base64: f.base64, mimeType: f.mimeType, name: f.name })), branch });
+      const d = await api('POST', '', { action: 'scan', files: files.map((f) => ({ base64: f.base64, mimeType: f.mimeType, name: f.name })), branch: branch.trim() || ownBranch });
       setDraftId(d.draftId);
       setFields(d.fields);
       setExamNames(d.examNames || []);
@@ -303,8 +313,13 @@ const UploadSheet: React.FC<{
     setPublishing(true);
     setError('');
     try {
-      const d = await api('POST', '', { action: 'publish', draftId, fields: { ...fields, branch } });
-      showToast?.('Paper added', `${d.paper.subjectName} · ${paperTitle(d.paper)}`, 'success');
+      const target = isStaff ? branch : branch.trim() || ownBranch;
+      const d = await api('POST', '', { action: 'publish', draftId, fields: { ...fields, branch: target } });
+      showToast?.(
+        'Paper added',
+        !isStaff && !forOwnBranch ? `For ${target}. Students of that branch will see it.` : `${d.paper.subjectName} · ${paperTitle(d.paper)}`,
+        'success'
+      );
       setDraftId('');
       reset();
       onDone(d.paper);
@@ -408,6 +423,53 @@ const UploadSheet: React.FC<{
             </div>
           )}
 
+          {/* Students: who the paper is for, from their profile. Change only if it's another branch's paper. */}
+          {!isStaff && !changingFor && (
+            <div className="flex items-center gap-f3 px-f3 py-2.5 bg-surface-2 rounded-xl">
+              <span className="flex-1 min-w-0">
+                <span className="block text-[12px] text-muted">For your class</span>
+                <span className="block text-[14px] font-medium text-fg leading-snug line-clamp-2">
+                  {[ownSemester ? `Sem ${ownSemester}` : '', ownBranch].filter(Boolean).join(' · ')}
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setBranch((b) => b || ownBranch);
+                  setChangingFor(true);
+                }}
+                className="shrink-0 text-[13px] font-semibold text-fg hover:underline underline-offset-4 cursor-pointer">
+                Change
+              </button>
+            </div>
+          )}
+          {!isStaff && changingFor && (
+            <div>
+              <div className="flex items-baseline justify-between gap-3 mb-1.5">
+                <label className="text-[13px] font-medium text-fg-2" htmlFor="qp-branch">Branch</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBranch(ownBranch);
+                    setChangingFor(false);
+                  }}
+                  className="text-[13px] font-semibold text-fg hover:underline underline-offset-4 cursor-pointer"
+                >
+                  Use my branch
+                </button>
+              </div>
+              <input id="qp-branch" list="qp-branches" value={branch} onChange={(e) => setBranch(e.target.value)} placeholder="e.g. Computer Science and Engineering" className={input} autoFocus />
+              <datalist id="qp-branches">
+                {[ownBranch, ...branchOptions].filter((b, i, a) => b && a.findIndex((x) => normKey(x) === normKey(b)) === i).map((b) => (
+                  <option key={b} value={b} />
+                ))}
+              </datalist>
+              <p className="mt-1.5 text-[12px] text-muted">
+                {forOwnBranch ? 'Your branch.' : "Only students of that branch will see it, so it won't show in your list."} You can set the semester on the next step.
+              </p>
+            </div>
+          )}
+
           {isStaff && (
             <div>
               <label className={label} htmlFor="qp-branch">Branch</label>
@@ -440,6 +502,12 @@ const UploadSheet: React.FC<{
       {step === 'confirm' && fields && (
         <div className="flex flex-col gap-f4">
           {possibleDup && dupCard(possibleDup, 'Looks like this paper is already here')}
+
+          {!isStaff && (
+            <p className="-mt-1 text-[13px] text-muted">
+              For <span className="font-medium text-fg">{branch.trim() || ownBranch}</span>
+            </p>
+          )}
 
           <div>
             <label className={label} htmlFor="qp-subject">Subject</label>
@@ -731,6 +799,8 @@ export const QuestionPapersView: React.FC = () => {
         onClose={() => setUploadOpen(false)}
         isStaff={isStaff}
         branchOptions={branchOptions}
+        ownBranch={data?.scope.branch || (profile as any)?.branch || ''}
+        ownSemester={Number((profile as any)?.semester) || null}
         onDone={(p) => {
           setUploadOpen(false);
           load();
