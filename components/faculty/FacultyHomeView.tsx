@@ -113,7 +113,7 @@ export const FacultyHomeView: React.FC = () => {
     const t = setInterval(() => setTick((n) => n + 1), 60000);
     return () => clearInterval(t);
   }, []);
-  const allWeekSessions = aggregateFacultyWeeklyTimetable(linkedBatches, batchesTimetableData);
+  const allWeekSessions = aggregateFacultyWeeklyTimetable(linkedBatches, batchesTimetableData, undefined, user?.id);
   const todaySessions = allWeekSessions[currentDay] || [];
   const tomorrowSessions = allWeekSessions[tomorrowDay] || [];
 

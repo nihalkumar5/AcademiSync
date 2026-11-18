@@ -6,11 +6,13 @@ import { Modal } from '@/components/ui/Modal';
 import {
   AggregatedFacultySession,
   rescheduleFacultyClass,
+  moveFacultyClass,
   formatFacultyBatchDegreeAndBranch,
   formatFacultyCombinedBatchLabel,
+  formatClassDate,
 } from '@/lib/facultyUtils';
-import { getTodayDateString, getDateStringForDayOfWeek } from '@/lib/timetableUtils';
-import { Clock, MapPin, Users, AlertCircle, Sparkles } from '@/components/ui/icons';
+import { getTodayDateString, formatTime12Hour } from '@/lib/timetableUtils';
+import { Clock, MapPin, Users, ArrowRight, CalendarDays } from '@/components/ui/icons';
 
 interface FacultyRescheduleModalProps {
   isOpen: boolean;
@@ -27,6 +29,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
 }) => {
   const { profile, user, showToast } = useApp();
 
+  const [toDate, setToDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [room, setRoom] = useState('');
@@ -35,6 +38,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
 
   useEffect(() => {
     if (aggregatedSession) {
+      setToDate(aggregatedSession.date);
       setStartTime(aggregatedSession.session.startTime || '09:00');
       setEndTime(aggregatedSession.session.endTime || '10:00');
       setRoom(aggregatedSession.session.room || '');
@@ -49,14 +53,22 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
     aggregatedSession.linkedBatches,
     aggregatedSession.batch
   );
-  const targetDateStr = session.day
-    ? getDateStringForDayOfWeek(session.day)
-    : getTodayDateString();
+  const fromDate = aggregatedSession.date;
+  const today = getTodayDateString();
+  const isMove = !!toDate && toDate !== fromDate;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!startTime || !endTime) {
       showToast('Time Required', 'Please provide start and end time.', 'error');
+      return;
+    }
+    if (endTime <= startTime) {
+      showToast('Check the time', 'The class must end after it starts.', 'error');
+      return;
+    }
+    if (isMove && toDate < today) {
+      showToast('Pick a later date', 'A class can only move to today or a later date.', 'error');
       return;
     }
 
@@ -71,6 +83,44 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
       });
       const targets = Array.from(batchMap.values());
 
+      const common = (t: { batch: any; session: any }) => ({
+        batchKey: t.batch.batchKey,
+        sessionId: t.session.id,
+        subjectName,
+        batchName: formatFacultyBatchDegreeAndBranch(t.batch).fullLabel || t.batch.batchName,
+        facultyName: profile.name || 'Faculty',
+        facultyTitle: profile.facultyTitle || 'Prof.',
+        userId: user?.id,
+        dateStr: fromDate,
+        sessionDay: session.day,
+        originalStartTime: aggregatedSession.rescheduleMeta?.originalStartTime || session.startTime,
+      });
+
+      if (isMove) {
+        if (!user?.id) throw new Error('Sign in again to move a class.');
+        await Promise.all(
+          targets.map((t) =>
+            moveFacultyClass({
+              ...common(t),
+              facultyId: user.id,
+              toDate,
+              newStartTime: startTime,
+              newEndTime: endTime,
+              newRoom: room.trim() || undefined,
+              reason: reason.trim() || undefined,
+            })
+          )
+        );
+        showToast(
+          'Class Moved',
+          `${subjectName} moved to ${formatClassDate(toDate)}, ${formatTime12Hour(startTime)}. Students notified.`,
+          'success'
+        );
+        if (onSuccess) onSuccess();
+        onClose();
+        return;
+      }
+
       await Promise.all(
         targets.map((t) =>
           rescheduleFacultyClass({
@@ -81,7 +131,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
             facultyName: profile.name || 'Faculty',
             facultyTitle: profile.facultyTitle || 'Prof.',
             userId: user?.id,
-            dateStr: targetDateStr,
+            dateStr: fromDate,
             newStartTime: startTime,
             newEndTime: endTime,
             newRoom: room.trim() || undefined,
@@ -94,7 +144,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
 
       showToast(
         'Lecture Rescheduled',
-        `${subjectName} moved to ${startTime}–${endTime}. Batch students notified.`,
+        `${subjectName} ${formatClassDate(fromDate)} now ${formatTime12Hour(startTime)}–${formatTime12Hour(endTime)}. Students notified.`,
         'success'
       );
 
@@ -112,8 +162,8 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Reschedule Lecture"
-      description="Update lecture time and room for today's batch schedule"
+      title="Reschedule or move"
+      description={`${subjectName} on ${formatClassDate(fromDate, { relative: false })}. Change the time or room, or pick another date to move it.`}
     >
       <div className="flex flex-col gap-4 text-left font-sans mt-2">
         {/* Current Details Banner */}
@@ -150,10 +200,34 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[12px] font-bold text-fg-2 flex items-center gap-1.5">
+              <CalendarDays className="w-3.5 h-3.5 opacity-60" /> Date
+            </label>
+            <input
+              type="date"
+              value={toDate}
+              min={today}
+              onChange={(e) => e.target.value && setToDate(e.target.value)}
+              required
+              className="px-3 py-2 rounded-none border border-line bg-surface text-sm font-mono text-fg focus:outline-none focus:border-line-strong"
+            />
+            {isMove ? (
+              <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[12px] font-medium text-sky-700 dark:text-sky-300">
+                <span className="whitespace-nowrap">{formatClassDate(fromDate)}</span>
+                <ArrowRight className="w-3 h-3 shrink-0" />
+                <span className="whitespace-nowrap font-semibold">{formatClassDate(toDate)}</span>
+                <span className="basis-full text-muted font-normal">Cancelled on the old date and added on the new one. Students are told both.</span>
+              </p>
+            ) : (
+              <p className="text-[12px] text-muted">Same date. Pick another date to move the class.</p>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="text-[12px] font-bold text-fg-2">
-                New Start Time
+                {isMove ? 'Start' : 'New Start Time'}
               </label>
               <input
                 type="time"
@@ -166,7 +240,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
 
             <div className="flex flex-col gap-1.5">
               <label className="text-[12px] font-bold text-fg-2">
-                New End Time
+                {isMove ? 'End' : 'New End Time'}
               </label>
               <input
                 type="time"
@@ -219,7 +293,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
               className="btn btn-primary btn-sm shadow-2xs"
             >
               <Clock className="w-3.5 h-3.5" />
-              <span>{isSubmitting ? 'Rescheduling...' : 'Save & Broadcast'}</span>
+              <span>{isSubmitting ? 'Saving…' : isMove ? `Move to ${formatClassDate(toDate)}` : 'Save & notify'}</span>
             </button>
           </div>
         </form>

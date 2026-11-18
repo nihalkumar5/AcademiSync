@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { formatClassDate } from '@/lib/facultyUtils';
 import { useApp } from '@/context/AppContext';
 import { motion } from 'framer-motion';
 import { 
@@ -935,7 +936,9 @@ export const TodayTimeline: React.FC = () => {
 
                               {isCancelled && (
                                 <span className="text-[11px] font-mono text-[#C94B5C] mt-1 font-semibold block">
-                                  Cancelled for today {cancelledMeta?.by ? `· by ${cancelledMeta.by} (BP)` : ''}
+                                  {(cancelledMeta as any)?.movedTo
+                                    ? `Moved to ${formatClassDate((cancelledMeta as any).movedTo.date)}, ${formatTime12Hour((cancelledMeta as any).movedTo.startTime)}${cancelledMeta?.by ? ` · by ${cancelledMeta.by}` : ''}`
+                                    : `Cancelled${cancelledMeta?.by ? ` · by ${cancelledMeta.by}${cancelledMeta.role === 'faculty' ? '' : ' (BP)'}` : ''}`}
                                 </span>
                               )}
 

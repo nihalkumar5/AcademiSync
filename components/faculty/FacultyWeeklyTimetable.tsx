@@ -1,10 +1,10 @@
 'use client';
 
 import { FacultyPageHeader, FacultyNoBatches, FacultyStatTile } from './FacultyUI';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
 import { ClassSession, DayOfWeek, FacultyLinkedBatch } from '@/lib/types';
-import { getCurrentDayOfWeek, getTomorrowDayOfWeek, formatTime12Hour, getDateStringForDayOfWeek, getTodayDateString } from '@/lib/timetableUtils';
+import { formatTime12Hour, getTodayDateString } from '@/lib/timetableUtils';
 import {
   aggregateFacultyWeeklyTimetable,
   AggregatedFacultySession,
@@ -12,6 +12,12 @@ import {
   formatFacultyCombinedBatchLabel,
   cancelOrRestoreFacultyClass,
   revertFacultyReschedule,
+  undoFacultyExtraClass,
+  teachingWeekDates,
+  formatClassDate,
+  dayOfWeekForDate,
+  addDaysToDateStr,
+  parseDateStr,
 } from '@/lib/facultyUtils';
 import { getSubjectCardTheme } from '@/lib/cardColors';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -32,6 +38,9 @@ import {
   RotateCcw,
   Ban,
   Share2,
+  ChevronLeft,
+  ChevronRight,
+  ArrowRight,
 } from '@/components/ui/icons';
 import { clsx } from 'clsx';
 
@@ -43,17 +52,18 @@ export const FacultyWeeklyTimetable: React.FC = () => {
 
   const [isConnectBatchOpen, setIsConnectBatchOpen] = useState(false);
   const [batchesTimetableData, setBatchesTimetableData] = useState<Record<string, any>>({});
-  const [selectedDay, setSelectedDay] = useState<DayOfWeek>(() => {
-    const now = new Date();
-    if (now.getHours() >= 20) {
-      const tomorrow = getTomorrowDayOfWeek();
-      if (DAYS.includes(tomorrow)) return tomorrow;
-      return 'Monday';
-    }
-    const curr = getCurrentDayOfWeek();
-    if (DAYS.includes(curr)) return curr;
-    return 'Monday';
+  // The date shown. After 8 pm it opens on tomorrow; on Sunday, on Monday.
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    let d = getTodayDateString();
+    if (new Date().getHours() >= 20) d = addDaysToDateStr(d, 1);
+    if (dayOfWeekForDate(d) === 'Sunday') d = addDaysToDateStr(d, 1);
+    return d;
   });
+  const todayStr = getTodayDateString();
+  const weekDates = teachingWeekDates(selectedDate);
+  const selectedDay = dayOfWeekForDate(selectedDate);
+  const setSelectedDay = (day: DayOfWeek) => setSelectedDate(weekDates[day]);
+  const datePickerRef = useRef<HTMLInputElement>(null);
 
   const [sessionToReschedule, setSessionToReschedule] = useState<AggregatedFacultySession | null>(null);
   const [openMenuSessionId, setOpenMenuSessionId] = useState<string | null>(null);
@@ -70,7 +80,8 @@ export const FacultyWeeklyTimetable: React.FC = () => {
       });
       const targets = Array.from(batchMap.values());
       const action = isCancelled ? 'restore' : 'cancel';
-      const targetDate = agg.session.day ? getDateStringForDayOfWeek(agg.session.day) : getTodayDateString();
+      const targetDate = agg.date;
+      if (action === 'cancel' && !window.confirm(`Cancel ${subjectName} on ${formatClassDate(targetDate, { relative: false })}? Students are notified.`)) return;
 
       await Promise.all(
         targets.map((t) =>
@@ -91,8 +102,8 @@ export const FacultyWeeklyTimetable: React.FC = () => {
       );
 
       showToast(
-        action === 'cancel' ? 'Class Cancelled' : 'Class Restored',
-        `${subjectName} updated across ${targets.length > 1 ? `${targets.length} batches` : 'batch'}.`,
+        action === 'cancel' ? 'Class Cancelled' : agg.movedTo ? 'Move Undone' : 'Class Restored',
+        `${subjectName} · ${formatClassDate(targetDate)}${targets.length > 1 ? ` · ${targets.length} batches` : ''}. Students notified.`,
         action === 'cancel' ? 'info' : 'success'
       );
     } catch (err: any) {
@@ -112,7 +123,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
         batchMap.set(bs.batch.batchKey, bs);
       });
       const targets = Array.from(batchMap.values());
-      const targetDate = agg.session.day ? getDateStringForDayOfWeek(agg.session.day) : getTodayDateString();
+      const targetDate = agg.date;
 
       await Promise.all(
         targets.map((t) =>
@@ -138,18 +149,161 @@ export const FacultyWeeklyTimetable: React.FC = () => {
     }
   };
 
+  // A one-off class: remove it. If it was moved here, the lecture goes back to its own date.
+  const handleUndoExtra = async (agg: AggregatedFacultySession) => {
+    const { subjectName, movedFrom } = agg;
+    const question = movedFrom
+      ? `Undo the move? ${subjectName} goes back to ${formatClassDate(movedFrom.date, { relative: false })}, ${formatTime12Hour(movedFrom.startTime)}.`
+      : `Remove this extra ${subjectName} class on ${formatClassDate(agg.date, { relative: false })}?`;
+    if (!window.confirm(question)) return;
+    try {
+      const refs = agg.batchSessions?.length ? agg.batchSessions : [{ batch: agg.batch, session: agg.session }];
+      await Promise.all(
+        refs.map((r) =>
+          undoFacultyExtraClass({
+            batchKey: r.batch.batchKey,
+            extraId: r.session.id,
+            subjectName,
+            batchName: r.batch.batchName,
+            facultyName: profile.name || 'Faculty',
+            facultyTitle: profile.facultyTitle || 'Prof.',
+            userId: user?.id,
+          })
+        )
+      );
+      showToast(movedFrom ? 'Move Undone' : 'Extra Class Removed', `${subjectName}. Students notified.`, 'success');
+    } catch (err: any) {
+      console.error('Error undoing extra class:', err);
+      showToast('Error', err.message || 'Could not undo that.', 'error');
+    }
+  };
+
+  // What changed for this one date, shown under the subject
+  const renderChangeNote = (agg: AggregatedFacultySession, compact = false) => {
+    const { isRescheduled, rescheduleMeta, movedTo, movedFrom, isExtra, isCancelled, cancelReason } = agg;
+    const base = clsx(
+      'inline-flex items-center gap-1.5 rounded-none border font-mono font-medium self-start',
+      compact ? 'px-1.5 py-0.5 text-[10px] mb-1.5' : 'px-2.5 py-1 text-[11px] mb-2.5'
+    );
+    if (movedTo) {
+      return (
+        <div className={clsx(base, 'bg-sky-500/10 border-sky-500/30 text-sky-700 dark:text-sky-300')}>
+          <ArrowRight className="w-3 h-3 shrink-0" />
+          <span>Moved to {formatClassDate(movedTo.date)}, {formatTime12Hour(movedTo.startTime)}</span>
+        </div>
+      );
+    }
+    if (isExtra) {
+      return (
+        <div className={clsx(base, 'bg-sky-500/10 border-sky-500/30 text-sky-700 dark:text-sky-300')}>
+          <CalendarDays className="w-3 h-3 shrink-0" />
+          <span>{movedFrom ? `Moved from ${formatClassDate(movedFrom.date)}, ${formatTime12Hour(movedFrom.startTime)}` : 'Extra class'}</span>
+        </div>
+      );
+    }
+    if (isRescheduled && rescheduleMeta?.originalStartTime) {
+      return (
+        <div className={clsx(base, 'bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-300')}>
+          <Clock className="w-3 h-3 shrink-0" />
+          <span>
+            {compact ? 'From' : 'Rescheduled from'} {formatTime12Hour(rescheduleMeta.originalStartTime)}
+            {!compact && rescheduleMeta.originalEndTime ? ` – ${formatTime12Hour(rescheduleMeta.originalEndTime)}` : ''}
+            {!compact && rescheduleMeta.reason ? ` · ${rescheduleMeta.reason}` : ''}
+          </span>
+        </div>
+      );
+    }
+    if (isCancelled && cancelReason && !compact && cancelReason !== 'Class cancelled by Faculty') {
+      return (
+        <div className={clsx(base, 'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300')}>
+          <Ban className="w-3 h-3 shrink-0" />
+          <span>{cancelReason}</span>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Faculty actions for one class on one date (same on phone and desktop)
+  const renderMenuItems = (agg: AggregatedFacultySession, compact = false) => {
+    const isPast = agg.date < todayStr;
+    const item = clsx(
+      'flex items-center gap-2.5 w-full text-left font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed',
+      compact ? 'px-3 py-1.5 text-[12px]' : 'px-3.5 py-2 text-[13px]'
+    );
+    const run = (fn: () => void) => () => {
+      setOpenMenuSessionId(null);
+      fn();
+    };
+    return (
+      <>
+        <div className={clsx('font-mono text-muted border-b border-line-soft mb-1', compact ? 'px-3 py-1 text-[11px]' : 'px-3.5 py-1 text-[12px]')}>
+          {formatClassDate(agg.date, { relative: false })}
+          {isPast ? ' · past' : ''}
+        </div>
+        {agg.isExtra ? (
+          <button type="button" disabled={isPast} onClick={run(() => handleUndoExtra(agg))} className={clsx(item, 'text-sky-700 dark:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-950/30')}>
+            <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+            <span>{agg.movedFrom ? 'Undo move' : 'Remove extra class'}</span>
+          </button>
+        ) : (
+          <>
+            {agg.isRescheduled ? (
+              <button type="button" disabled={isPast} onClick={run(() => handleRevertReschedule(agg))} className={clsx(item, 'text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30')}>
+                <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                <span>Back to usual time</span>
+              </button>
+            ) : (
+              !agg.isCancelled && (
+                <button type="button" disabled={isPast} onClick={run(() => setSessionToReschedule(agg))} className={clsx(item, 'text-fg hover:bg-surface-2')}>
+                  <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
+                  <span>Reschedule or move</span>
+                </button>
+              )
+            )}
+            {agg.isCancelled ? (
+              <button type="button" disabled={isPast} onClick={run(() => handleToggleCancel(agg))} className={clsx(item, 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30')}>
+                <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                <span>{agg.movedTo ? 'Undo move' : 'Restore class'}</span>
+              </button>
+            ) : (
+              <button type="button" disabled={isPast} onClick={run(() => handleToggleCancel(agg))} className={clsx(item, 'text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30')}>
+                <Ban className="w-3.5 h-3.5 shrink-0" />
+                <span>Cancel this class</span>
+              </button>
+            )}
+          </>
+        )}
+        <div className="h-px bg-surface-3 my-1" />
+        <button type="button" onClick={run(() => handleShareWhatsAppNotice(agg))} className={clsx(item, 'text-fg hover:bg-surface-2')}>
+          <Share2 className="w-3.5 h-3.5 opacity-60 shrink-0" />
+          <span>{compact ? 'WhatsApp' : 'Share Notice via WhatsApp'}</span>
+        </button>
+      </>
+    );
+  };
+
   const handleShareWhatsAppNotice = (agg: AggregatedFacultySession) => {
     const { session, subjectName, isCancelled, isRescheduled, rescheduleMeta } = agg;
+    const dayLabel = formatClassDate(agg.date, { relative: false });
     const { detailLabel } = formatFacultyCombinedBatchLabel(agg.linkedBatches, agg.batch);
     const teacherName = profile.name ? `${profile.facultyTitle || 'Prof.'} ${profile.name}` : 'Faculty';
     const batchLabel = detailLabel;
 
     let text = '';
-    if (isCancelled) {
+    if (isCancelled && agg.movedTo) {
+      text = `📅 *NOTICE: CLASS MOVED*\n\n` +
+        `Batch: *${batchLabel}*\n` +
+        `Subject: *${subjectName}*\n` +
+        `From: *${dayLabel}, ${session.startTime} - ${session.endTime}*\n` +
+        `To: *${formatClassDate(agg.movedTo.date, { relative: false })}, ${agg.movedTo.startTime} - ${agg.movedTo.endTime}*\n` +
+        `Faculty: *${teacherName}*\n\n` +
+        `Updated on Intersemester.`;
+    } else if (isCancelled) {
       text = `📢 *NOTICE: CLASS CANCELLED*\n\n` +
         `Batch: *${batchLabel}*\n` +
         `Subject: *${subjectName}* (${session.subjectCode || ''})\n` +
-        `Day & Time: *${session.day}, ${session.startTime} - ${session.endTime}*\n` +
+        `Date & Time: *${dayLabel}, ${session.startTime} - ${session.endTime}*\n` +
         `Status: *CANCELLED*\n` +
         `Faculty: *${teacherName}*\n\n` +
         `Synced via Intersemester.`;
@@ -157,7 +311,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
       text = `⏰ *NOTICE: CLASS RESCHEDULED*\n\n` +
         `Batch: *${batchLabel}*\n` +
         `Subject: *${subjectName}* (${session.subjectCode || ''})\n` +
-        `Day & Time: *${session.day}, ${session.startTime} - ${session.endTime}* (Original: ${rescheduleMeta?.originalStartTime} - ${rescheduleMeta?.originalEndTime})\n` +
+        `Date & Time: *${dayLabel}, ${session.startTime} - ${session.endTime}* (Original: ${rescheduleMeta?.originalStartTime} - ${rescheduleMeta?.originalEndTime})\n` +
         `Room: *${session.room || 'TBA'}*\n` +
         `Faculty: *${teacherName}*\n` +
         (rescheduleMeta?.reason ? `Note: *${rescheduleMeta.reason}*\n` : '') +
@@ -166,7 +320,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
       text = `📌 *CLASS UPDATE*\n\n` +
         `Batch: *${batchLabel}*\n` +
         `Subject: *${subjectName}* (${session.subjectCode || ''})\n` +
-        `Day & Time: *${session.day}, ${session.startTime} - ${session.endTime}*\n` +
+        `Date & Time: *${dayLabel}, ${session.startTime} - ${session.endTime}*\n` +
         `Room: *${session.room || 'TBA'}*\n` +
         `Faculty: *${teacherName}*\n\n` +
         `Synced via Intersemester.`;
@@ -211,10 +365,13 @@ export const FacultyWeeklyTimetable: React.FC = () => {
     };
   }, [linkedBatches]);
 
-  const currentDay = getCurrentDayOfWeek();
-
-  // Aggregate strictly filtered to faculty's selected subjects
-  const allWeekSessions = aggregateFacultyWeeklyTimetable(linkedBatches, batchesTimetableData);
+  // Aggregate strictly filtered to faculty's selected subjects, for the dates of the week shown
+  const allWeekSessions = aggregateFacultyWeeklyTimetable(linkedBatches, batchesTimetableData, weekDates, user?.id);
+  const days: DayOfWeek[] =
+    selectedDay === 'Sunday' || (allWeekSessions.Sunday || []).length > 0 ? [...DAYS, 'Sunday'] : DAYS;
+  const weekLabel = `${parseDateStr(weekDates.Monday).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} – ${parseDateStr(weekDates[days[days.length - 1]]).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`;
+  const isThisWeek = teachingWeekDates(todayStr).Monday === weekDates.Monday;
+  const dayNum = (day: DayOfWeek) => parseDateStr(weekDates[day]).getDate();
 
   const sessionsForDay = allWeekSessions[selectedDay] || [];
 
@@ -223,7 +380,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
       <FacultyPageHeader
         eyebrow="Teaching timetable"
         title="Your week"
-        description="Only the subjects you teach, across every batch you've linked."
+        description="Pick any date to cancel, reschedule or move a class. Students hear about it straight away."
         action={
           linkedBatches.length > 0 && (
             <button type="button" onClick={() => setIsConnectBatchOpen(true)} className="btn btn-secondary btn-sm">
@@ -243,11 +400,48 @@ export const FacultyWeeklyTimetable: React.FC = () => {
         />
       ) : (
         <div className="flex flex-col gap-5">
+          {/* Week navigator: any date, not just this week */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1">
+              <button type="button" onClick={() => setSelectedDate(addDaysToDateStr(selectedDate, -7))} className="w-9 h-9 inline-flex items-center justify-center border border-line bg-surface hover:bg-surface-2 cursor-pointer" aria-label="Previous week">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="min-w-[120px] text-center text-[14px] font-semibold tracking-tight text-fg tabular-nums">{weekLabel}</span>
+              <button type="button" onClick={() => setSelectedDate(addDaysToDateStr(selectedDate, 7))} className="w-9 h-9 inline-flex items-center justify-center border border-line bg-surface hover:bg-surface-2 cursor-pointer" aria-label="Next week">
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex items-center gap-1.5">
+              {!isThisWeek && (
+                <button type="button" onClick={() => setSelectedDate(dayOfWeekForDate(todayStr) === 'Sunday' ? addDaysToDateStr(todayStr, 1) : todayStr)} className="h-9 px-3 text-[13px] font-semibold border border-line bg-surface hover:bg-surface-2 cursor-pointer">
+                  Today
+                </button>
+              )}
+              <label className="relative h-9 px-3 inline-flex items-center gap-1.5 text-[13px] font-semibold border border-line bg-surface hover:bg-surface-2 cursor-pointer">
+                <CalendarDays className="w-4 h-4" />
+                <span className="hidden sm:inline">Pick a date</span>
+                <input
+                  ref={datePickerRef}
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
+                  onClick={() => {
+                    try {
+                      datePickerRef.current?.showPicker?.();
+                    } catch {}
+                  }}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  aria-label="Pick a date"
+                />
+              </label>
+            </div>
+          </div>
+
           {/* Mobile Day Tabs (< 768px) - Exact match to student theme */}
           <div className="flex md:hidden items-center gap-2.5 overflow-x-auto pb-2 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
-            {DAYS.map((day) => {
+            {days.map((day) => {
               const isSelected = selectedDay === day;
-              const isToday = currentDay === day;
+              const isToday = weekDates[day] === todayStr;
               const count = (allWeekSessions[day] || []).length;
 
               return (
@@ -257,13 +451,14 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                   onClick={() => setSelectedDay(day)}
                   className={clsx(
                     'flex flex-col items-center justify-center min-w-[76px] py-2.5 px-3 rounded-[3px] transition-all border cursor-pointer shrink-0',
+                    weekDates[day] < todayStr && !isSelected && 'opacity-55',
                     isSelected
                       ? 'bg-[#111111] text-white border-[#111111] shadow-xs'
                       : 'bg-surface border-[#E5E5E0] dark:border-white/[0.08] text-fg hover:bg-surface-2'
                   )}
                 >
                   <div className="flex items-center justify-center gap-1">
-                    <span className="text-[13px] font-bold tracking-tight">{day.slice(0, 3)}</span>
+                    <span className="text-[13px] font-bold tracking-tight">{day.slice(0, 3)} {dayNum(day)}</span>
                     {isToday && (
                       <span className="w-1.5 h-1.5 rounded-full bg-[#18A889] shrink-0" />
                     )}
@@ -286,8 +481,8 @@ export const FacultyWeeklyTimetable: React.FC = () => {
             {sessionsForDay.length === 0 ? (
               <EmptyState
                 illustration="free-day"
-                title={`No lectures on ${selectedDay}`}
-                description="No teaching sessions scheduled for this day."
+                title={`No lectures ${formatClassDate(selectedDate) === 'Today' ? 'today' : `on ${formatClassDate(selectedDate, { relative: false })}`}`}
+                description="No teaching sessions scheduled for this date."
                 actionLabel="Connect Another Batch"
                 onAction={() => setIsConnectBatchOpen(true)}
               />
@@ -313,11 +508,13 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                 });
 
                 const { pillLabel } = formatFacultyCombinedBatchLabel(agg.linkedBatches, agg.batch);
-                const cardKey = `${session.id}_${selectedDay}_${agg.linkedBatches?.map((b) => b.batchKey).join('_') || batch.batchKey}`;
+                const cardKey = `${session.id}_${agg.date}_${agg.linkedBatches?.map((b) => b.batchKey).join('_') || batch.batchKey}`;
                 const categoryLabel = isLive
                   ? 'LIVE NOW'
                   : isCancelled
-                  ? 'CANCELLED'
+                  ? (agg.movedTo ? 'MOVED' : 'CANCELLED')
+                  : agg.isExtra
+                  ? (agg.movedFrom ? 'MOVED HERE' : 'EXTRA CLASS')
                   : isRescheduled
                   ? 'RESCHEDULED'
                   : session.isLab
@@ -401,79 +598,8 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                                   className="fixed inset-0 z-30"
                                   onClick={() => setOpenMenuSessionId(null)}
                                 />
-                                <div className="absolute right-0 top-full mt-1.5 w-52 bg-surface border border-line rounded-none shadow-xl py-1.5 z-40 text-left font-sans flex flex-col">
-                                  <div className="px-3 py-1 text-[12px] font-mono text-muted border-b border-line-soft mb-1 flex items-center gap-1.5">
-                                    <span>🎓</span>
-                                    <span>Faculty Actions</span>
-                                  </div>
-
-                                  {isRescheduled ? (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setOpenMenuSessionId(null);
-                                        handleRevertReschedule(agg);
-                                      }}
-                                      className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
-                                    >
-                                      <RotateCcw className="w-3.5 h-3.5 shrink-0" />
-                                      <span>Revert Reschedule</span>
-                                    </button>
-                                  ) : (
-                                    !isCancelled && (
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setOpenMenuSessionId(null);
-                                          setSessionToReschedule(agg);
-                                        }}
-                                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-fg hover:bg-surface-2 text-left transition-colors cursor-pointer"
-                                      >
-                                        <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
-                                        <span>Reschedule / Edit</span>
-                                      </button>
-                                    )
-                                  )}
-
-                                  {isCancelled ? (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setOpenMenuSessionId(null);
-                                        handleToggleCancel(agg);
-                                      }}
-                                      className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-left transition-colors cursor-pointer"
-                                    >
-                                      <RotateCcw className="w-3.5 h-3.5 shrink-0" />
-                                      <span>Restore Class for Batch</span>
-                                    </button>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setOpenMenuSessionId(null);
-                                        handleToggleCancel(agg);
-                                      }}
-                                      className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
-                                    >
-                                      <Ban className="w-3.5 h-3.5 shrink-0" />
-                                      <span>Cancel Class for Batch</span>
-                                    </button>
-                                  )}
-
-                                  <div className="h-px bg-surface-3 my-1" />
-
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setOpenMenuSessionId(null);
-                                      handleShareWhatsAppNotice(agg);
-                                    }}
-                                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-fg hover:bg-surface-2 text-left transition-colors cursor-pointer"
-                                  >
-                                    <Share2 className="w-3.5 h-3.5 opacity-60 shrink-0" />
-                                    <span>Share Notice via WhatsApp</span>
-                                  </button>
+                                <div className="absolute right-0 top-full mt-1.5 w-56 bg-surface border border-line rounded-none shadow-xl py-1.5 z-40 text-left font-sans flex flex-col">
+                                  {renderMenuItems(agg)}
                                 </div>
                               </>
                             )}
@@ -485,15 +611,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                         {subjectName}
                       </h4>
 
-                      {isRescheduled && rescheduleMeta?.originalStartTime && (
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] font-mono font-medium mb-2.5 self-start">
-                          <Clock className="w-3.5 h-3.5 shrink-0" />
-                          <span>
-                            Rescheduled from {formatTime12Hour(rescheduleMeta.originalStartTime)} – {formatTime12Hour(rescheduleMeta.originalEndTime)}
-                            {rescheduleMeta.reason ? ` · ${rescheduleMeta.reason}` : ''}
-                          </span>
-                        </div>
-                      )}
+                      {renderChangeNote(agg)}
 
                       <div className={`flex items-center gap-1.5 text-[12px] font-medium truncate ${isLive ? 'text-white/80' : 'text-muted'}`}>
                         <span className="shrink-0 flex items-center gap-1">
@@ -514,10 +632,10 @@ export const FacultyWeeklyTimetable: React.FC = () => {
           {/* Desktop Weekly Grid (>= 768px) - Exact match to student timetable */}
           <div
             className="hidden md:grid gap-4 items-start"
-            style={{ gridTemplateColumns: `repeat(${DAYS.length}, minmax(0, 1fr))` }}
+            style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}
           >
-            {DAYS.map((day) => {
-              const isToday = currentDay === day;
+            {days.map((day) => {
+              const isToday = weekDates[day] === todayStr;
               const daySessions = allWeekSessions[day] || [];
 
               return (
@@ -533,8 +651,8 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                   <div className="flex items-center justify-between px-1 pb-3 border-b border-line-soft">
                     <div className="flex flex-col gap-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-[14px] font-bold tracking-tight text-fg">
-                          {day}
+                        <span className={clsx('text-[14px] font-bold tracking-tight text-fg', weekDates[day] < todayStr && 'opacity-55')}>
+                          {day.slice(0, 3)} {dayNum(day)}
                         </span>
                         {isToday && (
                           <span className="text-[12px] font-bold text-white dark:text-emerald-400 bg-[#111111] dark:bg-emerald-500/20 dark:border dark:border-emerald-500/30 px-2 py-0.5 font-mono">
@@ -576,11 +694,13 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                         });
 
                         const { pillLabel } = formatFacultyCombinedBatchLabel(agg.linkedBatches, agg.batch);
-                        const cardKey = `desk_${session.id}_${day}_${agg.linkedBatches?.map((b) => b.batchKey).join('_') || batch.batchKey}`;
+                        const cardKey = `desk_${session.id}_${agg.date}_${agg.linkedBatches?.map((b) => b.batchKey).join('_') || batch.batchKey}`;
                         const categoryLabel = isLive
                           ? 'LIVE NOW'
                           : isCancelled
-                          ? 'CANCELLED'
+                          ? (agg.movedTo ? 'MOVED' : 'CANCELLED')
+                          : agg.isExtra
+                          ? (agg.movedFrom ? 'MOVED HERE' : 'EXTRA')
                           : isRescheduled
                           ? 'RESCHEDULED'
                           : session.isLab
@@ -656,72 +776,8 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                                           className="fixed inset-0 z-30"
                                           onClick={() => setOpenMenuSessionId(null)}
                                         />
-                                        <div className="absolute right-0 top-full mt-1 w-48 bg-surface border border-line rounded-none shadow-xl py-1 z-40 text-left font-sans flex flex-col">
-                                          {isRescheduled ? (
-                                            <button
-                                              type="button"
-                                              onClick={() => {
-                                                setOpenMenuSessionId(null);
-                                                handleRevertReschedule(agg);
-                                              }}
-                                              className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-left transition-colors cursor-pointer"
-                                            >
-                                              <RotateCcw className="w-3.5 h-3.5 shrink-0" />
-                                              <span>Revert</span>
-                                            </button>
-                                          ) : (
-                                            !isCancelled && (
-                                              <button
-                                                type="button"
-                                                onClick={() => {
-                                                  setOpenMenuSessionId(null);
-                                                  setSessionToReschedule(agg);
-                                                }}
-                                                className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] font-semibold text-fg hover:bg-surface-2 text-left transition-colors cursor-pointer"
-                                              >
-                                                <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
-                                                <span>Reschedule</span>
-                                              </button>
-                                            )
-                                          )}
-
-                                          {isCancelled ? (
-                                            <button
-                                              type="button"
-                                              onClick={() => {
-                                                setOpenMenuSessionId(null);
-                                                handleToggleCancel(agg);
-                                              }}
-                                              className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-left transition-colors cursor-pointer"
-                                            >
-                                              <RotateCcw className="w-3.5 h-3.5 shrink-0" />
-                                              <span>Restore</span>
-                                            </button>
-                                          ) : (
-                                            <button
-                                              type="button"
-                                              onClick={() => {
-                                                setOpenMenuSessionId(null);
-                                                handleToggleCancel(agg);
-                                              }}
-                                              className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
-                                            >
-                                              <Ban className="w-3.5 h-3.5 shrink-0" />
-                                              <span>Cancel</span>
-                                            </button>
-                                          )}
-
-                                          <button
-                                            type="button"
-                                            onClick={() => {
-                                              setOpenMenuSessionId(null);
-                                              handleShareWhatsAppNotice(agg);
-                                            }}
-                                            className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] font-semibold text-fg hover:bg-surface-2 text-left transition-colors cursor-pointer"
-                                          >
-                                            <Share2 className="w-3.5 h-3.5 opacity-60 shrink-0" />
-                                            <span>WhatsApp</span>
-                                          </button>
+                                        <div className="absolute right-0 top-full mt-1 w-52 bg-surface border border-line rounded-none shadow-xl py-1 z-40 text-left font-sans flex flex-col">
+                                          {renderMenuItems(agg, true)}
                                         </div>
                                       </>
                                     )}
@@ -732,6 +788,8 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                               <h4 className={`text-[14px] leading-[18px] font-bold tracking-tight break-words mb-1.5 ${isCancelled ? 'line-through opacity-70' : ''} ${isLive ? 'text-white' : 'text-fg'}`}>
                                 {subjectName}
                               </h4>
+
+                              {renderChangeNote(agg, true)}
 
                               <div className={`flex items-center gap-1.5 text-[11px] font-medium truncate ${isLive ? 'text-white/80' : 'text-muted'}`}>
                                 <span className="shrink-0 flex items-center gap-1">

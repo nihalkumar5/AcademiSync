@@ -8,7 +8,6 @@ import {
   getTomorrowDayOfWeek,
   getTodayDateString,
   getTomorrowDateString,
-  getDateStringForDayOfWeek,
   formatTime12Hour,
   timeToMinutes,
 } from '@/lib/timetableUtils';
@@ -16,6 +15,8 @@ import {
   AggregatedFacultySession,
   cancelOrRestoreFacultyClass,
   revertFacultyReschedule,
+  undoFacultyExtraClass,
+  formatClassDate,
   formatFacultyBatchDegreeAndBranch,
   formatFacultyCombinedBatchLabel,
 } from '@/lib/facultyUtils';
@@ -74,7 +75,37 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
     return true;
   });
 
+  // A class moved here (or an extra class): undo it instead of cancelling a slot that isn't in the timetable
+  const handleUndoExtra = async (agg: AggregatedFacultySession) => {
+    const what = agg.movedFrom
+      ? `Undo the move? ${agg.subjectName} goes back to ${formatClassDate(agg.movedFrom.date, { relative: false })}, ${formatTime12Hour(agg.movedFrom.startTime)}.`
+      : `Remove this extra ${agg.subjectName} class?`;
+    if (!window.confirm(what)) return;
+    try {
+      const refs = agg.batchSessions?.length ? agg.batchSessions : [{ batch: agg.batch, session: agg.session }];
+      await Promise.all(
+        refs.map((r) =>
+          undoFacultyExtraClass({
+            batchKey: r.batch.batchKey,
+            extraId: r.session.id,
+            subjectName: agg.subjectName,
+            batchName: r.batch.batchName,
+            facultyName: profile.name || 'Faculty',
+            facultyTitle: profile.facultyTitle || 'Prof.',
+            userId: user?.id,
+          })
+        )
+      );
+      showToast(agg.movedFrom ? 'Move Undone' : 'Extra Class Removed', `${agg.subjectName}. Students notified.`, 'success');
+      if (onRefresh) onRefresh();
+    } catch (err: any) {
+      showToast('Error', err.message || 'Could not undo that.', 'error');
+    }
+  };
+
   const handleToggleCancel = async (agg: AggregatedFacultySession) => {
+    if (agg.isExtra) return handleUndoExtra(agg);
+    if (!agg.isCancelled && !window.confirm(`Cancel ${agg.subjectName} ${formatClassDate(agg.date) === 'Today' ? 'today' : `on ${formatClassDate(agg.date, { relative: false })}`}? Students are notified.`)) return;
     try {
       const { subjectName, isCancelled } = agg;
       const batchMap = new Map<string, { batch: FacultyLinkedBatch; session: ClassSession }>();
@@ -86,7 +117,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
       });
       const targets = Array.from(batchMap.values());
       const action = isCancelled ? 'restore' : 'cancel';
-      const targetDate = agg.session.day ? getDateStringForDayOfWeek(agg.session.day) : targetDateStr;
+      const targetDate = agg.date || targetDateStr;
 
       await Promise.all(
         targets.map((t) =>
@@ -130,7 +161,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
         batchMap.set(bs.batch.batchKey, bs);
       });
       const targets = Array.from(batchMap.values());
-      const targetDate = agg.session.day ? getDateStringForDayOfWeek(agg.session.day) : targetDateStr;
+      const targetDate = agg.date || targetDateStr;
 
       await Promise.all(
         targets.map((t) =>
@@ -344,7 +375,11 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
 
                           {isCancelled ? (
                             <span className="px-2 py-0.5 text-[12px] font-bold bg-[#FAD3D9] text-[#C94B5C] rounded-none shrink-0 dark:bg-red-500/15 dark:text-red-300">
-                              Cancelled
+                              {agg.movedTo ? `Moved to ${formatClassDate(agg.movedTo.date)}` : 'Cancelled'}
+                            </span>
+                          ) : agg.isExtra && !isLive ? (
+                            <span className="px-2 py-0.5 rounded-none text-[12px] font-bold bg-sky-100 text-sky-700 shrink-0 dark:bg-sky-500/15 dark:text-sky-300">
+                              {agg.movedFrom ? `Moved from ${formatClassDate(agg.movedFrom.date)}` : 'Extra class'}
                             </span>
                           ) : isLive ? (
                             <span className="px-2 py-0.5 rounded-none bg-[#18A889]/20 text-[#18A889] text-[12px] font-bold animate-pulse border border-[#18A889]/40 shrink-0">
@@ -439,7 +474,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                                   className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-left transition-colors cursor-pointer"
                                 >
                                   <RotateCcw className="w-3.5 h-3.5 shrink-0" />
-                                  <span>Restore Class for Batch</span>
+                                  <span>{agg.movedTo ? 'Undo move' : 'Restore Class for Batch'}</span>
                                 </button>
                               ) : (
                                 <button
@@ -451,7 +486,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                                   className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
                                 >
                                   <Ban className="w-3.5 h-3.5 shrink-0" />
-                                  <span>Cancel Class for Batch</span>
+                                  <span>{agg.isExtra ? (agg.movedFrom ? 'Undo move' : 'Remove extra class') : 'Cancel Class for Batch'}</span>
                                 </button>
                               )}
 
@@ -471,7 +506,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                                   <span>Revert Reschedule</span>
                                 </button>
                               ) : (
-                                !isCancelled && (
+                                !isCancelled && !agg.isExtra && (
                                   <button
                                     type="button"
                                     onClick={() => {
@@ -481,7 +516,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                                     className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] font-semibold text-fg hover:bg-surface-2 text-left transition-colors cursor-pointer"
                                   >
                                     <Clock className="w-3.5 h-3.5 opacity-60 shrink-0" />
-                                    <span>Reschedule Class</span>
+                                    <span>Reschedule or move</span>
                                   </button>
                                 )
                               )}
