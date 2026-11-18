@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { getShortCollegeName } from '@/lib/timetableUtils';
-import { Plus } from '@/components/ui/icons';
 
 interface FacultyHeroHeaderProps {
   onOpenConnectBatch?: () => void;
-  onOpenCreateAssignment: () => void;
+  /** No longer shown on Home (assignments are created from the Assignments tab) */
+  onOpenCreateAssignment?: () => void;
   todayLecturesCount: number;
   tomorrowLecturesCount?: number;
   isAfter8PM?: boolean;
@@ -48,10 +48,11 @@ export const FacultyHeroHeader: React.FC<FacultyHeroHeaderProps> = ({
     profile.college ? getShortCollegeName(profile.college) : null,
   ].filter(Boolean) as string[];
 
+  const classCount = isAfter8PM ? tomorrowLecturesCount : todayLecturesCount;
   const stats = [
-    { value: isAfter8PM ? tomorrowLecturesCount : todayLecturesCount, label: isAfter8PM ? 'Tomorrow' : 'Classes today', view: 'timetable' as const },
-    { value: linkedBatchesCount, label: linkedBatchesCount === 1 ? 'Batch' : 'Batches', view: 'carry' as const },
-    { value: activeAssignmentsCount, label: 'Open tasks', view: 'homework' as const },
+    { value: classCount, label: classCount === 1 ? 'Class' : 'Classes', caption: isAfter8PM ? 'tomorrow' : 'today', view: 'timetable' as const },
+    { value: linkedBatchesCount, label: linkedBatchesCount === 1 ? 'Batch' : 'Batches', caption: 'linked', view: 'carry' as const },
+    { value: activeAssignmentsCount, label: activeAssignmentsCount === 1 ? 'Assignment' : 'Assignments', caption: 'open', view: 'homework' as const },
   ];
 
   return (
@@ -84,32 +85,22 @@ export const FacultyHeroHeader: React.FC<FacultyHeroHeaderProps> = ({
             </li>
           ))}
         </ul>
-
-        {/* One clear primary action, only once there's a batch to post to */}
-        {hasBatches && (
-          <button
-            type="button"
-            onClick={onOpenCreateAssignment}
-            className="btn btn-primary mt-f4"
-          >
-            <Plus className="w-4 h-4" /> New assignment
-          </button>
-        )}
       </div>
 
+      {/* Same soft tiles as the student Home: one neutral background, each opens its section */}
       {hasBatches && (
-        <div className="grid grid-cols-3 gap-0 py-f4 border-y border-line relative">
-          <div className="absolute left-1/3 top-[15%] bottom-[15%] w-px bg-surface-3" />
-          <div className="absolute left-[66.666%] top-[15%] bottom-[15%] w-px bg-surface-3" />
+        <div className="grid grid-cols-3 gap-f3">
           {stats.map((s) => (
             <button
-              key={s.label}
+              key={s.view}
               type="button"
               onClick={() => setActiveView(s.view)}
-              className="flex flex-col items-center justify-center hover:opacity-70 transition-opacity text-center cursor-pointer"
+              aria-label={`${s.value} ${s.label} ${s.caption}`}
+              className="min-w-0 rounded-2xl p-f3 sm:p-f4 flex flex-col items-start text-left cursor-pointer transition-[filter,transform] duration-150 hover:brightness-[0.97] dark:hover:brightness-125 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/25 bg-surface-2 dark:bg-gradient-to-b dark:from-white/[0.03] dark:to-transparent dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.07),inset_0_0_0_1px_rgba(255,255,255,0.045)]"
             >
-              <span className="text-[28px] sm:text-[32px] font-medium text-fg tracking-tighter leading-none mb-1 tabular-nums">{s.value}</span>
-              <span className="text-[14px] font-medium text-muted leading-tight">{s.label}</span>
+              <span className={`text-[30px] sm:text-[34px] font-semibold tabular-nums tracking-[-0.03em] leading-none ${s.value === 0 ? 'text-fg/35' : 'text-fg'}`}>{s.value}</span>
+              <span className="mt-f2 w-full truncate text-[12.5px] font-medium leading-[16px] text-fg-2">{s.label}</span>
+              <span className="mt-0.5 w-full truncate text-[11px] leading-[14px] text-muted">{s.caption}</span>
             </button>
           ))}
         </div>
