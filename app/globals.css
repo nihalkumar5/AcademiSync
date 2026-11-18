@@ -236,7 +236,12 @@ html.dark .bento-card, html.dark .glass-card, html.dark .hero-mesh-card {
 
 /* Hide mobile nav and sticky header when modal is open to prevent PWA overlaps */
 body.modal-open header,
-body.modal-open #mobile-nav {
+body.modal-open #mobile-nav,
+body.fullscreen-open #mobile-nav {
+  display: none !important;
+}
+/* A full-screen screen keeps its own header; only the app's header goes */
+body.fullscreen-open header:not([aria-modal="true"] header) {
   display: none !important;
 }
 

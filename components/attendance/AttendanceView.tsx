@@ -7,7 +7,7 @@ import { db } from '@/lib/firebase';
 import { useApp } from '@/context/AppContext';
 import { FacultyLinkedBatch } from '@/lib/types';
 import { aggregateFacultyWeeklyTimetable, formatFacultyBatchDegreeAndBranch } from '@/lib/facultyUtils';
-import { getCurrentDayOfWeek, formatTime12Hour } from '@/lib/timetableUtils';
+import { getCurrentDayOfWeek, formatTime12Hour, timeToMinutes } from '@/lib/timetableUtils';
 import {
   AttendanceSession,
   Mark,
@@ -34,7 +34,7 @@ import { LiveCheckIn, LiveResult } from './LiveCheckIn';
 import { Modal } from '@/components/ui/Modal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import Link from 'next/link';
-import { BarChart3, Lock, Plus, Check, Users, FileSpreadsheet, ChevronRight, AlertTriangle, Loader2, ClipboardCheck, QrCode as QrIcon } from '@/components/ui/icons';
+import { BarChart3, Plus, Check, Users, FileSpreadsheet, ChevronRight, AlertTriangle, Loader2, ClipboardCheck, Clock, MoreHorizontal, Search, QrCode as QrIcon } from '@/components/ui/icons';
 
 const todayKey = () => {
   const d = new Date();
@@ -114,6 +114,16 @@ export const AttendanceView: React.FC = () => {
   const [tab, setTab] = useState<'lectures' | 'students'>('lectures');
   const [subjectFilter, setSubjectFilter] = useState('all');
   const [toDelete, setToDelete] = useState<AttendanceSession | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [lowOnly, setLowOnly] = useState(false);
+  const [showAllLectures, setShowAllLectures] = useState(false);
+  // Keep "Now / Next" current without a reload
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setTick((n) => n + 1), 30_000);
+    return () => clearInterval(t);
+  }, []);
 
   // "QR attendance" / "Mark by hand" from the Home live card land here with the lecture already picked
   const [pending, setPending] = useState<(TakeTarget & { batchKey: string; mode: 'qr' | 'hand' }) | null>(null);
@@ -256,34 +266,89 @@ export const AttendanceView: React.FC = () => {
   const stats = studentStats(sortedStudents, sessions, subjectFilter === 'all' ? undefined : subjectFilter);
   const lowCount = stats.filter(isAtRisk).length;
   const sessionSubjects = Array.from(new Set(sessions.map((s) => s.subjectName)));
-  const grouped = sessions.reduce<Record<string, AttendanceSession[]>>((acc, s) => {
+  const avgPct = sessions.length ? (sessions.reduce((n, s) => n + (s.total - s.absent), 0) / Math.max(1, sessions.reduce((n, s) => n + s.total, 0))) * 100 : NaN;
+
+  // Today: the lecture to act on now goes in the big card; the rest are listed under it
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+  // Same reading of times as the rest of the app ("02:00" in a timetable means 2 PM)
+  const toMin = (t?: string) => (t ? timeToMinutes(t) : 0);
+  const todayItems = todays.map((x) => {
+    const t: TakeTarget = { subjectName: x.subjectName, date: todayKey(), startTime: x.session.startTime, endTime: x.session.endTime };
+    const start = toMin(x.session.startTime);
+    const end = x.session.endTime ? toMin(x.session.endTime) : start + 60;
+    return { x, t, done: findSession(t), live: nowMin >= start && nowMin < end, over: nowMin >= end };
+  });
+  const focus = todayItems.find((i) => !i.done && !i.over) || todayItems.find((i) => !i.done) || null;
+  const others = todayItems.filter((i) => i !== focus);
+  const markedToday = todayItems.filter((i) => i.done).length;
+
+  const q = query.trim().toLowerCase();
+  const studentRows = [...stats]
+    .filter((s) => !lowOnly || isAtRisk(s))
+    .filter((s) => !q || s.student.name.toLowerCase().includes(q) || (s.student.roll || '').toLowerCase().includes(q))
+    .sort((a, b) => (isNaN(a.pct) ? 101 : a.pct) - (isNaN(b.pct) ? 101 : b.pct) || byRoll(a.student, b.student));
+  const visibleSessions = showAllLectures ? sessions : sessions.slice(0, 12);
+  const grouped = visibleSessions.reduce<Record<string, AttendanceSession[]>>((acc, s) => {
     (acc[s.date] ||= []).push(s);
     return acc;
   }, {});
 
-  return (
-    <div className="flex flex-col gap-f5 sm:gap-f6 text-left max-w-4xl mx-auto w-full pb-f7">
-      {/* Header */}
-      <div>
-        <h2 className="page-title">
-          Attendance,
-          <br />
-          Roll call
-        </h2>
-        <div className="flex items-center gap-3 mt-5">
-          <span className="tag bg-surface">
-            {todays.length} {todays.length === 1 ? 'lecture' : 'lectures'} today
-          </span>
-          <Link href="/attendance" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-fg hover:underline underline-offset-4">
-            <BarChart3 className="w-4 h-4" /> Attendance center
-          </Link>
-        </div>
-        <p className="text-[14px] text-muted leading-[20px] mt-4 max-w-md">Confirm each class list once. Then show a QR and students check themselves in, with no roll call. Or mark by hand.</p>
-      </div>
+  const openExtra = () => {
+    setExtraSubject(subjects[0] || '');
+    const n = new Date();
+    setExtraTime(`${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`);
+    setExtraOpen(true);
+  };
 
-      {/* Batch picker */}
+  const menuItem = 'flex items-center gap-3 w-full px-4 h-12 text-left text-[14px] font-medium text-fg hover:bg-surface-2 cursor-pointer disabled:opacity-40';
+
+  return (
+    <div className="flex flex-col gap-f5 text-left max-w-3xl mx-auto w-full pb-f7">
+      {/* Header: title, batch, one menu for everything that isn't taking attendance */}
+      <header className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="page-title">Attendance</h2>
+          {batches.length === 1 && <p className="mt-1.5 text-[14px] text-muted truncate">{batchLabel}</p>}
+        </div>
+        {roster && (
+          <div className="relative shrink-0 mt-1">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label="More"
+              aria-expanded={menuOpen}
+              className="w-11 h-11 inline-flex items-center justify-center border border-line bg-surface text-fg hover:border-line-strong cursor-pointer"
+            >
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
+            {menuOpen && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setMenuOpen(false)} />
+                <div className="absolute right-0 top-full mt-2 z-40 w-64 border border-line bg-surface shadow-xl py-1">
+                  <button type="button" className={menuItem} onClick={() => { setMenuOpen(false); setSetupOpen(true); }}>
+                    <Users className="w-4 h-4 text-muted" />
+                    <span className="flex-1">Class list</span>
+                    <span className="text-[13px] text-muted tabular-nums">{roster.students.length}</span>
+                  </button>
+                  <button type="button" className={menuItem} disabled={!sessions.length || exporting} onClick={() => { setMenuOpen(false); exportExcel(); }}>
+                    {exporting ? <Loader2 className="w-4 h-4 animate-spin text-muted" /> : <FileSpreadsheet className="w-4 h-4 text-muted" />}
+                    <span className="flex-1">Excel report</span>
+                  </button>
+                  <Link href="/attendance" className={menuItem} onClick={() => setMenuOpen(false)}>
+                    <BarChart3 className="w-4 h-4 text-muted" />
+                    <span className="flex-1">Attendance center</span>
+                    <ChevronRight className="w-4 h-4 text-faint" />
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </header>
+
+      {/* Batch switcher */}
       {batches.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-f4 px-f4 sm:mx-0 sm:px-0">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-f4 px-f4 sm:mx-0 sm:px-0 -mt-f2">
           {batches.map((b) => {
             const on = b.batchKey === batch?.batchKey;
             const { degreeAndBranch, semText } = formatFacultyBatchDegreeAndBranch(b);
@@ -293,9 +358,7 @@ export const AttendanceView: React.FC = () => {
                 type="button"
                 onClick={() => setBatchKey(b.batchKey)}
                 aria-pressed={on}
-                className={`shrink-0 h-11 px-3.5 border text-[14px] font-semibold cursor-pointer ${
-                  on ? 'bg-ink text-on-ink border-line-strong' : 'border-line text-fg'
-                }`}
+                className={`shrink-0 h-10 px-3.5 border text-[13px] font-semibold cursor-pointer transition-colors ${on ? 'bg-ink text-on-ink border-line-strong' : 'border-line text-fg-2 hover:border-line-strong'}`}
               >
                 {degreeAndBranch}
                 {semText ? <span className="font-normal opacity-70"> · {semText}</span> : null}
@@ -306,8 +369,10 @@ export const AttendanceView: React.FC = () => {
       )}
 
       {rosterLoading ? (
-        <div className="flex items-center justify-center gap-2 py-f6 text-[14px] text-muted">
-          <Loader2 className="w-4 h-4 animate-spin" /> Loading…
+        <div className="flex flex-col gap-3" aria-hidden="true">
+          <div className="h-[196px] bg-surface-2 animate-pulse" />
+          <div className="h-[72px] bg-surface-2 animate-pulse" />
+          <div className="h-[220px] bg-surface-2 animate-pulse" />
         </div>
       ) : rosterError ? (
         <div className="flex items-start gap-f3 p-f4 border border-amber-300/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10">
@@ -317,190 +382,258 @@ export const AttendanceView: React.FC = () => {
             <p className="mt-0.5 text-[14px] text-muted">
               {rosterError === 'unauthenticated' ? 'Your sign-in has expired. Sign out and sign in again.' : 'Check your connection and try again.'}
             </p>
-            <button
-              type="button"
-              onClick={() => facultyId && batch && reloadAttendance(facultyId, batch.batchKey)}
-              className="mt-f3 h-11 px-f4 bg-ink text-on-ink text-[14px] font-semibold cursor-pointer"
-            >
+            <button type="button" onClick={() => facultyId && batch && reloadAttendance(facultyId, batch.batchKey)} className="mt-f3 btn btn-primary">
               Try again
             </button>
           </div>
         </div>
       ) : !roster ? (
-        /* First run for this batch: two clear steps */
-        <section className="sheen-ink relative overflow-hidden bg-[#111111] dark:bg-[#15171D] dark:border dark:border-white/[0.08] text-white p-f4 sm:p-f5">
-          <p className="text-[12px] font-semibold uppercase tracking-[1.4px] text-white/60">{batchLabel}</p>
-          <h3 className="mt-2 text-[24px] font-semibold leading-tight tracking-tight">Set up attendance</h3>
-          <ol className="mt-f4 flex flex-col gap-f3">
-            {[
-              ['Confirm the class list', 'See everyone who joined the batch, untick anyone who shouldn’t be there, then lock it.'],
-              ['Mark each lecture', 'Everyone starts present. Tap only the absentees, or type their roll numbers.'],
-            ].map(([t, b], i) => (
-              <li key={t} className="flex gap-f3">
-                <span className="w-7 h-7 shrink-0 flex items-center justify-center border border-white/25 text-[13px] font-semibold">{i + 1}</span>
-                <span>
-                  <span className="block text-[15px] font-medium">{t}</span>
-                  <span className="block text-[13px] text-white/60">{b}</span>
-                </span>
-              </li>
-            ))}
-          </ol>
-          <button type="button" onClick={() => setSetupOpen(true)} className="mt-f5 inline-flex items-center gap-2 h-11 px-5 bg-white text-[#111111] text-[14px] font-semibold hover:opacity-90 cursor-pointer">
-            Review class list
+        /* First run for this batch */
+        <section className="sheen-ink relative overflow-hidden bg-ink text-on-ink p-f5 sm:p-f6">
+          <p className="text-[12px] font-semibold uppercase tracking-[1.4px] text-on-ink/60">One-time setup</p>
+          <h3 className="mt-2 text-[24px] font-semibold leading-tight tracking-tight">Confirm your class list</h3>
+          <p className="mt-2 text-[14px] leading-[21px] text-on-ink/70 max-w-md">
+            Check who&apos;s in {batchLabel || 'this batch'} and lock the list. After that, students check themselves in with a QR, or you mark by hand.
+          </p>
+          <button type="button" onClick={() => setSetupOpen(true)} className="mt-f5 inline-flex items-center gap-2 h-12 px-5 bg-on-ink text-ink text-[15px] font-semibold hover:opacity-90 cursor-pointer">
+            Review class list <ChevronRight className="w-4 h-4" />
           </button>
-          <p className="mt-f3 font-cursive text-[20px] font-semibold text-white/80 -rotate-1">Only once per batch ✌</p>
         </section>
       ) : (
         <>
-          {/* Locked class list */}
-          <section className="flex items-center gap-f3 p-f4 border border-line bg-surface">
-            <span className="w-10 h-10 shrink-0 flex items-center justify-center bg-ink text-on-ink">
-              <Lock className="w-4 h-4" />
-            </span>
-            <div className="flex-1 min-w-0">
-              <p className="text-[15px] font-semibold text-fg">Class list · {roster.students.length}</p>
-              <p className="text-[13px] text-muted truncate">
-                {newcomers > 0 ? (
-                  <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400">
-                    <AlertTriangle className="w-3.5 h-3.5" /> {newcomers} new in batch, not on list
-                  </span>
-                ) : (
-                  `Locked${roster.lockedAt ? ` since ${new Date(roster.lockedAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}` : ''}`
-                )}
-              </p>
-            </div>
-            <button type="button" onClick={() => setSetupOpen(true)} className="shrink-0 h-11 px-3.5 border border-line text-[14px] font-semibold text-fg cursor-pointer">
-              {newcomers > 0 ? 'Review' : 'Edit list'}
+          {/* Only when something needs the teacher */}
+          {newcomers > 0 && (
+            <button
+              type="button"
+              onClick={() => setSetupOpen(true)}
+              className="flex items-center gap-3 w-full px-f4 py-3 text-left border border-amber-300/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10 cursor-pointer"
+            >
+              <AlertTriangle className="w-[18px] h-[18px] shrink-0 text-amber-700 dark:text-amber-400" />
+              <span className="flex-1 text-[14px] text-fg">
+                <span className="font-semibold">{newcomers} new in the batch</span> <span className="text-muted">and not on your class list</span>
+              </span>
+              <span className="text-[13px] font-semibold text-fg">Review</span>
             </button>
-          </section>
+          )}
 
-          {/* Today */}
-          <section>
-            <div className="flex items-baseline justify-between gap-3 mb-f3">
-              <h3 className="text-[17px] font-semibold text-fg">Today</h3>
+          {/* The lecture to take now */}
+          {focus ? (
+            <section className="sheen-ink relative overflow-hidden bg-ink text-on-ink p-f5 sm:p-f6">
+              <p className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[1.4px] text-on-ink/60">
+                {focus.live ? (
+                  <>
+                    <span className="relative flex w-2 h-2">
+                      <span className="absolute inline-flex w-full h-full rounded-full bg-[#5EE0C2] opacity-70 animate-ping" />
+                      <span className="relative inline-flex w-2 h-2 rounded-full bg-[#5EE0C2]" />
+                    </span>
+                    <span className="text-[#5EE0C2]">Now</span>
+                  </>
+                ) : focus.over ? (
+                  'Not marked yet'
+                ) : (
+                  'Next'
+                )}
+                <span className="text-on-ink/40">·</span>
+                <span className="tabular-nums">
+                  {formatTime12Hour(focus.t.startTime)}
+                  {focus.t.endTime ? ` – ${formatTime12Hour(focus.t.endTime)}` : ''}
+                </span>
+              </p>
+              <h3 className="mt-2 text-[26px] sm:text-[30px] font-semibold leading-[1.15] tracking-tight">{focus.x.subjectName}</h3>
+              <p className="mt-1.5 text-[14px] text-on-ink/60 tabular-nums">
+                {roster.students.length} students{focus.x.session.room ? ` · ${focus.x.session.room}` : ''}
+              </p>
+              <div className="mt-f5 grid grid-cols-[1fr_auto] gap-2">
+                <button type="button" onClick={() => setLive(focus.t)} className="h-12 inline-flex items-center justify-center gap-2 bg-on-ink text-ink text-[15px] font-semibold hover:opacity-90 cursor-pointer">
+                  <QrIcon className="w-5 h-5" /> Start QR check-in
+                </button>
+                <button type="button" onClick={() => setTake(focus.t)} className="h-12 px-4 inline-flex items-center justify-center gap-2 border border-on-ink/25 text-on-ink text-[14px] font-semibold hover:bg-on-ink/10 cursor-pointer">
+                  <ClipboardCheck className="w-4 h-4" /> By hand
+                </button>
+              </div>
+            </section>
+          ) : todayItems.length > 0 ? (
+            <section className="flex items-center gap-f3 p-f4 border border-[#18A889]/35 bg-[#18A889]/[0.07]">
+              <span className="w-10 h-10 shrink-0 rounded-full bg-[#18A889] text-white flex items-center justify-center">
+                <Check className="w-5 h-5" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-[15px] font-semibold text-fg">Today is done</p>
+                <p className="text-[13px] text-muted">All {todayItems.length} of today&apos;s lectures are marked.</p>
+              </div>
+            </section>
+          ) : (
+            <section className="flex items-center gap-f3 p-f4 border border-dashed border-line">
+              <span className="w-10 h-10 shrink-0 flex items-center justify-center border border-line-soft text-muted">
+                <Clock className="w-[18px] h-[18px]" />
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px] font-semibold text-fg">No lectures today</p>
+                <p className="text-[13px] text-muted">Taking one that isn&apos;t on the timetable?</p>
+              </div>
+              <button type="button" onClick={openExtra} className="btn btn-secondary shrink-0">
+                <Plus className="w-4 h-4" /> Add
+              </button>
+            </section>
+          )}
+
+          {/* The rest of today */}
+          {todayItems.length > 0 && (
+            <section>
+              <div className="flex items-baseline justify-between gap-3 mb-2 px-0.5">
+                <h3 className="text-[13px] font-semibold uppercase tracking-[1.2px] text-muted">
+                  Today <span className="tabular-nums normal-case tracking-normal font-medium">· {markedToday}/{todayItems.length} marked</span>
+                </h3>
+                <button type="button" onClick={openExtra} className="inline-flex items-center gap-1 text-[13px] font-semibold text-fg hover:underline underline-offset-4 cursor-pointer">
+                  <Plus className="w-3.5 h-3.5" /> Extra lecture
+                </button>
+              </div>
+              {others.length > 0 && (
+                <ul className="border border-line bg-surface divide-y divide-line-soft">
+                  {others.map(({ x, t, done, live: isLive }, i) => (
+                    <li key={i}>
+                      <button
+                        type="button"
+                        onClick={() => (done ? setTake(t) : setLive(t))}
+                        className="w-full flex items-center gap-f3 px-f4 py-3 text-left hover:bg-surface-2 cursor-pointer"
+                      >
+                        <span className="w-[68px] shrink-0 whitespace-nowrap text-[13px] font-semibold text-fg tabular-nums">{formatTime12Hour(t.startTime)}</span>
+                        <span className="flex-1 min-w-0 text-[15px] font-medium text-fg truncate">{x.subjectName}</span>
+                        {done ? (
+                          <span className="shrink-0 inline-flex items-center gap-1 text-[13px] font-semibold text-emerald-700 dark:text-emerald-400 tabular-nums">
+                            <Check className="w-4 h-4" /> {done.total - done.absent}/{done.total}
+                          </span>
+                        ) : (
+                          <span className="shrink-0 inline-flex items-center gap-1 text-[13px] font-semibold text-fg">
+                            <QrIcon className="w-4 h-4" /> {isLive ? 'Take now' : 'Take'}
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
+
+          {/* Three numbers */}
+          {sessions.length > 0 && (
+            <section className="grid grid-cols-3 border border-line bg-surface divide-x divide-line-soft">
+              <div className="px-f3 sm:px-f4 py-f3">
+                <p className={`text-[24px] font-semibold leading-none tabular-nums ${avgPct < 75 ? 'text-rose-600 dark:text-rose-400' : 'text-fg'}`}>{pctText(avgPct)}</p>
+                <p className="mt-1.5 text-[12px] text-muted">Average</p>
+              </div>
+              <div className="px-f3 sm:px-f4 py-f3">
+                <p className="text-[24px] font-semibold leading-none tabular-nums text-fg">{sessions.length}</p>
+                <p className="mt-1.5 text-[12px] text-muted">{sessions.length === 1 ? 'Lecture' : 'Lectures'} marked</p>
+              </div>
               <button
                 type="button"
                 onClick={() => {
-                  setExtraSubject(subjects[0] || '');
-                  const n = new Date();
-                  setExtraTime(`${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`);
-                  setExtraOpen(true);
+                  setTab('students');
+                  setLowOnly(true);
                 }}
-                className="inline-flex items-center gap-1 text-[13px] font-semibold text-fg hover:underline underline-offset-4 cursor-pointer"
+                disabled={!lowCount}
+                className="px-f3 sm:px-f4 py-f3 text-left enabled:hover:bg-surface-2 enabled:cursor-pointer"
               >
-                <Plus className="w-3.5 h-3.5" /> Extra lecture
+                <p className={`text-[24px] font-semibold leading-none tabular-nums ${lowCount ? 'text-rose-600 dark:text-rose-400' : 'text-faint'}`}>{lowCount}</p>
+                <p className="mt-1.5 text-[12px] text-muted inline-flex items-center gap-0.5">
+                  Below 75%{lowCount > 0 && <ChevronRight className="w-3 h-3" />}
+                </p>
               </button>
-            </div>
-            {todays.length === 0 ? (
-              <p className="px-f4 py-f4 text-[14px] text-muted border border-dashed border-line">
-                No lectures of yours in this batch today. Use “Extra lecture” for anything off the timetable.
-              </p>
-            ) : (
-              <ul className="border border-line bg-surface divide-y divide-line-soft">
-                {todays.map((x, i) => {
-                  const t: TakeTarget = { subjectName: x.subjectName, date: todayKey(), startTime: x.session.startTime, endTime: x.session.endTime };
-                  const done = findSession(t);
-                  return (
-                    <li key={i} className="flex items-center gap-f3 px-f4 py-f3">
-                      <span className="flex-1 min-w-0">
-                        <span className="block text-[15px] font-medium text-fg truncate">{x.subjectName}</span>
-                        <span className="block text-[13px] text-muted tabular-nums truncate">
-                          {formatTime12Hour(x.session.startTime)} ·{' '}
-                          {done ? (
-                            <span className="text-emerald-700 dark:text-emerald-400">
-                              {done.total - done.absent}/{done.total} present
-                            </span>
-                          ) : (
-                            `${roster.students.length} students`
-                          )}
-                        </span>
-                      </span>
-                      {done ? (
-                        <button type="button" onClick={() => setTake(t)} className="shrink-0 inline-flex items-center gap-1 h-11 px-3 text-[14px] font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-300/70 dark:border-emerald-500/30 cursor-pointer">
-                          <Check className="w-4 h-4" /> Edit
-                        </button>
-                      ) : (
-                        <span className="shrink-0 flex gap-1.5">
-                          <button type="button" onClick={() => setTake(t)} aria-label={`Mark ${x.subjectName} by hand`} className="btn btn-secondary btn-icon">
-                            <ClipboardCheck className="w-4 h-4" />
-                          </button>
-                          <button type="button" onClick={() => setLive(t)} className="btn btn-primary">
-                            <QrIcon className="w-4 h-4" /> QR
-                          </button>
-                        </span>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
+            </section>
+          )}
 
           {/* Records */}
           <section>
-            <div className="flex items-center justify-between gap-3 mb-f3">
-              <div role="tablist" aria-label="Records" className="flex border border-line p-0.5">
-                {(
-                  [
-                    ['lectures', `Lectures ${sessions.length}`],
-                    ['students', `Students ${roster.students.length}`],
-                  ] as const
-                ).map(([id, label]) => (
-                  <button
-                    key={id}
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === id}
-                    onClick={() => setTab(id)}
-                    className={`h-9 px-3 text-[13px] font-medium tabular-nums cursor-pointer ${tab === id ? 'bg-ink text-on-ink' : 'text-muted'}`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-              {sessions.length > 0 && (
-                <button type="button" onClick={exportExcel} disabled={exporting} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-fg hover:underline underline-offset-4 disabled:opacity-50 cursor-pointer">
-                  {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />} Excel report
+            <div role="tablist" aria-label="Records" className="grid grid-cols-2 border border-line p-0.5 bg-surface">
+              {(
+                [
+                  ['lectures', 'Lectures', sessions.length],
+                  ['students', 'Students', roster.students.length],
+                ] as const
+              ).map(([id, label, n]) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === id}
+                  onClick={() => setTab(id)}
+                  className={`h-10 text-[14px] font-semibold cursor-pointer transition-colors ${tab === id ? 'bg-ink text-on-ink' : 'text-muted hover:text-fg'}`}
+                >
+                  {label} <span className="font-normal opacity-70 tabular-nums">{n}</span>
                 </button>
-              )}
+              ))}
             </div>
 
-            {sessions.length === 0 ? (
-              <p className="px-f4 py-f5 text-center text-[14px] text-muted border border-dashed border-line">No lectures marked yet.</p>
-            ) : tab === 'lectures' ? (
-              <div className="flex flex-col gap-f3">
-                {Object.entries(grouped).map(([date, list]) => (
-                  <div key={date}>
-                    <p className="mb-1.5 text-[12px] font-semibold uppercase tracking-[1.2px] text-muted">{dateLabel(date)}</p>
-                    <ul className="border border-line bg-surface divide-y divide-line-soft">
-                      {list.map((s) => {
-                        const pct = ((s.total - s.absent) / Math.max(s.total, 1)) * 100;
-                        return (
-                          <li key={s.id}>
-                            <button type="button" onClick={() => setTake({ subjectName: s.subjectName, date: s.date, startTime: s.startTime, endTime: s.endTime })} className="w-full flex items-center gap-f3 pl-f4 pr-f3 py-f3 text-left hover:bg-surface-2 cursor-pointer">
-                              <span className="flex-1 min-w-0">
-                                <span className="block text-[15px] font-medium text-fg truncate">{s.subjectName}</span>
-                                <span className="block text-[13px] text-muted tabular-nums truncate">
-                                  {formatTime12Hour(s.startTime)} · {s.absent ? `${s.absent} absent` : 'All present'}
+            {tab === 'lectures' ? (
+              sessions.length === 0 ? (
+                <p className="mt-f3 px-f4 py-f6 text-center text-[14px] text-muted border border-dashed border-line">Lectures you mark show up here.</p>
+              ) : (
+                <div className="mt-f4 flex flex-col gap-f4">
+                  {Object.entries(grouped).map(([date, list]) => (
+                    <div key={date}>
+                      <p className="mb-2 px-0.5 text-[12px] font-semibold uppercase tracking-[1.2px] text-muted">{dateLabel(date)}</p>
+                      <ul className="border border-line bg-surface divide-y divide-line-soft">
+                        {list.map((s) => {
+                          const pct = ((s.total - s.absent) / Math.max(s.total, 1)) * 100;
+                          return (
+                            <li key={s.id}>
+                              <button
+                                type="button"
+                                onClick={() => setTake({ subjectName: s.subjectName, date: s.date, startTime: s.startTime, endTime: s.endTime })}
+                                className="w-full flex items-center gap-f3 px-f4 py-3 text-left hover:bg-surface-2 cursor-pointer"
+                              >
+                                <span className="w-[68px] shrink-0 whitespace-nowrap text-[13px] text-muted tabular-nums">{formatTime12Hour(s.startTime)}</span>
+                                <span className="flex-1 min-w-0">
+                                  <span className="block text-[15px] font-medium text-fg truncate">{s.subjectName}</span>
+                                  <span className="block text-[12px] text-muted tabular-nums">
+                                    {s.absent ? `${s.absent} absent` : 'Everyone present'}
+                                    {s.qr ? ' · QR' : ''}
+                                  </span>
                                 </span>
-                              </span>
-                              <span className="shrink-0 text-right">
-                                <span className={`block text-[15px] font-semibold tabular-nums ${pct < 75 ? 'text-rose-600 dark:text-rose-400' : 'text-fg'}`}>{pctText(pct)}</span>
-                                <span className="block text-[11px] text-muted tabular-nums">
-                                  {s.total - s.absent}/{s.total}
+                                <span className="shrink-0 text-right">
+                                  <span className={`block text-[15px] font-semibold tabular-nums ${pct < 75 ? 'text-rose-600 dark:text-rose-400' : 'text-fg'}`}>{pctText(pct)}</span>
+                                  <span className="block text-[11px] text-muted tabular-nums">
+                                    {s.total - s.absent}/{s.total}
+                                  </span>
                                 </span>
-                              </span>
-                              <ChevronRight className="w-4 h-4 shrink-0 text-[#A0A0A0]" />
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                ))}
-              </div>
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  ))}
+                  {sessions.length > visibleSessions.length && (
+                    <button type="button" onClick={() => setShowAllLectures(true)} className="h-11 border border-line text-[14px] font-semibold text-fg hover:bg-surface-2 cursor-pointer">
+                      Show all {sessions.length} lectures
+                    </button>
+                  )}
+                </div>
+              )
             ) : (
-              <div className="flex flex-col gap-f3">
+              <div className="mt-f4 flex flex-col gap-f3">
+                <div className="flex gap-2">
+                  <label className="flex-1 flex items-center gap-2 h-11 px-3 border border-line bg-surface focus-within:border-line-strong">
+                    <Search className="w-4 h-4 text-muted shrink-0" />
+                    <input
+                      type="search"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder="Name or roll number"
+                      className="flex-1 min-w-0 bg-transparent text-[15px] text-fg outline-none placeholder:text-faint"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setLowOnly((v) => !v)}
+                    aria-pressed={lowOnly}
+                    className={`shrink-0 h-11 px-3 border text-[13px] font-semibold cursor-pointer transition-colors ${lowOnly ? 'bg-rose-600 text-white border-rose-600' : 'border-line text-fg hover:border-line-strong'}`}
+                  >
+                    Below 75%
+                  </button>
+                </div>
                 {sessionSubjects.length > 1 && (
                   <div className="flex gap-2 overflow-x-auto no-scrollbar">
                     {['all', ...sessionSubjects].map((sub) => (
@@ -509,44 +642,43 @@ export const AttendanceView: React.FC = () => {
                         type="button"
                         onClick={() => setSubjectFilter(sub)}
                         aria-pressed={subjectFilter === sub}
-                        className={`shrink-0 h-9 px-3 border text-[13px] font-medium cursor-pointer ${
-                          subjectFilter === sub ? 'bg-ink text-on-ink border-line-strong' : 'border-line text-fg'
-                        }`}
+                        className={`shrink-0 h-9 px-3 border text-[13px] font-medium cursor-pointer ${subjectFilter === sub ? 'bg-ink text-on-ink border-line-strong' : 'border-line text-fg-2'}`}
                       >
                         {sub === 'all' ? 'All subjects' : sub}
                       </button>
                     ))}
                   </div>
                 )}
-                {lowCount > 0 && (
-                  <p className="flex items-center gap-1.5 text-[14px] text-rose-700 dark:text-rose-400">
-                    <AlertTriangle className="w-4 h-4" /> {lowCount} below 75%
+                {studentRows.length === 0 ? (
+                  <p className="px-f4 py-f6 text-center text-[14px] text-muted border border-dashed border-line">
+                    {lowOnly && !q ? 'Nobody is below 75%.' : 'No one matches.'}
                   </p>
-                )}
-                <ul className="border border-line bg-surface divide-y divide-line-soft">
-                  {[...stats]
-                    .sort((a, b) => (isNaN(a.pct) ? 101 : a.pct) - (isNaN(b.pct) ? 101 : b.pct) || byRoll(a.student, b.student))
-                    .map(({ student, attended, total, pct }) => {
+                ) : (
+                  <ul className="border border-line bg-surface divide-y divide-line-soft">
+                    {studentRows.map(({ student, attended, total, pct }) => {
                       const low = isAtRisk({ pct, total });
                       return (
                         <li key={student.key} className="flex items-center gap-f3 px-f4 py-2.5">
-                          <span className="w-[78px] shrink-0 font-mono text-[13px] font-semibold text-fg truncate">{student.roll || '—'}</span>
+                          <span className="w-[76px] shrink-0 font-mono text-[12px] font-semibold text-fg-2 truncate">{student.roll || '—'}</span>
                           <span className="flex-1 min-w-0">
                             <span className="block text-[14px] text-fg truncate">{student.name}</span>
-                            <span className="mt-1 block h-1 bg-surface-3">
-                              <span className={`block h-full ${low ? 'bg-rose-500' : 'bg-emerald-500'}`} style={{ width: `${isNaN(pct) ? 0 : pct}%` }} />
+                            <span className="mt-1.5 relative block h-1 bg-surface-3">
+                              <span className={`absolute inset-y-0 left-0 ${low ? 'bg-rose-500' : 'bg-emerald-500'}`} style={{ width: `${isNaN(pct) ? 0 : pct}%` }} />
+                              <span className="absolute -top-0.5 -bottom-0.5 w-px bg-fg/50" style={{ left: '75%' }} />
                             </span>
                           </span>
-                          <span className="shrink-0 text-right">
+                          <span className="shrink-0 w-[52px] text-right">
                             <span className={`block text-[15px] font-semibold tabular-nums ${low ? 'text-rose-600 dark:text-rose-400' : 'text-fg'}`}>{pctText(pct)}</span>
                             <span className="block text-[11px] text-muted tabular-nums">
-                              {total < MIN_LECTURES_FOR_FLAG ? `${total}/${MIN_LECTURES_FOR_FLAG} lectures` : `${attended}/${total}`}
+                              {total < MIN_LECTURES_FOR_FLAG ? `${total} of ${MIN_LECTURES_FOR_FLAG}` : `${attended}/${total}`}
                             </span>
                           </span>
                         </li>
                       );
                     })}
-                </ul>
+                  </ul>
+                )}
+                <p className="px-0.5 text-[12px] text-muted">Flagged below 75% once a student has {MIN_LECTURES_FOR_FLAG} lectures.</p>
               </div>
             )}
           </section>

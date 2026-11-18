@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useFullscreenOverlay } from '@/lib/useFullscreenOverlay';
 import { X, Search, LayoutGrid, List, Loader2, CornerDownLeft, QrCode as QrIcon } from '@/components/ui/icons';
 import { Mark, RosterStudent, rollTail } from '@/lib/attendance';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
@@ -93,6 +94,8 @@ export const TakeAttendance: React.FC<{
 
   const q = query.trim().toLowerCase();
   const visible = students.filter((s) => (filter === 'all' || marks[s.key] === filter) && (!q || s.name.toLowerCase().includes(q) || s.roll.toLowerCase().includes(q)));
+
+  useFullscreenOverlay();
 
   const save = async () => {
     setSaving(true);

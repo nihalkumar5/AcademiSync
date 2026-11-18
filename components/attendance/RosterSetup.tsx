@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useFullscreenOverlay } from '@/lib/useFullscreenOverlay';
 import { X, Search, Check, Lock, Loader2, AlertTriangle, UserPlus, RefreshCw } from '@/components/ui/icons';
 import { Roster, RosterStudent, MemberCandidate, fetchBatchMembersInfo, saveRoster, byRoll, attendanceErrorText } from '@/lib/attendance';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
@@ -19,6 +21,7 @@ export const RosterSetup: React.FC<{
 }> = ({ facultyId, batchKey, batchLabel, roster, teaches, onClose, onSaved }) => {
   const editing = !!roster;
   const [members, setMembers] = useState<MemberCandidate[] | null>(null);
+  useFullscreenOverlay();
   const [loadError, setLoadError] = useState('');
   const [manual, setManual] = useState<RosterStudent[]>(() => (roster?.students || []).filter((s) => s.manual));
   const [selected, setSelected] = useState<Set<string>>(() => new Set((roster?.students || []).map((s) => s.key)));
@@ -162,8 +165,10 @@ export const RosterSetup: React.FC<{
     );
   };
 
-  return (
-    <div className="fixed inset-0 z-50 bg-canvas flex flex-col font-sans" role="dialog" aria-modal="true" aria-label="Class list">
+  // On <body>, above the app shell (its view transitions would trap a fixed screen under the tab bar)
+  if (typeof document === 'undefined') return null;
+  return createPortal(
+    <div className="fixed inset-0 z-[100] bg-canvas flex flex-col font-sans" role="dialog" aria-modal="true" aria-label="Class list">
       <header className="sheen shrink-0 border-b border-line bg-canvas" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="max-w-3xl mx-auto w-full px-f4 h-14 flex items-center gap-2">
           <button type="button" onClick={onClose} aria-label="Close" className="w-11 h-11 -ml-2 flex items-center justify-center text-fg cursor-pointer">
@@ -311,6 +316,7 @@ export const RosterSetup: React.FC<{
         variant="primary"
         isLoading={saving}
       />
-    </div>
+    </div>,
+    document.body
   );
 };

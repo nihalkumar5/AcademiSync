@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useFullscreenOverlay } from '@/lib/useFullscreenOverlay';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, Check, Loader2, Maximize, Minimize, RefreshCw, Smartphone, X } from '@/components/ui/icons';
 import { Capacitor } from '@capacitor/core';
@@ -238,6 +239,8 @@ export const LiveCheckIn: React.FC<{
     }
   };
 
+  useFullscreenOverlay();
+
   const serverNow = now + offset.current;
   const expired = !!live && (live.status === 'closed' || serverNow >= live.expiresAt);
   const left = live ? Math.max(0, live.expiresAt - serverNow) : 0;
@@ -251,7 +254,7 @@ export const LiveCheckIn: React.FC<{
   // otherwise trap a fixed overlay inside the content column
   if (typeof document === 'undefined') return null;
   return createPortal(
-    <div className="modal-open fixed inset-0 z-[100] flex flex-col bg-[#0B0B0C] text-white font-sans select-none" role="dialog" aria-modal="true" aria-label="QR attendance">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-[#0B0B0C] text-white font-sans select-none" role="dialog" aria-modal="true" aria-label="QR attendance">
       <header className="shrink-0" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="max-w-[1400px] mx-auto w-full h-14 px-f4 flex items-center gap-2">
           <button type="button" onClick={finish} aria-label="Close" className="w-11 h-11 -ml-2 flex items-center justify-center text-white/90 cursor-pointer">
