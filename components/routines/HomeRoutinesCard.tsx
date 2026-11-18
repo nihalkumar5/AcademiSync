@@ -203,7 +203,6 @@ export const HomeRoutinesCard: React.FC = () => {
                         type="button"
                         onClick={() => toggleRoutineDone(r.id, dateKey(now))}
                         aria-label={`Mark ${r.title} done`}
-                        data-haptic="off"
                         className="mt-f4 w-full h-11 inline-flex items-center justify-center gap-f2 bg-ink text-on-ink text-[14px] font-semibold active:scale-[0.98] transition-transform cursor-pointer"
                       >
                         <Check className="w-4 h-4" strokeWidth={3} /> Mark done

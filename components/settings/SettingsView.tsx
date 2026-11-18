@@ -57,6 +57,7 @@ import { ApplyForCRCard } from '@/components/cr/ApplyForCRCard';
 import { BatchSetupPromptModal } from '@/components/batch/BatchSetupPromptModal';
 import { searchCollegesAsync, CollegeItem } from '@/lib/collegeDirectory';
 import { AttendanceSummaryCard } from '@/components/attendance/AttendanceSummaryCard';
+import { setHapticsEnabled } from '@/lib/haptics';
 
 // ---------- Layout primitives: one system for every section ----------
 const Section = ({
@@ -1470,7 +1471,11 @@ ${PLAY_STORE_URL}
                       type="button"
                       role="radio"
                       aria-checked={(settings.hapticsEnabled !== false) === on}
-                      onClick={() => updateSettings({ hapticsEnabled: on })}
+                      onClick={() => {
+                        // Switch on first, so the "saved" toast that follows is felt
+                        if (on) setHapticsEnabled(true);
+                        updateSettings({ hapticsEnabled: on });
+                      }}
                       className={`h-9 px-3 text-[13px] font-medium cursor-pointer transition-colors ${
                         (settings.hapticsEnabled !== false) === on ? 'bg-ink text-on-ink' : 'text-muted hover:text-fg'
                       }`}

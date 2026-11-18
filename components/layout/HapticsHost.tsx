@@ -2,15 +2,12 @@
 
 import { useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
-import { haptic, setHapticsEnabled, type HapticKind } from '@/lib/haptics';
+import { haptic, type HapticKind, setHapticsEnabled } from '@/lib/haptics';
 
-// App-wide haptics in one place: every tap on something you can press gets a light tick, so
-// screens don't each have to remember. An element can ask for a different feel with
-// data-haptic="success" | "medium" | ... , or opt out with data-haptic="off".
+// Haptics are kept for moments that matter (completing something, a toast, marking attendance,
+// joining a plan). A buzz on every tap gets tiring and stops meaning anything, so ordinary
+// taps are silent. A control opts in with data-haptic="selection" | "success" | ...
 // Listens to `click` (not pointerdown) so starting a scroll never buzzes.
-
-const PRESSABLE =
-  'button, a[href], [role="button"], [role="tab"], [role="switch"], [role="radio"], [role="menuitem"], [role="checkbox"], input[type="checkbox"], input[type="radio"], select, summary, label[for]';
 
 const KINDS: HapticKind[] = ['selection', 'light', 'medium', 'success', 'warning', 'error'];
 
@@ -23,11 +20,10 @@ export const HapticsHost: React.FC = () => {
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      const el = (e.target as Element | null)?.closest?.(PRESSABLE) as HTMLElement | null;
+      const el = (e.target as Element | null)?.closest?.('[data-haptic]') as HTMLElement | null;
       if (!el || (el as HTMLButtonElement).disabled || el.getAttribute('aria-disabled') === 'true') return;
-      const own = el.closest('[data-haptic]')?.getAttribute('data-haptic');
-      if (own === 'off') return;
-      haptic(own && (KINDS as string[]).includes(own) ? (own as HapticKind) : 'selection');
+      const kind = el.getAttribute('data-haptic');
+      if (kind && (KINDS as string[]).includes(kind)) haptic(kind as HapticKind);
     };
     document.addEventListener('click', onClick, true);
     return () => document.removeEventListener('click', onClick, true);
