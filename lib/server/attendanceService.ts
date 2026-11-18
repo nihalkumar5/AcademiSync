@@ -40,7 +40,12 @@ export interface Caller {
 type Db = any; // firebase-admin Firestore
 
 const COL = 'attendance';
-const LIMITS = { write: { max: 300, windowMs: 3600_000 }, export: { max: 30, windowMs: 3600_000 } };
+const LIMITS = {
+  write: { max: 300, windowMs: 3600_000 },
+  export: { max: 30, windowMs: 3600_000 },
+  // QR check-in: a student scans once or twice a lecture; this only stops scripted guessing
+  checkin: { max: 60, windowMs: 3600_000 },
+};
 
 const str = (v: unknown, max: number) => (typeof v === 'string' && v.length <= max ? v : null);
 export const validKey = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length <= 200 && !v.includes('/') && v !== '.' && v !== '..';
@@ -205,7 +210,16 @@ export const saveRoster = async (db: Db, caller: Caller, profile: any, batchKey:
 };
 
 // ---------- Lectures ----------
-export const saveSession = async (db: Db, caller: Caller, profile: any, batchKey: string, input: any, baseVersion: unknown) => {
+export const saveSession = async (
+  db: Db,
+  caller: Caller,
+  profile: any,
+  batchKey: string,
+  input: any,
+  baseVersion: unknown,
+  /** Checked by the caller: the teacher's own QR check-in for this lecture, and how many scanned */
+  qr?: { liveId: string; scanned: number } | null
+) => {
   if (!validKey(batchKey)) throw new AttendanceError(400, 'invalid', 'batchKey is required');
   requireLinked(profile, batchKey);
   const subjectName = str(input?.subjectName, 120)?.trim();
@@ -264,7 +278,9 @@ export const saveSession = async (db: Db, caller: Caller, profile: any, batchKey
       updatedAt: now,
       updatedBy: caller.uid,
       version: (prevVersion || 0) + 1,
+      ...(qr ? { qr } : prev?.qr ? { qr: prev.qr } : {}),
     };
+    const viaQr = qr ? ` · ${qr.scanned} checked in by QR` : '';
 
     // What actually changed, student by student (snapshot of roll + name for the record)
     const changes: AuditChange[] = [];
@@ -289,8 +305,8 @@ export const saveSession = async (db: Db, caller: Caller, profile: any, batchKey
         date,
         startTime,
         summary: prev
-          ? `Edited: ${changes.filter((c) => c.to === 'A').length} marked absent, ${changes.filter((c) => c.to === 'P').length} marked present`
-          : `Marked: ${total - absent} present, ${absent} absent`,
+          ? `Edited: ${changes.filter((c) => c.to === 'A').length} marked absent, ${changes.filter((c) => c.to === 'P').length} marked present${viaQr}`
+          : `Marked: ${total - absent} present, ${absent} absent${viaQr}`,
         ...(prev ? { changes: changes.slice(0, MAX_STUDENTS) } : {}),
         present: total - absent,
         absent,

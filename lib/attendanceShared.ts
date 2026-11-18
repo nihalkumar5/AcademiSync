@@ -45,6 +45,8 @@ export interface AttendanceSession {
   version?: number; // 1 on first save, +1 on every edit
   takenBy?: string;
   updatedBy?: string;
+  /** Set when the lecture was taken by QR check-in: which check-in, and how many scanned */
+  qr?: { liveId: string; scanned: number };
 }
 
 /** One line in a batch's append-only change log (written only by the server). */

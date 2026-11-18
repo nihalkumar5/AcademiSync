@@ -25,13 +25,16 @@ import {
   reloadAttendance,
   attendanceErrorText,
   byRoll,
+  saveRoster,
 } from '@/lib/attendance';
+import type { LiveStray } from '@/lib/attendanceLive';
 import { RosterSetup } from './RosterSetup';
 import { TakeAttendance } from './TakeAttendance';
+import { LiveCheckIn, LiveResult } from './LiveCheckIn';
 import { Modal } from '@/components/ui/Modal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import Link from 'next/link';
-import { BarChart3, Lock, Plus, Check, Users, FileSpreadsheet, ChevronRight, AlertTriangle, Loader2, ClipboardCheck } from '@/components/ui/icons';
+import { BarChart3, Lock, Plus, Check, Users, FileSpreadsheet, ChevronRight, AlertTriangle, Loader2, ClipboardCheck, QrCode as QrIcon } from '@/components/ui/icons';
 
 const todayKey = () => {
   const d = new Date();
@@ -52,6 +55,14 @@ interface TakeTarget {
   date: string;
   startTime: string;
   endTime?: string;
+}
+
+/** After QR check-in: the review screen, prefilled from who scanned */
+interface Review {
+  target: TakeTarget;
+  liveId: string;
+  scanned: Set<string>;
+  marks: Record<string, Mark>;
 }
 
 export const AttendanceView: React.FC = () => {
@@ -95,6 +106,8 @@ export const AttendanceView: React.FC = () => {
 
   const [setupOpen, setSetupOpen] = useState(false);
   const [take, setTake] = useState<TakeTarget | null>(null);
+  const [live, setLive] = useState<TakeTarget | null>(null);
+  const [review, setReview] = useState<Review | null>(null);
   const [extraOpen, setExtraOpen] = useState(false);
   const [extraSubject, setExtraSubject] = useState('');
   const [extraTime, setExtraTime] = useState('');
@@ -102,21 +115,22 @@ export const AttendanceView: React.FC = () => {
   const [subjectFilter, setSubjectFilter] = useState('all');
   const [toDelete, setToDelete] = useState<AttendanceSession | null>(null);
 
-  // "Take attendance" from the Home live card lands here with the lecture already picked
-  const [pending, setPending] = useState<(TakeTarget & { batchKey: string }) | null>(null);
+  // "QR attendance" / "Mark by hand" from the Home live card land here with the lecture already picked
+  const [pending, setPending] = useState<(TakeTarget & { batchKey: string; mode: 'qr' | 'hand' }) | null>(null);
   useEffect(() => {
     const onTake = (e: Event) => {
       const d = (e as CustomEvent).detail;
       if (!d?.batchKey) return;
       setBatchKey(d.batchKey);
-      setPending({ batchKey: d.batchKey, subjectName: d.subjectName, startTime: d.startTime, endTime: d.endTime, date: todayKey() });
+      setPending({ batchKey: d.batchKey, subjectName: d.subjectName, startTime: d.startTime, endTime: d.endTime, date: todayKey(), mode: d.mode === 'qr' ? 'qr' : 'hand' });
     };
     window.addEventListener('attendance:take', onTake);
     return () => window.removeEventListener('attendance:take', onTake);
   }, []);
   useEffect(() => {
     if (!pending || rosterLoading || batch?.batchKey !== pending.batchKey) return;
-    if (roster) setTake(pending);
+    const { mode, batchKey: _b, ...target } = pending;
+    if (roster) (mode === 'qr' ? setLive : setTake)(target);
     else if (!rosterError) setSetupOpen(true);
     setPending(null);
   }, [pending, rosterLoading, roster, rosterError, batch?.batchKey]);
@@ -125,9 +139,44 @@ export const AttendanceView: React.FC = () => {
   const sortedStudents = useMemo(() => [...(roster?.students || [])].sort(byRoll), [roster]);
   const findSession = (t: TakeTarget) => sessions.find((s) => s.id === sessionId(t.date, t.startTime, t.subjectName));
   const existing = take ? findSession(take) : undefined;
+  const reviewExisting = review ? findSession(review.target) : undefined;
 
-  const saveTake = async (marks: Record<string, Mark>) => {
-    if (!take || !facultyId || !batch || !roster) return;
+  // QR check-in finished: who scanned is present; everyone else keeps what's saved, or absent
+  const startReview = (target: TakeTarget, r: LiveResult) => {
+    setLive(null);
+    if (!roster) return;
+    const keys = new Set(roster.students.map((s) => s.key));
+    const scanned = new Set<string>();
+    r.checkins.forEach((c) => keys.has(c.key) && scanned.add(c.key));
+    r.strays.forEach((s) => keys.has(s.uid) && scanned.add(s.uid)); // added to the list while scanning
+    const prev = findSession(target);
+    const marks: Record<string, Mark> = {};
+    roster.students.forEach((s) => (marks[s.key] = scanned.has(s.key) ? 'P' : prev?.marks?.[s.key] === 'P' ? 'P' : 'A'));
+    setReview({ target, liveId: r.liveId, scanned, marks });
+  };
+
+  // Someone scanned who joined the batch after the list was locked: add them in one tap
+  const addStray = async (st: LiveStray) => {
+    if (!roster || roster.students.some((s) => s.key === st.uid)) return true;
+    try {
+      await saveRoster({
+        ...roster,
+        students: [...roster.students, { key: st.uid, uid: st.uid, name: st.name, roll: st.roll }],
+        dismissed: (roster.dismissed || []).filter((k) => k !== st.uid),
+      });
+      showToast('Added to your class list', `${st.name}${st.roll ? ` · ${st.roll}` : ''}`, 'success');
+      return true;
+    } catch (err: any) {
+      showToast("Couldn't add them", attendanceErrorText(err), 'error');
+      return false;
+    }
+  };
+
+  const saveTake = (marks: Record<string, Mark>) => (take ? saveFor(take, marks, existing) : Promise.resolve());
+  const saveReview = (marks: Record<string, Mark>) => (review ? saveFor(review.target, marks, reviewExisting, review.liveId, review.scanned.size) : Promise.resolve());
+
+  const saveFor = async (take: TakeTarget, marks: Record<string, Mark>, existing: AttendanceSession | undefined, qrLiveId?: string, scannedCount = 0) => {
+    if (!facultyId || !batch || !roster) return;
     const vals = roster.students.map((s) => marks[s.key] || 'P');
     const absent = vals.filter((v) => v === 'A').length;
     const present = vals.length - absent;
@@ -146,15 +195,20 @@ export const AttendanceView: React.FC = () => {
       total: roster.students.length,
       takenAt: existing?.takenAt || now,
       updatedAt: now,
+      ...(qrLiveId ? { qr: { liveId: qrLiveId, scanned: scannedCount } } : {}),
     };
     try {
       const saved = await saveSession(facultyId, batch.batchKey, s, existing ? existing.version ?? 0 : null);
       showToast(existing ? 'Attendance updated' : 'Attendance saved', `${saved.present}/${saved.total} present · ${take.subjectName}`, 'success');
       setTake(null);
+      setReview(null);
     } catch (err: any) {
       console.error('Save attendance failed:', err);
       showToast("Couldn't save attendance", attendanceErrorText(err), 'error');
-      if (err?.code === 'conflict') setTake(null);
+      if (err?.code === 'conflict') {
+        setTake(null);
+        setReview(null);
+      }
     }
   };
 
@@ -224,7 +278,7 @@ export const AttendanceView: React.FC = () => {
             <BarChart3 className="w-4 h-4" /> Attendance center
           </Link>
         </div>
-        <p className="text-[14px] text-muted leading-[20px] mt-4 max-w-md">Confirm each class list once, then mark a lecture in seconds.</p>
+        <p className="text-[14px] text-muted leading-[20px] mt-4 max-w-md">Confirm each class list once. Then show a QR and students check themselves in, with no roll call. Or mark by hand.</p>
       </div>
 
       {/* Batch picker */}
@@ -366,9 +420,14 @@ export const AttendanceView: React.FC = () => {
                           <Check className="w-4 h-4" /> Edit
                         </button>
                       ) : (
-                        <button type="button" onClick={() => setTake(t)} className="btn btn-primary">
-                          <ClipboardCheck className="w-4 h-4" /> Take
-                        </button>
+                        <span className="shrink-0 flex gap-1.5">
+                          <button type="button" onClick={() => setTake(t)} aria-label={`Mark ${x.subjectName} by hand`} className="btn btn-secondary btn-icon">
+                            <ClipboardCheck className="w-4 h-4" />
+                          </button>
+                          <button type="button" onClick={() => setLive(t)} className="btn btn-primary">
+                            <QrIcon className="w-4 h-4" /> QR
+                          </button>
+                        </span>
                       )}
                     </li>
                   );
@@ -510,6 +569,47 @@ export const AttendanceView: React.FC = () => {
         />
       )}
 
+      {live && roster && batch && (
+        <LiveCheckIn
+          key={`live_${live.date}_${live.startTime}_${live.subjectName}`}
+          batchKey={batch.batchKey}
+          batchLabel={batchLabel}
+          subjectName={live.subjectName}
+          date={live.date}
+          startTime={live.startTime}
+          endTime={live.endTime}
+          onCancel={() => setLive(null)}
+          onDone={(r) => startReview(live, r)}
+          onAddStray={addStray}
+        />
+      )}
+
+      {review && roster && (
+        <TakeAttendance
+          key={`review_${review.liveId}`}
+          students={sortedStudents}
+          initialMarks={review.marks}
+          scanned={review.scanned}
+          unsaved
+          saveLabel={reviewExisting ? 'Update' : 'Save'}
+          title={review.target.subjectName}
+          subtitle={`${batchLabel} · ${dateLabel(review.target.date)} · ${formatTime12Hour(review.target.startTime)}`}
+          banner={
+            <div className="flex items-start gap-f3 p-f3 border border-[#18A889]/35 bg-[#18A889]/[0.07]">
+              <QrIcon className="w-5 h-5 shrink-0 mt-0.5 text-[#128A70] dark:text-[#5EE0C2]" />
+              <div className="text-[14px] leading-[20px]">
+                <p className="font-semibold text-fg">
+                  {review.scanned.size} of {roster.students.length} checked in by QR
+                </p>
+                <p className="text-muted">Everyone else is marked absent. Tap anyone who&apos;s here without a phone, then save.</p>
+              </div>
+            </div>
+          }
+          onClose={() => setReview(null)}
+          onSave={saveReview}
+        />
+      )}
+
       {take && roster && (
         <TakeAttendance
           key={`${take.date}_${take.startTime}_${take.subjectName}`}
@@ -545,17 +645,30 @@ export const AttendanceView: React.FC = () => {
             <span className="text-[14px] font-medium text-fg">Start time</span>
             <input type="time" value={extraTime} onChange={(e) => setExtraTime(e.target.value)} className="mt-2 w-full h-12 px-3.5 bg-surface border border-line text-[15px] text-fg" />
           </label>
-          <button
-            type="button"
-            disabled={!extraSubject || !extraTime}
-            onClick={() => {
-              setExtraOpen(false);
-              setTake({ subjectName: extraSubject || 'Lecture', date: todayKey(), startTime: extraTime });
-            }}
-            className="h-12 bg-ink text-on-ink text-[15px] font-semibold disabled:opacity-40 cursor-pointer"
-          >
-            Start marking
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={!extraSubject || !extraTime}
+              onClick={() => {
+                setExtraOpen(false);
+                setTake({ subjectName: extraSubject || 'Lecture', date: todayKey(), startTime: extraTime });
+              }}
+              className="flex-1 h-12 border border-line text-fg text-[15px] font-semibold disabled:opacity-40 cursor-pointer"
+            >
+              Mark by hand
+            </button>
+            <button
+              type="button"
+              disabled={!extraSubject || !extraTime}
+              onClick={() => {
+                setExtraOpen(false);
+                setLive({ subjectName: extraSubject || 'Lecture', date: todayKey(), startTime: extraTime });
+              }}
+              className="flex-1 h-12 bg-ink text-on-ink text-[15px] font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
+            >
+              <QrIcon className="w-4 h-4" /> QR check-in
+            </button>
+          </div>
         </div>
       </Modal>
 

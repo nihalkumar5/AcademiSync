@@ -15,6 +15,8 @@ import {
   saveRoster,
   saveSession,
 } from '@/lib/server/attendanceService';
+import { countCheckins } from '@/lib/server/attendanceLive';
+import { sessionId } from '@/lib/attendanceShared';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,7 +66,14 @@ export async function POST(req: Request) {
       }
       case 'saveSession': {
         const profile = await loadProfile(adminDb, caller.uid);
-        return ok(await saveSession(adminDb, caller, profile, batchKey, body.session, body.baseVersion));
+        // Taken by QR check-in: count the scans server-side (only for this teacher's own check-in)
+        const s = body.session || {};
+        let qr: { liveId: string; scanned: number } | null = null;
+        if (s.qr?.liveId && typeof s.date === 'string' && typeof s.startTime === 'string' && typeof s.subjectName === 'string') {
+          const scanned = await countCheckins(adminDb, caller, s.qr.liveId, batchKey, sessionId(s.date, s.startTime.trim(), s.subjectName.trim()));
+          if (scanned !== null) qr = { liveId: s.qr.liveId, scanned };
+        }
+        return ok(await saveSession(adminDb, caller, profile, batchKey, body.session, body.baseVersion, qr));
       }
       case 'deleteSession':
         await deleteSession(adminDb, caller, batchKey, body.id, body.baseVersion);

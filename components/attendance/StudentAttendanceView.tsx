@@ -18,7 +18,9 @@ import {
   UserCheck,
   Users,
   X,
+  ScanQr,
 } from '@/components/ui/icons';
+import { ScanAttendanceSheet } from './CheckIn';
 import { getSubjectCardTheme } from '@/lib/cardColors';
 import { formatTime12Hour } from '@/lib/timetableUtils';
 import { useMyAttendance } from '@/lib/myAttendance';
@@ -295,6 +297,7 @@ export const StudentAttendanceView: React.FC = () => {
   const uid: string | null = user?.id || null;
   const { data, loading, error, at, reload } = useMyAttendance(uid);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [scanOpen, setScanOpen] = useState(false);
   const [, tick] = useState(0);
   useEffect(() => {
     const t = setInterval(() => tick((n) => n + 1), 60000);
@@ -360,19 +363,27 @@ export const StudentAttendanceView: React.FC = () => {
     <div className="flex items-start justify-between gap-4">
       <div className="min-w-0">
         <h2 className="page-title">Attendance</h2>
-        <p className="text-[14px] text-muted mt-1.5">Marked by your teachers. Nothing for you to fill in.</p>
+        <p className="text-[14px] text-muted mt-1.5">Marked by your teachers. When one shows a QR, tap Scan to check in.</p>
       </div>
-      {uid && data && (
-        <button
-          type="button"
-          onClick={reload}
-          disabled={loading}
-          aria-label="Refresh attendance"
-          className="mt-1.5 shrink-0 w-10 h-10 inline-flex items-center justify-center border border-line bg-surface text-fg hover:border-line-strong transition-colors cursor-pointer disabled:cursor-default"
-        >
-          <RefreshCw className={clsx('w-[18px] h-[18px]', loading && 'animate-spin')} />
-        </button>
-      )}
+      <div className="mt-1.5 shrink-0 flex gap-2">
+        {uid && (
+          <button type="button" onClick={() => setScanOpen(true)} className="btn btn-primary h-10">
+            <ScanQr className="w-[18px] h-[18px]" /> Scan
+          </button>
+        )}
+        {uid && data && (
+          <button
+            type="button"
+            onClick={reload}
+            disabled={loading}
+            aria-label="Refresh attendance"
+            className="shrink-0 w-10 h-10 inline-flex items-center justify-center border border-line bg-surface text-fg hover:border-line-strong transition-colors cursor-pointer disabled:cursor-default"
+          >
+            <RefreshCw className={clsx('w-[18px] h-[18px]', loading && 'animate-spin')} />
+          </button>
+        )}
+      </div>
+      <ScanAttendanceSheet isOpen={scanOpen} onClose={() => setScanOpen(false)} />
     </div>
   );
 

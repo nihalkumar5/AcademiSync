@@ -22,7 +22,7 @@ type Db = any; // firebase-admin Firestore
 const isStr = (v: unknown): v is string => typeof v === 'string' && v.length > 0;
 const validKey = (v: unknown): v is string => isStr(v) && v.length <= 200 && !v.includes('/') && v !== '.' && v !== '..';
 
-const teacherName = (p: any) => {
+export const teacherName = (p: any) => {
   const name = typeof p?.name === 'string' ? p.name.trim() : '';
   const title = typeof p?.facultyTitle === 'string' ? p.facultyTitle.trim() : '';
   if (!name) return 'Your teacher';

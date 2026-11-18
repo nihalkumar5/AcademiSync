@@ -92,6 +92,10 @@ import {
   Position as IoPosition,
   Prohibition as IoProhibition,
   Refresh as IoRefresh,
+  QrCode as IoQrCode,
+  ScanQrCode as IoScanQrCode,
+  Maximize as IoMaximize,
+  Collapse as IoCollapse,
   Repeat as IoRepeat,
   SeaAndSun as IoSeaAndSun,
   Search as IoSearch,
@@ -279,6 +283,10 @@ export const Play = wrap(IoPlay, 'Play');
 export const Plus = wrap(IoPlus, 'Plus');
 export const PlusSquare = wrap(IoPlusSquare, 'PlusSquare');
 export const RefreshCw = wrap(IoRefresh, 'RefreshCw');
+export const QrCode = wrap(IoQrCode, 'QrCode');
+export const ScanQr = wrap(IoScanQrCode, 'ScanQr');
+export const Maximize = wrap(IoMaximize, 'Maximize');
+export const Minimize = wrap(IoCollapse, 'Minimize');
 export const Repeat = wrap(IoRepeat, 'Repeat');
 export const RotateCcw = wrap(IoUndo, 'RotateCcw');
 export const School = wrap(IoBuilding, 'School');

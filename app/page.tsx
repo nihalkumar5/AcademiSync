@@ -25,6 +25,7 @@ import { CampusSignature } from '@/components/dashboard/CampusSignature';
 import { HomeExamAlertCard } from '@/components/dashboard/HomeExamAlertCard';
 import { InviteBatchmatesCard } from '@/components/dashboard/InviteBatchmatesCard';
 import { LiveClassCard } from '@/components/dashboard/LiveClassCard';
+import { CheckInBanner } from '@/components/attendance/CheckInBanner';
 import { HomeMessCard } from '@/components/dashboard/HomeMessCard';
 import { TodayTimeline } from '@/components/dashboard/TodayTimeline';
 import { SmartFocusList } from '@/components/dashboard/SmartFocusList';
@@ -126,6 +127,19 @@ export default function AppHome() {
 
     const processUrl = async (url: string) => {
       try {
+        // Attendance QR scanned with the phone camera: check in on its own page
+        const checkinPath = (() => {
+          try {
+            return new URL(url).pathname.match(/^\/c\/([^/?#]+)/)?.[1] || null;
+          } catch {
+            return null;
+          }
+        })();
+        if (checkinPath) {
+          router.push(`/c/${checkinPath}`);
+          return;
+        }
+
         const inviteParam = extractParam(url, 'invite');
         const calendarParam = extractParam(url, 'calendar_invite');
         const examsParam = extractParam(url, 'exams_invite');
@@ -414,6 +428,7 @@ export default function AppHome() {
               ) : (
                 <div className="flex flex-col gap-f6">
                   <OverviewHeader />
+                  <CheckInBanner />
                   <ElectivesPromptCard />
                   <AdminProposalsCard />
                   <HomeExamAlertCard />

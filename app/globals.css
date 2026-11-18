@@ -356,6 +356,11 @@ body.modal-open #mobile-nav {
   .ai-scanline { top: 40%; }
 }
 
+/* QR check-in: the bar under the QR empties as each 3-second code runs out */
+@keyframes qrSlot { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+.qr-slot { transform-origin: left center; animation: qrSlot linear both; }
+@media (prefers-reduced-motion: reduce) { .qr-slot { animation: none; } }
+
 /* ── App launch + view transitions ───────────────────────────── */
 @keyframes appEnter { from { opacity: 0; } to { opacity: 1; } }
 /* opacity only: a transform here would break position:fixed modals and the bottom nav */

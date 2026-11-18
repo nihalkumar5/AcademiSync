@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { X, Search, LayoutGrid, List, Loader2, CornerDownLeft } from '@/components/ui/icons';
+import { createPortal } from 'react-dom';
+import { X, Search, LayoutGrid, List, Loader2, CornerDownLeft, QrCode as QrIcon } from '@/components/ui/icons';
 import { Mark, RosterStudent, rollTail } from '@/lib/attendance';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { haptic } from '@/lib/haptics';
@@ -23,7 +24,14 @@ export const TakeAttendance: React.FC<{
   onSave: (marks: Record<string, Mark>) => Promise<void>;
   /** Only for a lecture already saved: removing a record is rare, so it lives here, not on every row */
   onDelete?: () => void;
-}> = ({ students, initialMarks, title, subtitle, onClose, onSave, onDelete }) => {
+  /** After QR check-in: who scanned (class-list keys), shown with a small QR mark */
+  scanned?: Set<string>;
+  /** A short note above the list (e.g. what QR check-in filled in) */
+  banner?: React.ReactNode;
+  /** Ask before closing even with no edits (the marks came from somewhere and aren't saved yet) */
+  unsaved?: boolean;
+  saveLabel?: string;
+}> = ({ students, initialMarks, title, subtitle, onClose, onSave, onDelete, scanned, banner, unsaved, saveLabel }) => {
   const start = useMemo(() => {
     const m: Record<string, Mark> = {};
     // Anything other than absent (including old "late" marks) counts as present
@@ -39,7 +47,7 @@ export const TakeAttendance: React.FC<{
   const [saving, setSaving] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
 
-  const dirty = students.some((s) => marks[s.key] !== start[s.key]);
+  const dirty = !!unsaved || students.some((s) => marks[s.key] !== start[s.key]);
   const counts = students.reduce(
     (acc, s) => {
       acc[marks[s.key]]++;
@@ -95,8 +103,11 @@ export const TakeAttendance: React.FC<{
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 bg-canvas flex flex-col font-sans select-none" role="dialog" aria-modal="true" aria-label="Take attendance">
+  // On <body>, above everything: the app shell animates its views with transforms, which would
+  // otherwise trap this fixed screen inside the content column, under the app header
+  if (typeof document === 'undefined') return null;
+  return createPortal(
+    <div className="fixed inset-0 z-[100] bg-canvas flex flex-col font-sans select-none" role="dialog" aria-modal="true" aria-label="Take attendance">
       <header className="sheen shrink-0 border-b border-line bg-canvas" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="max-w-3xl mx-auto w-full px-f4 h-14 flex items-center gap-2">
           <button type="button" onClick={() => (dirty ? setConfirmClose(true) : onClose())} aria-label="Close" className="w-11 h-11 -ml-2 flex items-center justify-center text-fg cursor-pointer">
@@ -150,6 +161,7 @@ export const TakeAttendance: React.FC<{
 
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-3xl mx-auto w-full px-f4 py-f3 flex flex-col gap-f3">
+          {banner}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
             {(
               [
@@ -195,8 +207,9 @@ export const TakeAttendance: React.FC<{
                         onClick={() => toggle(s.key)}
                         aria-pressed={m === 'A'}
                         aria-label={`${s.roll} ${s.name}: ${m === 'A' ? 'absent' : 'present'}`}
-                        className={`w-full aspect-square flex flex-col items-center justify-center border-2 transition-colors active:scale-95 cursor-pointer touch-manipulation ${MARK_STYLE[m]}`}
+                        className={`relative w-full aspect-square flex flex-col items-center justify-center border-2 transition-colors active:scale-95 cursor-pointer touch-manipulation ${MARK_STYLE[m]}`}
                       >
+                        {scanned?.has(s.key) && <QrIcon className={`absolute top-1 right-1 w-3.5 h-3.5 ${m === 'A' ? 'text-white/80' : 'text-[#18A889]'}`} aria-label="Scanned" />}
                         <span className="text-[22px] font-semibold leading-none tabular-nums">{rollTail(s.roll)}</span>
                         <span className={`mt-1 max-w-full px-1 truncate text-[11px] ${m === 'P' ? 'text-muted' : ''}`}>{s.name.split(' ')[0]}</span>
                         {m === 'A' && <span className="text-[12px] font-bold ">Absent</span>}
@@ -214,7 +227,14 @@ export const TakeAttendance: React.FC<{
                   <li key={s.key} className={`flex items-center gap-f3 px-f4 py-2.5 ${m === 'A' ? 'bg-rose-50/70 dark:bg-rose-500/[0.07]' : ''}`}>
                     <span className="flex-1 min-w-0">
                       <span className="block text-[15px] font-medium text-fg truncate">{s.name}</span>
-                      <span className="block font-mono text-[12px] text-muted truncate">{s.roll || 'No roll'}</span>
+                      <span className="flex items-center gap-1.5 font-mono text-[12px] text-muted truncate">
+                        {s.roll || 'No roll'}
+                        {scanned?.has(s.key) && (
+                          <span className="inline-flex items-center gap-0.5 font-sans text-[11px] font-semibold text-[#128A70] dark:text-[#5EE0C2]">
+                            <QrIcon className="w-3 h-3" /> Scanned
+                          </span>
+                        )}
+                      </span>
                     </span>
                     <span className="flex shrink-0 border border-line" role="radiogroup" aria-label={`${s.name} attendance`}>
                       {(['P', 'A'] as Mark[]).map((x) => (
@@ -262,7 +282,7 @@ export const TakeAttendance: React.FC<{
           </div>
           <button type="button" onClick={save} disabled={saving} className="btn btn-primary ml-auto">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            {initialMarks ? 'Update' : 'Save'}
+            {saveLabel || (initialMarks ? 'Update' : 'Save')}
           </button>
         </div>
       </footer>
@@ -271,12 +291,17 @@ export const TakeAttendance: React.FC<{
         isOpen={confirmClose}
         onClose={() => setConfirmClose(false)}
         onConfirm={onClose}
-        title="Discard changes?"
-        description="The marks you changed in this lecture won't be saved."
+        title={unsaved ? 'Leave without saving?' : 'Discard changes?'}
+        description={
+          unsaved
+            ? "Nothing is saved to the register yet. Check-ins are kept: open QR attendance for this lecture again to pick up where you left off."
+            : "The marks you changed in this lecture won't be saved."
+        }
         confirmLabel="Discard"
         cancelLabel="Keep marking"
         variant="danger"
       />
-    </div>
+    </div>,
+    document.body
   );
 };

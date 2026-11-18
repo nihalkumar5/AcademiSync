@@ -24,7 +24,7 @@ import {
   Sparkles,
   ArrowRight,
   MoreHorizontal,
-  UserCheck,
+  UserCheck, QrCode as QrIcon,
 } from '@/components/ui/icons';
 import { clsx } from 'clsx';
 
@@ -414,19 +414,36 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
             />
           </div>
 
-          {/* The one thing a faculty does mid-lecture: straight into marking */}
+          {/* The one thing a faculty does mid-lecture: show the QR (no roll call), or mark by hand */}
           {!isCancelled && (
-            <button
-              type="button"
-              onClick={() => {
-                setActiveView('attendance');
-                const detail = { batchKey: batch.batchKey, subjectName, startTime: session.startTime, endTime: session.endTime };
-                setTimeout(() => window.dispatchEvent(new CustomEvent('attendance:take', { detail })), 60);
-              }}
-              className="mt-f4 h-11 w-full inline-flex items-center justify-center gap-2 bg-white text-[#111111] text-[14px] font-semibold rounded-none hover:opacity-90 active:scale-[0.99] transition cursor-pointer"
-            >
-              <UserCheck className="w-4 h-4" /> Take attendance
-            </button>
+            <div className="mt-f4 flex gap-2">
+              {(['qr', 'hand'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => {
+                    setActiveView('attendance');
+                    const detail = { batchKey: batch.batchKey, subjectName, startTime: session.startTime, endTime: session.endTime, mode };
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('attendance:take', { detail })), 60);
+                  }}
+                  className={
+                    mode === 'qr'
+                      ? 'h-11 flex-1 inline-flex items-center justify-center gap-2 bg-white text-[#111111] text-[14px] font-semibold rounded-none hover:opacity-90 active:scale-[0.99] transition cursor-pointer'
+                      : 'h-11 px-3.5 inline-flex items-center justify-center gap-2 border border-white/25 text-white text-[14px] font-semibold rounded-none hover:border-white/50 active:scale-[0.99] transition cursor-pointer'
+                  }
+                >
+                  {mode === 'qr' ? (
+                    <>
+                      <QrIcon className="w-4 h-4" /> QR attendance
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck className="w-4 h-4" /> By hand
+                    </>
+                  )}
+                </button>
+              ))}
+            </div>
           )}
         </div>
 
