@@ -1314,7 +1314,7 @@ export default function SuperAdminPage() {
     >
       {/* ---------- Header + navigation ---------- */}
       <header
-        className="sheen sticky top-0 z-40 bg-[#FAFAF8]/90 dark:bg-[#0A0B0F]/80 backdrop-blur-xl border-b border-line"
+        className="sheen sticky top-0 z-40 bg-[#FAFAF8]/90 dark:bg-canvas/80 backdrop-blur-xl border-b border-line"
         style={{ paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 8px), 13px)' }}
       >
         <div className="max-w-6xl mx-auto px-f4 sm:px-f5">

@@ -419,7 +419,7 @@ export const LiveClassCard: React.FC = () => {
     const live = !!pendingNow;
     const mins = live ? currentClass!.remainingMinutes : nextClass!.minutesUntilStart;
     return (
-      <div className={clsx('rounded-card w-full border p-5 sm:p-6 flex flex-col', live ? 'sheen-ink bg-[#111111] dark:bg-[#15171D] border-[#111111] dark:border-white/[0.08]' : 'bg-surface border-line')}>
+      <div className={clsx('rounded-card w-full border p-5 sm:p-6 flex flex-col', live ? 'sheen-ink bg-[#111111] dark:bg-surface border-[#111111] dark:border-white/[0.08]' : 'bg-surface border-line')}>
         <div className="flex items-center gap-2 text-[13px] leading-none">
           {live ? (
             <>
@@ -492,7 +492,7 @@ export const LiveClassCard: React.FC = () => {
 
     return (
       <>
-        <div className="overflow-hidden rounded-card sheen-ink w-full bg-[#111111] dark:bg-[#15171D] border border-[#111111] dark:border-white/[0.08] relative">
+        <div className="overflow-hidden rounded-card sheen-ink w-full bg-[#111111] dark:bg-surface border border-[#111111] dark:border-white/[0.08] relative">
           <div className="flex gap-f4 p-5 sm:p-6">
             {/* What and when */}
             <div className="flex-1 min-w-0 flex flex-col">

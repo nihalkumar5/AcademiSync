@@ -146,7 +146,7 @@ export const FacultyHomeView: React.FC = () => {
         </>
       ) : (
         // First run: everything (timetable, assignments, alerts) depends on linking a batch, so that is the only action
-        <section className="rounded-card sheen-ink relative overflow-hidden bg-[#111111] dark:bg-[#15171D] dark:border dark:border-white/[0.08] text-white p-f4 sm:p-f5">
+        <section className="rounded-card sheen-ink relative overflow-hidden bg-[#111111] dark:bg-surface dark:border dark:border-white/[0.08] text-white p-f4 sm:p-f5">
           <p className="text-[12px] font-semibold text-white/60">Get started</p>
           <h3 className="mt-2 text-[24px] sm:text-[28px] font-semibold leading-tight tracking-tight">Connect your first batch</h3>
           <p className="mt-2 text-[15px] leading-relaxed text-white/70 max-w-md">

@@ -168,9 +168,9 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
                     required
                     className="w-full px-3.5 py-2.5 h-[44px] rounded-field bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors appearance-none shadow-sm"
                   >
-                    <option value="" disabled className="dark:bg-[#121317]">Select Subject</option>
+                    <option value="" disabled className="dark:bg-surface">Select Subject</option>
                     {subjects.map((sub) => (
-                      <option key={sub.id} value={sub.id} className="dark:bg-[#121317]">
+                      <option key={sub.id} value={sub.id} className="dark:bg-surface">
                         {sub.code && sub.code !== 'UNK' ? `[${sub.code}] ` : ''}{sub.name}
                       </option>
                     ))}
@@ -229,9 +229,9 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
                       onChange={(e) => setExtractedPriority(e.target.value as any)}
                       className="w-full px-3.5 py-2.5 h-[44px] rounded-field bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors appearance-none shadow-sm"
                     >
-                      <option value="Low" className="dark:bg-[#121317]">Low Priority</option>
-                      <option value="Medium" className="dark:bg-[#121317]">Medium Priority</option>
-                      <option value="High" className="dark:bg-[#121317]">High Priority</option>
+                      <option value="Low" className="dark:bg-surface">Low Priority</option>
+                      <option value="Medium" className="dark:bg-surface">Medium Priority</option>
+                      <option value="High" className="dark:bg-surface">High Priority</option>
                     </select>
                     <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
                   </div>

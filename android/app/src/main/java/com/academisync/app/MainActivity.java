@@ -89,6 +89,11 @@ public class MainActivity extends BridgeActivity {
             webSettings.setDatabaseEnabled(true);
             webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
             webSettings.setSupportMultipleWindows(true);
+            // Same look on every phone: honour the page's viewport (the web app fits a 390px
+            // design to the screen width) and don't let the system font-size setting reflow it.
+            webSettings.setUseWideViewPort(true);
+            webSettings.setLoadWithOverviewMode(true);
+            webSettings.setTextZoom(100);
 
             getBridge().addWebViewListener(new WebViewListener() {
                 @Override

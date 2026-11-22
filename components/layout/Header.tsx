@@ -55,6 +55,15 @@ export const Header: React.FC = () => {
   const [showHwScanModal, setShowHwScanModal] = useState(false);
   const [showCalendarImportModal, setShowCalendarImportModal] = useState(false);
 
+  // The bar is flat at the top of the page and gets its hairline once content scrolls under it
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   // Desktop context line: date and time to the minute (a ticking seconds clock is noise)
   const [currentTime, setCurrentTime] = useState<string>('');
 
@@ -155,11 +164,11 @@ export const Header: React.FC = () => {
         }}
       >
         {/* Frosted glass bar (light mode); solid in dark mode — see .lg-header-bar */}
-        <div aria-hidden="true" className="lg-header-bar pointer-events-none absolute inset-0 -z-10" />
+        <div aria-hidden="true" className={`lg-header-bar pointer-events-none absolute inset-0 -z-10 ${scrolled ? 'is-scrolled' : ''}`} />
         <div className="flex items-center justify-between w-full max-w-6xl mx-auto relative md:px-f5">
           <div className="flex items-center gap-3 select-none">
           {/* Logo only shown on mobile where sidebar is hidden */}
-          <h1 className="md:hidden text-[21px] sm:text-2xl leading-none text-fg tracking-tighter font-sans">
+          <h1 className="md:hidden text-[22px] sm:text-2xl leading-none text-fg tracking-[-0.04em] font-sans">
             <span className="font-extrabold">inter</span>
             <span className="font-normal opacity-80">semester</span>
           </h1>
@@ -189,13 +198,13 @@ export const Header: React.FC = () => {
                 setActiveView('friends');
                 window.dispatchEvent(new CustomEvent('friends:tab', { detail: 'chats' }));
               }}
-              className="lg-press relative w-[34px] h-[34px] md:w-[38px] md:h-[38px] rounded-full flex items-center justify-center text-fg cursor-pointer bg-surface border border-black/[0.08] dark:bg-surface-2 dark:border-white/[0.08] shadow-[0_1px_1px_rgba(0,0,0,0.04)] hover:bg-surface-2 dark:hover:bg-surface-3 transition-colors"
+              className="lg-press relative w-10 h-10 rounded-full flex items-center justify-center text-fg cursor-pointer bg-surface-2 hover:bg-surface-3 transition-colors"
               title={unreadChats ? `Chats (${unreadChats} unread)` : 'Chats'}
               aria-label={unreadChats ? `Chats, ${unreadChats} unread` : 'Chats'}
             >
-              <MessageCircle className="w-4 h-4 md:w-[17px] md:h-[17px] text-fg" />
+              <MessageCircle className="w-5 h-5 text-fg" />
               {unreadChats > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-[3px] bg-emerald-500 text-white text-[9px] font-bold tabular-nums flex items-center justify-center ring-[1.5px] ring-canvas leading-none rounded-full">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-emerald-500 text-white text-[10px] font-bold tabular-nums flex items-center justify-center ring-2 ring-canvas leading-none rounded-full">
                   {unreadChats > 99 ? '99+' : unreadChats}
                 </span>
               )}
@@ -205,11 +214,11 @@ export const Header: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveView('notifications')}
-            className="lg-press relative w-[34px] h-[34px] md:w-[38px] md:h-[38px] rounded-full flex items-center justify-center text-fg cursor-pointer bg-surface border border-black/[0.08] dark:bg-surface-2 dark:border-white/[0.08] shadow-[0_1px_1px_rgba(0,0,0,0.04)] hover:bg-surface-2 dark:hover:bg-surface-3 transition-colors"
+            className="lg-press relative w-10 h-10 rounded-full flex items-center justify-center text-fg cursor-pointer bg-surface-2 hover:bg-surface-3 transition-colors"
             title={`Notifications (${unreadNotifs} unread)`}
             aria-label={unreadNotifs ? `Notifications, ${unreadNotifs} unread` : 'Notifications'}
           >
-            <Bell className="w-4 h-4 md:w-[17px] md:h-[17px] text-fg" strokeWidth={1.9} />
+            <Bell className="w-5 h-5 text-fg" strokeWidth={1.9} />
             {unreadNotifs > 0 && (
               <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-[3px] bg-rose-500 text-white text-[9px] font-bold tabular-nums flex items-center justify-center ring-[1.5px] ring-canvas leading-none rounded-full">
                 {unreadNotifs > 99 ? '99+' : unreadNotifs}
@@ -220,8 +229,8 @@ export const Header: React.FC = () => {
             </>
           )}
 
-          {/* Quick Create Dropdown: Original clean icon on mobile */}
-          <div className="relative" ref={menuRef}>
+          {/* Quick create: desktop only. On phones every page has its own "+" next to the title. */}
+          <div className="relative hidden md:block" ref={menuRef}>
             <button
               type="button"
               onClick={() => setAddMenuOpen(!addMenuOpen)}
@@ -278,12 +287,12 @@ export const Header: React.FC = () => {
             onClick={() => setActiveView('settings')}
             title="Profile" aria-label="Open profile"
             aria-current={activeView === 'settings' ? 'page' : undefined}
-            className="lg-press ml-0.5 w-[34px] h-[34px] md:hidden rounded-full flex items-center justify-center cursor-pointer"
+            className="lg-press ml-0.5 w-10 h-10 md:hidden rounded-full flex items-center justify-center cursor-pointer"
           >
             <span className={`block w-full h-full rounded-full overflow-hidden bg-[#3A3A3C] dark:bg-[#F4F4F6] ring-1 ${
               activeView === 'settings' ? 'ring-fg ring-offset-2 ring-offset-canvas' : 'ring-black/[0.08] dark:ring-white/[0.1]'
             }`}>
-              <img src={getAvatarSrc(getAvatarSeed(profile))} alt="" width={34} height={34} decoding="async" className="w-full h-full object-cover scale-110 translate-y-[2px] [backface-visibility:hidden]" />
+              <img src={getAvatarSrc(getAvatarSeed(profile))} alt="" width={40} height={40} decoding="async" className="w-full h-full object-cover scale-110 translate-y-[2px] [backface-visibility:hidden]" />
             </span>
           </button>
         </div>

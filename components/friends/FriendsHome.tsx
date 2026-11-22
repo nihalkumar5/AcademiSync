@@ -46,7 +46,7 @@ export const FriendsFreeNowCard: React.FC = () => {
   return (
     // Same warm amber card in light and dark (it's meant to stand out as "people"), so the text
     // uses fixed dark colours rather than theme tokens that turn light in dark mode.
-    <section className="rounded-card group w-full flex items-center gap-4 border border-amber-200/80 bg-amber-50 px-f4 py-f3">
+    <section className="rounded-card group w-full flex items-center gap-4 border border-amber-200/80 bg-amber-50 dark:border-amber-300/15 dark:bg-amber-300/[0.08] px-f4 py-f3">
       {/* Each free friend's face opens a chat with them */}
       <div className="flex -space-x-2 shrink-0">
         {free.slice(0, 4).map(({ f }) => (
@@ -56,7 +56,7 @@ export const FriendsFreeNowCard: React.FC = () => {
             onClick={() => chatWith(f.uid)}
             aria-label={`Chat with ${f.name}`}
             title={`Chat with ${f.name.split(' ')[0]}`}
-            className="relative rounded-full ring-2 ring-amber-50 hover:z-10 hover:-translate-y-0.5 active:scale-95 transition-transform cursor-pointer"
+            className="relative rounded-full ring-2 ring-amber-50 dark:ring-surface hover:z-10 hover:-translate-y-0.5 active:scale-95 transition-transform cursor-pointer"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={getAvatarSrc(getAvatarSeed({ avatarUrl: f.avatarUrl, id: f.uid, role: 'student' }))} alt="" className={`w-9 h-9 rounded-full bg-white ${opening === f.uid ? 'animate-pulse' : ''}`} />
@@ -66,10 +66,10 @@ export const FriendsFreeNowCard: React.FC = () => {
       </div>
       <button type="button" onClick={() => setActiveView('friends')} className="flex-1 min-w-0 flex items-center gap-3 text-left cursor-pointer">
         <span className="flex-1 min-w-0">
-          <span className="block text-[15px] font-semibold text-[#111111]">
+          <span className="block text-[15px] font-semibold text-[#111111] dark:text-fg">
             {free.length ? `${free.length} ${free.length === 1 ? 'friend is' : 'friends are'} free now` : 'No friends free right now'}
           </span>
-          <span className="block text-[13px] text-[#3D3D3B] truncate">
+          <span className="block text-[13px] text-[#3D3D3B] dark:text-fg-2 truncate">
             {free.length
               ? free
                   .slice(0, 3)
@@ -78,7 +78,7 @@ export const FriendsFreeNowCard: React.FC = () => {
               : 'See when they are free next'}
           </span>
         </span>
-        <ChevronRight className="w-4 h-4 text-[#8A8A8A] shrink-0 group-hover:translate-x-0.5 transition-transform" />
+        <ChevronRight className="w-4 h-4 text-[#8A8A8A] dark:text-muted shrink-0 group-hover:translate-x-0.5 transition-transform" />
       </button>
     </section>
   );

@@ -788,7 +788,7 @@ ${PLAY_STORE_URL}
               placeholder="e.g., ext_... or 4-digit code"
               value={inviteInput}
               onChange={(e) => setInviteInput(e.target.value)}
-              className="rounded-field w-full px-4 py-2.5 border border-[#ECECEA] dark:border-[#333333] bg-transparent text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+              className="rounded-field w-full px-4 py-2.5 border border-[#ECECEA] dark:border-line bg-transparent text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
               required
               autoFocus
             />

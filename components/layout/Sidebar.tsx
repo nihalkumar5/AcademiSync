@@ -131,7 +131,7 @@ export const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-[288px] shrink-0 h-screen sticky top-0 z-30 select-none bg-white/95 dark:bg-[#0A0B0F]/95 backdrop-blur-xl border-r border-line shadow-[4px_0_20px_rgba(0,0,0,0.03)] dark:shadow-[4px_0_25px_rgba(0,0,0,0.4)]">
+    <aside className="hidden md:flex flex-col w-[288px] shrink-0 h-screen sticky top-0 z-30 select-none bg-white/95 dark:bg-canvas/95 backdrop-blur-xl border-r border-line shadow-[4px_0_20px_rgba(0,0,0,0.03)] dark:shadow-[4px_0_25px_rgba(0,0,0,0.4)]">
       {/* Brand: same height as the page header so their bottom lines meet */}
       <div className="sheen h-[72px] shrink-0 flex items-center justify-between gap-f2 pl-f5 pr-f4 border-b border-line">
         <div className="leading-none min-w-0">

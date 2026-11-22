@@ -741,7 +741,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                       className="w-full px-3.5 py-2.5 bg-surface border border-line rounded-field text-[14px] font-medium text-fg focus:outline-none focus:border-black dark:focus-border-white/30 transition-colors cursor-pointer"
                     >
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((sem) => (
-                        <option key={sem} value={sem} className="dark:bg-[#121317]">
+                        <option key={sem} value={sem} className="dark:bg-surface">
                           Semester {sem}
                         </option>
                       ))}

@@ -47,32 +47,35 @@
 }
 
 .dark {
-  --background: #0C0C0D;
-  --foreground: #F4F4F6;
+  --background: #161618;
+  --foreground: #F2F2F4;
   color-scheme: dark;
 
-  /* ── Design system: neutral scale (dark) ── */
-  --c-canvas: 12 12 13;        /* #0C0C0D  neutral ink black (no blue cast) */
-  --c-surface: 21 21 23;       /* #151517 */
-  --c-surface-2: 28 28 30;     /* #1C1C1E */
-  --c-surface-3: 38 38 41;     /* #262629 */
-  --c-line: 46 46 49;          /* #2E2E31  ≈ white 10% on surface */
-  --c-line-soft: 32 32 35;     /* #202023 */
-  --c-line-strong: 244 244 246;/* #F4F4F6 */
-  --c-fg: 244 244 246;         /* #F4F4F6 */
-  --c-fg-2: 212 212 216;       /* #D4D4D8 */
-  --c-muted: 161 161 170;      /* #A1A1AA */
-  --c-faint: 113 113 122;      /* #71717A */
-  --c-ink: 244 244 246;
-  --c-on-ink: 12 12 13;
+  /* ── Design system: neutral scale (dark) ──
+     Soft charcoal, not pure black (the way Todoist, Jira and iOS do dark): the page is a deep
+     grey and every step up (card, fill, pressed) is a little lighter, so surfaces separate by
+     tone instead of by heavy borders. Text is off-white so it doesn't glare. */
+  --c-canvas: 22 22 24;        /* #161618  page */
+  --c-surface: 31 31 34;       /* #1F1F22  cards, sheets, inputs */
+  --c-surface-2: 40 40 44;     /* #28282C  quiet fill, chips, hover */
+  --c-surface-3: 51 51 56;     /* #333338  pressed, selected-soft, tracks */
+  --c-line: 56 56 62;          /* #38383E  borders */
+  --c-line-soft: 45 45 50;     /* #2D2D32  dividers inside cards */
+  --c-line-strong: 242 242 244;/* #F2F2F4 */
+  --c-fg: 242 242 244;         /* #F2F2F4 */
+  --c-fg-2: 209 209 214;       /* #D1D1D6 */
+  --c-muted: 158 158 166;      /* #9E9EA6 */
+  --c-faint: 112 112 120;      /* #707078 */
+  --c-ink: 242 242 244;
+  --c-on-ink: 22 22 24;
   --c-danger: 248 113 113;     /* red-400 */
-  --c-danger-soft: 69 10 10;
+  --c-danger-soft: 62 24 26;   /* #3E181A */
   --c-ok: 74 222 128;          /* green-400 */
-  --c-ok-soft: 5 46 22;
+  --c-ok-soft: 20 52 33;       /* #143421 */
 
-  /* Dark: a faint top highlight reads as a lit edge; the drop shadow sinks into the ink. */
+  /* Dark: cards are lifted by tone; a faint top highlight and a soft shadow add depth. */
   --elev-1: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  --elev-2: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 16px 32px -16px rgba(0, 0, 0, 0.7);
+  --elev-2: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 28px -16px rgba(0, 0, 0, 0.55);
 }
 
 /* ── Design system: shared control classes ───────────────────────────────
@@ -533,17 +536,18 @@ body.fullscreen-open header:not([aria-modal="true"] header) {
 
 /* Header bar: classic frosted glass in light mode; a plain solid bar in dark mode */
 .lg-header-bar {
-  background: rgb(255 255 255 / 0.95);
+  background: rgb(255 255 255 / 0.86);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   backdrop-filter: blur(20px) saturate(160%);
-  border-bottom: 0.5px solid rgb(0 0 0 / 0.08);
+  border-bottom: 0.5px solid transparent;
+  transition: border-color .2s ease;
 }
+.lg-header-bar.is-scrolled { border-bottom-color: rgb(0 0 0 / 0.08); }
 .dark .lg-header-bar {
-  background: rgb(var(--c-canvas));
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  border-bottom: 1px solid rgb(var(--c-line-soft));
+  background: rgb(var(--c-canvas) / 0.9);
+  border-bottom: 1px solid transparent;
 }
+.dark .lg-header-bar.is-scrolled { border-bottom-color: rgb(var(--c-line-soft)); }
 
 /* People who ask the OS for less transparency get solid surfaces */
 @media (prefers-reduced-transparency: reduce) {

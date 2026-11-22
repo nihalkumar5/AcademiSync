@@ -428,7 +428,7 @@ export const TodayTimeline: React.FC = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="rounded-card p-5 sm:p-6 bg-white dark:bg-[#14151B] border border-line-strong flex flex-col divide-y divide-line gap-4 shadow-xs"
+            className="rounded-card p-5 sm:p-6 bg-white dark:bg-surface border border-line-strong flex flex-col divide-y divide-line gap-4 shadow-xs"
           >
             {completedExams.length > 0 && (
               <div className="pb-3 flex items-center justify-between text-[11px] font-mono text-emerald-700 dark:text-emerald-400">
@@ -521,7 +521,7 @@ export const TodayTimeline: React.FC = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="rounded-card p-5 sm:p-6 bg-white dark:bg-[#14151B] border border-line-strong flex flex-col gap-3 shadow-xs"
+          className="rounded-card p-5 sm:p-6 bg-white dark:bg-surface border border-line-strong flex flex-col gap-3 shadow-xs"
         >
           {completedExams.length > 0 && (
             <div className="pb-3 border-b border-line flex items-center justify-between text-[11px] font-mono text-emerald-700 dark:text-emerald-400">
@@ -752,7 +752,7 @@ export const TodayTimeline: React.FC = () => {
             if (pend) {
               return (
                 <div key={session.id} className="relative pl-6 pb-6 last:pb-0">
-                  <div className="absolute left-[-7px] top-[2px] w-3 h-3 rounded-full border-2 border-white dark:border-[#090A0C] shadow-sm z-10 bg-amber-500" />
+                  <div className="absolute left-[-7px] top-[2px] w-3 h-3 rounded-full border-2 border-white dark:border-canvas shadow-sm z-10 bg-amber-500" />
                   <div className="flex flex-col gap-2.5">
                     <span className="text-[13px] font-bold tracking-tighter font-mono text-fg">{formatTime12Hour(session.startTime)}</span>
                     <ElectivePendingCard mark={pend} time={`till ${formatTime12Hour(session.endTime)}`} />
@@ -796,7 +796,7 @@ export const TodayTimeline: React.FC = () => {
                   <div key={session.id} className="relative pl-6 pb-6 last:pb-0 group">
                     {/* Node Dot */}
                     <div 
-                      className="absolute left-[-7px] top-[2px] w-3 h-3 rounded-full border-2 border-white dark:border-[#090A0C] shadow-sm z-10"
+                      className="absolute left-[-7px] top-[2px] w-3 h-3 rounded-full border-2 border-white dark:border-canvas shadow-sm z-10"
                       style={{ backgroundColor: dotColor }}
                     />
                     

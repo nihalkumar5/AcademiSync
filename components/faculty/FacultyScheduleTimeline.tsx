@@ -297,7 +297,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
               <div key={cardKey} className="relative pl-6 pb-6 last:pb-0 group">
                 {/* Node Dot */}
                 <div 
-                  className="absolute left-[-7px] top-[2px] w-3 h-3 rounded-full border-2 border-white dark:border-[#090A0C] shadow-sm z-10"
+                  className="absolute left-[-7px] top-[2px] w-3 h-3 rounded-full border-2 border-white dark:border-canvas shadow-sm z-10"
                   style={{ backgroundColor: dotColor }}
                 />
 

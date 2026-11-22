@@ -417,7 +417,7 @@ ${PLAY_STORE_URL}
         return (
           <section
             aria-label="Next exam"
-            className="rounded-card sheen-ink mb-f5 sm:mb-f6 w-full bg-[#111111] dark:bg-[#15171D] border border-[#111111] dark:border-white/[0.08] p-5 sm:p-6 text-left text-white"
+            className="rounded-card sheen-ink mb-f5 sm:mb-f6 w-full bg-[#111111] dark:bg-surface border border-[#111111] dark:border-white/[0.08] p-5 sm:p-6 text-left text-white"
           >
             <div className="flex items-center justify-between gap-3">
               <span className="inline-flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[1.4px]">
