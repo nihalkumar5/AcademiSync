@@ -32,6 +32,7 @@ import { broadcastBatchPushNotification } from '@/lib/pushNotifications';
 import { SharedRoutine } from '@/lib/types';
 import type { FriendRoutine } from '@/lib/friends';
 import { useFriendRoutines } from './friendRoutinesClient';
+import { PageActions, PageTitle } from '@/components/ui/PageActions';
 
 type Permission = 'granted' | 'denied' | 'default' | 'unsupported' | 'checking';
 
@@ -372,9 +373,9 @@ export const RoutinesView: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col gap-f4">
         <div>
-          <h2 className="page-title">
+          <PageTitle>
             Routines
-          </h2>
+          </PageTitle>
           <div className="flex items-center gap-f3 mt-3">
             <span className="tag bg-surface">
               {routinesForDay(routines, now).length} today
@@ -384,7 +385,7 @@ export const RoutinesView: React.FC = () => {
             Your own to-dos for study, sports, exam prep or anything else. Set it once, get reminded every time.
           </p>
         </div>
-        <div className="page-actions">
+        <PageActions>
           <button
             type="button"
             onClick={() => openNew()}
@@ -399,7 +400,7 @@ export const RoutinesView: React.FC = () => {
           >
             <LayoutTemplate className="w-4 h-4" /> Templates
           </button>
-        </div>
+        </PageActions>
       </div>
 
       {/* Reminders need permission; say so plainly */}

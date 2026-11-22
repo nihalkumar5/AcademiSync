@@ -5,10 +5,11 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { MessOnboarding } from './MessOnboarding';
 import { format } from 'date-fns';
-import { Share, Sparkles, Clock, Edit3, X, Check, ArrowRight, UtensilsCrossed, Coffee, Sun, Cookie, Moon, Pencil } from '@/components/ui/icons';
+import { Share, Sparkles, Clock, Edit3, X, Check, ArrowRight, UtensilsCrossed, Coffee, Sun, Cookie, Moon, Pencil, UserPlus } from '@/components/ui/icons';
 import { Modal } from '../ui/Modal';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { PageActions, PageTitle } from '@/components/ui/PageActions';
 
 const DEFAULT_TIMINGS: Record<string, string> = {
   Breakfast: '8:00 - 10:00',
@@ -437,15 +438,15 @@ ${PLAY_STORE_URL}
       {/* Header */}
       <div className="flex flex-col gap-4 pt-2 sm:pt-6">
         <div>
-          <h2 className="page-title">
+          <PageTitle>
             Mess menu
-          </h2>
+          </PageTitle>
           <p className="text-[14px] font-normal text-muted leading-[20px] mt-2">
             Weekly breakfast, lunch, snacks, and dinner menu with live meal countdowns.
           </p>
         </div>
 
-        <div className="page-actions mt-2">
+        <PageActions>
           <button
             onClick={handleShare}
             className="btn btn-secondary"
@@ -456,7 +457,7 @@ ${PLAY_STORE_URL}
             onClick={() => setShowJoinModal(true)}
             className="btn btn-secondary"
           >
-            Join Mess
+            <UserPlus className="w-4 h-4" /> Join Mess
           </button>
           <button
             onClick={() => setIsImporting(true)}
@@ -464,7 +465,7 @@ ${PLAY_STORE_URL}
           >
             <Sparkles className="w-4 h-4" /> Magic Import
           </button>
-        </div>
+        </PageActions>
       </div>
 
       <LiveMealCard 

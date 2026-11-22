@@ -23,6 +23,7 @@ import { openClassNotes, dateOfWeekday } from '@/lib/classNotes';
 import { ElectivePendingCard, ElectivesSummary } from '@/components/electives/Electives';
 import { formatTime12Hour } from '@/lib/timetableUtils';
 import type { PersonalSession } from '@/lib/electives';
+import { PageActions, PageTitle } from '@/components/ui/PageActions';
 
 export const WeeklyTimetable: React.FC = () => {
   const { profile } = useApp();
@@ -202,9 +203,9 @@ const StudentWeeklyTimetable: React.FC = () => {
       <div className="flex flex-col gap-f4">
         {/* Editorial stacked header, same as Tasks */}
         <div>
-          <h2 className="page-title">
+          <PageTitle>
             Timetable
-          </h2>
+          </PageTitle>
           <div className="flex items-center gap-3 mt-3">
             <span className="tag bg-surface">
               {activeTimetable.length} {activeTimetable.length === 1 ? 'class' : 'classes'} a week
@@ -216,7 +217,7 @@ const StudentWeeklyTimetable: React.FC = () => {
         </div>
 
         <div className="flex flex-col mt-2">
-          <div className="page-actions mb-[20px]">
+          <PageActions>
             <button
               type="button"
               onClick={() => handleAddForDay(selectedMobileDay)}
@@ -230,7 +231,7 @@ const StudentWeeklyTimetable: React.FC = () => {
               onClick={() => setShowJoinModal(true)}
               className="btn btn-secondary"
             >
-              Join Batch
+              <UserPlus className="w-4 h-4" /> Join Batch
             </button>
             <button
               type="button"
@@ -239,7 +240,7 @@ const StudentWeeklyTimetable: React.FC = () => {
             >
               <Sparkles className="w-4 h-4" /> Magic Import
             </button>
-          </div>
+          </PageActions>
 
           {profile.isBatchSynced && profile.batchKey && (
             <div className="flex flex-col">

@@ -15,6 +15,7 @@ import { getTodayDateString } from '@/lib/timetableUtils';
 import { subjectLabel, subjectTone } from '@/lib/assignmentDisplay';
 import { LocalPhoto, cacheMine, readMineCache } from './ClassNotesHost';
 import type { Subject } from '@/lib/types';
+import { PageActions, PageTitle } from '@/components/ui/PageActions';
 
 // Notes page: everything saved in class, in one place. Newest first, grouped by day, filter by
 // subject. Tapping a note opens that class's notes sheet, where you can add more or delete.
@@ -144,7 +145,7 @@ export const NotesView: React.FC = () => {
   if (!user?.id) {
     return (
       <div className="flex flex-col gap-f5 text-left max-w-3xl mx-auto w-full pb-f7">
-        <h2 className="page-title">Notes</h2>
+        <PageTitle>Notes</PageTitle>
         <SignInPanel
           title="Sign in to keep your class notes"
           body="Snap the board or jot a line in class. It's saved to that subject and date, so you can find it before exams."
@@ -159,18 +160,18 @@ export const NotesView: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="page-title">Notes</h2>
+          <PageTitle>Notes</PageTitle>
           <p className="text-[14px] text-muted mt-1.5">
             {loading && mine.length === 0
               ? 'Everything you saved in class'
               : `${mine.length} ${mine.length === 1 ? 'note' : 'notes'}${subjectCount ? ` · ${subjectCount} ${subjectCount === 1 ? 'subject' : 'subjects'}` : ''}`}
           </p>
         </div>
-        <div className="page-actions">
+        <PageActions>
           <button type="button" onClick={() => setPickOpen(true)} className="btn btn-primary">
             <Plus className="w-4 h-4" /> New note
           </button>
-        </div>
+        </PageActions>
       </div>
 
       <div className="flex flex-col gap-f3">

@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import { PLAY_STORE_URL } from '@/lib/shareUtils';
+import { PageActions, PageTitle } from '@/components/ui/PageActions';
 
 export const HomeworkView: React.FC = () => {
   const {
@@ -206,9 +207,9 @@ export const HomeworkView: React.FC = () => {
       <div className="flex flex-col gap-f4">
         {/* Large stacked heading with badge inline */}
         <div>
-          <h2 className="page-title">
+          <PageTitle>
             Assignments
-          </h2>
+          </PageTitle>
           <div className="flex items-center gap-3 mt-3">
             <span className="tag bg-surface">
               {pendingCount} pending
@@ -220,7 +221,7 @@ export const HomeworkView: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="page-actions mb-1">
+        <PageActions>
           <button
             onClick={() => {
               setEditHomework(null);
@@ -238,7 +239,7 @@ export const HomeworkView: React.FC = () => {
           >
             <Sparkles className="w-4 h-4" /> Magic Import
           </button>
-        </div>
+        </PageActions>
       </div>
 
       {isPilot && <ClassroomBridgeCard />}

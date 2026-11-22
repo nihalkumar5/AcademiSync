@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
 import { formatBatchDisplayName, getTodayDateString, getTomorrowDateString, isGenericExamTitle, sanitizeExamSubjectName } from '@/lib/timetableUtils';
 import { Exam } from '@/lib/types';
+import { PageActions, PageTitle } from '@/components/ui/PageActions';
 
 export const ExamsView: React.FC = () => {
   const { exams, deleteExam, isBatchCR, shareTimetableWithBatch, shareExamsWithBatch, joinSharedExams, showToast, user, profile, currentBatchData } = useApp();
@@ -344,14 +345,14 @@ export const ExamsView: React.FC = () => {
   return (
     <div className="flex flex-col flex-1 max-w-4xl mx-auto w-full">
       <div className="mb-f5 sm:mb-f6">
-        <h2 className="page-title">
+        <PageTitle>
           Exams
-        </h2>
+        </PageTitle>
         <p className="text-[14px] font-normal text-muted leading-[20px] mt-2 max-w-[280px]">
           Track your upcoming exams, syllabus, and preparation time.
         </p>
 
-        <div className="page-actions mt-8">
+        <PageActions>
           <button
             onClick={handleAddNewExam}
             className="btn btn-primary"
@@ -371,7 +372,7 @@ export const ExamsView: React.FC = () => {
             }}
             className="btn btn-secondary"
           >
-            Join Exams
+            <UserPlus className="w-4 h-4" /> Join Exams
           </button>
           {exams.length > 0 && isBatchCR && (
             <button
@@ -406,7 +407,7 @@ ${PLAY_STORE_URL}
               <Share2 className="w-4 h-4" /> Share
             </button>
           )}
-        </div>
+        </PageActions>
       </div>
 
       {nextExam && (() => {

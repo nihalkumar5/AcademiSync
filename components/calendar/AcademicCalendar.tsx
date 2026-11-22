@@ -26,6 +26,7 @@ import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';
 import { getTodayDateString, deduplicateAcademicEvents, isGenericExamTitle } from '@/lib/timetableUtils';
 import { CalendarEventType } from '@/lib/types';
+import { PageActions, PageTitle } from '@/components/ui/PageActions';
 
 interface UnifiedCalendarItem {
   id: string;
@@ -326,15 +327,15 @@ export const AcademicCalendar: React.FC = () => {
       <div className="flex flex-col gap-f4 mb-f5 sm:mb-f6">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <h2 className="page-title">
+            <PageTitle>
               Academic Calendar
-            </h2>
+            </PageTitle>
             <p className="text-[14px] text-muted mt-1.5">
               Holidays, exams and events for your semester.
             </p>
           </div>
 
-          <div className="page-actions">
+          <PageActions>
             <button
               onClick={() => {
                 if (!isSignedIn) { requestSignIn({ title: 'Sign in to add to your calendar', body: 'Events you add are saved to your account and show up on every device.' }); return; }
@@ -362,7 +363,7 @@ export const AcademicCalendar: React.FC = () => {
                 Clean {dupCount}
               </button>
             )}
-          </div>
+          </PageActions>
         </div>
 
         {/* Coming up: answers "when is the next break / exam?" without scanning the grid */}
