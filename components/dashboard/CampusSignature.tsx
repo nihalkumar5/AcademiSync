@@ -1,40 +1,49 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { MapPin } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { campusSignatureFor, lookupCampusPlace } from '@/lib/campusSignature';
 import { HandwrittenText } from '@/components/ui/HandwrittenText';
 
-// End-of-Home sign-off: the campus draws itself line by line, then the college name is
-// written by hand. Plays once per session when scrolled into view; otherwise it is static.
+// End-of-Home sign-off: the campus drawn line by line with quiet fills settling in after,
+// then the college name written by hand. Sits on the page, no card.
+// Plays once per session when scrolled into view; otherwise it is static.
 
 type Phase = 'waiting' | 'playing' | 'done';
 
 const playedKey = (slug: string) => `campus_sig_played_${slug}`;
 
-// Shared campus drawing. Every stroke has pathLength=1 so one dash animation fits all.
-// `t` marks the teal accents (trees, flag), matching the app's illustration palette.
+// Outline strokes, drawn in order. Every stroke has pathLength=1 so one dash animation fits all.
+// `t` marks the teal accents (trees, flag).
 const STROKES: { el: 'path' | 'rect' | 'circle'; p: Record<string, string | number>; t?: boolean }[] = [
-  { el: 'path', p: { d: 'M16 134 H304' } },
-  { el: 'path', p: { d: 'M118 134 V72 H202 V134' } },
-  { el: 'path', p: { d: 'M110 72 L160 44 L210 72 Z' } },
-  { el: 'circle', p: { cx: 160, cy: 61, r: 6 } },
-  { el: 'path', p: { d: 'M160 44 V20' } },
-  { el: 'path', p: { d: 'M160 20 L180 25.5 L160 31' }, t: true },
-  { el: 'path', p: { d: 'M150 134 V115 a10 10 0 0 1 20 0 V134' } },
-  { el: 'path', p: { d: 'M127 80 V134 M139 80 V134 M181 80 V134 M193 80 V134' } },
-  { el: 'path', p: { d: 'M56 134 V94 H118 M202 94 H264 V134' } },
-  { el: 'rect', p: { x: 66, y: 102, width: 9, height: 9, rx: 1 } },
-  { el: 'rect', p: { x: 82, y: 102, width: 9, height: 9, rx: 1 } },
-  { el: 'rect', p: { x: 98, y: 102, width: 9, height: 9, rx: 1 } },
-  { el: 'rect', p: { x: 213, y: 102, width: 9, height: 9, rx: 1 } },
-  { el: 'rect', p: { x: 229, y: 102, width: 9, height: 9, rx: 1 } },
-  { el: 'rect', p: { x: 245, y: 102, width: 9, height: 9, rx: 1 } },
-  { el: 'path', p: { d: 'M36 134 V114' } },
-  { el: 'circle', p: { cx: 36, cy: 102, r: 13 }, t: true },
-  { el: 'path', p: { d: 'M286 134 V117' } },
-  { el: 'circle', p: { cx: 286, cy: 106, r: 11 }, t: true },
-  { el: 'path', p: { d: 'M226 34 q4.5 -4.5 9 0 q4.5 -4.5 9 0 M248 24 q3.5 -3.5 7 0 q3.5 -3.5 7 0' } },
+  // ground
+  { el: 'path', p: { d: 'M14 150 H306' } },
+  // wings
+  { el: 'path', p: { d: 'M58 150 V104 H120 M200 104 H262 V150' } },
+  { el: 'path', p: { d: 'M54 104 H124 M196 104 H266' } },
+  // centre block and pediment
+  { el: 'path', p: { d: 'M120 150 V80 H200 V150' } },
+  { el: 'path', p: { d: 'M112 80 L160 50 L208 80 Z' } },
+  { el: 'circle', p: { cx: 160, cy: 67, r: 6.5 } },
+  { el: 'path', p: { d: 'M160 63.5 V67 L162.5 68.5' } },
+  // flag
+  { el: 'path', p: { d: 'M160 50 V24' } },
+  { el: 'path', p: { d: 'M160 24 C166 21 172 28 180 25 V35 C172 38 166 31 160 34' }, t: true },
+  // columns and door
+  { el: 'path', p: { d: 'M130 88 V140 M142 88 V140 M178 88 V140 M190 88 V140' } },
+  { el: 'path', p: { d: 'M151 140 V125 a9 9 0 0 1 18 0 V140' } },
+  // steps
+  { el: 'path', p: { d: 'M116 140 H204 M110 145 H210' } },
+  // wing windows
+  ...[68, 84, 100, 210, 226, 242].map((x) => ({ el: 'rect' as const, p: { x, y: 114, width: 10, height: 14, rx: 5 } })),
+  // trees
+  { el: 'path', p: { d: 'M34 150 V128' } },
+  { el: 'path', p: { d: 'M34 92 C46 100 48 120 34 128 C20 120 22 100 34 92 Z' }, t: true },
+  { el: 'path', p: { d: 'M288 150 V132' } },
+  { el: 'path', p: { d: 'M288 104 C298 110 300 126 288 132 C276 126 278 110 288 104 Z' }, t: true },
+  // birds
+  { el: 'path', p: { d: 'M60 40 q4 -4 8 0 q4 -4 8 0 M84 30 q3 -3 6 0 q3 -3 6 0' } },
 ];
 
 // Handwritten name sizing. Caveat averages ~0.34em per character; a little slack on top.
@@ -57,7 +66,6 @@ function splitName(name: string): string[] {
     const bounds = [0, ...cuts, words.length];
     const lines = bounds.slice(1).map((end, i) => words.slice(bounds[i], end).join(' '));
     const longest = Math.max(...lines.map((l) => l.length));
-    // shortest longest-line wins; ties prefer lines that get shorter towards the end
     const score = longest * 100 + Math.abs(lines[0].length - lines[lines.length - 1].length);
     if (score < bestScore) {
       bestScore = score;
@@ -71,10 +79,10 @@ function splitName(name: string): string[] {
   return best;
 }
 
-const STAGGER_MS = 70;
+const STAGGER_MS = 60;
 const DRAW_MS = 900;
-// The pen starts once most of the drawing is on screen
-const WRITE_DELAY_S = (STROKES.length * STAGGER_MS * 0.7 + 200) / 1000;
+const FILL_DELAY_S = (STROKES.length * STAGGER_MS + 300) / 1000;
+const NAME_DELAY_S = (STROKES.length * STAGGER_MS * 0.7 + 200) / 1000; // pen starts once most of the drawing is there
 
 export const CampusSignature: React.FC = () => {
   const { profile } = useApp();
@@ -96,7 +104,6 @@ export const CampusSignature: React.FC = () => {
   }, [sig?.slug, sig?.place, profile?.college]);
   const place = sig?.place || lookedUpPlace || undefined;
 
-  // Fit the handwriting to the space we actually have
   useEffect(() => {
     const el = ref.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
@@ -108,8 +115,8 @@ export const CampusSignature: React.FC = () => {
   const lines = sig ? splitName(sig.name) : [];
   const longest = Math.max(1, ...lines.map((l) => l.length));
   const fontSize = Math.max(MIN_PX, Math.min(MAX_PX, Math.floor((width - SIDE_PAD_PX) / (longest * CHAR_EM))));
-  const lineDelays = lines.map((_, i) => WRITE_DELAY_S + lines.slice(0, i).reduce((s, l) => s + l.length * SECONDS_PER_CHAR, 0));
-  const placeDelay = WRITE_DELAY_S + lines.reduce((s, l) => s + l.length * SECONDS_PER_CHAR, 0) + 0.2;
+  const lineDelays = lines.map((_, i) => NAME_DELAY_S + lines.slice(0, i).reduce((s, l) => s + l.length * SECONDS_PER_CHAR, 0));
+  const placeDelay = NAME_DELAY_S + lines.reduce((s, l) => s + l.length * SECONDS_PER_CHAR, 0) + 0.2;
 
   useEffect(() => {
     if (!sig) return;
@@ -141,6 +148,8 @@ export const CampusSignature: React.FC = () => {
 
   if (!sig) return null;
 
+  const fillStyle = phase === 'playing' ? { animationDelay: `${FILL_DELAY_S}s` } : undefined;
+
   return (
     <section
       ref={ref}
@@ -150,26 +159,31 @@ export const CampusSignature: React.FC = () => {
       {sig.art ? (
         <img src={sig.art} alt="" aria-hidden="true" className="campus-sig__art w-full max-w-[300px] h-auto" />
       ) : (
-        <svg
-          viewBox="0 0 320 146"
-          aria-hidden="true"
-          className="w-full max-w-[300px] h-auto text-fg/70"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.6}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          {STROKES.map(({ el: Tag, p, t }, i) => (
-            <Tag
-              key={i}
-              {...(p as any)}
-              pathLength={1}
-              className={`campus-sig__line${t ? ' text-[#00a3a3] dark:text-[#2fd1c5]' : ''}`}
-              stroke={t ? 'currentColor' : undefined}
-              style={{ animationDelay: `${i * STAGGER_MS}ms`, animationDuration: `${DRAW_MS}ms` }}
-            />
-          ))}
+        <svg viewBox="0 0 320 162" aria-hidden="true" className="w-full max-w-[300px] h-auto" fill="none">
+          {/* Quiet fills under the outline: white building faces, warm windows, teal tree crowns */}
+          <g className="campus-sig__fill" style={fillStyle}>
+            <ellipse cx="160" cy="151" rx="130" ry="4" className="fill-fg/[0.06]" />
+            <path d="M58 150 V104 H262 V150 Z M120 150 V80 H200 V150 Z M112 80 L160 50 L208 80 Z" className="fill-surface" />
+            {[68, 84, 100, 210, 226, 242].map((x) => (
+              <rect key={x} x={x} y={114} width={10} height={14} rx={5} className="fill-[#F6C77F]/80 dark:fill-[#E9B15F]/60" />
+            ))}
+            <path d="M151 140 V125 a9 9 0 0 1 18 0 V140 Z" className="fill-[#F6C77F]/80 dark:fill-[#E9B15F]/60" />
+            <path d="M34 92 C46 100 48 120 34 128 C20 120 22 100 34 92 Z" className="fill-[#00a3a3]/15 dark:fill-[#2fd1c5]/20" />
+            <path d="M288 104 C298 110 300 126 288 132 C276 126 278 110 288 104 Z" className="fill-[#00a3a3]/15 dark:fill-[#2fd1c5]/20" />
+            <path d="M160 24 C166 21 172 28 180 25 V35 C172 38 166 31 160 34 Z" className="fill-[#00a3a3]/20 dark:fill-[#2fd1c5]/30" />
+          </g>
+          <g stroke="currentColor" strokeWidth={1.4} strokeLinecap="round" strokeLinejoin="round" className="text-fg/70">
+            {STROKES.map(({ el: Tag, p, t }, i) => (
+              <Tag
+                key={i}
+                {...(p as any)}
+                pathLength={1}
+                className={`campus-sig__line${t ? ' text-[#00a3a3] dark:text-[#2fd1c5]' : ''}`}
+                stroke={t ? 'currentColor' : undefined}
+                style={{ animationDelay: `${i * STAGGER_MS}ms`, animationDuration: `${DRAW_MS}ms` }}
+              />
+            ))}
+          </g>
         </svg>
       )}
 
@@ -190,9 +204,10 @@ export const CampusSignature: React.FC = () => {
 
       {place && (
         <p
-          className="campus-sig__place mt-1.5 text-[12px] font-medium text-muted tracking-[0.02em]"
+          className="campus-sig__place mt-2 inline-flex items-center gap-1 text-[12px] font-medium text-muted"
           style={phase === 'playing' ? { animationDelay: `${placeDelay}s` } : undefined}
         >
+          <MapPin className="w-3.5 h-3.5" strokeWidth={2} />
           {place}
         </p>
       )}
