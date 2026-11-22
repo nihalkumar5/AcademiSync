@@ -361,11 +361,11 @@ export const FacultyBatchesView: React.FC = () => {
     <div className="flex flex-col gap-f5 text-left max-w-4xl mx-auto w-full pb-f7">
       <FacultyPageHeader
         eyebrow="Batches"
-        title="Your classes"
+        title="Batches"
         description="Every batch you teach, its pilots and its timetable."
         action={
           linkedBatches.length > 0 && (
-            <button type="button" onClick={() => setIsConnectModalOpen(true)} className="btn btn-secondary btn-sm">
+            <button type="button" onClick={() => setIsConnectModalOpen(true)} className="btn btn-primary btn-sm">
               <Plus className="w-4 h-4" /> Connect batch
             </button>
           )

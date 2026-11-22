@@ -376,7 +376,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
               {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
             </div>
             {isRescheduled && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-mono font-bold uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-semibold">
                 <Clock className="w-2.5 h-2.5" />
                 Rescheduled
                 {rescheduleMeta?.originalStartTime ? ` (Was ${formatTime12Hour(rescheduleMeta.originalStartTime)})` : ''}
@@ -387,7 +387,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                 Lab
               </span>
             )}
-            <span className="px-2 py-0.5 rounded-full bg-white/10 text-[11px] font-mono font-bold uppercase tracking-wider text-white/80">
+            <span className="px-2 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white/80">
               {pillLabel}
             </span>
           </div>

@@ -2,29 +2,27 @@
 
 import React from 'react';
 import { Users, Plus } from '@/components/ui/icons';
+import { PageTitle, PageActions } from '@/components/ui/PageActions';
 
-// Faculty page header in the same editorial style as the student pages.
+// Faculty page header, the same as every student page: a one-line title with the round primary
+// button and the "⋯" menu beside it (PageActions), then a short description.
 export const FacultyPageHeader: React.FC<{
-  eyebrow: string;
+  /** Kept for callers; no longer shown (the title already names the page) */
+  eyebrow?: string;
   title: string;
   description?: string;
   action?: React.ReactNode;
-}> = ({ eyebrow, title, description, action }) => (
-  <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-f3">
-    <div className="min-w-0">
-      <span className="tag bg-surface">
-        {eyebrow}
-      </span>
-      <h2 className="mt-f3 page-title">{title}</h2>
-      {description && <p className="mt-2 text-[14px] leading-[20px] text-muted max-w-md">{description}</p>}
-    </div>
-    {action && <div className="shrink-0">{action}</div>}
+}> = ({ title, description, action }) => (
+  <div className="min-w-0">
+    <PageTitle>{title}</PageTitle>
+    {action && <PageActions>{action}</PageActions>}
+    {description && <p className="mt-2 text-[14px] leading-[20px] text-muted max-w-md">{description}</p>}
   </div>
 );
 
 // Shown wherever a screen needs a linked batch before it can show anything.
 export const FacultyNoBatches: React.FC<{ onConnect: () => void; title: string; body: string; note?: string }> = ({ onConnect, title, body, note }) => (
-  <div className="rounded-card flex flex-col items-center justify-center text-center px-6 py-10 border border-dashed border-line">
+  <div className="rounded-card flex flex-col items-center justify-center text-center px-6 py-10 bg-surface shadow-[0_1px_2px_rgba(17,17,17,0.04)] dark:bg-surface-2 dark:shadow-none">
     <div className="rounded-xl mb-4 w-14 h-14 flex items-center justify-center bg-surface-2 border border-line-soft text-fg">
       <Users className="w-6 h-6" />
     </div>

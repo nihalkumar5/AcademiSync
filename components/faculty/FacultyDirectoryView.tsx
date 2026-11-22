@@ -254,7 +254,7 @@ export const FacultyDirectoryView: React.FC = () => {
 
             {groups.length > 0 && (
               <div className="mt-f5">
-                <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-faint mb-f3">{f.teachesYou ? 'Teaches you' : 'Subjects'}</p>
+                <p className="text-[12px] font-semibold text-faint mb-f3">{f.teachesYou ? 'Teaches you' : 'Subjects'}</p>
                 <div className="flex flex-col gap-f4">
                   {groups.map((g) => (
                     <div key={g.name}>

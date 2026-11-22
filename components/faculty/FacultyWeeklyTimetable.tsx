@@ -379,11 +379,11 @@ export const FacultyWeeklyTimetable: React.FC = () => {
     <div className="flex flex-col gap-f5 sm:gap-f6 text-left w-full max-w-full">
       <FacultyPageHeader
         eyebrow="Teaching timetable"
-        title="Your week"
+        title="Timetable"
         description="Pick any date to cancel, reschedule or move a class. Students hear about it straight away."
         action={
           linkedBatches.length > 0 && (
-            <button type="button" onClick={() => setIsConnectBatchOpen(true)} className="btn btn-secondary btn-sm">
+            <button type="button" onClick={() => setIsConnectBatchOpen(true)} className="btn btn-primary btn-sm">
               <Plus className="w-4 h-4" /> Add batch
             </button>
           )
@@ -512,14 +512,14 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                 const categoryLabel = isLive
                   ? 'LIVE NOW'
                   : isCancelled
-                  ? (agg.movedTo ? 'MOVED' : 'CANCELLED')
+                  ? (agg.movedTo ? 'Moved' : 'Cancelled')
                   : agg.isExtra
-                  ? (agg.movedFrom ? 'MOVED HERE' : 'EXTRA CLASS')
+                  ? (agg.movedFrom ? 'Moved here' : 'EXTRA CLASS')
                   : isRescheduled
-                  ? 'RESCHEDULED'
+                  ? 'Rescheduled'
                   : session.isLab
                   ? 'LAB SESSION'
-                  : (subjectCode || 'LECTURE');
+                  : (subjectCode || 'Lecture');
 
                 return (
                   <div
@@ -558,7 +558,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                     <div className="relative z-10 flex flex-col">
                       <div className="flex items-center justify-between gap-2 mb-2.5">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[11px] font-bold uppercase tracking-[1.4px] leading-none">
+                          <span className="text-[11px] font-semibold leading-none">
                             <span className="dark:hidden inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/80 text-slate-800 text-[11px] font-bold tracking-wider font-mono border border-black/[0.05] shadow-xs">
                               <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isLive ? '#18A889' : theme.accent }} />
                               {categoryLabel}
@@ -618,7 +618,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                           <span className="text-[11px] leading-none opacity-80 text-muted">◉</span> {session.room || 'Room TBA'}
                         </span>
                         <span className="shrink-0 opacity-40">·</span>
-                        <span className="truncate px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[11px] font-bold uppercase tracking-wider text-fg-2 inline-flex items-center font-mono border border-line-soft">
+                        <span className="truncate px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[11px] font-semibold text-fg-2 inline-flex items-center border border-line-soft">
                           {pillLabel}
                         </span>
                       </div>
@@ -668,7 +668,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
 
                   <div className="flex flex-col gap-3 min-h-[400px]">
                     {daySessions.length === 0 ? (
-                      <div className="rounded-card flex flex-col items-center justify-center h-48 text-center bg-surface-2 border border-dashed border-line">
+                      <div className="rounded-card flex flex-col items-center justify-center h-48 text-center bg-surface-2">
                         <CalendarDays className="w-6 h-6 text-[#6B6B6B] mb-2 opacity-50" />
                         <span className="text-xs font-semibold text-muted">No Lectures</span>
                       </div>
@@ -698,14 +698,14 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                         const categoryLabel = isLive
                           ? 'LIVE NOW'
                           : isCancelled
-                          ? (agg.movedTo ? 'MOVED' : 'CANCELLED')
+                          ? (agg.movedTo ? 'Moved' : 'Cancelled')
                           : agg.isExtra
-                          ? (agg.movedFrom ? 'MOVED HERE' : 'EXTRA')
+                          ? (agg.movedFrom ? 'Moved here' : 'Extra')
                           : isRescheduled
-                          ? 'RESCHEDULED'
+                          ? 'Rescheduled'
                           : session.isLab
                           ? 'LAB'
-                          : (subjectCode || 'LECTURE');
+                          : (subjectCode || 'Lecture');
 
                         return (
                           <div
@@ -743,7 +743,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
 
                             <div className="relative z-10 flex flex-col">
                               <div className="flex items-center justify-between gap-1.5 mb-2">
-                                <span className="text-[11px] font-bold uppercase tracking-wider leading-none">
+                                <span className="text-[11px] font-semibold leading-none">
                                   <span className="dark:hidden inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/80 text-slate-800 text-[11px] font-bold font-mono border border-black/[0.05] shadow-xs">
                                     <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isLive ? '#18A889' : theme.accent }} />
                                     {categoryLabel}

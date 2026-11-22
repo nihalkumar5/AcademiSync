@@ -181,7 +181,7 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
     return (
       <div className="flex flex-col text-left">
         <div className="flex items-center justify-between px-1 mb-6">
-          <h3 className="text-[13px] font-bold text-fg tracking-widest uppercase">
+          <h3 className="section-title">
             {headerTitle}
           </h3>
         </div>
@@ -205,11 +205,11 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
     <div className="flex flex-col text-left">
       {/* Header */}
       <div className="flex items-center justify-between px-1 mb-6">
-        <h3 className="text-[13px] font-bold text-fg tracking-widest uppercase">
+        <h3 className="section-title">
           {headerTitle}
         </h3>
-        <span className="text-[11px] font-bold text-[#6B6B6B] uppercase tracking-wider">
-          {focusItems.length} {focusItems.length === 1 ? 'PRIORITY' : 'PRIORITIES'}
+        <span className="text-[11px] font-semibold text-muted">
+          {focusItems.length} {focusItems.length === 1 ? 'priority' : 'priorities'}
         </span>
       </div>
 
@@ -308,7 +308,7 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
                   </div>
 
                   {/* Tag */}
-                  <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-muted break-words pr-2 mt-3.5">
+                  <span className="text-[11px] font-semibold text-muted break-words pr-2 mt-3.5">
                     {item.tag}
                   </span>
 
@@ -333,7 +333,7 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
                     {item.deadlineText ? (
                       <span
                         className={clsx(
-                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold font-mono uppercase tracking-wider',
+                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold',
                           isUrgent
                             ? 'bg-[#FFF0E8] text-[#C96B45] border border-[#F5D8CC] dark:bg-orange-500/15 dark:text-orange-300 dark:border-orange-500/30'
                             : isOverdue
