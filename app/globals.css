@@ -17,18 +17,18 @@
 }
 
 :root {
-  --background: #FFFFFF;
+  --background: #F6F5F2;
   --foreground: #111111;
 
   /* ── Design system: neutral scale (light) ─────────────────────────────
      Black and white only. Colour is reserved for meaning (danger / ok).
      canvas < surface < surface-2 < surface-3 is the elevation / fill order. */
-  --c-canvas: 255 255 255;     /* #FFFFFF  page: clean white */
+  --c-canvas: 246 245 242;     /* #F6F5F2  page: warm off-white, white cards sit on it */
   --c-surface: 255 255 255;    /* #FFFFFF  cards, sheets, inputs */
-  --c-surface-2: 247 247 245;  /* #F7F7F5  quiet fill, hover, chips */
-  --c-surface-3: 234 234 231;  /* #EAEAE7  pressed, selected-soft, tracks */
-  --c-line: 226 226 223;       /* #E2E2DF  borders */
-  --c-line-soft: 238 238 236;  /* #EEEEEC  dividers inside cards */
+  --c-surface-2: 239 238 234;  /* #EFEEEA  quiet fill, hover, chips (reads on page and card) */
+  --c-surface-3: 229 228 223;  /* #E5E4DF  pressed, selected-soft, tracks */
+  --c-line: 225 224 219;       /* #E1E0DB  borders */
+  --c-line-soft: 236 235 231;  /* #ECEBE7  dividers inside cards */
   --c-line-strong: 17 17 17;   /* #111111  focus, hover, active outline */
   --c-fg: 17 17 17;            /* #111111  primary text */
   --c-fg-2: 61 61 59;          /* #3D3D3B  secondary text */
@@ -176,8 +176,11 @@ body {
   -webkit-overflow-scrolling: touch;
   -webkit-tap-highlight-color: transparent;
   color: var(--foreground);
-  /* Light: a clean, flat page. Cards separate by soft fills and a gentle shadow, no grid. */
+  /* Light: warm off-white page with a soft warm glow at the top; white cards sit on it, no grid. */
   background-color: rgb(var(--c-canvas));
+  background-image:
+    radial-gradient(ellipse 100% 45% at 50% -10%, rgba(255, 228, 196, 0.45), transparent 70%);
+  background-attachment: fixed;
   font-feature-settings: "rlig" 1, "calt" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -185,7 +188,7 @@ body {
 
 .dark body, body.dark {
   /* Neutral ink black. The top glow is warm (not blue) so dark mode belongs to the same warm-paper
-     family as light mode; fine grid and a soft edge vignette give depth. */
+     family as light mode. */
   background-color: rgb(var(--c-canvas));
   background-image:
     radial-gradient(ellipse 90% 50% at 50% -12%, rgba(255, 232, 205, 0.075), transparent 70%);
@@ -536,13 +539,14 @@ body.fullscreen-open header:not([aria-modal="true"] header) {
 
 /* Header bar: classic frosted glass in light mode; a plain solid bar in dark mode */
 .lg-header-bar {
-  background: rgb(255 255 255 / 0.86);
+  /* See-through at the top so the page glow runs under it; frosted once the page scrolls. */
+  background: transparent;
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   backdrop-filter: blur(20px) saturate(160%);
   border-bottom: 0.5px solid transparent;
-  transition: border-color .2s ease;
+  transition: border-color .2s ease, background-color .2s ease;
 }
-.lg-header-bar.is-scrolled { border-bottom-color: rgb(0 0 0 / 0.08); }
+.lg-header-bar.is-scrolled { background: rgb(var(--c-canvas) / 0.86); border-bottom-color: rgb(0 0 0 / 0.08); }
 .dark .lg-header-bar {
   background: rgb(var(--c-canvas) / 0.9);
   border-bottom: 1px solid transparent;

@@ -30,7 +30,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   note,
 }) => {
   return (
-    <div className={`rounded-card flex flex-col items-center justify-center text-center px-6 py-10 my-4 bg-surface-2 ${className}`}>
+    <div className={`rounded-card flex flex-col items-center justify-center text-center px-6 py-10 my-4 bg-surface ${className}`}>
       {illustration ? (
         <Illustration name={illustration} className="mb-f4 h-[180px] w-auto max-w-[260px]" />
       ) : icon && (
