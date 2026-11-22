@@ -504,6 +504,7 @@ export default function CampusAdminPage() {
           lockedCollege={data.college}
           allowPush
           pushAlreadySent={!!editing?.pushSentAt}
+          aiEndpoint={withPreview('/api/campus-admin/notice-ai')}
         />
       )}
 

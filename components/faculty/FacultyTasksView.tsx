@@ -175,7 +175,7 @@ export const FacultyTasksView: React.FC = () => {
     <div className="flex flex-col gap-f5 text-left max-w-4xl mx-auto w-full pb-f7">
       <FacultyPageHeader
         eyebrow="Assignments"
-        title="Coursework"
+        title="Assignments"
         description="Post work to your batches and see who has opened it."
         action={
           linkedBatches.length > 0 && (
@@ -335,7 +335,7 @@ export const FacultyTasksView: React.FC = () => {
                       </span>
 
                       {/* Batch Pill */}
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-mono font-bold uppercase bg-ink text-on-ink">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-ink text-on-ink">
                         {batchLabel}
                       </span>
 

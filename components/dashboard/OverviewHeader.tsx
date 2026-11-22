@@ -92,8 +92,7 @@ export const OverviewHeader: React.FC = () => {
         <h2 className="mt-f3 tracking-tight">
           <span className="block text-[34px] leading-[40px] sm:text-[44px] sm:leading-[50px] font-normal text-muted">{greeting},</span>
           <span className="block mt-0.5 text-[44px] leading-[50px] sm:text-[56px] sm:leading-[62px] font-semibold text-fg break-words">
-            {(profile?.name || 'Student').split(' ')[0]}{' '}
-            <span aria-hidden="true" className="inline-block origin-[70%_70%] animate-[wave_1.8s_ease-in-out_1]">👋</span>
+            {(profile?.name || 'Student').split(' ')[0]}
           </span>
         </h2>
 

@@ -240,7 +240,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
           <h3 className="text-[12px] sm:text-[13px] font-bold text-fg truncate">
             {isAfter8PM ? "TOMORROW'S SCHEDULE" : "TODAY'S SCHEDULE"}
           </h3>
-          <span className="text-[11px] sm:text-[11px] font-mono font-medium text-[#6B6B6B] uppercase tracking-wider mt-0.5">
+          <span className="text-[11px] sm:text-[11px] font-medium text-muted mt-0.5">
             {targetDay}
           </span>
         </div>
@@ -394,7 +394,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                               Lab
                             </span>
                           ) : agg.isUpcoming && agg.minutesUntilStart !== undefined && agg.minutesUntilStart > 0 ? (
-                            <span className="px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-fg-2 text-[11px] font-mono font-bold uppercase tracking-wider shrink-0">
+                            <span className="px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-fg-2 text-[11px] font-semibold shrink-0">
                               in {agg.minutesUntilStart < 60 ? `${agg.minutesUntilStart}m` : `${Math.floor(agg.minutesUntilStart / 60)}h ${agg.minutesUntilStart % 60}m`}
                             </span>
                           ) : null}

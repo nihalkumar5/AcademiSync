@@ -390,7 +390,7 @@ export const AttendanceView: React.FC = () => {
       ) : !roster ? (
         /* First run for this batch */
         <section className="sheen-ink relative overflow-hidden bg-ink text-on-ink p-f5 sm:p-f6">
-          <p className="text-[12px] font-semibold uppercase tracking-[1.4px] text-on-ink/60">One-time setup</p>
+          <p className="text-[12px] font-semibold text-on-ink/60">One-time setup</p>
           <h3 className="mt-2 text-[24px] font-semibold leading-tight tracking-tight">Confirm your class list</h3>
           <p className="mt-2 text-[14px] leading-[21px] text-on-ink/70 max-w-md">
             Check who&apos;s in {batchLabel || 'this batch'} and lock the list. After that, students check themselves in with a QR, or you mark by hand.
@@ -419,7 +419,7 @@ export const AttendanceView: React.FC = () => {
           {/* The lecture to take now */}
           {focus ? (
             <section className="sheen-ink relative overflow-hidden bg-ink text-on-ink p-f5 sm:p-f6">
-              <p className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[1.4px] text-on-ink/60">
+              <p className="flex items-center gap-2 text-[12px] font-semibold text-on-ink/60">
                 {focus.live ? (
                   <>
                     <span className="relative flex w-2 h-2">
@@ -481,7 +481,7 @@ export const AttendanceView: React.FC = () => {
           {todayItems.length > 0 && (
             <section>
               <div className="flex items-baseline justify-between gap-3 mb-2 px-0.5">
-                <h3 className="text-[13px] font-semibold uppercase tracking-[1.2px] text-muted">
+                <h3 className="text-[13px] font-semibold text-muted">
                   Today <span className="tabular-nums normal-case tracking-normal font-medium">· {markedToday}/{todayItems.length} marked</span>
                 </h3>
                 <button type="button" onClick={openExtra} className="inline-flex items-center gap-1 text-[13px] font-semibold text-fg hover:underline underline-offset-4 cursor-pointer">
@@ -573,7 +573,7 @@ export const AttendanceView: React.FC = () => {
                 <div className="mt-f4 flex flex-col gap-f4">
                   {Object.entries(grouped).map(([date, list]) => (
                     <div key={date}>
-                      <p className="mb-2 px-0.5 text-[12px] font-semibold uppercase tracking-[1.2px] text-muted">{dateLabel(date)}</p>
+                      <p className="mb-2 px-0.5 text-[12px] font-semibold text-muted">{dateLabel(date)}</p>
                       <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
                         {list.map((s) => {
                           const pct = ((s.total - s.absent) / Math.max(s.total, 1)) * 100;

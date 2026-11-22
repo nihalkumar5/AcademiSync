@@ -2,7 +2,8 @@
 
 import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Upload, Check, Globe, Crosshair, Search, Loader2, ImageIcon, AlertCircle, CheckCircle2 } from '@/components/ui/icons';
+import { X, Upload, Check, Globe, Crosshair, Search, Loader2, ImageIcon, AlertCircle, CheckCircle2, Sparkles, RefreshCw } from '@/components/ui/icons';
+import { getAuthHeaders } from '@/lib/authHeaders';
 import { CampaignCategory } from '@/lib/types';
 import { CollegeItem } from '@/lib/collegeDirectory';
 import { SpotlightCardView, CAMPAIGN_CATEGORIES, getCategoryMeta } from '@/components/ads/CampusSpotlightCard';
@@ -169,6 +170,8 @@ export interface CampaignComposerProps {
   allowPush?: boolean;
   /** This notice already sent its notification. */
   pushAlreadySent?: boolean;
+  /** Campus admins: endpoint that drafts the notice from a rough note with AI. */
+  aiEndpoint?: string;
 }
 
 export const CampaignComposer: React.FC<CampaignComposerProps> = ({
@@ -188,6 +191,7 @@ export const CampaignComposer: React.FC<CampaignComposerProps> = ({
   lockedCollege,
   allowPush,
   pushAlreadySent,
+  aiEndpoint,
 }) => {
   const [touched, setTouched] = useState(false);
   const [saving, setSaving] = useState<null | 'draft' | 'publish'>(null);
@@ -195,6 +199,10 @@ export const CampaignComposer: React.FC<CampaignComposerProps> = ({
   const [imageError, setImageError] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [brief, setBrief] = useState('');
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiError, setAiError] = useState('');
+  const [aiDone, setAiDone] = useState(false);
 
   const set = <K extends keyof CampaignFormState>(k: K, v: CampaignFormState[K]) => setForm((p) => ({ ...p, [k]: v }));
   const toggle = <T,>(list: T[], v: T) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
@@ -237,11 +245,42 @@ export const CampaignComposer: React.FC<CampaignComposerProps> = ({
     }
   };
 
+  const writeWithAi = async () => {
+    if (!aiEndpoint || aiBusy) return;
+    if (brief.trim().length < 4) return setAiError('Write a line or two about the notice first.');
+    setAiBusy(true);
+    setAiError('');
+    try {
+      const res = await fetch(aiEndpoint, {
+        method: 'POST',
+        headers: await getAuthHeaders(),
+        body: JSON.stringify({ brief, draft: aiDone ? { title: form.title, subtitle: form.subtitle } : undefined }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.error || 'AI could not write this one. Try again.');
+      const n = json.notice;
+      setForm((p) => ({
+        ...p,
+        title: n.title,
+        subtitle: n.subtitle,
+        ctaText: n.ctaText,
+        category: n.category,
+        badgeText: n.badgeText,
+        expiresOn: n.expiresOn || p.expiresOn,
+      }));
+      setAiDone(true);
+    } catch (e: any) {
+      setAiError(e.message || 'AI could not write this one. Try again.');
+    } finally {
+      setAiBusy(false);
+    }
+  };
+
   const meta = getCategoryMeta(form.category);
   const reachPct = totalStudents ? Math.round((reach / totalStudents) * 100) : 0;
 
   return (
-    <div className="fixed inset-0 z-50 bg-canvas overflow-y-auto font-sans" role="dialog" aria-modal="true" aria-label={editing ? 'Edit ad' : 'New ad'}>
+    <div className="fixed inset-0 z-50 bg-canvas overflow-y-auto font-sans" role="dialog" aria-modal="true" aria-label={lockedCollege ? (editing ? 'Edit notice' : 'New notice') : editing ? 'Edit ad' : 'New ad'}>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="min-h-full flex flex-col">
         {/* Top bar: always reachable save actions (Fitts: big, fixed targets) */}
         <header
@@ -253,7 +292,7 @@ export const CampaignComposer: React.FC<CampaignComposerProps> = ({
               <button type="button" onClick={onClose} className={btn.icon} aria-label="Close">
                 <X className="w-5 h-5" />
               </button>
-              <h2 className={`text-[17px] font-semibold truncate ${strong}`}>{editing ? 'Edit ad' : 'New ad'}</h2>
+              <h2 className={`text-[17px] font-semibold truncate ${strong}`}>{lockedCollege ? (editing ? 'Edit notice' : 'New notice') : editing ? 'Edit ad' : 'New ad'}</h2>
             </div>
             <div className="flex items-center gap-2">
               <button type="button" onClick={() => submit(false)} disabled={!!saving} className={`${btn.secondary} hidden sm:inline-flex`}>
@@ -311,6 +350,47 @@ export const CampaignComposer: React.FC<CampaignComposerProps> = ({
             }}
           >
             <Step n={1} title="Message" description="One clear promise and one action. Short copy gets more taps.">
+              {aiEndpoint && (
+                <div className="rounded-card p-f4 bg-gradient-to-br from-violet-50 to-sky-50 border border-violet-100 dark:from-violet-400/[0.08] dark:to-sky-400/[0.06] dark:border-violet-400/15 flex flex-col gap-f3">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full w-8 h-8 flex items-center justify-center bg-surface text-violet-600 dark:text-violet-300 shadow-[0_1px_2px_rgba(17,17,17,0.06)]">
+                      <Sparkles className="w-4 h-4" />
+                    </span>
+                    <div>
+                      <p className={`text-[15px] font-semibold leading-tight ${strong}`}>Write with AI</p>
+                      <p className={`text-[13px] leading-tight ${muted}`}>Describe it in a line or two, in any language</p>
+                    </div>
+                  </div>
+                  <textarea
+                    rows={3}
+                    maxLength={1200}
+                    value={brief}
+                    onChange={(e) => setBrief(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault();
+                        writeWithAi();
+                      }
+                    }}
+                    aria-label="What is the notice about?"
+                    placeholder="e.g. Hackathon on 28 Nov in the auditorium from 5 PM. Register by 26 Nov, teams of 4."
+                    className={`${inputCls} h-auto py-2.5 resize-none bg-surface`}
+                  />
+                  {aiError && (
+                    <p className="text-[13px] text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5" /> {aiError}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button type="button" onClick={writeWithAi} disabled={aiBusy} className={btn.primary}>
+                      {aiBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : aiDone ? <RefreshCw className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+                      {aiBusy ? 'Writing…' : aiDone ? 'Rewrite' : 'Write notice'}
+                    </button>
+                    {aiDone && !aiBusy && <p className={`text-[13px] ${muted}`}>Filled in below. Review and edit anything.</p>}
+                  </div>
+                  <p className={`text-[12px] ${muted}`}>AI only uses the details you give. Add the link and image yourself.</p>
+                </div>
+              )}
               <Field label="Category" hint="Sets the icon and default label on the card.">
                 <div className="flex flex-wrap gap-2">
                   {CAMPAIGN_CATEGORIES.map((c) => (
