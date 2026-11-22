@@ -101,7 +101,7 @@ export const HomeRoutinesCard: React.FC = () => {
         )}
       </div>
 
-      <div className="sheen border border-line bg-surface overflow-hidden">
+      <div className="sheen rounded-card border border-line bg-surface overflow-hidden">
         {routines.length === 0 ? (
           /* First run: one starting point that fits this time of day */
           <div className="p-f4">
@@ -113,22 +113,22 @@ export const HomeRoutinesCard: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => open('routines:new', { ...starter, isActive: true })}
-                  className="mt-f4 w-full flex items-center gap-f3 p-f3 border border-line-soft text-left hover:border-line-strong transition-colors cursor-pointer"
+                  className="rounded-tile mt-f4 w-full flex items-center gap-f3 p-f3 border border-line-soft text-left hover:border-line-strong transition-colors cursor-pointer"
                 >
-                  <span className="w-f6 h-f6 shrink-0 flex items-center justify-center" style={{ backgroundColor: `${c.color}14`, boxShadow: `inset 0 0 0 1px ${c.color}1F` }} aria-hidden="true">
+                  <span className="w-f6 h-f6 shrink-0 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${c.color}14`, boxShadow: `inset 0 0 0 1px ${c.color}1F` }} aria-hidden="true">
                     <Icon3D name={iconForRoutine(starter.title, starter.category)} size={30} />
                   </span>
                   <span className="flex-1 min-w-0">
                     <span className="block text-[15px] font-semibold text-fg truncate">{starter.title}</span>
                     <span className="block text-[13px] text-muted tabular-nums">{formatRoutineTime(starter.time)}{starter.durationMinutes ? ` · ${starter.durationMinutes} min` : ''}</span>
                   </span>
-                  <span className="shrink-0 inline-flex items-center gap-1 h-9 px-f3 bg-ink text-on-ink text-[13px] font-semibold">
+                  <span className="rounded-full shrink-0 inline-flex items-center gap-1 h-9 px-f3 bg-ink text-on-ink text-[13px] font-semibold">
                     <Plus className="w-3.5 h-3.5" /> Add
                   </span>
                 </button>
               );
             })()}
-            <button type="button" onClick={() => open('routines:templates')} className="mt-f2 inline-flex items-center gap-f2 h-10 text-[13px] font-semibold text-fg hover:underline underline-offset-4 cursor-pointer">
+            <button type="button" onClick={() => open('routines:templates')} className="rounded-full mt-f2 inline-flex items-center gap-f2 h-10 text-[13px] font-semibold text-fg hover:underline underline-offset-4 cursor-pointer">
               <LayoutTemplate className="w-4 h-4" /> More templates
             </button>
           </div>
@@ -188,7 +188,7 @@ export const HomeRoutinesCard: React.FC = () => {
                         {when}
                       </p>
                       <div className="mt-f3 flex items-center gap-f3">
-                        <span className="w-f6 h-f6 shrink-0 flex items-center justify-center" style={{ backgroundColor: `${c.color}14`, boxShadow: `inset 0 0 0 1px ${c.color}1F` }} aria-hidden="true">
+                        <span className="w-f6 h-f6 shrink-0 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${c.color}14`, boxShadow: `inset 0 0 0 1px ${c.color}1F` }} aria-hidden="true">
                           <Icon3D name={iconForRoutine(r.title, r.category)} size={30} />
                         </span>
                         <button type="button" onClick={() => open()} className="flex-1 min-w-0 text-left cursor-pointer">
@@ -203,7 +203,7 @@ export const HomeRoutinesCard: React.FC = () => {
                         type="button"
                         onClick={() => toggleRoutineDone(r.id, dateKey(now))}
                         aria-label={`Mark ${r.title} done`}
-                        className="mt-f4 w-full h-11 inline-flex items-center justify-center gap-f2 bg-ink text-on-ink text-[14px] font-semibold active:scale-[0.98] transition-transform cursor-pointer"
+                        className="rounded-full mt-f4 w-full h-11 inline-flex items-center justify-center gap-f2 bg-ink text-on-ink text-[14px] font-semibold active:scale-[0.98] transition-transform cursor-pointer"
                       >
                         <Check className="w-4 h-4" strokeWidth={3} /> Mark done
                       </button>

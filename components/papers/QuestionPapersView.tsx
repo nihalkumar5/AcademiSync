@@ -70,7 +70,7 @@ const Chip: React.FC<{ active: boolean; onClick: () => void; children: React.Rea
 const PaperRow: React.FC<{ p: PaperSummary; isStaff: boolean; onOpen: () => void }> = ({ p, isStaff, onOpen }) => (
   <li>
     <button type="button" onClick={onOpen} className="group w-full flex items-center gap-3 px-f4 py-3 text-left hover:bg-surface-2 transition-colors cursor-pointer">
-      <span className="w-10 h-10 shrink-0 flex items-center justify-center border border-line-soft text-fg-2">
+      <span className="rounded-xl w-10 h-10 shrink-0 flex items-center justify-center border border-line-soft text-fg-2">
         <FileText className="w-[18px] h-[18px]" />
       </span>
       <span className="flex-1 min-w-0">
@@ -136,7 +136,7 @@ const Viewer: React.FC<{
       {paper && (
         <div className="flex flex-col gap-f4">
           {error && (
-            <p className="flex items-start gap-2 px-3 py-2.5 border border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-400/10 dark:border-rose-400/20 dark:text-rose-300 text-[14px]">
+            <p className="rounded-tile flex items-start gap-2 px-3 py-2.5 border border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-400/10 dark:border-rose-400/20 dark:text-rose-300 text-[14px]">
               <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /> {error}
             </p>
           )}
@@ -146,8 +146,8 @@ const Viewer: React.FC<{
             </div>
           )}
           {pages && paper.kind === 'pdf' && pages[0] && (
-            <div className="flex flex-col items-center text-center border border-line px-5 py-f5">
-              <span className="w-12 h-12 flex items-center justify-center border border-line-soft">
+            <div className="rounded-card flex flex-col items-center text-center border border-line px-5 py-f5">
+              <span className="rounded-xl w-12 h-12 flex items-center justify-center border border-line-soft">
                 <FileText className="w-5 h-5" />
               </span>
               <p className="mt-3 text-[15px] font-semibold text-fg">PDF question paper</p>
@@ -160,7 +160,7 @@ const Viewer: React.FC<{
           {pages && paper.kind === 'images' && (
             <div className="flex flex-col gap-3">
               {pages.map((pg, i) => (
-                <figure key={i} className="border border-line bg-surface-2">
+                <figure key={i} className="rounded-card border border-line bg-surface-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={pg.url} alt={`Page ${i + 1}`} className="w-full h-auto block" loading={i < 2 ? 'eager' : 'lazy'} />
                   <figcaption className="flex items-center justify-between px-3 py-2 border-t border-line text-[12px] text-muted">
@@ -333,11 +333,11 @@ const UploadSheet: React.FC<{
 
   const set = (patch: Partial<PaperFields>) => setFields((f) => (f ? { ...f, ...patch } : f));
   const label = 'block text-[13px] font-medium text-fg-2 mb-1.5';
-  const input = 'w-full h-11 px-3 bg-surface border border-line text-[15px] text-fg placeholder:text-faint focus:outline-none focus:border-line-strong';
+  const input = 'rounded-field w-full h-11 px-3 bg-surface border border-line text-[15px] text-fg placeholder:text-faint focus:outline-none focus:border-line-strong';
   const years = Array.from({ length: 12 }, (_, i) => new Date().getFullYear() + 1 - i);
 
   const dupCard = (p: PaperSummary, text: string) => (
-    <div className="border border-amber-200/80 bg-amber-50/70 dark:bg-amber-400/[0.06] dark:border-amber-400/20 p-f3">
+    <div className="rounded-tile border border-amber-200/80 bg-amber-50/70 dark:bg-amber-400/[0.06] dark:border-amber-400/20 p-f3">
       <p className="flex items-start gap-2 text-[14px] font-semibold text-fg">
         <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" /> {text}
       </p>
@@ -347,7 +347,7 @@ const UploadSheet: React.FC<{
           close();
           onOpenPaper(p);
         }}
-        className="mt-2.5 w-full flex items-center gap-3 border border-line bg-surface px-3 py-2.5 text-left hover:bg-surface-2 cursor-pointer"
+        className="rounded-tile mt-2.5 w-full flex items-center gap-3 border border-line bg-surface px-3 py-2.5 text-left hover:bg-surface-2 cursor-pointer"
       >
         <FileText className="w-4 h-4 shrink-0 text-fg-2" />
         <span className="flex-1 min-w-0">
@@ -376,14 +376,14 @@ const UploadSheet: React.FC<{
 
           {picked.length === 0 ? (
             <div className="grid grid-cols-2 gap-2.5">
-              <button type="button" onClick={() => photoInput.current?.click()} className="flex flex-col items-start gap-3 border border-line p-f4 text-left hover:bg-surface-2 cursor-pointer">
+              <button type="button" onClick={() => photoInput.current?.click()} className="rounded-card flex flex-col items-start gap-3 border border-line p-f4 text-left hover:bg-surface-2 cursor-pointer">
                 <Camera className="w-6 h-6 text-fg" />
                 <span>
                   <span className="block text-[15px] font-semibold text-fg">Photos</span>
                   <span className="block mt-0.5 text-[12px] text-muted">One photo per page, in order</span>
                 </span>
               </button>
-              <button type="button" onClick={() => pdfInput.current?.click()} className="flex flex-col items-start gap-3 border border-line p-f4 text-left hover:bg-surface-2 cursor-pointer">
+              <button type="button" onClick={() => pdfInput.current?.click()} className="rounded-card flex flex-col items-start gap-3 border border-line p-f4 text-left hover:bg-surface-2 cursor-pointer">
                 <FileText className="w-6 h-6 text-fg" />
                 <span>
                   <span className="block text-[15px] font-semibold text-fg">PDF</span>
@@ -392,10 +392,10 @@ const UploadSheet: React.FC<{
               </button>
             </div>
           ) : isPdf ? (
-            <div className="flex items-center gap-3 border border-line px-3 py-3">
+            <div className="rounded-tile flex items-center gap-3 border border-line px-3 py-3">
               <FileText className="w-5 h-5 shrink-0" />
               <span className="flex-1 min-w-0 text-[14px] font-medium text-fg truncate">{picked[0].file.name}</span>
-              <button type="button" onClick={() => setPicked([])} aria-label="Remove" className="w-8 h-8 flex items-center justify-center text-muted hover:text-fg cursor-pointer">
+              <button type="button" onClick={() => setPicked([])} aria-label="Remove" className="rounded-full w-8 h-8 flex items-center justify-center text-muted hover:text-fg cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -403,17 +403,17 @@ const UploadSheet: React.FC<{
             <div>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {picked.map((p, i) => (
-                  <div key={i} className="relative aspect-[3/4] border border-line bg-surface-2 overflow-hidden">
+                  <div key={i} className="rounded-card relative aspect-[3/4] border border-line bg-surface-2 overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     {p.preview && <img src={p.preview} alt={`Page ${i + 1}`} className="w-full h-full object-cover" />}
-                    <span className="absolute left-1 top-1 px-1.5 text-[11px] font-semibold bg-ink text-on-ink">{i + 1}</span>
-                    <button type="button" onClick={() => removeAt(i)} aria-label={`Remove page ${i + 1}`} className="absolute right-1 top-1 w-6 h-6 flex items-center justify-center bg-surface/90 border border-line text-fg cursor-pointer">
+                    <span className="rounded-full absolute left-1 top-1 px-1.5 text-[11px] font-semibold bg-ink text-on-ink">{i + 1}</span>
+                    <button type="button" onClick={() => removeAt(i)} aria-label={`Remove page ${i + 1}`} className="rounded-full absolute right-1 top-1 w-6 h-6 flex items-center justify-center bg-surface/90 border border-line text-fg cursor-pointer">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ))}
                 {picked.length < MAX_PAPER_PAGES && (
-                  <button type="button" onClick={() => photoInput.current?.click()} className="aspect-[3/4] flex flex-col items-center justify-center gap-1 border border-dashed border-line text-muted hover:text-fg hover:border-line-strong cursor-pointer">
+                  <button type="button" onClick={() => photoInput.current?.click()} className="rounded-tile aspect-[3/4] flex flex-col items-center justify-center gap-1 border border-dashed border-line text-muted hover:text-fg hover:border-line-strong cursor-pointer">
                     <Plus className="w-5 h-5" />
                     <span className="text-[12px] font-medium">Add page</span>
                   </button>
@@ -484,7 +484,7 @@ const UploadSheet: React.FC<{
           )}
 
           {error && !duplicate && (
-            <p className="flex items-start gap-2 px-3 py-2.5 border border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-400/10 dark:border-rose-400/20 dark:text-rose-300 text-[14px]">
+            <p className="rounded-tile flex items-start gap-2 px-3 py-2.5 border border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-400/10 dark:border-rose-400/20 dark:text-rose-300 text-[14px]">
               <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /> {error}
             </p>
           )}
@@ -564,7 +564,7 @@ const UploadSheet: React.FC<{
           </div>
 
           {error && !duplicate && (
-            <p className="flex items-start gap-2 px-3 py-2.5 border border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-400/10 dark:border-rose-400/20 dark:text-rose-300 text-[14px]">
+            <p className="rounded-tile flex items-start gap-2 px-3 py-2.5 border border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-400/10 dark:border-rose-400/20 dark:text-rose-300 text-[14px]">
               <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /> {error}
             </p>
           )}
@@ -659,13 +659,13 @@ export const QuestionPapersView: React.FC = () => {
     );
   } else if (loading && !data) {
     body = (
-      <ul className="border border-line bg-surface divide-y divide-line-soft" aria-hidden="true">
+      <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft" aria-hidden="true">
         {[0, 1, 2, 3].map((i) => (
           <li key={i} className="flex items-center gap-3 px-f4 py-3">
-            <span className="w-10 h-10 bg-surface-2 animate-pulse" />
+            <span className="rounded-xl w-10 h-10 bg-surface-2 animate-pulse" />
             <span className="flex-1 flex flex-col gap-2">
-              <span className="h-3.5 w-1/2 bg-surface-2 animate-pulse" />
-              <span className="h-3 w-1/3 bg-surface-2 animate-pulse" />
+              <span className="rounded-tile h-3.5 w-1/2 bg-surface-2 animate-pulse" />
+              <span className="rounded-full h-3 w-1/3 bg-surface-2 animate-pulse" />
             </span>
           </li>
         ))}
@@ -674,7 +674,7 @@ export const QuestionPapersView: React.FC = () => {
   } else if (error && !data) {
     const needsProfile = error.code === 'no-college' || error.code === 'no-branch';
     body = (
-      <section className="border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
+      <section className="rounded-card border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
         <Illustration name={needsProfile ? 'setup' : 'error'} className="h-[150px] w-auto" />
         <h3 className="mt-4 text-[18px] font-semibold text-fg">{needsProfile ? 'One detail missing' : "Couldn't load papers"}</h3>
         <p className="mt-1.5 text-[14px] text-muted max-w-sm">{error.message}</p>
@@ -685,7 +685,7 @@ export const QuestionPapersView: React.FC = () => {
     );
   } else if (papers.length === 0) {
     body = (
-      <section className="border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
+      <section className="rounded-card border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
         <Illustration name="papers" className="h-[150px] w-auto" />
         <h3 className="mt-4 text-[18px] font-semibold text-fg">No papers yet</h3>
         <p className="mt-1.5 text-[14px] text-muted max-w-sm">
@@ -707,7 +707,7 @@ export const QuestionPapersView: React.FC = () => {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search subject, code or year"
             aria-label="Search question papers"
-            className="w-full h-12 pl-10 pr-3 bg-surface border border-line text-[15px] text-fg placeholder:text-faint focus:outline-none focus:border-line-strong transition-colors"
+            className="rounded-field w-full h-12 pl-10 pr-3 bg-surface border border-line text-[15px] text-fg placeholder:text-faint focus:outline-none focus:border-line-strong transition-colors"
           />
         </div>
 
@@ -739,7 +739,7 @@ export const QuestionPapersView: React.FC = () => {
         </div>
 
         {groups.length === 0 ? (
-          <div className="flex flex-col items-center text-center px-6 py-f6 border border-dashed border-line">
+          <div className="rounded-card flex flex-col items-center text-center px-6 py-f6 bg-surface-2">
             <Illustration name="search" className="h-[120px] w-auto" />
             <p className="mt-f3 text-[15px] font-semibold text-fg">No paper matches</p>
             <p className="mt-1 text-[13px] text-muted">Try another word, or clear the filters.</p>
@@ -756,7 +756,7 @@ export const QuestionPapersView: React.FC = () => {
                   {g.list.length} {g.list.length === 1 ? 'paper' : 'papers'}
                 </span>
               </div>
-              <ul className="border border-line bg-surface divide-y divide-line-soft">
+              <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
                 {g.list.map((p) => (
                   <PaperRow key={p.id} p={p} isStaff={isStaff} onOpen={() => setOpenPaper(p)} />
                 ))}
@@ -782,7 +782,7 @@ export const QuestionPapersView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="min-w-0">
           <h2 className="page-title">Question papers</h2>
-          <p className="text-[14px] text-muted mt-1.5 truncate">{subtitle}</p>
+          <p className="text-[14px] leading-[20px] text-muted mt-1.5 line-clamp-2">{subtitle}</p>
         </div>
         {user?.id && data && (
           <button type="button" onClick={() => setUploadOpen(true)} className="btn btn-primary self-start sm:self-auto">

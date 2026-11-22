@@ -77,8 +77,8 @@ export const FacultyHeroHeader: React.FC<FacultyHeroHeaderProps> = ({
               key={chip}
               className={
                 i === 0
-                  ? 'px-2.5 py-1 text-[12px] font-semibold bg-ink text-on-ink'
-                  : 'px-2.5 py-1 text-[12px] font-medium text-fg border border-line bg-white/70 dark:bg-white/[0.03]'
+                  ? 'px-2.5 py-1 rounded-full text-[12px] font-semibold bg-ink text-on-ink'
+                  : 'px-2.5 py-1 rounded-full text-[12px] font-medium text-fg border border-line bg-white/70 dark:bg-white/[0.03]'
               }
             >
               {chip}

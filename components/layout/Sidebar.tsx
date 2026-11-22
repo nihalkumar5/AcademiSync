@@ -107,7 +107,7 @@ export const Sidebar: React.FC = () => {
         onClick={() => setActiveView(item.id)}
         aria-current={active ? 'page' : undefined}
         className={clsx(
-          'group relative flex items-center gap-f3 w-full h-11 px-f3 text-left text-[15px] border transition-colors cursor-pointer',
+          'rounded-xl group relative flex items-center gap-f3 w-full h-11 px-f3 text-left text-[15px] border transition-colors cursor-pointer',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#111111] dark:focus-visible:ring-[#F4F4F6]',
           active
             ? 'bg-[#F1F1EF] dark:bg-white/[0.07] border-[#E4E4E1] dark:border-white/[0.08] text-fg font-semibold'
@@ -146,7 +146,7 @@ export const Sidebar: React.FC = () => {
           onClick={() => updateSettings({ theme: settings.theme === 'dark' ? 'light' : 'dark' })}
           aria-label={settings.theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           title={settings.theme === 'dark' ? 'Light mode' : 'Dark mode'}
-          className="w-11 h-11 shrink-0 flex items-center justify-center text-muted hover:text-fg hover:bg-black/[0.05] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+          className="rounded-full w-11 h-11 shrink-0 flex items-center justify-center text-muted hover:text-fg hover:bg-black/[0.05] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
         >
           {settings.theme === 'dark' ? <Sun className="w-5 h-5" strokeWidth={1.75} /> : <Moon className="w-5 h-5" strokeWidth={1.75} />}
         </button>
@@ -157,11 +157,11 @@ export const Sidebar: React.FC = () => {
         <button
           type="button"
           onClick={() => setCommandPaletteOpen(true)}
-          className="flex items-center gap-f3 w-full h-11 px-f3 mb-f4 bg-[#FAFAF9] dark:bg-white/[0.04] border border-line text-[15px] text-faint hover:border-[#BDBDB8] dark:hover:border-white/20 transition-colors cursor-pointer text-left"
+          className="rounded-full flex items-center gap-f3 w-full h-11 px-f3 mb-f4 bg-[#FAFAF9] dark:bg-white/[0.04] border border-line text-[15px] text-faint hover:border-[#BDBDB8] dark:hover:border-white/20 transition-colors cursor-pointer text-left"
         >
           <Search className="w-5 h-5 shrink-0" strokeWidth={1.75} />
           <span className="flex-1">Search or jump to</span>
-          <kbd className="text-[12px] font-mono text-muted px-1.5 h-[21px] inline-flex items-center border border-[#E2E2DF] dark:border-white/[0.1] bg-surface-2">⌘K</kbd>
+          <kbd className="rounded-md text-[12px] font-mono text-muted px-1.5 h-[21px] inline-flex items-center border border-[#E2E2DF] dark:border-white/[0.1] bg-surface-2">⌘K</kbd>
         </button>
 
         <nav aria-label="Main" className="flex flex-col gap-f4">
@@ -186,7 +186,7 @@ export const Sidebar: React.FC = () => {
           aria-current={onSettings ? 'page' : undefined}
           title="Profile & settings"
           className={clsx(
-            'w-full flex items-center gap-f3 p-f2 pl-f3 text-left border transition-colors cursor-pointer',
+            'rounded-xl w-full flex items-center gap-f3 p-f2 pl-f3 text-left border transition-colors cursor-pointer',
             onSettings
               ? 'bg-[#F1F1EF] dark:bg-white/[0.07] border-[#E4E4E1] dark:border-white/[0.08]'
               : 'border-transparent hover:bg-black/[0.035] dark:hover:bg-white/[0.04]'
@@ -205,7 +205,7 @@ export const Sidebar: React.FC = () => {
           <button
             type="button"
             onClick={() => router.push('/sign-in')}
-            className="mt-f2 w-full h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+            className="rounded-full mt-f2 w-full h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity cursor-pointer"
           >
             Sign in to sync
           </button>

@@ -113,7 +113,7 @@ export const TakeAttendance: React.FC<{
     <div className="fixed inset-0 z-[100] bg-canvas flex flex-col font-sans select-none" role="dialog" aria-modal="true" aria-label="Take attendance">
       <header className="sheen shrink-0 border-b border-line bg-canvas" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="max-w-3xl mx-auto w-full px-f4 h-14 flex items-center gap-2">
-          <button type="button" onClick={() => (dirty ? setConfirmClose(true) : onClose())} aria-label="Close" className="w-11 h-11 -ml-2 flex items-center justify-center text-fg cursor-pointer">
+          <button type="button" onClick={() => (dirty ? setConfirmClose(true) : onClose())} aria-label="Close" className="rounded-full w-11 h-11 -ml-2 flex items-center justify-center text-fg cursor-pointer">
             <X className="w-5 h-5" />
           </button>
           <div className="min-w-0 flex-1">
@@ -129,7 +129,7 @@ export const TakeAttendance: React.FC<{
                 aria-checked={view === v}
                 aria-label={v === 'grid' ? 'Grid' : 'List'}
                 onClick={() => setView(v)}
-                className={`w-9 h-9 flex items-center justify-center cursor-pointer ${view === v ? 'bg-ink text-on-ink' : 'text-[#6B6B6B]'}`}
+                className={`rounded-full w-9 h-9 flex items-center justify-center cursor-pointer ${view === v ? 'bg-ink text-on-ink' : 'text-[#6B6B6B]'}`}
               >
                 {v === 'grid' ? <LayoutGrid className="w-4 h-4" /> : <List className="w-4 h-4" />}
               </button>
@@ -152,9 +152,9 @@ export const TakeAttendance: React.FC<{
               inputMode="numeric"
               placeholder="Absent rolls, e.g. 12 15 31"
               aria-label="Absent roll numbers"
-              className="flex-1 h-11 px-3.5 bg-surface border border-line text-[15px] font-mono text-fg focus:outline-none focus:border-line-strong"
+              className="rounded-field flex-1 h-11 px-3.5 bg-surface border border-line text-[15px] font-mono text-fg focus:outline-none focus:border-line-strong"
             />
-            <button type="submit" disabled={!quick.trim()} className="h-11 px-3 inline-flex items-center gap-1.5 bg-rose-600 text-white text-[14px] font-semibold disabled:opacity-40 cursor-pointer">
+            <button type="submit" disabled={!quick.trim()} className="rounded-full h-11 px-3 inline-flex items-center gap-1.5 bg-rose-600 text-white text-[14px] font-semibold disabled:opacity-40 cursor-pointer">
               <CornerDownLeft className="w-4 h-4" /> Absent
             </button>
           </form>
@@ -177,7 +177,7 @@ export const TakeAttendance: React.FC<{
                 type="button"
                 onClick={() => setFilter(id)}
                 aria-pressed={filter === id}
-                className={`shrink-0 h-9 px-3 border text-[13px] font-medium tabular-nums cursor-pointer ${
+                className={`rounded-full shrink-0 h-9 px-3 border text-[13px] font-medium tabular-nums cursor-pointer ${
                   filter === id ? 'bg-ink text-on-ink border-line-strong' : 'border-line text-fg'
                 }`}
               >
@@ -185,7 +185,7 @@ export const TakeAttendance: React.FC<{
               </button>
             ))}
             <span className="flex-1" />
-            <button type="button" onClick={() => setAll('P')} className="shrink-0 h-9 px-2 text-[13px] font-semibold text-emerald-700 dark:text-emerald-400 cursor-pointer">
+            <button type="button" onClick={() => setAll('P')} className="rounded-full shrink-0 h-9 px-2 text-[13px] font-semibold text-emerald-700 dark:text-emerald-400 cursor-pointer">
               All present
             </button>
           </div>
@@ -193,7 +193,7 @@ export const TakeAttendance: React.FC<{
           {view === 'list' && (
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8A8A8A]" />
-              <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Find a student" aria-label="Find a student" className="w-full h-11 pl-10 pr-3 bg-surface border border-line text-[15px] text-fg focus:outline-none" />
+              <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Find a student" aria-label="Find a student" className="rounded-field w-full h-11 pl-10 pr-3 bg-surface border border-line text-[15px] text-fg focus:outline-none" />
             </div>
           )}
 
@@ -210,7 +210,7 @@ export const TakeAttendance: React.FC<{
                         onClick={() => toggle(s.key)}
                         aria-pressed={m === 'A'}
                         aria-label={`${s.roll} ${s.name}: ${m === 'A' ? 'absent' : 'present'}`}
-                        className={`relative w-full aspect-square flex flex-col items-center justify-center border-2 transition-colors active:scale-95 cursor-pointer touch-manipulation ${MARK_STYLE[m]}`}
+                        className={`rounded-tile relative w-full aspect-square flex flex-col items-center justify-center border-2 transition-colors active:scale-95 cursor-pointer touch-manipulation ${MARK_STYLE[m]}`}
                       >
                         {scanned?.has(s.key) && <QrIcon className={`absolute top-1 right-1 w-3.5 h-3.5 ${m === 'A' ? 'text-white/80' : 'text-[#18A889]'}`} aria-label="Scanned" />}
                         <span className="text-[22px] font-semibold leading-none tabular-nums">{rollTail(s.roll)}</span>
@@ -223,7 +223,7 @@ export const TakeAttendance: React.FC<{
               </ul>
             </>
           ) : (
-            <ul className="border border-line bg-surface divide-y divide-line-soft">
+            <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
               {visible.map((s) => {
                 const m = marks[s.key];
                 return (
@@ -248,7 +248,7 @@ export const TakeAttendance: React.FC<{
                           aria-checked={m === x}
                           aria-label={x === 'P' ? 'Present' : 'Absent'}
                           onClick={() => set(s.key, x)}
-                          className={`w-11 h-11 text-[14px] font-semibold cursor-pointer ${
+                          className={`rounded-full w-11 h-11 text-[14px] font-semibold cursor-pointer ${
                             m === x ? (x === 'P' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white') : 'text-[#8A8A8A]'
                           }`}
                         >
@@ -264,7 +264,7 @@ export const TakeAttendance: React.FC<{
           {visible.length === 0 && <p className="py-f5 text-center text-[14px] text-muted">{filter === 'all' ? 'No one matches.' : 'No one is absent.'}</p>}
           {onDelete && (
             <div className="mt-f5 pt-f4 border-t border-line-soft text-center">
-              <button type="button" onClick={onDelete} className="h-11 px-3 text-[14px] font-semibold text-rose-600 dark:text-rose-400 hover:underline underline-offset-4 cursor-pointer">
+              <button type="button" onClick={onDelete} className="rounded-full h-11 px-3 text-[14px] font-semibold text-rose-600 dark:text-rose-400 hover:underline underline-offset-4 cursor-pointer">
                 Delete this lecture&apos;s record
               </button>
             </div>

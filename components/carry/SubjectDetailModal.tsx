@@ -79,7 +79,7 @@ export const SubjectDetailModal: React.FC<SubjectDetailModalProps> = ({
             onClick={() => {
               onOpenAdd();
             }}
-            className="flex items-center gap-2 text-[13px] font-semibold text-[#52525B] dark:text-[#A1A1AA] hover:text-fg transition-all w-fit cursor-pointer mt-2 px-3.5 h-9 rounded-none border border-dashed border-line hover:border-black/30 dark:hover:border-white/30"
+            className="flex items-center gap-2 text-[13px] font-semibold text-[#52525B] dark:text-[#A1A1AA] hover:text-fg transition-all w-fit cursor-pointer mt-2 px-3.5 h-9 rounded-full border border-dashed border-line hover:border-black/30 dark:hover:border-white/30"
           >
             <Plus className="w-4 h-4 stroke-[2]" />
             <span>Add item</span>

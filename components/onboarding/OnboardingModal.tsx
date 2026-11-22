@@ -3,7 +3,7 @@
 import { HandwrittenText } from '@/components/ui/HandwrittenText';
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Bell, CheckSquare, Clock, GraduationCap, Link as LinkIcon, Loader2, MapPin, Users } from '@/components/ui/icons';
+import { ArrowLeft, ArrowRight, Bell, LogIn, CheckSquare, Clock, GraduationCap, Link as LinkIcon, Loader2, MapPin, Users } from '@/components/ui/icons';
 import { useApp } from '@/context/AppContext';
 import { Illustration, IllustrationName } from '@/components/ui/Illustration';
 import { TimetableImportModal } from '@/components/timetable/TimetableImportModal';
@@ -13,7 +13,6 @@ import { SelectBatchModal } from '@/components/batch/SelectBatchModal';
 //   1. Welcome: what this is, in one line.
 //   2. Preview: show the payoff (a real-looking Home), not a feature list.
 //   3. Connect: the one action that makes the app useful, joining your class batch.
-// "Skip" on the intro steps jumps to Connect instead of leaving, so nobody lands on an empty app by accident.
 
 type Step = 0 | 1 | 2;
 const STEPS = 3;
@@ -131,7 +130,7 @@ export const OnboardingModal = () => {
             { icon: Users, text: 'Always in sync with your class' },
           ].map(({ icon: Icon, text }) => (
             <li key={text} className="flex items-center gap-3 text-[15px] text-fg">
-              <span className="w-8 h-8 shrink-0 flex items-center justify-center border border-line bg-surface">
+              <span className="rounded-xl w-8 h-8 shrink-0 flex items-center justify-center border border-line bg-surface">
                 <Icon className="w-4 h-4" />
               </span>
               {text}
@@ -172,9 +171,9 @@ export const OnboardingModal = () => {
           <button
             type="button"
             onClick={() => setBatchOpen(true)}
-            className="group w-full text-left border border-ink bg-ink text-on-ink p-4 flex items-center gap-4 cursor-pointer hover:opacity-95 transition-opacity"
+            className="rounded-card group w-full text-left border border-ink bg-ink text-on-ink p-4 flex items-center gap-4 cursor-pointer hover:opacity-95 transition-opacity"
           >
-            <span className="w-11 h-11 shrink-0 flex items-center justify-center bg-on-ink/10 border border-on-ink/15">
+            <span className="rounded-xl w-11 h-11 shrink-0 flex items-center justify-center bg-on-ink/10 border border-on-ink/15">
               <GraduationCap className="w-5 h-5" />
             </span>
             <span className="flex-1 min-w-0">
@@ -185,10 +184,10 @@ export const OnboardingModal = () => {
           </button>
 
           {/* Secondary: invite code */}
-          <div className="border border-line bg-surface">
+          <div className="rounded-card overflow-hidden border border-line bg-surface">
             {!inviteOpen ? (
               <button type="button" onClick={() => setInviteOpen(true)} className="w-full p-4 flex items-center gap-4 text-left cursor-pointer hover:bg-surface-2 transition-colors">
-                <span className="w-11 h-11 shrink-0 flex items-center justify-center bg-surface-2 border border-line-soft">
+                <span className="rounded-xl w-11 h-11 shrink-0 flex items-center justify-center bg-surface-2 border border-line-soft">
                   <LinkIcon className="w-5 h-5 text-fg" />
                 </span>
                 <span className="flex-1 min-w-0">
@@ -217,7 +216,7 @@ export const OnboardingModal = () => {
                     autoComplete="off"
                     spellCheck={false}
                     aria-invalid={!!inviteError}
-                    className={`flex-1 min-w-0 h-12 px-3.5 bg-surface border text-[15px] text-fg font-mono tracking-wide placeholder:font-sans placeholder:tracking-normal placeholder:text-faint focus:outline-none ${
+                    className={`rounded-field flex-1 min-w-0 h-12 px-3.5 bg-surface border text-[15px] text-fg font-mono tracking-wide placeholder:font-sans placeholder:tracking-normal placeholder:text-faint focus:outline-none ${
                       inviteError ? 'border-danger' : 'border-line focus:border-fg'
                     }`}
                   />
@@ -231,10 +230,26 @@ export const OnboardingModal = () => {
           </div>
         </div>
 
+        {!isSignedIn && (
+          <a
+            href="/sign-in"
+            className="mt-3 rounded-card bg-surface-2 hover:bg-surface-3 transition-colors p-4 flex items-center gap-4"
+          >
+            <span className="rounded-full w-11 h-11 shrink-0 flex items-center justify-center bg-surface border border-line-soft">
+              <LogIn className="w-5 h-5 text-fg" />
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block text-[16px] font-semibold text-fg">Already have an account?</span>
+              <span className="block text-[13px] text-muted mt-0.5">Log in and your classes come back</span>
+            </span>
+            <ArrowRight className="w-5 h-5 shrink-0 text-muted" />
+          </a>
+        )}
+
         <button
           type="button"
           onClick={finish}
-          className="mt-5 self-start text-[14px] font-medium text-muted hover:text-fg underline underline-offset-4 cursor-pointer"
+          className="mt-5 self-center rounded-full h-10 px-4 text-[14px] font-medium text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
         >
           Skip for now, I&apos;ll add my classes myself
         </button>
@@ -247,7 +262,7 @@ export const OnboardingModal = () => {
   return (
     <div className="fixed inset-0 z-[100] bg-canvas text-fg w-full h-[100dvh] overflow-hidden lg:grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]" role="dialog" aria-modal="true" aria-label="Welcome to Intersemester">
       {/* ===== Desktop side panel ===== */}
-      <aside className="hidden lg:flex sheen-ink relative overflow-hidden bg-ink text-on-ink flex-col justify-between p-12 xl:p-16">
+      <aside className="hidden lg:flex lg:m-3 rounded-[32px] sheen-ink relative overflow-hidden bg-ink text-on-ink flex-col justify-between p-12 xl:p-16">
         <div className="flex items-center gap-3">
           <span className="text-[24px] leading-none tracking-tighter font-sans" aria-label="intersemester">
             <span className="font-extrabold">inter</span>
@@ -255,7 +270,7 @@ export const OnboardingModal = () => {
           </span>
         </div>
         <div className="max-w-[500px]">
-          <div className="bg-surface border border-white/10 h-[340px] p-8 flex items-center justify-center">
+          <div className="rounded-card bg-surface border border-white/10 h-[340px] p-8 flex items-center justify-center">
             <AnimatePresence mode="wait">
               <motion.div
                 key={ART[step]}
@@ -281,7 +296,7 @@ export const OnboardingModal = () => {
         <header className="shrink-0 px-5 sm:px-8 pt-[max(env(safe-area-inset-top),16px)]">
           <div className="relative h-12 flex items-center justify-between">
             {step > 0 ? (
-              <button type="button" onClick={back} aria-label="Back" className="-ml-2 w-10 h-10 flex items-center justify-center text-fg hover:bg-surface-2 cursor-pointer">
+              <button type="button" onClick={back} aria-label="Back" className="rounded-full -ml-2 w-10 h-10 flex items-center justify-center text-fg hover:bg-surface-2 cursor-pointer">
                 <ArrowLeft className="w-5 h-5" />
               </button>
             ) : (
@@ -292,8 +307,13 @@ export const OnboardingModal = () => {
                 </span>
               </div>
             )}
+            {/* Skip jumps to the last step, where returning users find "Already have an account?" */}
             {step < 2 ? (
-              <button type="button" onClick={() => go(2)} className="h-10 px-2 -mr-2 text-[14px] font-medium text-muted hover:text-fg cursor-pointer">
+              <button
+                type="button"
+                onClick={() => go(2)}
+                className="rounded-full h-9 px-4 -mr-1 inline-flex items-center bg-surface-2 hover:bg-surface-3 text-[14px] font-semibold text-fg transition-colors cursor-pointer"
+              >
                 Skip
               </button>
             ) : (
@@ -332,14 +352,6 @@ export const OnboardingModal = () => {
                 {primaryLabel}
                 <ArrowRight className="w-4 h-4" />
               </button>
-              {step === 0 && !isSignedIn && (
-                <p className="mt-3 text-center text-[14px] text-muted">
-                  Already using Intersemester?{' '}
-                  <a href="/sign-in" className="font-semibold text-fg underline underline-offset-4">
-                    Log in
-                  </a>
-                </p>
-              )}
             </div>
           </footer>
         )}
@@ -356,7 +368,7 @@ export const OnboardingModal = () => {
 const Progress: React.FC<{ step: Step; onInk?: boolean }> = ({ step, onInk }) => (
   <div className="flex items-center gap-1.5" role="progressbar" aria-valuemin={1} aria-valuemax={STEPS} aria-valuenow={step + 1} aria-label={`Step ${step + 1} of ${STEPS}`}>
     {Array.from({ length: STEPS }).map((_, i) => (
-      <span key={i} className={`h-1 flex-1 ${onInk ? 'max-w-[56px]' : ''} ${onInk ? 'bg-on-ink/20' : 'bg-line'} relative overflow-hidden`}>
+      <span key={i} className={`h-1 flex-1 ${onInk ? 'max-w-[56px]' : ''} ${onInk ? 'bg-on-ink/20' : 'bg-line'} relative overflow-hidden rounded-full`}>
         <span
           className={`absolute inset-y-0 left-0 ${onInk ? 'bg-on-ink' : 'bg-fg'} transition-[width] duration-500 ease-out`}
           style={{ width: i <= step ? '100%' : '0%' }}
@@ -438,13 +450,13 @@ const DayPreview: React.FC<{ reduceMotion: boolean }> = ({ reduceMotion }) => {
 
       <div className="flex flex-col gap-2.5">
         {/* Next class */}
-        <motion.div {...item(0)} className="sheen-ink relative overflow-hidden bg-ink text-on-ink border border-ink p-4">
+        <motion.div {...item(0)} className="rounded-card sheen-ink relative overflow-hidden bg-ink text-on-ink border border-ink p-4">
           <div className="flex items-center justify-between text-[11px] font-semibold tracking-[0.08em] opacity-70">
             <span>NEXT CLASS</span>
             <span className="flex items-center gap-1.5 tabular-nums">
               <span className="relative flex w-1.5 h-1.5">
                 <span className="absolute inset-0 bg-emerald-400 animate-ping opacity-60" />
-                <span className="relative w-1.5 h-1.5 bg-emerald-400" />
+                <span className="rounded-full relative w-1.5 h-1.5 bg-emerald-400" />
               </span>
               in {mins} min
             </span>
@@ -459,7 +471,7 @@ const DayPreview: React.FC<{ reduceMotion: boolean }> = ({ reduceMotion }) => {
             </span>
           </div>
           {/* time-to-class bar */}
-          <div className="absolute left-0 right-0 bottom-0 h-[3px] bg-on-ink/10">
+          <div className="rounded-full absolute left-0 right-0 bottom-0 h-[3px] bg-on-ink/10">
             <motion.span
               className="block h-full bg-emerald-400"
               initial={{ width: reduceMotion ? '78%' : '55%' }}
@@ -470,8 +482,8 @@ const DayPreview: React.FC<{ reduceMotion: boolean }> = ({ reduceMotion }) => {
         </motion.div>
 
         {/* Reminder */}
-        <motion.div {...item(1)} className="border border-line bg-surface px-3.5 py-3 flex items-center gap-3">
-          <span className="onb-ring w-8 h-8 shrink-0 flex items-center justify-center bg-amber-50 text-amber-700 border border-amber-200/70 dark:bg-amber-400/10 dark:text-amber-300 dark:border-amber-400/20">
+        <motion.div {...item(1)} className="rounded-tile border border-line bg-surface px-3.5 py-3 flex items-center gap-3">
+          <span className="rounded-xl onb-ring w-8 h-8 shrink-0 flex items-center justify-center bg-amber-50 text-amber-700 border border-amber-200/70 dark:bg-amber-400/10 dark:text-amber-300 dark:border-amber-400/20">
             <Bell className="w-4 h-4" />
           </span>
           <p className="text-[13px] leading-[18px] text-fg">
@@ -481,10 +493,10 @@ const DayPreview: React.FC<{ reduceMotion: boolean }> = ({ reduceMotion }) => {
 
         <div className="grid grid-cols-2 gap-2.5">
           {/* Attendance */}
-          <motion.div {...item(2)} className="border border-line bg-surface p-3.5">
+          <motion.div {...item(2)} className="rounded-tile border border-line bg-surface p-3.5">
             <p className="text-[12px] font-semibold text-muted">Attendance</p>
             <p className="mt-1 text-[24px] font-semibold text-fg tabular-nums leading-none">{attendance}%</p>
-            <div className="mt-2.5 h-1.5 bg-surface-2 relative">
+            <div className="rounded-full mt-2.5 h-1.5 bg-surface-2 relative">
               <span className="absolute inset-y-0 left-0 bg-emerald-500" style={{ width: `${attendance}%` }} />
               <span className="absolute -top-0.5 -bottom-0.5 w-px bg-fg/50" style={{ left: '75%' }} />
             </div>
@@ -492,7 +504,7 @@ const DayPreview: React.FC<{ reduceMotion: boolean }> = ({ reduceMotion }) => {
           </motion.div>
 
           {/* Task */}
-          <motion.div {...item(3)} className="border border-line bg-surface p-3.5 flex flex-col">
+          <motion.div {...item(3)} className="rounded-tile border border-line bg-surface p-3.5 flex flex-col">
             <p className="text-[12px] font-semibold text-muted">Due tomorrow</p>
             <p className="mt-1 text-[15px] font-semibold text-fg leading-snug">DBMS assignment</p>
             <p className="mt-auto pt-2 flex items-center gap-1.5 text-[12px] text-muted">

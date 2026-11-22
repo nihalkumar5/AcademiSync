@@ -241,7 +241,7 @@ export const AttendanceView: React.FC = () => {
     return (
       <div className="flex flex-col gap-f5 text-left max-w-4xl mx-auto w-full">
         <h2 className="page-title">Attendance</h2>
-        <div className="flex flex-col items-center text-center px-6 py-10 border border-dashed border-line">
+        <div className="rounded-card flex flex-col items-center text-center px-6 py-10 bg-surface-2">
           <Users className="w-6 h-6 text-fg" />
           <p className="mt-f3 text-[17px] font-semibold text-fg">Link a batch first</p>
           <p className="mt-1 text-[14px] text-muted max-w-[300px]">Attendance works per batch. Connect one from the Batches page.</p>
@@ -317,14 +317,14 @@ export const AttendanceView: React.FC = () => {
               onClick={() => setMenuOpen((v) => !v)}
               aria-label="More"
               aria-expanded={menuOpen}
-              className="w-11 h-11 inline-flex items-center justify-center border border-line bg-surface text-fg hover:border-line-strong cursor-pointer"
+              className="rounded-full w-11 h-11 inline-flex items-center justify-center border border-line bg-surface text-fg hover:border-line-strong cursor-pointer"
             >
               <MoreHorizontal className="w-5 h-5" />
             </button>
             {menuOpen && (
               <>
                 <div className="fixed inset-0 z-30" onClick={() => setMenuOpen(false)} />
-                <div className="absolute right-0 top-full mt-2 z-40 w-64 border border-line bg-surface shadow-xl py-1">
+                <div className="rounded-card overflow-hidden absolute right-0 top-full mt-2 z-40 w-64 border border-line bg-surface shadow-xl py-1">
                   <button type="button" className={menuItem} onClick={() => { setMenuOpen(false); setSetupOpen(true); }}>
                     <Users className="w-4 h-4 text-muted" />
                     <span className="flex-1">Class list</span>
@@ -358,7 +358,7 @@ export const AttendanceView: React.FC = () => {
                 type="button"
                 onClick={() => setBatchKey(b.batchKey)}
                 aria-pressed={on}
-                className={`shrink-0 h-10 px-3.5 border text-[13px] font-semibold cursor-pointer transition-colors ${on ? 'bg-ink text-on-ink border-line-strong' : 'border-line text-fg-2 hover:border-line-strong'}`}
+                className={`rounded-full shrink-0 h-10 px-3.5 border text-[13px] font-semibold cursor-pointer transition-colors ${on ? 'bg-ink text-on-ink border-line-strong' : 'border-line text-fg-2 hover:border-line-strong'}`}
               >
                 {degreeAndBranch}
                 {semText ? <span className="font-normal opacity-70"> · {semText}</span> : null}
@@ -370,12 +370,12 @@ export const AttendanceView: React.FC = () => {
 
       {rosterLoading ? (
         <div className="flex flex-col gap-3" aria-hidden="true">
-          <div className="h-[196px] bg-surface-2 animate-pulse" />
-          <div className="h-[72px] bg-surface-2 animate-pulse" />
-          <div className="h-[220px] bg-surface-2 animate-pulse" />
+          <div className="rounded-tile h-[196px] bg-surface-2 animate-pulse" />
+          <div className="rounded-tile h-[72px] bg-surface-2 animate-pulse" />
+          <div className="rounded-tile h-[220px] bg-surface-2 animate-pulse" />
         </div>
       ) : rosterError ? (
-        <div className="flex items-start gap-f3 p-f4 border border-amber-300/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10">
+        <div className="rounded-tile flex items-start gap-f3 p-f4 border border-amber-300/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10">
           <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-amber-700 dark:text-amber-400" />
           <div className="flex-1">
             <p className="text-[15px] font-semibold text-fg">Attendance couldn&apos;t load</p>
@@ -395,7 +395,7 @@ export const AttendanceView: React.FC = () => {
           <p className="mt-2 text-[14px] leading-[21px] text-on-ink/70 max-w-md">
             Check who&apos;s in {batchLabel || 'this batch'} and lock the list. After that, students check themselves in with a QR, or you mark by hand.
           </p>
-          <button type="button" onClick={() => setSetupOpen(true)} className="mt-f5 inline-flex items-center gap-2 h-12 px-5 bg-on-ink text-ink text-[15px] font-semibold hover:opacity-90 cursor-pointer">
+          <button type="button" onClick={() => setSetupOpen(true)} className="rounded-full mt-f5 inline-flex items-center gap-2 h-12 px-5 bg-on-ink text-ink text-[15px] font-semibold hover:opacity-90 cursor-pointer">
             Review class list <ChevronRight className="w-4 h-4" />
           </button>
         </section>
@@ -406,7 +406,7 @@ export const AttendanceView: React.FC = () => {
             <button
               type="button"
               onClick={() => setSetupOpen(true)}
-              className="flex items-center gap-3 w-full px-f4 py-3 text-left border border-amber-300/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10 cursor-pointer"
+              className="rounded-card flex items-center gap-3 w-full px-f4 py-3 text-left border border-amber-300/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10 cursor-pointer"
             >
               <AlertTriangle className="w-[18px] h-[18px] shrink-0 text-amber-700 dark:text-amber-400" />
               <span className="flex-1 text-[14px] text-fg">
@@ -444,16 +444,16 @@ export const AttendanceView: React.FC = () => {
                 {roster.students.length} students{focus.x.session.room ? ` · ${focus.x.session.room}` : ''}
               </p>
               <div className="mt-f5 grid grid-cols-[1fr_auto] gap-2">
-                <button type="button" onClick={() => setLive(focus.t)} className="h-12 inline-flex items-center justify-center gap-2 bg-on-ink text-ink text-[15px] font-semibold hover:opacity-90 cursor-pointer">
+                <button type="button" onClick={() => setLive(focus.t)} className="rounded-full h-12 inline-flex items-center justify-center gap-2 bg-on-ink text-ink text-[15px] font-semibold hover:opacity-90 cursor-pointer">
                   <QrIcon className="w-5 h-5" /> Start QR check-in
                 </button>
-                <button type="button" onClick={() => setTake(focus.t)} className="h-12 px-4 inline-flex items-center justify-center gap-2 border border-on-ink/25 text-on-ink text-[14px] font-semibold hover:bg-on-ink/10 cursor-pointer">
+                <button type="button" onClick={() => setTake(focus.t)} className="rounded-full h-12 px-4 inline-flex items-center justify-center gap-2 border border-on-ink/25 text-on-ink text-[14px] font-semibold hover:bg-on-ink/10 cursor-pointer">
                   <ClipboardCheck className="w-4 h-4" /> By hand
                 </button>
               </div>
             </section>
           ) : todayItems.length > 0 ? (
-            <section className="flex items-center gap-f3 p-f4 border border-[#18A889]/35 bg-[#18A889]/[0.07]">
+            <section className="rounded-card flex items-center gap-f3 p-f4 border border-[#18A889]/35 bg-[#18A889]/[0.07]">
               <span className="w-10 h-10 shrink-0 rounded-full bg-[#18A889] text-white flex items-center justify-center">
                 <Check className="w-5 h-5" />
               </span>
@@ -463,8 +463,8 @@ export const AttendanceView: React.FC = () => {
               </div>
             </section>
           ) : (
-            <section className="flex items-center gap-f3 p-f4 border border-dashed border-line">
-              <span className="w-10 h-10 shrink-0 flex items-center justify-center border border-line-soft text-muted">
+            <section className="rounded-card flex items-center gap-f3 p-f4 bg-surface-2">
+              <span className="rounded-xl w-10 h-10 shrink-0 flex items-center justify-center border border-line-soft text-muted">
                 <Clock className="w-[18px] h-[18px]" />
               </span>
               <div className="flex-1 min-w-0">
@@ -489,7 +489,7 @@ export const AttendanceView: React.FC = () => {
                 </button>
               </div>
               {others.length > 0 && (
-                <ul className="border border-line bg-surface divide-y divide-line-soft">
+                <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
                   {others.map(({ x, t, done, live: isLive }, i) => (
                     <li key={i}>
                       <button
@@ -518,7 +518,7 @@ export const AttendanceView: React.FC = () => {
 
           {/* Three numbers */}
           {sessions.length > 0 && (
-            <section className="grid grid-cols-3 border border-line bg-surface divide-x divide-line-soft">
+            <section className="rounded-card overflow-hidden grid grid-cols-3 border border-line bg-surface divide-x divide-line-soft">
               <div className="px-f3 sm:px-f4 py-f3">
                 <p className={`text-[24px] font-semibold leading-none tabular-nums ${avgPct < 75 ? 'text-rose-600 dark:text-rose-400' : 'text-fg'}`}>{pctText(avgPct)}</p>
                 <p className="mt-1.5 text-[12px] text-muted">Average</p>
@@ -546,7 +546,7 @@ export const AttendanceView: React.FC = () => {
 
           {/* Records */}
           <section>
-            <div role="tablist" aria-label="Records" className="grid grid-cols-2 border border-line p-0.5 bg-surface">
+            <div role="tablist" aria-label="Records" className="rounded-full grid grid-cols-2 gap-1 p-1 bg-surface-2">
               {(
                 [
                   ['lectures', 'Lectures', sessions.length],
@@ -559,7 +559,7 @@ export const AttendanceView: React.FC = () => {
                   role="tab"
                   aria-selected={tab === id}
                   onClick={() => setTab(id)}
-                  className={`h-10 text-[14px] font-semibold cursor-pointer transition-colors ${tab === id ? 'bg-ink text-on-ink' : 'text-muted hover:text-fg'}`}
+                  className={`rounded-full h-10 text-[14px] font-semibold cursor-pointer transition-colors ${tab === id ? 'bg-ink text-on-ink' : 'text-muted hover:text-fg'}`}
                 >
                   {label} <span className="font-normal opacity-70 tabular-nums">{n}</span>
                 </button>
@@ -568,13 +568,13 @@ export const AttendanceView: React.FC = () => {
 
             {tab === 'lectures' ? (
               sessions.length === 0 ? (
-                <p className="mt-f3 px-f4 py-f6 text-center text-[14px] text-muted border border-dashed border-line">Lectures you mark show up here.</p>
+                <p className="rounded-card mt-f3 px-f4 py-f6 text-center text-[14px] text-muted bg-surface-2">Lectures you mark show up here.</p>
               ) : (
                 <div className="mt-f4 flex flex-col gap-f4">
                   {Object.entries(grouped).map(([date, list]) => (
                     <div key={date}>
                       <p className="mb-2 px-0.5 text-[12px] font-semibold uppercase tracking-[1.2px] text-muted">{dateLabel(date)}</p>
-                      <ul className="border border-line bg-surface divide-y divide-line-soft">
+                      <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
                         {list.map((s) => {
                           const pct = ((s.total - s.absent) / Math.max(s.total, 1)) * 100;
                           return (
@@ -606,7 +606,7 @@ export const AttendanceView: React.FC = () => {
                     </div>
                   ))}
                   {sessions.length > visibleSessions.length && (
-                    <button type="button" onClick={() => setShowAllLectures(true)} className="h-11 border border-line text-[14px] font-semibold text-fg hover:bg-surface-2 cursor-pointer">
+                    <button type="button" onClick={() => setShowAllLectures(true)} className="rounded-full h-11 border border-line text-[14px] font-semibold text-fg hover:bg-surface-2 cursor-pointer">
                       Show all {sessions.length} lectures
                     </button>
                   )}
@@ -615,7 +615,7 @@ export const AttendanceView: React.FC = () => {
             ) : (
               <div className="mt-f4 flex flex-col gap-f3">
                 <div className="flex gap-2">
-                  <label className="flex-1 flex items-center gap-2 h-11 px-3 border border-line bg-surface focus-within:border-line-strong">
+                  <label className="rounded-tile flex-1 flex items-center gap-2 h-11 px-3 border border-line bg-surface focus-within:border-line-strong">
                     <Search className="w-4 h-4 text-muted shrink-0" />
                     <input
                       type="search"
@@ -629,7 +629,7 @@ export const AttendanceView: React.FC = () => {
                     type="button"
                     onClick={() => setLowOnly((v) => !v)}
                     aria-pressed={lowOnly}
-                    className={`shrink-0 h-11 px-3 border text-[13px] font-semibold cursor-pointer transition-colors ${lowOnly ? 'bg-rose-600 text-white border-rose-600' : 'border-line text-fg hover:border-line-strong'}`}
+                    className={`rounded-full shrink-0 h-11 px-3 border text-[13px] font-semibold cursor-pointer transition-colors ${lowOnly ? 'bg-rose-600 text-white border-rose-600' : 'border-line text-fg hover:border-line-strong'}`}
                   >
                     Below 75%
                   </button>
@@ -642,7 +642,7 @@ export const AttendanceView: React.FC = () => {
                         type="button"
                         onClick={() => setSubjectFilter(sub)}
                         aria-pressed={subjectFilter === sub}
-                        className={`shrink-0 h-9 px-3 border text-[13px] font-medium cursor-pointer ${subjectFilter === sub ? 'bg-ink text-on-ink border-line-strong' : 'border-line text-fg-2'}`}
+                        className={`rounded-full shrink-0 h-9 px-3 border text-[13px] font-medium cursor-pointer ${subjectFilter === sub ? 'bg-ink text-on-ink border-line-strong' : 'border-line text-fg-2'}`}
                       >
                         {sub === 'all' ? 'All subjects' : sub}
                       </button>
@@ -650,11 +650,11 @@ export const AttendanceView: React.FC = () => {
                   </div>
                 )}
                 {studentRows.length === 0 ? (
-                  <p className="px-f4 py-f6 text-center text-[14px] text-muted border border-dashed border-line">
+                  <p className="rounded-card px-f4 py-f6 text-center text-[14px] text-muted bg-surface-2">
                     {lowOnly && !q ? 'Nobody is below 75%.' : 'No one matches.'}
                   </p>
                 ) : (
-                  <ul className="border border-line bg-surface divide-y divide-line-soft">
+                  <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
                     {studentRows.map(({ student, attended, total, pct }) => {
                       const low = isAtRisk({ pct, total });
                       return (
@@ -662,7 +662,7 @@ export const AttendanceView: React.FC = () => {
                           <span className="w-[76px] shrink-0 font-mono text-[12px] font-semibold text-fg-2 truncate">{student.roll || '—'}</span>
                           <span className="flex-1 min-w-0">
                             <span className="block text-[14px] text-fg truncate">{student.name}</span>
-                            <span className="mt-1.5 relative block h-1 bg-surface-3">
+                            <span className="rounded-full mt-1.5 relative block h-1 bg-surface-3">
                               <span className={`absolute inset-y-0 left-0 ${low ? 'bg-rose-500' : 'bg-emerald-500'}`} style={{ width: `${isNaN(pct) ? 0 : pct}%` }} />
                               <span className="absolute -top-0.5 -bottom-0.5 w-px bg-fg/50" style={{ left: '75%' }} />
                             </span>
@@ -727,7 +727,7 @@ export const AttendanceView: React.FC = () => {
           title={review.target.subjectName}
           subtitle={`${batchLabel} · ${dateLabel(review.target.date)} · ${formatTime12Hour(review.target.startTime)}`}
           banner={
-            <div className="flex items-start gap-f3 p-f3 border border-[#18A889]/35 bg-[#18A889]/[0.07]">
+            <div className="rounded-tile flex items-start gap-f3 p-f3 border border-[#18A889]/35 bg-[#18A889]/[0.07]">
               <QrIcon className="w-5 h-5 shrink-0 mt-0.5 text-[#128A70] dark:text-[#5EE0C2]" />
               <div className="text-[14px] leading-[20px]">
                 <p className="font-semibold text-fg">
@@ -766,7 +766,7 @@ export const AttendanceView: React.FC = () => {
                   type="button"
                   onClick={() => setExtraSubject(s)}
                   aria-pressed={extraSubject === s}
-                  className={`h-11 px-3 border text-[14px] cursor-pointer ${extraSubject === s ? 'bg-ink text-on-ink border-[#111111]' : 'border-line text-fg'}`}
+                  className={`rounded-full h-11 px-3 border text-[14px] cursor-pointer ${extraSubject === s ? 'bg-ink text-on-ink border-[#111111]' : 'border-line text-fg'}`}
                 >
                   {s}
                 </button>
@@ -775,7 +775,7 @@ export const AttendanceView: React.FC = () => {
           </div>
           <label className="block">
             <span className="text-[14px] font-medium text-fg">Start time</span>
-            <input type="time" value={extraTime} onChange={(e) => setExtraTime(e.target.value)} className="mt-2 w-full h-12 px-3.5 bg-surface border border-line text-[15px] text-fg" />
+            <input type="time" value={extraTime} onChange={(e) => setExtraTime(e.target.value)} className="rounded-field mt-2 w-full h-12 px-3.5 bg-surface border border-line text-[15px] text-fg" />
           </label>
           <div className="flex gap-2">
             <button
@@ -785,7 +785,7 @@ export const AttendanceView: React.FC = () => {
                 setExtraOpen(false);
                 setTake({ subjectName: extraSubject || 'Lecture', date: todayKey(), startTime: extraTime });
               }}
-              className="flex-1 h-12 border border-line text-fg text-[15px] font-semibold disabled:opacity-40 cursor-pointer"
+              className="rounded-full flex-1 h-12 border border-line text-fg text-[15px] font-semibold disabled:opacity-40 cursor-pointer"
             >
               Mark by hand
             </button>
@@ -796,7 +796,7 @@ export const AttendanceView: React.FC = () => {
                 setExtraOpen(false);
                 setLive({ subjectName: extraSubject || 'Lecture', date: todayKey(), startTime: extraTime });
               }}
-              className="flex-1 h-12 bg-ink text-on-ink text-[15px] font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
+              className="rounded-full flex-1 h-12 bg-ink text-on-ink text-[15px] font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
             >
               <QrIcon className="w-4 h-4" /> QR check-in
             </button>

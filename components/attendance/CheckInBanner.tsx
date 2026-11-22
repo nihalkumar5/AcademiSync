@@ -69,13 +69,13 @@ export const CheckInBanner: React.FC = () => {
           <p className="mt-1 text-[14px] text-white/60">
             {todo.facultyName} is taking attendance{todo.startTime ? ` · ${formatTime12Hour(todo.startTime)}` : ''}
           </p>
-          <button type="button" onClick={() => setScan(true)} className="mt-f4 h-12 w-full inline-flex items-center justify-center gap-2 bg-white text-[#111111] text-[15px] font-semibold hover:opacity-90 active:scale-[0.99] transition cursor-pointer">
+          <button type="button" onClick={() => setScan(true)} className="rounded-full mt-f4 h-12 w-full inline-flex items-center justify-center gap-2 bg-white text-[#111111] text-[15px] font-semibold hover:opacity-90 active:scale-[0.99] transition cursor-pointer">
             <ScanQr className="w-5 h-5" /> Scan the QR
           </button>
         </section>
       )}
       {done && (
-        <div className="flex items-center gap-3 px-f4 py-3 border border-[#18A889]/35 bg-[#18A889]/[0.07] text-[14px]">
+        <div className="rounded-tile flex items-center gap-3 px-f4 py-3 border border-[#18A889]/35 bg-[#18A889]/[0.07] text-[14px]">
           <span className="w-7 h-7 shrink-0 rounded-full bg-[#18A889] text-white flex items-center justify-center">
             <Check className="w-4 h-4" />
           </span>

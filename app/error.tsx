@@ -59,7 +59,7 @@ export default function Error({
   return (
     <div className="min-h-[100dvh] w-full flex items-center justify-center bg-surface text-fg px-4 py-10 font-sans">
       <div className="w-full max-w-[400px]">
-        <div className="relative border border-line bg-surface">
+        <div className="rounded-card relative border border-line bg-surface">
           <div className="px-5 pt-6 pb-5">
             <span className="inline-flex items-center gap-2 text-[12px] font-semibold text-rose-600 dark:text-rose-400">
               <AlertCircle className="w-4 h-4" />
@@ -82,7 +82,7 @@ export default function Error({
               <button
                 type="button"
                 onClick={() => (window.location.href = '/')}
-                className="h-12 inline-flex items-center justify-center gap-2 border border-line text-[14px] font-semibold hover:border-line-strong active:scale-[0.99] transition-all cursor-pointer"
+                className="rounded-full h-12 inline-flex items-center justify-center gap-2 border border-line text-[14px] font-semibold hover:border-line-strong active:scale-[0.99] transition-all cursor-pointer"
               >
                 <Home className="w-4 h-4" />
                 Go home
@@ -103,7 +103,7 @@ export default function Error({
               </button>
               {showDetails && (
                 <div className="pl-6 pr-5 pb-5">
-                  <pre className="p-3 bg-[#F7F7F5] dark:bg-black/30 border border-line-soft text-[12px] font-mono text-muted whitespace-pre-wrap break-all max-h-40 overflow-auto">
+                  <pre className="rounded-tile p-3 bg-[#F7F7F5] dark:bg-black/30 border border-line-soft text-[12px] font-mono text-muted whitespace-pre-wrap break-all max-h-40 overflow-auto">
                     {detail}
                   </pre>
                   <button
@@ -133,7 +133,7 @@ export default function Error({
               Still broken? Reset app data
             </button>
           ) : (
-            <div className="border border-rose-200 dark:border-rose-500/25 bg-rose-50/60 dark:bg-rose-500/[0.06] p-4 text-left">
+            <div className="rounded-tile border border-rose-200 dark:border-rose-500/25 bg-rose-50/60 dark:bg-rose-500/[0.06] p-4 text-left">
               <p className="text-[14px] font-semibold">Reset app data on this device?</p>
               <p className="mt-1 text-[13px] text-muted">
                 Local timetable, tasks and settings will be cleared. Anything synced to your account comes back after sign-in.
@@ -142,7 +142,7 @@ export default function Error({
                 <button
                   type="button"
                   onClick={handleClearAndReset}
-                  className="h-11 px-4 bg-rose-600 text-white text-[14px] font-semibold hover:bg-rose-700 transition-colors cursor-pointer"
+                  className="rounded-full h-11 px-4 bg-rose-600 text-white text-[14px] font-semibold hover:bg-rose-700 transition-colors cursor-pointer"
                 >
                   Reset
                 </button>

@@ -257,7 +257,7 @@ export const LiveCheckIn: React.FC<{
     <div className="fixed inset-0 z-[100] flex flex-col bg-[#0B0B0C] text-white font-sans select-none" role="dialog" aria-modal="true" aria-label="QR attendance">
       <header className="shrink-0" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="max-w-[1400px] mx-auto w-full h-14 px-f4 flex items-center gap-2">
-          <button type="button" onClick={finish} aria-label="Close" className="w-11 h-11 -ml-2 flex items-center justify-center text-white/90 cursor-pointer">
+          <button type="button" onClick={finish} aria-label="Close" className="rounded-full w-11 h-11 -ml-2 flex items-center justify-center text-white/90 cursor-pointer">
             <X className="w-5 h-5" />
           </button>
           <div className="min-w-0 flex-1">
@@ -292,11 +292,11 @@ export const LiveCheckIn: React.FC<{
             <p className="mt-3 text-[18px] font-semibold">Couldn&apos;t start QR check-in</p>
             <p className="mt-1.5 text-[14px] text-white/60 max-w-sm">{error?.message}</p>
             <div className="mt-f4 flex gap-2">
-              <button type="button" onClick={onCancel} className="h-11 px-4 border border-white/20 text-[14px] font-semibold cursor-pointer">
+              <button type="button" onClick={onCancel} className="rounded-full h-11 px-4 border border-white/20 text-[14px] font-semibold cursor-pointer">
                 Close
               </button>
               {error?.code !== 'no-roster' && error?.code !== 'permission-denied' && (
-                <button type="button" onClick={open} className="h-11 px-4 bg-white text-[#111] text-[14px] font-semibold inline-flex items-center gap-2 cursor-pointer">
+                <button type="button" onClick={open} className="rounded-full h-11 px-4 bg-white text-[#111] text-[14px] font-semibold inline-flex items-center gap-2 cursor-pointer">
                   <RefreshCw className="w-4 h-4" /> Try again
                 </button>
               )}
@@ -308,7 +308,7 @@ export const LiveCheckIn: React.FC<{
           <div className="min-h-full max-w-[1400px] mx-auto px-f4 py-f3 lg:py-f4 flex flex-col lg:flex-row items-center justify-center gap-f5 lg:gap-f6">
             {/* The QR */}
             <section className="flex flex-col items-center w-full max-w-[min(100%,60vh)] lg:max-w-none lg:w-auto">
-              <div className="relative bg-white p-3 sm:p-4 w-full aspect-square lg:w-[min(70vh,52vw)]">
+              <div className="rounded-tile relative bg-white p-3 sm:p-4 w-full aspect-square lg:w-[min(70vh,52vw)]">
                 {code ? (
                   <QrCode value={qrLink(code)} className={`w-full h-full transition-opacity duration-300 ${expired ? 'opacity-10' : ''}`} />
                 ) : (
@@ -320,13 +320,13 @@ export const LiveCheckIn: React.FC<{
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 text-[#111]">
                     <p className="text-[18px] font-semibold">Check-in has closed</p>
                     <p className="mt-1 text-[14px] text-[#555]">It closes by itself after {LIVE.openMinutes} minutes.</p>
-                    <button type="button" onClick={open} className="mt-4 h-11 px-4 bg-[#111] text-white text-[14px] font-semibold inline-flex items-center gap-2 cursor-pointer">
+                    <button type="button" onClick={open} className="rounded-full mt-4 h-11 px-4 bg-[#111] text-white text-[14px] font-semibold inline-flex items-center gap-2 cursor-pointer">
                       <RefreshCw className="w-4 h-4" /> Reopen
                     </button>
                   </div>
                 )}
               </div>
-              <div className="mt-3 w-full h-[3px] bg-white/10 overflow-hidden" aria-hidden="true">
+              <div className="rounded-full mt-3 w-full h-[3px] bg-white/10 overflow-hidden" aria-hidden="true">
                 {!expired && code && <div key={tick} className="qr-slot h-full bg-[#18A889]" style={{ animationDuration: `${LIVE.periodMs}ms`, animationDelay: `-${Math.round(elapsed)}ms` }} />}
               </div>
               <p className="mt-2 text-[12px] text-white/45 text-center">The code changes every 3 seconds, so a photo sent to a friend won&apos;t work.</p>
@@ -343,7 +343,7 @@ export const LiveCheckIn: React.FC<{
                 </p>
                 <p className="mt-2 text-[15px] text-white/70">checked in</p>
               </div>
-              <div className="mt-f3 h-1.5 bg-white/10 overflow-hidden">
+              <div className="rounded-full mt-f3 h-1.5 bg-white/10 overflow-hidden">
                 <div className="h-full bg-[#18A889] transition-[width] duration-700" style={{ width: `${total ? Math.min(100, (count / total) * 100) : 0}%` }} />
               </div>
 
@@ -365,7 +365,7 @@ export const LiveCheckIn: React.FC<{
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.25 }}
-                        className="inline-flex items-center gap-1.5 h-8 px-2.5 bg-white/[0.07] border border-white/10 text-[13px]"
+                        className="rounded-tile inline-flex items-center gap-1.5 h-8 px-2.5 bg-white/[0.07] border border-white/10 text-[13px]"
                       >
                         <Check className="w-3.5 h-3.5 text-[#5EE0C2]" />
                         {firstName(c.name)}
@@ -390,7 +390,7 @@ export const LiveCheckIn: React.FC<{
                           <span className="block text-[12px] text-white/50 font-mono truncate">{s.roll || 'No roll number'}</span>
                         </span>
                         {s.inBatch && onAddStray ? (
-                          <button type="button" disabled={adding === s.uid} onClick={() => addStray(s)} className="shrink-0 h-9 px-3 bg-white text-[#111] text-[13px] font-semibold inline-flex items-center gap-1.5 disabled:opacity-60 cursor-pointer">
+                          <button type="button" disabled={adding === s.uid} onClick={() => addStray(s)} className="rounded-full shrink-0 h-9 px-3 bg-white text-[#111] text-[13px] font-semibold inline-flex items-center gap-1.5 disabled:opacity-60 cursor-pointer">
                             {adding === s.uid && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Add to list
                           </button>
                         ) : (
@@ -416,7 +416,7 @@ export const LiveCheckIn: React.FC<{
         <footer className="shrink-0 border-t border-white/10" style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)' }}>
           <div className="max-w-[1400px] mx-auto w-full px-f4 pt-3 flex items-center gap-f3">
             <p className="text-[13px] text-white/50 tabular-nums">{expired ? 'Closed' : `Closes in ${leftText}`}</p>
-            <button type="button" onClick={finish} disabled={phase === 'closing'} className="ml-auto h-12 px-5 bg-white text-[#111111] text-[15px] font-semibold inline-flex items-center gap-2 hover:opacity-90 disabled:opacity-70 cursor-pointer">
+            <button type="button" onClick={finish} disabled={phase === 'closing'} className="rounded-full ml-auto h-12 px-5 bg-white text-[#111111] text-[15px] font-semibold inline-flex items-center gap-2 hover:opacity-90 disabled:opacity-70 cursor-pointer">
               {phase === 'closing' && <Loader2 className="w-4 h-4 animate-spin" />}
               Done · review {count}
             </button>

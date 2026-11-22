@@ -23,9 +23,9 @@ import {
   EyeOff, 
   ArrowRight, 
   ArrowLeft, 
-  CheckCircle2, 
-  Mail, 
-  KeyRound, 
+  CheckCircle2,
+  KeyRound,
+  Mail,
   Building2, 
   Sparkles,
   ChevronLeft
@@ -296,68 +296,102 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
       : viewType === 'email_form'
       ? isSignup
         ? 'Create your account'
-        : 'Log in with email'
-      : 'Your semester, sorted.';
+        : 'Enter your password'
+      : isSignup
+      ? 'Create your account'
+      : 'Log in to Intersemester';
   const subtitle =
     viewType === 'forgot_password'
       ? "Enter the email you signed up with. We'll send you a link."
       : viewType === 'email_form'
       ? isSignup
-        ? 'Takes less than a minute.'
+        ? 'Just your name and a password. Takes less than a minute.'
         : 'Pick up right where you left off.'
-      : 'New here or coming back, continue the same way.';
+      : 'Your timetable, attendance and exams, all in one place.';
+
+  const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const handleEmailContinue = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailLooksValid) {
+      setErrorMsg('Please enter a valid email address.');
+      return;
+    }
+    setErrorMsg('');
+    setPassword('');
+    setViewType('email_form');
+  };
 
   const inputCls =
-    'w-full h-12 border border-line bg-surface text-fg px-4 text-[15px] rounded-none placeholder:text-faint focus:outline-none focus:border-fg transition-colors disabled:opacity-60';
+    'w-full h-[52px] rounded-field border border-line bg-surface text-fg px-4 text-[16px] placeholder:text-faint focus:outline-none focus:border-line-strong focus:ring-4 focus:ring-fg/[0.06] transition-[border-color,box-shadow] disabled:opacity-60';
   const labelCls = 'text-[13px] font-semibold text-fg';
 
   const slideNow = SLIDES[slide];
 
   return (
-    <div className="min-h-[100dvh] w-full bg-canvas text-fg lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
-      {/* ===== Brand panel (desktop) ===== */}
-      <aside className="hidden lg:flex sheen-ink relative overflow-hidden bg-ink text-on-ink flex-col justify-between p-12 xl:p-16">
+    <div className="min-h-[100dvh] w-full bg-canvas text-fg lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:p-3">
+      {/* ===== Brand panel (desktop): a floating, rounded showcase ===== */}
+      <aside className="hidden lg:flex relative overflow-hidden rounded-[32px] bg-surface-2 flex-col justify-between p-12 xl:p-14">
         <div className="flex items-center gap-3">
           <BrandMark />
           <span className="text-[17px] font-semibold tracking-tight">Intersemester</span>
         </div>
 
         <div className="max-w-[520px]">
-          <div className="bg-surface border border-white/10 p-8 flex items-center justify-center h-[300px]">
+          <div className="rounded-sheet bg-surface shadow-[0_24px_60px_-30px_rgba(17,17,17,0.25)] p-8 flex items-center justify-center h-[320px]">
             <Illustration key={slideNow.art} name={slideNow.art} className="h-full w-auto auth-fade" />
           </div>
-          <p className="mt-8 text-[13px] font-semibold uppercase tracking-[0.12em] opacity-60">{slideNow.kicker}</p>
-          <h2 className="mt-2 text-[34px] xl:text-[40px] leading-[1.08] tracking-tight">{slideNow.title}</h2>
-          <p className="mt-3 text-[16px] leading-[24px] opacity-70 max-w-[440px]">{slideNow.body}</p>
-          <SlideDots active={slide} onPick={setSlide} onInk />
+          <span className="mt-8 inline-flex h-7 items-center rounded-full bg-surface px-3 text-[12px] font-semibold text-fg-2">
+            {slideNow.kicker}
+          </span>
+          <h2 className="mt-3 text-[34px] xl:text-[40px] leading-[1.08] tracking-tight">{slideNow.title}</h2>
+          <p className="mt-3 text-[16px] leading-[24px] text-muted max-w-[440px]">{slideNow.body}</p>
+          <SlideDots active={slide} onPick={setSlide} large />
         </div>
 
-        <p className="text-[13px] opacity-50">Made for students, faculty and campus teams.</p>
+        <p className="text-[13px] text-muted">Made for students, faculty and campus teams.</p>
       </aside>
 
       {/* ===== Form side ===== */}
-      <main className="min-h-[100dvh] flex flex-col">
+      <main className="min-h-[100dvh] lg:min-h-0 flex flex-col">
         {/* Top bar */}
-        <header className="flex items-center justify-between px-5 sm:px-8 pt-[max(env(safe-area-inset-top),20px)] pb-2">
-          <div className="flex items-center gap-2.5 lg:invisible">
-            <BrandMark small />
-            <span className="text-[15px] font-semibold tracking-tight">Intersemester</span>
-          </div>
-          <Link href="/contact" className="text-[13px] font-medium text-muted hover:text-fg">
+        <header className="flex items-center justify-between px-5 sm:px-8 pt-[max(env(safe-area-inset-top),16px)] pb-2">
+          {viewType === 'providers' ? (
+            <div className="flex items-center gap-2.5 lg:invisible">
+              <BrandMark small />
+              <span className="text-[15px] font-semibold tracking-tight">Intersemester</span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setViewType(viewType === 'forgot_password' ? 'email_form' : 'providers');
+                setErrorMsg('');
+                setResetSent(false);
+              }}
+              aria-label="Back"
+              className="w-10 h-10 -ml-1 rounded-full bg-surface-2 hover:bg-surface-3 flex items-center justify-center text-fg transition-colors cursor-pointer"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
+          <Link
+            href="/contact"
+            className="h-9 px-3.5 inline-flex items-center rounded-full bg-surface-2 hover:bg-surface-3 text-[13px] font-medium text-fg-2 transition-colors"
+          >
             Need help?
           </Link>
         </header>
 
-        <div className="flex-1 flex flex-col items-center px-5 sm:px-8 pb-8">
+        <div className="flex-1 flex flex-col items-center px-5 sm:px-8 pb-6">
           <div className="w-full max-w-[400px] flex flex-col my-auto">
-            {/* Illustration (phones and tablets) */}
+            {/* ---- Hero (phones and tablets): rotating illustration ---- */}
             {viewType === 'providers' && (
-              <section className="lg:hidden mt-3 border border-line bg-surface">
-                <div className="h-[184px] flex items-center justify-center px-6 pt-5 bg-surface-2/60">
+              <section className="lg:hidden mt-2 rounded-sheet bg-surface-2 overflow-hidden">
+                <div className="h-[200px] flex items-end justify-center px-6 pt-6">
                   <Illustration key={slideNow.art} name={slideNow.art} className="h-full w-auto auth-fade" />
                 </div>
-                <div className="flex items-center justify-between gap-3 px-4 py-3 min-h-[62px] border-t border-line">
-                  <p key={slideNow.title} className="text-[13px] leading-[18px] text-fg font-medium auth-fade">
+                <div className="flex items-center justify-between gap-3 px-5 pt-3 pb-4">
+                  <p key={slideNow.title} className="text-[13px] leading-[18px] font-medium text-fg-2 auth-fade">
                     {slideNow.short}
                   </p>
                   <SlideDots active={slide} onPick={setSlide} />
@@ -365,37 +399,36 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
               </section>
             )}
 
-            {viewType !== 'providers' && (
-              <button
-                type="button"
-                onClick={() => {
-                  setViewType(viewType === 'forgot_password' ? 'email_form' : 'providers');
-                  setErrorMsg('');
-                  setResetSent(false);
-                }}
-                className="self-start -ml-1 mt-2 h-9 px-1 inline-flex items-center gap-1 text-[14px] font-medium text-muted hover:text-fg cursor-pointer"
-              >
-                <ChevronLeft className="w-4 h-4" /> Back
-              </button>
+            {/* Hero on the email and reset steps: same card language as the first screen */}
+            {viewType !== 'providers' && !resetSent && (
+              <section className="mt-2 rounded-sheet bg-surface-2 overflow-hidden h-[184px] flex items-end justify-center px-8 pt-7">
+                <Illustration
+                  key={`${viewType}-${authMode}`}
+                  name={viewType === 'forgot_password' ? 'search' : isSignup ? 'launch' : 'signin'}
+                  className="h-full w-auto max-w-full object-contain auth-fade"
+                />
+              </section>
             )}
 
             {/* Heading */}
-            <div className={viewType === 'providers' ? 'mt-7' : 'mt-4'}>
-              <h1 className="text-[30px] sm:text-[34px] leading-[1.1] tracking-tight text-fg">{title}</h1>
-              <p className="mt-2 text-[15px] leading-[22px] text-muted">{subtitle}</p>
-            </div>
+            {!resetSent && (
+              <div className={viewType === 'providers' ? 'mt-7 text-center' : 'mt-5'}>
+                <h1 className="text-[28px] sm:text-[32px] leading-[1.12] font-semibold tracking-[-0.02em] text-fg">{title}</h1>
+                <p className="mt-2 text-[15px] leading-[22px] text-muted">{subtitle}</p>
+              </div>
+            )}
 
             {/* Error */}
             {errorMsg && (
-              <div role="alert" className="mt-4 flex items-start gap-2.5 border border-danger/30 bg-danger-soft px-3.5 py-3 text-[13px] leading-[19px] text-danger">
-                <span className="mt-[5px] w-1.5 h-1.5 shrink-0 bg-danger" />
+              <div role="alert" className="mt-4 flex items-start gap-2.5 rounded-tile bg-danger-soft px-4 py-3 text-[13px] leading-[19px] text-danger">
+                <span className="mt-[6px] w-1.5 h-1.5 shrink-0 rounded-full bg-danger" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
             {/* ---- Providers ---- */}
             {viewType === 'providers' && (
-              <div className="mt-5 flex flex-col gap-2.5">
+              <div className="mt-6 flex flex-col gap-3">
                 <button
                   type="button"
                   onClick={handleGoogleLogin}
@@ -406,7 +439,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
                     <>
-                      <span className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-white flex items-center justify-center">
+                      <span className="absolute left-1.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white flex items-center justify-center">
                         <GoogleG />
                       </span>
                       <span>Continue with Google</span>
@@ -414,38 +447,94 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                   )}
                 </button>
 
-                <div className="grid grid-cols-2 gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => handleOAuthLogin('github')}
-                    disabled={loading}
-                    className="btn btn-secondary h-12 disabled:opacity-60"
-                  >
+                <button
+                  type="button"
+                  onClick={() => handleOAuthLogin('github')}
+                  disabled={loading}
+                  className="btn btn-secondary btn-lg w-full relative disabled:opacity-60"
+                >
+                  <span className="absolute left-1.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center">
                     <GitHubMark />
-                    <span>GitHub</span>
+                  </span>
+                  <span>Continue with GitHub</span>
+                </button>
+
+                <div className="my-2 flex items-center gap-3 text-[13px] text-faint">
+                  <span className="h-px flex-1 bg-line-soft" />
+                  or use your email
+                  <span className="h-px flex-1 bg-line-soft" />
+                </div>
+
+                <form onSubmit={handleEmailContinue} className="flex flex-col gap-3" noValidate>
+                  <label className="relative flex items-center">
+                    <span className="sr-only">Email</span>
+                    <Mail className="absolute left-4 w-[18px] h-[18px] text-faint pointer-events-none" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (errorMsg) setErrorMsg('');
+                      }}
+                      placeholder="you@college.edu"
+                      autoComplete="email"
+                      inputMode="email"
+                      disabled={loading}
+                      className={`${inputCls} pl-11`}
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    disabled={loading || !email.trim()}
+                    className="btn btn-secondary btn-lg w-full disabled:opacity-40"
+                  >
+                    <span>Continue with email</span>
+                    <ArrowRight className="w-4 h-4" />
                   </button>
+                </form>
+
+                <p className="mt-3 text-center text-[14px] text-muted">
+                  {isSignup ? 'Already have an account?' : 'New to Intersemester?'}{' '}
                   <button
                     type="button"
                     onClick={() => {
-                      setViewType('email_form');
+                      setAuthMode(isSignup ? 'signin' : 'signup');
                       setErrorMsg('');
                     }}
-                    disabled={loading}
-                    className="btn btn-secondary h-12 disabled:opacity-60"
+                    className="font-semibold text-fg underline decoration-line-strong/30 underline-offset-4 cursor-pointer"
                   >
-                    <Mail className="w-4 h-4" />
-                    <span>Email</span>
+                    {isSignup ? 'Log in' : 'Create an account'}
                   </button>
-                </div>
-
+                </p>
               </div>
             )}
 
             {/* ---- Email form ---- */}
             {viewType === 'email_form' && (
-              <form onSubmit={handleEmailSubmit} className="mt-5 flex flex-col gap-4" noValidate>
+              <form onSubmit={handleEmailSubmit} className="mt-6 flex flex-col gap-4" noValidate>
+                {/* The email picked on the first screen, with a way back to change it */}
+                <div className="flex items-center gap-3 rounded-card bg-surface-2 p-2 pr-2">
+                  <span className="w-10 h-10 shrink-0 rounded-full bg-ink text-on-ink flex items-center justify-center text-[15px] font-semibold uppercase">
+                    {email.trim().charAt(0) || '?'}
+                  </span>
+                  <p className="min-w-0 flex-1 text-[15px] font-medium text-fg truncate">{email.trim()}</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setViewType('providers');
+                      setErrorMsg('');
+                    }}
+                    className="shrink-0 h-9 px-3.5 rounded-full bg-surface hover:bg-surface-3 text-[13px] font-semibold text-fg transition-colors cursor-pointer"
+                  >
+                    Change
+                  </button>
+                </div>
+
+                {/* Hidden email field so password managers save the right username */}
+                <input type="email" value={email} autoComplete="username" readOnly hidden />
+
                 {isSignup && (
-                  <label className="flex flex-col gap-1.5">
+                  <label className="flex flex-col gap-2">
                     <span className={labelCls}>Full name</span>
                     <input
                       type="text"
@@ -461,23 +550,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                   </label>
                 )}
 
-                <label className="flex flex-col gap-1.5">
-                  <span className={labelCls}>Email</span>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@college.edu"
-                    autoComplete="email"
-                    inputMode="email"
-                    required
-                    autoFocus={!isSignup}
-                    disabled={loading}
-                    className={inputCls}
-                  />
-                </label>
-
-                <label className="flex flex-col gap-1.5">
+                <label className="flex flex-col gap-2">
                   <span className="flex items-center justify-between">
                     <span className={labelCls}>Password</span>
                     {!isSignup && (
@@ -487,7 +560,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                           setViewType('forgot_password');
                           setErrorMsg('');
                         }}
-                        className="text-[13px] font-medium text-muted hover:text-fg underline-offset-4 hover:underline cursor-pointer"
+                        className="text-[13px] font-medium text-muted hover:text-fg cursor-pointer"
                       >
                         Forgot password?
                       </button>
@@ -501,16 +574,17 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                       placeholder={isSignup ? 'At least 6 characters' : 'Your password'}
                       autoComplete={isSignup ? 'new-password' : 'current-password'}
                       required
+                      autoFocus={!isSignup}
                       disabled={loading}
-                      className={`${inputCls} pr-12`}
+                      className={`${inputCls} pr-14`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      className="absolute right-0 h-12 w-12 flex items-center justify-center text-muted hover:text-fg cursor-pointer"
+                      className="absolute right-1.5 w-10 h-10 rounded-full flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
                     </button>
                   </span>
                   {isSignup && password.length > 0 && password.length < 6 && (
@@ -518,7 +592,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                   )}
                 </label>
 
-                <button type="submit" disabled={loading} className="btn btn-primary btn-lg w-full mt-1">
+                <button type="submit" disabled={loading} className="btn btn-primary btn-lg w-full mt-2">
                   {loading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
@@ -537,7 +611,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                       setAuthMode(isSignup ? 'signin' : 'signup');
                       setErrorMsg('');
                     }}
-                    className="font-semibold text-fg underline underline-offset-4 cursor-pointer"
+                    className="font-semibold text-fg underline decoration-line-strong/30 underline-offset-4 cursor-pointer"
                   >
                     {isSignup ? 'Log in' : 'Create an account'}
                   </button>
@@ -547,12 +621,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
 
             {/* ---- Forgot password ---- */}
             {viewType === 'forgot_password' && (
-              <div className="mt-5">
+              <div className={resetSent ? 'mt-4' : 'mt-6'}>
                 {resetSent ? (
-                  <div className="border border-line bg-surface p-5 flex flex-col items-center text-center">
-                    <Illustration name="signin" className="h-[120px] w-auto" />
-                    <p className="mt-4 text-[16px] font-semibold text-fg">Check your inbox</p>
-                    <p className="mt-1 text-[14px] leading-[21px] text-muted">
+                  <div className="rounded-sheet bg-surface-2 px-6 pt-8 pb-6 flex flex-col items-center text-center">
+                    <Illustration name="signin" className="h-[132px] w-auto auth-fade" />
+                    <p className="mt-5 text-[20px] font-semibold tracking-tight text-fg">Check your inbox</p>
+                    <p className="mt-1.5 text-[14px] leading-[21px] text-muted">
                       We sent a reset link to <span className="font-semibold text-fg break-all">{email}</span>.
                     </p>
                     <button
@@ -562,14 +636,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                         setViewType('email_form');
                         setAuthMode('signin');
                       }}
-                      className="btn btn-primary w-full mt-5"
+                      className="btn btn-primary btn-lg w-full mt-6"
                     >
                       Back to log in
                     </button>
                   </div>
                 ) : (
                   <form onSubmit={handleResetPassword} className="flex flex-col gap-4" noValidate>
-                    <label className="flex flex-col gap-1.5">
+                    <label className="flex flex-col gap-2">
                       <span className={labelCls}>Email</span>
                       <input
                         type="email"
@@ -584,7 +658,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                         className={inputCls}
                       />
                     </label>
-                    <button type="submit" disabled={loading} className="btn btn-primary btn-lg w-full">
+                    <button type="submit" disabled={loading} className="btn btn-primary btn-lg w-full mt-1">
                       {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Send reset link</span>}
                     </button>
                   </form>
@@ -592,32 +666,24 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
               </div>
             )}
 
-            <p className="mt-7 text-[12px] leading-[18px] text-muted">
+            <p className="mt-8 text-center text-[12px] leading-[18px] text-faint">
               By continuing you agree to our{' '}
-              <Link href="/terms" className="text-fg underline underline-offset-2">
+              <Link href="/terms" className="text-muted underline underline-offset-2 hover:text-fg">
                 Terms
               </Link>{' '}
               and{' '}
-              <Link href="/privacy" className="text-fg underline underline-offset-2">
+              <Link href="/privacy" className="text-muted underline underline-offset-2 hover:text-fg">
                 Privacy Policy
               </Link>
               .
             </p>
           </div>
         </div>
-
-        <footer className="px-5 sm:px-8 pb-[max(env(safe-area-inset-bottom),20px)] flex items-center justify-between text-[12px] text-faint">
-          <span>© 2026 Intersemester</span>
-          <span className="flex items-center gap-4">
-            <Link href="/privacy" className="hover:text-fg">Privacy</Link>
-            <Link href="/terms" className="hover:text-fg">Terms</Link>
-          </span>
-        </footer>
       </main>
 
       <style>{`
         .auth-fade { animation: authFade .45s ease both; }
-        @keyframes authFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+        @keyframes authFade { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: none; } }
         @media (prefers-reduced-motion: reduce) { .auth-fade { animation: none; } }
       `}</style>
     </div>
@@ -656,8 +722,8 @@ const SLIDES: { art: IllustrationName; kicker: string; title: string; body: stri
   },
 ];
 
-const SlideDots: React.FC<{ active: number; onPick: (i: number) => void; onInk?: boolean }> = ({ active, onPick, onInk }) => (
-  <div className={`flex items-center gap-1.5 ${onInk ? 'mt-8' : 'shrink-0'}`}>
+const SlideDots: React.FC<{ active: number; onPick: (i: number) => void; large?: boolean }> = ({ active, onPick, large }) => (
+  <div className={`flex items-center gap-1.5 ${large ? 'mt-8' : 'shrink-0'}`}>
     {SLIDES.map((s, i) => (
       <button
         key={s.art}
@@ -665,16 +731,14 @@ const SlideDots: React.FC<{ active: number; onPick: (i: number) => void; onInk?:
         onClick={() => onPick(i)}
         aria-label={`Show: ${s.kicker}`}
         aria-current={i === active}
-        className={`h-1.5 transition-all cursor-pointer ${i === active ? 'w-5' : 'w-1.5'} ${
-          onInk ? (i === active ? 'bg-on-ink' : 'bg-on-ink/30') : i === active ? 'bg-fg' : 'bg-line-strong'
-        }`}
+        className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${i === active ? 'w-6 bg-fg' : 'w-1.5 bg-line-strong/20'}`}
       />
     ))}
   </div>
 );
 
 const BrandMark: React.FC<{ small?: boolean }> = ({ small }) => (
-  <span className={`${small ? 'w-8 h-8' : 'w-10 h-10'} overflow-hidden bg-white border border-line flex items-center justify-center shrink-0`}>
+  <span className={`${small ? 'w-8 h-8 rounded-[10px]' : 'w-10 h-10 rounded-xl'} overflow-hidden bg-white border border-line-soft flex items-center justify-center shrink-0`}>
     {/* eslint-disable-next-line @next/next/no-img-element */}
     <img src="/logo51.png" alt="" className="w-full h-full object-cover scale-[1.75] select-none" draggable={false} />
   </span>

@@ -215,11 +215,11 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
               
               <div className="flex flex-col gap-4">
                 {extractedEvents.map((event, index) => (
-                  <div key={index} className="flex flex-col gap-3 p-4 rounded-none border border-line bg-surface-2 relative group">
+                  <div key={index} className="flex flex-col gap-3 p-4 rounded-tile border border-line bg-surface-2 relative group">
                     <button
                       type="button"
                       onClick={() => removeExtractedRow(index)}
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-none bg-surface border border-line flex items-center justify-center text-muted hover:text-rose-500 dark:hover:text-rose-400 transition-colors z-10 shadow-sm"
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-surface border border-line flex items-center justify-center text-muted hover:text-rose-500 dark:hover:text-rose-400 transition-colors z-10 shadow-sm"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -231,7 +231,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
                           type="text"
                           value={event.title}
                           onChange={(e) => updateExtractedRow(index, { title: e.target.value })}
-                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                          className="w-full px-3 py-1.5 h-[38px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                         />
                       </div>
                       <div className="flex flex-col gap-1.5">
@@ -240,7 +240,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
                           <select
                             value={event.type}
                             onChange={(e) => updateExtractedRow(index, { type: e.target.value as any })}
-                            className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors appearance-none"
+                            className="w-full px-3 py-1.5 h-[38px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors appearance-none"
                           >
                             <option value="exam" className="dark:bg-[#121317]">Exam</option>
                             <option value="holiday" className="dark:bg-[#121317]">Holiday</option>
@@ -267,7 +267,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
                               ...(shouldSyncEnd ? { endDate: newStart } : {}),
                             });
                           }}
-                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                          className="w-full px-3 py-1.5 h-[38px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                         />
                       </div>
                       <div className="flex flex-col gap-1.5">
@@ -283,7 +283,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
                           type="date"
                           value={event.endDate || event.startDate || event.date}
                           onChange={(e) => updateExtractedRow(index, { endDate: e.target.value })}
-                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                          className="w-full px-3 py-1.5 h-[38px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                         />
                       </div>
                       <div className="flex flex-col gap-1.5">
@@ -293,7 +293,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
                           value={event.location || ''}
                           onChange={(e) => updateExtractedRow(index, { location: e.target.value })}
                           placeholder="Optional"
-                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors placeholder:text-black/30 dark:placeholder:text-[#71717A]"
+                          className="w-full px-3 py-1.5 h-[38px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors placeholder:text-black/30 dark:placeholder:text-[#71717A]"
                         />
                       </div>
                     </div>
@@ -309,7 +309,7 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
                 <button
                   type="button"
                   onClick={addExtractedRow}
-                  className="w-full flex items-center justify-center gap-2 py-2 h-11 text-[14px] font-semibold text-fg rounded-none border border-line bg-surface-2 hover:bg-surface-2 transition-colors cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-2 h-11 text-[14px] font-semibold text-fg rounded-full border border-line bg-surface-2 hover:bg-surface-2 transition-colors cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add Row
                 </button>
@@ -321,14 +321,14 @@ export const CalendarImportModal: React.FC<CalendarImportModalProps> = ({ isOpen
             <button 
               type="button" 
               onClick={resetState}
-              className="w-full sm:w-auto px-4 h-11 rounded-none text-[14px] font-semibold text-muted hover:bg-surface-2 transition-colors cursor-pointer"
+              className="w-full sm:w-auto px-4 h-11 rounded-full text-[14px] font-semibold text-muted hover:bg-surface-2 transition-colors cursor-pointer"
             >
               Scan Another
             </button>
             <button 
               type="button" 
               onClick={handleSaveConfirmed}
-              className="w-full sm:w-auto px-6 h-11 rounded-none bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
+              className="w-full sm:w-auto px-6 h-11 rounded-full bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
             >
               Save to Calendar
             </button>

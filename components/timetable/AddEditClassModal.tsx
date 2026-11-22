@@ -182,7 +182,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
             <button
               type="button"
               onClick={() => setShowSearchModal(true)}
-              className="w-full flex items-center gap-3 p-f3 border border-line bg-surface hover:bg-surface-2 text-left transition-colors cursor-pointer"
+              className="rounded-tile w-full flex items-center gap-3 p-f3 border border-line bg-surface hover:bg-surface-2 text-left transition-colors cursor-pointer"
               style={tone ? ({ '--sub': tone.accent, '--sub-dark': tone.darkAccent } as React.CSSProperties) : undefined}
             >
               <span className={tone ? 'w-3 h-3 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]' : 'w-3 h-3 shrink-0 bg-line'} aria-hidden="true" />
@@ -213,7 +213,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
                       aria-checked={on}
                       aria-label={d}
                       onClick={() => setDay(d as DayOfWeek)}
-                      className={`h-11 text-[13px] font-semibold transition-colors cursor-pointer ${on ? 'bg-ink text-on-ink' : 'bg-surface-2 text-fg-2 hover:text-fg'}`}
+                      className={`rounded-tile h-11 text-[13px] font-semibold transition-colors cursor-pointer ${on ? 'bg-ink text-on-ink' : 'bg-surface-2 text-fg-2 hover:text-fg'}`}
                     >
                       {d.slice(0, 3)}
                     </button>
@@ -237,7 +237,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
                 { l: '1 hr', d: 55 },
                 { l: '2 hr lab', d: 115 },
               ].map((q) => (
-                <button key={q.l} type="button" onClick={() => setEndTime(fromMins(mins(startTime) + q.d))} className="h-7 px-2.5 bg-surface-2 text-[12px] font-medium text-fg-2 hover:text-fg cursor-pointer">
+                <button key={q.l} type="button" onClick={() => setEndTime(fromMins(mins(startTime) + q.d))} className="rounded-full h-7 px-2.5 bg-surface-2 text-[12px] font-medium text-fg-2 hover:text-fg cursor-pointer">
                   {q.l}
                 </button>
               ))}
@@ -268,7 +268,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
           {isBatchCR && profile.isBatchSynced && (
             <section className="border-t border-line pt-f4">
               <span className={label}>Who gets this change</span>
-              <div role="radiogroup" className="grid grid-cols-2 gap-1 p-1 bg-surface-2">
+              <div role="radiogroup" className="rounded-tile grid grid-cols-2 gap-1 p-1 bg-surface-2">
                 {[
                   { on: true, l: 'Whole batch' },
                   { on: false, l: 'Only me' },
@@ -279,7 +279,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
                     role="radio"
                     aria-checked={syncWithBatch === o.on}
                     onClick={() => setSyncWithBatch(o.on)}
-                    className={`h-10 text-[14px] font-semibold transition-colors cursor-pointer ${syncWithBatch === o.on ? 'bg-surface text-fg shadow-sm' : 'text-muted hover:text-fg'}`}
+                    className={`rounded-tile h-10 text-[14px] font-semibold transition-colors cursor-pointer ${syncWithBatch === o.on ? 'bg-surface text-fg shadow-sm' : 'text-muted hover:text-fg'}`}
                   >
                     {o.l}
                   </button>
@@ -328,7 +328,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
                     handleSubjectChangeStr(sub.id);
                     setShowSearchModal(false);
                   }}
-                  className={`flex items-start p-4 text-left transition-colors border ${
+                  className={`rounded-tile flex items-start p-4 text-left transition-colors border ${
                     isSelected 
                       ? 'bg-ink text-on-ink border-line-strong' 
                       : 'bg-surface border-line hover:border-[#111111] dark:hover:border-white/[0.2] text-fg'
@@ -379,7 +379,7 @@ export const AddEditClassModal: React.FC<AddEditClassModalProps> = ({
                   setDay(d as DayOfWeek);
                   setShowDayModal(false);
                 }}
-                className={`flex items-center justify-between p-4 text-left transition-colors border ${
+                className={`rounded-tile flex items-center justify-between p-4 text-left transition-colors border ${
                   isSelected 
                     ? 'bg-ink text-on-ink border-line-strong' 
                     : 'bg-surface border-line hover:border-[#111111] dark:hover:border-white/[0.2] text-fg'

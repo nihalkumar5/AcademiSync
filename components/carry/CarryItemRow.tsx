@@ -20,7 +20,7 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
       layout
       onClick={() => onToggle(item.id)}
       className={clsx(
-        'group flex items-center justify-between p-3.5 sm:p-4 border transition-all cursor-pointer select-none text-left gap-3 relative',
+        'rounded-tile group flex items-center justify-between p-3.5 sm:p-4 border transition-all cursor-pointer select-none text-left gap-3 relative',
         item.isPacked
           ? 'bg-surface-2 border-line-soft opacity-65'
           : 'bg-[#FFFFFF] dark:bg-[#15171E] border-line-soft hover:border-line shadow-xs hover:shadow-sm'
@@ -35,7 +35,7 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
             onToggle(item.id);
           }}
           className={clsx(
-            'w-[22px] h-[22px] flex items-center justify-center border transition-all shrink-0 cursor-pointer',
+            'rounded-full w-[22px] h-[22px] flex items-center justify-center border transition-all shrink-0 cursor-pointer',
             item.isPacked
               ? 'bg-[#18A889] border-[#18A889] text-white shadow-xs'
               : 'bg-transparent border-[#D1D1D1] dark:border-white/20 hover:border-[#18A889] dark:hover:border-[#18A889]'
@@ -67,12 +67,12 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
 
           <div className="flex items-center gap-2 text-[12px] text-muted font-medium min-w-0 flex-wrap">
             {item.source === 'subject' ? (
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-medium truncate">
+              <span className="rounded-full inline-flex items-center gap-1.5 px-2 py-0.5 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-medium truncate">
                 <BookOpen className="w-[12px] h-[12px] shrink-0" />
                 <span className="truncate">{item.subjectName || 'Required Subject Item'}</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-medium truncate">
+              <span className="rounded-full inline-flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-medium truncate">
                 <Tag className="w-[12px] h-[12px] shrink-0" />
                 <span className="truncate">Custom Item</span>
               </span>
@@ -94,7 +94,7 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
             e.stopPropagation();
             setShowMenu(!showMenu);
           }}
-          className="p-1.5 text-muted hover:text-fg transition-colors cursor-pointer hover:bg-surface-2"
+          className="rounded-full p-1.5 text-muted hover:text-fg transition-colors cursor-pointer hover:bg-surface-2"
         >
           <MoreVertical className="w-4 h-4" />
         </button>
@@ -106,7 +106,7 @@ export const CarryItemRow: React.FC<CarryItemRowProps> = ({ item, onToggle, onDe
               onClick={(e) => { e.stopPropagation(); setShowMenu(false); }} 
             />
             <div 
-              className="absolute right-0 top-full mt-1.5 w-44 rounded-none bg-surface border border-line shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 flex flex-col text-left overflow-hidden"
+              className="absolute right-0 top-full mt-1.5 w-44 rounded-card bg-surface border border-line shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 flex flex-col text-left overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {onDelete && item.source === 'custom' && (

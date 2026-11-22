@@ -15,7 +15,7 @@ export const btn = {
   icon: 'btn btn-ghost btn-sm btn-icon',
 };
 
-export const surface = 'border border-line bg-surface';
+export const surface = 'rounded-card border border-line bg-surface';
 export const divider = 'divide-y divide-line-soft';
 export const muted = 'text-muted';
 export const strong = 'text-fg';
@@ -51,7 +51,7 @@ const toneCls: Record<Tone, string> = {
   violet: 'text-violet-700 dark:text-violet-300 border-violet-300/70 dark:border-violet-500/30 bg-violet-50/70 dark:bg-violet-500/10',
 };
 export const Badge: React.FC<{ tone?: Tone; dot?: boolean; children: React.ReactNode }> = ({ tone = 'neutral', dot, children }) => (
-  <span className={`inline-flex items-center gap-1.5 h-6 px-2 border text-[12px] font-medium whitespace-nowrap ${toneCls[tone]}`}>
+  <span className={`rounded-full inline-flex items-center gap-1.5 h-6 px-2 border text-[12px] font-medium whitespace-nowrap ${toneCls[tone]}`}>
     {dot && <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />}
     {children}
   </span>
@@ -91,7 +91,7 @@ export const Segmented = <T extends string>({
   options: { id: T; label: string; count?: number }[];
   ariaLabel: string;
 }) => (
-  <div role="tablist" aria-label={ariaLabel} className="inline-flex max-w-full overflow-x-auto no-scrollbar border border-line p-0.5">
+  <div role="tablist" aria-label={ariaLabel} className="inline-flex max-w-full overflow-x-auto no-scrollbar rounded-full border border-line p-0.5">
     {options.map((o) => {
       const on = value === o.id;
       return (
@@ -101,7 +101,7 @@ export const Segmented = <T extends string>({
           role="tab"
           aria-selected={on}
           onClick={() => onChange(o.id)}
-          className={`shrink-0 h-9 px-3 inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors cursor-pointer ${
+          className={`shrink-0 h-9 px-3 rounded-full inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors cursor-pointer ${
             on ? 'bg-ink text-on-ink' : `${muted} hover:text-fg`
           }`}
         >
@@ -138,8 +138,8 @@ export const SearchField: React.FC<{ value: string; onChange: (v: string) => voi
 );
 
 export const Empty: React.FC<{ icon: React.ElementType; title: string; body?: string; action?: React.ReactNode }> = ({ icon: Icon, title, body, action }) => (
-  <div className="flex flex-col items-center text-center px-f4 py-f6 border border-dashed border-line">
-    <span className={`w-12 h-12 flex items-center justify-center border border-line-soft ${strong}`}>
+  <div className="rounded-card flex flex-col items-center text-center px-f4 py-f6 border border-dashed border-line">
+    <span className={`rounded-xl w-12 h-12 flex items-center justify-center border border-line-soft ${strong}`}>
       <Icon className="w-5 h-5" strokeWidth={1.75} />
     </span>
     <p className={`mt-f3 text-[16px] font-semibold ${strong}`}>{title}</p>
@@ -163,7 +163,7 @@ export const AttentionRow: React.FC<{
   }[tone];
   return (
     <button type="button" onClick={onClick} className="w-full flex items-center gap-f3 px-f4 py-f3 min-h-[64px] text-left hover:bg-surface-2 transition-colors cursor-pointer">
-      <span className={`w-9 h-9 shrink-0 flex items-center justify-center border ${iconTone}`}>
+      <span className={`rounded-xl w-9 h-9 shrink-0 flex items-center justify-center border ${iconTone}`}>
         <Icon className="w-4 h-4" strokeWidth={1.9} />
       </span>
       <span className="flex-1 min-w-0">

@@ -188,7 +188,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
           <div className="flex items-center gap-2 min-h-[28px]">
             <span className={clsx('inline-flex items-center gap-1.5 min-w-0 text-[12px]', isDone ? 'text-faint' : 'text-muted')}>
               {/* Subject colour: same as this subject's timetable and subject cards */}
-              <span aria-hidden="true" className={clsx('w-2.5 h-2.5 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]', isDone && 'opacity-40')} />
+              <span aria-hidden="true" className={clsx('rounded-full w-2.5 h-2.5 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]', isDone && 'opacity-40')} />
               {label.code && <span className="font-bold tracking-wide text-fg/80 shrink-0">{label.code}</span>}
               {label.code && <span aria-hidden="true">·</span>}
               <span className="truncate font-medium">{label.name}</span>
@@ -207,7 +207,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                     e.stopPropagation();
                     setShowMenu(!showMenu);
                   }}
-                  className="w-8 h-8 flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                  className="rounded-full w-8 h-8 flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
                   aria-label="More options"
                   aria-expanded={showMenu}
                 >
@@ -228,7 +228,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -4 }}
                         transition={{ duration: 0.12 }}
-                        className="absolute right-0 top-full mt-1 w-44 bg-surface border border-line shadow-[0_12px_32px_-12px_rgba(0,0,0,0.28)] z-50 py-1"
+                        className="rounded-card overflow-hidden absolute right-0 top-full mt-1 w-44 bg-surface border border-line shadow-[0_12px_32px_-12px_rgba(0,0,0,0.28)] z-50 py-1"
                         role="menu"
                       >
                         <button
@@ -323,7 +323,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
 
           {/* Due · state · extras */}
           <div className="mt-3 pl-[34px] pr-2 flex flex-wrap items-center gap-1.5">
-            <span className={clsx('inline-flex items-center gap-1.5 h-7 px-2.5 border text-[12px] font-semibold', DUE_TONE[due.tone])}>
+            <span className={clsx('rounded-full inline-flex items-center gap-1.5 h-7 px-2.5 border text-[12px] font-semibold', DUE_TONE[due.tone])}>
               {due.tone === 'overdue' ? (
                 <AlertTriangle className="w-3.5 h-3.5" />
               ) : due.tone === 'done' ? (
@@ -334,7 +334,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
               {due.label}
             </span>
             {isInProgress && (
-              <span className="inline-flex items-center gap-1.5 h-7 px-2.5 border border-line-soft bg-surface-2 text-[12px] font-semibold text-fg">
+              <span className="rounded-full inline-flex items-center gap-1.5 h-7 px-2.5 border border-line-soft bg-surface-2 text-[12px] font-semibold text-fg">
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--sub)] dark:bg-[var(--sub-dark)]" /> In progress
               </span>
             )}
@@ -356,7 +356,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                   if (extraLink && !fileCount) openAttachment(extraLink);
                   else openDetail();
                 }}
-                className="inline-flex items-center gap-1 h-7 px-1.5 text-[12px] font-semibold text-muted hover:text-fg cursor-pointer"
+                className="rounded-full inline-flex items-center gap-1 h-7 px-1.5 text-[12px] font-semibold text-muted hover:text-fg cursor-pointer"
                 title={fileCount ? `${fileCount} file${fileCount === 1 ? '' : 's'}` : 'Open link'}
               >
                 <Paperclip className="w-3.5 h-3.5" />
@@ -370,7 +370,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
                   e.stopPropagation();
                   openAttachment(classroomLink);
                 }}
-                className="ml-auto inline-flex items-center gap-1 h-7 px-1.5 text-[12px] font-semibold text-emerald-700 dark:text-emerald-300 hover:underline underline-offset-2 cursor-pointer"
+                className="rounded-full ml-auto inline-flex items-center gap-1 h-7 px-1.5 text-[12px] font-semibold text-emerald-700 dark:text-emerald-300 hover:underline underline-offset-2 cursor-pointer"
               >
                 Open <ExternalLink className="w-3 h-3" />
               </button>
@@ -394,14 +394,14 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-line mt-2">
             <button 
               type="button"
-              className="text-[13px] font-semibold text-fg px-4 h-9 hover:bg-surface-2 transition-colors"
+              className="rounded-full text-[13px] font-semibold text-fg px-4 h-9 hover:bg-surface-2 transition-colors"
               onClick={() => setShowConfirmModal(false)}
             >
               Cancel
             </button>
             <button 
               type="button"
-              className="text-[14px] font-semibold bg-ink text-on-ink px-6 h-11 hover:opacity-90 transition-opacity"
+              className="rounded-full text-[14px] font-semibold bg-ink text-on-ink px-6 h-11 hover:opacity-90 transition-opacity"
               onClick={async () => {
                 setShowConfirmModal(false);
                 const propId = await proposeBatchTask({
@@ -438,14 +438,14 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-line mt-2">
             <button 
               type="button"
-              className="text-[13px] font-semibold text-muted hover:text-fg px-4 h-9 hover:bg-surface-2 transition-colors cursor-pointer"
+              className="rounded-full text-[13px] font-semibold text-muted hover:text-fg px-4 h-9 hover:bg-surface-2 transition-colors cursor-pointer"
               onClick={() => setShowCompleteConfirmModal(false)}
             >
               No, Keep Doing
             </button>
             <button 
               type="button"
-              className="text-[14px] font-semibold bg-[#18A889] hover:bg-[#159A78] text-[#FFFFFF] px-6 h-11 transition-colors cursor-pointer rounded-none"
+              className="text-[14px] font-semibold bg-[#18A889] hover:bg-[#159A78] text-[#FFFFFF] px-6 h-11 transition-colors cursor-pointer rounded-full"
               onClick={() => {
                 setShowCompleteConfirmModal(false);
                 updateHomework(homework.id, {
@@ -475,7 +475,7 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
               Are you sure you want to delete <span className="font-bold">"{homework.title}"</span>?
             </p>
             {homework.isBatchShared && isBatchCR && (
-              <p className="text-[12px] font-medium text-amber-600 dark:text-amber-400 bg-amber-500/10 p-2.5 border border-amber-500/20">
+              <p className="rounded-tile text-[12px] font-medium text-amber-600 dark:text-amber-400 bg-amber-500/10 p-2.5 border border-amber-500/20">
                 ⚠️ As a Batch Pilot, this will remove the task for all batch members in real-time.
               </p>
             )}
@@ -483,14 +483,14 @@ export const HomeworkCard: React.FC<HomeworkCardProps> = ({
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-line mt-2">
             <button 
               type="button"
-              className="text-[13px] font-semibold text-fg px-4 h-9 hover:bg-surface-2 transition-colors cursor-pointer"
+              className="rounded-full text-[13px] font-semibold text-fg px-4 h-9 hover:bg-surface-2 transition-colors cursor-pointer"
               onClick={() => setShowDeleteConfirmModal(false)}
             >
               No, Keep
             </button>
             <button 
               type="button"
-              className="text-[14px] font-semibold bg-red-600 hover:bg-red-700 text-[#FFFFFF] px-6 h-11 transition-colors cursor-pointer"
+              className="rounded-full text-[14px] font-semibold bg-red-600 hover:bg-red-700 text-[#FFFFFF] px-6 h-11 transition-colors cursor-pointer"
               onClick={() => {
                 setShowDeleteConfirmModal(false);
                 onDelete(homework.id);

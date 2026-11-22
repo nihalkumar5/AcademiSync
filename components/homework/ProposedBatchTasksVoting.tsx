@@ -25,17 +25,17 @@ export const ProposedBatchTasksVoting: React.FC = () => {
   if (activeProposals.length === 0) return null;
 
   return (
-    <div className="border border-line p-4 sm:p-5 bg-surface-2 rounded-none flex flex-col gap-4 text-left shadow-sm">
+    <div className="border border-line p-4 sm:p-5 bg-surface-2 rounded-card flex flex-col gap-4 text-left shadow-sm">
       {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-line">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-none bg-black text-white dark:bg-white/[0.08] dark:text-[#F4F4F6] border border-line flex items-center justify-center font-bold text-xs shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-black text-white dark:bg-white/[0.08] dark:text-[#F4F4F6] border border-line flex items-center justify-center font-bold text-xs shrink-0">
             <Vote className="w-4 h-4 text-amber-500" />
           </div>
           <div>
             <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-fg flex items-center gap-2">
               <span>Batch Assignment Proposals</span>
-              <span className="px-2 py-0.5 rounded-none bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[11px] font-mono font-bold uppercase">
+              <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[11px] font-mono font-bold uppercase">
                 {activeProposals.length} VOTING ACTIVE
               </span>
             </h3>
@@ -66,12 +66,12 @@ export const ProposedBatchTasksVoting: React.FC = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 layout
-                className="border border-line p-4 bg-surface rounded-none flex flex-col justify-between gap-3 relative shadow-sm"
+                className="border border-line p-4 bg-surface rounded-tile flex flex-col justify-between gap-3 relative shadow-sm"
               >
                 <div>
                   {/* Top Bar: Subject & Due Date */}
                   <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-black/10 dark:border-white/[0.06] text-[11px] font-medium">
-                    <span className="px-2 py-0.5 rounded-none border border-line bg-surface-2 text-fg font-bold uppercase truncate max-w-[160px]">
+                    <span className="px-2 py-0.5 rounded-full border border-line bg-surface-2 text-fg font-bold uppercase truncate max-w-[160px]">
                       {subjectName}
                     </span>
                     <span className="flex items-center gap-1 text-muted">
@@ -88,7 +88,7 @@ export const ProposedBatchTasksVoting: React.FC = () => {
                           deleteBatchProposal(proposal.id);
                         }}
                         title="Delete Proposal" aria-label="Delete Proposal"
-                        className="p-1 text-muted hover:text-rose-600 dark:hover:text-rose-400 transition-colors ml-1 cursor-pointer"
+                        className="rounded-full p-1 text-muted hover:text-rose-600 dark:hover:text-rose-400 transition-colors ml-1 cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -119,9 +119,9 @@ export const ProposedBatchTasksVoting: React.FC = () => {
                       <span>Consensus: {proposal.approvalsCount} / {neededVotes} Approvals Needed</span>
                       <span className="font-bold text-fg">{progressPercent}%</span>
                     </div>
-                    <div className="w-full h-1.5 rounded-none border border-line bg-surface-2 overflow-hidden">
+                    <div className="w-full h-1.5 rounded-full border border-line bg-surface-2 overflow-hidden">
                       <div
-                        className="h-full bg-emerald-500 rounded-none transition-all duration-300"
+                        className="h-full bg-emerald-500 rounded-full transition-all duration-300"
                         style={{ width: `${progressPercent}%` }}
                       />
                     </div>
@@ -150,14 +150,14 @@ export const ProposedBatchTasksVoting: React.FC = () => {
                       <div className="flex items-center gap-2 w-full">
                         <button
                           onClick={() => voteBatchTask(proposal.id, 'approve')}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-none bg-ink text-on-ink text-xs font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full bg-ink text-on-ink text-xs font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
                         >
                           <ThumbsUp className="w-3.5 h-3.5" />
                           <span>Approve</span>
                         </button>
                         <button
                           onClick={() => voteBatchTask(proposal.id, 'reject')}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-none border border-line text-xs font-bold hover:border-rose-500 hover:text-rose-500 dark:hover:border-rose-500 dark:hover:text-rose-400 transition-colors cursor-pointer text-muted"
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full border border-line text-xs font-bold hover:border-rose-500 hover:text-rose-500 dark:hover:border-rose-500 dark:hover:text-rose-400 transition-colors cursor-pointer text-muted"
                         >
                           <ThumbsDown className="w-3.5 h-3.5" />
                           <span>Reject</span>

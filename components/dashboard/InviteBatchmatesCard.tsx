@@ -42,7 +42,7 @@ ${PLAY_STORE_URL}
 
   return (
     <>
-      <div className="relative bg-surface-2 p-4 sm:p-5 border border-line dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex items-center justify-between overflow-hidden min-h-[140px] rounded-none">
+      <div className="relative bg-surface-2 p-4 sm:p-5 border border-line dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex items-center justify-between overflow-hidden min-h-[140px] rounded-card">
         <div className="flex flex-col gap-3 max-w-[58%] sm:max-w-[64%] relative z-10">
           <div className="flex flex-col gap-1">
             <h3 className="text-[16px] font-bold text-fg tracking-tight flex items-center gap-2">
@@ -65,7 +65,7 @@ ${PLAY_STORE_URL}
                 <span className="section-label">
                   Batch Code:
                 </span>
-                <span className="text-[12px] font-mono font-bold tracking-[1.5px] text-fg bg-black/5 dark:bg-white/[0.08] px-2 py-0.5 rounded-none border border-line select-all">
+                <span className="text-[12px] font-mono font-bold tracking-[1.5px] text-fg bg-black/5 dark:bg-white/[0.08] px-2 py-0.5 rounded-full border border-line select-all">
                   {sixDigitCode}
                 </span>
               </div>
@@ -75,7 +75,7 @@ ${PLAY_STORE_URL}
           {isSynced ? (
             <button
               onClick={handleInvite}
-              className="self-start mt-1 px-4 h-9 bg-ink text-on-ink text-[12px] font-semibold transition-opacity hover:opacity-90 rounded-none cursor-pointer"
+              className="self-start mt-1 px-4 h-9 bg-ink text-on-ink text-[12px] font-semibold transition-opacity hover:opacity-90 rounded-full cursor-pointer"
             >
               Share Code
             </button>

@@ -240,7 +240,7 @@ export const CommandPalette: React.FC = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98, y: -8 }}
             transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-[560px] bg-[#FCFCFA] dark:bg-[#121317] border border-[#EAEAE6] dark:border-white/[0.08] rounded-none shadow-[0_20px_60px_-15px_rgba(0,0,0,0.18)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] overflow-hidden z-10 text-left flex flex-col"
+            className="relative w-full max-w-[560px] bg-[#FCFCFA] dark:bg-[#121317] border border-[#EAEAE6] dark:border-white/[0.08] rounded-sheet overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.18)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] overflow-hidden z-10 text-left flex flex-col"
           >
             {/* Search Input Bar */}
             <div className="flex items-center gap-3 px-4 h-[48px] sm:h-[50px] border-b border-line-soft bg-[#FCFCFA] dark:bg-[#121317]">
@@ -260,7 +260,7 @@ export const CommandPalette: React.FC = () => {
               />
 
               <div className="flex items-center gap-1.5 shrink-0">
-                <kbd className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-none border border-[#E2E2DC] dark:border-white/10 bg-[#F2F2EE] dark:bg-white/[0.06] text-[#6E6E6A] dark:text-[#A1A1AA] shadow-2xs">
+                <kbd className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-md border border-[#E2E2DC] dark:border-white/10 bg-[#F2F2EE] dark:bg-white/[0.06] text-[#6E6E6A] dark:text-[#A1A1AA] shadow-2xs">
                   ESC
                 </kbd>
               </div>
@@ -281,7 +281,7 @@ export const CommandPalette: React.FC = () => {
                       key={cmd.id}
                       onClick={cmd.action}
                       onMouseEnter={() => setSelectedIndex(idx)}
-                      className={`flex items-center justify-between w-full min-h-[48px] sm:min-h-[50px] px-3.5 py-2.5 rounded-none text-xs font-semibold transition-all group cursor-pointer ${
+                      className={`flex items-center justify-between w-full min-h-[48px] sm:min-h-[50px] px-3.5 py-2.5 rounded-tile text-xs font-semibold transition-all group cursor-pointer ${
                         isSelected
                           ? 'bg-[#111111] text-white shadow-xs'
                           : 'bg-transparent text-[#202020] dark:text-[#F4F4F6] hover:bg-[#F3F3F0] dark:hover:bg-white/[0.04]'
@@ -304,7 +304,7 @@ export const CommandPalette: React.FC = () => {
 
                       <div className="flex items-center gap-2.5 shrink-0 ml-3">
                         <span
-                          className={`text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-none border ${
+                          className={`text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full border ${
                             isSelected
                               ? 'border-white/25 bg-white/10 text-white/80'
                               : 'border-line text-muted font-normal'
@@ -328,16 +328,16 @@ export const CommandPalette: React.FC = () => {
             <div className="flex items-center justify-between px-4 h-[36px] bg-[#F3F3F1] dark:bg-[#16171B] border-t border-[#E8E8E4] dark:border-white/[0.06] text-muted">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5 text-[11px] font-medium">
-                  <kbd className="font-mono text-[11px] bg-surface px-1.5 py-0.5 rounded-none border border-line text-muted shadow-2xs">
+                  <kbd className="font-mono text-[11px] bg-surface px-1.5 py-0.5 rounded-md border border-line text-muted shadow-2xs">
                     ↑
                   </kbd>
-                  <kbd className="font-mono text-[11px] bg-surface px-1.5 py-0.5 rounded-none border border-line text-muted shadow-2xs">
+                  <kbd className="font-mono text-[11px] bg-surface px-1.5 py-0.5 rounded-md border border-line text-muted shadow-2xs">
                     ↓
                   </kbd>
                   <span>Navigate</span>
                 </span>
                 <span className="flex items-center gap-1.5 text-[11px] font-medium">
-                  <kbd className="font-mono text-[11px] bg-surface px-1.5 py-0.5 rounded-none border border-line text-muted shadow-2xs">
+                  <kbd className="font-mono text-[11px] bg-surface px-1.5 py-0.5 rounded-md border border-line text-muted shadow-2xs">
                     ↵
                   </kbd>
                   <span>Open</span>
@@ -345,7 +345,7 @@ export const CommandPalette: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-1.5 font-mono text-[11px] text-muted">
-                <kbd className="text-[11px] bg-surface px-1.5 py-0.5 rounded-none border border-line text-muted shadow-2xs flex items-center gap-0.5">
+                <kbd className="text-[11px] bg-surface px-1.5 py-0.5 rounded-md border border-line text-muted shadow-2xs flex items-center gap-0.5">
                   <Command className="w-2.5 h-2.5" strokeWidth={2} />
                 </kbd>
                 <span>Spotlight</span>

@@ -145,7 +145,7 @@ export const HomeExamAlertCard: React.FC = () => {
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
       className="w-full text-left"
     >
-      <div className="relative overflow-hidden border-2 border-line-strong bg-surface p-5 sm:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] flex flex-col gap-4">
+      <div className="rounded-card relative overflow-hidden border-2 border-line-strong bg-surface p-5 sm:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] flex flex-col gap-4">
         
         {/* Top Header Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -162,7 +162,7 @@ export const HomeExamAlertCard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className={`px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-wider ${
+            <span className={`rounded-full px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-wider ${
               isLive 
                 ? 'bg-emerald-600 text-on-ink dark:bg-emerald-500' 
                 : 'bg-ink text-on-ink'
@@ -175,7 +175,7 @@ export const HomeExamAlertCard: React.FC = () => {
         {/* Live Progress Bar (Active when Exam is Live Now) */}
         {isLive && (
           <div className="w-full flex flex-col gap-1.5 pt-0.5">
-            <div className="w-full h-2 bg-black/[0.08] dark:bg-white/[0.1] border border-line overflow-hidden">
+            <div className="rounded-full w-full h-2 bg-black/[0.08] dark:bg-white/[0.1] border border-line overflow-hidden">
               <motion.div
                 className="h-full bg-emerald-600 dark:bg-emerald-400"
                 initial={{ width: 0 }}
@@ -218,14 +218,14 @@ export const HomeExamAlertCard: React.FC = () => {
 
         {/* Chips row: Time, Room, Duration */}
         <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-line">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-2 border border-line-soft font-mono text-[12px] text-fg font-semibold">
+          <span className="rounded-full inline-flex items-center gap-1.5 px-3 py-1 bg-surface-2 border border-line-soft font-mono text-[12px] text-fg font-semibold">
             <Clock className={`w-3.5 h-3.5 shrink-0 ${isLive ? 'text-emerald-500' : 'text-amber-500'}`} />
             {isToday ? 'Today' : 'Tomorrow'} · {activeExam.timing.formattedRange}
             {activeExam.timing.durationMinutes ? ` (${activeExam.timing.durationMinutes}m)` : ''}
           </span>
 
           {activeExam.room && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 font-semibold text-[12px]">
+            <span className="rounded-full inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 font-semibold text-[12px]">
               <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               Room {activeExam.room}
             </span>
@@ -235,7 +235,7 @@ export const HomeExamAlertCard: React.FC = () => {
             <button
               type="button"
               onClick={() => setExpandedSyllabus(!expandedSyllabus)}
-              className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-2 hover:bg-black/[0.07] dark:hover:bg-white/[0.08] border border-line-soft font-mono text-[11px] font-medium text-fg-2 transition-colors cursor-pointer"
+              className="rounded-full inline-flex items-center gap-1.5 px-3 py-1 bg-surface-2 hover:bg-black/[0.07] dark:hover:bg-white/[0.08] border border-line-soft font-mono text-[11px] font-medium text-fg-2 transition-colors cursor-pointer"
             >
               <BookOpen className="w-3.5 h-3.5 text-amber-500" />
               <span>Syllabus Peek</span>
@@ -246,7 +246,7 @@ export const HomeExamAlertCard: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowChecklist(!showChecklist)}
-            className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-2 hover:bg-black/[0.07] dark:hover:bg-white/[0.08] border border-line-soft font-mono text-[11px] font-medium text-fg-2 transition-colors cursor-pointer"
+            className="rounded-full inline-flex items-center gap-1.5 px-3 py-1 bg-surface-2 hover:bg-black/[0.07] dark:hover:bg-white/[0.08] border border-line-soft font-mono text-[11px] font-medium text-fg-2 transition-colors cursor-pointer"
           >
             <Backpack className="w-3.5 h-3.5 text-blue-500" />
             <span>Exam Kit ({packedCount}/4)</span>
@@ -263,7 +263,7 @@ export const HomeExamAlertCard: React.FC = () => {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden pt-2 border-t border-line"
             >
-              <div className="p-3.5 bg-surface-2 border border-black/5 dark:border-white/10 flex flex-col gap-2.5">
+              <div className="rounded-tile p-3.5 bg-surface-2 border border-black/5 dark:border-white/10 flex flex-col gap-2.5">
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-[12px] font-bold text-muted">
                     Mandatory Hall Essentials
@@ -281,7 +281,7 @@ export const HomeExamAlertCard: React.FC = () => {
                         key={item.key}
                         type="button"
                         onClick={() => toggleCheck(item.key)}
-                        className={`p-2.5 text-left border flex items-center justify-between transition-colors cursor-pointer ${
+                        className={`rounded-tile p-2.5 text-left border flex items-center justify-between transition-colors cursor-pointer ${
                           isChecked
                             ? 'bg-emerald-500/10 border-emerald-500/30 dark:bg-emerald-500/15 dark:border-emerald-500/30'
                             : 'bg-surface border-line hover:border-black/25 dark:hover:border-white/25'

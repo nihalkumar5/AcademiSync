@@ -96,9 +96,9 @@ export const Modal: React.FC<ModalProps> = ({
                 'relative bg-surface border-line z-10 text-left shadow-2xl dark:shadow-[0_16px_50px_rgba(0,0,0,0.6)] flex flex-col',
                 mobileFullSheet 
                   ? footer
-                    ? 'w-full h-[100dvh] sm:h-auto sm:max-h-[88vh] sm:my-auto border-0 sm:border sm:rounded-none overflow-hidden'
-                    : 'w-full min-h-[100dvh] sm:min-h-0 sm:max-h-[88vh] sm:my-auto border-0 sm:border sm:rounded-none overflow-hidden' 
-                  : 'w-full border my-auto max-h-[90dvh] sm:rounded-none overflow-hidden',
+                    ? 'w-full h-[100dvh] sm:h-auto sm:max-h-[88vh] sm:my-auto border-0 sm:border sm:rounded-sheet overflow-hidden'
+                    : 'w-full min-h-[100dvh] sm:min-h-0 sm:max-h-[88vh] sm:my-auto border-0 sm:border sm:rounded-sheet overflow-hidden' 
+                  : 'w-full border my-auto max-h-[90dvh] rounded-sheet overflow-hidden',
                 maxWClasses[maxWidth]
               )
             )}

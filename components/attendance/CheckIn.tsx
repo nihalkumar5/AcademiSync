@@ -106,7 +106,7 @@ export const CheckInOutcome: React.FC<{
         <h3 className="mt-f4 text-[24px] leading-tight font-semibold tracking-tight text-fg">{fresh ? "You're checked in" : 'Already checked in'}</h3>
         <p className="mt-1.5 text-[15px] text-fg">{r.subjectName}</p>
         <p className="text-[14px] text-muted">{[r.facultyName, r.startTime ? formatTime12Hour(r.startTime) : ''].filter(Boolean).join(' · ')}</p>
-        <p className="mt-f4 px-3 py-2 bg-surface-2 text-[13px] text-muted max-w-[320px]">
+        <p className="rounded-tile mt-f4 px-3 py-2 bg-surface-2 text-[13px] text-muted max-w-[320px]">
           Checked in at {at12(r.at)}. It counts once {r.facultyName.startsWith('Your') ? 'your teacher' : r.facultyName} saves the register.
         </p>
         {onDone && (
@@ -164,7 +164,7 @@ export const CheckInScanner: React.FC<{ onCode: (code: string) => void; paused?:
           wrongTimer.current = setTimeout(() => setWrong(false), 1800);
         }}
         fallback={(why) => (
-          <div className="border border-line bg-surface px-f4 py-f5 text-center">
+          <div className="rounded-card border border-line bg-surface px-f4 py-f5 text-center">
             <ScanQr className="w-7 h-7 mx-auto text-muted" />
             <p className="mt-3 text-[15px] font-semibold text-fg">{why === 'denied' ? 'Camera is blocked' : "Can't open the camera here"}</p>
             <p className="mt-1 text-[13px] leading-[19px] text-muted">

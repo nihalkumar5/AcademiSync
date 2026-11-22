@@ -104,7 +104,7 @@ const Bar: React.FC<{ pct: number; min: number; fill: string; dark?: boolean; ta
   const w = isNaN(pct) ? 0 : Math.max(0, Math.min(100, pct));
   return (
     <div className="py-1" role="img" aria-label={isNaN(pct) ? 'No classes yet' : `${shownPct(pct)}% attended, ${min}% needed`}>
-      <div className={clsx('relative', tall ? 'h-3' : 'h-2', dark ? 'bg-white/15' : 'bg-surface-3')}>
+      <div className={clsx('rounded-full relative', tall ? 'h-3' : 'h-2', dark ? 'bg-white/15' : 'bg-surface-3')}>
         <div className={clsx('absolute inset-y-0 left-0 transition-[width] duration-700 ease-out', fill)} style={{ width: `${shown ? w : 0}%` }} />
         <div className={clsx('absolute -top-1 -bottom-1 w-[2px]', dark ? 'bg-white' : 'bg-fg')} style={{ left: `calc(${min}% - 1px)` }} />
       </div>
@@ -148,7 +148,7 @@ const SubjectCard: React.FC<{ row: TrackedRow; min: number; onOpen: () => void }
       <button
         type="button"
         onClick={onOpen}
-        className="group w-full border border-line bg-surface px-4 pt-4 pb-3 text-left hover:bg-surface-2 transition-colors cursor-pointer"
+        className="rounded-card group w-full border border-line bg-surface px-4 pt-4 pb-3 text-left hover:bg-surface-2 transition-colors cursor-pointer"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -189,7 +189,7 @@ const SubjectCard: React.FC<{ row: TrackedRow; min: number; onOpen: () => void }
 };
 
 const WhatIf: React.FC<{ label: string; pct: number; min: number }> = ({ label, pct, min }) => (
-  <div className="bg-surface-2 px-4 py-3">
+  <div className="rounded-tile bg-surface-2 px-4 py-3">
     <p className="text-[12px] font-medium text-muted">{label}</p>
     <p className={clsx('mt-1.5 text-[24px] font-semibold leading-none tracking-tight tabular-nums', pct < min ? 'text-rose-600 dark:text-rose-400' : 'text-fg')}>
       {shownPct(pct)}
@@ -241,7 +241,7 @@ const CourseSheet: React.FC<{ row: TrackedRow; isOpen: boolean; min: number; onC
             <h4 className="mb-2 text-[14px] font-semibold text-fg">Class history</h4>
             <ul className="border border-line overflow-hidden divide-y divide-line-soft">
               {history.map((h, i) => (
-                <li key={`${h.date}_${h.startTime}_${i}`} className={clsx('flex items-center justify-between gap-3 px-4 py-2.5', h.mark === 'A' && 'bg-rose-50/70 dark:bg-rose-400/[0.06]')}>
+                <li key={`${h.date}_${h.startTime}_${i}`} className={clsx('rounded-tile flex items-center justify-between gap-3 px-4 py-2.5', h.mark === 'A' && 'bg-rose-50/70 dark:bg-rose-400/[0.06]')}>
                   <span className="text-[14px] text-fg min-w-0 truncate">
                     {dateLabel(h.date)}
                     {h.startTime && <span className="text-muted"> · {formatTime12Hour(h.startTime)}</span>}
@@ -269,15 +269,15 @@ const CourseSheet: React.FC<{ row: TrackedRow; isOpen: boolean; min: number; onC
 
 const Skeleton = () => (
   <div className="flex flex-col gap-3" aria-hidden="true">
-    <div className="h-[168px] bg-surface-2 animate-pulse" />
+    <div className="rounded-tile h-[168px] bg-surface-2 animate-pulse" />
     {[0, 1, 2].map((i) => (
-      <div key={i} className="h-[96px] bg-surface-2 animate-pulse" />
+      <div key={i} className="rounded-tile h-[96px] bg-surface-2 animate-pulse" />
     ))}
   </div>
 );
 
 const Notice: React.FC<{ icon: React.ReactNode; title: string; body: string; action?: React.ReactNode; art?: IllustrationName }> = ({ icon, title, body, action, art = 'attendance' }) => (
-  <section className="border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
+  <section className="rounded-card border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
     <Illustration name={art} className="h-[120px] w-auto self-center" />
     <span className="sr-only">{icon}</span>
     <h3 className="mt-4 text-[18px] font-semibold text-fg tracking-tight">{title}</h3>
@@ -288,7 +288,7 @@ const Notice: React.FC<{ icon: React.ReactNode; title: string; body: string; act
 
 /** The dark summary card at the top. */
 const Hero: React.FC<{ children: React.ReactNode; glow?: string }> = ({ children }) => (
-  <section className="sheen-ink relative overflow-hidden bg-ink text-on-ink border border-ink p-5 sm:p-6">{children}</section>
+  <section className="rounded-card sheen-ink relative overflow-hidden bg-ink text-on-ink border border-ink p-5 sm:p-6">{children}</section>
 );
 const GLOW: Record<Standing, string> = { safe: '#10b981', edge: '#f59e0b', low: '#f43f5e', none: '#6366f1' };
 
@@ -377,7 +377,7 @@ export const StudentAttendanceView: React.FC = () => {
             onClick={reload}
             disabled={loading}
             aria-label="Refresh attendance"
-            className="shrink-0 w-10 h-10 inline-flex items-center justify-center border border-line bg-surface text-fg hover:border-line-strong transition-colors cursor-pointer disabled:cursor-default"
+            className="rounded-full shrink-0 w-10 h-10 inline-flex items-center justify-center border border-line bg-surface text-fg hover:border-line-strong transition-colors cursor-pointer disabled:cursor-default"
           >
             <RefreshCw className={clsx('w-[18px] h-[18px]', loading && 'animate-spin')} />
           </button>
@@ -453,7 +453,7 @@ export const StudentAttendanceView: React.FC = () => {
             </p>
           </Hero>
         ) : (
-          <section className="border border-line bg-surface px-5 pt-6 pb-6 flex flex-col items-center text-center">
+          <section className="rounded-card border border-line bg-surface px-5 pt-6 pb-6 flex flex-col items-center text-center">
             <Illustration name="attendance" className="h-[170px] w-auto max-w-[240px]" />
             <p className="mt-5 text-[19px] font-semibold leading-[1.25] tracking-tight text-fg">
               {tracked.length > 0 ? 'Online attendance is on' : 'No online attendance yet'}
@@ -481,7 +481,7 @@ export const StudentAttendanceView: React.FC = () => {
         )}
 
         {off.some((r) => r.kind === 'not-on-list') && (
-          <section aria-label="Not on the class list" className="border border-amber-200/80 bg-amber-50/60 dark:border-amber-400/20 dark:bg-amber-400/[0.06] p-4">
+          <section aria-label="Not on the class list" className="rounded-card border border-amber-200/80 bg-amber-50/60 dark:border-amber-400/20 dark:bg-amber-400/[0.06] p-4">
             {off
               .filter((r) => r.kind === 'not-on-list')
               .map((r) => (
@@ -499,9 +499,9 @@ export const StudentAttendanceView: React.FC = () => {
         )}
 
         {off.some((r) => r.kind === 'off') && (
-          <section aria-label="Subjects without online attendance" className="border border-line bg-surface p-4 sm:p-5">
+          <section aria-label="Subjects without online attendance" className="rounded-card border border-line bg-surface p-4 sm:p-5">
             <div className="flex items-start gap-3">
-              <span className="w-9 h-9 flex items-center justify-center text-muted shrink-0 border border-line-soft">
+              <span className="rounded-xl w-9 h-9 flex items-center justify-center text-muted shrink-0 border border-line-soft">
                 <Clock className="w-[18px] h-[18px]" />
               </span>
               <div className="min-w-0">
@@ -513,7 +513,7 @@ export const StudentAttendanceView: React.FC = () => {
               {off
                 .filter((r) => r.kind === 'off')
                 .map((r) => (
-                  <li key={r.id} className="inline-flex items-center gap-2 border border-line bg-surface pl-2.5 pr-3 py-1.5 text-[13px] font-medium text-fg-2 max-w-full">
+                  <li key={r.id} className="rounded-tile inline-flex items-center gap-2 border border-line bg-surface pl-2.5 pr-3 py-1.5 text-[13px] font-medium text-fg-2 max-w-full">
                     <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: r.accent }} aria-hidden="true" />
                     <span className="truncate">{r.name}</span>
                   </li>

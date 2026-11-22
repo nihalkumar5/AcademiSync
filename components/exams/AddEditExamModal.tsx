@@ -145,7 +145,7 @@ export const AddEditExamModal: React.FC<AddEditExamModalProps> = ({
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-1">
         {/* Pilot Sync Banner */}
         {isPilot && (
-          <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 text-[12px] text-amber-700 dark:text-amber-300 flex items-center gap-2">
+          <div className="rounded-tile p-2.5 bg-amber-500/10 border border-amber-500/20 text-[12px] text-amber-700 dark:text-amber-300 flex items-center gap-2">
             <Sparkles className="w-4 h-4 shrink-0 text-amber-500" />
             <span>
               <strong>Batch Pilot:</strong> Changes here will sync to all batch members in real-time.
@@ -163,7 +163,7 @@ export const AddEditExamModal: React.FC<AddEditExamModalProps> = ({
             value={subjectName}
             onChange={(e) => setSubjectName(e.target.value)}
             placeholder="e.g. Operating Systems (CS501)"
-            className="w-full px-3.5 py-2.5 border border-line-soft bg-transparent text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+            className="rounded-field w-full px-3.5 py-2.5 border border-line-soft bg-transparent text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors"
             required
             autoFocus
           />
@@ -179,7 +179,7 @@ export const AddEditExamModal: React.FC<AddEditExamModalProps> = ({
                   type="button"
                   key={sub.id}
                   onClick={() => setSubjectName(sub.name + (sub.code ? ` (${sub.code})` : ''))}
-                  className="px-2 py-0.5 text-[12px] border border-line-soft hover:border-line-strong bg-surface-2 text-fg transition-colors rounded-none cursor-pointer"
+                  className="px-2 py-0.5 text-[12px] border border-line-soft hover:border-line-strong bg-surface-2 text-fg transition-colors rounded-full cursor-pointer"
                 >
                   {sub.code || sub.shortName || sub.name}
                 </button>
@@ -198,7 +198,7 @@ export const AddEditExamModal: React.FC<AddEditExamModalProps> = ({
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-3.5 py-2 border border-line-soft bg-transparent text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+              className="rounded-field w-full px-3.5 py-2 border border-line-soft bg-transparent text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors"
               required
             />
           </div>
@@ -211,7 +211,7 @@ export const AddEditExamModal: React.FC<AddEditExamModalProps> = ({
               type="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
-              className="w-full px-3.5 py-2 border border-line-soft bg-transparent text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+              className="rounded-field w-full px-3.5 py-2 border border-line-soft bg-transparent text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors"
               required
             />
           </div>
@@ -231,7 +231,7 @@ export const AddEditExamModal: React.FC<AddEditExamModalProps> = ({
                 step="15"
                 value={durationMinutes}
                 onChange={(e) => setDurationMinutes(Number(e.target.value))}
-                className="w-full px-3.5 py-2 border border-line-soft bg-transparent text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                className="rounded-field w-full px-3.5 py-2 border border-line-soft bg-transparent text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors"
               />
               <div className="flex gap-1 shrink-0">
                 {[120, 180].map((mins) => (
@@ -239,7 +239,7 @@ export const AddEditExamModal: React.FC<AddEditExamModalProps> = ({
                     type="button"
                     key={mins}
                     onClick={() => setDurationMinutes(mins)}
-                    className={`px-2 h-9 text-[13px] font-medium border transition-colors cursor-pointer ${
+                    className={`rounded-full px-2 h-9 text-[13px] font-medium border transition-colors cursor-pointer ${
                       durationMinutes === mins
                         ? 'border-line-strong bg-ink text-on-ink'
                         : 'border-line-soft text-[#6B6B6B] hover:text-fg'
@@ -261,7 +261,7 @@ export const AddEditExamModal: React.FC<AddEditExamModalProps> = ({
               value={room}
               onChange={(e) => setRoom(e.target.value)}
               placeholder="e.g. Hall A, LH-201"
-              className="w-full px-3.5 py-2 border border-line-soft bg-transparent text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+              className="rounded-field w-full px-3.5 py-2 border border-line-soft bg-transparent text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors"
             />
           </div>
         </div>
@@ -276,7 +276,7 @@ export const AddEditExamModal: React.FC<AddEditExamModalProps> = ({
             value={syllabus}
             onChange={(e) => setSyllabus(e.target.value)}
             placeholder="e.g. Units 1 to 4. Focus on Dynamic Programming and Memory Management."
-            className="w-full px-3.5 py-2 border border-line-soft bg-transparent text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors resize-none"
+            className="rounded-tile w-full px-3.5 py-2 border border-line-soft bg-transparent text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors resize-none"
           />
         </div>
 
@@ -288,14 +288,14 @@ export const AddEditExamModal: React.FC<AddEditExamModalProps> = ({
                 <button
                   type="button"
                   onClick={handleDelete}
-                  className="h-9 px-3 bg-red-600 hover:bg-red-700 text-white text-[13px] font-semibold transition-colors cursor-pointer"
+                  className="rounded-full h-9 px-3 bg-red-600 hover:bg-red-700 text-white text-[13px] font-semibold transition-colors cursor-pointer"
                 >
                   Confirm Delete
                 </button>
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(false)}
-                  className="h-9 px-2.5 text-[13px] text-muted hover:text-fg cursor-pointer"
+                  className="rounded-full h-9 px-2.5 text-[13px] text-muted hover:text-fg cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -304,7 +304,7 @@ export const AddEditExamModal: React.FC<AddEditExamModalProps> = ({
               <button
                 type="button"
                 onClick={() => setConfirmDelete(true)}
-                className="h-9 px-3 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 text-[13px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="rounded-full h-9 px-3 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 text-[13px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Delete</span>
@@ -318,13 +318,13 @@ export const AddEditExamModal: React.FC<AddEditExamModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="h-11 px-4 border border-line text-fg text-[14px] font-semibold hover:bg-surface-2 transition-colors cursor-pointer"
+              className="rounded-full h-11 px-4 border border-line text-fg text-[14px] font-semibold hover:bg-surface-2 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="h-11 px-5 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+              className="rounded-full h-11 px-5 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
             >
               {examToEdit ? 'Save Changes' : 'Add Exam'}
             </button>

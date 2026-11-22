@@ -185,7 +185,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                 </p>
               </div>
 
-              <div className="flex items-center gap-2.5 px-3.5 py-3 bg-surface border border-line focus-within:border-line-strong transition-colors">
+              <div className="rounded-tile flex items-center gap-2.5 px-3.5 py-3 bg-surface border border-line focus-within:border-line-strong transition-colors">
                 <input
                   type="text"
                   placeholder="e.g. 65SQ9K"
@@ -234,7 +234,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
             <form onSubmit={handleConfirmJoin} className="flex flex-col gap-4">
               {/* Batch Summary Badge (Locked Academic Info) */}
               {foundBatch && (
-                <div className="p-3.5 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 rounded-none flex flex-col gap-1">
+                <div className="p-3.5 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 rounded-tile flex flex-col gap-1">
                   <div className="flex items-center justify-between">
                     <span className="text-[12px] font-bold font-mono text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" />
@@ -258,7 +258,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                 <label className="section-label">
                   Full Name
                 </label>
-                <div className="flex items-center gap-2 px-3 py-2.5 bg-surface border border-line focus-within:border-line-strong">
+                <div className="rounded-tile flex items-center gap-2 px-3 py-2.5 bg-surface border border-line focus-within:border-line-strong">
                   <User className="w-4 h-4 text-slate-400 shrink-0" />
                   <input
                     type="text"
@@ -276,7 +276,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                 <label className="section-label">
                   Institute Email
                 </label>
-                <div className="flex items-center gap-2 px-3 py-2.5 bg-surface border border-line focus-within:border-line-strong">
+                <div className="rounded-tile flex items-center gap-2 px-3 py-2.5 bg-surface border border-line focus-within:border-line-strong">
                   <Mail className="w-4 h-4 text-slate-400 shrink-0" />
                   <input
                     type="email"
@@ -294,7 +294,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                 <label className="section-label">
                   Roll Number <span className="text-rose-500">*</span>
                 </label>
-                <div className="flex items-center gap-2 px-3 py-2.5 bg-surface border border-line focus-within:border-line-strong">
+                <div className="rounded-tile flex items-center gap-2 px-3 py-2.5 bg-surface border border-line focus-within:border-line-strong">
                   <Hash className="w-4 h-4 text-slate-400 shrink-0" />
                   <input
                     type="text"
@@ -323,7 +323,7 @@ export const BatchDiscoveryModal: React.FC<BatchDiscoveryModalProps> = ({ isOpen
                 <button
                   type="button"
                   onClick={() => setStep('code')}
-                  className="text-center text-[12px] text-muted hover:text-fg font-bold py-1 cursor-pointer flex items-center justify-center gap-1"
+                  className="rounded-full text-center text-[12px] text-muted hover:text-fg font-bold py-1 cursor-pointer flex items-center justify-center gap-1"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Enter a different code</span>

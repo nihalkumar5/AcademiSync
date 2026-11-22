@@ -146,7 +146,7 @@ export const FacultyHomeView: React.FC = () => {
         </>
       ) : (
         // First run: everything (timetable, assignments, alerts) depends on linking a batch, so that is the only action
-        <section className="sheen-ink relative overflow-hidden bg-[#111111] dark:bg-[#15171D] dark:border dark:border-white/[0.08] text-white p-f4 sm:p-f5">
+        <section className="rounded-card sheen-ink relative overflow-hidden bg-[#111111] dark:bg-[#15171D] dark:border dark:border-white/[0.08] text-white p-f4 sm:p-f5">
           <p className="text-[12px] font-semibold text-white/60">Get started</p>
           <h3 className="mt-2 text-[24px] sm:text-[28px] font-semibold leading-tight tracking-tight">Connect your first batch</h3>
           <p className="mt-2 text-[15px] leading-relaxed text-white/70 max-w-md">
@@ -159,7 +159,7 @@ export const FacultyHomeView: React.FC = () => {
               ['Teach, post and update', 'Assignments, cancellations and reschedules reach every student instantly.'],
             ].map(([title, body], i) => (
               <li key={title} className="flex gap-f3">
-                <span className="w-7 h-7 shrink-0 flex items-center justify-center border border-white/25 text-[13px] font-semibold tabular-nums">{i + 1}</span>
+                <span className="rounded-full w-7 h-7 shrink-0 flex items-center justify-center border border-white/25 text-[13px] font-semibold tabular-nums">{i + 1}</span>
                 <span>
                   <span className="block text-[15px] font-medium">{title}</span>
                   <span className="block text-[13px] text-white/60">{body}</span>
@@ -170,7 +170,7 @@ export const FacultyHomeView: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsConnectBatchOpen(true)}
-            className="mt-f5 inline-flex items-center gap-2 h-11 px-5 bg-white text-[#111111] text-[14px] font-semibold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer"
+            className="rounded-full mt-f5 inline-flex items-center gap-2 h-11 px-5 bg-white text-[#111111] text-[14px] font-semibold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer"
           >
             Enter batch code
           </button>

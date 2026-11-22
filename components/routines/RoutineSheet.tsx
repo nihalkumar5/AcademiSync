@@ -45,7 +45,7 @@ const Chip: React.FC<{ on: boolean; onClick: () => void; children: React.ReactNo
     aria-pressed={on}
     aria-label={ariaLabel}
     onClick={onClick}
-    className={`h-11 px-3 inline-flex items-center justify-center gap-1.5 whitespace-nowrap border text-[14px] font-medium transition-colors cursor-pointer ${
+    className={`rounded-full h-11 px-3 inline-flex items-center justify-center gap-1.5 whitespace-nowrap border text-[14px] font-medium transition-colors cursor-pointer ${
       on
         ? 'bg-ink text-on-ink border-line-strong'
         : 'border-line text-fg hover:border-line-strong'
@@ -242,7 +242,7 @@ export const RoutineSheet: React.FC<{
           <button
             type="button"
             onClick={save}
-            className="h-12 bg-ink text-on-ink text-[15px] font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+            className="rounded-full h-12 bg-ink text-on-ink text-[15px] font-semibold hover:opacity-90 transition-opacity cursor-pointer"
           >
             {editing ? 'Save changes' : 'Add routine'}
           </button>
@@ -250,7 +250,7 @@ export const RoutineSheet: React.FC<{
             <button
               type="button"
               onClick={onShare}
-              className="h-12 inline-flex items-center justify-center gap-2 border border-line text-[15px] font-semibold text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+              className="rounded-full h-12 inline-flex items-center justify-center gap-2 border border-line text-[15px] font-semibold text-fg hover:bg-surface-2 transition-colors cursor-pointer"
             >
               {isShared ? <Users className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
               {isShared ? 'Shared with your batch' : 'Share with batch'}
@@ -263,7 +263,7 @@ export const RoutineSheet: React.FC<{
                 onDelete();
                 onClose();
               }}
-              className="h-12 inline-flex items-center justify-center gap-2 text-[15px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer"
+              className="rounded-full h-12 inline-flex items-center justify-center gap-2 text-[15px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer"
             >
               <Trash2 className="w-4 h-4" /> Delete routine
             </button>

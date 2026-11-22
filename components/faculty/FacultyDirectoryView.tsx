@@ -149,7 +149,7 @@ export const FacultyDirectoryView: React.FC = () => {
   const SubjectChips = ({ list, max }: { list: string[]; max: number }) => (
     <div className="flex flex-wrap gap-1.5">
       {list.slice(0, max).map((s) => (
-        <span key={s} className="max-w-full h-7 px-2.5 inline-flex items-center gap-1.5 bg-surface-2 text-[12px] font-medium text-fg-2 dark:text-[#D4D4D8]">
+        <span key={s} className="rounded-full max-w-full h-7 px-2.5 inline-flex items-center gap-1.5 bg-surface-2 text-[12px] font-medium text-fg-2 dark:text-[#D4D4D8]">
           <BookOpen className="w-3.5 h-3.5 shrink-0 text-muted" />
           <span className="truncate">{s}</span>
         </span>
@@ -173,7 +173,7 @@ export const FacultyDirectoryView: React.FC = () => {
           </span>
         </button>
         {f.email ? (
-          <a href={`mailto:${f.email}`} aria-label={`Email ${f.name}`} className="shrink-0 w-10 h-10 flex items-center justify-center border border-line text-fg hover:border-line-strong transition-colors">
+          <a href={`mailto:${f.email}`} aria-label={`Email ${f.name}`} className="rounded-full shrink-0 w-10 h-10 flex items-center justify-center border border-line text-fg hover:border-line-strong transition-colors">
             <Mail className="w-4 h-4" />
           </a>
         ) : (
@@ -211,7 +211,7 @@ export const FacultyDirectoryView: React.FC = () => {
       <Modal isOpen={!!f} onClose={onClose} maxWidth="md" showCloseButton={false}>
         {f && (
           <div className="relative flex flex-col">
-            <button type="button" onClick={onClose} aria-label="Close" className="absolute -top-2 -right-2 w-9 h-9 flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer">
+            <button type="button" onClick={onClose} aria-label="Close" className="rounded-full absolute -top-2 -right-2 w-9 h-9 flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer">
               <X className="w-4 h-4" />
             </button>
             <div className="flex items-start gap-f3 pb-f4 pr-8">
@@ -220,20 +220,20 @@ export const FacultyDirectoryView: React.FC = () => {
                 <p className="text-[19px] font-semibold tracking-tight text-fg leading-snug">{fullName(f)}</p>
                 <p className="mt-0.5 text-[14px] text-muted">{f.department || 'Faculty'}</p>
                 <div className="mt-f2 flex items-center gap-1.5 flex-wrap">
-                  {f.teachesYou && <span className="inline-flex items-center h-6 px-2 text-[12px] font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-400/10">Teaches you</span>}
+                  {f.teachesYou && <span className="rounded-full inline-flex items-center h-6 px-2 text-[12px] font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-400/10">Teaches you</span>}
                   {f.onApp ? (
-                    <span className="inline-flex items-center gap-1 h-6 px-2 text-[12px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-400/10">
+                    <span className="rounded-full inline-flex items-center gap-1 h-6 px-2 text-[12px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-400/10">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> On Intersemester
                     </span>
                   ) : (
-                    <span className="inline-flex items-center h-6 px-2 text-[12px] font-medium text-muted bg-surface-2">From your timetable</span>
+                    <span className="rounded-full inline-flex items-center h-6 px-2 text-[12px] font-medium text-muted bg-surface-2">From your timetable</span>
                   )}
                 </div>
               </div>
             </div>
 
             {(f.email || f.office) && (
-              <div className="border border-line divide-y divide-line-soft">
+              <div className="rounded-tile overflow-hidden border border-line divide-y divide-line-soft">
                 {f.email && (
                   <div className="flex items-center gap-f3 px-f3 py-f3">
                     <Mail className="w-4 h-4 shrink-0 text-muted" />
@@ -263,7 +263,7 @@ export const FacultyDirectoryView: React.FC = () => {
                       {g.sessions.length > 0 && (
                         <div className="mt-f2 flex flex-wrap gap-1.5">
                           {g.sessions.map((c) => (
-                            <span key={c.id} className="h-7 px-2 inline-flex items-center gap-1.5 bg-surface-2 text-[12px] text-fg tabular-nums">
+                            <span key={c.id} className="rounded-full h-7 px-2 inline-flex items-center gap-1.5 bg-surface-2 text-[12px] text-fg tabular-nums">
                               <span className="font-semibold">{c.day.slice(0, 3)}</span>
                               <span className="text-muted">{timeRange(c.startTime, c.endTime)}</span>
                               {c.isLab && <span className="text-[10px] font-semibold text-violet-700 dark:text-violet-300">LAB</span>}
@@ -297,7 +297,7 @@ export const FacultyDirectoryView: React.FC = () => {
   };
 
   const Skeleton = () => (
-    <ul className="border border-line bg-surface divide-y divide-line-soft" aria-hidden="true">
+    <ul className="rounded-tile overflow-hidden border border-line bg-surface divide-y divide-line-soft" aria-hidden="true">
       {[0, 1, 2].map((i) => (
         <li key={i} className="flex items-center gap-f3 px-f4 py-f3">
           <span className="w-10 h-10 rounded-full bg-surface-2 animate-pulse" />
@@ -315,15 +315,13 @@ export const FacultyDirectoryView: React.FC = () => {
     <div className="flex flex-col gap-f5 sm:gap-f6 text-left max-w-4xl mx-auto w-full pb-f7">
       <div>
         <h2 className="page-title">
-          Faculty,
-          <br />
-          Campus
+          Faculty
         </h2>
-        <div className="flex items-center gap-2 mt-5 flex-wrap">
+        <div className="flex items-center gap-2 mt-3 flex-wrap">
           <span className="tag bg-surface">{mine.length} teach you</span>
           {campus.length > 0 && <span className="tag bg-surface">{campus.length} on campus</span>}
         </div>
-        <p className="text-[14px] text-muted leading-[20px] mt-4 max-w-md">Your teachers and everyone at your college. Tap a name for details.</p>
+        <p className="text-[14px] text-muted leading-[20px] mt-2 max-w-md">Your teachers and everyone at your college. Tap a name for details.</p>
       </div>
 
       <div className="relative">
@@ -334,7 +332,7 @@ export const FacultyDirectoryView: React.FC = () => {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search name, subject or department"
           aria-label="Search faculty"
-          className="w-full h-12 pl-10 pr-3 bg-surface border border-line text-[15px] text-fg placeholder:text-faint focus:outline-none focus:border-line-strong transition-colors"
+          className="rounded-field w-full h-12 pl-10 pr-3 bg-surface border border-line text-[15px] text-fg placeholder:text-faint focus:outline-none focus:border-line-strong transition-colors"
         />
       </div>
 
@@ -346,15 +344,15 @@ export const FacultyDirectoryView: React.FC = () => {
         {loading ? (
           <Skeleton />
         ) : mineShown.length === 0 ? (
-          <div className="flex flex-col items-center text-center px-6 py-f6 border border-dashed border-line">
-            <span className="w-12 h-12 flex items-center justify-center border border-line-soft text-fg">
+          <div className="rounded-card flex flex-col items-center text-center px-6 py-f6 bg-surface-2">
+            <span className="rounded-xl w-12 h-12 flex items-center justify-center border border-line-soft text-fg">
               <GraduationCap className="w-5 h-5" />
             </span>
             <p className="mt-f3 text-[15px] font-semibold text-fg">{q ? 'No teacher matches' : 'No teachers yet'}</p>
             <p className="mt-1 text-[13px] text-muted max-w-[300px]">Teachers appear here once they link your batch, or when your subjects list a faculty name.</p>
           </div>
         ) : (
-          <ul className="border border-line bg-surface divide-y divide-line-soft">
+          <ul className="rounded-tile overflow-hidden border border-line bg-surface divide-y divide-line-soft">
             {mineShown.map((f) => (
               <FacultyRow key={f.id} f={f} />
             ))}
@@ -375,7 +373,7 @@ export const FacultyDirectoryView: React.FC = () => {
                 type="button"
                 onClick={() => setDept(d)}
                 aria-pressed={dept === d}
-                className={`shrink-0 h-9 px-3 border text-[13px] font-medium cursor-pointer transition-colors ${dept === d ? 'bg-ink text-on-ink border-line-strong' : 'border-line text-fg hover:border-line-strong'}`}
+                className={`rounded-full shrink-0 h-9 px-3 border text-[13px] font-medium cursor-pointer transition-colors ${dept === d ? 'bg-ink text-on-ink border-line-strong' : 'border-line text-fg hover:border-line-strong'}`}
               >
                 {d === 'all' ? 'All departments' : d}
               </button>
@@ -383,17 +381,17 @@ export const FacultyDirectoryView: React.FC = () => {
           </div>
         )}
         {!user ? (
-          <p className="px-f4 py-f4 text-[14px] text-muted border border-dashed border-line">Sign in to see faculty at your college.</p>
+          <p className="rounded-tile px-f4 py-f4 text-[14px] text-muted bg-surface-2">Sign in to see faculty at your college.</p>
         ) : failed ? (
-          <p className="flex items-center gap-2 px-f4 py-f4 text-[14px] text-muted border border-amber-300/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10">
+          <p className="rounded-tile flex items-center gap-2 px-f4 py-f4 text-[14px] text-muted border border-amber-300/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10">
             <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-400" /> Couldn&apos;t load campus faculty. Check your connection.
           </p>
         ) : loading ? null : campusShown.length === 0 ? (
-          <p className="px-f4 py-f4 text-[14px] text-muted border border-dashed border-line">
+          <p className="rounded-tile px-f4 py-f4 text-[14px] text-muted bg-surface-2">
             {q || dept !== 'all' ? 'No one matches.' : 'No other faculty from your college are on Intersemester yet.'}
           </p>
         ) : (
-          <ul className="border border-line bg-surface divide-y divide-line-soft">
+          <ul className="rounded-tile overflow-hidden border border-line bg-surface divide-y divide-line-soft">
             {campusShown.map((f) => (
               <FacultyRow key={f.id} f={f} />
             ))}

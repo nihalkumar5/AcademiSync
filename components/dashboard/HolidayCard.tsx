@@ -60,7 +60,7 @@ export const HolidayCard: React.FC<{ holiday: AcademicEvent }> = ({ holiday }) =
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="relative w-full overflow-hidden bg-[linear-gradient(160deg,#161B18_0%,#0E1110_100%)] border border-white/[0.08] dark:border-emerald-500/20 text-white shadow-[0_20px_44px_-22px_rgba(0,0,0,0.55)] dark:shadow-none"
+      className="rounded-card relative w-full overflow-hidden bg-[linear-gradient(160deg,#161B18_0%,#0E1110_100%)] border border-white/[0.08] dark:border-emerald-500/20 text-white shadow-[0_20px_44px_-22px_rgba(0,0,0,0.55)] dark:shadow-none"
     >
       {/* Fine grid that fades out, echoing the app background */}
       <div
@@ -111,7 +111,7 @@ export const HolidayCard: React.FC<{ holiday: AcademicEvent }> = ({ holiday }) =
             </div>
             <div className="mt-2 flex gap-1" role="img" aria-label={`Day ${dayOfBreak} of a ${breakLength}-day break`}>
               {Array.from({ length: breakLength }).map((_, i) => (
-                <span key={i} className={`h-1 flex-1 ${i < dayOfBreak ? 'bg-emerald-400' : 'bg-white/15'}`} />
+                <span key={i} className={`rounded-full h-1 flex-1 ${i < dayOfBreak ? 'bg-emerald-400' : 'bg-white/15'}`} />
               ))}
             </div>
           </div>

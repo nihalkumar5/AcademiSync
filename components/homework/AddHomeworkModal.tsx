@@ -309,9 +309,9 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({ isOpen, onCl
               type="button"
               onClick={() => scanRef.current?.click()}
               disabled={scanning}
-              className="group relative w-full overflow-hidden border border-ink bg-ink text-on-ink p-4 flex items-center gap-4 text-left cursor-pointer disabled:cursor-wait"
+              className="rounded-card group relative w-full overflow-hidden border border-ink bg-ink text-on-ink p-4 flex items-center gap-4 text-left cursor-pointer disabled:cursor-wait"
             >
-              <span className="w-11 h-11 shrink-0 flex items-center justify-center bg-on-ink/10 border border-on-ink/15">
+              <span className="rounded-xl w-11 h-11 shrink-0 flex items-center justify-center bg-on-ink/10 border border-on-ink/15">
                 {scanning ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
               </span>
               <span className="flex-1 min-w-0">
@@ -342,10 +342,10 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({ isOpen, onCl
               <button
                 type="button"
                 onClick={() => setShowSubjectModal(true)}
-                className="w-full h-12 px-3.5 bg-surface border border-line text-left flex items-center gap-3 hover:border-line-strong transition-colors cursor-pointer"
+                className="rounded-tile w-full h-12 px-3.5 bg-surface border border-line text-left flex items-center gap-3 hover:border-line-strong transition-colors cursor-pointer"
               >
                 {selectedSubject?.code && selectedSubject.code !== 'UNK' && (
-                  <span className="shrink-0 h-6 px-1.5 inline-flex items-center bg-surface-2 border border-line-soft text-[11px] font-bold tracking-wide text-fg">
+                  <span className="rounded-full shrink-0 h-6 px-1.5 inline-flex items-center bg-surface-2 border border-line-soft text-[11px] font-bold tracking-wide text-fg">
                     {selectedSubject.code}
                   </span>
                 )}
@@ -385,7 +385,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({ isOpen, onCl
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Questions to do, pages, submission format…"
                 rows={3}
-                className="w-full px-3.5 py-3 bg-surface border border-line text-[15px] text-fg placeholder:text-faint focus:outline-none focus:border-fg transition-colors resize-y"
+                className="rounded-tile w-full px-3.5 py-3 bg-surface border border-line text-[15px] text-fg placeholder:text-faint focus:outline-none focus:border-fg transition-colors resize-y"
               />
             </div>
           </section>
@@ -413,7 +413,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({ isOpen, onCl
 
             <div className="mt-2 flex flex-col gap-1.5">
               <span className={labelCls}>Priority</span>
-              <div role="radiogroup" aria-label="Priority" className="grid grid-cols-3 border border-line bg-surface p-1 gap-1">
+              <div role="radiogroup" aria-label="Priority" className="rounded-tile grid grid-cols-3 border border-line bg-surface p-1 gap-1">
                 {PRIORITIES.map((p) => (
                   <button
                     key={p.id}
@@ -422,7 +422,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({ isOpen, onCl
                     aria-checked={priority === p.id}
                     onClick={() => setPriority(p.id)}
                     className={clsx(
-                      'h-10 inline-flex items-center justify-center gap-2 text-[14px] font-semibold transition-colors cursor-pointer',
+                      'rounded-full h-10 inline-flex items-center justify-center gap-2 text-[14px] font-semibold transition-colors cursor-pointer',
                       priority === p.id ? 'bg-ink text-on-ink' : 'text-muted hover:text-fg'
                     )}
                   >
@@ -436,7 +436,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({ isOpen, onCl
             {homeworkToEdit && (
               <div className="mt-2 flex flex-col gap-1.5">
                 <span className={labelCls}>Status</span>
-                <div role="radiogroup" aria-label="Status" className="grid grid-cols-3 border border-line bg-surface p-1 gap-1">
+                <div role="radiogroup" aria-label="Status" className="rounded-tile grid grid-cols-3 border border-line bg-surface p-1 gap-1">
                   {STATUSES.map((s) => (
                     <button
                       key={s.id}
@@ -445,7 +445,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({ isOpen, onCl
                       aria-checked={status === s.id}
                       onClick={() => setStatus(s.id)}
                       className={clsx(
-                        'h-10 text-[14px] font-semibold transition-colors cursor-pointer',
+                        'rounded-full h-10 text-[14px] font-semibold transition-colors cursor-pointer',
                         status === s.id ? 'bg-ink text-on-ink' : 'text-muted hover:text-fg'
                       )}
                     >
@@ -479,7 +479,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({ isOpen, onCl
                 type="button"
                 onClick={() => filesRef.current?.click()}
                 disabled={adding || files.length >= MAX_TASK_FILES}
-                className="h-12 border border-dashed border-line-strong bg-surface text-[14px] font-semibold text-fg inline-flex items-center justify-center gap-2 hover:bg-surface-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-full h-12 border border-dashed border-line-strong bg-surface text-[14px] font-semibold text-fg inline-flex items-center justify-center gap-2 hover:bg-surface-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
                 {files.length ? 'Add more' : 'Attach files'}
@@ -488,7 +488,7 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({ isOpen, onCl
                 type="button"
                 onClick={() => setShowLink((v) => !v)}
                 className={clsx(
-                  'h-12 border bg-surface text-[14px] font-semibold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer',
+                  'rounded-full h-12 border bg-surface text-[14px] font-semibold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer',
                   showLink ? 'border-fg text-fg' : 'border-dashed border-line-strong text-fg hover:bg-surface-2'
                 )}
               >
@@ -527,9 +527,9 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({ isOpen, onCl
                 role="switch"
                 aria-checked={shareWithBatch}
                 onClick={() => setShareWithBatch((v) => !v)}
-                className="w-full p-4 border border-line bg-surface flex items-center gap-3.5 text-left cursor-pointer hover:border-line-strong transition-colors"
+                className="rounded-card w-full p-4 border border-line bg-surface flex items-center gap-3.5 text-left cursor-pointer hover:border-line-strong transition-colors"
               >
-                <span className="w-10 h-10 shrink-0 flex items-center justify-center bg-surface-2 border border-line-soft">
+                <span className="rounded-xl w-10 h-10 shrink-0 flex items-center justify-center bg-surface-2 border border-line-soft">
                   <Users className="w-[18px] h-[18px] text-fg" />
                 </span>
                 <span className="flex-1 min-w-0">
@@ -539,8 +539,8 @@ export const AddHomeworkModal: React.FC<AddHomeworkModalProps> = ({ isOpen, onCl
                     {shareWithBatch && files.length > 0 ? ' · files stay with you' : ''}
                   </span>
                 </span>
-                <span className={clsx('relative w-11 h-6 shrink-0 transition-colors', shareWithBatch ? 'bg-ink' : 'bg-line-strong/60')}>
-                  <span className={clsx('absolute top-0.5 w-5 h-5 bg-surface transition-[left]', shareWithBatch ? 'left-[22px]' : 'left-0.5')} />
+                <span className={clsx('rounded-full relative w-11 h-6 shrink-0 transition-colors', shareWithBatch ? 'bg-ink' : 'bg-line-strong/60')}>
+                  <span className={clsx('rounded-full absolute top-0.5 w-5 h-5 bg-surface transition-[left]', shareWithBatch ? 'left-[22px]' : 'left-0.5')} />
                 </span>
               </button>
             </section>
@@ -653,7 +653,7 @@ export const FileTile: React.FC<{ file: TaskFile; onRemove?: () => void }> = ({ 
         type="button"
         onClick={() => !missing && openTaskFile(file)}
         title={missing ? 'Added on another device' : file.name}
-        className="w-full aspect-square border border-line bg-surface-2 overflow-hidden flex flex-col items-center justify-center text-center cursor-pointer"
+        className="rounded-tile w-full aspect-square border border-line bg-surface-2 overflow-hidden flex flex-col items-center justify-center text-center cursor-pointer"
       >
         {thumb ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -671,7 +671,7 @@ export const FileTile: React.FC<{ file: TaskFile; onRemove?: () => void }> = ({ 
           type="button"
           onClick={onRemove}
           aria-label={`Remove ${file.name}`}
-          className="absolute top-1 right-1 w-7 h-7 flex items-center justify-center bg-ink text-on-ink cursor-pointer"
+          className="rounded-full absolute top-1 right-1 w-7 h-7 flex items-center justify-center bg-ink text-on-ink cursor-pointer"
         >
           <X className="w-3.5 h-3.5" />
         </button>

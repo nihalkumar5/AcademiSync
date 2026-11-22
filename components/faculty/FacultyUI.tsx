@@ -24,8 +24,8 @@ export const FacultyPageHeader: React.FC<{
 
 // Shown wherever a screen needs a linked batch before it can show anything.
 export const FacultyNoBatches: React.FC<{ onConnect: () => void; title: string; body: string; note?: string }> = ({ onConnect, title, body, note }) => (
-  <div className="flex flex-col items-center justify-center text-center px-6 py-10 border border-dashed border-line">
-    <div className="mb-4 w-14 h-14 flex items-center justify-center bg-surface-2 border border-line-soft text-fg">
+  <div className="rounded-card flex flex-col items-center justify-center text-center px-6 py-10 border border-dashed border-line">
+    <div className="rounded-xl mb-4 w-14 h-14 flex items-center justify-center bg-surface-2 border border-line-soft text-fg">
       <Users className="w-6 h-6" />
     </div>
     <h3 className="text-[17px] font-semibold text-fg tracking-tight">{title}</h3>
@@ -42,7 +42,7 @@ export const FacultyNoBatches: React.FC<{ onConnect: () => void; title: string; 
 );
 
 export const FacultyStatTile: React.FC<{ value: React.ReactNode; label: string; tint?: string }> = ({ value, label }) => (
-  <div className="flex flex-col items-center justify-center text-center py-f4 border border-line bg-surface">
+  <div className="rounded-card flex flex-col items-center justify-center text-center py-f4 border border-line bg-surface">
     <span className="text-[28px] sm:text-[32px] font-medium text-fg tracking-tighter leading-none mb-1 tabular-nums">{value}</span>
     <span className="text-[12px] sm:text-[13px] font-medium text-muted leading-tight">{label}</span>
   </div>

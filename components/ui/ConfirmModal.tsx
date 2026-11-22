@@ -40,7 +40,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
       <div className="flex flex-col text-left">
         {/* Header with Icon */}
         <div className="flex items-start gap-3.5 mb-4">
-          <div className={`w-10 h-10 shrink-0 rounded-none border flex items-center justify-center ${
+          <div className={`w-10 h-10 shrink-0 rounded-xl border flex items-center justify-center ${
             variant === 'danger'
               ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-400'
               : variant === 'warning'
@@ -68,7 +68,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
         {/* Monospace Highlight Box */}
         {highlightText && (
-          <div className="mb-5 p-2.5 bg-surface-2 border border-line text-[12px] font-mono text-fg rounded-none break-all select-all">
+          <div className="mb-5 p-2.5 bg-surface-2 border border-line text-[12px] font-mono text-fg rounded-tile break-all select-all">
             {highlightText}
           </div>
         )}
@@ -81,7 +81,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             size="sm"
             onClick={onClose}
             disabled={isLoading}
-            className="h-9 px-4 rounded-none text-xs font-mono uppercase tracking-wider"
+            className="h-9 px-4 rounded-full text-xs font-mono uppercase tracking-wider"
           >
             {cancelLabel}
           </Button>
@@ -92,7 +92,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             size="sm"
             onClick={onConfirm}
             isLoading={isLoading}
-            className={`h-9 px-4 rounded-none text-xs font-mono uppercase tracking-wider ${
+            className={`h-9 px-4 rounded-full text-xs font-mono uppercase tracking-wider ${
               variant === 'danger'
                 ? 'bg-rose-600 hover:bg-rose-700 text-white border-transparent'
                 : ''

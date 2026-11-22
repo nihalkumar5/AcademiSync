@@ -123,7 +123,7 @@ const Field: React.FC<{ label: string; hint?: React.ReactNode; counter?: string;
 const Step: React.FC<{ n: number; title: string; description: string; children: React.ReactNode }> = ({ n, title, description, children }) => (
   <section className="flex flex-col gap-f4">
     <div className="flex items-start gap-f3">
-      <span className={`w-7 h-7 shrink-0 flex items-center justify-center text-[13px] font-semibold border border-line tabular-nums ${strong}`}>{n}</span>
+      <span className={`rounded-full w-7 h-7 shrink-0 flex items-center justify-center text-[13px] font-semibold border border-line tabular-nums ${strong}`}>{n}</span>
       <div>
         <h3 className={`text-[18px] font-semibold tracking-tight leading-tight ${strong}`}>{title}</h3>
         <p className={`mt-0.5 text-[14px] ${muted}`}>{description}</p>
@@ -138,7 +138,7 @@ const Chip: React.FC<{ on: boolean; onClick: () => void; children: React.ReactNo
     type="button"
     aria-pressed={on}
     onClick={onClick}
-    className={`inline-flex items-center gap-1.5 h-9 px-3 border text-[13px] font-medium transition-colors cursor-pointer ${
+    className={`rounded-full inline-flex items-center gap-1.5 h-9 px-3 border text-[13px] font-medium transition-colors cursor-pointer ${
       on
         ? 'bg-ink text-on-ink border-line-strong'
         : `border-line ${strong} hover:border-line-strong`
@@ -347,7 +347,7 @@ export const CampaignComposer: React.FC<CampaignComposerProps> = ({
                   <input id="ad-cta" className={inputCls} maxLength={20} value={form.ctaText} onChange={(e) => set('ctaText', e.target.value)} placeholder="Learn more" />
                   <div className="flex flex-wrap gap-1.5">
                     {CTA_SUGGESTIONS.filter((s) => s !== form.ctaText).slice(0, 4).map((s) => (
-                      <button key={s} type="button" onClick={() => set('ctaText', s)} className={`h-7 px-2 text-[12px] border border-dashed border-line ${muted} hover:text-fg cursor-pointer`}>
+                      <button key={s} type="button" onClick={() => set('ctaText', s)} className={`rounded-full h-7 px-2 text-[12px] border border-dashed border-line ${muted} hover:text-fg cursor-pointer`}>
                         {s}
                       </button>
                     ))}
@@ -400,7 +400,7 @@ export const CampaignComposer: React.FC<CampaignComposerProps> = ({
                       e.preventDefault();
                       onPickImage(e.dataTransfer.files?.[0]);
                     }}
-                    className={`w-full aspect-[16/7] max-h-56 flex flex-col items-center justify-center gap-2 border border-dashed border-[#CFCFCB] dark:border-white/[0.16] ${muted} hover:border-line-strong hover:text-fg transition-colors cursor-pointer`}
+                    className={`rounded-tile w-full aspect-[16/7] max-h-56 flex flex-col items-center justify-center gap-2 border border-dashed border-[#CFCFCB] dark:border-white/[0.16] ${muted} hover:border-line-strong hover:text-fg transition-colors cursor-pointer`}
                   >
                     {imageBusy ? <Loader2 className="w-6 h-6 animate-spin" /> : <ImageIcon className="w-6 h-6" strokeWidth={1.6} />}
                     <span className="text-[14px] font-medium">{imageBusy ? 'Preparing image…' : 'Upload or drop an image'}</span>
@@ -412,7 +412,7 @@ export const CampaignComposer: React.FC<CampaignComposerProps> = ({
 
             <Step n={3} title="Audience" description={lockedCollege ? 'Only students of your college see this. Narrow it by branch or semester if you like.' : 'Narrow audiences see fewer, more relevant ads.'}>
               {lockedCollege ? (
-                <div className="flex items-center gap-3 p-f3 border border-line bg-surface-2">
+                <div className="rounded-tile flex items-center gap-3 p-f3 border border-line bg-surface-2">
                   <Crosshair className={`w-5 h-5 shrink-0 ${strong}`} strokeWidth={1.75} />
                   <span className="min-w-0">
                     <span className={`block text-[15px] font-semibold ${strong}`}>Your college</span>
@@ -433,7 +433,7 @@ export const CampaignComposer: React.FC<CampaignComposerProps> = ({
                       role="radio"
                       aria-checked={on}
                       onClick={() => set('targetAudienceType', o.id)}
-                      className={`flex flex-col items-start gap-2 p-f3 text-left border transition-colors cursor-pointer ${
+                      className={`rounded-tile flex flex-col items-start gap-2 p-f3 text-left border transition-colors cursor-pointer ${
                         on ? 'border-line-strong ring-1 ring-[#111111] dark:ring-[#F4F4F6]' : 'border-line hover:border-line-strong'
                       }`}
                     >
@@ -584,7 +584,7 @@ export const CampaignComposer: React.FC<CampaignComposerProps> = ({
                     role="switch"
                     aria-checked={!!form.sendPush}
                     onClick={() => set('sendPush', !form.sendPush)}
-                    className="w-full flex items-center justify-between gap-3 p-f3 border border-line hover:border-line-strong text-left transition-colors cursor-pointer"
+                    className="rounded-tile w-full flex items-center justify-between gap-3 p-f3 border border-line hover:border-line-strong text-left transition-colors cursor-pointer"
                   >
                     <span className="min-w-0">
                       <span className={`block text-[15px] font-semibold ${strong}`}>Notify students</span>

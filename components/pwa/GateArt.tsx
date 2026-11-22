@@ -20,8 +20,8 @@ const Phone: React.FC<{ children: React.ReactNode; island?: boolean }> = ({ chil
           <span className="absolute left-1/2 top-1.5 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-fg" />
         )}
         <span className="flex items-center gap-0.5">
-          <span className="w-2.5 h-1.5 bg-fg/80" />
-          <span className="w-1 h-1.5 bg-fg/40" />
+          <span className="rounded-full w-2.5 h-1.5 bg-fg/80" />
+          <span className="rounded-full w-1 h-1.5 bg-fg/40" />
         </span>
       </div>
       {children}
@@ -36,35 +36,35 @@ const MiniHome: React.FC = () => (
       <span className="opacity-80">semester</span>
     </p>
     <p className="mt-1 text-[11px] font-semibold text-fg leading-none">Good morning</p>
-    <div className="mt-1 bg-ink text-on-ink p-2">
+    <div className="rounded-tile mt-1 bg-ink text-on-ink p-2">
       <div className="flex items-center justify-between text-[6.5px] font-semibold opacity-70 tracking-wider">
         <span>NEXT CLASS</span>
         <span className="flex items-center gap-0.5">
-          <span className="w-1 h-1 bg-emerald-400 animate-pulse" /> 12 MIN
+          <span className="rounded-full w-1 h-1 bg-emerald-400 animate-pulse" /> 12 MIN
         </span>
       </div>
       <p className="mt-1 text-[10px] font-semibold leading-tight">Data Structures</p>
       <p className="mt-0.5 text-[7px] opacity-70">10:00 · Room 204</p>
     </div>
     <div className="grid grid-cols-2 gap-1.5">
-      <div className="border border-line p-1.5">
+      <div className="rounded-tile border border-line p-1.5">
         <p className="text-[6.5px] font-semibold text-muted">Attendance</p>
         <p className="text-[11px] font-semibold text-fg leading-tight tabular-nums">82%</p>
-        <div className="mt-1 h-[3px] bg-surface-2">
+        <div className="rounded-full mt-1 h-[3px] bg-surface-2">
           <div className="gate-fill h-full bg-emerald-500" />
         </div>
       </div>
-      <div className="border border-line p-1.5">
+      <div className="rounded-tile border border-line p-1.5">
         <p className="text-[6.5px] font-semibold text-muted">Due tomorrow</p>
         <p className="text-[8px] font-semibold text-fg leading-tight">DBMS assignment</p>
       </div>
     </div>
     {['bg-[#DCE8FB] dark:bg-[#1D2A3E]', 'bg-[#FBE3D2] dark:bg-[#3A281D]', 'bg-[#DDF1E3] dark:bg-[#1C3226]', 'bg-[#EEE2FA] dark:bg-[#2D2340]', 'bg-[#FBF0C9] dark:bg-[#3A3218]'].map((t, i) => (
-      <div key={i} className="flex items-center gap-1.5 border border-line-soft p-1.5">
+      <div key={i} className="rounded-tile flex items-center gap-1.5 border border-line-soft p-1.5">
         <span className={`w-1 self-stretch ${t}`} />
         <span className="flex-1">
-          <span className="block h-1 w-3/4 bg-fg/25" />
-          <span className="mt-1 block h-1 w-1/2 bg-fg/10" />
+          <span className="rounded-full block h-1 w-3/4 bg-fg/25" />
+          <span className="rounded-full mt-1 block h-1 w-1/2 bg-fg/10" />
         </span>
       </div>
     ))}
@@ -74,7 +74,7 @@ const MiniHome: React.FC = () => (
 /** Android: the app's Home on a tilted phone, with pieces of the app floating out of it. */
 const Chip: React.FC<{ className?: string; style?: React.CSSProperties; children: React.ReactNode }> = ({ className = '', style, children }) => (
   <div
-    className={`ai-float absolute z-10 flex items-center gap-1.5 bg-surface border border-line px-2.5 py-2 text-[11px] font-semibold text-fg whitespace-nowrap shadow-[0_12px_28px_-14px_rgba(0,0,0,0.35)] ${className}`}
+    className={`rounded-tile ai-float absolute z-10 flex items-center gap-1.5 bg-surface border border-line px-2.5 py-2 text-[11px] font-semibold text-fg whitespace-nowrap shadow-[0_12px_28px_-14px_rgba(0,0,0,0.35)] ${className}`}
     style={style}
   >
     {children}
@@ -89,8 +89,8 @@ export const AndroidGateArt: React.FC = () => (
       <div className="h-full -rotate-[4deg]">
         <Phone>
           <MiniHome />
-          <div className="gate-notif absolute left-1.5 right-1.5 top-7 bg-surface border border-fg shadow-lg p-1.5 flex items-start gap-1.5">
-            <span className="w-4 h-4 shrink-0 bg-ink text-on-ink text-[7px] font-bold flex items-center justify-center">is</span>
+          <div className="rounded-tile gate-notif absolute left-1.5 right-1.5 top-7 bg-surface border border-fg shadow-lg p-1.5 flex items-start gap-1.5">
+            <span className="rounded-md w-4 h-4 shrink-0 bg-ink text-on-ink text-[7px] font-bold flex items-center justify-center">is</span>
             <span className="min-w-0">
               <span className="block text-[7.5px] font-semibold text-fg leading-tight">Class moved</span>
               <span className="block text-[7px] text-muted leading-tight">DBMS is now in Room 204</span>
@@ -100,7 +100,7 @@ export const AndroidGateArt: React.FC = () => (
       </div>
 
       <Chip className="-left-[58px] top-[4%] -rotate-[3deg]" style={{ animationDelay: '0.2s' }}>
-        <span className="w-5 h-5 flex items-center justify-center bg-[#DCE8FB] dark:bg-[#1D2A3E]">
+        <span className="rounded-md w-5 h-5 flex items-center justify-center bg-[#DCE8FB] dark:bg-[#1D2A3E]">
           <Calendar className="w-3 h-3" />
         </span>
         Live timetable
@@ -117,7 +117,7 @@ export const AndroidGateArt: React.FC = () => (
       </div>
 
       <Chip className="-left-[50px] bottom-[14%] rotate-[2deg]" style={{ animationDelay: '1.5s' }}>
-        <span className="w-5 h-5 flex items-center justify-center bg-[#FBE3D2] dark:bg-[#3A281D]">
+        <span className="rounded-md w-5 h-5 flex items-center justify-center bg-[#FBE3D2] dark:bg-[#3A281D]">
           <Bell className="w-3 h-3" />
         </span>
         Exam in 3 days
@@ -181,8 +181,8 @@ export const IOSGateArt: React.FC<{ step: number }> = ({ step }) => (
               {step === 0 && <span className="absolute inset-0 rounded-full border-2 border-[#0A84FF] gate-ping" />}
               <ShareGlyph className="w-3.5 h-3.5" />
             </span>
-            <span className="w-2.5 h-2.5 border border-current" />
-            <span className="w-2.5 h-2.5 border border-current" />
+            <span className="rounded-full w-2.5 h-2.5 border border-current" />
+            <span className="rounded-full w-2.5 h-2.5 border border-current" />
           </div>
           {/* share sheet */}
           <div
@@ -201,7 +201,7 @@ export const IOSGateArt: React.FC<{ step: number }> = ({ step }) => (
                   }`}
                 >
                   {r}
-                  {on ? <PlusGlyph className="w-3 h-3" /> : <span className="w-2 h-2 border border-current opacity-50" />}
+                  {on ? <PlusGlyph className="w-3 h-3" /> : <span className="rounded-full w-2 h-2 border border-current opacity-50" />}
                 </div>
               );
             })}

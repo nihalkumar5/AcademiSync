@@ -57,7 +57,7 @@ export const AndroidAppGate: React.FC = () => {
           href={PLAY_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="h-12 w-full flex items-center justify-center gap-3 border border-line-strong bg-surface text-fg hover:bg-surface-2 transition-colors"
+          className="rounded-full h-12 w-full flex items-center justify-center gap-3 border border-line-strong bg-surface text-fg hover:bg-surface-2 transition-colors"
         >
           <PlayMark className="w-5 h-5" />
           <span className="text-left leading-none">

@@ -126,7 +126,7 @@ export const ChatsList: React.FC<{
 
   if (!chats.length) {
     return (
-      <section className="border border-line bg-surface px-5 py-f6 flex flex-col items-center text-center">
+      <section className="rounded-card border border-line bg-surface px-5 py-f6 flex flex-col items-center text-center">
         <motion.span className="text-[48px] leading-none" animate={{ rotate: [0, 14, -6, 10, 0] }} transition={{ duration: 1.4, repeat: Infinity, repeatDelay: 2 }}>
           💬
         </motion.span>
@@ -144,7 +144,7 @@ export const ChatsList: React.FC<{
   return (
     <section aria-label="Chats" className="flex flex-col gap-f3">
       {chats.length > 6 && (
-        <label className="flex items-center gap-2.5 h-11 px-3 border border-line bg-surface focus-within:border-fg transition-colors">
+        <label className="rounded-tile flex items-center gap-2.5 h-11 px-3 border border-line bg-surface focus-within:border-fg transition-colors">
           <Search className="w-4 h-4 text-muted shrink-0" />
           <input
             type="search"
@@ -158,7 +158,7 @@ export const ChatsList: React.FC<{
       {shown.length === 0 ? (
         <p className="py-f4 text-center text-[14px] text-muted">No chats match &ldquo;{q}&rdquo;.</p>
       ) : (
-        <ul className="border border-line bg-surface divide-y divide-line-soft">
+        <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
           <AnimatePresence initial={false}>
             {shown.map((c) => {
               const other = c.type === 'dm' ? c.members.find((m) => m !== me) || '' : '';
@@ -280,9 +280,9 @@ export const PlanCard: React.FC<{
       layout
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className={clsx('relative overflow-hidden border bg-surface p-f4', cd.hot ? 'border-emerald-300 dark:border-emerald-500/40' : 'border-line')}
+      className={clsx('rounded-tile relative overflow-hidden border bg-surface p-f4', cd.hot ? 'border-emerald-300 dark:border-emerald-500/40' : 'border-line')}
     >
-      {cd.hot && <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500" aria-hidden="true" />}
+      {cd.hot && <span className="rounded-full absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500" aria-hidden="true" />}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <span className={clsx('inline-flex items-center gap-1 h-6 px-2 rounded-full text-[11px] font-bold', cd.hot ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300' : 'bg-surface-2 text-muted')}>

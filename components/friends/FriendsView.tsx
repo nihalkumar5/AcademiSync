@@ -81,7 +81,7 @@ const isFreeAt = (f: Friend, at: Date) => {
   return !day.classes.some((c) => c.start <= t && t < c.end);
 };
 const Err: React.FC<{ msg: string }> = ({ msg }) => (
-  <p className="flex items-start gap-2 px-3 py-2.5 border border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-400/10 dark:border-rose-400/20 dark:text-rose-300 text-[14px]">
+  <p className="rounded-tile flex items-start gap-2 px-3 py-2.5 border border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-400/10 dark:border-rose-400/20 dark:text-rose-300 text-[14px]">
     <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /> {msg}
   </p>
 );
@@ -142,7 +142,7 @@ const Scanner: React.FC<{ onCode: (code: string) => void }> = ({ onCode }) => {
 
   if (state === 'unsupported' || state === 'denied') {
     return (
-      <div className="border border-line px-f4 py-f5 text-center">
+      <div className="rounded-card border border-line px-f4 py-f5 text-center">
         <Camera className="w-6 h-6 mx-auto text-muted" />
         <p className="mt-3 text-[15px] font-semibold text-fg">{state === 'denied' ? 'Camera is blocked' : "This phone can't scan here"}</p>
         <p className="mt-1 text-[13px] text-muted">Open your phone's camera app and point it at your friend's QR, or type their code instead.</p>
@@ -223,7 +223,7 @@ const AddSheet: React.FC<{ open: boolean; onClose: () => void; me: FriendsData['
   return (
     <Modal isOpen={open} onClose={onClose} title="Add a friend" description="Only students from your campus" maxWidth="md" mobileFullSheet>
       <div className="flex flex-col gap-f4">
-        <div className="grid grid-cols-3 border border-line" role="tablist">
+        <div className="grid grid-cols-3 gap-1 p-1 rounded-full bg-surface-2" role="tablist">
           {(
             [
               ['code', 'My QR'],
@@ -231,7 +231,7 @@ const AddSheet: React.FC<{ open: boolean; onClose: () => void; me: FriendsData['
               ['type', 'Enter code'],
             ] as const
           ).map(([id, label]) => (
-            <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => { setTab(id); setError(''); }} className={clsx('h-11 text-[14px] font-semibold cursor-pointer', tab === id ? 'bg-ink text-on-ink' : 'text-fg-2 hover:bg-surface-2')}>
+            <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => { setTab(id); setError(''); }} className={clsx('rounded-full h-10 text-[14px] font-semibold cursor-pointer transition-colors', tab === id ? 'bg-surface text-fg shadow-[0_1px_3px_rgba(17,17,17,0.12)]' : 'text-muted hover:text-fg')}>
               {label}
             </button>
           ))}
@@ -239,7 +239,7 @@ const AddSheet: React.FC<{ open: boolean; onClose: () => void; me: FriendsData['
 
         {done ? (
           <div className="flex flex-col items-center text-center py-f4">
-            <span className="w-12 h-12 flex items-center justify-center border border-emerald-300 bg-emerald-50 dark:bg-emerald-400/10 dark:border-emerald-400/30 text-emerald-700 dark:text-emerald-300">
+            <span className="rounded-xl w-12 h-12 flex items-center justify-center border border-emerald-300 bg-emerald-50 dark:bg-emerald-400/10 dark:border-emerald-400/30 text-emerald-700 dark:text-emerald-300">
               <Check className="w-6 h-6" />
             </span>
             <p className="mt-3 text-[17px] font-semibold text-fg">
@@ -252,7 +252,7 @@ const AddSheet: React.FC<{ open: boolean; onClose: () => void; me: FriendsData['
           <div className="flex flex-col items-center text-center">
             {me ? (
               <>
-                <div className="border border-line p-3 bg-white">
+                <div className="rounded-tile border border-line p-3 bg-white">
                   <QrCode value={friendLink(me.code)} size={220} />
                 </div>
                 <p className="mt-f3 text-[12px] font-medium text-muted">Your code</p>
@@ -301,7 +301,7 @@ const AddSheet: React.FC<{ open: boolean; onClose: () => void; me: FriendsData['
               autoCapitalize="characters"
               autoComplete="off"
               aria-label="Friend code"
-              className="w-full h-14 px-3 text-center font-mono text-[26px] tracking-[0.3em] bg-surface border border-line text-fg placeholder:text-faint focus:outline-none focus:border-line-strong"
+              className="rounded-field w-full h-14 px-3 text-center font-mono text-[26px] tracking-[0.3em] bg-surface border border-line text-fg placeholder:text-faint focus:outline-none focus:border-line-strong"
             />
             <button type="submit" disabled={busy || code.length !== 6} className="btn btn-primary w-full">
               {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />} Send request
@@ -349,7 +349,7 @@ const TogetherSheet: React.FC<{ open: boolean; onClose: () => void; friends: Fri
         </div>
         {picked.length > 0 &&
           (slots.length === 0 ? (
-            <p className="border border-dashed border-line px-f3 py-f4 text-center text-[14px] text-muted">No common free time this week. Try fewer people.</p>
+            <p className="rounded-tile border border-dashed border-line px-f3 py-f4 text-center text-[14px] text-muted">No common free time this week. Try fewer people.</p>
           ) : (
             Object.entries(byDay).map(([date, list]) => (
               <section key={date}>
@@ -438,7 +438,7 @@ const PlanSheet: React.FC<{ open: boolean; onClose: () => void; friends: Friend[
               </button>
             ))}
           </div>
-          <input value={title} onChange={(e) => setTitle(e.target.value.slice(0, 40))} placeholder="Or type your own" className="mt-2 w-full h-11 px-3 bg-surface border border-line text-[15px] text-fg focus:outline-none focus:border-line-strong" />
+          <input value={title} onChange={(e) => setTitle(e.target.value.slice(0, 40))} placeholder="Or type your own" className="rounded-field mt-2 w-full h-11 px-3 bg-surface border border-line text-[15px] text-fg focus:outline-none focus:border-line-strong" />
         </div>
         <div>
           <p className="mb-2 text-[13px] font-medium text-fg-2">
@@ -461,7 +461,7 @@ const PlanSheet: React.FC<{ open: boolean; onClose: () => void; friends: Friend[
                 pickTime(d);
               }}
               aria-label="Pick a time"
-              className="h-8 px-2 border border-line bg-surface text-[13px] text-fg"
+              className="rounded-field h-8 px-2 border border-line bg-surface text-[13px] text-fg"
             />
           </div>
         </div>
@@ -482,7 +482,7 @@ const PlanSheet: React.FC<{ open: boolean; onClose: () => void; friends: Friend[
                         <span className="block text-[14px] font-medium text-fg truncate">{f.name}</span>
                         <span className={clsx('block text-[12px]', free ? 'text-emerald-700 dark:text-emerald-400' : 'text-muted')}>{free ? 'Free then' : 'In class then'}</span>
                       </span>
-                      <span className={clsx('w-5 h-5 border flex items-center justify-center', on ? 'bg-ink border-ink text-on-ink' : 'border-line-strong')}>{on && <Check className="w-3.5 h-3.5" />}</span>
+                      <span className={clsx('rounded-md w-5 h-5 border flex items-center justify-center', on ? 'bg-ink border-ink text-on-ink' : 'border-line-strong')}>{on && <Check className="w-3.5 h-3.5" />}</span>
                     </button>
                   </li>
                 );
@@ -533,7 +533,7 @@ const ClassmatesSheet: React.FC<{
     <Modal isOpen={open} onClose={onClose} title="Your class" description={`${classLabel} · ${people.length} ${people.length === 1 ? 'classmate' : 'classmates'}`} maxWidth="lg" mobileFullSheet>
       <div className="flex flex-col gap-f3">
         {people.length > 8 && (
-          <label className="flex items-center gap-2.5 h-11 px-3 border border-line bg-surface focus-within:border-fg transition-colors">
+          <label className="rounded-tile flex items-center gap-2.5 h-11 px-3 border border-line bg-surface focus-within:border-fg transition-colors">
             <Search className="w-4 h-4 text-muted shrink-0" />
             <input
               type="search"
@@ -560,7 +560,7 @@ const ClassmatesSheet: React.FC<{
                       type="button"
                       disabled={!!busy}
                       onClick={() => onUndo(p)}
-                      className="group h-9 px-2 inline-flex items-center gap-1.5 text-[13px] font-medium text-muted hover:text-fg cursor-pointer"
+                      className="rounded-full group h-9 px-2 inline-flex items-center gap-1.5 text-[13px] font-medium text-muted hover:text-fg cursor-pointer"
                       aria-label={`Cancel request to ${p.name}`}
                     >
                       {working ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
@@ -572,7 +572,7 @@ const ClassmatesSheet: React.FC<{
                       type="button"
                       disabled={!!busy}
                       onClick={() => onRequest(p)}
-                      className="h-9 px-3 inline-flex items-center gap-1.5 bg-surface-2 text-[13px] font-semibold text-fg hover:bg-ink hover:text-on-ink transition-colors cursor-pointer disabled:opacity-60"
+                      className="rounded-full h-9 px-3 inline-flex items-center gap-1.5 bg-surface-2 text-[13px] font-semibold text-fg hover:bg-ink hover:text-on-ink transition-colors cursor-pointer disabled:opacity-60"
                       aria-label={`Send a friend request to ${p.name}`}
                     >
                       {working ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />} Add
@@ -602,7 +602,7 @@ const NewChatSheet: React.FC<{ open: boolean; onClose: () => void; friends: Frie
     <Modal isOpen={open} onClose={onClose} title="New chat" description={`${friends.length} ${friends.length === 1 ? 'friend' : 'friends'}`} maxWidth="lg" mobileFullSheet>
       <div className="flex flex-col gap-f3">
         {friends.length > 8 && (
-          <label className="flex items-center gap-2.5 h-11 px-3 border border-line bg-surface focus-within:border-fg transition-colors">
+          <label className="rounded-tile flex items-center gap-2.5 h-11 px-3 border border-line bg-surface focus-within:border-fg transition-colors">
             <Search className="w-4 h-4 text-muted shrink-0" />
             <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search friends" className="flex-1 min-w-0 bg-transparent text-[15px] text-fg placeholder:text-faint focus:outline-none" />
           </label>
@@ -610,7 +610,7 @@ const NewChatSheet: React.FC<{ open: boolean; onClose: () => void; friends: Frie
         {shown.length === 0 ? (
           <p className="py-f4 text-center text-[14px] text-muted">{friends.length ? <>No one matches &ldquo;{q}&rdquo;.</> : 'Add a friend first.'}</p>
         ) : (
-          <ul className="border border-line bg-surface divide-y divide-line-soft">
+          <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
             {shown.map((f) => (
               <li key={f.uid}>
                 <button type="button" onClick={() => onPick(f)} className="w-full flex items-center gap-3 px-f4 py-3 text-left hover:bg-surface-2 transition-colors cursor-pointer">
@@ -814,7 +814,7 @@ export const FriendsView: React.FC = () => {
     <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
       <div className="min-w-0">
         <h2 className="page-title">Friends</h2>
-        <p className="text-[14px] text-muted mt-1.5 truncate">
+        <p className="text-[14px] leading-[20px] text-muted mt-1.5 line-clamp-2">
           {data ? `${data.me.college || 'Your campus'} only · ${friends.length} ${friends.length === 1 ? 'friend' : 'friends'}` : 'See when your friends are free'}
         </p>
       </div>
@@ -866,13 +866,13 @@ export const FriendsView: React.FC = () => {
           )}
         </div>
         <ChatRowButton onClick={() => openFriendChat(f)} label={`Chat with ${f.name}`} />
-        <button type="button" aria-label={`Options for ${f.name}`} onClick={() => setMenu(menu === f.uid ? null : f.uid)} className="w-8 h-8 flex items-center justify-center text-muted hover:text-fg cursor-pointer">
+        <button type="button" aria-label={`Options for ${f.name}`} onClick={() => setMenu(menu === f.uid ? null : f.uid)} className="rounded-full w-8 h-8 flex items-center justify-center text-muted hover:text-fg cursor-pointer">
           <MoreVertical className="w-4 h-4" />
         </button>
         {menu === f.uid && (
           <>
             <div className="fixed inset-0 z-20" onClick={() => setMenu(null)} />
-            <div className="absolute right-3 top-12 z-30 w-56 bg-surface border border-line shadow-[0_12px_36px_rgba(0,0,0,0.2)] py-1">
+            <div className="rounded-card absolute right-3 top-12 z-30 w-56 bg-surface border border-line shadow-[0_12px_36px_rgba(0,0,0,0.2)] py-1">
               <button
                 type="button"
                 onClick={() => act(`hide_${f.uid}`, { action: 'settings', hide: { uid: f.uid, hidden: !f.hiddenByMe } }, f.hiddenByMe ? ['Sharing again', `${f.name} can see when you're free`] : ['Hidden', `${f.name} won't see when you're free`])}
@@ -921,13 +921,13 @@ export const FriendsView: React.FC = () => {
     );
   } else if (loading && !data) {
     body = (
-      <ul className="border border-line bg-surface divide-y divide-line-soft" aria-hidden="true">
+      <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft" aria-hidden="true">
         {[0, 1, 2].map((i) => (
           <li key={i} className="flex items-center gap-3 px-f4 py-3">
             <span className="w-10 h-10 rounded-full bg-surface-2 animate-pulse" />
             <span className="flex-1 flex flex-col gap-2">
-              <span className="h-3.5 w-1/3 bg-surface-2 animate-pulse" />
-              <span className="h-3 w-1/2 bg-surface-2 animate-pulse" />
+              <span className="rounded-tile h-3.5 w-1/3 bg-surface-2 animate-pulse" />
+              <span className="rounded-full h-3 w-1/2 bg-surface-2 animate-pulse" />
             </span>
           </li>
         ))}
@@ -935,7 +935,7 @@ export const FriendsView: React.FC = () => {
     );
   } else if (error && !data) {
     body = (
-      <section className="border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
+      <section className="rounded-card border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
         <Illustration name={error.code === 'no-college' ? 'setup' : 'error'} className="h-[140px] w-auto" />
         <h3 className="mt-4 text-[18px] font-semibold text-fg">{error.code === 'no-college' ? 'Add your college first' : "Couldn't load friends"}</h3>
         <p className="mt-1.5 text-[14px] text-muted">{error.message}</p>
@@ -950,7 +950,7 @@ export const FriendsView: React.FC = () => {
         {tab === 'chats' ? (
           <>
         {/* Where am I + privacy */}
-        <section className="border border-line bg-surface">
+        <section className="rounded-card border border-line bg-surface">
           <div className="px-f4 pt-f3 pb-3">
             <div className="flex items-baseline justify-between gap-3">
               <h3 className="text-[15px] font-semibold text-fg">Where are you?</h3>
@@ -989,7 +989,7 @@ export const FriendsView: React.FC = () => {
         {data.incoming.length > 0 && (
           <section>
             <h3 className="mb-f3 text-[17px] font-semibold text-fg tracking-tight">Requests</h3>
-            <ul className="border border-line bg-surface divide-y divide-line-soft">
+            <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
               {data.incoming.map((p) => (
                 <li key={p.uid} className="flex items-center gap-3 px-f4 py-3">
                   <Avatar p={p} />
@@ -1035,7 +1035,7 @@ export const FriendsView: React.FC = () => {
 
         {/* Friends */}
         {friends.length === 0 ? (
-          <section className="border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
+          <section className="rounded-card border border-line bg-surface px-5 py-6 flex flex-col items-center text-center">
             <Illustration name="friends" className="h-[160px] w-auto" />
             <h3 className="mt-4 text-[18px] font-semibold text-fg">See when your friends are free</h3>
             <p className="mt-1.5 text-[14px] text-muted max-w-sm">Add friends from your campus with a QR or code. Their free time shows up here on its own, from their timetable.</p>
@@ -1050,7 +1050,7 @@ export const FriendsView: React.FC = () => {
                 <h3 className="text-[17px] font-semibold text-fg tracking-tight">All friends</h3>
                 <span className="text-[13px] text-muted tabular-nums">{friends.length}</span>
               </div>
-              <ul className="border border-line bg-surface divide-y divide-line-soft">
+              <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
                 {[...freeNow, ...inClass, ...away, ...hidden].map(({ f, s }) => (
                   <FriendRow key={f.uid} f={f} s={s} />
                 ))}
@@ -1070,7 +1070,7 @@ export const FriendsView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setClassOpen(true)}
-                className="w-full flex items-center gap-f3 p-f4 bg-surface border border-line hover:bg-surface-2 transition-colors text-left cursor-pointer"
+                className="rounded-card w-full flex items-center gap-f3 p-f4 bg-surface border border-line hover:bg-surface-2 transition-colors text-left cursor-pointer"
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-[12px] font-semibold text-muted">Your class</p>
@@ -1120,7 +1120,7 @@ export const FriendsView: React.FC = () => {
   }
 
   const tabs = user?.id && data ? (
-    <div role="tablist" aria-label="Friends and chats" className="grid grid-cols-2 border border-line bg-surface p-1 -mt-f2 sm:-mt-f3">
+    <div role="tablist" aria-label="Friends and chats" className="rounded-full grid grid-cols-2 bg-surface-2 p-1 -mt-f2 sm:-mt-f3">
       {(
         [
           ['friends', 'Friends', friends.length ? String(friends.length) : ''],
@@ -1133,9 +1133,9 @@ export const FriendsView: React.FC = () => {
           role="tab"
           aria-selected={tab === id}
           onClick={() => setTab(id)}
-          className={clsx('relative h-10 flex items-center justify-center gap-2 text-[14px] font-semibold cursor-pointer transition-colors', tab === id ? 'text-on-ink' : 'text-muted hover:text-fg')}
+          className={clsx('rounded-full relative h-10 flex items-center justify-center gap-2 text-[14px] font-semibold cursor-pointer transition-colors', tab === id ? 'text-fg' : 'text-muted hover:text-fg')}
         >
-          {tab === id && <motion.span layoutId="friends-tab" className="absolute inset-0 bg-ink" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
+          {tab === id && <motion.span layoutId="friends-tab" className="absolute inset-0 rounded-full bg-surface shadow-[0_1px_3px_rgba(17,17,17,0.12)]" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
           <span className="relative">{label}</span>
           {badge &&
             (id === 'chats' ? (

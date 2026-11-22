@@ -132,7 +132,7 @@ export const LiveClassCard: React.FC = () => {
             setOpenMenuSessionId(openMenuSessionId === session.id ? null : session.id);
           }}
           className={clsx(
-            "p-1.5 rounded-[2px] transition-colors cursor-pointer",
+            "p-1.5 rounded-full transition-colors cursor-pointer",
             isDarkTheme
               ? "text-white/60 hover:text-white hover:bg-white/10"
               : "text-muted hover:text-fg hover:bg-surface-2"
@@ -152,7 +152,7 @@ export const LiveClassCard: React.FC = () => {
               }}
             />
             <div
-              className="absolute right-0 top-full mt-1.5 w-52 bg-surface border border-line shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 text-left overflow-hidden rounded-none"
+              className="absolute right-0 top-full mt-1.5 w-52 bg-surface border border-line shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 text-left overflow-hidden rounded-card"
               onClick={(e) => e.stopPropagation()}
             >
               {session.isExtra ? (
@@ -283,7 +283,7 @@ export const LiveClassCard: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
-            className="w-full flex items-center justify-between px-3 py-2.5 bg-surface border border-line text-sm focus:outline-none rounded-none text-fg transition-colors cursor-pointer text-left shadow-xs"
+            className="w-full flex items-center justify-between px-3 py-2.5 bg-surface border border-line text-sm focus:outline-none rounded-field text-fg transition-colors cursor-pointer text-left shadow-xs"
           >
             <span className="truncate font-medium">
               {(() => {
@@ -301,7 +301,7 @@ export const LiveClassCard: React.FC = () => {
                 className="fixed inset-0 z-40" 
                 onClick={() => setIsSubjectDropdownOpen(false)} 
               />
-              <div className="absolute top-[100%] left-0 right-0 mt-1 z-50 max-h-52 overflow-y-auto bg-surface border border-line shadow-2xl flex flex-col divide-y divide-line-soft">
+              <div className="rounded-card overflow-hidden absolute top-[100%] left-0 right-0 mt-1 z-50 max-h-52 overflow-y-auto bg-surface border border-line shadow-2xl flex flex-col divide-y divide-line-soft">
                 {subjects.map((s) => {
                   const isSelected = s.id === rescheduleSubjectId;
                   return (
@@ -353,7 +353,7 @@ export const LiveClassCard: React.FC = () => {
             value={rescheduleTimeStart}
             onChange={(e) => setRescheduleTimeStart(e.target.value)}
             required
-            className="px-3 py-2 bg-transparent border border-line dark:text-[#F4F4F6] text-sm focus:outline-none rounded-none"
+            className="px-3 py-2 bg-transparent border border-line dark:text-[#F4F4F6] text-sm focus:outline-none rounded-field"
           />
         </div>
 
@@ -366,7 +366,7 @@ export const LiveClassCard: React.FC = () => {
             value={rescheduleTimeEnd}
             onChange={(e) => setRescheduleTimeEnd(e.target.value)}
             required
-            className="px-3 py-2 bg-transparent border border-line dark:text-[#F4F4F6] text-sm focus:outline-none rounded-none"
+            className="px-3 py-2 bg-transparent border border-line dark:text-[#F4F4F6] text-sm focus:outline-none rounded-field"
           />
         </div>
 
@@ -379,7 +379,7 @@ export const LiveClassCard: React.FC = () => {
             value={rescheduleRoom}
             onChange={(e) => setRescheduleRoom(e.target.value)}
             placeholder="e.g. LT-2, Lab-3"
-            className="px-3 py-2 bg-transparent border border-line dark:text-[#F4F4F6] placeholder:dark:text-[#A1A1AA] text-sm focus:outline-none rounded-none"
+            className="px-3 py-2 bg-transparent border border-line dark:text-[#F4F4F6] placeholder:dark:text-[#A1A1AA] text-sm focus:outline-none rounded-field"
           />
         </div>
 
@@ -387,11 +387,11 @@ export const LiveClassCard: React.FC = () => {
           <button
             type="button"
             onClick={() => setRescheduleTarget(null)}
-            className="px-4 h-9 border border-line dark:text-[#A1A1AA] text-[13px] font-semibold hover:bg-surface-2 transition-colors cursor-pointer rounded-none"
+            className="px-4 h-9 border border-line dark:text-[#A1A1AA] text-[13px] font-semibold hover:bg-surface-2 transition-colors cursor-pointer rounded-full"
           >
             Cancel
           </button>
-          <Button type="submit" size="sm" className="rounded-none font-bold text-xs">
+          <Button type="submit" size="sm" className="rounded-full font-bold text-xs">
             Broadcast Reschedule
           </Button>
         </div>
@@ -419,7 +419,7 @@ export const LiveClassCard: React.FC = () => {
     const live = !!pendingNow;
     const mins = live ? currentClass!.remainingMinutes : nextClass!.minutesUntilStart;
     return (
-      <div className={clsx('w-full border p-5 sm:p-6 flex flex-col', live ? 'sheen-ink bg-[#111111] dark:bg-[#15171D] border-[#111111] dark:border-white/[0.08]' : 'bg-surface border-line')}>
+      <div className={clsx('rounded-card w-full border p-5 sm:p-6 flex flex-col', live ? 'sheen-ink bg-[#111111] dark:bg-[#15171D] border-[#111111] dark:border-white/[0.08]' : 'bg-surface border-line')}>
         <div className="flex items-center gap-2 text-[13px] leading-none">
           {live ? (
             <>
@@ -445,7 +445,7 @@ export const LiveClassCard: React.FC = () => {
           <button
             type="button"
             onClick={() => openElectives({ focus: mark.groupKey })}
-            className={clsx('shrink-0 inline-flex items-center gap-1 h-9 px-3.5 text-[13px] font-semibold cursor-pointer', live ? 'bg-white text-[#111111]' : 'bg-ink text-on-ink')}
+            className={clsx('rounded-full shrink-0 inline-flex items-center gap-1 h-9 px-3.5 text-[13px] font-semibold cursor-pointer', live ? 'bg-white text-[#111111]' : 'bg-ink text-on-ink')}
           >
             {mark.kind === 'pick' ? 'Choose' : 'Decide'}
           </button>
@@ -492,7 +492,7 @@ export const LiveClassCard: React.FC = () => {
 
     return (
       <>
-        <div className="sheen-ink w-full bg-[#111111] dark:bg-[#15171D] border border-[#111111] dark:border-white/[0.08] relative">
+        <div className="overflow-hidden rounded-card sheen-ink w-full bg-[#111111] dark:bg-[#15171D] border border-[#111111] dark:border-white/[0.08] relative">
           <div className="flex gap-f4 p-5 sm:p-6">
             {/* What and when */}
             <div className="flex-1 min-w-0 flex flex-col">
@@ -520,13 +520,13 @@ export const LiveClassCard: React.FC = () => {
               {(currentReschedule || session.isExtra) && (
                 <div className="mt-2.5 flex flex-wrap gap-1.5">
                   {currentReschedule && (
-                    <span className="inline-flex items-center gap-1 h-6 px-2 bg-amber-400/15 text-amber-300 text-[12px] font-semibold">
+                    <span className="rounded-full inline-flex items-center gap-1 h-6 px-2 bg-amber-400/15 text-amber-300 text-[12px] font-semibold">
                       <Clock className="w-3 h-3" />
                       Moved by {currentReschedule.by || 'Pilot'}
                       {origSession && (origSession.startTime !== session.startTime || origSession.endTime !== session.endTime) ? ` · was ${formatTime12Hour(origSession.startTime)}` : ''}
                     </span>
                   )}
-                  {session.isExtra && <span className="inline-flex items-center h-6 px-2 bg-white/10 text-white/80 text-[12px] font-semibold">Extra class</span>}
+                  {session.isExtra && <span className="rounded-full inline-flex items-center h-6 px-2 bg-white/10 text-white/80 text-[12px] font-semibold">Extra class</span>}
                 </div>
               )}
 
@@ -734,7 +734,10 @@ export const LiveClassCard: React.FC = () => {
   const totalToday = rawTodaySessions.length;
   const cancelledToday = rawTodayRegular.filter((s) => isSessionCancelled(s.id, dateTodayStr)).length;
   const completedToday = totalToday - cancelledToday;
-  
+
+  // No classes at all today: the schedule section below already says so, don't repeat it here
+  if (totalToday === 0) return null;
+
   return (
     <div className="card w-full p-f4 flex flex-col">
       <span className="text-[12px] font-semibold text-muted leading-none mb-f3">

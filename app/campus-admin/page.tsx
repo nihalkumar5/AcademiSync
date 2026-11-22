@@ -230,7 +230,7 @@ export default function CampusAdminPage() {
   if (error || !data) {
     return (
       <div className="min-h-[100dvh] flex flex-col items-center justify-center gap-f4 px-f5 text-center bg-canvas">
-        <span className={`w-12 h-12 flex items-center justify-center border border-line ${strong}`}>
+        <span className={`rounded-xl w-12 h-12 flex items-center justify-center border border-line ${strong}`}>
           <Building2 className="w-5 h-5" />
         </span>
         <div>
@@ -325,7 +325,7 @@ export default function CampusAdminPage() {
                   <t.icon className="w-4 h-4" strokeWidth={1.9} />
                   {t.label}
                   {typeof t.count === 'number' && t.count > 0 && (
-                    <span className={`min-w-[20px] h-5 px-1.5 inline-flex items-center justify-center text-[11px] font-semibold tabular-nums ${t.alert ? 'bg-rose-500 text-white' : 'bg-surface-3 text-current'}`}>
+                    <span className={`min-w-[20px] h-5 px-1.5 inline-flex items-center justify-center text-[11px] font-semibold tabular-nums ${t.alert ? 'rounded-full bg-rose-500 text-white' : 'bg-surface-3 text-current'}`}>
                       {t.count}
                     </span>
                   )}

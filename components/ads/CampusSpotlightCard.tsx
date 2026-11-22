@@ -70,7 +70,7 @@ export const SpotlightCardView: React.FC<SpotlightCardViewProps> = ({
             <button
               type="button"
               onClick={onDismiss}
-              className="-m-1.5 p-1.5 text-[#8A8A8A] hover:text-fg transition-colors cursor-pointer"
+              className="rounded-full -m-1.5 p-1.5 text-[#8A8A8A] hover:text-fg transition-colors cursor-pointer"
               aria-label="Hide this"
             >
               <X className="w-4 h-4" />

@@ -43,21 +43,21 @@ const anchorId = (key: string) => `elective-${key.replace(/[^a-z0-9]+/gi, '-')}`
 // ---------- One elective slot: pick one / take it or not ----------
 const StatusChip: React.FC<{ g: ResolvedElectiveGroup }> = ({ g }) =>
   g.status === 'pending' ? (
-    <span className="shrink-0 inline-flex items-center h-6 px-2 border border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300 text-[12px] font-semibold">
+    <span className="rounded-full shrink-0 inline-flex items-center h-6 px-2 border border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300 text-[12px] font-semibold">
       {g.kind === 'pick' ? 'Pick one' : 'Decide'}
     </span>
   ) : g.status === 'chosen' ? (
-    <span className="shrink-0 inline-flex items-center gap-1 h-6 px-2 border border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-300 text-[12px] font-semibold">
+    <span className="rounded-full shrink-0 inline-flex items-center gap-1 h-6 px-2 border border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-300 text-[12px] font-semibold">
       <Check className="w-3 h-3" /> {g.kind === 'pick' ? 'Picked' : 'Taking'}
     </span>
   ) : (
-    <span className="shrink-0 inline-flex items-center h-6 px-2 border border-line bg-surface-2 text-muted text-[12px] font-semibold">Not taking</span>
+    <span className="rounded-full shrink-0 inline-flex items-center h-6 px-2 border border-line bg-surface-2 text-muted text-[12px] font-semibold">Not taking</span>
   );
 
 export const ElectiveGroupCard: React.FC<{ group: ResolvedElectiveGroup; onChoose: (optionId: string | null) => void }> = ({ group, onChoose }) => {
   const when = slotSummary(group.slots, formatTime12Hour);
   return (
-    <section id={anchorId(group.key)} className="border border-line bg-surface scroll-mt-24">
+    <section id={anchorId(group.key)} className="rounded-card border border-line bg-surface scroll-mt-24">
       <header className="px-f4 pt-f3 pb-f3 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="text-[16px] font-semibold text-fg tracking-tight truncate">{group.label}</h3>
@@ -82,10 +82,10 @@ export const ElectiveGroupCard: React.FC<{ group: ResolvedElectiveGroup; onChoos
                 role="radio"
                 aria-checked={sel}
                 onClick={() => !sel && onChoose(o.id)}
-                className={clsx('w-full flex items-center gap-3 px-f4 py-3 text-left transition-colors cursor-pointer', sel ? 'bg-surface-2' : 'hover:bg-surface-2/60')}
+                className={clsx('rounded-card w-full flex items-center gap-3 px-f4 py-3 text-left transition-colors cursor-pointer', sel ? 'bg-surface-2' : 'hover:bg-surface-2/60')}
                 style={{ '--sub': tone.accent, '--sub-dark': tone.darkAccent } as React.CSSProperties}
               >
-                <span className="w-2.5 h-2.5 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]" aria-hidden="true" />
+                <span className="rounded-full w-2.5 h-2.5 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]" aria-hidden="true" />
                 <span className="flex-1 min-w-0">
                   <span className="block text-[15px] font-semibold text-fg leading-snug">{o.name}</span>
                   {meta && <span className="block mt-0.5 text-[12px] text-muted truncate">{meta}</span>}
@@ -106,7 +106,7 @@ export const ElectiveGroupCard: React.FC<{ group: ResolvedElectiveGroup; onChoos
             aria-checked={group.status === 'none'}
             onClick={() => group.status !== 'none' && onChoose(null)}
             className={clsx(
-              'w-full h-11 px-f4 flex items-center justify-between gap-3 text-left text-[13px] font-medium transition-colors cursor-pointer',
+              'rounded-card w-full h-11 px-f4 flex items-center justify-between gap-3 text-left text-[13px] font-medium transition-colors cursor-pointer',
               group.status === 'none' ? 'bg-surface-2 text-fg' : 'text-muted hover:text-fg hover:bg-surface-2/60'
             )}
           >
@@ -323,7 +323,7 @@ const SetupSheet: React.FC<{ open: boolean; onClose: () => void; onSaved: () => 
               <Sparkles className="w-4 h-4" /> Same time, different courses
             </h3>
             {parallel.map((c) => (
-              <div key={c.subjects.map((s) => s.id).join('|')} className="border border-line bg-surface p-f3 flex flex-col gap-2.5">
+              <div key={c.subjects.map((s) => s.id).join('|')} className="rounded-tile border border-line bg-surface p-f3 flex flex-col gap-2.5">
                 <p className="text-[14px] text-fg">
                   <span className="font-semibold">{c.subjects.map((s) => s.name).join(' · ')}</span>
                   <span className="text-muted"> run together on {c.slot.day.slice(0, 3)} {formatTime12Hour(c.slot.start)}. Students can only sit in one.</span>
@@ -339,7 +339,7 @@ const SetupSheet: React.FC<{ open: boolean; onClose: () => void; onSaved: () => 
         {/* Courses */}
         <section>
           <h3 className="mb-2 text-[13px] font-semibold text-muted">Courses</h3>
-          <ul className="border border-line bg-surface divide-y divide-line-soft">
+          <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
             {all.map((s) => {
               const m = marks[s.id] || { isElective: false, slot: '' };
               const tone = subjectTone(s);
@@ -348,7 +348,7 @@ const SetupSheet: React.FC<{ open: boolean; onClose: () => void; onSaved: () => 
               return (
                 <li key={s.id} className="px-f4 py-3" style={{ '--sub': tone.accent, '--sub-dark': tone.darkAccent } as React.CSSProperties}>
                   <div className="flex items-center gap-3">
-                    <span className="w-2.5 h-2.5 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]" aria-hidden="true" />
+                    <span className="rounded-full w-2.5 h-2.5 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]" aria-hidden="true" />
                     <span className="flex-1 min-w-0">
                       <span className="block text-[15px] font-medium text-fg leading-snug">{s.name}</span>
                       {looksElective && <span className="block mt-0.5 text-[12px] text-amber-700 dark:text-amber-300">Looks like an elective</span>}
@@ -373,7 +373,7 @@ const SetupSheet: React.FC<{ open: boolean; onClose: () => void; onSaved: () => 
                           value={m.slot}
                           onChange={(e) => setMark(s.id, { slot: e.target.value.slice(0, 40) })}
                           placeholder="e.g. Elective I"
-                          className="flex-1 min-w-0 h-9 px-2.5 border border-line bg-surface text-[14px] text-fg placeholder:text-faint focus:outline-none focus:border-fg"
+                          className="rounded-field flex-1 min-w-0 h-9 px-2.5 border border-line bg-surface text-[14px] text-fg placeholder:text-faint focus:outline-none focus:border-fg"
                         />
                       </label>
                       {(slotNames.filter((n) => n !== m.slot).length > 0 || !m.slot) && (
@@ -381,12 +381,12 @@ const SetupSheet: React.FC<{ open: boolean; onClose: () => void; onSaved: () => 
                           {slotNames
                             .filter((n) => n !== m.slot)
                             .map((n) => (
-                              <button key={n} type="button" onClick={() => setMark(s.id, { slot: n })} className="h-7 px-2.5 bg-surface-2 text-[12px] font-medium text-fg-2 hover:text-fg cursor-pointer">
+                              <button key={n} type="button" onClick={() => setMark(s.id, { slot: n })} className="rounded-full h-7 px-2.5 bg-surface-2 text-[12px] font-medium text-fg-2 hover:text-fg cursor-pointer">
                                 {n}
                               </button>
                             ))}
                           {!m.slot && (
-                            <button type="button" onClick={() => setMark(s.id, { slot: nextSlotName(draftSubjects as Subject[]) })} className="h-7 px-2.5 bg-surface-2 text-[12px] font-medium text-fg-2 hover:text-fg cursor-pointer">
+                            <button type="button" onClick={() => setMark(s.id, { slot: nextSlotName(draftSubjects as Subject[]) })} className="rounded-full h-7 px-2.5 bg-surface-2 text-[12px] font-medium text-fg-2 hover:text-fg cursor-pointer">
                               + {nextSlotName(draftSubjects as Subject[])}
                             </button>
                           )}
@@ -397,7 +397,7 @@ const SetupSheet: React.FC<{ open: boolean; onClose: () => void; onSaved: () => 
                           type="button"
                           aria-pressed={!!splits[s.id]}
                           onClick={() => setSplits((p) => ({ ...p, [s.id]: !p[s.id] }))}
-                          className={clsx('self-start ml-12 inline-flex items-center gap-1.5 min-h-8 py-1.5 px-3 border text-left text-[13px] font-semibold cursor-pointer transition-colors', splits[s.id] ? 'bg-ink text-on-ink border-ink' : 'border-line text-fg hover:bg-surface-2')}
+                          className={clsx('rounded-tile self-start ml-12 inline-flex items-center gap-1.5 min-h-8 py-1.5 px-3 border text-left text-[13px] font-semibold cursor-pointer transition-colors', splits[s.id] ? 'bg-ink text-on-ink border-ink' : 'border-line text-fg hover:bg-surface-2')}
                         >
                           {splits[s.id] ? <Check className="w-4 h-4" /> : <Layers className="w-4 h-4" />}
                           {splits[s.id] ? `Splitting into ${parts.length}: ${parts.join(' · ')}` : `Split into ${parts.length} options`}
@@ -416,9 +416,9 @@ const SetupSheet: React.FC<{ open: boolean; onClose: () => void; onSaved: () => 
         <section>
           <h3 className="mb-2 text-[13px] font-semibold text-muted">Students will be asked</h3>
           {preview.length === 0 ? (
-            <p className="border border-dashed border-line px-f3 py-3 text-[14px] text-muted">Nothing yet. Switch on the courses that are electives.</p>
+            <p className="rounded-tile bg-surface-2 px-f3 py-3 text-[14px] text-muted">Nothing yet. Switch on the courses that are electives.</p>
           ) : (
-            <ul className="border border-line bg-surface divide-y divide-line-soft">
+            <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
               {preview.map((g) => (
                 <li key={g.key} className="px-f4 py-3">
                   <p className="flex items-baseline justify-between gap-3">
@@ -483,9 +483,9 @@ export const ElectivesPromptCard: React.FC = () => {
   if (profile?.role === 'faculty' || pending.length === 0) return null;
   const names = pending.map((g) => g.label);
   return (
-    <section className="border border-line bg-surface p-f4 sm:p-f5 flex items-center gap-f4">
+    <section className="rounded-card border border-line bg-surface p-f4 sm:p-f5 flex items-center gap-f4">
       <div className="flex-1 min-w-0">
-        <span className="inline-flex items-center h-6 px-2 border border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300 text-[12px] font-semibold">
+        <span className="rounded-full inline-flex items-center h-6 px-2 border border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300 text-[12px] font-semibold">
           {pending.length} to pick
         </span>
         <h3 className="mt-2.5 text-[19px] font-semibold text-fg tracking-tight">Pick your electives</h3>
@@ -515,7 +515,7 @@ export const ElectivesSummary: React.FC = () => {
         <button
           type="button"
           onClick={() => openElectives({ mode: 'setup' })}
-          className="flex items-center justify-between gap-3 p-3.5 bg-surface border border-dashed border-line-strong hover:bg-surface-2 transition-colors text-left cursor-pointer"
+          className="rounded-tile flex items-center justify-between gap-3 p-3.5 bg-surface border border-dashed border-line-strong hover:bg-surface-2 transition-colors text-left cursor-pointer"
         >
           <span className="flex flex-col gap-0.5 min-w-0">
             <span className="text-[14px] font-semibold text-fg">Set up electives</span>
@@ -536,7 +536,7 @@ export const ElectivesSummary: React.FC = () => {
           </button>
         )}
       </div>
-      <ul className="bg-surface border border-line divide-y divide-line-soft">
+      <ul className="rounded-card overflow-hidden bg-surface border border-line divide-y divide-line-soft">
         {groups.map((g) => (
           <li key={g.key}>
             <button type="button" onClick={() => openElectives({ focus: g.key })} className="w-full flex items-center gap-3 px-3.5 h-12 text-left hover:bg-surface-2 transition-colors cursor-pointer">
@@ -563,7 +563,7 @@ export const ElectivePendingCard: React.FC<{ mark: ElectivePendingMark; time?: s
   <button
     type="button"
     onClick={() => openElectives({ focus: mark.groupKey })}
-    className={clsx('w-full text-left border border-dashed border-line-strong bg-surface hover:bg-surface-2 transition-colors p-4 sm:p-[18px] cursor-pointer', className)}
+    className={clsx('rounded-card w-full text-left border border-dashed border-line-strong bg-surface hover:bg-surface-2 transition-colors p-4 sm:p-[18px] cursor-pointer', className)}
   >
     <span className="flex items-center justify-between gap-3">
       <span className="text-[12px] font-semibold text-amber-700 dark:text-amber-300">{mark.kind === 'pick' ? 'Elective · pick yours' : 'Optional · do you take it?'}</span>
@@ -571,7 +571,7 @@ export const ElectivePendingCard: React.FC<{ mark: ElectivePendingMark; time?: s
     </span>
     <span className="mt-1.5 block text-[17px] font-semibold text-fg tracking-tight leading-snug">{mark.label}</span>
     {mark.kind === 'pick' && <span className="mt-1 block text-[13px] text-muted line-clamp-2">{mark.options.map((o) => o.name).join(' · ')}</span>}
-    <span className="mt-3 inline-flex items-center gap-1 h-8 px-3 bg-ink text-on-ink text-[13px] font-semibold">
+    <span className="rounded-full mt-3 inline-flex items-center gap-1 h-8 px-3 bg-ink text-on-ink text-[13px] font-semibold">
       {mark.kind === 'pick' ? 'Choose' : 'Decide'} <ChevronRight className="w-4 h-4" />
     </span>
   </button>

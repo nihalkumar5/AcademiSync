@@ -167,7 +167,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
     >
       <div className="flex flex-col gap-4 text-left font-sans mt-2">
         {/* Current Details Banner */}
-        <div className="p-3.5 rounded-none bg-surface-2 border border-line-soft flex flex-col gap-1.5">
+        <div className="p-3.5 rounded-tile bg-surface-2 border border-line-soft flex flex-col gap-1.5">
           <div className="flex items-center justify-between gap-2">
             <span className="text-sm font-bold text-fg">
               {subjectName}
@@ -210,7 +210,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
               min={today}
               onChange={(e) => e.target.value && setToDate(e.target.value)}
               required
-              className="px-3 py-2 rounded-none border border-line bg-surface text-sm font-mono text-fg focus:outline-none focus:border-line-strong"
+              className="px-3 py-2 rounded-field border border-line bg-surface text-sm font-mono text-fg focus:outline-none focus:border-line-strong"
             />
             {isMove ? (
               <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[12px] font-medium text-sky-700 dark:text-sky-300">
@@ -234,7 +234,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 required
-                className="px-3 py-2 rounded-none border border-line bg-surface text-sm font-mono text-fg focus:outline-none focus:border-line-strong"
+                className="px-3 py-2 rounded-field border border-line bg-surface text-sm font-mono text-fg focus:outline-none focus:border-line-strong"
               />
             </div>
 
@@ -247,7 +247,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 required
-                className="px-3 py-2 rounded-none border border-line bg-surface text-sm font-mono text-fg focus:outline-none focus:border-line-strong"
+                className="px-3 py-2 rounded-field border border-line bg-surface text-sm font-mono text-fg focus:outline-none focus:border-line-strong"
               />
             </div>
           </div>
@@ -261,7 +261,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
               value={room}
               onChange={(e) => setRoom(e.target.value)}
               placeholder="e.g. LT-102, Lab-3"
-              className="px-3.5 py-2.5 rounded-none border border-line bg-surface text-sm font-mono text-fg focus:outline-none focus:border-line-strong placeholder:text-black/30 dark:placeholder:text-white/30"
+              className="px-3.5 py-2.5 rounded-field border border-line bg-surface text-sm font-mono text-fg focus:outline-none focus:border-line-strong placeholder:text-black/30 dark:placeholder:text-white/30"
             />
           </div>
 
@@ -274,7 +274,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="e.g. Moved slot due to lab conflict"
-              className="px-3.5 py-2.5 rounded-none border border-line bg-surface text-xs font-mono text-fg focus:outline-none focus:border-line-strong placeholder:text-black/30 dark:placeholder:text-white/30"
+              className="px-3.5 py-2.5 rounded-field border border-line bg-surface text-xs font-mono text-fg focus:outline-none focus:border-line-strong placeholder:text-black/30 dark:placeholder:text-white/30"
             />
           </div>
 
@@ -283,7 +283,7 @@ export const FacultyRescheduleModal: React.FC<FacultyRescheduleModalProps> = ({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 h-9 rounded-none border border-line text-[13px] font-semibold text-fg-2 hover:bg-surface-2 cursor-pointer transition-colors"
+              className="px-4 h-9 rounded-full border border-line text-[13px] font-semibold text-fg-2 hover:bg-surface-2 cursor-pointer transition-colors"
             >
               Cancel
             </button>

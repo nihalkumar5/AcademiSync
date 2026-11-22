@@ -119,14 +119,14 @@ If you are our Batch Pilot or want to setup the synced batch timetable for all o
               />
 
               <div className="relative flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 h-7 px-2.5 bg-surface border border-amber-200 dark:border-amber-400/25 text-[12px] font-semibold text-amber-800 dark:text-amber-300">
+                <span className="rounded-full inline-flex items-center gap-1.5 h-7 px-2.5 bg-surface border border-amber-200 dark:border-amber-400/25 text-[12px] font-semibold text-amber-800 dark:text-amber-300">
                   <span className="relative flex w-2 h-2">
                     <span className="absolute inset-0 bg-amber-500 animate-ping opacity-60 motion-reduce:hidden" />
-                    <span className="relative w-2 h-2 bg-amber-500" />
+                    <span className="rounded-full relative w-2 h-2 bg-amber-500" />
                   </span>
                   No pilot yet
                 </span>
-                <span className="h-7 px-2.5 inline-flex items-center bg-surface/70 border border-line text-[12px] font-medium text-fg truncate max-w-full">
+                <span className="rounded-full h-7 px-2.5 inline-flex items-center bg-surface/70 border border-line text-[12px] font-medium text-fg truncate max-w-full">
                   {batchLabel} · {shortCollege}
                 </span>
               </div>
@@ -146,8 +146,8 @@ If you are our Batch Pilot or want to setup the synced batch timetable for all o
               {/* What one update does, shown as the notification classmates receive */}
               <div className="relative mt-6">
                 <p className="mb-2 text-[12px] font-semibold text-muted">What your batch sees when you move a class</p>
-                <div className="bg-surface border border-line shadow-[0_12px_32px_-16px_rgba(17,17,17,0.25)] p-3 flex gap-3">
-                  <span className="w-9 h-9 shrink-0 overflow-hidden bg-white border border-line">
+                <div className="rounded-tile bg-surface border border-line shadow-[0_12px_32px_-16px_rgba(17,17,17,0.25)] p-3 flex gap-3">
+                  <span className="rounded-xl w-9 h-9 shrink-0 overflow-hidden bg-white border border-line">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/logo51.png" alt="" className="w-full h-full object-cover scale-[1.75]" />
                   </span>
@@ -198,8 +198,8 @@ If you are our Batch Pilot or want to setup the synced batch timetable for all o
                     { icon: Clock, title: 'Shared deadlines', body: 'Tasks and labs for all', tone: 'bg-violet-50 text-violet-700 border-violet-200/70 dark:bg-violet-400/10 dark:text-violet-300 dark:border-violet-400/20' },
                     { icon: Users, title: 'No more chaos', body: 'One place, not 5 groups', tone: 'bg-emerald-50 text-emerald-700 border-emerald-200/70 dark:bg-emerald-400/10 dark:text-emerald-300 dark:border-emerald-400/20' },
                   ].map(({ icon: Icon, title, body, tone }) => (
-                    <li key={title} className="border border-line bg-surface p-3.5">
-                      <span className={`w-9 h-9 flex items-center justify-center border ${tone}`}>
+                    <li key={title} className="rounded-tile border border-line bg-surface p-3.5">
+                      <span className={`rounded-xl w-9 h-9 flex items-center justify-center border ${tone}`}>
                         <Icon className="w-[18px] h-[18px]" />
                       </span>
                       <span className="block mt-3 text-[14px] font-semibold text-fg leading-tight">{title}</span>

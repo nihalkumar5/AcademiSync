@@ -70,7 +70,7 @@ export default function JoinMessPage() {
         <button
           type="button"
           onClick={() => router.push('/')}
-          className="px-6 h-11 bg-ink text-on-ink text-[14px] font-semibold cursor-pointer"
+          className="rounded-full px-6 h-11 bg-ink text-on-ink text-[14px] font-semibold cursor-pointer"
         >
           Go Home
         </button>
@@ -82,19 +82,16 @@ export default function JoinMessPage() {
     <div className="flex flex-col justify-start pt-16 sm:pt-20 min-h-screen bg-[#FAFAF8] dark:bg-[#111110] p-6 text-left max-w-md mx-auto w-full font-sans">
       <div className="mb-6">
         <h2 className="page-title">
-          Join,<br />
-          Hostel,<br />
-          Mess,<br />
-          Menu
+          Join your mess
         </h2>
-        <p className="text-[#6B6B6B] text-[14px] leading-[20px] mt-4 max-w-[320px]">
+        <p className="text-muted text-[14px] leading-[20px] mt-2 max-w-[320px]">
           Sync your hostel&apos;s live meal countdowns, daily dishes &amp; serving hours.
         </p>
       </div>
 
-      <div className="border border-line bg-surface p-6 w-full mb-6 text-left shadow-sm">
+      <div className="rounded-card border border-line bg-surface p-6 w-full mb-6 text-left shadow-sm">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-[11px] font-bold tracking-widest text-[#6B6B6B] uppercase">INVITE CODE: {params.id}</p>
+          <p className="text-[11px] font-bold tracking-widest text-muted uppercase">INVITE CODE: {params.id}</p>
           <button
             type="button"
             onClick={copyCode}
@@ -108,7 +105,7 @@ export default function JoinMessPage() {
           <Utensils className="w-4 h-4 text-fg" />
           Hostel Mess Menu
         </h3>
-        <p className="text-[13px] text-[#6B6B6B]">
+        <p className="text-[13px] text-muted">
           Breakfast · Lunch · Snacks · Dinner
         </p>
       </div>
@@ -136,7 +133,7 @@ export default function JoinMessPage() {
       ) : (
         /* Web Flow -> Strictly Mobile App Only */
         <div className="flex flex-col gap-4 w-full">
-          <div className="p-3.5 bg-surface-2 border border-line flex flex-col gap-1.5 text-xs text-fg-2">
+          <div className="rounded-tile p-3.5 bg-surface-2 border border-line flex flex-col gap-1.5 text-xs text-fg-2">
             <span className="font-bold text-[12px] text-fg">
               App Only Feature:
             </span>

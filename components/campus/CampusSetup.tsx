@@ -17,11 +17,11 @@ import { CampusCalendar, CalendarYears, SetupBatch, expandCalendar, yearLabel, y
 type SetupData = { college: string; batches: SetupBatch[]; calendars: CampusCalendar[] };
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const TYPES = ['holiday', 'exam', 'event', 'assignment'] as const;
-const field = 'h-10 px-2.5 bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong min-w-0';
+const field = 'rounded-field h-10 px-2.5 bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong min-w-0';
 const label = (b: SetupBatch) => [b.programme, b.branch, b.semester ? `Sem ${b.semester}` : ''].filter(Boolean).join(' · ');
 
 const ErrorLine: React.FC<{ msg: string }> = ({ msg }) => (
-  <p className="flex items-start gap-2 px-3 py-2.5 border border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-400/10 dark:border-rose-400/20 dark:text-rose-300 text-[14px]">
+  <p className="rounded-tile flex items-start gap-2 px-3 py-2.5 border border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-400/10 dark:border-rose-400/20 dark:text-rose-300 text-[14px]">
     <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /> {msg}
   </p>
 );
@@ -32,7 +32,7 @@ const ReadFile: React.FC<{ text: string; busy: boolean; onFiles: (files: File[])
   return (
     <>
       <input ref={input} type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple className="hidden" onChange={(e) => { const f = Array.from(e.target.files || []); e.target.value = ''; if (f.length) onFiles(f); }} />
-      <button type="button" onClick={() => input.current?.click()} disabled={busy} className="w-full flex items-center justify-center gap-2 h-20 border border-dashed border-line text-[14px] font-medium text-fg hover:bg-surface-2 cursor-pointer disabled:cursor-default">
+      <button type="button" onClick={() => input.current?.click()} disabled={busy} className="rounded-full w-full flex items-center justify-center gap-2 h-20 border border-dashed border-line text-[14px] font-medium text-fg hover:bg-surface-2 cursor-pointer disabled:cursor-default">
         {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
         {busy ? 'Reading… this takes a few seconds' : text}
       </button>
@@ -114,7 +114,7 @@ export const CampusSetup: React.FC<{ withPreview: (p: string) => string; openBat
         }
       />
 
-      <div className="grid grid-cols-3 border border-line bg-surface divide-x divide-line-soft">
+      <div className="rounded-card overflow-hidden grid grid-cols-3 border border-line bg-surface divide-x divide-line-soft">
         {[
           { v: data.batches.length, l: 'Batches' },
           { v: noTimetable, l: 'Need a timetable', warn: noTimetable > 0 },

@@ -37,23 +37,23 @@ const CLASS_TONE = 'bg-emerald-50 text-emerald-700 border-emerald-200/70 dark:bg
 
 /** Classroom → Intersemester → your batch, with a dot travelling along the wires. */
 const FlowArt: React.FC = () => (
-  <div className="relative border border-line bg-surface-2/60 px-4 py-7" aria-hidden="true">
+  <div className="rounded-card relative border border-line bg-surface-2/60 px-4 py-7" aria-hidden="true">
     <div className="flex items-center">
       <FlowNode label="Classroom">
-        <span className={clsx('w-14 h-14 flex items-center justify-center border', CLASS_TONE)}>
+        <span className={clsx('rounded-xl w-14 h-14 flex items-center justify-center border', CLASS_TONE)}>
           <GraduationCap className="w-7 h-7" />
         </span>
       </FlowNode>
       <Wire />
       <FlowNode label="Intersemester">
-        <span className="w-14 h-14 overflow-hidden bg-white border border-line flex items-center justify-center">
+        <span className="rounded-xl w-14 h-14 overflow-hidden bg-white border border-line flex items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo51.png" alt="" className="w-full h-full object-cover scale-[1.75]" />
         </span>
       </FlowNode>
       <Wire late />
       <FlowNode label="Your batch">
-        <span className="w-14 h-14 flex items-center justify-center bg-ink text-on-ink border border-ink">
+        <span className="rounded-xl w-14 h-14 flex items-center justify-center bg-ink text-on-ink border border-ink">
           <Users className="w-7 h-7" />
         </span>
       </FlowNode>
@@ -74,7 +74,7 @@ const FlowNode: React.FC<{ label: string; children: React.ReactNode }> = ({ labe
 );
 const Wire: React.FC<{ late?: boolean }> = ({ late }) => (
   <div className="relative flex-1 h-px -mt-6 border-t border-dashed border-line-strong">
-    <span className={clsx('bridge-dot absolute -top-[3.5px] w-1.5 h-1.5 bg-emerald-500', late && 'bridge-dot-late')} />
+    <span className={clsx('rounded-full bridge-dot absolute -top-[3.5px] w-1.5 h-1.5 bg-emerald-500', late && 'bridge-dot-late')} />
   </div>
 );
 
@@ -173,9 +173,9 @@ export const ClassroomBridgeSheet: React.FC<{ open: boolean; onClose: () => void
   if (!data && (loading || !error)) {
     body = (
       <div className="flex flex-col gap-3" aria-hidden="true">
-        <div className="h-[132px] bg-surface-2 animate-pulse" />
-        <div className="h-16 bg-surface-2 animate-pulse" />
-        <div className="h-40 bg-surface-2 animate-pulse" />
+        <div className="rounded-tile h-[132px] bg-surface-2 animate-pulse" />
+        <div className="rounded-tile h-16 bg-surface-2 animate-pulse" />
+        <div className="rounded-tile h-40 bg-surface-2 animate-pulse" />
       </div>
     );
   } else if (!data) {
@@ -223,7 +223,7 @@ export const ClassroomBridgeSheet: React.FC<{ open: boolean; onClose: () => void
             'Only you connect. Classmates don’t have to',
           ].map((t) => (
             <li key={t} className="flex items-start gap-3 text-[14px] leading-[20px] text-fg">
-              <span className="mt-0.5 w-5 h-5 shrink-0 flex items-center justify-center bg-ink text-on-ink">
+              <span className="rounded-md mt-0.5 w-5 h-5 shrink-0 flex items-center justify-center bg-ink text-on-ink">
                 <Check className="w-3 h-3" />
               </span>
               {t}
@@ -231,7 +231,7 @@ export const ClassroomBridgeSheet: React.FC<{ open: boolean; onClose: () => void
           ))}
         </ul>
         {connectError && (
-          <div role="alert" className="mt-5 flex items-start gap-2.5 border border-danger/30 bg-danger-soft px-3.5 py-3 text-[13px] leading-[19px] text-danger">
+          <div role="alert" className="rounded-tile mt-5 flex items-start gap-2.5 border border-danger/30 bg-danger-soft px-3.5 py-3 text-[13px] leading-[19px] text-danger">
             <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
             <span>{connectError}</span>
           </div>
@@ -247,7 +247,7 @@ export const ClassroomBridgeSheet: React.FC<{ open: boolean; onClose: () => void
             </>
           ) : (
             <>
-              <span className="w-7 h-7 -ml-1 bg-white flex items-center justify-center">
+              <span className="rounded-xl w-7 h-7 -ml-1 bg-white flex items-center justify-center">
                 <GoogleG />
               </span>
               Connect Google Classroom
@@ -265,12 +265,12 @@ export const ClassroomBridgeSheet: React.FC<{ open: boolean; onClose: () => void
     body = (
       <div className="flex flex-col gap-7">
         {/* Status */}
-        <section className="sheen-ink bg-ink text-on-ink border border-ink p-4 sm:p-5">
+        <section className="rounded-card sheen-ink bg-ink text-on-ink border border-ink p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <span className="inline-flex items-center gap-2 text-[13px] font-semibold">
               <span className="relative flex w-2 h-2">
                 {!reconnect && !paused && <span className="absolute inset-0 bg-emerald-400 animate-ping opacity-60 motion-reduce:hidden" />}
-                <span className={clsx('relative w-2 h-2', reconnect ? 'bg-amber-400' : paused ? 'bg-on-ink/40' : 'bg-emerald-400')} />
+                <span className={clsx('rounded-full relative w-2 h-2', reconnect ? 'bg-amber-400' : paused ? 'bg-on-ink/40' : 'bg-emerald-400')} />
               </span>
               {reconnect ? 'Reconnect needed' : paused ? 'Paused' : data.autoShare ? 'Auto-sync on' : 'Syncing, you review'}
             </span>
@@ -282,7 +282,7 @@ export const ClassroomBridgeSheet: React.FC<{ open: boolean; onClose: () => void
         </section>
 
         {reconnect && (
-          <div className="flex items-start gap-3 border border-amber-300 dark:border-amber-400/30 bg-amber-50 dark:bg-amber-400/[0.07] p-3.5">
+          <div className="rounded-tile flex items-start gap-3 border border-amber-300 dark:border-amber-400/30 bg-amber-50 dark:bg-amber-400/[0.07] p-3.5">
             <AlertTriangle className="w-5 h-5 shrink-0 text-amber-700 dark:text-amber-300" />
             <div className="min-w-0 flex-1">
               <p className="text-[14px] font-semibold text-fg">Google access ended</p>
@@ -303,7 +303,7 @@ export const ClassroomBridgeSheet: React.FC<{ open: boolean; onClose: () => void
           aria-checked={data.autoShare}
           onClick={() => run(() => act('autoShare', { on: !data.autoShare }, 'autoShare'))}
           disabled={busy === 'autoShare'}
-          className="w-full p-4 border border-line bg-surface flex items-center gap-3.5 text-left cursor-pointer hover:border-line-strong transition-colors"
+          className="rounded-card w-full p-4 border border-line bg-surface flex items-center gap-3.5 text-left cursor-pointer hover:border-line-strong transition-colors"
         >
           <span className="min-w-0 flex-1">
             <span className="block text-[15px] font-semibold text-fg">Share new assignments automatically</span>
@@ -311,8 +311,8 @@ export const ClassroomBridgeSheet: React.FC<{ open: boolean; onClose: () => void
               {data.autoShare ? 'They reach your batch within 30 minutes' : 'You check each one before it goes out'}
             </span>
           </span>
-          <span className={clsx('relative w-11 h-6 shrink-0 transition-colors', data.autoShare ? 'bg-ink' : 'bg-line-strong/60')}>
-            <span className={clsx('absolute top-0.5 w-5 h-5 bg-surface transition-[left]', data.autoShare ? 'left-[22px]' : 'left-0.5')} />
+          <span className={clsx('rounded-full relative w-11 h-6 shrink-0 transition-colors', data.autoShare ? 'bg-ink' : 'bg-line-strong/60')}>
+            <span className={clsx('rounded-full absolute top-0.5 w-5 h-5 bg-surface transition-[left]', data.autoShare ? 'left-[22px]' : 'left-0.5')} />
           </span>
         </button>
 
@@ -332,7 +332,7 @@ export const ClassroomBridgeSheet: React.FC<{ open: boolean; onClose: () => void
                   <li
                     key={p.id}
                     className={clsx(
-                      'border border-amber-200 dark:border-amber-400/25 bg-amber-50/50 dark:bg-amber-400/[0.05] p-3.5 transition-opacity',
+                      'rounded-tile border border-amber-200 dark:border-amber-400/25 bg-amber-50/50 dark:bg-amber-400/[0.05] p-3.5 transition-opacity',
                       working && 'opacity-60 pointer-events-none'
                     )}
                   >
@@ -348,7 +348,7 @@ export const ClassroomBridgeSheet: React.FC<{ open: boolean; onClose: () => void
                           target="_blank"
                           rel="noopener noreferrer"
                           aria-label="Open in Classroom"
-                          className="w-8 h-8 -mr-1 -mt-1 shrink-0 flex items-center justify-center text-muted hover:text-fg"
+                          className="rounded-full w-8 h-8 -mr-1 -mt-1 shrink-0 flex items-center justify-center text-muted hover:text-fg"
                         >
                           <ExternalLink className="w-4 h-4" />
                         </a>
@@ -396,7 +396,7 @@ export const ClassroomBridgeSheet: React.FC<{ open: boolean; onClose: () => void
             <span className="text-[12px] text-muted">Tap to change the subject</span>
           </div>
           {data.courses.length === 0 ? (
-            <div className="mt-2.5 border border-dashed border-line px-4 py-5 text-center">
+            <div className="rounded-card mt-2.5 border border-dashed border-line px-4 py-5 text-center">
               <p className="text-[14px] font-semibold text-fg">No classes in this Google account</p>
               <p className="mt-1 text-[13px] text-muted">Connect the account your teachers invite to Classroom.</p>
               <button type="button" onClick={connect} className="btn btn-secondary btn-sm mt-3">
@@ -404,7 +404,7 @@ export const ClassroomBridgeSheet: React.FC<{ open: boolean; onClose: () => void
               </button>
             </div>
           ) : (
-            <ul className="mt-2.5 border border-line bg-surface divide-y divide-line-soft">
+            <ul className="rounded-card overflow-hidden mt-2.5 border border-line bg-surface divide-y divide-line-soft">
               {data.courses.map((c) => (
                 <li key={c.id}>
                   <button
@@ -413,7 +413,7 @@ export const ClassroomBridgeSheet: React.FC<{ open: boolean; onClose: () => void
                     disabled={busy === `course:${c.id}`}
                     className="w-full flex items-center gap-3 px-3.5 py-3 text-left hover:bg-surface-2 transition-colors cursor-pointer"
                   >
-                    <span className={clsx('w-9 h-9 shrink-0 flex items-center justify-center border', c.how === 'off' ? 'bg-surface-2 text-muted border-line-soft' : CLASS_TONE)}>
+                    <span className={clsx('rounded-xl w-9 h-9 shrink-0 flex items-center justify-center border', c.how === 'off' ? 'bg-surface-2 text-muted border-line-soft' : CLASS_TONE)}>
                       {busy === `course:${c.id}` ? <Loader2 className="w-4 h-4 animate-spin" /> : <GraduationCap className="w-[18px] h-[18px]" />}
                     </span>
                     <span className="min-w-0 flex-1">
@@ -436,7 +436,7 @@ export const ClassroomBridgeSheet: React.FC<{ open: boolean; onClose: () => void
         {data.recent.length > 0 && (
           <section>
             <h3 className="text-[13px] font-semibold text-fg">Recently shared</h3>
-            <ul className="mt-2.5 border border-line bg-surface divide-y divide-line-soft">
+            <ul className="rounded-card overflow-hidden mt-2.5 border border-line bg-surface divide-y divide-line-soft">
               {data.recent.map((r) => (
                 <li key={r.id} className="flex items-center gap-3 px-3.5 py-3">
                   <span className="min-w-0 flex-1">
@@ -453,11 +453,11 @@ export const ClassroomBridgeSheet: React.FC<{ open: boolean; onClose: () => void
                           setConfirmUndo(null);
                           run(() => act('unshare', { id: r.id }, `unshare:${r.id}`), ['Removed from your batch', r.title]);
                         }}
-                        className="h-8 px-2.5 text-[12px] font-semibold text-white bg-danger cursor-pointer"
+                        className="rounded-full h-8 px-2.5 text-[12px] font-semibold text-white bg-danger cursor-pointer"
                       >
                         Remove
                       </button>
-                      <button type="button" onClick={() => setConfirmUndo(null)} className="h-8 px-2 text-[12px] font-medium text-muted cursor-pointer">
+                      <button type="button" onClick={() => setConfirmUndo(null)} className="rounded-full h-8 px-2 text-[12px] font-medium text-muted cursor-pointer">
                         Keep
                       </button>
                     </span>
@@ -466,7 +466,7 @@ export const ClassroomBridgeSheet: React.FC<{ open: boolean; onClose: () => void
                       type="button"
                       onClick={() => setConfirmUndo(r.id)}
                       disabled={busy === `unshare:${r.id}`}
-                      className="h-8 px-2 shrink-0 text-[12px] font-medium text-muted hover:text-fg cursor-pointer"
+                      className="rounded-full h-8 px-2 shrink-0 text-[12px] font-medium text-muted hover:text-fg cursor-pointer"
                     >
                       {busy === `unshare:${r.id}` ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Undo'}
                     </button>

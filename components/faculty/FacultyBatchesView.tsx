@@ -385,7 +385,7 @@ export const FacultyBatchesView: React.FC = () => {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           {/* Search Input */}
           <div className="relative flex-1">
-            <div className="flex items-center gap-3 px-3.5 h-[44px] rounded-none bg-surface border border-line shadow-xs">
+            <div className="flex items-center gap-3 px-3.5 h-[44px] rounded-field bg-surface border border-line shadow-xs">
               <Search className="w-4 h-4 text-muted shrink-0" />
               <input
                 type="text"
@@ -413,7 +413,7 @@ export const FacultyBatchesView: React.FC = () => {
                 type="button"
                 onClick={() => setSelectedProgrammeFilter('all')}
                 className={clsx(
- 'px-3.5 py-1.5 rounded-[3px] text-xs font-mono font-semibold transition-colors cursor-pointer whitespace-nowrap border',
+ 'px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition-colors cursor-pointer whitespace-nowrap border',
  selectedProgrammeFilter === 'all'
  ? 'bg-ink text-on-ink border-line-strong shadow-xs'
  : 'bg-transparent text-muted border-line hover:border-black/30 dark:hover:border-white/30'
@@ -427,7 +427,7 @@ export const FacultyBatchesView: React.FC = () => {
                   type="button"
                   onClick={() => setSelectedProgrammeFilter(prog)}
                   className={clsx(
-                    'px-3.5 py-1.5 rounded-[3px] text-xs font-mono font-semibold uppercase tracking-wider transition-colors cursor-pointer whitespace-nowrap border',
+                    'px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold uppercase tracking-wider transition-colors cursor-pointer whitespace-nowrap border',
                     selectedProgrammeFilter === prog
                       ? 'bg-ink text-on-ink border-line-strong shadow-xs'
                       : 'bg-transparent text-muted border-line hover:border-black/30 dark:hover:border-white/30'
@@ -451,7 +451,7 @@ export const FacultyBatchesView: React.FC = () => {
         />
       ) : filteredBatches.length === 0 ? (
         // Empty Search Results
-        <div className="flex flex-col items-center justify-center p-8 text-center rounded-none border border-line bg-black/[0.01] dark:bg-white/[0.01]">
+        <div className="flex flex-col items-center justify-center p-8 text-center rounded-card border border-line bg-black/[0.01] dark:bg-white/[0.01]">
           <Search className="w-6 h-6 text-muted mb-2" />
           <p className="text-sm font-semibold text-fg">No matching batches found</p>
           <p className="text-xs text-muted mt-0.5">Try clearing your search query or filter.</p>
@@ -491,7 +491,7 @@ export const FacultyBatchesView: React.FC = () => {
             return (
               <article
                 key={batch.id || batch.batchKey}
-                className="relative flex flex-col border border-line bg-surface"
+                className="rounded-card relative flex flex-col border border-line bg-surface"
               >
                 {/* Identity */}
                 <div className="flex items-start justify-between gap-3 pl-f4 pr-f3 pt-f4">
@@ -533,7 +533,7 @@ export const FacultyBatchesView: React.FC = () => {
                       subjects.map((subjName, idx) => (
                         <span
                           key={idx}
-                          className="inline-flex items-center gap-1.5 h-7 px-2.5 text-[13px] font-medium border border-line text-fg"
+                          className="rounded-full inline-flex items-center gap-1.5 h-7 px-2.5 text-[13px] font-medium border border-line text-fg"
                         >
                           <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: getSubjectCardTheme({ subjectName: subjName }).accent }} />
                           {subjName}
@@ -544,7 +544,7 @@ export const FacultyBatchesView: React.FC = () => {
                 </div>
 
                 {/* Join code: copy or send */}
-                <div className="mx-f4 mt-f4 flex items-center justify-between gap-3 px-f3 py-2.5 bg-surface-2 border border-line-soft">
+                <div className="rounded-tile mx-f4 mt-f4 flex items-center justify-between gap-3 px-f3 py-2.5 bg-surface-2 border border-line-soft">
                   <div className="min-w-0">
                     <p className="text-[11px] font-medium text-muted">Join code</p>
                     <p className="text-[18px] font-mono font-semibold tracking-[3px] text-fg select-all">{code}</p>
@@ -584,7 +584,7 @@ export const FacultyBatchesView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleContactCR(crInfo)}
-                      className="inline-flex items-center gap-1.5 h-9 px-3 text-[13px] font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-300/70 dark:border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors cursor-pointer shrink-0"
+                      className="rounded-full inline-flex items-center gap-1.5 h-9 px-3 text-[13px] font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-300/70 dark:border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors cursor-pointer shrink-0"
                     >
                       <MessageCircle className="w-4 h-4" /> Chat
                     </button>
@@ -631,7 +631,7 @@ export const FacultyBatchesView: React.FC = () => {
                   type="button"
                   onClick={() => setTimetableModalDay(day)}
                   className={clsx(
-                    'px-3 py-1.5 rounded-[3px] text-xs font-mono font-semibold uppercase tracking-wider transition-colors cursor-pointer whitespace-nowrap border',
+                    'px-3 py-1.5 rounded-full text-xs font-mono font-semibold uppercase tracking-wider transition-colors cursor-pointer whitespace-nowrap border',
                     timetableModalDay === day
                       ? 'bg-ink text-on-ink border-line-strong shadow-xs'
                       : 'bg-transparent text-muted border-line hover:border-black/30 dark:hover:border-white/30'
@@ -677,7 +677,7 @@ export const FacultyBatchesView: React.FC = () => {
                       <div
                         key={idx}
                         className={clsx(
-                          'p-3 rounded-[3px] border flex items-center justify-between gap-3 flex-wrap transition-colors',
+                          'p-3 rounded-tile border flex items-center justify-between gap-3 flex-wrap transition-colors',
                           isYourClass
                             ? 'border-emerald-500/30 bg-emerald-500/[0.04] dark:border-emerald-500/40'
                             : 'border-line bg-black/[0.01] dark:bg-white/[0.01]'
@@ -696,7 +696,7 @@ export const FacultyBatchesView: React.FC = () => {
                                 {s.subjectName || (s as any).subject || s.subjectId || 'Session'}
                               </span>
                               {isYourClass && (
-                                <span className="px-1.5 py-0.2 rounded-none text-[12px] font-mono font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 ">
+                                <span className="px-1.5 py-0.2 rounded-full text-[12px] font-mono font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 ">
                                   Your Lecture
                                 </span>
                               )}
@@ -708,7 +708,7 @@ export const FacultyBatchesView: React.FC = () => {
                         </div>
 
                         {s.isLab && (
-                          <span className="px-2 py-0.5 rounded-none text-[12px] font-mono font-bold bg-purple-500/10 text-purple-700 dark:text-purple-300 ">
+                          <span className="px-2 py-0.5 rounded-full text-[12px] font-mono font-bold bg-purple-500/10 text-purple-700 dark:text-purple-300 ">
                             LAB
                           </span>
                         )}
@@ -730,7 +730,7 @@ export const FacultyBatchesView: React.FC = () => {
           title="Disconnect Batch"
         >
           <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-3 p-3 rounded-none bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 text-rose-800 dark:text-rose-200 text-xs sm:text-sm">
+            <div className="flex items-center gap-3 p-3 rounded-tile bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 text-rose-800 dark:text-rose-200 text-xs sm:text-sm">
               <AlertCircle className="w-5 h-5 shrink-0" />
               <span>
                 Are you sure you want to unlink{' '}
@@ -744,7 +744,7 @@ export const FacultyBatchesView: React.FC = () => {
                 type="button"
                 onClick={() => setBatchToUnlink(null)}
                 disabled={isUnlinking}
-                className="px-4 h-9 rounded-none border border-line text-[13px] font-semibold text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                className="px-4 h-9 rounded-full border border-line text-[13px] font-semibold text-fg hover:bg-surface-2 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -752,7 +752,7 @@ export const FacultyBatchesView: React.FC = () => {
                 type="button"
                 onClick={handleConfirmUnlink}
                 disabled={isUnlinking}
-                className="px-4 h-9 rounded-none bg-rose-600 text-white font-semibold text-[13px] hover:bg-rose-700 transition-colors cursor-pointer"
+                className="px-4 h-9 rounded-full bg-rose-600 text-white font-semibold text-[13px] hover:bg-rose-700 transition-colors cursor-pointer"
               >
                 {isUnlinking ? 'Disconnecting...' : 'Yes, Disconnect'}
               </button>

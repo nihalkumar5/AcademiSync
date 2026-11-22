@@ -144,7 +144,7 @@ export const RosterSetup: React.FC<{
     return (
       <li>
         <button type="button" onClick={() => toggle(s.key)} aria-pressed={on} className="w-full flex items-center gap-f3 px-f4 py-3 text-left hover:bg-surface-2 cursor-pointer">
-          <span className={`w-6 h-6 shrink-0 border-2 flex items-center justify-center ${on ? 'bg-ink border-line-strong text-on-ink' : 'border-[#BDBDBD] dark:border-white/30'}`}>
+          <span className={`rounded-md w-6 h-6 shrink-0 border-2 flex items-center justify-center ${on ? 'bg-ink border-line-strong text-on-ink' : 'border-[#BDBDBD] dark:border-white/30'}`}>
             {on && <Check className="w-4 h-4" strokeWidth={3} />}
           </span>
           <span className="w-[86px] shrink-0 font-mono text-[13px] font-semibold text-fg truncate">{s.roll || '—'}</span>
@@ -171,7 +171,7 @@ export const RosterSetup: React.FC<{
     <div className="fixed inset-0 z-[100] bg-canvas flex flex-col font-sans" role="dialog" aria-modal="true" aria-label="Class list">
       <header className="sheen shrink-0 border-b border-line bg-canvas" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="max-w-3xl mx-auto w-full px-f4 h-14 flex items-center gap-2">
-          <button type="button" onClick={onClose} aria-label="Close" className="w-11 h-11 -ml-2 flex items-center justify-center text-fg cursor-pointer">
+          <button type="button" onClick={onClose} aria-label="Close" className="rounded-full w-11 h-11 -ml-2 flex items-center justify-center text-fg cursor-pointer">
             <X className="w-5 h-5" />
           </button>
           <div className="min-w-0">
@@ -183,7 +183,7 @@ export const RosterSetup: React.FC<{
 
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-3xl mx-auto w-full px-f4 py-f4 flex flex-col gap-f4">
-          <div className="p-f4 border border-line bg-surface">
+          <div className="rounded-tile p-f4 border border-line bg-surface">
             <p className="text-[17px] font-semibold text-fg">{editing ? 'Who is in this class?' : 'Confirm your class list'}</p>
             <p className="mt-1 text-[14px] leading-relaxed text-muted">
               Only students you tick here appear in attendance. Anyone who joins the batch with its code later stays out until you add them.
@@ -191,7 +191,7 @@ export const RosterSetup: React.FC<{
           </div>
 
           {electiveInfo && (
-            <div className="p-f3 border border-line bg-surface-2 text-[14px] leading-relaxed text-fg">
+            <div className="rounded-tile p-f3 border border-line bg-surface-2 text-[14px] leading-relaxed text-fg">
               <span className="font-semibold">{electiveInfo.names.join(', ')}</span> {electiveInfo.names.length > 1 ? 'are electives' : 'is an elective'}.
               {!editing && ` We ticked the ${electiveInfo.picked} ${electiveInfo.picked === 1 ? 'student' : 'students'} who picked it in the app.`}
               {electiveInfo.undecided > 0 && ` ${electiveInfo.undecided} ${electiveInfo.undecided === 1 ? 'student hasn’t' : 'students haven’t'} picked their elective yet. Tick them if they sit in your class.`}
@@ -206,7 +206,7 @@ export const RosterSetup: React.FC<{
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search name or roll number"
               aria-label="Search students"
-              className="w-full h-12 pl-10 pr-4 bg-surface border border-line text-[15px] text-fg focus:outline-none focus:border-line-strong"
+              className="rounded-field w-full h-12 pl-10 pr-4 bg-surface border border-line text-[15px] text-fg focus:outline-none focus:border-line-strong"
             />
           </div>
 
@@ -217,7 +217,7 @@ export const RosterSetup: React.FC<{
           ) : (
             <>
               {loadError && (
-                <div className="flex items-center justify-between gap-3 p-f3 border border-amber-300/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10 text-[14px] text-fg">
+                <div className="rounded-tile flex items-center justify-between gap-3 p-f3 border border-amber-300/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10 text-[14px] text-fg">
                   <span>{loadError}</span>
                   <button type="button" onClick={load} className="inline-flex items-center gap-1 font-semibold cursor-pointer">
                     <RefreshCw className="w-4 h-4" /> Retry
@@ -231,7 +231,7 @@ export const RosterSetup: React.FC<{
                     <h3 className="text-[15px] font-semibold text-fg">Joined since you locked</h3>
                     <span className="text-[13px] text-amber-700 dark:text-amber-400">{newcomers.length} to review</span>
                   </div>
-                  <ul className="border border-amber-300/70 dark:border-amber-500/30 bg-surface divide-y divide-line-soft">
+                  <ul className="rounded-card overflow-hidden border border-amber-300/70 dark:border-amber-500/30 bg-surface divide-y divide-line-soft">
                     {newcomers.map((s) => (
                       <Row key={s.key} s={s} />
                     ))}
@@ -254,11 +254,11 @@ export const RosterSetup: React.FC<{
                   </div>
                 </div>
                 {rest.length === 0 && newcomers.length === 0 ? (
-                  <p className="py-f5 text-center text-[14px] text-muted border border-dashed border-line">
+                  <p className="rounded-card py-f5 text-center text-[14px] text-muted bg-surface-2">
                     {q ? 'No one matches that.' : 'No one has joined this batch yet. Add students by hand below.'}
                   </p>
                 ) : (
-                  <ul className="border border-line bg-surface divide-y divide-line-soft">
+                  <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
                     {rest.map((s) => (
                       <Row key={s.key} s={s} />
                     ))}
@@ -270,9 +270,9 @@ export const RosterSetup: React.FC<{
               <section>
                 <h3 className="text-[15px] font-semibold text-fg mb-2">Add a student by hand</h3>
                 <div className="grid grid-cols-[110px_1fr_auto] gap-2">
-                  <input value={addRoll} onChange={(e) => setAddRoll(e.target.value)} placeholder="Roll no." aria-label="Roll number" className="h-11 px-3 font-mono uppercase bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-[#111111]" />
-                  <input value={addName} onChange={(e) => setAddName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addManual()} placeholder="Full name" aria-label="Full name" className="h-11 px-3 bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-[#111111]" />
-                  <button type="button" onClick={addManual} disabled={!addName.trim() || !addRoll.trim()} aria-label="Add student" className="h-11 w-11 flex items-center justify-center border border-line text-fg disabled:opacity-40 cursor-pointer">
+                  <input value={addRoll} onChange={(e) => setAddRoll(e.target.value)} placeholder="Roll no." aria-label="Roll number" className="rounded-field h-11 px-3 font-mono uppercase bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-[#111111]" />
+                  <input value={addName} onChange={(e) => setAddName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addManual()} placeholder="Full name" aria-label="Full name" className="rounded-field h-11 px-3 bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-[#111111]" />
+                  <button type="button" onClick={addManual} disabled={!addName.trim() || !addRoll.trim()} aria-label="Add student" className="rounded-full h-11 w-11 flex items-center justify-center border border-line text-fg disabled:opacity-40 cursor-pointer">
                     <UserPlus className="w-4 h-4" />
                   </button>
                 </div>

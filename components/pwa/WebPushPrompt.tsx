@@ -57,17 +57,17 @@ export const WebPushPrompt: React.FC = () => {
   };
 
   return (
-    <div className="fixed left-3 right-3 md:left-auto md:right-6 md:w-[380px] bottom-[calc(env(safe-area-inset-bottom,0px)+96px)] md:bottom-6 z-[60] bg-surface border border-line shadow-[0_24px_60px_-20px_rgba(17,17,17,0.35)] dark:shadow-[0_24px_60px_-16px_rgba(0,0,0,0.75)] p-4 animate-[menuIn_200ms_cubic-bezier(0.16,1,0.3,1)]">
+    <div className="rounded-tile fixed left-3 right-3 md:left-auto md:right-6 md:w-[380px] bottom-[calc(env(safe-area-inset-bottom,0px)+96px)] md:bottom-6 z-[60] bg-surface border border-line shadow-[0_24px_60px_-20px_rgba(17,17,17,0.35)] dark:shadow-[0_24px_60px_-16px_rgba(0,0,0,0.75)] p-4 animate-[menuIn_200ms_cubic-bezier(0.16,1,0.3,1)]">
       <button
         type="button"
         onClick={dismiss}
         aria-label="Not now"
-        className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center text-muted hover:text-fg cursor-pointer"
+        className="rounded-full absolute top-2 right-2 w-8 h-8 flex items-center justify-center text-muted hover:text-fg cursor-pointer"
       >
         <X className="w-4 h-4" />
       </button>
       <div className="flex items-start gap-3 pr-6">
-        <span className="w-10 h-10 shrink-0 flex items-center justify-center bg-rose-50 text-rose-600 border border-rose-200/70 dark:bg-rose-400/10 dark:text-rose-300 dark:border-rose-400/20">
+        <span className="rounded-xl w-10 h-10 shrink-0 flex items-center justify-center bg-rose-50 text-rose-600 border border-rose-200/70 dark:bg-rose-400/10 dark:text-rose-300 dark:border-rose-400/20">
           <Bell className="w-5 h-5" />
         </span>
         <div className="min-w-0">

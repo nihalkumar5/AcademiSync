@@ -52,13 +52,13 @@ export const LocalPhoto: React.FC<{ id: string; onOpen: (url: string) => void }>
   if (url === undefined) return <div className="aspect-square bg-surface-2 animate-pulse" />;
   if (url === null)
     return (
-      <div className="aspect-square flex flex-col items-center justify-center gap-1 border border-dashed border-line text-muted text-center px-1">
+      <div className="rounded-tile aspect-square flex flex-col items-center justify-center gap-1 border border-dashed border-line text-muted text-center px-1">
         <Smartphone className="w-4 h-4" />
         <span className="text-[10px] leading-tight">On another phone</span>
       </div>
     );
   return (
-    <button type="button" onClick={() => onOpen(url)} className="aspect-square border border-line overflow-hidden cursor-pointer">
+    <button type="button" onClick={() => onOpen(url)} className="rounded-tile aspect-square border border-line overflow-hidden cursor-pointer">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={url} alt="Lecture photo" className="w-full h-full object-cover" />
     </button>
@@ -316,10 +316,10 @@ export const ClassNotesHost: React.FC = () => {
 
                 {/* Composer */}
                 {tab === 'class' && !hasBatch ? (
-                  <p className="bg-surface-2 px-f3 py-3 text-[14px] text-muted">Join your class batch from Profile to share notes with your classmates.</p>
+                  <p className="rounded-tile bg-surface-2 px-f3 py-3 text-[14px] text-muted">Join your class batch from Profile to share notes with your classmates.</p>
                 ) : (
                   <div>
-                    <div className="border border-line bg-surface focus-within:border-fg transition-colors">
+                    <div className="rounded-card border border-line bg-surface focus-within:border-fg transition-colors">
                       <textarea
                         ref={textRef}
                         value={text}
@@ -331,14 +331,14 @@ export const ClassNotesHost: React.FC = () => {
                       {pending.length > 0 && (
                         <div className="flex gap-2 overflow-x-auto no-scrollbar px-f3 pb-2">
                           {pending.map((p, i) => (
-                            <div key={p.url} className="relative w-16 h-16 shrink-0 border border-line overflow-hidden">
+                            <div key={p.url} className="rounded-tile relative w-16 h-16 shrink-0 border border-line overflow-hidden">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={p.url} alt="" className="w-full h-full object-cover" />
                               <button
                                 type="button"
                                 aria-label="Remove photo"
                                 onClick={() => setPending((list) => { URL.revokeObjectURL(list[i].url); return list.filter((_, j) => j !== i); })}
-                                className="absolute right-0.5 top-0.5 w-5 h-5 flex items-center justify-center bg-surface/90 border border-line cursor-pointer"
+                                className="rounded-full absolute right-0.5 top-0.5 w-5 h-5 flex items-center justify-center bg-surface/90 border border-line cursor-pointer"
                               >
                                 <X className="w-3 h-3" />
                               </button>
@@ -349,10 +349,10 @@ export const ClassNotesHost: React.FC = () => {
                       <div className="flex items-center gap-0.5 px-1.5 pb-1.5">
                         {tab === 'mine' && (
                           <>
-                            <button type="button" onClick={() => cameraRef.current?.click()} aria-label="Take photo" title="Take photo" className="w-9 h-9 inline-flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 cursor-pointer">
+                            <button type="button" onClick={() => cameraRef.current?.click()} aria-label="Take photo" title="Take photo" className="rounded-full w-9 h-9 inline-flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 cursor-pointer">
                               <Camera className="w-[18px] h-[18px]" />
                             </button>
-                            <button type="button" onClick={() => galleryRef.current?.click()} aria-label="Add from gallery" title="Add from gallery" className="w-9 h-9 inline-flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 cursor-pointer">
+                            <button type="button" onClick={() => galleryRef.current?.click()} aria-label="Add from gallery" title="Add from gallery" className="rounded-full w-9 h-9 inline-flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 cursor-pointer">
                               <ImageIcon className="w-[18px] h-[18px]" />
                             </button>
                           </>
@@ -371,7 +371,7 @@ export const ClassNotesHost: React.FC = () => {
                             key={q}
                             type="button"
                             onClick={() => { setText(q + ': '); textRef.current?.focus(); }}
-                            className="shrink-0 h-7 px-2.5 bg-surface-2 text-[12px] font-medium text-muted hover:text-fg cursor-pointer"
+                            className="rounded-full shrink-0 h-7 px-2.5 bg-surface-2 text-[12px] font-medium text-muted hover:text-fg cursor-pointer"
                           >
                             {q}
                           </button>
@@ -386,7 +386,7 @@ export const ClassNotesHost: React.FC = () => {
                 )}
 
                 {error && (
-                  <p className="flex items-start gap-2 px-3 py-2.5 border border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-400/10 dark:border-rose-400/20 dark:text-rose-300 text-[14px]">
+                  <p className="rounded-tile flex items-start gap-2 px-3 py-2.5 border border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-400/10 dark:border-rose-400/20 dark:text-rose-300 text-[14px]">
                     <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /> {error}
                   </p>
                 )}
@@ -406,9 +406,9 @@ export const ClassNotesHost: React.FC = () => {
                 {loading && list.length === 0 ? (
                   <div className="flex flex-col gap-2" aria-label="Loading notes">
                     {[0, 1].map((i) => (
-                      <div key={i} className="bg-surface-2 px-f3 py-3 animate-pulse">
-                        <div className="h-3 w-3/4 bg-line" />
-                        <div className="mt-2 h-3 w-1/3 bg-line-soft" />
+                      <div key={i} className="rounded-tile bg-surface-2 px-f3 py-3 animate-pulse">
+                        <div className="rounded-full h-3 w-3/4 bg-line" />
+                        <div className="rounded-full mt-2 h-3 w-1/3 bg-line-soft" />
                       </div>
                     ))}
                   </div>
@@ -441,7 +441,7 @@ export const ClassNotesHost: React.FC = () => {
                                     aria-label="Share note to WhatsApp or other apps"
                                     title="Share"
                                     onClick={() => shareOut(n)}
-                                    className="w-8 h-8 shrink-0 flex items-center justify-center text-muted hover:text-fg cursor-pointer"
+                                    className="rounded-full w-8 h-8 shrink-0 flex items-center justify-center text-muted hover:text-fg cursor-pointer"
                                   >
                                     <Share2 className="w-4 h-4" />
                                   </button>
@@ -451,7 +451,7 @@ export const ClassNotesHost: React.FC = () => {
                                     type="button"
                                     aria-label="Delete note"
                                     onClick={() => (tab === 'mine' ? removeMine(n) : removeShared(n))}
-                                    className="w-8 h-8 shrink-0 flex items-center justify-center text-muted hover:text-rose-600 cursor-pointer"
+                                    className="rounded-full w-8 h-8 shrink-0 flex items-center justify-center text-muted hover:text-rose-600 cursor-pointer"
                                   >
                                     <Trash2 className="w-4 h-4" />
                                   </button>
@@ -465,7 +465,7 @@ export const ClassNotesHost: React.FC = () => {
                                 </div>
                               )}
                               {tab === 'class' && n.imageUrl && (
-                                <button type="button" onClick={() => setViewer(n.imageUrl)} className="mt-2.5 block w-full border border-line overflow-hidden cursor-pointer">
+                                <button type="button" onClick={() => setViewer(n.imageUrl)} className="rounded-tile mt-2.5 block w-full border border-line overflow-hidden cursor-pointer">
                                   {/* eslint-disable-next-line @next/next/no-img-element */}
                                   <img src={n.imageUrl} alt="Shared class photo" className="w-full max-h-[320px] object-cover" loading="lazy" />
                                 </button>

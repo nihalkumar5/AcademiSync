@@ -263,7 +263,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                     e.stopPropagation();
                     setMenuOpen((prev) => !prev);
                   }}
-                  className="p-1 rounded-none text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                  className="p-1 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                   title="Class Options" aria-label="Class Options"
                 >
                   <MoreHorizontal className="w-4 h-4" />
@@ -279,7 +279,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                       }}
                     />
                     <div
-                      className="absolute right-0 top-full mt-1.5 w-52 bg-surface border border-line shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 text-left overflow-hidden rounded-none"
+                      className="absolute right-0 top-full mt-1.5 w-52 bg-surface border border-line shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 text-left overflow-hidden rounded-card"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="px-3.5 py-1.5 bg-surface-2 border-b border-line-soft text-[12px] font-mono font-bold text-muted flex items-center gap-1.5">
@@ -376,18 +376,18 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
               {formatTime12Hour(session.startTime)} – {formatTime12Hour(session.endTime)}
             </div>
             {isRescheduled && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-none bg-amber-500/20 text-amber-300 text-[11px] font-mono font-bold uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-mono font-bold uppercase tracking-wider">
                 <Clock className="w-2.5 h-2.5" />
                 Rescheduled
                 {rescheduleMeta?.originalStartTime ? ` (Was ${formatTime12Hour(rescheduleMeta.originalStartTime)})` : ''}
               </span>
             )}
             {session.isLab && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-none bg-[#18A889]/20 text-[#18A889] text-[12px] font-mono font-bold ">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#18A889]/20 text-[#18A889] text-[12px] font-mono font-bold ">
                 Lab
               </span>
             )}
-            <span className="px-2 py-0.5 rounded-none bg-white/10 text-[11px] font-mono font-bold uppercase tracking-wider text-white/80">
+            <span className="px-2 py-0.5 rounded-full bg-white/10 text-[11px] font-mono font-bold uppercase tracking-wider text-white/80">
               {pillLabel}
             </span>
           </div>
@@ -428,8 +428,8 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                   }}
                   className={
                     mode === 'qr'
-                      ? 'h-11 flex-1 inline-flex items-center justify-center gap-2 bg-white text-[#111111] text-[14px] font-semibold rounded-none hover:opacity-90 active:scale-[0.99] transition cursor-pointer'
-                      : 'h-11 px-3.5 inline-flex items-center justify-center gap-2 border border-white/25 text-white text-[14px] font-semibold rounded-none hover:border-white/50 active:scale-[0.99] transition cursor-pointer'
+                      ? 'h-11 flex-1 inline-flex items-center justify-center gap-2 bg-white text-[#111111] text-[14px] font-semibold rounded-full hover:opacity-90 active:scale-[0.99] transition cursor-pointer'
+                      : 'h-11 px-3.5 inline-flex items-center justify-center gap-2 border border-white/25 text-white text-[14px] font-semibold rounded-full hover:border-white/50 active:scale-[0.99] transition cursor-pointer'
                   }
                 >
                   {mode === 'qr' ? (
@@ -479,7 +479,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
     <>
       <div
         className={clsx(
-          'w-full text-left relative border border-[color:var(--card-line)] shadow-[var(--elev-2)]',
+          'rounded-card w-full text-left relative border border-[color:var(--card-line)] shadow-[var(--elev-2)]',
           menuOpen ? 'overflow-visible z-30' : 'overflow-hidden z-0'
         )}
         style={
@@ -542,7 +542,7 @@ export const FacultyLiveLectureCard: React.FC<FacultyLiveLectureCardProps> = ({
                       }}
                     />
                     <div
-                      className="absolute right-0 top-full mt-1.5 w-52 bg-surface border border-line rounded-none shadow-xl py-1.5 z-40 text-left font-sans flex flex-col"
+                      className="absolute right-0 top-full mt-1.5 w-52 bg-surface border border-line rounded-card overflow-hidden shadow-xl py-1.5 z-40 text-left font-sans flex flex-col"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="px-3 py-1 text-[12px] font-mono text-muted border-b border-line-soft mb-1 flex items-center gap-1.5">

@@ -49,11 +49,11 @@ export const CampusNoticesView: React.FC = () => {
       {notices === null ? (
         <div className="flex flex-col gap-f3" aria-hidden="true">
           {[0, 1].map((i) => (
-            <div key={i} className="h-[180px] border border-line bg-surface-2 animate-pulse" />
+            <div key={i} className="rounded-tile h-[180px] border border-line bg-surface-2 animate-pulse" />
           ))}
         </div>
       ) : notices.length === 0 ? (
-        <section className="border border-dashed border-line px-6 py-10 flex flex-col items-center text-center">
+        <section className="rounded-card border border-dashed border-line px-6 py-10 flex flex-col items-center text-center">
           <Illustration name="notifications" className="h-[160px] w-auto" />
           <h3 className="mt-f4 text-[17px] font-semibold text-fg">No notices right now</h3>
           <p className="mt-1.5 text-[14px] text-muted max-w-[300px]">
