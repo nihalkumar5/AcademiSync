@@ -199,7 +199,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
       {step === 'upload' && <AiUploadPanel kind="exam" onScan={startScan}
           context={
             profile?.branch ? (
-              <p className="flex items-center gap-2 px-f3 py-2.5 bg-surface-2 text-[13px] text-muted">
+              <p className="rounded-tile flex items-center gap-2 px-f3 py-2.5 bg-surface-2 text-[13px] text-muted">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                 <span className="min-w-0">
                   Only exams for <strong className="font-semibold text-fg">{profile.branch}</strong>
@@ -219,11 +219,11 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
               
               <div className="flex flex-col gap-4">
                 {extractedExams.map((event, index) => (
-                  <div key={index} className="flex flex-col gap-3 p-4 rounded-none border border-line bg-surface-2 relative group">
+                  <div key={index} className="flex flex-col gap-3 p-4 rounded-tile border border-line bg-surface-2 relative group">
                     <button
                       type="button"
                       onClick={() => removeExtractedRow(index)}
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-none bg-surface border border-line flex items-center justify-center text-muted hover:text-rose-500 dark:hover:text-rose-400 transition-colors z-10 shadow-sm"
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-surface border border-line flex items-center justify-center text-muted hover:text-rose-500 dark:hover:text-rose-400 transition-colors z-10 shadow-sm"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -238,7 +238,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
                           value={event.subjectName}
                           placeholder="e.g. Operating Systems (CS501)"
                           onChange={(e) => updateExtractedRow(index, { subjectName: e.target.value })}
-                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                          className="w-full px-3 py-1.5 h-[38px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                         />
                       </div>
                       <div className="sm:col-span-3 flex flex-col gap-1.5">
@@ -249,7 +249,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
                           type="date"
                           value={event.date?.includes('T') ? event.date.split('T')[0] : event.date}
                           onChange={(e) => updateExtractedRow(index, { date: e.target.value })}
-                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                          className="w-full px-3 py-1.5 h-[38px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                         />
                       </div>
                       <div className="sm:col-span-4 flex flex-col gap-1.5">
@@ -261,7 +261,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
                           value={event.time}
                           placeholder="e.g. 09:30 AM - 12:30 PM"
                           onChange={(e) => updateExtractedRow(index, { time: e.target.value })}
-                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                          className="w-full px-3 py-1.5 h-[38px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                         />
                       </div>
                     </div>
@@ -276,7 +276,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
                           value={event.room || ''}
                           placeholder="e.g. Room 204 or Hall B"
                           onChange={(e) => updateExtractedRow(index, { room: e.target.value })}
-                          className="w-full px-3 py-1.5 h-[36px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                          className="w-full px-3 py-1.5 h-[36px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                         />
                       </div>
                       <div className="sm:col-span-8 flex flex-col gap-1.5">
@@ -288,7 +288,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
                           value={event.syllabus || ''}
                           placeholder="e.g. Modules 1 to 4"
                           onChange={(e) => updateExtractedRow(index, { syllabus: e.target.value })}
-                          className="w-full px-3 py-1.5 h-[36px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                          className="w-full px-3 py-1.5 h-[36px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                         />
                       </div>
                     </div>
@@ -298,7 +298,7 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
                 <button
                   type="button"
                   onClick={addExtractedRow}
-                  className="flex items-center justify-center h-[44px] rounded-none border border-dashed border-line text-[13px] font-bold text-fg bg-surface-2 hover:bg-surface-2 transition-colors gap-2 cursor-pointer"
+                  className="flex items-center justify-center h-[44px] rounded-full border border-dashed border-line text-[13px] font-bold text-fg bg-surface-2 hover:bg-surface-2 transition-colors gap-2 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   Add Another Exam
@@ -313,14 +313,14 @@ export const ExamImportModal: React.FC<ExamImportModalProps> = ({ isOpen, onClos
                   setStep('upload');
                   setExtractedExams([]);
                 }}
-                className="w-full sm:w-auto px-4 h-11 rounded-none text-[14px] font-semibold text-muted hover:bg-surface-2 transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-4 h-11 rounded-full text-[14px] font-semibold text-muted hover:bg-surface-2 transition-colors cursor-pointer"
               >
                 Scan Another
               </button>
               <button 
                 type="button" 
                 onClick={handleSaveConfirmed}
-                className="w-full sm:w-auto px-6 h-11 rounded-none bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
+                className="w-full sm:w-auto px-6 h-11 rounded-full bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
               >
                 Save {extractedExams.length} Exams
               </button>

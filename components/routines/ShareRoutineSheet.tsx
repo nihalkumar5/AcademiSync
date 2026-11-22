@@ -19,7 +19,7 @@ const sameSet = (a: string[], b: string[]) => a.length === b.length && a.every((
 const Tick: React.FC<{ on: boolean }> = ({ on }) => (
   <span
     aria-hidden="true"
-    className={`w-5 h-5 shrink-0 border flex items-center justify-center ${
+    className={`rounded-md w-5 h-5 shrink-0 border flex items-center justify-center ${
       on ? 'bg-ink border-line-strong text-on-ink' : 'border-[#BDBDBD] dark:border-white/30'
     }`}
   >
@@ -119,7 +119,7 @@ export const ShareRoutineSheet: React.FC<{
     <Modal isOpen={!!routine} onClose={onClose} title="Share routine">
       <div className="flex flex-col gap-f4">
         {/* What will be shared */}
-        <div className="flex items-center gap-f3 p-f3 border border-line">
+        <div className="rounded-tile flex items-center gap-f3 p-f3 border border-line">
           <span className="w-10 h-10 shrink-0 flex items-center justify-center" style={{ backgroundColor: `${c.color}14`, boxShadow: `inset 0 0 0 1px ${c.color}1F` }} aria-hidden="true">
             <Icon3D name={iconForRoutine(routine.title, routine.category)} size={26} />
           </span>
@@ -135,7 +135,7 @@ export const ShareRoutineSheet: React.FC<{
         {blockedReason === 'signin' ? (
           <div className="flex flex-col items-start gap-f3">
             <p className="text-[15px] text-fg">Sign in to share routines with friends or your batch.</p>
-            <button type="button" onClick={onGoToProfile} className="h-11 px-4 bg-ink text-on-ink text-[14px] font-semibold cursor-pointer">
+            <button type="button" onClick={onGoToProfile} className="rounded-full h-11 px-4 bg-ink text-on-ink text-[14px] font-semibold cursor-pointer">
               Go to sign in
             </button>
           </div>
@@ -150,20 +150,20 @@ export const ShareRoutineSheet: React.FC<{
                 </div>
 
                 {friendsLoading && friends.length === 0 ? (
-                  <div className="mt-2 h-14 flex items-center justify-center border border-line text-muted">
+                  <div className="rounded-tile mt-2 h-14 flex items-center justify-center border border-line text-muted">
                     <Loader2 className="w-4 h-4 animate-spin" />
                   </div>
                 ) : friends.length === 0 ? (
-                  <div className="mt-2 p-f3 border border-line flex items-center justify-between gap-f3">
+                  <div className="rounded-tile mt-2 p-f3 border border-line flex items-center justify-between gap-f3">
                     <p className="text-[13px] text-muted">Add friends to share routines with just them.</p>
-                    <button type="button" onClick={onGoToFriends} className="shrink-0 h-9 px-3 border border-line text-[13px] font-semibold text-fg cursor-pointer hover:bg-surface-2">
+                    <button type="button" onClick={onGoToFriends} className="rounded-full shrink-0 h-9 px-3 border border-line text-[13px] font-semibold text-fg cursor-pointer hover:bg-surface-2">
                       Find friends
                     </button>
                   </div>
                 ) : (
                   <>
                     {friends.length > 8 && (
-                      <label className="mt-2 flex items-center gap-2 h-10 px-3 border border-line bg-surface">
+                      <label className="rounded-tile mt-2 flex items-center gap-2 h-10 px-3 border border-line bg-surface">
                         <Search className="w-4 h-4 text-muted shrink-0" />
                         <input
                           value={query}
@@ -209,9 +209,9 @@ export const ShareRoutineSheet: React.FC<{
             <section aria-label="Your batch">
               <p className="text-[14px] font-medium text-fg">{targets.length > 1 ? 'Batches' : 'Your batch'}</p>
               {blockedReason === 'nobatch' ? (
-                <div className="mt-2 p-f3 border border-line flex items-center justify-between gap-f3">
+                <div className="rounded-tile mt-2 p-f3 border border-line flex items-center justify-between gap-f3">
                   <p className="text-[13px] text-muted">Join your batch to share with your whole class.</p>
-                  <button type="button" onClick={onGoToProfile} className="shrink-0 h-9 px-3 border border-line text-[13px] font-semibold text-fg cursor-pointer hover:bg-surface-2">
+                  <button type="button" onClick={onGoToProfile} className="rounded-full shrink-0 h-9 px-3 border border-line text-[13px] font-semibold text-fg cursor-pointer hover:bg-surface-2">
                     Connect batch
                   </button>
                 </div>
@@ -269,7 +269,7 @@ export const ShareRoutineSheet: React.FC<{
               type="button"
               disabled={busy === 'share'}
               onClick={apply}
-              className={`h-12 inline-flex items-center justify-center gap-2 text-[15px] font-semibold transition-opacity cursor-pointer disabled:opacity-60 ${
+              className={`rounded-full h-12 inline-flex items-center justify-center gap-2 text-[15px] font-semibold transition-opacity cursor-pointer disabled:opacity-60 ${
                 changed ? 'bg-ink text-on-ink hover:opacity-90' : 'border border-line text-fg'
               }`}
             >

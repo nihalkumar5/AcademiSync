@@ -227,9 +227,9 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
   const subjectNames: string[] = (matchedBatch?.subjects || []).map((x: any) => x?.name).filter(Boolean);
 
   const field =
-    'w-full h-11 bg-surface border border-line flex items-center gap-2.5 px-3 focus-within:border-fg transition-colors';
+    'rounded-tile w-full h-11 bg-surface border border-line flex items-center gap-2.5 px-3 focus-within:border-fg transition-colors';
   const input = 'w-full min-w-0 bg-transparent text-[15px] text-fg placeholder:text-faint focus:outline-none';
-  const menu = 'absolute top-full left-0 w-full mt-1 max-h-56 overflow-y-auto bg-surface border border-line shadow-xl z-50';
+  const menu = 'rounded-card absolute top-full left-0 w-full mt-1 max-h-56 overflow-y-auto bg-surface border border-line shadow-xl z-50';
 
   const footer =
     state === 'found' ? (
@@ -323,7 +323,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                       <span className="block text-[14px] font-medium text-fg leading-snug">{col.name}</span>
                       <span className="mt-0.5 flex items-center gap-1.5 text-[12px] text-muted">
                         {col.state || 'India'}
-                        {col.shortName && col.shortName !== col.name && <span className="px-1.5 bg-surface-2 border border-line-soft text-[11px] font-semibold">{col.shortName}</span>}
+                        {col.shortName && col.shortName !== col.name && <span className="rounded-tile px-1.5 bg-surface-2 border border-line-soft text-[11px] font-semibold">{col.shortName}</span>}
                       </span>
                     </button>
                   ))}
@@ -447,7 +447,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                       role="radio"
                       aria-checked={on}
                       onClick={() => setSemester(n)}
-                      className={`h-10 text-[14px] font-semibold tabular-nums border transition-colors cursor-pointer ${
+                      className={`rounded-full h-10 text-[14px] font-semibold tabular-nums border transition-colors cursor-pointer ${
                         on ? 'bg-ink text-on-ink border-ink' : 'bg-surface text-fg border-line hover:border-line-strong'
                       }`}
                     >
@@ -462,8 +462,8 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
           {/* ── Result ── */}
           <div aria-live="polite">
             {state === 'searching' && (
-              <div className="border border-line bg-surface p-5 flex items-center gap-4">
-                <div className="relative w-16 h-16 shrink-0 border border-line bg-surface-2 overflow-hidden" aria-hidden="true">
+              <div className="rounded-card border border-line bg-surface p-5 flex items-center gap-4">
+                <div className="rounded-tile relative w-16 h-16 shrink-0 border border-line bg-surface-2 overflow-hidden" aria-hidden="true">
                   <div className="absolute inset-2 grid grid-cols-3 gap-1">
                     {Array.from({ length: 9 }).map((_, i) => (
                       <span key={i} className="bg-line" />
@@ -485,12 +485,12 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                 <div className="flex justify-end pr-3 pb-1.5 rotate-[2deg] text-[21px] leading-none text-fg" aria-hidden="true">
                   <span className="hl-marker" style={{ ['--hl-delay' as any]: '1.1s' }}><HandwrittenText text="found them!" playKey="batch-found" delay={0.3} /></span>
                 </div>
-                <div className="sb-found border border-fg bg-surface">
+                <div className="rounded-card sb-found border border-fg bg-surface">
                   <div className="sheen-ink bg-ink text-on-ink px-4 py-3 flex items-center justify-between">
                     <span className="flex items-center gap-2 text-[12px] font-semibold">
                       <span className="relative flex w-2 h-2">
                         <span className="absolute inset-0 bg-emerald-400 animate-ping opacity-60" />
-                        <span className="relative w-2 h-2 bg-emerald-400" />
+                        <span className="rounded-full relative w-2 h-2 bg-emerald-400" />
                       </span>
                       Your class is live
                     </span>
@@ -507,7 +507,7 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
                       <div className="py-3 pr-3 flex items-center gap-2.5">
                         <Users className="w-4 h-4 text-muted shrink-0" />
                         {counted === null ? (
-                          <span className="h-3.5 w-24 bg-surface-2 animate-pulse" aria-label="Counting classmates" />
+                          <span className="rounded-tile h-3.5 w-24 bg-surface-2 animate-pulse" aria-label="Counting classmates" />
                         ) : (
                           <p className="text-[14px] text-fg">
                             {classmates === 0 ? (
@@ -545,14 +545,14 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
             )}
 
             {state === 'missing' && (
-              <div className="border-2 border-dashed border-amber-500/40 bg-amber-500/[0.06] p-5 sm:p-6 flex flex-col items-center text-center">
+              <div className="rounded-card border-2 border-dashed border-amber-500/40 bg-amber-500/[0.06] p-5 sm:p-6 flex flex-col items-center text-center">
                 <div className="relative">
                   <Illustration name="pilot" className="h-[120px] w-auto ai-float" />
                   <div className="absolute -right-16 top-2 rotate-[4deg] text-[21px] leading-none text-fg whitespace-nowrap" aria-hidden="true">
                     <span className="hl-marker" style={{ ['--hl-delay' as any]: '1.2s' }}><HandwrittenText text="be the first!" playKey="batch-pilot" delay={0.4} /></span>
                   </div>
                 </div>
-                <span className="mt-3 inline-flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/15 border border-amber-500/30 text-[11px] font-semibold text-amber-700 dark:text-amber-400">
+                <span className="rounded-full mt-3 inline-flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/15 border border-amber-500/30 text-[11px] font-semibold text-amber-700 dark:text-amber-400">
                   <Crown className="w-3.5 h-3.5" /> Batch Pilot spot open
                 </span>
                 <h4 className="mt-2 text-[17px] font-semibold text-fg">Your class isn&apos;t here yet</h4>
@@ -564,8 +564,8 @@ export const SelectBatchModal: React.FC<SelectBatchModalProps> = ({
             )}
 
             {state === 'idle' && (
-              <div className="border border-line-soft bg-surface-2/60 p-5 flex items-center gap-4">
-                <span className="w-11 h-11 shrink-0 flex items-center justify-center bg-surface border border-line">
+              <div className="rounded-card border border-line-soft bg-surface-2/60 p-5 flex items-center gap-4">
+                <span className="rounded-xl w-11 h-11 shrink-0 flex items-center justify-center bg-surface border border-line">
                   <Search className="w-5 h-5 text-muted" />
                 </span>
                 <div className="min-w-0">

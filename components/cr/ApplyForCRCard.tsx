@@ -20,9 +20,9 @@ export const ApplyForCRCard: React.FC = () => {
 
   return (
     <>
-      <div className="border border-line bg-surface-2 rounded-none p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-line shadow-sm">
+      <div className="border border-line bg-surface-2 rounded-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-line shadow-sm">
         <div className="flex items-start gap-3.5 z-10">
-          <div className="w-9 h-9 rounded-none border border-line bg-white dark:bg-white/[0.06] flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-xl border border-line bg-white dark:bg-white/[0.06] flex items-center justify-center shrink-0">
             <Crown className="w-4 h-4 text-amber-500" />
           </div>
           <div>

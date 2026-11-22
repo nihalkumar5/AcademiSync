@@ -248,7 +248,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
         <button
           type="button"
           onClick={() => setActiveView('timetable')}
-          className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-ink text-on-ink text-[12px] font-mono font-bold rounded-none hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
+          className="shrink-0 flex items-center gap-1 px-2.5 py-1 bg-ink text-on-ink text-[12px] font-mono font-bold rounded-full hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap shadow-xs"
         >
           <span>+ EXTRA CLASS</span>
         </button>
@@ -374,27 +374,27 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                           </h4>
 
                           {isCancelled ? (
-                            <span className="px-2 py-0.5 text-[12px] font-bold bg-[#FAD3D9] text-[#C94B5C] rounded-none shrink-0 dark:bg-red-500/15 dark:text-red-300">
+                            <span className="px-2 py-0.5 text-[12px] font-bold bg-[#FAD3D9] text-[#C94B5C] rounded-full shrink-0 dark:bg-red-500/15 dark:text-red-300">
                               {agg.movedTo ? `Moved to ${formatClassDate(agg.movedTo.date)}` : 'Cancelled'}
                             </span>
                           ) : agg.isExtra && !isLive ? (
-                            <span className="px-2 py-0.5 rounded-none text-[12px] font-bold bg-sky-100 text-sky-700 shrink-0 dark:bg-sky-500/15 dark:text-sky-300">
+                            <span className="px-2 py-0.5 rounded-full text-[12px] font-bold bg-sky-100 text-sky-700 shrink-0 dark:bg-sky-500/15 dark:text-sky-300">
                               {agg.movedFrom ? `Moved from ${formatClassDate(agg.movedFrom.date)}` : 'Extra class'}
                             </span>
                           ) : isLive ? (
-                            <span className="px-2 py-0.5 rounded-none bg-[#18A889]/20 text-[#18A889] text-[12px] font-bold animate-pulse border border-[#18A889]/40 shrink-0">
+                            <span className="px-2 py-0.5 rounded-full bg-[#18A889]/20 text-[#18A889] text-[12px] font-bold animate-pulse border border-[#18A889]/40 shrink-0">
                               Live
                             </span>
                           ) : isRescheduled ? (
-                            <span className="px-2 py-0.5 rounded-none text-[12px] font-bold bg-[#FCE0D5] text-[#C85F3D] shrink-0 dark:bg-orange-500/15 dark:text-orange-300">
+                            <span className="px-2 py-0.5 rounded-full text-[12px] font-bold bg-[#FCE0D5] text-[#C85F3D] shrink-0 dark:bg-orange-500/15 dark:text-orange-300">
                               Rescheduled
                             </span>
                           ) : session.isLab ? (
-                            <span className="px-2 py-0.5 rounded-none text-[12px] font-bold bg-[#D2F1E8] text-[#18A889] shrink-0 dark:bg-teal-500/15 dark:text-teal-300">
+                            <span className="px-2 py-0.5 rounded-full text-[12px] font-bold bg-[#D2F1E8] text-[#18A889] shrink-0 dark:bg-teal-500/15 dark:text-teal-300">
                               Lab
                             </span>
                           ) : agg.isUpcoming && agg.minutesUntilStart !== undefined && agg.minutesUntilStart > 0 ? (
-                            <span className="px-2 py-0.5 rounded-none bg-black/5 dark:bg-white/10 text-fg-2 text-[11px] font-mono font-bold uppercase tracking-wider shrink-0">
+                            <span className="px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-fg-2 text-[11px] font-mono font-bold uppercase tracking-wider shrink-0">
                               in {agg.minutesUntilStart < 60 ? `${agg.minutesUntilStart}m` : `${Math.floor(agg.minutesUntilStart / 60)}h ${agg.minutesUntilStart % 60}m`}
                             </span>
                           ) : null}
@@ -439,7 +439,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                             e.stopPropagation();
                             setOpenMenuSessionId(openMenuSessionId === cardKey ? null : cardKey);
                           }}
-                          className="p-1.5 text-[#6B6B6B] hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer rounded-none"
+                          className="p-1.5 text-[#6B6B6B] hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer rounded-full"
                           title="Options" aria-label="Options"
                         >
                           <MoreVertical className="w-4 h-4" />
@@ -455,7 +455,7 @@ export const FacultyScheduleTimeline: React.FC<FacultyScheduleTimelineProps> = (
                               }}
                             />
                             <div
-                              className="absolute right-0 top-full mt-1.5 w-52 rounded-none bg-surface border border-line shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 text-left overflow-hidden"
+                              className="absolute right-0 top-full mt-1.5 w-52 rounded-card bg-surface border border-line shadow-[0_12px_36px_rgba(0,0,0,0.22)] py-1.5 z-50 text-left overflow-hidden"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <div className="px-3.5 py-1.5 bg-surface-2 border-b border-line-soft text-[12px] font-mono font-bold text-muted flex items-center gap-1.5">

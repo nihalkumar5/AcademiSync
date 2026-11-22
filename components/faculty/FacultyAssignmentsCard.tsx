@@ -83,7 +83,7 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
 
   return (
     <>
-      <div className="w-full bg-surface border border-line-soft rounded-none p-5 sm:p-6 text-left flex flex-col gap-5 shadow-xs">
+      <div className="w-full bg-surface border border-line-soft rounded-card p-5 sm:p-6 text-left flex flex-col gap-5 shadow-xs">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-line-soft">
           <div className="flex items-center gap-2">
@@ -132,18 +132,18 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
               return (
                 <div
                   key={task.id}
-                  className="relative flex flex-col p-4 sm:p-[18px] rounded-none border border-black/[0.05] dark:border-[color:var(--card-accent-border)] transition-all w-full overflow-hidden shadow-xs hover:shadow-md"
+                  className="relative flex flex-col p-4 sm:p-[18px] rounded-card border border-black/[0.05] dark:border-[color:var(--card-accent-border)] transition-all w-full overflow-hidden shadow-xs hover:shadow-md"
                   style={{
                     ['--card-accent-border' as any]: `${theme.accent}45`,
                   }}
                 >
                   {/* Pastel background tints */}
                   <div
-                    className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-none"
+                    className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-card"
                     style={{ backgroundColor: theme.bg }}
                   />
                   <div
-                    className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-none"
+                    className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-card"
                     style={{
                       background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
                     }}
@@ -160,18 +160,18 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
                       </div>
 
                       <div className="flex items-center gap-1.5 flex-wrap self-start">
-                        <span className="px-2 py-0.5 rounded-none bg-black/5 dark:bg-white/10 text-[11px] font-bold uppercase tracking-wider text-fg-2 flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[11px] font-bold uppercase tracking-wider text-fg-2 flex items-center gap-1">
                           <Users className="w-3 h-3" />
                           {batchName}
                         </span>
 
                         {task.priority === 'High' && (
-                          <span className="px-2 py-0.5 rounded-none bg-[#FFF0E8] text-[#C96B45] text-[12px] font-bold dark:bg-orange-500/15 dark:text-orange-300">
+                          <span className="px-2 py-0.5 rounded-full bg-[#FFF0E8] text-[#C96B45] text-[12px] font-bold dark:bg-orange-500/15 dark:text-orange-300">
                             HIGH
                           </span>
                         )}
 
-                        <span className="px-2 py-0.5 rounded-none bg-surface-2 text-[11px] font-mono text-fg-2 flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-full bg-surface-2 text-[11px] font-mono text-fg-2 flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           Due {deadlineDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           {diffDays <= 2 && diffDays >= 0 && (
@@ -205,7 +205,7 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
                     {/* Bottom: Read Tracker Bar & Action */}
                     <div className="flex items-center justify-between pt-2.5 border-t border-line mt-1 flex-wrap gap-2">
                       <div className="flex items-center gap-2">
-                        <div className="px-2.5 py-1 rounded-none bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-bold flex items-center gap-1.5">
+                        <div className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-bold flex items-center gap-1.5">
                           <Eye className="w-3.5 h-3.5" />
                           <span>{readCount} Opened</span>
                         </div>
@@ -215,7 +215,7 @@ export const FacultyAssignmentsCard: React.FC<FacultyAssignmentsCardProps> = ({
                             href={task.attachmentUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-2.5 py-1 rounded-none bg-surface-2 text-[11px] font-medium text-fg-2 hover:bg-surface-3 flex items-center gap-1 transition-colors"
+                            className="px-2.5 py-1 rounded-full bg-surface-2 text-[11px] font-medium text-fg-2 hover:bg-surface-3 flex items-center gap-1 transition-colors"
                           >
                             <Link2 className="w-3 h-3" />
                             <span>Attachment</span>

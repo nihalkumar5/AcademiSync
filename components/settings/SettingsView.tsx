@@ -84,7 +84,7 @@ const Section = ({
 );
 
 const Group = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`border border-line bg-surface divide-y divide-line-soft ${className}`}>
+  <div className={`rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft ${className}`}>
     {children}
   </div>
 );
@@ -94,7 +94,7 @@ const rowInteractive = 'cursor-pointer hover:bg-surface-2 transition-colors';
 
 const RowIcon = ({ icon: Icon, tone = 'default' }: { icon: React.ElementType; tone?: 'default' | 'danger' }) => (
   <span
-    className={`w-8 h-8 shrink-0 flex items-center justify-center border ${
+    className={`rounded-xl w-8 h-8 shrink-0 flex items-center justify-center border ${
       tone === 'danger'
         ? 'border-rose-200 dark:border-rose-500/25 text-rose-600 dark:text-rose-400'
         : 'border-line-soft text-fg'
@@ -774,7 +774,7 @@ ${PLAY_STORE_URL}
                 )}
               </Group>
             ) : (
-              <div className="border border-line bg-surface p-4 sm:p-5">
+              <div className="rounded-card border border-line bg-surface p-4 sm:p-5">
                 {isFaculty ? (
                 <form onSubmit={async (e) => { 
                   await handleSaveProfile(e); 
@@ -786,7 +786,7 @@ ${PLAY_STORE_URL}
                       <select
                         value={facultyTitle}
                         onChange={(e) => setFacultyTitle(e.target.value)}
-                        className="px-3.5 py-2.5 bg-surface border border-line text-sm font-semibold text-fg focus:outline-none"
+                        className="rounded-field px-3.5 py-2.5 bg-surface border border-line text-sm font-semibold text-fg focus:outline-none"
                       >
                         {['Prof.', 'Dr.', 'Asst. Prof.', 'Assoc. Prof.', 'Lecturer'].map(t => (
                           <option key={t} value={t}>{t}</option>
@@ -802,7 +802,7 @@ ${PLAY_STORE_URL}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Your full name"
                         required
-                        className="px-3.5 py-2.5 bg-surface border border-line text-sm font-medium text-fg focus:outline-none"
+                        className="rounded-field px-3.5 py-2.5 bg-surface border border-line text-sm font-medium text-fg focus:outline-none"
                       />
                     </div>
                   </div>
@@ -815,7 +815,7 @@ ${PLAY_STORE_URL}
                       onChange={(e) => setCollege(e.target.value)}
                       placeholder="e.g. Bennett University"
                       required
-                      className="px-3.5 py-2.5 bg-surface border border-line text-sm font-medium text-fg focus:outline-none"
+                      className="rounded-field px-3.5 py-2.5 bg-surface border border-line text-sm font-medium text-fg focus:outline-none"
                     />
                   </div>
 
@@ -851,10 +851,10 @@ ${PLAY_STORE_URL}
                           }}
                           placeholder={facultyDepartment || 'Select your department'}
                           autoComplete="off"
-                          className="w-full px-3.5 py-2.5 bg-surface border border-line text-sm font-medium text-fg focus:outline-none"
+                          className="rounded-field w-full px-3.5 py-2.5 bg-surface border border-line text-sm font-medium text-fg focus:outline-none"
                         />
                         {departmentQuery !== null && (
-                          <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-surface border border-line shadow-2xl z-50">
+                          <div className="rounded-card overflow-hidden absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-surface border border-line shadow-2xl z-50">
                             {filterBranches(departmentQuery).length > 0 ? (
                               filterBranches(departmentQuery).map((b) => (
                                 <div
@@ -882,7 +882,7 @@ ${PLAY_STORE_URL}
                         value={facultyOfficeRoom}
                         onChange={(e) => setFacultyOfficeRoom(e.target.value)}
                         placeholder="e.g. Block C, Room 304"
-                        className="px-3.5 py-2.5 bg-surface border border-line text-sm font-medium text-fg focus:outline-none"
+                        className="rounded-field px-3.5 py-2.5 bg-surface border border-line text-sm font-medium text-fg focus:outline-none"
                       />
                     </div>
                   </div>
@@ -895,7 +895,7 @@ ${PLAY_STORE_URL}
                         value={facultyEmployeeId}
                         onChange={(e) => setFacultyEmployeeId(e.target.value)}
                         placeholder="e.g. FAC-204"
-                        className="px-3.5 py-2.5 bg-surface border border-line text-sm font-medium text-fg focus:outline-none"
+                        className="rounded-field px-3.5 py-2.5 bg-surface border border-line text-sm font-medium text-fg focus:outline-none"
                       />
                     </div>
 
@@ -906,16 +906,16 @@ ${PLAY_STORE_URL}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="faculty@college.edu.in"
-                        className="px-3.5 py-2.5 bg-surface border border-line text-sm font-medium text-fg focus:outline-none"
+                        className="rounded-field px-3.5 py-2.5 bg-surface border border-line text-sm font-medium text-fg focus:outline-none"
                       />
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3 pt-3">
-                    <button type="submit" className="bg-ink text-on-ink px-5 h-11 text-[14px] font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm">
+                    <button type="submit" className="rounded-full bg-ink text-on-ink px-5 h-11 text-[14px] font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm">
                       Save Faculty Profile
                     </button>
-                    <button type="button" onClick={() => setIsEditingAcademic(false)} className="px-4 h-11 text-[14px] font-semibold text-muted hover:text-fg transition-colors cursor-pointer">
+                    <button type="button" onClick={() => setIsEditingAcademic(false)} className="rounded-full px-4 h-11 text-[14px] font-semibold text-muted hover:text-fg transition-colors cursor-pointer">
                       Cancel
                     </button>
                   </div>
@@ -928,7 +928,7 @@ ${PLAY_STORE_URL}
                   {profile.isBatchSynced ? (
                     <>
                       {/* Locked Batch Banner */}
-                      <div className="flex items-center justify-between p-3.5 bg-emerald-500/10 border border-emerald-500/25">
+                      <div className="rounded-tile flex items-center justify-between p-3.5 bg-emerald-500/10 border border-emerald-500/25">
                         <div className="flex items-center gap-2.5">
                           <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                           <div className="flex flex-col">
@@ -940,7 +940,7 @@ ${PLAY_STORE_URL}
                             </span>
                           </div>
                         </div>
-                        <span className="text-[12px] font-mono font-bold bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 px-2 py-0.5">
+                        <span className="rounded-full text-[12px] font-mono font-bold bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 px-2 py-0.5">
                           Locked
                         </span>
                       </div>
@@ -948,7 +948,7 @@ ${PLAY_STORE_URL}
                       {/* Full Name */}
                       <div className="flex flex-col gap-1.5">
                         <label className="section-label">Full Name</label>
-                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line">
+                        <div className="rounded-field flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line">
                           <User className="w-4 h-4 text-[#6B6B6B] shrink-0" />
                           <input
                             type="text"
@@ -965,7 +965,7 @@ ${PLAY_STORE_URL}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1.5">
                           <label className="section-label">Roll Number</label>
-                          <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line">
+                          <div className="rounded-field flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line">
                             <Hash className="w-4 h-4 text-muted shrink-0" />
                             <input
                               type="text"
@@ -979,7 +979,7 @@ ${PLAY_STORE_URL}
                         </div>
                         <div className="flex flex-col gap-1.5">
                           <label className="section-label">Institute Email</label>
-                          <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line">
+                          <div className="rounded-field flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line">
                             <Mail className="w-4 h-4 text-muted shrink-0" />
                             <input
                               type="email"
@@ -996,7 +996,7 @@ ${PLAY_STORE_URL}
                       {/* Section (Optional) */}
                       <div className="flex flex-col gap-1.5">
                         <label className="section-label">Section (Optional)</label>
-                        <div className="flex items-center gap-2 px-3 py-2.5 bg-surface border border-line h-[44px]">
+                        <div className="rounded-field flex items-center gap-2 px-3 py-2.5 bg-surface border border-line h-[44px]">
                           <input
                             type="text"
                             value={section}
@@ -1012,7 +1012,7 @@ ${PLAY_STORE_URL}
                       {/* Full Name */}
                       <div className="flex flex-col gap-1.5">
                         <label className="section-label">Full Name</label>
-                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line">
+                        <div className="rounded-field flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line">
                           <User className="w-4 h-4 text-[#6B6B6B] shrink-0" />
                           <input
                             type="text"
@@ -1030,7 +1030,7 @@ ${PLAY_STORE_URL}
                         <label className="section-label">College / University</label>
                         <div className="relative w-full">
                           {college && !isChangingCollege ? (
-                            <div className="flex items-center justify-between px-3.5 py-2.5 bg-surface border border-line">
+                            <div className="rounded-field flex items-center justify-between px-3.5 py-2.5 bg-surface border border-line">
                               <div className="flex items-center gap-2.5 overflow-hidden">
                                 <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                                 <span className="text-[13px] font-bold text-fg truncate">{college}</span>
@@ -1048,7 +1048,7 @@ ${PLAY_STORE_URL}
                             </div>
                           ) : (
                             <div className="relative">
-                              <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line-strong">
+                              <div className="rounded-field flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line-strong">
                                 <Building2 className="w-4 h-4 text-[#6B6B6B] shrink-0" />
                                 <input
                                   type="text"
@@ -1073,10 +1073,10 @@ ${PLAY_STORE_URL}
                                 )}
                               </div>
                               {showCollegeDropdown && (
-                                <div className="absolute top-full left-0 w-full mt-1.5 max-h-60 overflow-y-auto bg-surface border border-slate-200 dark:border-white/[0.1] shadow-2xl rounded-none z-50 divide-y divide-slate-100 dark:divide-white/[0.06]">
+                                <div className="absolute top-full left-0 w-full mt-1.5 max-h-60 overflow-y-auto bg-surface border border-slate-200 dark:border-white/[0.1] shadow-2xl rounded-card z-50 divide-y divide-slate-100 dark:divide-white/[0.06]">
                                   <div className="p-2 bg-slate-50 dark:bg-zinc-900/80 text-[12px] font-bold text-slate-400 flex items-center justify-between sticky top-0 backdrop-blur-sm">
                                     <span>{isLoadingColleges ? 'Searching verified directory...' : 'Select Your University'}</span>
-                                    <span className="text-[11px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 rounded-none font-mono font-bold">SheerID Verified</span>
+                                    <span className="text-[11px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 rounded-full font-mono font-bold">SheerID Verified</span>
                                   </div>
 
                                   {suggestedColleges.length > 0 ? (
@@ -1123,7 +1123,7 @@ ${PLAY_STORE_URL}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1.5">
                           <label className="section-label">Roll Number</label>
-                          <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line">
+                          <div className="rounded-field flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line">
                             <Hash className="w-4 h-4 text-muted shrink-0" />
                             <input
                               type="text"
@@ -1136,7 +1136,7 @@ ${PLAY_STORE_URL}
                         </div>
                         <div className="flex flex-col gap-1.5">
                           <label className="section-label">Institute Email</label>
-                          <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line">
+                          <div className="rounded-field flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line">
                             <Mail className="w-4 h-4 text-muted shrink-0" />
                             <input
                               type="email"
@@ -1154,7 +1154,7 @@ ${PLAY_STORE_URL}
                         <div className="flex flex-col gap-1.5">
                           <label className="section-label">Degree / Programme</label>
                           <div className="relative w-full">
-                            <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line">
+                            <div className="rounded-field flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line">
                               <GraduationCap className="w-4 h-4 text-muted shrink-0" />
                               <input
                                 type="text"
@@ -1181,7 +1181,7 @@ ${PLAY_STORE_URL}
                               />
                             </div>
                             {showProgrammeDropdown && (
-                              <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-surface border border-line shadow-2xl z-50">
+                              <div className="rounded-card overflow-hidden absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-surface border border-line shadow-2xl z-50">
                                 {filterProgrammes(programme).length > 0 ? (
                                   filterProgrammes(programme).map(p => (
                                     <div
@@ -1205,7 +1205,7 @@ ${PLAY_STORE_URL}
                         <div className="flex flex-col gap-1.5">
                           <label className="section-label">Major / Branch</label>
                           <div className="relative w-full">
-                            <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line">
+                            <div className="rounded-field flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line">
                               <Building2 className="w-4 h-4 text-muted shrink-0" />
                               <input
                                 type="text"
@@ -1232,7 +1232,7 @@ ${PLAY_STORE_URL}
                               />
                             </div>
                             {showBranchDropdown && (
-                              <div className="absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-surface border border-line shadow-2xl z-50">
+                              <div className="rounded-card overflow-hidden absolute top-full left-0 w-full mt-1 max-h-48 overflow-y-auto bg-surface border border-line shadow-2xl z-50">
                                 {filterBranches(branch).length > 0 ? (
                                   filterBranches(branch).map(b => (
                                     <div
@@ -1258,7 +1258,7 @@ ${PLAY_STORE_URL}
                       <div className="grid grid-cols-3 gap-3 items-start">
                         <div className="flex flex-col gap-1.5">
                           <label className="text-[12px] font-bold text-muted h-4 flex items-center">Year</label>
-                          <div className="flex items-center gap-2 px-3 py-2.5 bg-surface border border-line h-[44px]">
+                          <div className="rounded-field flex items-center gap-2 px-3 py-2.5 bg-surface border border-line h-[44px]">
                             <CalendarDays className="w-4 h-4 text-muted shrink-0" />
                             <input
                               type="number"
@@ -1273,7 +1273,7 @@ ${PLAY_STORE_URL}
                         </div>
                         <div className="flex flex-col gap-1.5">
                           <label className="text-[12px] font-bold text-muted h-4 flex items-center">Semester</label>
-                          <div className="flex items-center gap-2 px-3 py-2.5 bg-surface border border-line h-[44px]">
+                          <div className="rounded-field flex items-center gap-2 px-3 py-2.5 bg-surface border border-line h-[44px]">
                             <input
                               type="number"
                               min="1"
@@ -1288,7 +1288,7 @@ ${PLAY_STORE_URL}
                         </div>
                         <div className="flex flex-col gap-1.5">
                           <label className="text-[12px] font-bold text-muted h-4 flex items-center">Section</label>
-                          <div className="flex items-center gap-2 px-3 py-2.5 bg-surface border border-line h-[44px]">
+                          <div className="rounded-field flex items-center gap-2 px-3 py-2.5 bg-surface border border-line h-[44px]">
                             <input
                               type="text"
                               value={section}
@@ -1303,11 +1303,11 @@ ${PLAY_STORE_URL}
                   )}
 
                   <div className="flex items-center gap-3 pt-3">
-                    <button type="submit" className="bg-ink text-on-ink px-5 h-11 text-[14px] font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm">
+                    <button type="submit" className="rounded-full bg-ink text-on-ink px-5 h-11 text-[14px] font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm">
                       {profile.college && profile.branch ? 'Save Changes' : 'Create Profile'}
                     </button>
                     {profile.college && (
-                      <button type="button" onClick={() => setIsEditingAcademic(false)} className="px-4 h-11 text-[14px] font-semibold text-muted hover:text-fg transition-colors cursor-pointer">
+                      <button type="button" onClick={() => setIsEditingAcademic(false)} className="rounded-full px-4 h-11 text-[14px] font-semibold text-muted hover:text-fg transition-colors cursor-pointer">
                         Cancel
                       </button>
                     )}
@@ -1387,7 +1387,7 @@ ${PLAY_STORE_URL}
                   </button>
                 </Group>
               ) : (
-                <div className="border border-dashed border-line p-5 flex flex-col gap-4">
+                <div className="rounded-card border border-dashed border-line p-5 flex flex-col gap-4">
                   <div className="flex items-start gap-3">
                     <RowIcon icon={Users} />
                     <div>
@@ -1442,7 +1442,7 @@ ${PLAY_STORE_URL}
               <div className={rowBase}>
                 <RowIcon icon={settings.theme === 'dark' ? Moon : Sun} />
                 <RowText label="Appearance" />
-                <div role="radiogroup" aria-label="Theme" className="flex shrink-0 border border-line p-0.5">
+                <div role="radiogroup" aria-label="Theme" className="rounded-full flex shrink-0 border border-line p-0.5">
                   {(['light', 'dark'] as const).map((t) => (
                     <button
                       key={t}
@@ -1450,7 +1450,7 @@ ${PLAY_STORE_URL}
                       role="radio"
                       aria-checked={settings.theme === t}
                       onClick={() => updateSettings({ theme: t })}
-                      className={`h-9 px-3 text-[13px] font-medium capitalize cursor-pointer transition-colors ${
+                      className={`rounded-full h-9 px-3 text-[13px] font-medium capitalize cursor-pointer transition-colors ${
                         settings.theme === t
                           ? 'bg-ink text-on-ink'
                           : 'text-muted hover:text-fg'
@@ -1464,7 +1464,7 @@ ${PLAY_STORE_URL}
               <div className={rowBase}>
                 <RowIcon icon={Smartphone} />
                 <RowText label="Haptics" hint="Buzz on tap" />
-                <div role="radiogroup" aria-label="Haptics" className="flex shrink-0 border border-line p-0.5">
+                <div role="radiogroup" aria-label="Haptics" className="rounded-full flex shrink-0 border border-line p-0.5">
                   {([true, false] as const).map((on) => (
                     <button
                       key={String(on)}
@@ -1476,7 +1476,7 @@ ${PLAY_STORE_URL}
                         if (on) setHapticsEnabled(true);
                         updateSettings({ hapticsEnabled: on });
                       }}
-                      className={`h-9 px-3 text-[13px] font-medium cursor-pointer transition-colors ${
+                      className={`rounded-full h-9 px-3 text-[13px] font-medium cursor-pointer transition-colors ${
                         (settings.hapticsEnabled !== false) === on ? 'bg-ink text-on-ink' : 'text-muted hover:text-fg'
                       }`}
                     >
@@ -1576,7 +1576,7 @@ ${PLAY_STORE_URL}
             <button
               type="button"
               onClick={() => setConfirmSignOut(true)}
-              className="w-full h-11 inline-flex items-center justify-center gap-2 border border-rose-200 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 text-[14px] font-semibold hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer"
+              className="rounded-full w-full h-11 inline-flex items-center justify-center gap-2 border border-rose-200 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 text-[14px] font-semibold hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer"
             >
               <LogOut className="w-4 h-4" /> Sign out
             </button>
@@ -1613,7 +1613,7 @@ ${PLAY_STORE_URL}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.94, y: 12 }}
               transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-              className="relative w-full max-w-sm bg-surface border border-line shadow-2xl p-6 sm:p-7 overflow-hidden z-10 text-left flex flex-col gap-5 font-sans"
+              className="rounded-sheet relative w-full max-w-sm bg-surface border border-line shadow-2xl p-6 sm:p-7 overflow-hidden z-10 text-left flex flex-col gap-5 font-sans"
             >
               {/* Close Button */}
               <button
@@ -1622,13 +1622,13 @@ ${PLAY_STORE_URL}
                   setIsHolding(false);
                   setShowResetModal(false);
                 }}
-                className="absolute top-5 right-5 p-1 text-[#6B6B6B] hover:text-fg transition-colors cursor-pointer"
+                className="rounded-full absolute top-5 right-5 p-1 text-[#6B6B6B] hover:text-fg transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
 
               {/* Warning Icon Header */}
-              <div className="w-10 h-10 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+              <div className="rounded-xl w-10 h-10 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-5 h-5" />
               </div>
 
@@ -1669,7 +1669,7 @@ ${PLAY_STORE_URL}
                   onMouseLeave={() => setIsHolding(false)}
                   onTouchStart={() => setIsHolding(true)}
                   onTouchEnd={() => setIsHolding(false)}
-                  className="relative overflow-hidden w-full h-12 border border-rose-600 dark:border-rose-500 bg-surface flex items-center justify-center text-rose-600 dark:text-rose-400 text-[13px] font-bold tracking-wide cursor-pointer select-none touch-manipulation transition-transform"
+                  className="rounded-full relative overflow-hidden w-full h-12 border border-rose-600 dark:border-rose-500 bg-surface flex items-center justify-center text-rose-600 dark:text-rose-400 text-[13px] font-bold tracking-wide cursor-pointer select-none touch-manipulation transition-transform"
                 >
                   <motion.div
                     style={{ width: `${holdProgress}%` }}
@@ -1717,7 +1717,7 @@ ${PLAY_STORE_URL}
           description="A shared timetable already exists for this college, branch, and semester."
         >
           <div className="flex flex-col gap-4 mt-3 text-left">
-            <div className="p-4 border border-line bg-surface-2 flex flex-col gap-2">
+            <div className="rounded-tile p-4 border border-line bg-surface-2 flex flex-col gap-2">
               <h4 className="text-sm font-bold text-fg">
                 {matchedBatchData.college}
               </h4>
@@ -1754,7 +1754,7 @@ ${PLAY_STORE_URL}
                   });
                   showToast('Profile Saved', 'Saved manually without syncing to batch.', 'success');
                 }}
-                className="px-4 h-9 border border-line text-[13px] font-semibold hover:bg-surface-2 text-fg transition-colors cursor-pointer rounded-none"
+                className="px-4 h-9 border border-line text-[13px] font-semibold hover:bg-surface-2 text-fg transition-colors cursor-pointer rounded-full"
               >
                 Keep Local
               </button>
@@ -1767,7 +1767,7 @@ ${PLAY_STORE_URL}
                     await joinBatchTimetable(keyToJoin);
                   }
                 }}
-                className="px-4 h-9 bg-ink text-on-ink border border-line-strong text-[13px] font-semibold hover:opacity-90 transition-opacity cursor-pointer rounded-none shadow-sm"
+                className="px-4 h-9 bg-ink text-on-ink border border-line-strong text-[13px] font-semibold hover:opacity-90 transition-opacity cursor-pointer rounded-full shadow-sm"
               >
                 Sync & Join Batch
               </button>
@@ -1801,7 +1801,7 @@ ${PLAY_STORE_URL}
                       setShowSettingModal(false);
                       showToast('Updated', 'Class reminder updated', 'success');
                     }}
-                    className={`flex items-center gap-2 h-11 px-3 border text-[14px] font-semibold cursor-pointer ${
+                    className={`rounded-full flex items-center gap-2 h-11 px-3 border text-[14px] font-semibold cursor-pointer ${
                       settings.classReminderMinutes === mins
                         ? 'border-line-strong bg-ink text-on-ink'
                         : 'border-line bg-surface text-fg'
@@ -1825,7 +1825,7 @@ ${PLAY_STORE_URL}
                   onChange={(e) => {
                     updateSettings({ eveningCarryReminderTime: e.target.value });
                   }}
-                  className="w-full px-3.5 py-3 bg-surface border border-line text-[14px] font-bold text-fg focus:outline-none"
+                  className="rounded-field w-full px-3.5 py-3 bg-surface border border-line text-[14px] font-bold text-fg focus:outline-none"
                 />
                 <button
                   type="button"
@@ -1833,7 +1833,7 @@ ${PLAY_STORE_URL}
                     setShowSettingModal(false);
                     showToast('Updated', 'Evening reminder updated', 'success');
                   }}
-                  className="w-full mt-2 h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+                  className="rounded-full w-full mt-2 h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
                 >
                   Save Time
                 </button>
@@ -1854,7 +1854,7 @@ ${PLAY_STORE_URL}
                       setShowSettingModal(false);
                       showToast('Updated', 'Homework warning updated', 'success');
                     }}
-                    className={`flex items-center gap-2 h-11 px-3 border text-[14px] font-semibold cursor-pointer ${
+                    className={`rounded-full flex items-center gap-2 h-11 px-3 border text-[14px] font-semibold cursor-pointer ${
                       settings.homeworkWarningDays === days
                         ? 'border-line-strong bg-ink text-on-ink'
                         : 'border-line bg-surface text-fg'
@@ -1878,7 +1878,7 @@ ${PLAY_STORE_URL}
       >
         <div className="p-5 flex flex-col gap-4 max-h-[65vh] overflow-y-auto">
           <p className="text-[13px] text-muted">Shown on your profile, in the header and to your batchmates.</p>
-          <div role="tablist" aria-label="Character groups" className="grid grid-cols-3 border border-line p-0.5">
+          <div role="tablist" aria-label="Character groups" className="rounded-full grid grid-cols-3 border border-line p-0.5">
             {avatarGroups.map((g) => (
               <button
                 key={g.label}
@@ -1886,7 +1886,7 @@ ${PLAY_STORE_URL}
                 role="tab"
                 aria-selected={avatarTab === g.label}
                 onClick={() => setAvatarTab(g.label)}
-                className={`h-9 text-[13px] font-medium cursor-pointer transition-colors ${
+                className={`rounded-full h-9 text-[13px] font-medium cursor-pointer transition-colors ${
                   avatarTab === g.label
                     ? 'bg-ink text-on-ink'
                     : 'text-muted hover:text-fg'
@@ -1954,14 +1954,14 @@ ${PLAY_STORE_URL}
                   </div>
                 ))}
               </div>
-              <p className="text-[13px] leading-relaxed text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/25 px-3 py-2.5">
+              <p className="rounded-tile text-[13px] leading-relaxed text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/25 px-3 py-2.5">
                 This replaces your current classes, tasks, exams and settings{user ? ' here and in your account' : ''}. Your batch link stays as it is.
               </p>
               <div className="flex gap-2">
-                <button type="button" onClick={confirmImport} className="flex-1 h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity cursor-pointer">
+                <button type="button" onClick={confirmImport} className="rounded-full flex-1 h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity cursor-pointer">
                   Restore
                 </button>
-                <button type="button" onClick={() => setPendingImport(null)} className="h-11 px-4 border border-line text-[14px] font-semibold text-fg cursor-pointer">
+                <button type="button" onClick={() => setPendingImport(null)} className="rounded-full h-11 px-4 border border-line text-[14px] font-semibold text-fg cursor-pointer">
                   Cancel
                 </button>
               </div>
@@ -2013,7 +2013,7 @@ ${PLAY_STORE_URL}
               <button
                 type="button"
                 onClick={() => { setShowCloudSyncModal(false); setConfirmSignOut(true); }}
-                className="w-full h-11 inline-flex items-center justify-center gap-2 border border-rose-200 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 text-[14px] font-semibold hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer"
+                className="rounded-full w-full h-11 inline-flex items-center justify-center gap-2 border border-rose-200 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 text-[14px] font-semibold hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer"
               >
                 <LogOut className="w-4 h-4" /> Sign out
               </button>
@@ -2021,7 +2021,7 @@ ${PLAY_STORE_URL}
           ) : (
             <>
               <div className="flex items-start gap-3">
-                <span className="w-10 h-10 shrink-0 flex items-center justify-center border border-line-soft text-fg">
+                <span className="rounded-xl w-10 h-10 shrink-0 flex items-center justify-center border border-line-soft text-fg">
                   <Cloud className="w-5 h-5" strokeWidth={1.75} />
                 </span>
                 <div>
@@ -2111,7 +2111,7 @@ ${PLAY_STORE_URL}
                       <span className="text-[14px] font-bold text-fg">
                         Regenerate batch code
                       </span>
-                      <span className="text-[12px] font-mono font-bold text-amber-700 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-500/20 px-1.5 py-0.5 border border-amber-500/30">
+                      <span className="rounded-full text-[12px] font-mono font-bold text-amber-700 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-500/20 px-1.5 py-0.5 border border-amber-500/30">
                         Pilot Only
                       </span>
                     </div>
@@ -2140,7 +2140,7 @@ ${PLAY_STORE_URL}
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              <div className="p-4 border border-red-600/30 bg-red-600/10 text-red-600 flex flex-col gap-2">
+              <div className="rounded-tile p-4 border border-red-600/30 bg-red-600/10 text-red-600 flex flex-col gap-2">
                 <span className="text-[14px] font-bold">Are you sure you want to leave?</span>
                 <span className="text-[12px] opacity-90 leading-snug">
                   All batch classes, schedule, and shared tasks will be removed. Your personal custom classes, notes, and private tasks will be preserved.
@@ -2149,7 +2149,7 @@ ${PLAY_STORE_URL}
               <div className="flex items-center justify-end gap-2 mt-2">
                 <button 
                   onClick={() => setShowLeaveConfirm(false)}
-                  className="px-4 h-9 border border-line text-[13px] font-semibold text-fg hover:bg-surface-2 transition-colors"
+                  className="rounded-full px-4 h-9 border border-line text-[13px] font-semibold text-fg hover:bg-surface-2 transition-colors"
                 >
                   Cancel
                 </button>
@@ -2159,7 +2159,7 @@ ${PLAY_STORE_URL}
                     setShowLeaveConfirm(false);
                     await disconnectBatchTimetable();
                   }}
-                  className="px-4 h-9 bg-red-600 text-white text-[13px] font-semibold hover:bg-red-700 transition-colors cursor-pointer"
+                  className="rounded-full px-4 h-9 bg-red-600 text-white text-[13px] font-semibold hover:bg-red-700 transition-colors cursor-pointer"
                 >
                   Confirm & Leave
                 </button>
@@ -2201,19 +2201,19 @@ ${PLAY_STORE_URL}
         maxWidth="md"
       >
         <div className="flex flex-col gap-4 p-1 text-left font-sans">
-          <div className="p-3.5 bg-surface-2 border border-line-soft flex items-center justify-between">
+          <div className="rounded-tile p-3.5 bg-surface-2 border border-line-soft flex items-center justify-between">
             <div className="flex flex-col">
               <span className="section-label">Current code</span>
               <span className="text-[16px] font-mono font-bold tracking-[2.5px] text-fg">
                 {currentBatchData?.inviteCode || '------'}
               </span>
             </div>
-            <div className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-[12px] font-mono font-bold ">
+            <div className="rounded-full px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-[12px] font-mono font-bold ">
               Will Expire
             </div>
           </div>
 
-          <div className="p-3.5 border border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/[0.06] flex flex-col gap-1">
+          <div className="rounded-tile p-3.5 border border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/[0.06] flex flex-col gap-1">
             <span className="text-[12px] font-bold text-amber-700 dark:text-amber-400 ">How this works</span>
             <p className="text-[12px] text-muted leading-relaxed">
               A new official 6-character code will be generated immediately. Existing students who already joined will stay in the batch, but any new students must use the new code.
@@ -2225,7 +2225,7 @@ ${PLAY_STORE_URL}
               type="button"
               onClick={() => setShowRegenerateCodeModal(false)}
               disabled={isRegeneratingCode}
-              className="px-4 h-9 border border-line text-[13px] font-semibold text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+              className="rounded-full px-4 h-9 border border-line text-[13px] font-semibold text-fg hover:bg-surface-2 transition-colors cursor-pointer"
             >
               Cancel
             </button>

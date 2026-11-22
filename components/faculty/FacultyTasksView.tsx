@@ -198,7 +198,7 @@ export const FacultyTasksView: React.FC = () => {
       {linkedBatches.length > 0 && (<>
       {/* Search Bar */}
       <div className="relative w-full">
-        <div className="flex items-center gap-3 px-4 py-2.5 h-[44px] rounded-none bg-surface border border-line shadow-xs">
+        <div className="flex items-center gap-3 px-4 py-2.5 h-[44px] rounded-field bg-surface border border-line shadow-xs">
           <Search className="w-4 h-4 text-muted shrink-0" />
           <input
             type="text"
@@ -211,7 +211,7 @@ export const FacultyTasksView: React.FC = () => {
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="p-1 rounded-none text-[#6B6B6B] hover:text-fg transition-colors"
+              className="p-1 rounded-full text-[#6B6B6B] hover:text-fg transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -226,7 +226,7 @@ export const FacultyTasksView: React.FC = () => {
             type="button"
             onClick={() => setSelectedBatchFilter('all')}
             className={clsx(
- 'px-3.5 py-1.5 rounded-[3px] text-xs font-mono font-semibold transition-colors cursor-pointer whitespace-nowrap border',
+ 'px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition-colors cursor-pointer whitespace-nowrap border',
  selectedBatchFilter === 'all'
  ? 'bg-ink text-on-ink border-line-strong shadow-xs'
  : 'bg-transparent text-muted border-line hover:border-black/30 dark:hover:border-white/30'
@@ -245,7 +245,7 @@ export const FacultyTasksView: React.FC = () => {
                 type="button"
                 onClick={() => setSelectedBatchFilter(batch.batchKey)}
                 className={clsx(
- 'px-3.5 py-1.5 rounded-[3px] text-xs font-mono font-semibold transition-colors cursor-pointer whitespace-nowrap border',
+ 'px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition-colors cursor-pointer whitespace-nowrap border',
  isSel
  ? 'bg-ink text-on-ink border-line-strong shadow-xs'
  : 'bg-transparent text-muted border-line hover:border-black/30 dark:hover:border-white/30'
@@ -306,18 +306,18 @@ export const FacultyTasksView: React.FC = () => {
             return (
               <div
                 key={task.id}
-                className="relative flex flex-col p-4 sm:p-[18px] rounded-none border border-black/[0.05] dark:border-[color:var(--card-accent-border)] transition-all w-full overflow-hidden shadow-xs hover:shadow-md"
+                className="relative flex flex-col p-4 sm:p-[18px] rounded-card border border-black/[0.05] dark:border-[color:var(--card-accent-border)] transition-all w-full overflow-hidden shadow-xs hover:shadow-md"
                 style={{
                   ['--card-accent-border' as any]: `${theme.accent}45`,
                 }}
               >
                 {/* Pastel backgrounds (exact match to HomeworkCard) */}
                 <div
-                  className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-none"
+                  className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-card"
                   style={{ backgroundColor: theme.bg }}
                 />
                 <div
-                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-none"
+                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-card"
                   style={{
                     background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
                   }}
@@ -335,18 +335,18 @@ export const FacultyTasksView: React.FC = () => {
                       </span>
 
                       {/* Batch Pill */}
-                      <span className="px-2 py-0.5 rounded-none text-[11px] font-mono font-bold uppercase bg-ink text-on-ink">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-mono font-bold uppercase bg-ink text-on-ink">
                         {batchLabel}
                       </span>
 
                       {/* Subject */}
-                      <span className="px-2 py-0.5 rounded-none text-[12px] font-mono font-bold bg-black/5 dark:bg-white/10 text-fg-2 border border-line-soft">
+                      <span className="px-2 py-0.5 rounded-full text-[12px] font-mono font-bold bg-black/5 dark:bg-white/10 text-fg-2 border border-line-soft">
                         {task.subjectName || 'Coursework'}
                       </span>
 
                       {/* Priority if High */}
                       {task.priority === 'High' && (
-                        <span className="px-2 py-0.5 rounded-none bg-[#FFF0E8] text-[#C96B45] text-[12px] font-bold font-mono dark:bg-orange-500/15 dark:text-orange-300">
+                        <span className="px-2 py-0.5 rounded-full bg-[#FFF0E8] text-[#C96B45] text-[12px] font-bold font-mono dark:bg-orange-500/15 dark:text-orange-300">
                           High priority
                         </span>
                       )}
@@ -362,7 +362,7 @@ export const FacultyTasksView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleDeleteAssignment(task)}
-                        className="p-1 rounded-none text-black/60 dark:text-white/30 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                        className="p-1 rounded-full text-black/60 dark:text-white/30 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
                         title="Delete Assignment" aria-label="Delete Assignment"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -389,7 +389,7 @@ export const FacultyTasksView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setSelectedTaskForTracking(task)}
-                        className="h-7 px-2.5 rounded-none bg-emerald-500/10 hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-mono font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-xs"
+                        className="h-7 px-2.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-mono font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-xs"
                         title="View student reads" aria-label="View student reads"
                       >
                         <Eye className="w-3.5 h-3.5" />
@@ -402,7 +402,7 @@ export const FacultyTasksView: React.FC = () => {
                           href={task.attachmentUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="h-7 px-2.5 rounded-none bg-surface-2 text-fg-2 hover:bg-surface-3 flex items-center gap-1 transition-colors text-[11px] font-medium"
+                          className="h-7 px-2.5 rounded-full bg-surface-2 text-fg-2 hover:bg-surface-3 flex items-center gap-1 transition-colors text-[11px] font-medium"
                         >
                           <Link2 className="w-3 h-3" />
                           <span>Attachment</span>
@@ -416,7 +416,7 @@ export const FacultyTasksView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleShareWhatsApp(task)}
-                        className="h-7 px-2.5 rounded-none border border-line hover:bg-surface-2 text-fg-2 transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
+                        className="h-7 px-2.5 rounded-full border border-line hover:bg-surface-2 text-fg-2 transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
                         title="Share to WhatsApp" aria-label="Share to WhatsApp"
                       >
                         <Share2 className="w-3 h-3" />
@@ -427,7 +427,7 @@ export const FacultyTasksView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setSelectedTaskForTracking(task)}
-                        className="h-7 px-2.5 rounded-none bg-ink text-on-ink font-semibold text-xs hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-1 shadow-xs"
+                        className="h-7 px-2.5 rounded-full bg-ink text-on-ink font-semibold text-xs hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-1 shadow-xs"
                       >
                         <span>Track</span>
                         <ExternalLink className="w-3 h-3 opacity-60" />

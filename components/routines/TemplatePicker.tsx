@@ -63,7 +63,7 @@ export const TemplatePicker: React.FC<{
                     key={t.title}
                     type="button"
                     onClick={() => onPick(t)}
-                    className={`group relative flex items-center gap-f3 sm:min-h-[89px] py-f3 pl-f3 pr-f5 text-left border transition-colors cursor-pointer ${
+                    className={`rounded-tile group relative flex items-center gap-f3 sm:min-h-[89px] py-f3 pl-f3 pr-f5 text-left border transition-colors cursor-pointer ${
                       added
                         ? 'border-line-soft bg-[#FAFAF9] dark:bg-white/[0.02]'
                         : 'border-[#E2E2DF] dark:border-white/[0.08] bg-surface hover:border-line-strong'

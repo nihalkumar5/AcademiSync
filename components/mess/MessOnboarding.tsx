@@ -208,18 +208,15 @@ ${PLAY_STORE_URL}
           >
             <div className="mb-12 relative">
               {onCancel && (
-                <button onClick={onCancel} className="absolute top-0 right-0 p-2 text-[#6B6B6B] hover:text-fg transition-colors">
+                <button onClick={onCancel} className="rounded-full absolute top-0 right-0 p-2 text-[#6B6B6B] hover:text-fg transition-colors">
                   <X className="w-6 h-6" />
                 </button>
               )}
               <Illustration name="mess" className="h-[150px] w-auto mb-f5" />
               <h2 className="page-title">
-                Hostel,<br />
-                Mess,<br />
-                Weekly,<br />
-                Menu
+                Mess menu
               </h2>
-              <p className="text-[14px] font-normal text-muted leading-[20px] mt-4 max-w-[280px]">
+              <p className="text-[14px] font-normal text-muted leading-[20px] mt-2 max-w-[280px]">
                 Upload the weekly menu once. We'll organise meals, timings and days automatically.
               </p>
 
@@ -241,7 +238,7 @@ ${PLAY_STORE_URL}
 
             {/* JOIN EXISTING */}
             {showJoinInput && (
-              <div className="mb-12 rounded-none border border-line bg-surface-2 p-5 flex flex-col md:flex-row md:items-center justify-between group gap-4 shadow-sm">
+              <div className="mb-12 rounded-card border border-line bg-surface-2 p-5 flex flex-col md:flex-row md:items-center justify-between group gap-4 shadow-sm">
                 <div className="flex flex-col">
                   <p className="text-[14px] text-fg font-medium leading-relaxed">
                     Have an invite code?
@@ -255,7 +252,7 @@ ${PLAY_STORE_URL}
                   <input 
                     type="text" 
                     placeholder="e.g. 1a2b3c4d"
-                    className="w-full bg-surface border border-line rounded-none px-3.5 py-2.5 text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors shadow-sm"
+                    className="w-full bg-surface border border-line rounded-field px-3.5 py-2.5 text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors shadow-sm"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && e.currentTarget.value) {
                         executeJoinMess(e.currentTarget.value);
@@ -293,7 +290,7 @@ ${PLAY_STORE_URL}
 
             <div className="flex-1 overflow-y-auto mb-8 pr-2 flex flex-col gap-6">
               {/* Meal Timings Card */}
-              <div className="bg-surface border border-line rounded-none p-6 shadow-sm">
+              <div className="bg-surface border border-line rounded-card p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-4 border-b border-line pb-3">
                   <h3 className="text-[13px] font-bold text-fg">
                     Meal timings
@@ -319,7 +316,7 @@ ${PLAY_STORE_URL}
                             })
                           }
                           placeholder="e.g. 8:00 - 10:00"
-                          className="bg-surface-2 border border-line rounded-none px-3.5 py-2 text-[13px] text-fg focus:outline-none focus:border-line-strong"
+                          className="bg-surface-2 border border-line rounded-field px-3.5 py-2 text-[13px] text-fg focus:outline-none focus:border-line-strong"
                         />
                       ) : (
                         <p className="text-[14px] font-mono font-medium text-fg">
@@ -337,7 +334,7 @@ ${PLAY_STORE_URL}
                 if (!isEditing && day !== 'Monday') return null;
 
                 return (
-                  <div key={day} className="bg-surface border border-line rounded-none p-6 shadow-sm">
+                  <div key={day} className="bg-surface border border-line rounded-card p-6 shadow-sm">
                     <h3 className="text-[15px] font-bold text-fg mb-6 border-b border-line pb-3">
                       {day.toUpperCase()} {(!isEditing && day === 'Monday') && <span className="text-[11px] text-muted ml-2 font-normal lowercase">(preview)</span>}
                     </h3>
@@ -366,7 +363,7 @@ ${PLAY_STORE_URL}
                                 });
                               }}
                               placeholder="e.g. Aloo Paratha, Curd"
-                              className="w-full bg-surface-2 border border-line rounded-none px-3.5 py-2.5 text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                              className="w-full bg-surface-2 border border-line rounded-field px-3.5 py-2.5 text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                             />
                           ) : (
                             <p className="text-[14px] text-fg leading-relaxed">
@@ -385,18 +382,18 @@ ${PLAY_STORE_URL}
               {isEditing ? (
                 <button 
                   onClick={() => setIsEditing(false)} 
-                  className="w-full h-11 rounded-none bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+                  className="w-full h-11 rounded-full bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
                 >
                   Done Editing
                 </button>
               ) : (
                 <>
-                  <Button onClick={handlePublish} className="w-full flex justify-center items-center gap-2 h-12 text-[14px] rounded-none shadow-sm">
+                  <Button onClick={handlePublish} className="w-full flex justify-center items-center gap-2 h-12 text-[14px] rounded-full shadow-sm">
                     Looks good <ArrowRight className="w-4 h-4" />
                   </Button>
                   <button 
                     onClick={() => setIsEditing(true)}
-                    className="w-full h-11 rounded-none border border-line text-[14px] font-semibold text-fg bg-white dark:bg-white/[0.06] hover:bg-black/5 dark:hover:bg-white/[0.1] transition-colors cursor-pointer"
+                    className="w-full h-11 rounded-full border border-line text-[14px] font-semibold text-fg bg-white dark:bg-white/[0.06] hover:bg-black/5 dark:hover:bg-white/[0.1] transition-colors cursor-pointer"
                   >
                     Edit menu
                   </button>
@@ -424,14 +421,14 @@ ${PLAY_STORE_URL}
               Anyone with this link can join.
             </p>
 
-            <div className="flex items-center justify-between w-full p-4 rounded-none border border-line bg-surface-2 mb-6 shadow-sm">
+            <div className="flex items-center justify-between w-full p-4 rounded-tile border border-line bg-surface-2 mb-6 shadow-sm">
               <span className="text-[15px] font-mono font-medium text-fg truncate mr-4">
                 intersemester.app/join/{messId}
               </span>
             </div>
 
             <div className="flex flex-col w-full gap-3">
-              <Button onClick={handleCopyLink} className="w-full h-12 text-[14px] rounded-none flex items-center justify-center gap-2 shadow-sm">
+              <Button onClick={handleCopyLink} className="w-full h-12 text-[14px] rounded-full flex items-center justify-center gap-2 shadow-sm">
                 {copying ? <><Check className="w-4 h-4" /> Copied</> : 'Copy invite link'}
               </Button>
 
@@ -462,7 +459,7 @@ ${PLAY_STORE_URL}
               placeholder="e.g., ext_..."
               value={inviteInput}
               onChange={(e) => setInviteInput(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-none border border-line bg-surface text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors shadow-sm"
+              className="w-full px-4 py-2.5 rounded-field border border-line bg-surface text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors shadow-sm"
               required
             />
           </div>

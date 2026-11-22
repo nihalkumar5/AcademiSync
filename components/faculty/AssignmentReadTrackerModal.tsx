@@ -79,7 +79,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
     >
       <div className="flex flex-col gap-4 text-left font-sans mt-2">
         {/* Progress & Stat Header */}
-        <div className="p-4 rounded-none bg-surface-2 border border-line-soft flex flex-col gap-3">
+        <div className="p-4 rounded-tile bg-surface-2 border border-line-soft flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-fg-2">
               Read Percentage
@@ -141,7 +141,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
               openedList.map((st, i) => (
                 <div
                   key={`${st.studentId}_${i}`}
-                  className="p-2.5 rounded-none bg-surface border border-line-soft flex items-center justify-between gap-2 shadow-2xs"
+                  className="p-2.5 rounded-tile bg-surface border border-line-soft flex items-center justify-between gap-2 shadow-2xs"
                 >
                   <div className="flex flex-col min-w-0">
                     <span className="text-xs font-bold text-fg truncate">
@@ -171,7 +171,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
               unopenedMembers.map((m, i) => (
                 <div
                   key={`${m.id || i}`}
-                  className="p-2.5 rounded-none bg-surface border border-line-soft flex items-center justify-between gap-2 opacity-75 shadow-2xs"
+                  className="p-2.5 rounded-tile bg-surface border border-line-soft flex items-center justify-between gap-2 opacity-75 shadow-2xs"
                 >
                   <div className="flex flex-col min-w-0">
                     <span className="text-xs font-medium text-fg truncate">
@@ -209,7 +209,7 @@ export const AssignmentReadTrackerModal: React.FC<AssignmentReadTrackerModalProp
             <button
               type="button"
               onClick={onClose}
-              className="px-4 h-9 rounded-none bg-ink text-on-ink text-[13px] font-semibold hover:opacity-85 transition-opacity cursor-pointer shadow-2xs"
+              className="px-4 h-9 rounded-full bg-ink text-on-ink text-[13px] font-semibold hover:opacity-85 transition-opacity cursor-pointer shadow-2xs"
             >
               Close
             </button>

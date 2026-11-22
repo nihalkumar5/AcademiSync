@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
 import { formatBatchDisplayName, getTodayDateString, getTomorrowDateString, isGenericExamTitle, sanitizeExamSubjectName } from '@/lib/timetableUtils';
 import { Exam } from '@/lib/types';
+import { PageActions, PageTitle } from '@/components/ui/PageActions';
 
 export const ExamsView: React.FC = () => {
   const { exams, deleteExam, isBatchCR, shareTimetableWithBatch, shareExamsWithBatch, joinSharedExams, showToast, user, profile, currentBatchData } = useApp();
@@ -275,7 +276,7 @@ export const ExamsView: React.FC = () => {
     return (
       <li key={exam.id} className={isPast ? 'opacity-60' : ''}>
         <div className="flex gap-4 p-4 sm:p-5">
-          <span className="w-12 shrink-0 flex flex-col items-center justify-center py-1.5 border border-line-soft bg-surface-2 leading-none">
+          <span className="rounded-xl w-12 shrink-0 flex flex-col items-center justify-center py-1.5 border border-line-soft bg-surface-2 leading-none">
             <span className="text-[11px] font-semibold uppercase tracking-[1px] text-rose-600 dark:text-rose-300">
               {dateObj.toLocaleDateString('en-US', { month: 'short' })}
             </span>
@@ -297,7 +298,7 @@ export const ExamsView: React.FC = () => {
                   {exam.room ? ` · ${exam.room.toLowerCase().startsWith('room') || exam.room.toLowerCase().startsWith('hall') ? exam.room : `Room ${exam.room}`}` : ''}
                 </p>
               </div>
-              <span className={`shrink-0 text-[12px] whitespace-nowrap ${isSoon ? 'px-2 py-0.5 font-semibold uppercase tracking-[1px] bg-rose-500/15 text-rose-700 dark:text-rose-300' : 'text-muted'}`}>
+              <span className={`rounded-full shrink-0 text-[12px] whitespace-nowrap ${isSoon ? 'px-2 py-0.5 font-semibold uppercase tracking-[1px] bg-rose-500/15 text-rose-700 dark:text-rose-300' : 'text-muted'}`}>
                 {relative}
               </span>
             </div>
@@ -308,7 +309,7 @@ export const ExamsView: React.FC = () => {
                   type="button"
                   onClick={() => toggleSyllabus(exam.id)}
                   aria-expanded={!!isExpanded}
-                  className="h-9 px-2 inline-flex items-center gap-1.5 text-[13px] font-medium text-fg hover:bg-surface-2 cursor-pointer"
+                  className="rounded-full h-9 px-2 inline-flex items-center gap-1.5 text-[13px] font-medium text-fg hover:bg-surface-2 cursor-pointer"
                 >
                   <BookOpen className="w-4 h-4" /> Syllabus
                   {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -316,14 +317,14 @@ export const ExamsView: React.FC = () => {
               )}
               <button
                 onClick={() => handleEditExam(exam)}
-                className="w-9 h-9 flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 cursor-pointer"
+                className="rounded-full w-9 h-9 flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 cursor-pointer"
                 title={`Edit ${exam.subjectName}`} aria-label={`Edit ${exam.subjectName}`}
               >
                 <Edit2 className="w-4 h-4" />
               </button>
               <button
                 onClick={() => handleDeleteExam(exam.id, exam.subjectName)}
-                className="w-9 h-9 flex items-center justify-center text-muted hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-500/10 cursor-pointer"
+                className="rounded-full w-9 h-9 flex items-center justify-center text-muted hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-500/10 cursor-pointer"
                 title={`Delete ${exam.subjectName}`} aria-label={`Delete ${exam.subjectName}`}
               >
                 <Trash2 className="w-4 h-4" />
@@ -331,7 +332,7 @@ export const ExamsView: React.FC = () => {
             </div>
 
             {exam.syllabus && isExpanded && (
-              <p className="mt-2 p-3 text-[14px] leading-relaxed whitespace-pre-wrap text-fg bg-surface-2 border border-line-soft">
+              <p className="rounded-tile mt-2 p-3 text-[14px] leading-relaxed whitespace-pre-wrap text-fg bg-surface-2 border border-line-soft">
                 {exam.syllabus}
               </p>
             )}
@@ -344,16 +345,14 @@ export const ExamsView: React.FC = () => {
   return (
     <div className="flex flex-col flex-1 max-w-4xl mx-auto w-full">
       <div className="mb-f5 sm:mb-f6">
-        <h2 className="page-title">
-          Exam,<br />
-          Schedule,<br />
-          Countdown
-        </h2>
-        <p className="text-[14px] font-normal text-[#6B6B6B] leading-[20px] mt-4 max-w-[280px]">
+        <PageTitle>
+          Exams
+        </PageTitle>
+        <p className="text-[14px] font-normal text-muted leading-[20px] mt-2 max-w-[280px]">
           Track your upcoming exams, syllabus, and preparation time.
         </p>
 
-        <div className="page-actions mt-8">
+        <PageActions>
           <button
             onClick={handleAddNewExam}
             className="btn btn-primary"
@@ -373,7 +372,7 @@ export const ExamsView: React.FC = () => {
             }}
             className="btn btn-secondary"
           >
-            Join Exams
+            <UserPlus className="w-4 h-4" /> Join Exams
           </button>
           {exams.length > 0 && isBatchCR && (
             <button
@@ -408,7 +407,7 @@ ${PLAY_STORE_URL}
               <Share2 className="w-4 h-4" /> Share
             </button>
           )}
-        </div>
+        </PageActions>
       </div>
 
       {nextExam && (() => {
@@ -418,7 +417,7 @@ ${PLAY_STORE_URL}
         return (
           <section
             aria-label="Next exam"
-            className="sheen-ink mb-f5 sm:mb-f6 w-full bg-[#111111] dark:bg-[#15171D] border border-[#111111] dark:border-white/[0.08] p-5 sm:p-6 text-left text-white"
+            className="rounded-card sheen-ink mb-f5 sm:mb-f6 w-full bg-[#111111] dark:bg-[#15171D] border border-[#111111] dark:border-white/[0.08] p-5 sm:p-6 text-left text-white"
           >
             <div className="flex items-center justify-between gap-3">
               <span className="inline-flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[1.4px]">
@@ -431,14 +430,14 @@ ${PLAY_STORE_URL}
               <div className="flex items-center -mr-2">
                 <button
                   onClick={() => handleEditExam(nextExam)}
-                  className="w-9 h-9 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 cursor-pointer"
+                  className="rounded-full w-9 h-9 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 cursor-pointer"
                   title="Edit next exam" aria-label="Edit next exam"
                 >
                   <Edit2 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handleDeleteExam(nextExam.id, nextExam.subjectName)}
-                  className="w-9 h-9 flex items-center justify-center text-white/70 hover:text-rose-300 hover:bg-white/10 cursor-pointer"
+                  className="rounded-full w-9 h-9 flex items-center justify-center text-white/70 hover:text-rose-300 hover:bg-white/10 cursor-pointer"
                   title="Delete next exam" aria-label="Delete next exam"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -454,7 +453,7 @@ ${PLAY_STORE_URL}
             </p>
 
             {/* Countdown */}
-            <div className="mt-5 grid grid-cols-3 border border-white/[0.12] divide-x divide-white/[0.12]" aria-label={`Starts in ${cd.days} days ${cd.hours} hours ${cd.minutes} minutes`}>
+            <div className="rounded-tile overflow-hidden mt-5 grid grid-cols-3 border border-white/[0.12] divide-x divide-white/[0.12]" aria-label={`Starts in ${cd.days} days ${cd.hours} hours ${cd.minutes} minutes`}>
               {[
                 { value: cd.days, label: cd.days === 1 ? 'Day' : 'Days' },
                 { value: cd.hours, label: cd.hours === 1 ? 'Hour' : 'Hours' },
@@ -478,13 +477,13 @@ ${PLAY_STORE_URL}
             {(nextExam.room || nextExam.durationMinutes || nextExam.syllabus) && (
               <div className="mt-5 flex flex-wrap gap-2">
                 {nextExam.room && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[14px] bg-white/[0.08] border border-white/[0.12]">
+                  <span className="rounded-full inline-flex items-center gap-1.5 px-3 py-1.5 text-[14px] bg-white/[0.08] border border-white/[0.12]">
                     <MapPin className="w-4 h-4 text-white/70" />
                     {nextExam.room.toLowerCase().startsWith('room') || nextExam.room.toLowerCase().startsWith('hall') ? nextExam.room : `Room ${nextExam.room}`}
                   </span>
                 )}
                 {nextExam.durationMinutes ? (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[14px] bg-white/[0.08] border border-white/[0.12]">
+                  <span className="rounded-full inline-flex items-center gap-1.5 px-3 py-1.5 text-[14px] bg-white/[0.08] border border-white/[0.12]">
                     <Hourglass className="w-4 h-4 text-white/70" />
                     {formatDuration(nextExam.durationMinutes)}
                   </span>
@@ -494,7 +493,7 @@ ${PLAY_STORE_URL}
                     type="button"
                     onClick={() => toggleSyllabus(nextExam.id)}
                     aria-expanded={!!expandedSyllabus[nextExam.id]}
-                    className="inline-flex items-center gap-1.5 px-3 h-9 text-[13px] bg-white/[0.08] border border-white/[0.12] hover:bg-white/[0.14] cursor-pointer"
+                    className="rounded-full inline-flex items-center gap-1.5 px-3 h-9 text-[13px] bg-white/[0.08] border border-white/[0.12] hover:bg-white/[0.14] cursor-pointer"
                   >
                     <BookOpen className="w-4 h-4 text-white/70" /> Syllabus
                     {expandedSyllabus[nextExam.id] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -514,7 +513,7 @@ ${PLAY_STORE_URL}
 
       <div className="flex flex-col">
         {exams.length === 0 ? (
-          <div className="py-12 border border-dashed border-line flex flex-col items-center justify-center text-center p-6">
+          <div className="rounded-card py-12 bg-surface-2 flex flex-col items-center justify-center text-center p-6">
             <Illustration name="exam" className="mb-f4 h-[180px] w-auto max-w-[260px]" />
             <h4 className="text-[17px] font-semibold text-fg">No exams scheduled</h4>
             <p className="text-[14px] text-muted mt-1 mb-5">
@@ -545,14 +544,14 @@ ${PLAY_STORE_URL}
                   </h3>
                   <span className="text-[13px] text-muted">{remainingUpcoming.length} {remainingUpcoming.length === 1 ? 'exam' : 'exams'}</span>
                 </div>
-                <ol className="border border-line bg-surface divide-y divide-line-soft">
+                <ol className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
                   {remainingUpcoming.map(renderExamCard)}
                 </ol>
               </section>
             )}
 
             {nextExam && remainingUpcoming.length === 0 && pastExams.length === 0 && (
-              <div className="border border-dashed border-line p-5 flex items-center gap-3">
+              <div className="rounded-card bg-surface-2 p-5 flex items-center gap-3">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-300 shrink-0" />
                 <p className="text-[14px] text-fg">
                   That&apos;s the last exam on your list. <span className="text-muted">Nothing else is scheduled after it.</span>
@@ -566,7 +565,7 @@ ${PLAY_STORE_URL}
                   <h3 className="text-[17px] font-semibold text-fg tracking-tight">Completed</h3>
                   <span className="text-[13px] text-muted">{pastExams.length}</span>
                 </div>
-                <ol className="border border-line bg-surface divide-y divide-line-soft">
+                <ol className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
                   {pastExams.map(renderExamCard)}
                 </ol>
               </section>
@@ -596,7 +595,7 @@ ${PLAY_STORE_URL}
               placeholder="e.g. 65SQ9K"
               value={inviteInput}
               onChange={(e) => setInviteInput(e.target.value.toUpperCase())}
-              className="w-full px-4 py-2.5 border border-line-soft bg-transparent text-[14px] font-mono font-bold tracking-[2px] focus:outline-none focus:border-line-strong text-fg transition-colors uppercase"
+              className="rounded-field w-full px-4 py-2.5 border border-line-soft bg-transparent text-[14px] font-mono font-bold tracking-[2px] focus:outline-none focus:border-line-strong text-fg transition-colors uppercase"
               required
             />
           </div>

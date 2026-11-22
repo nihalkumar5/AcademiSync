@@ -182,7 +182,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
   const renderChangeNote = (agg: AggregatedFacultySession, compact = false) => {
     const { isRescheduled, rescheduleMeta, movedTo, movedFrom, isExtra, isCancelled, cancelReason } = agg;
     const base = clsx(
-      'inline-flex items-center gap-1.5 rounded-none border font-mono font-medium self-start',
+      'inline-flex items-center gap-1.5 rounded-full border font-mono font-medium self-start',
       compact ? 'px-1.5 py-0.5 text-[10px] mb-1.5' : 'px-2.5 py-1 text-[11px] mb-2.5'
     );
     if (movedTo) {
@@ -403,21 +403,21 @@ export const FacultyWeeklyTimetable: React.FC = () => {
           {/* Week navigator: any date, not just this week */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1">
-              <button type="button" onClick={() => setSelectedDate(addDaysToDateStr(selectedDate, -7))} className="w-9 h-9 inline-flex items-center justify-center border border-line bg-surface hover:bg-surface-2 cursor-pointer" aria-label="Previous week">
+              <button type="button" onClick={() => setSelectedDate(addDaysToDateStr(selectedDate, -7))} className="rounded-full w-9 h-9 inline-flex items-center justify-center border border-line bg-surface hover:bg-surface-2 cursor-pointer" aria-label="Previous week">
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <span className="min-w-[120px] text-center text-[14px] font-semibold tracking-tight text-fg tabular-nums">{weekLabel}</span>
-              <button type="button" onClick={() => setSelectedDate(addDaysToDateStr(selectedDate, 7))} className="w-9 h-9 inline-flex items-center justify-center border border-line bg-surface hover:bg-surface-2 cursor-pointer" aria-label="Next week">
+              <button type="button" onClick={() => setSelectedDate(addDaysToDateStr(selectedDate, 7))} className="rounded-full w-9 h-9 inline-flex items-center justify-center border border-line bg-surface hover:bg-surface-2 cursor-pointer" aria-label="Next week">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
             <div className="flex items-center gap-1.5">
               {!isThisWeek && (
-                <button type="button" onClick={() => setSelectedDate(dayOfWeekForDate(todayStr) === 'Sunday' ? addDaysToDateStr(todayStr, 1) : todayStr)} className="h-9 px-3 text-[13px] font-semibold border border-line bg-surface hover:bg-surface-2 cursor-pointer">
+                <button type="button" onClick={() => setSelectedDate(dayOfWeekForDate(todayStr) === 'Sunday' ? addDaysToDateStr(todayStr, 1) : todayStr)} className="rounded-full h-9 px-3 text-[13px] font-semibold border border-line bg-surface hover:bg-surface-2 cursor-pointer">
                   Today
                 </button>
               )}
-              <label className="relative h-9 px-3 inline-flex items-center gap-1.5 text-[13px] font-semibold border border-line bg-surface hover:bg-surface-2 cursor-pointer">
+              <label className="rounded-full relative h-9 px-3 inline-flex items-center gap-1.5 text-[13px] font-semibold border border-line bg-surface hover:bg-surface-2 cursor-pointer">
                 <CalendarDays className="w-4 h-4" />
                 <span className="hidden sm:inline">Pick a date</span>
                 <input
@@ -450,7 +450,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                   type="button"
                   onClick={() => setSelectedDay(day)}
                   className={clsx(
-                    'flex flex-col items-center justify-center min-w-[76px] py-2.5 px-3 rounded-[3px] transition-all border cursor-pointer shrink-0',
+                    'flex flex-col items-center justify-center min-w-[76px] py-2.5 px-3 rounded-xl transition-all border cursor-pointer shrink-0',
                     weekDates[day] < todayStr && !isSelected && 'opacity-55',
                     isSelected
                       ? 'bg-[#111111] text-white border-[#111111] shadow-xs'
@@ -543,11 +543,11 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                     {!isLive && (
                       <>
                         <div
-                          className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-none"
+                          className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-card"
                           style={{ backgroundColor: theme.bg }}
                         />
                         <div
-                          className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-none"
+                          className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-card"
                           style={{
                             background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
                           }}
@@ -559,7 +559,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                       <div className="flex items-center justify-between gap-2 mb-2.5">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-[11px] font-bold uppercase tracking-[1.4px] leading-none">
-                            <span className="dark:hidden inline-flex items-center gap-1.5 px-2 py-0.5 rounded-none bg-white/80 text-slate-800 text-[11px] font-bold tracking-wider font-mono border border-black/[0.05] shadow-xs">
+                            <span className="dark:hidden inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/80 text-slate-800 text-[11px] font-bold tracking-wider font-mono border border-black/[0.05] shadow-xs">
                               <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isLive ? '#18A889' : theme.accent }} />
                               {categoryLabel}
                             </span>
@@ -569,7 +569,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                           </span>
 
                           {session.isLab && (
-                            <span className="text-[12px] font-bold px-1.5 py-0.5 rounded-none bg-white/80 dark:bg-[rgba(24,168,137,0.18)] text-emerald-800 dark:text-[#18A889] border border-emerald-600/20 dark:border-transparent shadow-xs dark:shadow-none">
+                            <span className="text-[12px] font-bold px-1.5 py-0.5 rounded-full bg-white/80 dark:bg-[rgba(24,168,137,0.18)] text-emerald-800 dark:text-[#18A889] border border-emerald-600/20 dark:border-transparent shadow-xs dark:shadow-none">
                               LAB
                             </span>
                           )}
@@ -586,7 +586,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                               onClick={() =>
                                 setOpenMenuSessionId(openMenuSessionId === cardKey ? null : cardKey)
                               }
-                              className="p-1 rounded-none text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                              className="p-1 rounded-full text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
                               title="Class Options" aria-label="Class Options"
                             >
                               <MoreHorizontal className="w-4 h-4" />
@@ -598,7 +598,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                                   className="fixed inset-0 z-30"
                                   onClick={() => setOpenMenuSessionId(null)}
                                 />
-                                <div className="absolute right-0 top-full mt-1.5 w-56 bg-surface border border-line rounded-none shadow-xl py-1.5 z-40 text-left font-sans flex flex-col">
+                                <div className="absolute right-0 top-full mt-1.5 w-56 bg-surface border border-line rounded-card overflow-hidden shadow-xl py-1.5 z-40 text-left font-sans flex flex-col">
                                   {renderMenuItems(agg)}
                                 </div>
                               </>
@@ -618,7 +618,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                           <span className="text-[11px] leading-none opacity-80 text-muted">◉</span> {session.room || 'Room TBA'}
                         </span>
                         <span className="shrink-0 opacity-40">·</span>
-                        <span className="truncate px-2 py-0.5 rounded-none bg-black/5 dark:bg-white/10 text-[11px] font-bold uppercase tracking-wider text-fg-2 inline-flex items-center font-mono border border-line-soft">
+                        <span className="truncate px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[11px] font-bold uppercase tracking-wider text-fg-2 inline-flex items-center font-mono border border-line-soft">
                           {pillLabel}
                         </span>
                       </div>
@@ -642,7 +642,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                 <div
                   key={day}
                   className={clsx(
-                    "flex flex-col gap-4 p-4 border transition-all rounded-none",
+                    "flex flex-col gap-4 p-4 border transition-all rounded-card",
                     isToday
                       ? "bg-surface border-[#111111] dark:border-emerald-500/40 dark:shadow-[0_0_25px_-5px_rgba(16,185,129,0.12)] shadow-xs"
                       : "bg-surface border-line"
@@ -655,7 +655,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                           {day.slice(0, 3)} {dayNum(day)}
                         </span>
                         {isToday && (
-                          <span className="text-[12px] font-bold text-white dark:text-emerald-400 bg-[#111111] dark:bg-emerald-500/20 dark:border dark:border-emerald-500/30 px-2 py-0.5 font-mono">
+                          <span className="rounded-full text-[12px] font-bold text-white dark:text-emerald-400 bg-[#111111] dark:bg-emerald-500/20 dark:border dark:border-emerald-500/30 px-2 py-0.5 font-mono">
                             Today
                           </span>
                         )}
@@ -668,7 +668,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
 
                   <div className="flex flex-col gap-3 min-h-[400px]">
                     {daySessions.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center h-48 text-center bg-surface-2 border border-dashed border-line">
+                      <div className="rounded-card flex flex-col items-center justify-center h-48 text-center bg-surface-2 border border-dashed border-line">
                         <CalendarDays className="w-6 h-6 text-[#6B6B6B] mb-2 opacity-50" />
                         <span className="text-xs font-semibold text-muted">No Lectures</span>
                       </div>
@@ -729,11 +729,11 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                             {!isLive && (
                               <>
                                 <div
-                                  className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-none"
+                                  className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-card"
                                   style={{ backgroundColor: theme.bg }}
                                 />
                                 <div
-                                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-none"
+                                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-card"
                                   style={{
                                     background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
                                   }}
@@ -744,7 +744,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                             <div className="relative z-10 flex flex-col">
                               <div className="flex items-center justify-between gap-1.5 mb-2">
                                 <span className="text-[11px] font-bold uppercase tracking-wider leading-none">
-                                  <span className="dark:hidden inline-flex items-center gap-1 px-1.5 py-0.5 rounded-none bg-white/80 text-slate-800 text-[11px] font-bold font-mono border border-black/[0.05] shadow-xs">
+                                  <span className="dark:hidden inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/80 text-slate-800 text-[11px] font-bold font-mono border border-black/[0.05] shadow-xs">
                                     <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isLive ? '#18A889' : theme.accent }} />
                                     {categoryLabel}
                                   </span>
@@ -764,7 +764,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                                       onClick={() =>
                                         setOpenMenuSessionId(openMenuSessionId === cardKey ? null : cardKey)
                                       }
-                                      className="p-1 rounded-none text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                                      className="p-1 rounded-full text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
                                       title="Class Options" aria-label="Class Options"
                                     >
                                       <MoreHorizontal className="w-3.5 h-3.5" />
@@ -776,7 +776,7 @@ export const FacultyWeeklyTimetable: React.FC = () => {
                                           className="fixed inset-0 z-30"
                                           onClick={() => setOpenMenuSessionId(null)}
                                         />
-                                        <div className="absolute right-0 top-full mt-1 w-52 bg-surface border border-line rounded-none shadow-xl py-1 z-40 text-left font-sans flex flex-col">
+                                        <div className="absolute right-0 top-full mt-1 w-52 bg-surface border border-line rounded-card overflow-hidden shadow-xl py-1 z-40 text-left font-sans flex flex-col">
                                           {renderMenuItems(agg, true)}
                                         </div>
                                       </>

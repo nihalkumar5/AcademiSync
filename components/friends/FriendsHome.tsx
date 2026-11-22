@@ -46,7 +46,7 @@ export const FriendsFreeNowCard: React.FC = () => {
   return (
     // Same warm amber card in light and dark (it's meant to stand out as "people"), so the text
     // uses fixed dark colours rather than theme tokens that turn light in dark mode.
-    <section className="group w-full flex items-center gap-4 border border-amber-200/80 bg-amber-50 px-f4 py-f3">
+    <section className="rounded-card group w-full flex items-center gap-4 border border-amber-200/80 bg-amber-50 px-f4 py-f3">
       {/* Each free friend's face opens a chat with them */}
       <div className="flex -space-x-2 shrink-0">
         {free.slice(0, 4).map(({ f }) => (

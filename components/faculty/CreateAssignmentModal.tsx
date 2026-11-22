@@ -294,7 +294,7 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
   const label = 'block text-[15px] font-semibold text-fg';
   const hint = 'mt-f1 text-[13px] text-muted';
   const field =
-    'w-full h-12 px-f3 bg-surface border border-line text-[15px] text-fg placeholder:text-[#9A9A9A] focus:outline-none focus:border-line-strong transition-colors';
+    'rounded-field w-full h-12 px-f3 bg-surface border border-line text-[15px] text-fg placeholder:text-[#9A9A9A] focus:outline-none focus:border-line-strong transition-colors';
   const dueDate = deadline ? new Date(deadline) : null;
   const activePreset = DUE_PRESETS.find((p) => endOfDayIn(p.days) === deadline)?.days ?? null;
   const targetCount = selectedBatchIds.length;
@@ -344,7 +344,7 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
         <div>
           <p className={label}>Send to</p>
           {linkedBatches.length === 0 ? (
-            <p className="mt-f2 flex items-center gap-f2 p-f3 border border-amber-300/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10 text-[14px] text-amber-800 dark:text-amber-300">
+            <p className="rounded-tile mt-f2 flex items-center gap-f2 p-f3 border border-amber-300/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10 text-[14px] text-amber-800 dark:text-amber-300">
               <AlertCircle className="w-4 h-4 shrink-0" /> Connect a batch first, from More → Batches.
             </p>
           ) : (
@@ -356,7 +356,7 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
                   const { main, sub } = shortBatch(batch);
                   return (
                     <button key={batch.id} type="button" onClick={() => handleToggleBatch(batch.id)} aria-pressed={on} className={chip(on)}>
-                      <span className={`w-4 h-4 shrink-0 flex items-center justify-center border ${on ? 'border-current' : 'border-[#BDBDB8] dark:border-white/30'}`}>{on && <Check className="w-3 h-3" strokeWidth={3} />}</span>
+                      <span className={`rounded-md w-4 h-4 shrink-0 flex items-center justify-center border ${on ? 'border-current' : 'border-[#BDBDB8] dark:border-white/30'}`}>{on && <Check className="w-3 h-3" strokeWidth={3} />}</span>
                       <span className="flex flex-col leading-tight">
                         <span>{main}</span>
                         {sub && <span className={`text-[12px] font-normal ${on ? 'opacity-70' : 'text-muted'}`}>{sub}</span>}
@@ -444,7 +444,7 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
             Attachment <span className="font-normal text-[#8A8A8E]">· optional</span>
           </p>
           {upload ? (
-            <div className="mt-f2 p-f3 border border-line">
+            <div className="rounded-tile mt-f2 p-f3 border border-line">
               <div className="flex items-center gap-f3">
                 <Loader2 className="w-5 h-5 shrink-0 animate-spin text-[#6B6B6B]" />
                 <span className="flex-1 min-w-0">
@@ -462,18 +462,18 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
               </div>
             </div>
           ) : file ? (
-            <div className="mt-f2 flex items-center gap-f3 p-f3 border border-emerald-300/70 dark:border-emerald-500/30 bg-emerald-50/60 dark:bg-emerald-500/[0.07]">
+            <div className="rounded-tile mt-f2 flex items-center gap-f3 p-f3 border border-emerald-300/70 dark:border-emerald-500/30 bg-emerald-50/60 dark:bg-emerald-500/[0.07]">
               <FileText className="w-5 h-5 shrink-0 text-emerald-700 dark:text-emerald-400" />
               <span className="flex-1 min-w-0">
                 <span className="block text-[14px] font-medium text-fg truncate">{file.name}</span>
                 <span className="block text-[12px] text-muted">{formatBytes(file.size)} · uploaded</span>
               </span>
-              <button type="button" onClick={removeFile} aria-label="Remove file" className="shrink-0 w-9 h-9 flex items-center justify-center text-[#6B6B6B] hover:text-fg cursor-pointer">
+              <button type="button" onClick={removeFile} aria-label="Remove file" className="rounded-full shrink-0 w-9 h-9 flex items-center justify-center text-[#6B6B6B] hover:text-fg cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
           ) : (
-            <label className="mt-f2 flex items-center gap-f3 p-f3 min-h-[55px] border border-dashed border-[#BDBDB8] dark:border-white/[0.2] hover:border-line-strong cursor-pointer transition-colors">
+            <label className="rounded-tile mt-f2 flex items-center gap-f3 p-f3 min-h-[55px] border border-dashed border-[#BDBDB8] dark:border-white/[0.2] hover:border-line-strong cursor-pointer transition-colors">
               <Paperclip className="w-5 h-5 shrink-0 text-muted" />
               <span className="flex-1 min-w-0">
                 <span className="block text-[14px] font-medium text-fg">Attach a file</span>
@@ -522,7 +522,7 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
               </div>
               <div>
                 <p className="text-[14px] font-medium text-fg">Priority</p>
-                <div className="mt-f2 grid grid-cols-3 border border-line">
+                <div className="rounded-tile overflow-hidden mt-f2 grid grid-cols-3 border border-line">
                   {(['Low', 'Medium', 'High'] as HomeworkPriority[]).map((p) => (
                     <button key={p} type="button" onClick={() => setPriority(p)} aria-pressed={priority === p} className={`h-11 text-[14px] font-medium cursor-pointer ${priority === p ? 'bg-ink text-on-ink' : 'text-muted'}`}>
                       {p}

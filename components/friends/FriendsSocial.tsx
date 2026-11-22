@@ -45,19 +45,14 @@ export const confettiBurst = async (from?: HTMLElement | null, opts: { count?: n
 export const FreeNowStrip: React.FC<{
   people: { f: Friend; s: NowStatus }[];
   onOpen: (f: Friend) => void;
-}> = ({ people, onOpen }) => {
-  if (!people.length) return null;
+  /** First bubble in the row, e.g. "Your status" */
+  lead?: React.ReactNode;
+}> = ({ people, onOpen, lead }) => {
+  if (!people.length && !lead) return null;
   return (
     <section aria-label="Free now">
-      <div className="flex items-center gap-2 mb-f3">
-        <span className="relative flex w-2.5 h-2.5">
-          <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
-          <span className="relative inline-flex w-2.5 h-2.5 rounded-full bg-emerald-500" />
-        </span>
-        <h3 className="text-[17px] font-semibold text-fg tracking-tight">Free now</h3>
-        <span className="text-[13px] text-muted tabular-nums">{people.length}</span>
-      </div>
-      <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex gap-3 overflow-x-auto no-scrollbar pb-1">
+      <div className="-mx-5 px-5 sm:mx-0 sm:px-0 flex gap-3 overflow-x-auto no-scrollbar pt-4 pb-1">
+        {lead}
         {people.map(({ f, s }, i) => {
           const place = placeOf(f.status?.place);
           const label = s.kind === 'free' ? (s.until === null ? 'free all day' : `till ${clock(s.until)}`) : s.kind === 'off' ? s.label : 'free';
@@ -115,19 +110,21 @@ export const ChatsList: React.FC<{
   onOpen: (c: ChatSummary) => void;
   onNew: () => void;
   canStart: boolean;
-}> = ({ chats, me, people, onOpen, onNew, canStart }) => {
+  /** Search text from the page's own search bar */
+  query?: string;
+}> = ({ chats, me, people, onOpen, onNew, canStart, query: outerQuery }) => {
   const [q, setQ] = useState('');
   const nameOf = (c: ChatSummary) => {
     const other = c.type === 'dm' ? c.members.find((m) => m !== me) || '' : '';
     return c.type === 'dm' ? people[other]?.name || c.names[other] || 'Friend' : c.title || 'Plan';
   };
-  const query = q.trim().toLowerCase();
+  const query = (outerQuery ?? q).trim().toLowerCase();
   const shown = query ? chats.filter((c) => nameOf(c).toLowerCase().includes(query) || (c.lastMessage?.text || '').toLowerCase().includes(query)) : chats;
 
   if (!chats.length) {
     return (
-      <section className="border border-line bg-surface px-5 py-f6 flex flex-col items-center text-center">
-        <motion.span className="text-[48px] leading-none" animate={{ rotate: [0, 14, -6, 10, 0] }} transition={{ duration: 1.4, repeat: Infinity, repeatDelay: 2 }}>
+      <section className="rounded-card bg-surface-2 px-5 py-f5 flex flex-col items-center text-center">
+        <motion.span className="text-[40px] leading-none" animate={{ rotate: [0, 14, -6, 10, 0] }} transition={{ duration: 1.4, repeat: Infinity, repeatDelay: 2 }}>
           💬
         </motion.span>
         <h3 className="mt-4 text-[18px] font-semibold text-fg">No chats yet</h3>
@@ -143,8 +140,8 @@ export const ChatsList: React.FC<{
 
   return (
     <section aria-label="Chats" className="flex flex-col gap-f3">
-      {chats.length > 6 && (
-        <label className="flex items-center gap-2.5 h-11 px-3 border border-line bg-surface focus-within:border-fg transition-colors">
+      {outerQuery === undefined && chats.length > 6 && (
+        <label className="rounded-tile flex items-center gap-2.5 h-11 px-3 border border-line bg-surface focus-within:border-fg transition-colors">
           <Search className="w-4 h-4 text-muted shrink-0" />
           <input
             type="search"
@@ -156,9 +153,9 @@ export const ChatsList: React.FC<{
         </label>
       )}
       {shown.length === 0 ? (
-        <p className="py-f4 text-center text-[14px] text-muted">No chats match &ldquo;{q}&rdquo;.</p>
+        <p className="py-f3 text-[14px] text-muted">No chats match &ldquo;{outerQuery ?? q}&rdquo;.</p>
       ) : (
-        <ul className="border border-line bg-surface divide-y divide-line-soft">
+        <ul className="-mx-2 flex flex-col">
           <AnimatePresence initial={false}>
             {shown.map((c) => {
               const other = c.type === 'dm' ? c.members.find((m) => m !== me) || '' : '';
@@ -168,11 +165,11 @@ export const ChatsList: React.FC<{
               const preview = last ? `${who}${last.text}` : c.type === 'plan' ? 'Plan chat · say hi 👋' : 'Say hi 👋';
               return (
                 <motion.li key={c.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  <button type="button" onClick={() => onOpen(c)} className="w-full flex items-center gap-3 px-f4 py-3 text-left hover:bg-surface-2 active:bg-surface-2 transition-colors cursor-pointer">
+                  <button type="button" onClick={() => onOpen(c)} className="w-full flex items-center gap-3 px-2 py-2.5 rounded-tile text-left hover:bg-surface-2 active:bg-surface-2 transition-colors cursor-pointer">
                     {c.type === 'dm' ? (
-                      <Face p={{ uid: other, avatarUrl: people[other]?.avatarUrl }} size={48} />
+                      <Face p={{ uid: other, avatarUrl: people[other]?.avatarUrl }} size={52} />
                     ) : (
-                      <span className="w-12 h-12 shrink-0 rounded-full bg-ink text-on-ink flex items-center justify-center">
+                      <span className="w-[52px] h-[52px] shrink-0 rounded-full bg-ink text-on-ink flex items-center justify-center">
                         <Users className="w-5 h-5" />
                       </span>
                     )}
@@ -280,9 +277,9 @@ export const PlanCard: React.FC<{
       layout
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className={clsx('relative overflow-hidden border bg-surface p-f4', cd.hot ? 'border-emerald-300 dark:border-emerald-500/40' : 'border-line')}
+      className={clsx('rounded-tile relative overflow-hidden border bg-surface p-f4', cd.hot ? 'border-emerald-300 dark:border-emerald-500/40' : 'border-line')}
     >
-      {cd.hot && <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500" aria-hidden="true" />}
+      {cd.hot && <span className="rounded-full absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500" aria-hidden="true" />}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <span className={clsx('inline-flex items-center gap-1 h-6 px-2 rounded-full text-[11px] font-bold', cd.hot ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300' : 'bg-surface-2 text-muted')}>

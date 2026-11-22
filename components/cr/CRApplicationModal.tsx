@@ -336,8 +336,8 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
           />
         ) : isSuperAdmin ? (
           /* CASE 2A: USER IS SUPER ADMIN */
-          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-line bg-surface-2 rounded-none">
-            <div className="w-14 h-14 border border-line bg-ink text-on-ink rounded-none flex items-center justify-center shadow-sm">
+          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-4 border border-line bg-surface-2 rounded-tile">
+            <div className="w-14 h-14 border border-line bg-ink text-on-ink rounded-xl flex items-center justify-center shadow-sm">
               <Crown className="w-7 h-7" />
             </div>
             <div>
@@ -351,15 +351,15 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
             <button 
               type="button"
               onClick={onClose} 
-              className="mt-2 px-6 h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity rounded-none cursor-pointer"
+              className="mt-2 px-6 h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity rounded-full cursor-pointer"
             >
               Back to Dashboard
             </button>
           </div>
         ) : isCR ? (
           /* CASE 2B: USER IS ALREADY A CR */
-          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-5 border border-line bg-surface-2 rounded-none">
-            <div className="w-14 h-14 border border-line bg-surface rounded-none flex items-center justify-center shadow-sm">
+          <div className="p-6 sm:p-8 flex flex-col items-center text-center gap-5 border border-line bg-surface-2 rounded-tile">
+            <div className="w-14 h-14 border border-line bg-surface rounded-xl flex items-center justify-center shadow-sm">
               <Crown className="w-7 h-7 text-amber-500" />
             </div>
             <div>
@@ -376,7 +376,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
 
             {/* Batch Code Box */}
             {activeBatchCode ? (
-              <div className="w-full max-w-sm p-4 bg-surface border-2 border-dashed border-amber-500/40 rounded-none flex flex-col items-center text-center">
+              <div className="w-full max-w-sm p-4 bg-surface border-2 border-dashed border-amber-500/40 rounded-tile flex flex-col items-center text-center">
                 <span className="text-[12px] font-mono font-bold text-amber-700 dark:text-amber-400 mb-1">
                   Official 6-digit batch code
                 </span>
@@ -396,7 +396,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                         showToast('Error', 'Failed to copy batch code', 'error');
                       }
                     }}
-                    className="p-2 border border-line hover:bg-surface-2 transition-colors rounded-none cursor-pointer"
+                    className="p-2 border border-line hover:bg-surface-2 transition-colors rounded-full cursor-pointer"
                     title="Copy Code" aria-label="Copy Code"
                   >
                     {copiedCode ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-slate-600 dark:text-zinc-300" />}
@@ -426,7 +426,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                       console.error(e);
                     }
                   }}
-                  className="mt-3 w-full h-11 bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold text-[14px] flex items-center justify-center gap-2 transition-colors rounded-none shadow-sm cursor-pointer"
+                  className="mt-3 w-full h-11 bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold text-[14px] flex items-center justify-center gap-2 transition-colors rounded-full shadow-sm cursor-pointer"
                 >
                   <MessageCircle className="w-4 h-4 fill-white" />
                   <span>Share Code with Class on WhatsApp</span>
@@ -441,14 +441,14 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                   onClose();
                   router.push('/timetable');
                 }} 
-                className="flex-1 px-5 h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity rounded-none cursor-pointer"
+                className="flex-1 px-5 h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity rounded-full cursor-pointer"
               >
                 Manage Schedule
               </button>
               <button 
                 type="button"
                 onClick={onClose} 
-                className="px-5 h-11 border border-line text-fg text-[14px] font-semibold hover:bg-surface-2 transition-colors rounded-none cursor-pointer"
+                className="px-5 h-11 border border-line text-fg text-[14px] font-semibold hover:bg-surface-2 transition-colors rounded-full cursor-pointer"
               >
                 Close
               </button>
@@ -471,7 +471,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
             <p className="text-[13px] text-muted leading-relaxed">
               Your Batch Pilot request for <strong>{college}</strong> · <strong>{formatBatchDisplayName(branch, semester)}</strong> is currently being reviewed.
             </p>
-            <div className="p-4 bg-surface border border-line rounded-none text-[12px] space-y-1.5 font-mono text-fg">
+            <div className="p-4 bg-surface border border-line rounded-tile text-[12px] space-y-1.5 font-mono text-fg">
               <div><strong>Roll No:</strong> {existingRequest.rollNumber}</div>
               <div><strong>Email:</strong> {existingRequest.email}</div>
               <div><strong>WhatsApp:</strong> {existingRequest.phone}</div>
@@ -483,7 +483,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
             <button
               type="button"
               onClick={onClose}
-              className="w-full h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity rounded-none cursor-pointer shadow-sm"
+              className="w-full h-11 bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity rounded-full cursor-pointer shadow-sm"
             >
               Got it
             </button>
@@ -494,9 +494,9 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
             
             {/* EXISTING BATCH DETECTED WARNING BANNER */}
             {existingBatch && (
-              <div className="p-4 bg-amber-500/10 border-2 border-amber-500/40 rounded-none flex flex-col gap-3">
+              <div className="p-4 bg-amber-500/10 border-2 border-amber-500/40 rounded-tile flex flex-col gap-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-none bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0 mt-0.5">
                     <AlertCircle className="w-4 h-4 text-amber-700 dark:text-amber-400" />
                   </div>
                   <div className="flex flex-col gap-0.5 min-w-0">
@@ -541,7 +541,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
             )}
 
             {/* Batch Details Card */}
-            <div className="p-4 sm:p-5 bg-surface-2 border border-line-soft rounded-none flex flex-col gap-4">
+            <div className="p-4 sm:p-5 bg-surface-2 border border-line-soft rounded-tile flex flex-col gap-4">
               <div className="flex items-center justify-between border-b border-line-soft pb-3">
                 <span className="text-[12px] font-bold text-muted flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5" />
@@ -560,7 +560,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                     College / University <span className="text-red-500">*</span>
                   </label>
                   <div className="relative w-full">
-                    <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line rounded-none focus-within:border-line-strong transition-colors">
+                    <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line rounded-field focus-within:border-line-strong transition-colors">
                       <School className="w-4 h-4 text-[#6B6B6B] shrink-0" />
                       <input
                         type="text"
@@ -580,10 +580,10 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                     </div>
                     
                     {showCollegeDropdown && (suggestedColleges.length > 0 || isLoadingColleges) && (
-                      <div className="absolute top-full left-0 w-full mt-1.5 max-h-52 overflow-y-auto bg-surface border border-line rounded-none shadow-2xl z-50 divide-y divide-line-soft">
+                      <div className="absolute top-full left-0 w-full mt-1.5 max-h-52 overflow-y-auto bg-surface border border-line rounded-card shadow-2xl z-50 divide-y divide-line-soft">
                         <div className="p-2.5 bg-surface-2 text-[12px] font-bold text-muted flex items-center justify-between sticky top-0">
                           <span>{isLoadingColleges ? 'Searching database...' : 'Select Your College'}</span>
-                          <span className="text-[11px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 font-mono font-bold rounded-none">Database Verified</span>
+                          <span className="text-[11px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 font-mono font-bold rounded-full">Database Verified</span>
                         </div>
                         {suggestedColleges.map((item) => (
                           <button
@@ -619,7 +619,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                       Degree / Programme <span className="text-red-500">*</span>
                     </label>
                     <div className="relative w-full">
-                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line rounded-none focus-within:border-line-strong transition-colors">
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line rounded-field focus-within:border-line-strong transition-colors">
                         <GraduationCap className="w-4 h-4 text-[#6B6B6B] shrink-0" />
                         <input
                           type="text"
@@ -648,7 +648,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                       </div>
 
                       {showProgrammeDropdown && (
-                        <div className="absolute top-full left-0 w-full mt-1.5 max-h-48 overflow-y-auto bg-surface border border-line rounded-none shadow-2xl z-50">
+                        <div className="absolute top-full left-0 w-full mt-1.5 max-h-48 overflow-y-auto bg-surface border border-line rounded-card shadow-2xl z-50">
                           {filterProgrammes(programme).length > 0 ? (
                             filterProgrammes(programme).map(p => (
                               <div
@@ -675,7 +675,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                       Major / Branch <span className="text-red-500">*</span>
                     </label>
                     <div className="relative w-full">
-                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line rounded-none focus-within:border-line-strong transition-colors">
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line rounded-field focus-within:border-line-strong transition-colors">
                         <Building2 className="w-4 h-4 text-[#6B6B6B] shrink-0" />
                         <input
                           type="text"
@@ -704,7 +704,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                       </div>
 
                       {showBranchDropdown && (
-                        <div className="absolute top-full left-0 w-full mt-1.5 max-h-48 overflow-y-auto bg-surface border border-line rounded-none shadow-2xl z-50">
+                        <div className="absolute top-full left-0 w-full mt-1.5 max-h-48 overflow-y-auto bg-surface border border-line rounded-card shadow-2xl z-50">
                           {filterBranches(branch).length > 0 ? (
                             filterBranches(branch).map(b => (
                               <div
@@ -738,7 +738,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                     <select
                       value={semester}
                       onChange={(e) => setSemester(Number(e.target.value) || 1)}
-                      className="w-full px-3.5 py-2.5 bg-surface border border-line rounded-none text-[14px] font-medium text-fg focus:outline-none focus:border-black dark:focus-border-white/30 transition-colors cursor-pointer"
+                      className="w-full px-3.5 py-2.5 bg-surface border border-line rounded-field text-[14px] font-medium text-fg focus:outline-none focus:border-black dark:focus-border-white/30 transition-colors cursor-pointer"
                     >
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((sem) => (
                         <option key={sem} value={sem} className="dark:bg-[#121317]">
@@ -753,7 +753,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                     <label className="section-label">
                       Roll Number <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex items-center gap-2 px-3.5 py-2.5 bg-surface border border-line rounded-none focus-within:border-line-strong transition-colors">
+                    <div className="flex items-center gap-2 px-3.5 py-2.5 bg-surface border border-line rounded-field focus-within:border-line-strong transition-colors">
                       <Hash className="w-3.5 h-3.5 text-[#6B6B6B] shrink-0" />
                       <input
                         type="text"
@@ -773,7 +773,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
               {/* Batch Preview Pill */}
               <div className="mt-1 pt-3 border-t border-line-soft flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 text-[12px]">
                 <span className="text-muted font-medium">Batch Key:</span>
-                <span className="font-mono text-[11px] bg-surface-2 border border-line-soft px-2.5 py-1 rounded-none text-fg truncate max-w-full">
+                <span className="font-mono text-[11px] bg-surface-2 border border-line-soft px-2.5 py-1 rounded-full text-fg truncate max-w-full">
                   {canonicalBatchKey || 'batch-key-preview'}
                 </span>
               </div>
@@ -782,7 +782,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
             {!isBatchFull ? (
               <>
                 {/* Contact Information Card */}
-                <div className="p-4 sm:p-5 bg-surface-2 border border-line-soft rounded-none flex flex-col gap-3.5">
+                <div className="p-4 sm:p-5 bg-surface-2 border border-line-soft rounded-tile flex flex-col gap-3.5">
                   <span className="text-[12px] font-bold text-muted flex items-center gap-1.5">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                     CONTACT &amp; VERIFICATION
@@ -793,7 +793,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                     <label className="section-label">
                       WhatsApp Phone Number <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line rounded-none focus-within:border-line-strong transition-colors">
+                    <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface border border-line rounded-field focus-within:border-line-strong transition-colors">
                       <Phone className="w-4 h-4 text-[#6B6B6B] shrink-0" />
                       <input
                         type="tel"
@@ -811,7 +811,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                     <label className="section-label">
                       Proof / Verification Note (Optional)
                     </label>
-                    <div className="p-3 bg-surface border border-line rounded-none focus-within:border-line-strong transition-colors">
+                    <div className="p-3 bg-surface border border-line rounded-tile focus-within:border-line-strong transition-colors">
                       <textarea
                         rows={2}
                         placeholder="e.g. Official Class Representative / Batch Leader for CSE 2024 section A"
@@ -853,7 +853,7 @@ Need the code to sync timetable, room updates, and class alerts. Thanks! 🚀`;
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-full h-11 border border-line text-fg text-[14px] font-semibold hover:bg-surface-2 transition-colors rounded-none cursor-pointer text-center"
+                  className="w-full h-11 border border-line text-fg text-[14px] font-semibold hover:bg-surface-2 transition-colors rounded-full cursor-pointer text-center"
                 >
                   Close
                 </button>

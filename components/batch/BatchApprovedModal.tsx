@@ -103,7 +103,7 @@ ${PLAY_STORE_URL}
           type="button"
           onClick={handleClose}
           aria-label="Close"
-          className="absolute top-3 right-3 z-10 w-9 h-9 flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+          className="rounded-full absolute top-3 right-3 z-10 w-9 h-9 flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
@@ -125,7 +125,7 @@ ${PLAY_STORE_URL}
             </div>
           </div>
 
-          <span className="relative mt-5 inline-flex items-center gap-1.5 h-6 px-2.5 bg-amber-500/10 text-amber-800 dark:text-amber-300 text-[11px] font-semibold tracking-wide uppercase">
+          <span className="rounded-full relative mt-5 inline-flex items-center gap-1.5 h-6 px-2.5 bg-amber-500/10 text-amber-800 dark:text-amber-300 text-[11px] font-semibold tracking-wide uppercase">
             <Check className="w-3 h-3" strokeWidth={2.5} /> Verified Batch Pilot
           </span>
           <h2 className="relative mt-3 text-[24px] leading-[30px] font-semibold tracking-tight text-fg">
@@ -155,14 +155,14 @@ ${PLAY_STORE_URL}
               {String(inviteCode).toUpperCase().split('').map((ch: string, i: number) => (
                 <span
                   key={i}
-                  className="h-14 flex items-center justify-center bg-surface-2 border border-line text-[24px] font-mono font-bold text-fg group-hover:border-line-strong/40 transition-colors"
+                  className="rounded-tile h-14 flex items-center justify-center bg-surface-2 border border-line text-[24px] font-mono font-bold text-fg group-hover:border-line-strong/40 transition-colors"
                 >
                   {ch}
                 </span>
               ))}
             </span>
             <span
-              className={`w-14 h-14 shrink-0 flex items-center justify-center border transition-colors ${
+              className={`rounded-xl w-14 h-14 shrink-0 flex items-center justify-center border transition-colors ${
                 copied
                   ? 'bg-emerald-500 border-emerald-500 text-white'
                   : 'bg-surface border-line text-fg group-hover:border-line-strong/40'
@@ -190,7 +190,7 @@ ${PLAY_STORE_URL}
             <button
               type="button"
               onClick={handleClose}
-              className="mt-1 h-10 text-[13px] font-medium text-muted hover:text-fg transition-colors cursor-pointer"
+              className="rounded-full mt-1 h-10 text-[13px] font-medium text-muted hover:text-fg transition-colors cursor-pointer"
             >
               I&apos;ll do this later
             </button>

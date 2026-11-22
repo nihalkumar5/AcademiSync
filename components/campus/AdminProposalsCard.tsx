@@ -43,9 +43,9 @@ export const AdminProposalsCard: React.FC = () => {
   return (
     <section className="flex flex-col gap-2.5">
       {items.map((p) => (
-        <article key={p.id} className="border border-amber-200/80 bg-amber-50/60 dark:bg-amber-400/[0.06] dark:border-amber-400/20 p-f4">
+        <article key={p.id} className="rounded-tile border border-amber-200/80 bg-amber-50/60 dark:bg-amber-400/[0.06] dark:border-amber-400/20 p-f4">
           <div className="flex items-start gap-3">
-            <span className="w-10 h-10 shrink-0 flex items-center justify-center border border-amber-300/70 dark:border-amber-400/30 text-amber-700 dark:text-amber-300">
+            <span className="rounded-xl w-10 h-10 shrink-0 flex items-center justify-center border border-amber-300/70 dark:border-amber-400/30 text-amber-700 dark:text-amber-300">
               <Building2 className="w-5 h-5" />
             </span>
             <div className="min-w-0">
@@ -55,7 +55,7 @@ export const AdminProposalsCard: React.FC = () => {
             </div>
           </div>
           {p.preview.length > 0 && (
-            <ul className="mt-3 border border-line bg-surface divide-y divide-line-soft text-[13px] text-fg">
+            <ul className="rounded-card overflow-hidden mt-3 border border-line bg-surface divide-y divide-line-soft text-[13px] text-fg">
               {p.preview.slice(0, 6).map((line) => (
                 <li key={line} className="px-3 py-2 truncate">{line}</li>
               ))}

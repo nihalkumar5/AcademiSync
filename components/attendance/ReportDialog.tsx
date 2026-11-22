@@ -28,7 +28,7 @@ const range = (p: Period, from: string, to: string): { from?: string; to?: strin
 };
 
 const chip = (on: boolean) =>
-  `shrink-0 h-10 px-3 border text-[14px] font-medium cursor-pointer transition-colors ${
+  `rounded-full shrink-0 h-10 px-3 border text-[14px] font-medium cursor-pointer transition-colors ${
     on ? 'bg-ink text-on-ink border-line-strong' : 'border-line text-fg hover:border-line-strong'
   }`;
 const label = 'text-[13px] font-semibold text-fg';
@@ -126,7 +126,7 @@ export const ReportDialog: React.FC<{
               ).map(([l, v, set]) => (
                 <label key={l} className="block">
                   <span className="text-[12px] text-muted">{l}</span>
-                  <input type="date" value={v} max={key(new Date())} onChange={(e) => set(e.target.value)} className="mt-1 w-full h-11 px-3 bg-surface border border-line text-[15px] text-fg" />
+                  <input type="date" value={v} max={key(new Date())} onChange={(e) => set(e.target.value)} className="rounded-field mt-1 w-full h-11 px-3 bg-surface border border-line text-[15px] text-fg" />
                 </label>
               ))}
             </div>
@@ -134,7 +134,7 @@ export const ReportDialog: React.FC<{
         </div>
 
         {/* What's inside, so the faculty knows what they're about to share */}
-        <div className="flex items-start gap-f3 p-f3 border border-line-soft bg-[#FAFAF9] dark:bg-white/[0.02]">
+        <div className="rounded-tile flex items-start gap-f3 p-f3 border border-line-soft bg-[#FAFAF9] dark:bg-white/[0.02]">
           <FileSpreadsheet className="w-5 h-5 shrink-0 mt-0.5 text-emerald-700 dark:text-emerald-400" />
           <div className="text-[13px] text-muted">
             <p className="font-semibold text-fg">5 sheets</p>
@@ -148,7 +148,7 @@ export const ReportDialog: React.FC<{
           </p>
         )}
 
-        <button type="button" onClick={go} disabled={busy || customInvalid} className="h-12 inline-flex items-center justify-center gap-2 bg-ink text-on-ink text-[15px] font-semibold disabled:opacity-50 cursor-pointer">
+        <button type="button" onClick={go} disabled={busy || customInvalid} className="rounded-full h-12 inline-flex items-center justify-center gap-2 bg-ink text-on-ink text-[15px] font-semibold disabled:opacity-50 cursor-pointer">
           {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
           {busy ? 'Preparing…' : 'Download Excel report'}
         </button>

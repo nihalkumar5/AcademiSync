@@ -108,7 +108,7 @@ export const QrScanner: React.FC<{
         {fallback ? (
           fallback(state)
         ) : (
-          <div className="border border-line px-f4 py-f5 text-center">
+          <div className="rounded-card border border-line px-f4 py-f5 text-center">
             <Camera className="w-6 h-6 mx-auto text-muted" />
             <p className="mt-3 text-[15px] font-semibold text-fg">{state === 'denied' ? 'Camera is blocked' : "This phone can't scan here"}</p>
             <p className="mt-1 text-[13px] text-muted">

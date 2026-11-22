@@ -119,7 +119,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({ isOpen
         {/* Subject + title */}
         <div>
           <div className="flex items-center gap-2 text-[13px]">
-            <span className="w-2.5 h-2.5 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]" aria-hidden="true" />
+            <span className="rounded-full w-2.5 h-2.5 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]" aria-hidden="true" />
             {label.code && <span className="font-bold tracking-wide text-fg">{label.code}</span>}
             {label.code && <span className="text-faint">·</span>}
             <span className="font-medium text-muted truncate">{label.name}</span>
@@ -128,7 +128,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({ isOpen
             {hw.title}
           </h2>
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
-            <span className={clsx('inline-flex items-center gap-1.5 h-8 px-3 border text-[13px] font-semibold', DUE_TONE[due.tone])}>
+            <span className={clsx('rounded-full inline-flex items-center gap-1.5 h-8 px-3 border text-[13px] font-semibold', DUE_TONE[due.tone])}>
               {due.tone === 'overdue' ? <AlertTriangle className="w-4 h-4" /> : due.tone === 'done' ? <Check className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
               {due.label}
             </span>
@@ -137,7 +137,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({ isOpen
 
         {/* Status: one tap */}
         <section>
-          <div role="radiogroup" aria-label="Status" className="grid grid-cols-3 border border-line bg-surface p-1 gap-1">
+          <div role="radiogroup" aria-label="Status" className="rounded-tile grid grid-cols-3 border border-line bg-surface p-1 gap-1">
             {STATUSES.map((st) => {
               const on = hw.status === st.id;
               return (
@@ -148,7 +148,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({ isOpen
                   aria-checked={on}
                   onClick={() => setStatus(st.id)}
                   className={clsx(
-                    'h-10 inline-flex items-center justify-center gap-1.5 text-[14px] font-semibold transition-colors cursor-pointer',
+                    'rounded-full h-10 inline-flex items-center justify-center gap-1.5 text-[14px] font-semibold transition-colors cursor-pointer',
                     on ? (st.id === 'Completed' ? 'bg-emerald-600 text-white dark:bg-emerald-500' : 'bg-ink text-on-ink') : 'text-muted hover:text-fg'
                   )}
                 >
@@ -161,7 +161,7 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({ isOpen
         </section>
 
         {/* Facts */}
-        <dl className="border border-line bg-surface divide-y divide-line-soft">
+        <dl className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
           <div className="flex gap-4 px-4 py-3">
             <dt className="w-20 shrink-0 text-[13px] text-muted">Due</dt>
             <dd className="min-w-0 flex-1 text-[14px] text-fg">
@@ -238,9 +238,9 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({ isOpen
               <button
                 type="button"
                 onClick={() => openLink(classroomLink)}
-                className="w-full flex items-center gap-3 p-3.5 border border-line bg-surface hover:border-line-strong text-left transition-colors cursor-pointer"
+                className="rounded-tile w-full flex items-center gap-3 p-3.5 border border-line bg-surface hover:border-line-strong text-left transition-colors cursor-pointer"
               >
-                <span className="w-9 h-9 shrink-0 flex items-center justify-center border bg-emerald-50 text-emerald-700 border-emerald-200/70 dark:bg-emerald-400/10 dark:text-emerald-300 dark:border-emerald-400/20">
+                <span className="rounded-xl w-9 h-9 shrink-0 flex items-center justify-center border bg-emerald-50 text-emerald-700 border-emerald-200/70 dark:bg-emerald-400/10 dark:text-emerald-300 dark:border-emerald-400/20">
                   <GraduationCap className="w-[18px] h-[18px]" />
                 </span>
                 <span className="flex-1 min-w-0">
@@ -254,9 +254,9 @@ export const HomeworkDetailModal: React.FC<HomeworkDetailModalProps> = ({ isOpen
               <button
                 type="button"
                 onClick={() => openLink(otherLink)}
-                className="w-full flex items-center gap-3 p-3.5 border border-line bg-surface hover:border-line-strong text-left transition-colors cursor-pointer"
+                className="rounded-tile w-full flex items-center gap-3 p-3.5 border border-line bg-surface hover:border-line-strong text-left transition-colors cursor-pointer"
               >
-                <span className="w-9 h-9 shrink-0 flex items-center justify-center border border-line-soft bg-surface-2 text-fg">
+                <span className="rounded-xl w-9 h-9 shrink-0 flex items-center justify-center border border-line-soft bg-surface-2 text-fg">
                   <LinkIcon className="w-[18px] h-[18px]" />
                 </span>
                 <span className="flex-1 min-w-0">

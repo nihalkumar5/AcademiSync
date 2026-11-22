@@ -15,6 +15,7 @@ import { getTodayDateString } from '@/lib/timetableUtils';
 import { subjectLabel, subjectTone } from '@/lib/assignmentDisplay';
 import { LocalPhoto, cacheMine, readMineCache } from './ClassNotesHost';
 import type { Subject } from '@/lib/types';
+import { PageActions, PageTitle } from '@/components/ui/PageActions';
 
 // Notes page: everything saved in class, in one place. Newest first, grouped by day, filter by
 // subject. Tapping a note opens that class's notes sheet, where you can add more or delete.
@@ -144,7 +145,7 @@ export const NotesView: React.FC = () => {
   if (!user?.id) {
     return (
       <div className="flex flex-col gap-f5 text-left max-w-3xl mx-auto w-full pb-f7">
-        <h2 className="page-title">Notes</h2>
+        <PageTitle>Notes</PageTitle>
         <SignInPanel
           title="Sign in to keep your class notes"
           body="Snap the board or jot a line in class. It's saved to that subject and date, so you can find it before exams."
@@ -159,18 +160,18 @@ export const NotesView: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="page-title">Notes</h2>
+          <PageTitle>Notes</PageTitle>
           <p className="text-[14px] text-muted mt-1.5">
             {loading && mine.length === 0
               ? 'Everything you saved in class'
               : `${mine.length} ${mine.length === 1 ? 'note' : 'notes'}${subjectCount ? ` · ${subjectCount} ${subjectCount === 1 ? 'subject' : 'subjects'}` : ''}`}
           </p>
         </div>
-        <div className="page-actions">
+        <PageActions>
           <button type="button" onClick={() => setPickOpen(true)} className="btn btn-primary">
             <Plus className="w-4 h-4" /> New note
           </button>
-        </div>
+        </PageActions>
       </div>
 
       <div className="flex flex-col gap-f3">
@@ -202,7 +203,7 @@ export const NotesView: React.FC = () => {
 
         {/* Search */}
         {all.length > 0 && (
-          <label className="flex items-center gap-2.5 h-11 px-3 border border-line bg-surface focus-within:border-fg transition-colors">
+          <label className="rounded-tile flex items-center gap-2.5 h-11 px-3 border border-line bg-surface focus-within:border-fg transition-colors">
             <Search className="w-4 h-4 text-muted shrink-0" />
             <input
               type="search"
@@ -212,7 +213,7 @@ export const NotesView: React.FC = () => {
               className="flex-1 min-w-0 bg-transparent text-[15px] text-fg placeholder:text-faint focus:outline-none"
             />
             {q && (
-              <button type="button" onClick={() => setQ('')} aria-label="Clear search" className="w-7 h-7 flex items-center justify-center text-muted hover:text-fg cursor-pointer">
+              <button type="button" onClick={() => setQ('')} aria-label="Clear search" className="rounded-full w-7 h-7 flex items-center justify-center text-muted hover:text-fg cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             )}
@@ -225,7 +226,7 @@ export const NotesView: React.FC = () => {
             <button
               type="button"
               onClick={() => setSubjectFilter('all')}
-              className={clsx('shrink-0 h-9 px-3 inline-flex items-center gap-1.5 border text-[13px] font-semibold transition-colors cursor-pointer', subjectFilter === 'all' ? 'bg-ink text-on-ink border-ink' : 'bg-surface border-line text-fg hover:bg-surface-2')}
+              className={clsx('rounded-full shrink-0 h-9 px-3 inline-flex items-center gap-1.5 border text-[13px] font-semibold transition-colors cursor-pointer', subjectFilter === 'all' ? 'bg-ink text-on-ink border-ink' : 'bg-surface border-line text-fg hover:bg-surface-2')}
             >
               All
             </button>
@@ -238,10 +239,10 @@ export const NotesView: React.FC = () => {
                   key={c.key}
                   type="button"
                   onClick={() => setSubjectFilter(active ? 'all' : c.key)}
-                  className={clsx('shrink-0 h-9 px-3 inline-flex items-center gap-2 border text-[13px] font-semibold transition-colors cursor-pointer', active ? 'bg-ink text-on-ink border-ink' : 'bg-surface border-line text-fg hover:bg-surface-2')}
+                  className={clsx('rounded-full shrink-0 h-9 px-3 inline-flex items-center gap-2 border text-[13px] font-semibold transition-colors cursor-pointer', active ? 'bg-ink text-on-ink border-ink' : 'bg-surface border-line text-fg hover:bg-surface-2')}
                   style={{ '--sub': tone.accent, '--sub-dark': tone.darkAccent } as React.CSSProperties}
                 >
-                  <span className="w-2 h-2 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]" aria-hidden="true" />
+                  <span className="rounded-full w-2 h-2 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]" aria-hidden="true" />
                   {subjectLabel(s, c.name).code || c.name}
                   <span className={clsx('text-[12px] font-medium tabular-nums', active ? 'text-on-ink/60' : 'text-faint')}>{c.count}</span>
                 </button>
@@ -257,10 +258,10 @@ export const NotesView: React.FC = () => {
       {loading && all.length === 0 ? (
         <div className="flex flex-col gap-2" aria-label="Loading notes">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="border border-line-soft bg-surface px-f4 py-f3 animate-pulse">
-              <div className="h-3 w-1/3 bg-line" />
-              <div className="mt-3 h-3 w-4/5 bg-line-soft" />
-              <div className="mt-2 h-3 w-1/2 bg-line-soft" />
+            <div key={i} className="rounded-tile border border-line-soft bg-surface px-f4 py-f3 animate-pulse">
+              <div className="rounded-full h-3 w-1/3 bg-line" />
+              <div className="rounded-full mt-3 h-3 w-4/5 bg-line-soft" />
+              <div className="rounded-full mt-2 h-3 w-1/2 bg-line-soft" />
             </div>
           ))}
         </div>
@@ -296,10 +297,10 @@ export const NotesView: React.FC = () => {
                   const photos = n.kind === 'mine' ? (n as MyNote).photos : [];
                   const image = n.kind !== 'mine' ? (n as SharedNote).imageUrl : null;
                   return (
-                    <li key={n.id} className="bg-surface border border-line" style={{ '--sub': tone.accent, '--sub-dark': tone.darkAccent } as React.CSSProperties}>
+                    <li key={n.id} className="rounded-card overflow-hidden bg-surface border border-line" style={{ '--sub': tone.accent, '--sub-dark': tone.darkAccent } as React.CSSProperties}>
                       <button type="button" onClick={() => openSlot(n)} className="group w-full text-left px-f4 pt-f3 pb-f3 cursor-pointer hover:bg-surface-2/60 transition-colors">
                         <span className="flex items-center gap-2 text-[12px]">
-                          <span className="w-2.5 h-2.5 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]" aria-hidden="true" />
+                          <span className="rounded-full w-2.5 h-2.5 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]" aria-hidden="true" />
                           {label.code && <span className="font-bold tracking-wide text-fg">{label.code}</span>}
                           {label.code && <span className="text-faint">·</span>}
                           <span className="font-medium text-muted truncate">{label.name}</span>
@@ -323,7 +324,7 @@ export const NotesView: React.FC = () => {
                             type="button"
                             onClick={() => shareOut(n as MyNote)}
                             disabled={sharingId === n.id}
-                            className="h-8 px-2.5 inline-flex items-center gap-1.5 text-[12px] font-semibold text-muted hover:text-fg hover:bg-surface-2 cursor-pointer disabled:opacity-50"
+                            className="rounded-full h-8 px-2.5 inline-flex items-center gap-1.5 text-[12px] font-semibold text-muted hover:text-fg hover:bg-surface-2 cursor-pointer disabled:opacity-50"
                           >
                             <Share2 className="w-3.5 h-3.5" /> Share
                           </button>
@@ -338,7 +339,7 @@ export const NotesView: React.FC = () => {
                       )}
                       {image && (
                         <div className="px-f4 pb-f3">
-                          <button type="button" onClick={() => setViewer(image)} className="block w-full border border-line overflow-hidden cursor-pointer">
+                          <button type="button" onClick={() => setViewer(image)} className="rounded-tile block w-full border border-line overflow-hidden cursor-pointer">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={image} alt="Shared class photo" className="w-full max-h-[240px] object-cover" loading="lazy" />
                           </button>
@@ -375,7 +376,7 @@ export const NotesView: React.FC = () => {
                       className="w-full h-12 px-1 flex items-center gap-3 text-left hover:bg-surface-2 cursor-pointer"
                       style={{ '--sub': tone.accent, '--sub-dark': tone.darkAccent } as React.CSSProperties}
                     >
-                      <span className="w-2.5 h-2.5 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]" aria-hidden="true" />
+                      <span className="rounded-full w-2.5 h-2.5 shrink-0 bg-[var(--sub)] dark:bg-[var(--sub-dark)]" aria-hidden="true" />
                       <span className="flex-1 min-w-0 truncate text-[15px] font-medium text-fg">{s.name}</span>
                       {label.code && <span className="text-[12px] font-bold tracking-wide text-muted">{label.code}</span>}
                     </button>
@@ -392,7 +393,7 @@ export const NotesView: React.FC = () => {
 };
 
 const EmptyNotes: React.FC<{ art: 'notes' | 'friends'; title: string; body: string; action?: React.ReactNode }> = ({ art, title, body, action }) => (
-  <section className="border border-line bg-surface px-5 py-f5 flex flex-col items-center text-center">
+  <section className="rounded-card border border-line bg-surface px-5 py-f5 flex flex-col items-center text-center">
     <Illustration name={art} className="h-[140px] w-auto" />
     <h3 className="mt-f4 text-[18px] font-semibold text-fg">{title}</h3>
     <p className="mt-1.5 text-[14px] text-muted max-w-sm">{body}</p>

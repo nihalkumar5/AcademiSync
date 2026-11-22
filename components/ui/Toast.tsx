@@ -79,7 +79,7 @@ export const Toast: React.FC = () => {
                 type="button"
                 onClick={() => setDismissedId(visible.id)}
                 aria-label="Dismiss notification"
-                className="w-9 h-9 shrink-0 -mt-1 flex items-center justify-center text-white/50 hover:text-on-ink dark:text-[#111111]/45 transition-colors cursor-pointer"
+                className="rounded-full w-9 h-9 shrink-0 -mt-1 flex items-center justify-center text-white/50 hover:text-on-ink dark:text-[#111111]/45 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>

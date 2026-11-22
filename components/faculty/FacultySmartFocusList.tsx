@@ -253,11 +253,11 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
               >
                 {/* Direct Solid Pastel Backgrounds for Light & Dark mode */}
                 <div
-                  className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-none"
+                  className="dark:hidden absolute inset-0 z-0 pointer-events-none rounded-card"
                   style={{ backgroundColor: theme.bg }}
                 />
                 <div
-                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-none"
+                  className="hidden dark:block absolute inset-0 z-0 pointer-events-none rounded-card"
                   style={{
                     background: `linear-gradient(135deg, ${theme.accent}2A 0%, ${theme.accent}14 100%), #13151D`,
                   }}
@@ -275,17 +275,17 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
 
                     <div className="flex items-center gap-1.5 self-start">
                       {item.originalPriority === 'High' && !isCompleted && (
-                        <span className="px-2 py-0.5 rounded-none bg-[#FFF0E8] text-[#C96B45] text-[12px] font-bold dark:bg-orange-500/15 dark:text-orange-300">
+                        <span className="px-2 py-0.5 rounded-full bg-[#FFF0E8] text-[#C96B45] text-[12px] font-bold dark:bg-orange-500/15 dark:text-orange-300">
                           HIGH
                         </span>
                       )}
                       {item.originalPriority === 'Medium' && !isCompleted && (
-                        <span className="px-2 py-0.5 rounded-none bg-[#FFF0E8]/70 text-[#C96B45]/90 text-[12px] font-bold dark:bg-orange-500/15 dark:text-orange-300">
+                        <span className="px-2 py-0.5 rounded-full bg-[#FFF0E8]/70 text-[#C96B45]/90 text-[12px] font-bold dark:bg-orange-500/15 dark:text-orange-300">
                           MED
                         </span>
                       )}
                       {isCompleted && (
-                        <span className="px-2 py-0.5 rounded-none bg-[#D2F1E8] text-[#18A889] text-[12px] font-bold dark:bg-teal-500/15 dark:text-teal-300">
+                        <span className="px-2 py-0.5 rounded-full bg-[#D2F1E8] text-[#18A889] text-[12px] font-bold dark:bg-teal-500/15 dark:text-teal-300">
                           DONE
                         </span>
                       )}
@@ -295,7 +295,7 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
                         type="button"
                         onClick={(e) => toggleCompleted(item.id, e)}
                         className={clsx(
-                          'w-6 h-6 rounded-[4px] border flex items-center justify-center transition-colors cursor-pointer ml-1',
+                          'w-6 h-6 rounded-full border flex items-center justify-center transition-colors cursor-pointer ml-1',
                           isCompleted
                             ? 'bg-[#18A889] border-[#18A889] text-white'
                             : 'border-line hover:border-black/50 dark:hover:border-white/50 bg-white/40 dark:bg-black/20'
@@ -333,7 +333,7 @@ export const FacultySmartFocusList: React.FC<FacultySmartFocusListProps> = ({
                     {item.deadlineText ? (
                       <span
                         className={clsx(
-                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[11px] font-bold font-mono uppercase tracking-wider',
+                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold font-mono uppercase tracking-wider',
                           isUrgent
                             ? 'bg-[#FFF0E8] text-[#C96B45] border border-[#F5D8CC] dark:bg-orange-500/15 dark:text-orange-300 dark:border-orange-500/30'
                             : isOverdue

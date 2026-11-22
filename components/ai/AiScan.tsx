@@ -73,17 +73,17 @@ function usePreviews(files: File[]) {
 }
 
 const PageThumb: React.FC<{ file: File; url: string | null; index: number; onRemove?: () => void }> = ({ file, url, index, onRemove }) => (
-  <div className="relative aspect-[3/4] border border-line bg-surface overflow-hidden">
+  <div className="rounded-card relative aspect-[3/4] border border-line bg-surface overflow-hidden">
     {url ? (
       // eslint-disable-next-line @next/next/no-img-element
       <img src={url} alt="" className="w-full h-full object-cover" />
     ) : (
-      <div className="w-full h-full flex flex-col items-center justify-center gap-1.5 bg-surface-2 px-2 text-center">
+      <div className="rounded-tile w-full h-full flex flex-col items-center justify-center gap-1.5 bg-surface-2 px-2 text-center">
         <FileText className="w-6 h-6 text-muted" />
         <span className="text-[11px] font-semibold text-fg-2 line-clamp-2 break-all">{file.name}</span>
       </div>
     )}
-    <span className="absolute left-1 bottom-1 min-w-[20px] h-5 px-1 bg-ink/85 text-on-ink text-[11px] font-semibold tabular-nums flex items-center justify-center">
+    <span className="rounded-full absolute left-1 bottom-1 min-w-[20px] h-5 px-1 bg-ink/85 text-on-ink text-[11px] font-semibold tabular-nums flex items-center justify-center">
       {index + 1}
     </span>
     {onRemove && (
@@ -91,7 +91,7 @@ const PageThumb: React.FC<{ file: File; url: string | null; index: number; onRem
         type="button"
         onClick={onRemove}
         aria-label={`Remove ${file.name}`}
-        className="absolute right-1 top-1 w-6 h-6 flex items-center justify-center bg-surface/90 border border-line text-fg hover:bg-surface cursor-pointer"
+        className="rounded-full absolute right-1 top-1 w-6 h-6 flex items-center justify-center bg-surface/90 border border-line text-fg hover:bg-surface cursor-pointer"
       >
         <X className="w-3.5 h-3.5" />
       </button>
@@ -138,7 +138,7 @@ export const AiUploadPanel: React.FC<{
   return (
     <div className="flex flex-col gap-f4 text-left">
       {error && (
-        <div className="flex items-start gap-3 p-f3 border border-rose-200 bg-rose-50 dark:border-rose-400/25 dark:bg-rose-400/10" role="alert">
+        <div className="rounded-tile flex items-start gap-3 p-f3 border border-rose-200 bg-rose-50 dark:border-rose-400/25 dark:bg-rose-400/10" role="alert">
           <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-rose-600 dark:text-rose-300" />
           <div className="flex-1 min-w-0">
             <p className="text-[14px] font-semibold text-rose-900 dark:text-rose-200">That scan didn’t work</p>
@@ -184,11 +184,11 @@ export const AiUploadPanel: React.FC<{
             add(e.dataTransfer.files);
           }}
           className={clsx(
-            'border-2 border-dashed px-f4 py-f5 flex flex-col items-center text-center transition-colors',
+            'rounded-card border-2 border-dashed px-f4 py-f5 flex flex-col items-center text-center transition-colors',
             drag ? 'border-fg bg-surface-2' : 'border-line bg-surface-2/40'
           )}
         >
-          <span className="w-11 h-11 flex items-center justify-center bg-surface-2 border border-line text-fg">
+          <span className="rounded-xl w-11 h-11 flex items-center justify-center bg-surface-2 border border-line text-fg">
             <Upload className="w-5 h-5" />
           </span>
           <p className="mt-3 text-[15px] font-semibold text-fg">Drop your {k.noun} here</p>
@@ -203,7 +203,7 @@ export const AiUploadPanel: React.FC<{
           </div>
         </div>
       ) : (
-        <div className="border border-line bg-surface p-f3">
+        <div className="rounded-tile border border-line bg-surface p-f3">
           <div className="flex items-baseline justify-between gap-3 mb-f3">
             <p className="text-[14px] font-semibold text-fg">
               {pages} {pages === 1 ? 'page' : 'pages'} ready
@@ -220,7 +220,7 @@ export const AiUploadPanel: React.FC<{
               <button
                 type="button"
                 onClick={() => pickRef.current?.click()}
-                className="aspect-[3/4] border border-dashed border-line-strong bg-surface-2/50 flex flex-col items-center justify-center gap-1 text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                className="rounded-tile aspect-[3/4] border border-dashed border-line-strong bg-surface-2/50 flex flex-col items-center justify-center gap-1 text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
               >
                 <Plus className="w-5 h-5" />
                 <span className="text-[12px] font-semibold">Add page</span>
@@ -289,7 +289,7 @@ export const AiScanning: React.FC<{ kind: AiScanKind; files?: File[]; images?: {
               return (
                 <div
                   key={`${f.name}_${idx}`}
-                  className="absolute inset-0 border border-line bg-surface shadow-[0_6px_18px_-8px_rgba(17,17,17,0.25)] overflow-hidden"
+                  className="rounded-card absolute inset-0 border border-line bg-surface shadow-[0_6px_18px_-8px_rgba(17,17,17,0.25)] overflow-hidden"
                   style={{ transform: `translate(${back * 10}px, ${-back * 8}px) rotate(${back * 3}deg)`, zIndex: i }}
                 >
                   {urls[idx] ? (
@@ -314,7 +314,7 @@ export const AiScanning: React.FC<{ kind: AiScanKind; files?: File[]; images?: {
       <h3 className="mt-f3 text-[18px] font-semibold text-fg tracking-tight">Reading your {k.noun}…</h3>
       <p className="mt-1 text-[13px] text-muted">Usually 10–20 seconds{files.length > 1 ? ` for ${files.length} pages` : ''}.</p>
 
-      <div className="mt-f4 w-full max-w-[300px] h-1 bg-surface-3 overflow-hidden" aria-hidden="true">
+      <div className="rounded-full mt-f4 w-full max-w-[300px] h-1 bg-surface-3 overflow-hidden" aria-hidden="true">
         <div className="h-full w-1/3 bg-fg ai-progress" />
       </div>
 

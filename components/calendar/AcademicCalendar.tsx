@@ -26,6 +26,7 @@ import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';
 import { getTodayDateString, deduplicateAcademicEvents, isGenericExamTitle } from '@/lib/timetableUtils';
 import { CalendarEventType } from '@/lib/types';
+import { PageActions, PageTitle } from '@/components/ui/PageActions';
 
 interface UnifiedCalendarItem {
   id: string;
@@ -326,15 +327,15 @@ export const AcademicCalendar: React.FC = () => {
       <div className="flex flex-col gap-f4 mb-f5 sm:mb-f6">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <h2 className="page-title">
+            <PageTitle>
               Academic Calendar
-            </h2>
+            </PageTitle>
             <p className="text-[14px] text-muted mt-1.5">
               Holidays, exams and events for your semester.
             </p>
           </div>
 
-          <div className="page-actions">
+          <PageActions>
             <button
               onClick={() => {
                 if (!isSignedIn) { requestSignIn({ title: 'Sign in to add to your calendar', body: 'Events you add are saved to your account and show up on every device.' }); return; }
@@ -362,11 +363,11 @@ export const AcademicCalendar: React.FC = () => {
                 Clean {dupCount}
               </button>
             )}
-          </div>
+          </PageActions>
         </div>
 
         {/* Coming up: answers "when is the next break / exam?" without scanning the grid */}
-        <div className="grid grid-cols-2 border border-line-soft bg-surface divide-x divide-line-soft">
+        <div className="rounded-card overflow-hidden grid grid-cols-2 border border-line-soft bg-surface divide-x divide-line-soft">
           {[
             { key: 'holiday', label: 'Holiday', item: nextHoliday, empty: 'None ahead' },
             { key: 'exam', label: 'Exam', item: nextExam, empty: 'None ahead' },
@@ -420,7 +421,7 @@ export const AcademicCalendar: React.FC = () => {
                   aria-selected={active}
                   onClick={() => setActiveFilter(f.id)}
                   className={clsx(
-                    'h-9 px-3.5 flex items-center gap-2 border text-[13px] font-medium whitespace-nowrap cursor-pointer transition-colors',
+                    'rounded-full h-9 px-3.5 flex items-center gap-2 border text-[13px] font-medium whitespace-nowrap cursor-pointer transition-colors',
                     active
                       ? 'bg-ink border-line-strong text-on-ink'
                       : 'bg-white dark:bg-transparent border-line text-fg hover:border-line-strong'
@@ -442,7 +443,7 @@ export const AcademicCalendar: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-f5 sm:gap-f6 items-start">
 
         <div className="lg:col-span-7 flex flex-col gap-4">
-          <div className="border border-line-soft bg-surface p-4 sm:p-6">
+          <div className="rounded-card border border-line-soft bg-surface p-4 sm:p-6">
 
             {/* Month header */}
             <div className="flex items-center justify-between mb-4">
@@ -452,20 +453,20 @@ export const AcademicCalendar: React.FC = () => {
               <div className="flex items-center gap-1">
                 <button
                   onClick={jumpToToday}
-                  className="h-9 px-3 text-[13px] font-medium border border-line text-fg hover:bg-surface-2 transition-colors cursor-pointer mr-1"
+                  className="rounded-full h-9 px-3 text-[13px] font-medium border border-line text-fg hover:bg-surface-2 transition-colors cursor-pointer mr-1"
                 >
                   Today
                 </button>
                 <button
                   onClick={prevMonth}
-                  className="w-9 h-9 flex items-center justify-center text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                  className="rounded-full w-9 h-9 flex items-center justify-center text-fg hover:bg-surface-2 transition-colors cursor-pointer"
                   title="Previous month" aria-label="Previous month"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button
                   onClick={nextMonth}
-                  className="w-9 h-9 flex items-center justify-center text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                  className="rounded-full w-9 h-9 flex items-center justify-center text-fg hover:bg-surface-2 transition-colors cursor-pointer"
                   title="Next month" aria-label="Next month"
                 >
                   <ChevronRight className="w-5 h-5" />
@@ -517,7 +518,7 @@ export const AcademicCalendar: React.FC = () => {
                       }
                     }}
                     className={clsx(
-                      'relative h-12 sm:h-14 flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors outline-offset-[-2px]',
+                      'rounded-lg relative h-12 sm:h-14 flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors outline-offset-[-2px]',
                       cell.isCurrentMonth && tint ? tint.cell : 'hover:bg-surface-2',
                       isSelected && 'outline outline-2 outline-[#111111] dark:outline-[#F4F4F6]'
                     )}
@@ -558,7 +559,7 @@ export const AcademicCalendar: React.FC = () => {
             </div>
 
             {selectedItems.length === 0 ? (
-              <div className="border border-dashed border-black/[0.12] dark:border-white/[0.1] p-5 flex flex-col items-start gap-1">
+              <div className="rounded-tile border border-dashed border-black/[0.12] dark:border-white/[0.1] p-5 flex flex-col items-start gap-1">
                 <p className="text-[14px] font-medium text-fg">Nothing scheduled</p>
                 <p className="text-[13px] text-muted">No holidays, exams or events on this day.</p>
                 {nextEventAfterSelected && (
@@ -576,7 +577,7 @@ export const AcademicCalendar: React.FC = () => {
                 )}
               </div>
             ) : (
-              <ul className="flex flex-col border border-line-soft bg-surface divide-y divide-line-soft">
+              <ul className="rounded-card overflow-hidden flex flex-col border border-line-soft bg-surface divide-y divide-line-soft">
                 {selectedItems.map((item, idx) => {
                   const meta = getEventTypeMeta(item.type);
                   return (
@@ -620,7 +621,7 @@ export const AcademicCalendar: React.FC = () => {
                           }
                         }}
                         title={`Delete ${item.title}`} aria-label={`Delete ${item.title}`}
-                        className="w-9 h-9 -mr-2 -mt-1.5 flex items-center justify-center text-muted hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-500/10 transition-colors cursor-pointer shrink-0"
+                        className="rounded-full w-9 h-9 -mr-2 -mt-1.5 flex items-center justify-center text-muted hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-500/10 transition-colors cursor-pointer shrink-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -639,7 +640,7 @@ export const AcademicCalendar: React.FC = () => {
                 <span className="text-[13px] text-muted">{filteredUpcoming.length} {filteredUpcoming.length === 1 ? 'day' : 'days'}</span>
               </div>
 
-              <div className="border border-line-soft bg-surface">
+              <div className="rounded-card overflow-hidden border border-line-soft bg-surface">
                 {visibleUpcoming.map((item, idx) => {
                   const d = new Date(`${item.dateStr}T00:00:00`);
                   const meta = getEventTypeMeta(item.type);
@@ -718,7 +719,7 @@ export const AcademicCalendar: React.FC = () => {
               </div>
               <button
                 onClick={() => setShowAddEventModal(false)}
-                className="p-1 rounded-none text-[#71717A] hover:text-fg transition-colors cursor-pointer"
+                className="p-1 rounded-full text-[#71717A] hover:text-fg transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -729,7 +730,7 @@ export const AcademicCalendar: React.FC = () => {
               <label className="text-[12px] font-bold text-[#71717A] mb-1.5 block">
                 Category
               </label>
-              <div className="grid grid-cols-4 gap-1.5 p-1 bg-surface-2 rounded-none border border-line-soft">
+              <div className="grid grid-cols-4 gap-1.5 p-1 bg-surface-2 rounded-xl border border-line-soft">
                 {(['event', 'holiday', 'exam', 'assignment'] as const).map((t) => (
                   <button
                     key={t}
@@ -758,7 +759,7 @@ export const AcademicCalendar: React.FC = () => {
                   type="text"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-surface-2 border border-line rounded-none px-3.5 py-2.5 text-[13px] text-fg focus:outline-none focus:border-amber-500"
+                  className="w-full bg-surface-2 border border-line rounded-field px-3.5 py-2.5 text-[13px] text-fg focus:outline-none focus:border-amber-500"
                   placeholder="e.g. Campus Placement Drive / Fest"
                   autoFocus
                 />
@@ -773,7 +774,7 @@ export const AcademicCalendar: React.FC = () => {
                     type="date"
                     value={newDate}
                     onChange={(e) => setNewDate(e.target.value)}
-                    className="w-full bg-surface-2 border border-line rounded-none px-3 py-2 text-[13px] text-fg focus:outline-none focus:border-amber-500 font-mono"
+                    className="w-full bg-surface-2 border border-line rounded-field px-3 py-2 text-[13px] text-fg focus:outline-none focus:border-amber-500 font-mono"
                   />
                 </div>
                 <div>
@@ -784,7 +785,7 @@ export const AcademicCalendar: React.FC = () => {
                     type="time"
                     value={newTime}
                     onChange={(e) => setNewTime(e.target.value)}
-                    className="w-full bg-surface-2 border border-line rounded-none px-3 py-2 text-[13px] text-fg focus:outline-none focus:border-amber-500 font-mono"
+                    className="w-full bg-surface-2 border border-line rounded-field px-3 py-2 text-[13px] text-fg focus:outline-none focus:border-amber-500 font-mono"
                   />
                 </div>
               </div>
@@ -797,7 +798,7 @@ export const AcademicCalendar: React.FC = () => {
                   type="text"
                   value={newLocation}
                   onChange={(e) => setNewLocation(e.target.value)}
-                  className="w-full bg-surface-2 border border-line rounded-none px-3.5 py-2 text-[13px] text-fg focus:outline-none focus:border-amber-500"
+                  className="w-full bg-surface-2 border border-line rounded-field px-3.5 py-2 text-[13px] text-fg focus:outline-none focus:border-amber-500"
                   placeholder="e.g. Auditorium / LT-1"
                 />
               </div>
@@ -810,7 +811,7 @@ export const AcademicCalendar: React.FC = () => {
                   rows={2}
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  className="w-full bg-surface-2 border border-line rounded-none px-3.5 py-2 text-[12px] text-fg focus:outline-none focus:border-amber-500 resize-none"
+                  className="w-full bg-surface-2 border border-line rounded-tile px-3.5 py-2 text-[12px] text-fg focus:outline-none focus:border-amber-500 resize-none"
                   placeholder="Event details or notes..."
                 />
               </div>
@@ -820,7 +821,7 @@ export const AcademicCalendar: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowAddEventModal(false)}
-                className="px-4 h-9 rounded-none text-[13px] font-medium text-[#71717A] hover:bg-surface-2 transition-colors cursor-pointer"
+                className="px-4 h-9 rounded-full text-[13px] font-medium text-[#71717A] hover:bg-surface-2 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -828,7 +829,7 @@ export const AcademicCalendar: React.FC = () => {
                 type="button"
                 onClick={handleSaveEvent}
                 disabled={!newTitle.trim()}
-                className="px-5 h-9 rounded-none bg-ink text-on-ink text-[13px] font-semibold disabled:opacity-50 transition-opacity cursor-pointer shadow-xs"
+                className="px-5 h-9 rounded-full bg-ink text-on-ink text-[13px] font-semibold disabled:opacity-50 transition-opacity cursor-pointer shadow-xs"
               >
                 Add Event
               </button>

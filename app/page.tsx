@@ -401,7 +401,7 @@ export default function AppHome() {
 
         <main className="flex-1 px-f4 sm:px-f5 pt-f5 pb-f6 max-w-6xl mx-auto w-full relative">
           {!Capacitor.isNativePlatform() && isAndroid && isSignedIn && (
-            <div className="mb-f5 p-f4 bg-ink text-on-ink flex items-center justify-between rounded-none">
+            <div className="mb-f5 p-f4 bg-ink text-on-ink flex items-center justify-between rounded-tile">
               <div className="flex flex-col pr-4">
                 <span className="text-[12px] font-bold opacity-70 mb-1">
                   Intersemester App
@@ -412,7 +412,7 @@ export default function AppHome() {
               </div>
               <a
                 href={typeof window !== 'undefined' ? `intent://open#Intent;scheme=com.intersemester.app;package=com.intersemester.app;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end` : 'https://play.google.com/store/apps/details?id=com.intersemester.app'}
-                className="px-4 h-9 bg-surface text-fg font-semibold text-[12px] shrink-0 flex items-center justify-center text-center"
+                className="rounded-full px-4 h-9 bg-surface text-fg font-semibold text-[12px] shrink-0 flex items-center justify-center text-center"
               >
                 Open app
               </a>
@@ -511,7 +511,7 @@ export default function AppHome() {
           }
         >
           <div className="flex flex-col gap-4 mt-3 text-left font-sans">
-            <div className="p-4 border border-line-strong bg-surface-2 flex flex-col gap-2">
+            <div className="rounded-tile p-4 border border-line-strong bg-surface-2 flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-bold text-fg">
                   {inviteData.college || 'Academic Batch'}
@@ -531,7 +531,7 @@ export default function AppHome() {
               /* Strictly Web View -> Mobile App Gate Only */
               <div className="flex flex-col gap-4">
                 {/* Prominent 6-Digit Batch Code */}
-                <div className="p-4 bg-ink text-on-ink flex flex-col gap-2">
+                <div className="rounded-tile p-4 bg-ink text-on-ink flex flex-col gap-2">
                   <span className="text-[12px] font-bold opacity-70">
                     6-Digit Batch Code
                   </span>
@@ -555,7 +555,7 @@ export default function AppHome() {
                 </div>
 
                 {/* Step-by-Step Instructions */}
-                <div className="p-3.5 bg-surface-2 border border-line flex flex-col gap-1.5 text-xs text-fg-2">
+                <div className="rounded-tile p-3.5 bg-surface-2 border border-line flex flex-col gap-1.5 text-xs text-fg-2">
                   <span className="font-bold text-[12px] text-fg">
                     How to join:
                   </span>
@@ -618,7 +618,7 @@ export default function AppHome() {
                         window.history.replaceState({}, document.title, window.location.pathname);
                       }
                     }}
-                    className="px-4 h-9 border border-line-strong text-[13px] font-semibold hover:bg-surface-2 transition-colors cursor-pointer rounded-none"
+                    className="px-4 h-9 border border-line-strong text-[13px] font-semibold hover:bg-surface-2 transition-colors cursor-pointer rounded-full"
                   >
                     Dismiss
                   </button>
@@ -631,7 +631,7 @@ export default function AppHome() {
                         window.history.replaceState({}, document.title, window.location.pathname);
                       }
                     }}
-                    className="px-4 h-9 bg-ink text-on-ink border border-line-strong text-[13px] font-semibold hover:bg-transparent hover:text-fg transition-colors cursor-pointer rounded-none"
+                    className="px-4 h-9 bg-ink text-on-ink border border-line-strong text-[13px] font-semibold hover:bg-transparent hover:text-fg transition-colors cursor-pointer rounded-full"
                   >
                     Accept & Sync
                   </button>
@@ -659,7 +659,7 @@ export default function AppHome() {
           }
         >
           <div className="flex flex-col gap-4 mt-3 text-left font-sans">
-            <div className="p-4 border border-line-strong bg-surface-2 flex flex-col gap-2">
+            <div className="rounded-tile p-4 border border-line-strong bg-surface-2 flex flex-col gap-2">
               <h4 className="text-sm font-bold text-fg">
                 {calendarInviteData.college}
               </h4>
@@ -676,7 +676,7 @@ export default function AppHome() {
             {!Capacitor.isNativePlatform() ? (
               /* Strictly Web View -> Mobile App Gate Only */
               <div className="flex flex-col gap-4">
-                <div className="p-4 bg-ink text-on-ink flex flex-col gap-2">
+                <div className="rounded-tile p-4 bg-ink text-on-ink flex flex-col gap-2">
                   <span className="text-[12px] font-bold opacity-70">
                     Calendar Code / ID
                   </span>
@@ -698,7 +698,7 @@ export default function AppHome() {
                   </div>
                 </div>
 
-                <div className="p-3.5 bg-surface-2 border border-line flex flex-col gap-1.5 text-xs text-fg-2">
+                <div className="rounded-tile p-3.5 bg-surface-2 border border-line flex flex-col gap-1.5 text-xs text-fg-2">
                   <span className="font-bold text-[12px] text-fg">
                     How to import:
                   </span>
@@ -760,7 +760,7 @@ export default function AppHome() {
                         window.history.replaceState({}, document.title, window.location.pathname);
                       }
                     }}
-                    className="px-4 h-9 border border-line-strong text-[13px] font-semibold hover:bg-surface-2 transition-colors cursor-pointer rounded-none"
+                    className="px-4 h-9 border border-line-strong text-[13px] font-semibold hover:bg-surface-2 transition-colors cursor-pointer rounded-full"
                   >
                     Dismiss
                   </button>
@@ -780,7 +780,7 @@ export default function AppHome() {
                         window.history.replaceState({}, document.title, window.location.pathname);
                       }
                     }}
-                    className="px-4 h-9 bg-ink text-on-ink border border-line-strong text-[13px] font-semibold hover:bg-transparent hover:text-fg transition-colors cursor-pointer rounded-none"
+                    className="px-4 h-9 bg-ink text-on-ink border border-line-strong text-[13px] font-semibold hover:bg-transparent hover:text-fg transition-colors cursor-pointer rounded-full"
                   >
                     Accept & Import
                   </button>
@@ -808,7 +808,7 @@ export default function AppHome() {
           }
         >
           <div className="flex flex-col gap-4 mt-3 text-left font-sans">
-            <div className="p-4 border border-line-strong bg-surface-2 flex flex-col gap-2">
+            <div className="rounded-tile p-4 border border-line-strong bg-surface-2 flex flex-col gap-2">
               <h4 className="text-sm font-bold text-fg">
                 {examsInviteData.college}
               </h4>
@@ -825,7 +825,7 @@ export default function AppHome() {
             {!Capacitor.isNativePlatform() ? (
               /* Strictly Web View -> Mobile App Gate Only */
               <div className="flex flex-col gap-4">
-                <div className="p-4 bg-ink text-on-ink flex flex-col gap-2">
+                <div className="rounded-tile p-4 bg-ink text-on-ink flex flex-col gap-2">
                   <span className="text-[12px] font-bold opacity-70">
                     Exam Schedule Code / ID
                   </span>
@@ -847,7 +847,7 @@ export default function AppHome() {
                   </div>
                 </div>
 
-                <div className="p-3.5 bg-surface-2 border border-line flex flex-col gap-1.5 text-xs text-fg-2">
+                <div className="rounded-tile p-3.5 bg-surface-2 border border-line flex flex-col gap-1.5 text-xs text-fg-2">
                   <span className="font-bold text-[12px] text-fg">
                     How to import:
                   </span>
@@ -909,7 +909,7 @@ export default function AppHome() {
                         window.history.replaceState({}, document.title, window.location.pathname);
                       }
                     }}
-                    className="px-4 h-9 border border-line-strong text-[13px] font-semibold hover:bg-surface-2 transition-colors cursor-pointer rounded-none"
+                    className="px-4 h-9 border border-line-strong text-[13px] font-semibold hover:bg-surface-2 transition-colors cursor-pointer rounded-full"
                   >
                     Dismiss
                   </button>
@@ -929,7 +929,7 @@ export default function AppHome() {
                         window.history.replaceState({}, document.title, window.location.pathname);
                       }
                     }}
-                    className="px-4 h-9 bg-ink text-on-ink border border-line-strong text-[13px] font-semibold hover:bg-transparent hover:text-fg transition-colors cursor-pointer rounded-none"
+                    className="px-4 h-9 bg-ink text-on-ink border border-line-strong text-[13px] font-semibold hover:bg-transparent hover:text-fg transition-colors cursor-pointer rounded-full"
                   >
                     Accept & Import
                   </button>

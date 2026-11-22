@@ -135,7 +135,7 @@ export const FacultyBatchesCard: React.FC<FacultyBatchesCardProps> = ({
       </div>
 
       {linkedBatches.length === 0 ? (
-        <div className="flex flex-col items-center text-center px-6 py-f5 border border-dashed border-line">
+        <div className="rounded-card flex flex-col items-center text-center px-6 py-f5 border border-dashed border-line">
           <Illustration name="setup" className="h-[120px] w-auto" />
           <p className="mt-f3 text-[15px] font-semibold text-fg">No batches yet</p>
           <p className="mt-1 text-[14px] text-muted max-w-[280px]">Enter a batch code from the class&apos;s batch pilot.</p>
@@ -148,7 +148,7 @@ export const FacultyBatchesCard: React.FC<FacultyBatchesCardProps> = ({
           </button>
         </div>
       ) : (
-        <ul className="border border-line bg-surface divide-y divide-line-soft">
+        <ul className="rounded-tile overflow-hidden border border-line bg-surface divide-y divide-line-soft">
           {linkedBatches.map((batch, idx) => {
             const { degreeAndBranch, semText } = formatFacultyBatchDegreeAndBranch(batch);
             const code = batch.batchCode || batch.batchKey;

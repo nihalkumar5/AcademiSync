@@ -123,7 +123,7 @@ export default function DeleteDataPage() {
           </div>
 
           {status === 'sent' ? (
-            <div className="bg-surface border border-red-600 dark:border-red-500 p-6 flex flex-col items-center justify-center text-center gap-4">
+            <div className="rounded-card bg-surface border border-red-600 dark:border-red-500 p-6 flex flex-col items-center justify-center text-center gap-4">
               <h3 className="text-[18px] font-bold text-red-600 dark:text-red-500">Request received</h3>
               <p className="text-[14px] text-[#6B6B6B]">
                 We&apos;ll delete your account and data within 7 days and email you at {email.trim().toLowerCase()}{' '}
@@ -147,7 +147,7 @@ export default function DeleteDataPage() {
                   maxLength={200}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-surface border border-line text-[14px] focus:outline-none focus:border-line-strong transition-colors rounded-none placeholder:text-[#999999]"
+                  className="w-full px-4 py-3 bg-surface border border-line text-[14px] focus:outline-none focus:border-line-strong transition-colors rounded-field placeholder:text-[#999999]"
                   placeholder="name@university.edu"
                 />
               </div>
@@ -162,7 +162,7 @@ export default function DeleteDataPage() {
                   maxLength={100}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 bg-surface border border-line text-[14px] focus:outline-none focus:border-line-strong transition-colors rounded-none placeholder:text-[#999999]"
+                  className="w-full px-4 py-3 bg-surface border border-line text-[14px] focus:outline-none focus:border-line-strong transition-colors rounded-field placeholder:text-[#999999]"
                 />
               </div>
 
@@ -176,7 +176,7 @@ export default function DeleteDataPage() {
                   maxLength={1000}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  className="w-full px-4 py-3 bg-surface border border-line text-[14px] focus:outline-none focus:border-line-strong transition-colors rounded-none placeholder:text-[#999999] resize-none"
+                  className="w-full px-4 py-3 bg-surface border border-line text-[14px] focus:outline-none focus:border-line-strong transition-colors rounded-tile placeholder:text-[#999999] resize-none"
                 />
               </div>
 
@@ -190,7 +190,7 @@ export default function DeleteDataPage() {
               <button
                 type="submit"
                 disabled={status === 'sending'}
-                className="w-full py-4 mt-2 bg-red-600 text-white text-[13px] font-bold hover:bg-red-700 transition-colors rounded-none disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full py-4 mt-2 bg-red-600 text-white text-[13px] font-bold hover:bg-red-700 transition-colors rounded-full disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {status === 'sending' ? 'Sending…' : 'Request account deletion'}
               </button>

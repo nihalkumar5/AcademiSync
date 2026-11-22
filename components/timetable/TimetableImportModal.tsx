@@ -332,18 +332,18 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
             <div className="flex flex-col gap-3">
               <span className="section-label">Extracted Sessions</span>
               {parallelFound > 0 && (
-                <p className="border border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-200 px-3 py-2.5 text-[13px] leading-[19px]">
+                <p className="rounded-tile border border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-200 px-3 py-2.5 text-[13px] leading-[19px]">
                   {parallelFound} classes run at the same time as another course, so we marked them as electives. Students pick the one they attend. Switch any off that everyone takes.
                 </p>
               )}
               
               <div className="flex flex-col gap-4">
                 {extractedSessions.map((session, index) => (
-                  <div key={index} className="flex flex-col gap-3 p-4 rounded-none border border-line bg-surface-2 relative group">
+                  <div key={index} className="flex flex-col gap-3 p-4 rounded-tile border border-line bg-surface-2 relative group">
                     <button
                       type="button"
                       onClick={() => removeExtractedRow(index)}
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-none bg-surface border border-line flex items-center justify-center text-muted hover:text-rose-500 dark:hover:text-rose-400 transition-colors z-10 shadow-sm"
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-surface border border-line flex items-center justify-center text-muted hover:text-rose-500 dark:hover:text-rose-400 transition-colors z-10 shadow-sm"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -355,7 +355,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                           <select
                             value={session.day}
                             onChange={(e) => updateExtractedRow(index, { day: e.target.value as any })}
-                            className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors appearance-none"
+                            className="w-full px-3 py-1.5 h-[38px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors appearance-none"
                           >
                             <option value="Monday" className="dark:bg-[#121317]">Monday</option>
                             <option value="Tuesday" className="dark:bg-[#121317]">Tuesday</option>
@@ -376,7 +376,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                             type="time"
                             value={session.startTime}
                             onChange={(e) => updateExtractedRow(index, { startTime: e.target.value })}
-                            className="w-full px-2.5 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                            className="w-full px-2.5 py-1.5 h-[38px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                           />
                         </div>
                         <span className="text-black/60 dark:text-white/20 mt-5">-</span>
@@ -386,7 +386,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                             type="time"
                             value={session.endTime}
                             onChange={(e) => updateExtractedRow(index, { endTime: e.target.value })}
-                            className="w-full px-2.5 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                            className="w-full px-2.5 py-1.5 h-[38px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                           />
                         </div>
                       </div>
@@ -400,14 +400,14 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                           placeholder="Code"
                           value={session.subjectCode}
                           onChange={(e) => updateExtractedRow(index, { subjectCode: e.target.value })}
-                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                          className="w-full px-3 py-1.5 h-[38px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                         />
                         <input
                           type="text"
                           placeholder="Subject Name"
                           value={session.subjectName}
                           onChange={(e) => updateExtractedRow(index, { subjectName: e.target.value })}
-                          className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                          className="w-full px-3 py-1.5 h-[38px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                         />
                       </div>
                     </div>
@@ -418,14 +418,14 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                         placeholder="Room / Lab"
                         value={session.room}
                         onChange={(e) => updateExtractedRow(index, { room: e.target.value })}
-                        className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                        className="w-full px-3 py-1.5 h-[38px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                       />
                       <input
                         type="text"
                         placeholder="Faculty"
                         value={session.faculty}
                         onChange={(e) => updateExtractedRow(index, { faculty: e.target.value })}
-                        className="w-full px-3 py-1.5 h-[38px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                        className="w-full px-3 py-1.5 h-[38px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                       />
                     </div>
 
@@ -433,7 +433,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                       <button
                         type="button"
                         onClick={() => updateExtractedRow(index, { isLab: !session.isLab })}
-                        className={`px-3 py-1 text-[13px] font-bold transition-colors border ${
+                        className={`rounded-full px-3 py-1 text-[13px] font-bold transition-colors border ${
  session.isLab
  ? 'bg-[#18A889] text-white border-[#18A889]'
  : 'bg-transparent text-muted border-line hover:border-black/30'
@@ -445,7 +445,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                       <button
                         type="button"
                         onClick={() => updateExtractedRow(index, { isElective: !session.isElective })}
-                        className={`px-3 py-1 text-[13px] font-bold transition-colors border ${
+                        className={`rounded-full px-3 py-1 text-[13px] font-bold transition-colors border ${
  session.isElective
  ? 'bg-[#8067B5] text-white border-[#8067B5]'
  : 'bg-transparent text-muted border-line hover:border-[#8067B5]'
@@ -462,7 +462,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                           placeholder="e.g. Elective I (same name = pick one)"
                           value={session.electiveGroup || ''}
                           onChange={(e) => updateExtractedRow(index, { electiveGroup: e.target.value.slice(0, 40) })}
-                          className="flex-1 min-w-0 px-3 py-1.5 h-[34px] rounded-none bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+                          className="flex-1 min-w-0 px-3 py-1.5 h-[34px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
                         />
                       </label>
                     )}
@@ -472,7 +472,7 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                 <button
                   type="button"
                   onClick={addExtractedRow}
-                  className="w-full flex items-center justify-center gap-2 py-2 h-11 text-[14px] font-semibold text-fg rounded-none border border-line bg-surface-2 hover:bg-surface-2 transition-colors cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-2 h-11 text-[14px] font-semibold text-fg rounded-full border border-line bg-surface-2 hover:bg-surface-2 transition-colors cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add Row
                 </button>
@@ -484,14 +484,14 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
             <button 
               type="button" 
               onClick={resetState}
-              className="w-full sm:w-auto px-4 h-11 rounded-none text-[14px] font-semibold text-muted hover:bg-surface-2 transition-colors cursor-pointer"
+              className="w-full sm:w-auto px-4 h-11 rounded-full text-[14px] font-semibold text-muted hover:bg-surface-2 transition-colors cursor-pointer"
             >
               Scan Another
             </button>
             <button 
               type="button" 
               onClick={handleSaveConfirmed}
-              className="w-full sm:w-auto px-6 h-11 rounded-none bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
+              className="w-full sm:w-auto px-6 h-11 rounded-full bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
             >
               Save to Timetable
             </button>

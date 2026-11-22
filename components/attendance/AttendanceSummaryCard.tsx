@@ -32,7 +32,7 @@ export const AttendanceSummaryCard: React.FC = () => {
         <div className="grid grid-cols-3 divide-x divide-line-soft">
           <Stat label="Lectures" value={summary ? String(summary.lectures) : '—'} />
           <Stat label="Average" value={avg === null ? '—' : String(avg)} unit={avg === null ? undefined : '%'} alert={avg !== null && avg < 75}>
-            <span className="mt-f3 block h-[3px] w-full bg-surface-3" aria-hidden="true">
+            <span className="rounded-full mt-f3 block h-[3px] w-full bg-surface-3" aria-hidden="true">
               <span
                 className={`block h-full transition-[width] duration-700 ${avg !== null && avg < 75 ? 'bg-danger' : 'bg-ink'}`}
                 style={{ width: `${avg ?? 0}%` }}

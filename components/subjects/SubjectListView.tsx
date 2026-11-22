@@ -124,7 +124,7 @@ export const SubjectListView: React.FC = () => {
       </div>
 
       {/* Summary strip */}
-      <div className="grid grid-cols-4 border border-line bg-surface divide-x divide-line-soft">
+      <div className="rounded-card overflow-hidden grid grid-cols-4 border border-line bg-surface divide-x divide-line-soft">
         {[
           { label: 'Courses', value: subjects.length },
           { label: 'Credits', value: totalCredits },
@@ -152,7 +152,7 @@ export const SubjectListView: React.FC = () => {
             )}
           </div>
           {electiveGroups.length === 0 ? (
-            <p className="border border-dashed border-line px-4 py-3 text-[14px] text-muted">No electives yet. Mark the courses where students pick one, and they choose theirs.</p>
+            <p className="rounded-tile bg-surface-2 px-4 py-3 text-[14px] text-muted">No electives yet. Mark the courses where students pick one, and they choose theirs.</p>
           ) : (
             <div className="flex flex-col gap-3">
               {electiveGroups.map((g) => (
@@ -165,7 +165,7 @@ export const SubjectListView: React.FC = () => {
 
       {/* Search + filters */}
       <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-3 px-4 h-12 bg-surface border border-line focus-within:border-line-strong transition-colors">
+        <div className="rounded-tile flex items-center gap-3 px-4 h-12 bg-surface border border-line focus-within:border-line-strong transition-colors">
           <Search className="w-[18px] h-[18px] text-muted shrink-0" />
           <input
             type="text"
@@ -188,7 +188,7 @@ export const SubjectListView: React.FC = () => {
                   aria-selected={active}
                   onClick={() => setFilterType(f.id)}
                   className={clsx(
-                    'h-9 px-3.5 inline-flex items-center gap-2 border text-[13px] font-medium whitespace-nowrap cursor-pointer transition-colors',
+                    'rounded-full h-9 px-3.5 inline-flex items-center gap-2 border text-[13px] font-medium whitespace-nowrap cursor-pointer transition-colors',
                     active
                       ? 'bg-ink border-line-strong text-on-ink'
                       : 'bg-white dark:bg-transparent border-line text-fg hover:border-line-strong'
@@ -218,7 +218,7 @@ export const SubjectListView: React.FC = () => {
           }}
         />
       ) : filteredSubjects.length === 0 ? (
-        <div className="py-10 px-4 border border-dashed border-line text-center flex flex-col items-center gap-1.5">
+        <div className="rounded-card py-10 px-4 bg-surface-2 text-center flex flex-col items-center gap-1.5">
           <p className="text-[15px] font-semibold text-fg">No matching subjects</p>
           <p className="text-[14px] text-muted">Try a different search or filter.</p>
           <button
@@ -257,7 +257,7 @@ export const SubjectListView: React.FC = () => {
                   setEditSubject(sub);
                   setShowModal(true);
                 }}
-                className="relative flex flex-col overflow-hidden border border-black/[0.06] dark:border-[color:var(--subject-border)] hover:shadow-md transition-shadow cursor-pointer"
+                className="rounded-card relative flex flex-col overflow-hidden border border-black/[0.06] dark:border-[color:var(--subject-border)] hover:shadow-md transition-shadow cursor-pointer"
                 style={{ ['--subject-border' as any]: `${theme.accent}45` }}
               >
                 {/* Same colour as this subject's classes in the timetable: soft pastel in light, accent tint in dark */}
@@ -276,10 +276,10 @@ export const SubjectListView: React.FC = () => {
                         {sub.code && sub.code !== 'UNK' && <span aria-hidden="true">·</span>}
                         <span>{sub.credits} {sub.credits === 1 ? 'credit' : 'credits'}</span>
                         {sub.isLab && (
-                          <span className="ml-1 px-1.5 py-px text-[12px] font-semibold border" style={{ color: theme.accent, borderColor: `${theme.accent}55` }}>Lab</span>
+                          <span className="rounded-full ml-1 px-1.5 py-px text-[12px] font-semibold border" style={{ color: theme.accent, borderColor: `${theme.accent}55` }}>Lab</span>
                         )}
                         {sub.isElective && (
-                          <span className="ml-1 px-1.5 py-px text-[12px] font-semibold border border-violet-500/40 text-violet-700 dark:text-violet-300">Elective</span>
+                          <span className="rounded-full ml-1 px-1.5 py-px text-[12px] font-semibold border border-violet-500/40 text-violet-700 dark:text-violet-300">Elective</span>
                         )}
                         {isReadOnlyOfficial && <span className="ml-1">· Official</span>}
                       </p>
@@ -295,7 +295,7 @@ export const SubjectListView: React.FC = () => {
                           setEditSubject(sub);
                           setShowModal(true);
                         }}
-                        className="w-9 h-9 flex items-center justify-center text-muted hover:text-fg hover:bg-black/[0.05] dark:hover:bg-white/[0.08] cursor-pointer"
+                        className="rounded-full w-9 h-9 flex items-center justify-center text-muted hover:text-fg hover:bg-black/[0.05] dark:hover:bg-white/[0.08] cursor-pointer"
                         title={isReadOnlyOfficial ? 'Customize colour' : `Edit ${sub.name}`} aria-label={isReadOnlyOfficial ? `Customize colour of ${sub.name}` : `Edit ${sub.name}`}
                       >
                         <Edit2 className="w-4 h-4" />
@@ -307,7 +307,7 @@ export const SubjectListView: React.FC = () => {
                             e.stopPropagation();
                             setSubjectToDelete(sub);
                           }}
-                          className="w-9 h-9 flex items-center justify-center text-muted hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-500/10 cursor-pointer"
+                          className="rounded-full w-9 h-9 flex items-center justify-center text-muted hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-500/10 cursor-pointer"
                           title="Delete subject" aria-label={`Delete ${sub.name}`}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -330,7 +330,7 @@ export const SubjectListView: React.FC = () => {
                           <a
                             href={`mailto:${sub.facultyEmail}?subject=${encodeURIComponent(`[${sub.code || sub.name}] Inquiry`)}`}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-9 h-9 flex items-center justify-center text-muted hover:text-fg hover:bg-black/[0.05] dark:hover:bg-white/[0.08]"
+                            className="rounded-full w-9 h-9 flex items-center justify-center text-muted hover:text-fg hover:bg-black/[0.05] dark:hover:bg-white/[0.08]"
                             title="Email faculty" aria-label={`Email ${sub.facultyName || 'faculty'}`}
                           >
                             <Mail className="w-4 h-4" />
@@ -341,7 +341,7 @@ export const SubjectListView: React.FC = () => {
                               e.stopPropagation();
                               handleCopyEmail(sub.facultyEmail!);
                             }}
-                            className="w-9 h-9 flex items-center justify-center text-muted hover:text-fg hover:bg-black/[0.05] dark:hover:bg-white/[0.08] cursor-pointer"
+                            className="rounded-full w-9 h-9 flex items-center justify-center text-muted hover:text-fg hover:bg-black/[0.05] dark:hover:bg-white/[0.08] cursor-pointer"
                             title="Copy email" aria-label="Copy faculty email"
                           >
                             {copiedEmail === sub.facultyEmail ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
@@ -366,7 +366,7 @@ export const SubjectListView: React.FC = () => {
                     {scheduledSessions.length > 0 ? (
                       <div className="flex flex-wrap gap-1.5">
                         {scheduledSessions.map((sess) => (
-                          <span key={sess.id} className="px-2 py-0.5 text-[12px] tabular-nums bg-white/75 dark:bg-black/25 border border-black/[0.05] dark:border-white/[0.06] text-fg">
+                          <span key={sess.id} className="rounded-full px-2 py-0.5 text-[12px] tabular-nums bg-white/75 dark:bg-black/25 border border-black/[0.05] dark:border-white/[0.06] text-fg">
                             <span className="font-semibold">{sess.day.slice(0, 3)}</span> {formatSlotTime(sess.startTime)}
                           </span>
                         ))}
@@ -380,7 +380,7 @@ export const SubjectListView: React.FC = () => {
                     {sub.carryRequirements && sub.carryRequirements.length > 0 ? (
                       <div className="flex flex-wrap gap-1.5">
                         {sub.carryRequirements.map((item, idx) => (
-                          <span key={idx} className="px-2 py-0.5 text-[12px] bg-white/75 dark:bg-black/25 border border-black/[0.05] dark:border-white/[0.06] text-fg">
+                          <span key={idx} className="rounded-full px-2 py-0.5 text-[12px] bg-white/75 dark:bg-black/25 border border-black/[0.05] dark:border-white/[0.06] text-fg">
                             {item}
                           </span>
                         ))}
@@ -398,7 +398,7 @@ export const SubjectListView: React.FC = () => {
                           e.stopPropagation();
                           openElectives({ focus: electiveGroups.find((g) => g.options.some((o) => o.id === sub.id))?.key });
                         }}
-                        className={clsx('h-7 px-2.5 text-[12px] font-semibold cursor-pointer transition-colors', isEnrolledElective ? 'bg-ink text-on-ink' : 'border border-line text-fg')}
+                        className={clsx('rounded-full h-7 px-2.5 text-[12px] font-semibold cursor-pointer transition-colors', isEnrolledElective ? 'bg-ink text-on-ink' : 'border border-line text-fg')}
                       >
                         {isEnrolledElective ? 'You take this' : 'Not yours · change'}
                       </button>

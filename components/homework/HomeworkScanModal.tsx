@@ -166,7 +166,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
                     value={extractedSubjectId}
                     onChange={(e) => setExtractedSubjectId(e.target.value)}
                     required
-                    className="w-full px-3.5 py-2.5 h-[44px] rounded-none bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors appearance-none shadow-sm"
+                    className="w-full px-3.5 py-2.5 h-[44px] rounded-field bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors appearance-none shadow-sm"
                   >
                     <option value="" disabled className="dark:bg-[#121317]">Select Subject</option>
                     {subjects.map((sub) => (
@@ -191,7 +191,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
                   value={extractedTitle}
                   onChange={(e) => setExtractedTitle(e.target.value)}
                   required
-                  className="w-full px-3.5 py-2.5 rounded-none bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors shadow-sm"
+                  className="w-full px-3.5 py-2.5 rounded-field bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors shadow-sm"
                 />
               </div>
 
@@ -200,7 +200,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
                 <textarea
                   value={extractedDescription}
                   onChange={(e) => setExtractedDescription(e.target.value)}
-                  className="w-full p-3.5 rounded-none min-h-[80px] bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors resize-y shadow-sm"
+                  className="w-full p-3.5 rounded-tile min-h-[80px] bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors resize-y shadow-sm"
                 />
               </div>
             </div>
@@ -217,7 +217,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
                     value={extractedDeadline}
                     onChange={(e) => setExtractedDeadline(e.target.value)}
                     required
-                    className="w-full px-3.5 py-2.5 h-[44px] rounded-none bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors shadow-sm"
+                    className="w-full px-3.5 py-2.5 h-[44px] rounded-field bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors shadow-sm"
                   />
                 </div>
 
@@ -227,7 +227,7 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
                     <select
                       value={extractedPriority}
                       onChange={(e) => setExtractedPriority(e.target.value as any)}
-                      className="w-full px-3.5 py-2.5 h-[44px] rounded-none bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors appearance-none shadow-sm"
+                      className="w-full px-3.5 py-2.5 h-[44px] rounded-field bg-surface border border-line text-[14px] text-fg focus:outline-none focus:border-line-strong transition-colors appearance-none shadow-sm"
                     >
                       <option value="Low" className="dark:bg-[#121317]">Low Priority</option>
                       <option value="Medium" className="dark:bg-[#121317]">Medium Priority</option>
@@ -244,13 +244,13 @@ export const HomeworkScanModal: React.FC<HomeworkScanModalProps> = ({ isOpen, on
             <button 
               type="button" 
               onClick={resetState}
-              className="w-full sm:w-auto px-4 h-11 rounded-none text-[14px] font-semibold text-muted hover:bg-surface-2 transition-colors cursor-pointer"
+              className="w-full sm:w-auto px-4 h-11 rounded-full text-[14px] font-semibold text-muted hover:bg-surface-2 transition-colors cursor-pointer"
             >
               Scan Another
             </button>
             <button 
               type="submit"
-              className="w-full sm:w-auto px-6 h-11 rounded-none bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
+              className="w-full sm:w-auto px-6 h-11 rounded-full bg-ink text-on-ink text-[14px] font-semibold hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
             >
               Save Task
             </button>

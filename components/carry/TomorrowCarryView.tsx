@@ -96,22 +96,22 @@ export const TomorrowCarryView: React.FC = () => {
       <div className="flex flex-col gap-3 pt-2 sm:pt-6">
         <div>
           <h2 className="page-title">
-            Bag,<br />Carry,<br />Pack
+            Pack your bag
           </h2>
           <div className="flex items-center gap-2.5 mt-4 flex-wrap">
-            <span className="px-2.5 py-1 text-[12px] font-semibold bg-ink text-on-ink">
+            <span className="rounded-full px-2.5 py-1 text-[12px] font-semibold bg-ink text-on-ink">
               {targetDay}
             </span>
             {targetHoliday ? (
-              <span className="px-2.5 py-1 text-[12px] font-medium bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+              <span className="rounded-full px-2.5 py-1 text-[12px] font-medium bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
                 Holiday · {targetHoliday.title}
               </span>
             ) : targetExam ? (
-              <span className="px-2.5 py-1 text-[12px] font-medium bg-rose-500/10 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300">
+              <span className="rounded-full px-2.5 py-1 text-[12px] font-medium bg-rose-500/10 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300">
                 Exam day
               </span>
             ) : (
-              <span className="px-2.5 py-1 text-[12px] font-medium tabular-nums border border-line text-fg">
+              <span className="rounded-full px-2.5 py-1 text-[12px] font-medium tabular-nums border border-line text-fg">
                 {packedCount}/{totalCount} packed
               </span>
             )}
@@ -128,7 +128,7 @@ export const TomorrowCarryView: React.FC = () => {
         {/* Left Column: Things to Carry List */}
         <div className="lg:col-span-7 flex flex-col gap-4">
           {totalCount === 0 && !targetHoliday ? (
-            <div className="border border-line bg-surface p-6 flex flex-col items-start">
+            <div className="rounded-card border border-line bg-surface p-6 flex flex-col items-start">
               <div className="flex items-center gap-2 text-[17px] font-semibold tracking-tight text-fg">
                 <Backpack className="w-5 h-5 stroke-[1.8]" />
                 <span>Things to carry</span>
@@ -139,14 +139,14 @@ export const TomorrowCarryView: React.FC = () => {
               </div>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="h-[42px] px-5 bg-ink text-on-ink flex items-center justify-center gap-2 font-semibold text-[13px] hover:opacity-90 transition-opacity cursor-pointer"
+                className="rounded-full h-[42px] px-5 bg-ink text-on-ink flex items-center justify-center gap-2 font-semibold text-[13px] hover:opacity-90 transition-opacity cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add item</span>
               </button>
             </div>
           ) : (
-            <div className="border border-line flex flex-col p-5 sm:p-6 bg-surface">
+            <div className="rounded-card border border-line flex flex-col p-5 sm:p-6 bg-surface">
               <div className="flex items-center justify-between pb-3.5 border-b border-line-soft mb-4">
                 <div className="flex items-center gap-2 text-[17px] font-semibold tracking-tight text-fg">
                   <Backpack className="w-5 h-5 stroke-[1.8]" />
@@ -160,7 +160,7 @@ export const TomorrowCarryView: React.FC = () => {
               {/* Progress bar */}
               {totalCount > 0 && (
                 <div className="mb-4">
-                  <div className="w-full h-1.5 bg-surface-3 overflow-hidden">
+                  <div className="rounded-full w-full h-1.5 bg-surface-3 overflow-hidden">
                     <div 
                       className="h-full bg-[#18A889] transition-all duration-300"
                       style={{ width: `${(packedCount / totalCount) * 100}%` }}
@@ -200,7 +200,7 @@ export const TomorrowCarryView: React.FC = () => {
               {visibleCarryItems.length > 0 && (
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="flex items-center justify-center gap-2 h-11 px-4 border border-dashed border-line text-[14px] font-semibold text-[#52525B] dark:text-[#A1A1AA] hover:text-fg hover:border-black/30 dark:hover:border-white/30 hover:bg-surface-2 transition-all cursor-pointer mt-4"
+                  className="rounded-full flex items-center justify-center gap-2 h-11 px-4 border border-dashed border-line text-[14px] font-semibold text-[#52525B] dark:text-[#A1A1AA] hover:text-fg hover:border-black/30 dark:hover:border-white/30 hover:bg-surface-2 transition-all cursor-pointer mt-4"
                 >
                   <Plus className="w-4 h-4 stroke-[2]" />
                   <span>Add another item</span>
@@ -224,11 +224,11 @@ export const TomorrowCarryView: React.FC = () => {
 
           <div className="flex flex-col gap-3">
             {targetHoliday ? (
-              <div className="p-4 border border-dashed border-line text-[14px] text-muted">
+              <div className="rounded-tile p-4 bg-surface-2 text-[14px] text-muted">
                 No classes {isAfterReminderTime ? 'tomorrow' : 'today'}. Campus is closed for <span className="font-medium text-fg">{targetHoliday.title}</span>.
               </div>
             ) : targetExam ? (
-              <div className="p-5 text-left bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/20 flex flex-col gap-2.5">
+              <div className="rounded-card p-5 text-left bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/20 flex flex-col gap-2.5">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                   <span className="font-mono text-[12px] font-bold text-amber-700 dark:text-amber-400">
@@ -247,7 +247,7 @@ export const TomorrowCarryView: React.FC = () => {
                 </p>
               </div>
             ) : targetClasses.length === 0 ? (
-              <div className="p-4 border border-dashed border-line text-[14px] text-muted">
+              <div className="rounded-tile p-4 bg-surface-2 text-[14px] text-muted">
                 No classes scheduled for {isAfterReminderTime ? 'tomorrow' : 'today'}.
               </div>
             ) : (
@@ -269,7 +269,7 @@ export const TomorrowCarryView: React.FC = () => {
                   <button
                     key={sess.id}
                     onClick={() => setDetailSession(sess)}
-                    className="relative w-full p-4 sm:p-[18px] border transition-all text-left group overflow-hidden shadow-xs hover:shadow-md cursor-pointer border-black/[0.06] dark:border-[color:var(--card-accent-border)] hover:scale-[1.008] duration-200"
+                    className="rounded-card relative w-full p-4 sm:p-[18px] border transition-all text-left group overflow-hidden shadow-xs hover:shadow-md cursor-pointer border-black/[0.06] dark:border-[color:var(--card-accent-border)] hover:scale-[1.008] duration-200"
                     style={{
                       ['--card-accent-border' as any]: `${theme.accent}45`,
                     }}
@@ -311,7 +311,7 @@ export const TomorrowCarryView: React.FC = () => {
 
                       {/* Carry Requirements Highlight Badge */}
                       {reqs.length > 0 ? (
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/80 dark:bg-white/[0.08] border border-black/5 dark:border-white/10 backdrop-blur-xs text-[13px] font-semibold text-fg">
+                        <div className="rounded-tile flex items-center gap-2 px-3 py-1.5 bg-white/80 dark:bg-white/[0.08] border border-black/5 dark:border-white/10 backdrop-blur-xs text-[13px] font-semibold text-fg">
                           <Backpack className="w-3.5 h-3.5 text-[#18A889] shrink-0 stroke-[2.2]" />
                           <span className="truncate">Bring: {reqs.join(', ')}</span>
                         </div>

@@ -271,7 +271,7 @@ export const MobileNav: React.FC = () => {
                               aria-current={isActive ? 'page' : undefined}
                               aria-label={`${item.label}: ${item.hint}`}
                               className={clsx(
-                                'relative w-full text-left border transition-colors cursor-pointer',
+                                'rounded-tile relative w-full text-left border transition-colors cursor-pointer',
                                 g.items.length === 1 ? 'h-[55px] px-[13px] flex items-center gap-[13px]' : 'h-[89px] p-[13px] flex flex-col items-start justify-between',
                                 isActive
                                   ? 'bg-ink text-on-ink border-ink'
@@ -280,7 +280,7 @@ export const MobileNav: React.FC = () => {
                             >
                               <span
                                 className={clsx(
-                                  'w-[34px] h-[34px] flex items-center justify-center border [&>svg]:w-[21px] [&>svg]:h-[21px]',
+                                  'rounded-full w-[34px] h-[34px] flex items-center justify-center border [&>svg]:w-[21px] [&>svg]:h-[21px]',
                                   isActive ? 'bg-on-ink/10 border-on-ink/20 text-on-ink' : MORE_TONES[item.id] || 'bg-surface-2 text-fg border-line-soft'
                                 )}
                               >

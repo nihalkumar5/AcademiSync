@@ -100,7 +100,7 @@ const TrendBars: React.FC<{ items: AttendanceSession[]; labelFor: (s: Attendance
                 className="relative flex-1 max-w-[34px] h-full flex items-end cursor-pointer focus:outline-none"
               >
                 <span
-                  className={`block w-full rounded-t-[4px] transition-opacity ${low ? 'bg-rose-500' : 'bg-ink'} ${shown === i ? 'opacity-100' : 'opacity-60'}`}
+                  className={`block w-full rounded-t-md transition-opacity ${low ? 'bg-rose-500' : 'bg-ink'} ${shown === i ? 'opacity-100' : 'opacity-60'}`}
                   style={{ height: `${Math.max(isNaN(p) ? 0 : p, 2)}%` }}
                 />
               </button>
@@ -261,7 +261,7 @@ export default function AttendanceCenterPage() {
   // ---------- Gates ----------
   const gate = (icon: React.ReactNode, title: string, body: string, action?: React.ReactNode) => (
     <div className="min-h-screen bg-canvas flex flex-col items-center justify-center p-6 text-center">
-      <span className={`w-14 h-14 flex items-center justify-center border border-line ${strong}`}>{icon}</span>
+      <span className={`rounded-xl w-14 h-14 flex items-center justify-center border border-line ${strong}`}>{icon}</span>
       <h1 className={`mt-f4 text-[22px] font-semibold ${strong}`}>{title}</h1>
       <p className={`mt-1 text-[14px] max-w-sm ${muted}`}>{body}</p>
       {action && <div className="mt-f4">{action}</div>}
@@ -386,7 +386,7 @@ export default function AttendanceCenterPage() {
                   <t.icon className="w-4 h-4" strokeWidth={1.9} />
                   {t.label}
                   {typeof t.count === 'number' && t.count > 0 && (
-                    <span className={`min-w-[20px] h-5 px-1.5 inline-flex items-center justify-center text-[11px] font-semibold tabular-nums ${t.alert ? 'bg-rose-500 text-white' : 'bg-surface-3 text-current'}`}>{t.count}</span>
+                    <span className={`min-w-[20px] h-5 px-1.5 inline-flex items-center justify-center text-[11px] font-semibold tabular-nums ${t.alert ? 'rounded-full bg-rose-500 text-white' : 'bg-surface-3 text-current'}`}>{t.count}</span>
                   )}
                   {on && <motion.span layoutId="attendance-tab" className="absolute left-2 right-2 -bottom-px h-[2px] bg-ink" />}
                 </button>
@@ -402,7 +402,7 @@ export default function AttendanceCenterPage() {
             <Loader2 className="w-4 h-4 animate-spin" /> Loading your records…
           </div>
         ) : error ? (
-          <div className="flex items-start gap-f3 p-f4 border border-amber-300/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10">
+          <div className="rounded-tile flex items-start gap-f3 p-f4 border border-amber-300/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10">
             <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-amber-700 dark:text-amber-400" />
             <div>
               <p className={`text-[15px] font-semibold ${strong}`}>Records couldn&apos;t load</p>
@@ -562,7 +562,7 @@ export default function AttendanceCenterPage() {
                         type="button"
                         onClick={() => setHSubject(x)}
                         aria-pressed={hSubject === x}
-                        className={`shrink-0 h-9 px-3 border text-[13px] font-medium cursor-pointer ${hSubject === x ? 'bg-ink text-on-ink border-line-strong' : `border-line ${strong}`}`}
+                        className={`rounded-full shrink-0 h-9 px-3 border text-[13px] font-medium cursor-pointer ${hSubject === x ? 'bg-ink text-on-ink border-line-strong' : `border-line ${strong}`}`}
                       >
                         {x === 'all' ? 'All subjects' : x}
                       </button>
@@ -637,7 +637,7 @@ export default function AttendanceCenterPage() {
                             type="button"
                             onClick={() => setSSubject(x)}
                             aria-pressed={sSubject === x}
-                            className={`shrink-0 h-9 px-3 border text-[13px] font-medium cursor-pointer ${sSubject === x ? 'bg-ink text-on-ink border-line-strong' : `border-line ${strong}`}`}
+                            className={`rounded-full shrink-0 h-9 px-3 border text-[13px] font-medium cursor-pointer ${sSubject === x ? 'bg-ink text-on-ink border-line-strong' : `border-line ${strong}`}`}
                           >
                             {x === 'all' ? 'All subjects' : x}
                           </button>
@@ -689,7 +689,7 @@ export default function AttendanceCenterPage() {
       >
         {openSession && (
           <div className="flex flex-col gap-f4">
-            <div className="grid grid-cols-3 border border-line divide-x divide-line-soft">
+            <div className="rounded-tile overflow-hidden grid grid-cols-3 border border-line divide-x divide-line-soft">
               {[
                 ['Present', openSession.total - openSession.absent, 'text-emerald-700 dark:text-emerald-400'],
                 ['Absent', openSession.absent, 'text-rose-600 dark:text-rose-400'],

@@ -52,7 +52,7 @@ export const SmartFocusList: React.FC = () => {
         </span>
       </div>
 
-      <ol className="border border-line bg-surface divide-y divide-line-soft">
+      <ol className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
         <AnimatePresence initial={false}>
           {focusItems.map((item) => {
             const isCompleted = completingId === item.id || item.status === 'Completed';
@@ -95,7 +95,7 @@ export const SmartFocusList: React.FC = () => {
                     <div className="mt-2 flex flex-wrap items-center gap-1.5">
                       {item.deadlineText && (
                         <span className={clsx(
-                          'inline-flex items-center gap-1.5 px-2 py-0.5 text-[12px] font-medium',
+                          'rounded-full inline-flex items-center gap-1.5 px-2 py-0.5 text-[12px] font-medium',
                           isOverdue
                             ? 'bg-red-500/10 text-red-700 dark:bg-red-500/15 dark:text-red-300'
                             : isUrgent
@@ -107,10 +107,10 @@ export const SmartFocusList: React.FC = () => {
                         </span>
                       )}
                       {item.type === 'homework' && item.originalPriority === 'High' && !isCompleted && (
-                        <span className="px-2 py-0.5 text-[12px] font-medium bg-orange-500/10 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300">High priority</span>
+                        <span className="rounded-full px-2 py-0.5 text-[12px] font-medium bg-orange-500/10 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300">High priority</span>
                       )}
                       {isInProgress && !isCompleted && (
-                        <span className="px-2 py-0.5 text-[12px] font-medium bg-blue-500/10 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">In progress</span>
+                        <span className="rounded-full px-2 py-0.5 text-[12px] font-medium bg-blue-500/10 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">In progress</span>
                       )}
                     </div>
                   </div>

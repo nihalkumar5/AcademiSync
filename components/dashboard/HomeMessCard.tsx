@@ -200,7 +200,7 @@ export const HomeMessCard: React.FC = () => {
       <button
         type="button"
         onClick={() => setActiveView('mess')}
-        className="sheen-ink w-full p-5 bg-[#111111] dark:bg-[#15171D] border border-[#111111] dark:border-white/[0.08] text-white text-left cursor-pointer"
+        className="rounded-card sheen-ink w-full p-5 bg-[#111111] dark:bg-[#15171D] border border-[#111111] dark:border-white/[0.08] text-white text-left cursor-pointer"
       >
         <div className="flex items-center justify-between gap-3">
           <span className="inline-flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[1.4px]">
@@ -223,7 +223,7 @@ export const HomeMessCard: React.FC = () => {
         {displayItems.length > 0 && (
           <span className="mt-4 flex flex-wrap gap-1.5">
             {displayItems.map((item, idx) => (
-              <span key={idx} className="px-2.5 py-1 text-[14px] text-white bg-white/[0.08] border border-white/[0.12]">
+              <span key={idx} className="rounded-full px-2.5 py-1 text-[14px] text-white bg-white/[0.08] border border-white/[0.12]">
                 {item}
               </span>
             ))}

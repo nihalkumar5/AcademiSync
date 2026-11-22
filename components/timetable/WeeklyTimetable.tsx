@@ -11,7 +11,7 @@ import { TimetableImportModal } from './TimetableImportModal';
 import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
 import { MonochromeIllustration } from '../ui/MonochromeIllustration';
-import { Plus, Sparkles, CalendarDays, Share2, UserPlus, Users } from '@/components/ui/icons';
+import { Plus, Sparkles, CalendarDays, Share2, UserPlus, Users, ArrowRight } from '@/components/ui/icons';
 import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
@@ -23,6 +23,7 @@ import { openClassNotes, dateOfWeekday } from '@/lib/classNotes';
 import { ElectivePendingCard, ElectivesSummary } from '@/components/electives/Electives';
 import { formatTime12Hour } from '@/lib/timetableUtils';
 import type { PersonalSession } from '@/lib/electives';
+import { PageActions, PageTitle } from '@/components/ui/PageActions';
 
 export const WeeklyTimetable: React.FC = () => {
   const { profile } = useApp();
@@ -202,21 +203,21 @@ const StudentWeeklyTimetable: React.FC = () => {
       <div className="flex flex-col gap-f4">
         {/* Editorial stacked header, same as Tasks */}
         <div>
-          <h2 className="page-title">
-            Timetable,<br />Classes,<br />Labs
-          </h2>
-          <div className="flex items-center gap-3 mt-5">
+          <PageTitle>
+            Timetable
+          </PageTitle>
+          <div className="flex items-center gap-3 mt-3">
             <span className="tag bg-surface">
               {activeTimetable.length} {activeTimetable.length === 1 ? 'class' : 'classes'} a week
             </span>
           </div>
-          <p className="text-[14px] font-normal text-muted leading-[20px] mt-4 max-w-md">
+          <p className="text-[14px] font-normal text-muted leading-[20px] mt-2 max-w-md">
             Manage your lectures, lab slots, and classroom locations.
           </p>
         </div>
 
         <div className="flex flex-col mt-2">
-          <div className="page-actions mb-[20px]">
+          <PageActions>
             <button
               type="button"
               onClick={() => handleAddForDay(selectedMobileDay)}
@@ -230,7 +231,7 @@ const StudentWeeklyTimetable: React.FC = () => {
               onClick={() => setShowJoinModal(true)}
               className="btn btn-secondary"
             >
-              Join Batch
+              <UserPlus className="w-4 h-4" /> Join Batch
             </button>
             <button
               type="button"
@@ -239,24 +240,24 @@ const StudentWeeklyTimetable: React.FC = () => {
             >
               <Sparkles className="w-4 h-4" /> Magic Import
             </button>
-          </div>
+          </PageActions>
 
           {profile.isBatchSynced && profile.batchKey && (
             <div className="flex flex-col">
               <span className="text-[12px] font-bold text-muted mb-1.5">Batch</span>
               <button
                 onClick={() => setShowBatchMembersModal(true)}
-                className="flex items-center justify-between p-3.5 bg-surface border border-line hover:bg-surface-2 transition-colors text-left cursor-pointer rounded-none"
+                className="flex items-center justify-between p-3.5 bg-surface border border-line hover:bg-surface-2 transition-colors text-left cursor-pointer rounded-tile"
               >
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-[13px] font-bold text-fg uppercase tracking-wide">
+                  <span className="text-[15px] font-semibold text-fg">
                     {profile.programme} · {profile.branch?.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')}
                   </span>
-                  <span className="text-[12px] font-medium text-muted font-mono">
-                    YEAR {profile.year || 1} · MEMBERS
+                  <span className="text-[13px] text-muted">
+                    Year {profile.year || 1} · See classmates
                   </span>
                 </div>
-                <span className="text-muted">→</span>
+                <ArrowRight className="w-4 h-4 text-muted" />
               </button>
             </div>
           )}
@@ -278,7 +279,7 @@ const StudentWeeklyTimetable: React.FC = () => {
               key={day}
               onClick={() => setSelectedMobileDay(day)}
               className={clsx(
-                'flex flex-col items-center justify-center min-w-[76px] py-2.5 px-3 rounded-[3px] transition-all border cursor-pointer',
+                'flex flex-col items-center justify-center min-w-[76px] py-2.5 px-3 rounded-md transition-all border cursor-pointer',
                 isSelected
                   ? 'bg-[#111111] text-white border-[#111111] shadow-xs'
                   : 'bg-surface border-[#E5E5E0] dark:border-white/[0.08] text-fg hover:bg-surface-2'
@@ -356,7 +357,7 @@ const StudentWeeklyTimetable: React.FC = () => {
             <div
               key={day}
               className={clsx(
-                "flex flex-col gap-4 p-4 border transition-all rounded-none",
+                "flex flex-col gap-4 p-4 border transition-all rounded-tile",
                 isToday
                   ? "bg-surface border-[#111111] dark:border-emerald-500/40 dark:shadow-[0_0_25px_-5px_rgba(16,185,129,0.12)] shadow-xs"
                   : "bg-surface border-line"
@@ -370,7 +371,7 @@ const StudentWeeklyTimetable: React.FC = () => {
                       {day}
                     </span>
                     {isToday && (
-                      <span className="text-[12px] font-bold text-white dark:text-emerald-400 bg-[#111111] dark:bg-emerald-500/20 dark:border dark:border-emerald-500/30 px-2 py-0.5 font-mono">
+                      <span className="rounded-full text-[12px] font-bold text-white dark:text-emerald-400 bg-[#111111] dark:bg-emerald-500/20 dark:border dark:border-emerald-500/30 px-2 py-0.5 font-mono">
                         Today
                       </span>
                     )}
@@ -382,7 +383,7 @@ const StudentWeeklyTimetable: React.FC = () => {
 
                 <button
                   onClick={() => handleAddForDay(day)}
-                  className="p-1.5 border border-line hover:border-line-strong text-fg bg-white dark:bg-white/[0.04] hover:dark:bg-white/[0.08] transition-colors cursor-pointer"
+                  className="rounded-full p-1.5 border border-line hover:border-line-strong text-fg bg-white dark:bg-white/[0.04] hover:dark:bg-white/[0.08] transition-colors cursor-pointer"
                   title={`Add class to ${day}`}
                 >
                   <Plus className="w-4 h-4" />
@@ -392,7 +393,7 @@ const StudentWeeklyTimetable: React.FC = () => {
               {/* Class Cards List */}
               <div className="flex flex-col gap-3 min-h-[400px]">
                 {daySessions.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-48 text-center bg-surface-2 border border-dashed border-line">
+                  <div className="rounded-tile flex flex-col items-center justify-center h-48 text-center bg-surface-2 border border-dashed border-line">
                     <CalendarDays className="w-6 h-6 text-[#6B6B6B] mb-2 opacity-50" />
                     <span className="text-xs font-semibold text-muted">No Classes</span>
                     <button

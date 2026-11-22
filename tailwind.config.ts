@@ -94,6 +94,13 @@ const config: Config = {
         sans: ["Poppins", "-apple-system", "BlinkMacSystemFont", "Inter", "Segoe UI", "Roboto", "sans-serif"],
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
       },
+      // Corner scale for the whole app: nothing is sharp.
+      borderRadius: {
+        field: '14px',  // inputs, selects
+        tile: '14px',   // blocks, rows and tiles inside a card
+        card: '20px',   // cards, panels, popovers
+        sheet: '28px',  // modals and bottom sheets
+      },
       animation: {
         "pulse-subtle": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       }

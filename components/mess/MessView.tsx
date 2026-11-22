@@ -5,10 +5,11 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { MessOnboarding } from './MessOnboarding';
 import { format } from 'date-fns';
-import { Share, Sparkles, Clock, Edit3, X, Check, ArrowRight, UtensilsCrossed, Coffee, Sun, Cookie, Moon, Pencil } from '@/components/ui/icons';
+import { Share, Sparkles, Clock, Edit3, X, Check, ArrowRight, UtensilsCrossed, Coffee, Sun, Cookie, Moon, Pencil, UserPlus } from '@/components/ui/icons';
 import { Modal } from '../ui/Modal';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { PageActions, PageTitle } from '@/components/ui/PageActions';
 
 const DEFAULT_TIMINGS: Record<string, string> = {
   Breakfast: '8:00 - 10:00',
@@ -164,7 +165,7 @@ const LiveMealCard = ({
   return (
     <section
       aria-label="Current meal"
-      className="relative w-full overflow-hidden border border-white/[0.08] text-left text-white"
+      className="rounded-card relative w-full overflow-hidden border border-white/[0.08] text-left text-white"
       style={{ backgroundColor: mood.base }}
     >
       {/* Atmosphere: fading grid, a meal-coloured glow and a large icon watermark */}
@@ -186,7 +187,7 @@ const LiveMealCard = ({
       <div className="relative p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3">
           <span
-            className="inline-flex items-center gap-2 h-6 px-2 text-[12px] font-semibold uppercase tracking-[1.2px] border"
+            className="rounded-full inline-flex items-center gap-2 h-6 px-2 text-[12px] font-semibold uppercase tracking-[1.2px] border"
             style={{ color: serving ? '#6EE7B7' : 'rgba(255,255,255,0.85)', borderColor: serving ? 'rgba(52,211,153,0.35)' : 'rgba(255,255,255,0.18)', backgroundColor: serving ? 'rgba(52,211,153,0.10)' : 'rgba(255,255,255,0.05)' }}
           >
             <span className="relative flex h-2 w-2">
@@ -210,7 +211,7 @@ const LiveMealCard = ({
 
         {serving && (
           <div className="mt-3">
-            <div className="h-1 w-full bg-white/[0.12] overflow-hidden" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100} aria-label="Serving time elapsed">
+            <div className="rounded-full h-1 w-full bg-white/[0.12] overflow-hidden" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100} aria-label="Serving time elapsed">
               <div
                 className="h-full transition-[width] duration-700"
                 style={{ width: `${progress}%`, background: `linear-gradient(90deg, ${mood.accent}99, ${mood.accent})`, boxShadow: `0 0 12px ${mood.accent}80` }}
@@ -437,15 +438,15 @@ ${PLAY_STORE_URL}
       {/* Header */}
       <div className="flex flex-col gap-4 pt-2 sm:pt-6">
         <div>
-          <h2 className="page-title">
-            Mess,<br />Hostel,<br />Food,<br />Menu
-          </h2>
-          <p className="text-[14px] font-normal text-muted leading-[20px] mt-4">
+          <PageTitle>
+            Mess menu
+          </PageTitle>
+          <p className="text-[14px] font-normal text-muted leading-[20px] mt-2">
             Weekly breakfast, lunch, snacks, and dinner menu with live meal countdowns.
           </p>
         </div>
 
-        <div className="page-actions mt-2">
+        <PageActions>
           <button
             onClick={handleShare}
             className="btn btn-secondary"
@@ -456,7 +457,7 @@ ${PLAY_STORE_URL}
             onClick={() => setShowJoinModal(true)}
             className="btn btn-secondary"
           >
-            Join Mess
+            <UserPlus className="w-4 h-4" /> Join Mess
           </button>
           <button
             onClick={() => setIsImporting(true)}
@@ -464,7 +465,7 @@ ${PLAY_STORE_URL}
           >
             <Sparkles className="w-4 h-4" /> Magic Import
           </button>
-        </div>
+        </PageActions>
       </div>
 
       <LiveMealCard 
@@ -474,7 +475,7 @@ ${PLAY_STORE_URL}
       />
 
       {/* Day picker: the whole week fits on one row, today is marked */}
-      <div role="tablist" aria-label="Day of week" className="grid grid-cols-7 border border-line bg-surface">
+      <div role="tablist" aria-label="Day of week" className="grid grid-cols-7 gap-1 p-1 rounded-card bg-surface-2">
         {days.map((day, idx) => {
           const isSelected = selectedDay === day;
           const isToday = today === day;
@@ -487,12 +488,10 @@ ${PLAY_STORE_URL}
               aria-selected={isSelected}
               aria-label={`${day}${isToday ? ', today' : ''}`}
               onClick={() => setSelectedDay(day)}
-              className={`relative flex flex-col items-center justify-center gap-1 py-2.5 cursor-pointer transition-colors ${
-                idx > 0 ? 'border-l border-line-soft' : ''
-              } ${
+              className={`rounded-2xl relative flex flex-col items-center justify-center gap-1 py-2.5 cursor-pointer transition-colors ${
                 isSelected
                   ? 'bg-ink text-on-ink'
-                  : 'text-fg hover:bg-surface-2'
+                  : 'text-fg hover:bg-surface'
               }`}
             >
               <span className={`text-[11px] font-semibold uppercase tracking-[1px] ${isSelected ? 'opacity-80' : 'text-muted'}`}>
@@ -516,7 +515,7 @@ ${PLAY_STORE_URL}
           </span>
         </div>
 
-        <ol className="border border-line bg-surface divide-y divide-line-soft">
+        <ol className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
           {MEAL_ORDER.map((meal) => {
             const items: string[] = Array.isArray(selectedMenu[meal]) ? selectedMenu[meal] : (selectedMenu[meal] ? [selectedMenu[meal]] : []);
             const rawTiming = effectiveTimings[meal] || '';
@@ -535,7 +534,7 @@ ${PLAY_STORE_URL}
 
             return (
               <li key={meal} className={`flex gap-4 p-4 sm:p-5 ${state === 'done' ? 'opacity-60' : ''}`}>
-                <span className={`w-10 h-10 shrink-0 flex items-center justify-center border ${
+                <span className={`rounded-xl w-10 h-10 shrink-0 flex items-center justify-center border ${
                   state === 'now'
                     ? 'bg-ink border-line-strong text-on-ink'
                     : 'bg-surface-2 border-line-soft text-fg'
@@ -549,10 +548,10 @@ ${PLAY_STORE_URL}
                       <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="text-[16px] font-semibold text-fg leading-tight">{meal}</h4>
                         {state === 'now' && (
-                          <span className="px-2 py-0.5 text-[12px] font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">Serving now</span>
+                          <span className="rounded-full px-2 py-0.5 text-[12px] font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">Serving now</span>
                         )}
                         {state === 'next' && (
-                          <span className="px-2 py-0.5 text-[12px] font-semibold bg-surface-3 text-fg">Up next</span>
+                          <span className="rounded-full px-2 py-0.5 text-[12px] font-semibold bg-surface-3 text-fg">Up next</span>
                         )}
                       </div>
                       <p className="mt-1 text-[13px] text-muted tabular-nums">
@@ -570,7 +569,7 @@ ${PLAY_STORE_URL}
                         });
                       }}
                       title={`Edit ${meal}`} aria-label={`Edit ${selectedDay} ${meal}`}
-                      className="w-9 h-9 -mr-2 -mt-1.5 shrink-0 flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                      className="rounded-full w-9 h-9 -mr-2 -mt-1.5 shrink-0 flex items-center justify-center text-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
@@ -579,7 +578,7 @@ ${PLAY_STORE_URL}
                   {items.length > 0 ? (
                     <ul className="mt-3 flex flex-wrap gap-1.5">
                       {items.map((dish, idx) => (
-                        <li key={idx} className="px-2.5 py-1 text-[14px] text-fg bg-surface-2 border border-line-soft">
+                        <li key={idx} className="rounded-tile px-2.5 py-1 text-[14px] text-fg bg-surface-2 border border-line-soft">
                           {dish}
                         </li>
                       ))}
@@ -616,7 +615,7 @@ ${PLAY_STORE_URL}
                   })
                 }
                 placeholder="e.g. 8:00 - 10:00 or 08:00 - 09:30 (Mon-Fri) / 08:00 - 10:00 (Sat-Sun)"
-                className="w-full px-3.5 py-2 border border-line bg-transparent text-[13px] text-fg focus:outline-none"
+                className="rounded-field w-full px-3.5 py-2 border border-line bg-transparent text-[13px] text-fg focus:outline-none"
                 required
               />
               <p className="text-[11px] text-[#6B6B6B]">
@@ -638,7 +637,7 @@ ${PLAY_STORE_URL}
                   })
                 }
                 placeholder="e.g. Dosa, Sambar, Coconut Chutney"
-                className="w-full px-3.5 py-2 border border-line bg-transparent text-[13px] text-fg focus:outline-none"
+                className="rounded-tile w-full px-3.5 py-2 border border-line bg-transparent text-[13px] text-fg focus:outline-none"
                 required
               />
             </div>
@@ -647,7 +646,7 @@ ${PLAY_STORE_URL}
               <button
                 type="button"
                 onClick={() => setQuickEditMeal(null)}
-                className="h-11 px-4 border border-line text-[14px] font-semibold text-fg cursor-pointer"
+                className="rounded-full h-11 px-4 border border-line text-[14px] font-semibold text-fg cursor-pointer"
               >
                 Cancel
               </button>
@@ -685,7 +684,7 @@ ${PLAY_STORE_URL}
                     })
                   }
                   placeholder="e.g. 8:00 - 10:00 or 08:00 - 09:30 (Mon-Fri) / 08:00 - 10:00 (Sat-Sun)"
-                  className="w-full px-3.5 py-2 border border-line bg-transparent text-[13px] text-fg focus:outline-none focus:border-line-strong"
+                  className="rounded-field w-full px-3.5 py-2 border border-line bg-transparent text-[13px] text-fg focus:outline-none focus:border-line-strong"
                   required
                 />
               </div>
@@ -696,7 +695,7 @@ ${PLAY_STORE_URL}
             <button
               type="button"
               onClick={() => setShowEditTimingsModal(false)}
-              className="h-11 px-4 border border-line text-[14px] font-semibold text-fg cursor-pointer"
+              className="rounded-full h-11 px-4 border border-line text-[14px] font-semibold text-fg cursor-pointer"
             >
               Cancel
             </button>
@@ -721,7 +720,7 @@ ${PLAY_STORE_URL}
             {days.map((day) => {
               const dayData = tempMenu[day] || {};
               return (
-                <div key={day} className="p-4 border border-line bg-[#FAFAFA] dark:bg-[#161616]">
+                <div key={day} className="rounded-tile p-4 border border-line bg-[#FAFAFA] dark:bg-[#161616]">
                   <h4 className="text-[13px] font-bold uppercase tracking-wider text-fg mb-3 border-b border-line pb-1">
                     {day}
                   </h4>
@@ -748,7 +747,7 @@ ${PLAY_STORE_URL}
                               });
                             }}
                             placeholder="e.g. Roti, Dal, Rice"
-                            className="w-full px-3 py-1.5 border border-line bg-surface text-[12px] text-fg focus:outline-none"
+                            className="rounded-field w-full px-3 py-1.5 border border-line bg-surface text-[12px] text-fg focus:outline-none"
                           />
                         </div>
                       );
@@ -763,7 +762,7 @@ ${PLAY_STORE_URL}
             <button
               type="button"
               onClick={() => setShowEditMenuModal(false)}
-              className="h-11 px-4 border border-line text-[14px] font-semibold text-fg cursor-pointer"
+              className="rounded-full h-11 px-4 border border-line text-[14px] font-semibold text-fg cursor-pointer"
             >
               Cancel
             </button>
@@ -789,7 +788,7 @@ ${PLAY_STORE_URL}
               placeholder="e.g., ext_... or 4-digit code"
               value={inviteInput}
               onChange={(e) => setInviteInput(e.target.value)}
-              className="w-full px-4 py-2.5 border border-[#ECECEA] dark:border-[#333333] bg-transparent text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
+              className="rounded-field w-full px-4 py-2.5 border border-[#ECECEA] dark:border-[#333333] bg-transparent text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors"
               required
               autoFocus
             />
@@ -798,7 +797,7 @@ ${PLAY_STORE_URL}
             <button
               type="button"
               onClick={() => setShowJoinModal(false)}
-              className="h-11 px-4 border border-line text-[14px] font-semibold text-fg cursor-pointer"
+              className="rounded-full h-11 px-4 border border-line text-[14px] font-semibold text-fg cursor-pointer"
             >
               Cancel
             </button>

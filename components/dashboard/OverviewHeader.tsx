@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import React, { useState, useEffect } from 'react';
 // Trigger Vercel sync build for academi-sync-chi
 import { useApp } from '@/context/AppContext';
-import { getCurrentDayOfWeek, formatCollegeBadge, getTodayDateString, getShortCollegeName, isGenericExamTitle, getLiveExamSchedule, sanitizeExamSubjectName } from '@/lib/timetableUtils';
+import { getCurrentDayOfWeek, formatCollegeBadge, getTodayDateString, isGenericExamTitle, getLiveExamSchedule, sanitizeExamSubjectName } from '@/lib/timetableUtils';
 import {
   BookOpen,
   CheckSquare,
@@ -83,24 +83,11 @@ export const OverviewHeader: React.FC = () => {
       }).format(time)
     : 'Loading date...';
 
-  const timeFormatted = time
-    ? time.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      })
-    : '--:--';
-
-  const seconds = time ? time.getSeconds().toString().padStart(2, '0') : '00';
-
   return (
     <div className="flex flex-col gap-f5">
       {/* Greeting: date strip, two-tone greeting, and wrapping profile chips */}
       <div>
-        <div className="flex items-baseline justify-between gap-3 text-[13px] leading-none">
-          <span className="font-semibold text-fg-2">{dateFormatted}</span>
-          <span className="font-medium text-muted tabular-nums">{timeFormatted}</span>
-        </div>
+        <p className="text-[13px] leading-none font-semibold text-fg-2">{dateFormatted}</p>
 
         <h2 className="mt-f3 tracking-tight">
           <span className="block text-[34px] leading-[40px] sm:text-[44px] sm:leading-[50px] font-normal text-muted">{greeting},</span>
@@ -110,29 +97,34 @@ export const OverviewHeader: React.FC = () => {
           </span>
         </h2>
 
-        {(profile?.programme || profile?.branch || profile?.rollNumber) && (
-          <ul className="mt-f4 flex flex-wrap gap-f2" aria-label="Your profile">
-            {[
-              profile?.semester ? `Sem ${profile.semester}` : null,
-              [profile?.programme, profile?.branch?.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI').replace(/ARTIFICIAL INTELLIGENCE/i, 'AI').replace(/\s*\(DS\s*&\s*AI\)/i, '')]
-                .filter(Boolean)
-                .join(' · ') || null,
-              profile?.rollNumber || null,
-              profile?.college ? getShortCollegeName(profile.college) : null,
+        {(() => {
+          const programme =
+            [
+              profile?.programme,
+              profile?.branch
+                ?.replace(/AND ARTIFICIAL INTELLIGENCE/i, '& AI')
+                .replace(/ARTIFICIAL INTELLIGENCE/i, 'AI')
+                .replace(/\s*\(DS\s*&\s*AI\)/i, ''),
             ]
               .filter(Boolean)
-              .map((chip, i) => (
-                <li
-                  key={i}
-                  className={i === 0
-                    ? 'px-2.5 py-1 text-[12px] font-semibold bg-ink text-on-ink'
-                    : 'px-2.5 py-1 text-[12px] font-medium text-fg border border-line bg-white/70 dark:bg-white/[0.03]'}
-                >
-                  {chip}
+              .join(' · ') || null;
+          const sem = profile?.semester ? `Sem ${profile.semester}` : null;
+          if (!sem && !programme && !profile?.rollNumber) return null;
+          const chipCls =
+            'inline-flex items-center rounded-full border border-line bg-white/70 dark:bg-white/[0.03] text-[12px] font-medium text-fg';
+          return (
+            <ul className="mt-f4 flex flex-wrap gap-f2" aria-label="Your profile">
+              {/* Semester and programme read as one label: a dark "Sem" segment inside the programme pill */}
+              {(sem || programme) && (
+                <li className={`${chipCls} p-[3px] ${programme ? 'pr-3' : ''}`}>
+                  {sem && <span className="rounded-full bg-ink text-on-ink px-2.5 py-[3px] font-semibold">{sem}</span>}
+                  {programme && <span className={sem ? 'pl-2' : 'pl-2.5'}>{programme}</span>}
                 </li>
-              ))}
-          </ul>
-        )}
+              )}
+              {profile?.rollNumber && <li className={`${chipCls} px-3 py-1 tabular-nums text-fg-2`}>{profile.rollNumber}</li>}
+            </ul>
+          );
+        })()}
       </div>
 
       {/* Today at a glance: three soft tiles, all on the same neutral background. Only the number

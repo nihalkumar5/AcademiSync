@@ -32,6 +32,7 @@ import { broadcastBatchPushNotification } from '@/lib/pushNotifications';
 import { SharedRoutine } from '@/lib/types';
 import type { FriendRoutine } from '@/lib/friends';
 import { useFriendRoutines } from './friendRoutinesClient';
+import { PageActions, PageTitle } from '@/components/ui/PageActions';
 
 type Permission = 'granted' | 'denied' | 'default' | 'unsupported' | 'checking';
 
@@ -270,7 +271,7 @@ export const RoutinesView: React.FC = () => {
         <h3 className="text-[17px] font-semibold text-fg">From friends</h3>
         <span className="text-[13px] text-muted">{friendShares.incoming.length}</span>
       </div>
-      <ul className="border border-line bg-surface divide-y divide-line-soft">
+      <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
         {friendShares.incoming.map((x) => {
           const c = getRoutineCategory(x.category);
           const asRoutine = { ...x, isActive: true, completions: [], createdAt: x.createdAt } as unknown as Routine;
@@ -290,14 +291,14 @@ export const RoutinesView: React.FC = () => {
                 type="button"
                 onClick={() => friendShares.mark(x.id, 'dismissed')}
                 aria-label={`Dismiss ${x.title} from ${x.byName}`}
-                className="shrink-0 h-9 px-2 text-[13px] font-semibold text-muted hover:text-fg cursor-pointer"
+                className="rounded-full shrink-0 h-9 px-2 text-[13px] font-semibold text-muted hover:text-fg cursor-pointer"
               >
                 Not now
               </button>
               <button
                 type="button"
                 onClick={() => addFromFriend(x)}
-                className="shrink-0 h-9 px-3 bg-ink text-on-ink text-[13px] font-semibold cursor-pointer hover:opacity-90"
+                className="rounded-full shrink-0 h-9 px-3 bg-ink text-on-ink text-[13px] font-semibold cursor-pointer hover:opacity-90"
               >
                 Add
               </button>
@@ -314,7 +315,7 @@ export const RoutinesView: React.FC = () => {
         <h3 className="text-[17px] font-semibold text-fg">Shared with your batch</h3>
         <span className="text-[13px] text-muted">{sharedItems.length}</span>
       </div>
-      <ul className="border border-line bg-surface divide-y divide-line-soft">
+      <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
         {sharedItems.map((x) => {
           const c = getRoutineCategory(x.category);
           const mine = x.sharedBy === user?.id;
@@ -343,7 +344,7 @@ export const RoutinesView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => unshareRoutine(x.batchKey, x.id).then(() => showToast('Stopped sharing', x.title, 'info')).catch(() => showToast("Couldn't stop sharing", 'Try again.', 'error'))}
-                  className="shrink-0 h-9 px-3 text-[13px] font-semibold text-muted hover:text-rose-600 cursor-pointer"
+                  className="rounded-full shrink-0 h-9 px-3 text-[13px] font-semibold text-muted hover:text-rose-600 cursor-pointer"
                 >
                   Remove
                 </button>
@@ -372,23 +373,19 @@ export const RoutinesView: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col gap-f4">
         <div>
-          <h2 className="page-title">
-            Routines,
-            <br />
-            Habits,
-            <br />
-            Reminders
-          </h2>
-          <div className="flex items-center gap-f3 mt-f4">
+          <PageTitle>
+            Routines
+          </PageTitle>
+          <div className="flex items-center gap-f3 mt-3">
             <span className="tag bg-surface">
               {routinesForDay(routines, now).length} today
             </span>
           </div>
-          <p className="text-[14px] text-muted leading-[21px] mt-f3 max-w-md">
+          <p className="text-[14px] text-muted leading-[21px] mt-2 max-w-md">
             Your own to-dos for study, sports, exam prep or anything else. Set it once, get reminded every time.
           </p>
         </div>
-        <div className="page-actions">
+        <PageActions>
           <button
             type="button"
             onClick={() => openNew()}
@@ -403,12 +400,12 @@ export const RoutinesView: React.FC = () => {
           >
             <LayoutTemplate className="w-4 h-4" /> Templates
           </button>
-        </div>
+        </PageActions>
       </div>
 
       {/* Reminders need permission; say so plainly */}
       {routines.length > 0 && (permission === 'default' || permission === 'denied') && (
-        <div className="flex items-start gap-f3 p-f4 border border-amber-300/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10">
+        <div className="rounded-tile flex items-start gap-f3 p-f4 border border-amber-300/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10">
           <BellOff className="w-5 h-5 shrink-0 mt-0.5 text-amber-700 dark:text-amber-400" />
           <div className="flex-1">
             <p className="text-[15px] font-semibold text-fg">Reminders are off</p>
@@ -429,7 +426,7 @@ export const RoutinesView: React.FC = () => {
       {routines.length === 0 ? (
         /* First run: templates make the first routine two taps away */
         <section>
-          <div className="flex flex-col items-center text-center px-6 py-10 border border-dashed border-line">
+          <div className="rounded-card flex flex-col items-center text-center px-6 py-10 bg-surface-2">
             <Illustration name="routines" className="h-[160px] w-auto" />
             <h3 className="mt-f3 text-[17px] font-semibold text-fg">No routines yet</h3>
             <p className="mt-1.5 text-[14px] text-muted max-w-[300px]">Pick a starting point below or make your own.</p>
@@ -446,7 +443,7 @@ export const RoutinesView: React.FC = () => {
                   key={t.title}
                   type="button"
                   onClick={() => openNew({ ...t, isActive: true })}
-                  className="flex items-center gap-f3 p-f3 border border-line bg-surface text-left hover:border-line-strong transition-colors cursor-pointer"
+                  className="rounded-tile flex items-center gap-f3 p-f3 border border-line bg-surface text-left hover:border-line-strong transition-colors cursor-pointer"
                 >
                   <span className="w-10 h-10 shrink-0 flex items-center justify-center" style={{ backgroundColor: `${c.color}14`, boxShadow: `inset 0 0 0 1px ${c.color}1F` }} aria-hidden="true">
                     <Icon3D name={iconForRoutine(t.title, t.category)} size={26} />
@@ -466,7 +463,7 @@ export const RoutinesView: React.FC = () => {
             <button
               type="button"
               onClick={() => setTemplatesOpen(true)}
-              className="mt-f3 inline-flex items-center gap-f2 h-11 px-f3 -ml-f3 text-[14px] font-semibold text-fg hover:underline underline-offset-4 cursor-pointer"
+              className="rounded-full mt-f3 inline-flex items-center gap-f2 h-11 px-f3 -ml-f3 text-[14px] font-semibold text-fg hover:underline underline-offset-4 cursor-pointer"
             >
               <LayoutTemplate className="w-4 h-4" /> See all {templates.length} templates
             </button>
@@ -475,7 +472,7 @@ export const RoutinesView: React.FC = () => {
       ) : (
         <>
           {/* Week strip */}
-          <div className="grid grid-cols-7 border border-line divide-x divide-line-soft bg-surface">
+          <div className="rounded-card overflow-hidden grid grid-cols-7 border border-line divide-x divide-line-soft bg-surface">
             {week.map(({ i, d }) => {
               const on = selectedOffset === i;
               return (
@@ -485,7 +482,7 @@ export const RoutinesView: React.FC = () => {
                   onClick={() => setSelectedOffset(i)}
                   aria-pressed={on}
                   aria-label={d.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' })}
-                  className={`flex flex-col items-center gap-f2 py-f3 cursor-pointer transition-colors ${
+                  className={`rounded-full flex flex-col items-center gap-f2 py-f3 cursor-pointer transition-colors ${
                     on ? 'bg-ink text-on-ink' : 'text-fg hover:bg-surface-2'
                   }`}
                 >
@@ -509,18 +506,18 @@ export const RoutinesView: React.FC = () => {
               )}
             </div>
             {dayList.length > 0 && (
-              <div className="h-1 mb-f4 bg-surface-3">
+              <div className="rounded-full h-1 mb-f4 bg-surface-3">
                 <div className="h-full bg-emerald-500 transition-[width] duration-500" style={{ width: `${(doneCount / dayList.length) * 100}%` }} />
               </div>
             )}
 
             {dayList.length === 0 ? (
-              <div className="px-f4 py-f5 text-center border border-dashed border-line">
+              <div className="rounded-card px-f4 py-f5 text-center bg-surface-2">
                 <p className="text-[15px] text-muted">Nothing planned for this day.</p>
                 <p className="mt-2 font-cursive text-[21px] font-semibold text-fg -rotate-1">A free day is a good day.</p>
               </div>
             ) : (
-              <ul className="border border-line bg-surface divide-y divide-line-soft">
+              <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
                 {dayList.map((r) => {
                   const c = getRoutineCategory(r.category);
                   const done = isDoneOn(r, selectedDay);
@@ -546,7 +543,7 @@ export const RoutinesView: React.FC = () => {
                       <button type="button" onClick={() => openNew(r)} className="flex-1 min-w-0 text-left cursor-pointer">
                         <span className="flex items-center gap-2">
                           <span className={`text-[15px] font-medium truncate ${done ? 'line-through text-[#8A8A8A]' : 'text-fg'}`}>{r.title}</span>
-                          {isNext && <span className="shrink-0 text-[11px] font-semibold px-1.5 py-0.5 bg-ink text-on-ink">Next · {inLabel(startsAt.getTime() - now.getTime())}</span>}
+                          {isNext && <span className="rounded-full shrink-0 text-[11px] font-semibold px-1.5 py-0.5 bg-ink text-on-ink">Next · {inLabel(startsAt.getTime() - now.getTime())}</span>}
                         </span>
                         <span className="block mt-0.5 text-[13px] text-muted truncate">
                           {c.emoji} {c.label}
@@ -592,7 +589,7 @@ export const RoutinesView: React.FC = () => {
                     type="button"
                     onClick={() => setFilter(c.id)}
                     aria-pressed={on}
-                    className={`shrink-0 h-9 px-3 border text-[13px] font-medium cursor-pointer ${
+                    className={`rounded-full shrink-0 h-9 px-3 border text-[13px] font-medium cursor-pointer ${
                       on ? 'bg-ink text-on-ink border-line-strong' : 'border-line text-fg'
                     }`}
                   >
@@ -602,7 +599,7 @@ export const RoutinesView: React.FC = () => {
                 );
               })}
             </div>
-            <ul className="border border-line bg-surface divide-y divide-line-soft">
+            <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
               {visibleAll.map((r) => {
                 const c = getRoutineCategory(r.category);
                 const streak = routineStreak(r, now);
@@ -635,7 +632,7 @@ export const RoutinesView: React.FC = () => {
                       onClick={() => setShareFor(r)}
                       aria-label={`Share ${r.title}`}
                       title="Share"
-                      className={`shrink-0 w-9 h-9 flex items-center justify-center cursor-pointer transition-colors hover:bg-surface-2 ${
+                      className={`rounded-full shrink-0 w-9 h-9 flex items-center justify-center cursor-pointer transition-colors hover:bg-surface-2 ${
                         isSharedAnywhere(r) ? 'text-fg' : 'text-muted'
                       }`}
                     >
@@ -647,7 +644,7 @@ export const RoutinesView: React.FC = () => {
                       aria-checked={r.isActive}
                       aria-label={`${r.isActive ? 'Pause' : 'Resume'} ${r.title}`}
                       onClick={() => updateRoutine({ ...r, isActive: !r.isActive })}
-                      className="shrink-0 p-1 cursor-pointer"
+                      className="rounded-full shrink-0 p-1 cursor-pointer"
                     >
                       <span className={`relative block w-10 h-6 rounded-full transition-colors ${r.isActive ? 'bg-emerald-500' : 'bg-black/15 dark:bg-white/20'}`}>
                         <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${r.isActive ? 'translate-x-4' : ''}`} />

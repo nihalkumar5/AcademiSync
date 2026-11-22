@@ -88,7 +88,7 @@ export default function ContactPage() {
       </div>
 
       {/* WhatsApp Quick Support Card */}
-      <div className="mb-8 p-5 sm:p-6 bg-surface border border-[#E5E5E3] dark:border-[#282828] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all">
+      <div className="rounded-card mb-8 p-5 sm:p-6 bg-surface border border-[#E5E5E3] dark:border-[#282828] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center rounded-full shrink-0">
             <MessageCircle className="w-5 h-5" />
@@ -108,7 +108,7 @@ export default function ContactPage() {
           href="https://wa.me/919565550673"
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full sm:w-auto px-5 h-11 bg-[#25D366] hover:bg-[#20bd5a] text-white text-[14px] font-semibold transition-colors inline-flex items-center justify-center gap-2 shrink-0 shadow-xs"
+          className="rounded-full w-full sm:w-auto px-5 h-11 bg-[#25D366] hover:bg-[#20bd5a] text-white text-[14px] font-semibold transition-colors inline-flex items-center justify-center gap-2 shrink-0 shadow-xs"
         >
           <MessageCircle className="w-4 h-4 fill-white" />
           <span>Chat on WhatsApp</span>
@@ -122,7 +122,7 @@ export default function ContactPage() {
         </div>
 
         {submitted ? (
-          <div className="bg-surface border border-line p-8 sm:p-10 flex flex-col items-center justify-center text-center gap-4">
+          <div className="rounded-card bg-surface border border-line p-8 sm:p-10 flex flex-col items-center justify-center text-center gap-4">
             <div className="w-12 h-12 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center rounded-full">
               <CheckCircle2 className="w-6 h-6" />
             </div>
@@ -134,7 +134,7 @@ export default function ContactPage() {
             </p>
             <button
               onClick={() => setSubmitted(false)}
-              className="mt-4 px-5 h-11 border border-line text-[14px] font-semibold text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+              className="rounded-full mt-4 px-5 h-11 border border-line text-[14px] font-semibold text-fg hover:bg-surface-2 transition-colors cursor-pointer"
             >
               Send another message
             </button>
@@ -148,7 +148,7 @@ export default function ContactPage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 bg-surface border border-line text-[14px] focus:outline-none focus:border-line-strong transition-colors rounded-none placeholder:text-[#999999]"
+                className="w-full px-4 py-3 bg-surface border border-line text-[14px] focus:outline-none focus:border-line-strong transition-colors rounded-field placeholder:text-[#999999]"
                 placeholder="Rahul Sharma"
               />
             </div>
@@ -160,7 +160,7 @@ export default function ContactPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-surface border border-line text-[14px] focus:outline-none focus:border-line-strong transition-colors rounded-none placeholder:text-[#999999]"
+                className="w-full px-4 py-3 bg-surface border border-line text-[14px] focus:outline-none focus:border-line-strong transition-colors rounded-field placeholder:text-[#999999]"
                 placeholder="name@university.edu"
               />
             </div>
@@ -170,7 +170,7 @@ export default function ContactPage() {
               <select
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className="w-full px-4 py-3 bg-surface border border-line text-[14px] focus:outline-none focus:border-line-strong transition-colors rounded-none appearance-none"
+                className="w-full px-4 py-3 bg-surface border border-line text-[14px] focus:outline-none focus:border-line-strong transition-colors rounded-field appearance-none"
               >
                 <option value="Feedback / Feature Request">Feedback / Feature Request</option>
                 <option value="Bug Report">Bug Report</option>
@@ -187,7 +187,7 @@ export default function ContactPage() {
                 rows={4}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="w-full px-4 py-3 bg-surface border border-line text-[14px] focus:outline-none focus:border-line-strong transition-colors rounded-none resize-none placeholder:text-[#999999]"
+                className="w-full px-4 py-3 bg-surface border border-line text-[14px] focus:outline-none focus:border-line-strong transition-colors rounded-tile resize-none placeholder:text-[#999999]"
                 placeholder="Tell us what you need help with..."
               />
             </div>
@@ -195,7 +195,7 @@ export default function ContactPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-4 mt-2 bg-ink text-on-ink text-[13px] font-bold hover:opacity-90 disabled:opacity-50 transition-opacity rounded-none inline-flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-4 mt-2 bg-ink text-on-ink text-[13px] font-bold hover:opacity-90 disabled:opacity-50 transition-opacity rounded-full inline-flex items-center justify-center gap-2 cursor-pointer"
             >
               {isSubmitting ? (
                 <>

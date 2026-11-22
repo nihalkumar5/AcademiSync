@@ -89,7 +89,7 @@ export const AddCustomItemModal: React.FC<AddCustomItemModalProps> = ({
             <button
               type="button"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-full flex items-center justify-between h-[48px] px-4 border border-line bg-surface text-fg text-[15px] font-[600] outline-none transition-colors rounded-none cursor-pointer"
+              className="w-full flex items-center justify-between h-[48px] px-4 border border-line bg-surface text-fg text-[15px] font-[600] outline-none transition-colors rounded-field cursor-pointer"
             >
               <span className="truncate pr-4">
                 {activeSubject ? activeSubject.name : 'Select subject'}
@@ -103,7 +103,7 @@ export const AddCustomItemModal: React.FC<AddCustomItemModalProps> = ({
                   className="fixed inset-0 z-40" 
                   onClick={() => setIsDropdownOpen(false)} 
                 />
-                <div className="absolute top-[52px] left-0 w-full bg-surface border border-line z-50 shadow-2xl max-h-[250px] overflow-y-auto divide-y divide-[#EAEAEA] dark:divide-white/[0.08]">
+                <div className="rounded-card overflow-hidden absolute top-[52px] left-0 w-full bg-surface border border-line z-50 shadow-2xl max-h-[250px] overflow-y-auto divide-y divide-[#EAEAEA] dark:divide-white/[0.08]">
                   <button
                     type="button"
                     onClick={() => {
@@ -149,14 +149,14 @@ export const AddCustomItemModal: React.FC<AddCustomItemModalProps> = ({
                   type="button"
                   onClick={() => toggleSuggestion(item)}
                   className={clsx(
-                    'flex items-center justify-start gap-3 p-3 border rounded-none transition-colors outline-none cursor-pointer',
+                    'flex items-center justify-start gap-3 p-3 border rounded-tile transition-colors outline-none cursor-pointer',
                     isSelected
                       ? 'border-line-strong bg-[#F7F7F5] dark:bg-white/[0.08]'
                       : 'border-line hover:border-[#111111] dark:hover:border-white/[0.2] bg-surface'
                   )}
                 >
                   <div className={clsx(
-                    'w-[18px] h-[18px] border flex items-center justify-center shrink-0 rounded-none transition-colors',
+                    'w-[18px] h-[18px] border flex items-center justify-center shrink-0 rounded-md transition-colors',
                     isSelected
                       ? 'bg-ink border-line-strong text-on-ink'
                       : 'border-[#D9D9D6] dark:border-white/[0.15] bg-[#FFFFFF] dark:bg-transparent'
@@ -195,7 +195,7 @@ export const AddCustomItemModal: React.FC<AddCustomItemModalProps> = ({
             <input
               type="text"
               autoFocus
-              className="w-full h-[48px] px-4 border border-line-strong bg-surface text-fg text-[15px] outline-none transition-colors rounded-none placeholder:text-[#A0A0A0] dark:placeholder:text-[#71717A]"
+              className="w-full h-[48px] px-4 border border-line-strong bg-surface text-fg text-[15px] outline-none transition-colors rounded-field placeholder:text-[#A0A0A0] dark:placeholder:text-[#71717A]"
               placeholder="e.g. Scientific Calculator"
               value={customTitle}
               onChange={(e) => setCustomTitle(e.target.value)}

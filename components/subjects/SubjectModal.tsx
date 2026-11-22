@@ -13,7 +13,7 @@ import { PASTEL_THEMES, THEME_KEYS } from '@/lib/cardColors';
 import { ClassCard } from '../timetable/ClassCard';
 
 // Form pieces live outside the modal so inputs keep focus while typing
-const field = 'w-full h-11 px-3 border border-line bg-surface text-[15px] text-fg placeholder:text-faint focus:outline-none focus:border-fg transition-colors disabled:bg-surface-2 disabled:text-muted';
+const field = 'rounded-field w-full h-11 px-3 border border-line bg-surface text-[15px] text-fg placeholder:text-faint focus:outline-none focus:border-fg transition-colors disabled:bg-surface-2 disabled:text-muted';
 const Label: React.FC<{ htmlFor?: string; children: React.ReactNode }> = ({ htmlFor, children }) => (
   <label htmlFor={htmlFor} className="block mb-1.5 text-[12px] font-semibold text-muted">
     {children}
@@ -350,9 +350,9 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
           {carryReqs.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {carryReqs.map((req, idx) => (
-                <span key={`${req}_${idx}`} className="inline-flex items-center gap-1.5 h-8 pl-3 pr-1.5 bg-ink text-on-ink text-[13px] font-medium">
+                <span key={`${req}_${idx}`} className="rounded-full inline-flex items-center gap-1.5 h-8 pl-3 pr-1.5 bg-ink text-on-ink text-[13px] font-medium">
                   {req}
-                  <button type="button" onClick={() => handleRemoveCarryItem(idx)} aria-label={`Remove ${req}`} className="w-5 h-5 flex items-center justify-center opacity-70 hover:opacity-100 cursor-pointer">
+                  <button type="button" onClick={() => handleRemoveCarryItem(idx)} aria-label={`Remove ${req}`} className="rounded-full w-5 h-5 flex items-center justify-center opacity-70 hover:opacity-100 cursor-pointer">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </span>
@@ -364,7 +364,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
               {carryPresets
                 .filter((p) => !carryReqs.includes(p))
                 .map((preset) => (
-                  <button key={preset} type="button" onClick={() => handleAddCarryItem(preset)} className="inline-flex items-center gap-1 h-8 px-2.5 bg-surface-2 text-[13px] font-medium text-fg-2 hover:text-fg cursor-pointer">
+                  <button key={preset} type="button" onClick={() => handleAddCarryItem(preset)} className="rounded-full inline-flex items-center gap-1 h-8 px-2.5 bg-surface-2 text-[13px] font-medium text-fg-2 hover:text-fg cursor-pointer">
                     <Plus className="w-3.5 h-3.5" /> {preset}
                   </button>
                 ))}
@@ -409,9 +409,9 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
               type="button"
               onClick={() => syllabusRef.current?.click()}
               disabled={uploading}
-              className="w-full flex items-center gap-3 px-f3 h-14 border border-dashed border-line bg-surface-2/40 hover:bg-surface-2 text-left transition-colors cursor-pointer disabled:opacity-60"
+              className="rounded-tile w-full flex items-center gap-3 px-f3 h-14 border border-dashed border-line bg-surface-2/40 hover:bg-surface-2 text-left transition-colors cursor-pointer disabled:opacity-60"
             >
-              <span className="w-9 h-9 shrink-0 flex items-center justify-center bg-surface border border-line">
+              <span className="rounded-xl w-9 h-9 shrink-0 flex items-center justify-center bg-surface border border-line">
                 {syllabusFiles.length ? <Upload className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
               </span>
               <span className="flex-1 min-w-0">

@@ -479,7 +479,7 @@ ${PLAY_STORE_URL}
   displayYear = displayYear || '?';
 
   const MemberList = ({ members: list, pilot = false }: { members: any[]; pilot?: boolean }) => (
-    <ul className="border border-line bg-surface divide-y divide-line-soft">
+    <ul className="rounded-card overflow-hidden border border-line bg-surface divide-y divide-line-soft">
       {list.map((m) => {
         const p = m.profile || {};
         const isYou = checkIsCurrentUser(m);
@@ -493,7 +493,7 @@ ${PLAY_STORE_URL}
               <span className="flex items-center gap-2 min-w-0">
                 <span className="text-[15px] font-medium text-fg truncate">{p.name || 'Student'}</span>
                 {isYou && (
-                  <span className="shrink-0 text-[11px] font-semibold px-1.5 py-0.5 bg-ink text-on-ink">You</span>
+                  <span className="rounded-full shrink-0 text-[11px] font-semibold px-1.5 py-0.5 bg-ink text-on-ink">You</span>
                 )}
               </span>
               <span className="block mt-0.5 text-[13px] text-muted truncate">
@@ -532,7 +532,7 @@ ${PLAY_STORE_URL}
         <div className="flex flex-col gap-6 font-sans">
           {/* Batch summary */}
           <div className="flex items-start gap-3">
-            <span className="w-11 h-11 shrink-0 flex items-center justify-center bg-ink text-on-ink">
+            <span className="rounded-xl w-11 h-11 shrink-0 flex items-center justify-center bg-ink text-on-ink">
               <Users className="w-5 h-5" strokeWidth={1.75} />
             </span>
             <div className="min-w-0">
@@ -547,7 +547,7 @@ ${PLAY_STORE_URL}
           </div>
 
           {/* Invite */}
-          <div className="border border-line bg-surface">
+          <div className="rounded-card border border-line bg-surface">
             {inviteCode && (
               <div className="flex items-center justify-between gap-3 px-4 pt-4">
                 <div>
@@ -577,7 +577,7 @@ ${PLAY_STORE_URL}
               aria-label="Search members"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 pl-10 pr-4 bg-surface text-[15px] text-fg border border-line focus:outline-none focus:border-line-strong transition-colors placeholder:text-[#8A8A8A] dark:placeholder:text-[#71717A]"
+              className="rounded-field w-full h-12 pl-10 pr-4 bg-surface text-[15px] text-fg border border-line focus:outline-none focus:border-line-strong transition-colors placeholder:text-[#8A8A8A] dark:placeholder:text-[#71717A]"
             />
           </div>
 
@@ -587,8 +587,8 @@ ${PLAY_STORE_URL}
                 <div key={i} className="flex items-center gap-3 px-4 py-3">
                   <span className="w-10 h-10 rounded-full bg-black/[0.06] dark:bg-white/[0.06] animate-pulse" />
                   <span className="flex-1">
-                    <span className="block h-3.5 w-1/2 bg-black/[0.06] dark:bg-white/[0.06] animate-pulse" />
-                    <span className="block mt-2 h-3 w-1/3 bg-surface-2 animate-pulse" />
+                    <span className="rounded-tile block h-3.5 w-1/2 bg-black/[0.06] dark:bg-white/[0.06] animate-pulse" />
+                    <span className="rounded-full block mt-2 h-3 w-1/3 bg-surface-2 animate-pulse" />
                   </span>
                 </div>
               ))}
@@ -613,7 +613,7 @@ ${PLAY_STORE_URL}
                   <span className="text-[13px] text-muted">{normalMembers.length}</span>
                 </div>
                 {normalMembers.length === 0 ? (
-                  <div className="border border-dashed border-line px-4 py-8 text-center text-[14px] text-muted">
+                  <div className="rounded-card border border-dashed border-line px-4 py-8 text-center text-[14px] text-muted">
                     {searchQuery ? `No one matches "${searchQuery}".` : 'No members yet. Share the code to invite your class.'}
                   </div>
                 ) : (

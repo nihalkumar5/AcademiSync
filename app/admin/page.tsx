@@ -1230,7 +1230,7 @@ export default function SuperAdminPage() {
           paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 20px), 32px)',
         }}
       >
-        <div className="w-14 h-14 border border-line-strong flex items-center justify-center mb-6">
+        <div className="rounded-xl w-14 h-14 border border-line-strong flex items-center justify-center mb-6">
           <Lock className="w-6 h-6" />
         </div>
         <h1 className="text-xl font-bold mb-2">Super Admin Access</h1>
@@ -1238,7 +1238,7 @@ export default function SuperAdminPage() {
           Sign in with your master administrator account to manage users, college batches, and direct campaigns.
         </p>
         <Link href="/sign-in">
-          <button className="px-6 h-11 bg-ink text-on-ink text-[14px] font-semibold border border-line-strong cursor-pointer hover:opacity-90">
+          <button className="rounded-full px-6 h-11 bg-ink text-on-ink text-[14px] font-semibold border border-line-strong cursor-pointer hover:opacity-90">
             Sign In with Admin Account
           </button>
         </Link>
@@ -1256,7 +1256,7 @@ export default function SuperAdminPage() {
           paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 20px), 32px)',
         }}
       >
-        <div className="w-14 h-14 border border-rose-500 text-rose-500 flex items-center justify-center mb-6">
+        <div className="rounded-xl w-14 h-14 border border-rose-500 text-rose-500 flex items-center justify-center mb-6">
           <AlertTriangle className="w-6 h-6" />
         </div>
         <h1 className="text-xl font-bold text-rose-600 dark:text-rose-400 mb-2">
@@ -1267,7 +1267,7 @@ export default function SuperAdminPage() {
         </p>
         <Link
           href="/"
-          className="flex items-center gap-2 px-6 h-11 border border-line-strong text-[14px] font-semibold hover:bg-ink hover:text-on-ink transition-colors"
+          className="rounded-full flex items-center gap-2 px-6 h-11 border border-line-strong text-[14px] font-semibold hover:bg-ink hover:text-on-ink transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Return to Student App</span>
@@ -1350,7 +1350,7 @@ export default function SuperAdminPage() {
                   {t.label}
                   {typeof t.count === 'number' && t.count > 0 && (
                     <span
-                      className={`min-w-[20px] h-5 px-1.5 inline-flex items-center justify-center text-[11px] font-semibold tabular-nums ${
+                      className={`rounded-full min-w-[20px] h-5 px-1.5 inline-flex items-center justify-center text-[11px] font-semibold tabular-nums ${
                         t.alert ? 'bg-rose-500 text-white' : 'bg-surface-3 text-current'
                       }`}
                     >
@@ -1483,7 +1483,7 @@ export default function SuperAdminPage() {
               <SectionHead title="Maintenance" />
               <div className={`${surface} p-f4 flex flex-col sm:flex-row sm:items-center gap-f3 justify-between`}>
                 <div className="flex items-start gap-f3">
-                  <span className={`w-9 h-9 shrink-0 flex items-center justify-center border border-line-soft ${strong}`}>
+                  <span className={`rounded-xl w-9 h-9 shrink-0 flex items-center justify-center border border-line-soft ${strong}`}>
                     <Wrench className="w-4 h-4" />
                   </span>
                   <div>
@@ -1553,7 +1553,7 @@ export default function SuperAdminPage() {
                   return (
                     <article key={c.id} className={`${surface} flex flex-col ${st !== 'live' ? 'opacity-80' : ''}`}>
                       <div className="flex gap-f3 p-f4">
-                        <div className="w-[88px] h-[64px] shrink-0 bg-[#F1F1EF] dark:bg-white/[0.04] border border-line-soft overflow-hidden flex items-center justify-center">
+                        <div className="rounded-tile w-[88px] h-[64px] shrink-0 bg-[#F1F1EF] dark:bg-white/[0.04] border border-line-soft overflow-hidden flex items-center justify-center">
                           {c.imageUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={c.imageUrl} alt="" className="w-full h-full object-cover" />
@@ -1663,7 +1663,7 @@ export default function SuperAdminPage() {
                               </p>
                             </div>
                           </div>
-                          {req.note && <p className={`text-[14px] leading-relaxed bg-surface-2 px-3 py-2 ${muted}`}>{req.note}</p>}
+                          {req.note && <p className={`rounded-tile text-[14px] leading-relaxed bg-surface-2 px-3 py-2 ${muted}`}>{req.note}</p>}
                           <div className="flex flex-wrap gap-x-f4 gap-y-1.5 text-[13px]">
                             {req.email && (
                               <a href={`mailto:${req.email}`} className={`inline-flex items-center gap-1.5 hover:underline underline-offset-4 ${strong}`}>
@@ -1812,7 +1812,7 @@ export default function SuperAdminPage() {
                 value={selectedCollegeFilter}
                 onChange={(e) => setSelectedCollegeFilter(e.target.value)}
                 aria-label="College"
-                className="h-11 px-3 lg:w-72 bg-surface border border-line text-[15px] text-fg focus:outline-none focus:border-line-strong cursor-pointer"
+                className="rounded-field h-11 px-3 lg:w-72 bg-surface border border-line text-[15px] text-fg focus:outline-none focus:border-line-strong cursor-pointer"
               >
                 <option value="ALL">All colleges ({deduplicatedUsersList.length})</option>
                 {allCollegeOptions.map((c) => (
@@ -1920,7 +1920,7 @@ export default function SuperAdminPage() {
                                     value={role}
                                     onChange={(e) => requestRoleChange(u, e.target.value as AdminRole)}
                                     aria-label={`Role for ${displayName(p)}`}
-                                    className="h-9 px-2.5 bg-surface border border-line text-[13px] text-fg cursor-pointer focus:outline-none focus:border-[#111111]"
+                                    className="rounded-field h-9 px-2.5 bg-surface border border-line text-[13px] text-fg cursor-pointer focus:outline-none focus:border-[#111111]"
                                   >
                                     {(['student', 'cr', 'faculty', 'campus_admin', 'super_admin'] as const).map((r) => (
                                       <option key={r} value={r}>
@@ -2038,7 +2038,7 @@ export default function SuperAdminPage() {
               <p className={`mt-1 text-[14px] ${muted}`}>
                 {getShortCollegeName(approvedSuccessData.college)} · {approvedSuccessData.branch} · Semester {approvedSuccessData.semester}
               </p>
-              <div className="mt-f4 p-f4 border border-dashed border-[#CFCFCB] dark:border-white/[0.16] text-center">
+              <div className="rounded-tile mt-f4 p-f4 border border-dashed border-[#CFCFCB] dark:border-white/[0.16] text-center">
                 <p className={`text-[13px] ${muted}`}>Batch join code</p>
                 <div className="mt-1 flex items-center justify-center gap-2">
                   <span className={`text-[32px] font-mono font-semibold tracking-[6px] select-all ${strong}`}>{approvedSuccessData.batchCode}</span>

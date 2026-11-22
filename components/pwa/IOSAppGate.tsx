@@ -55,9 +55,9 @@ export const IOSAppGate: React.FC = () => {
             aria-selected={i === step}
             aria-label={`Step ${i + 1}: ${x.title}`}
             onClick={() => setStep(i)}
-            className="py-2 cursor-pointer"
+            className="rounded-full py-2 cursor-pointer"
           >
-            <span className="block h-[3px] bg-line overflow-hidden">
+            <span className="rounded-full block h-[3px] bg-line overflow-hidden">
               <span
                 key={i === step ? `on-${step}` : 'off'}
                 className={`block h-full bg-fg ${i < step ? 'w-full' : i === step ? (reduce ? 'w-full' : 'gate-bar') : 'w-0'}`}
