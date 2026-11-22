@@ -17,18 +17,18 @@
 }
 
 :root {
-  --background: #F6F5F2;
+  --background: #F5F5F6;
   --foreground: #111111;
 
   /* ── Design system: neutral scale (light) ─────────────────────────────
      Black and white only. Colour is reserved for meaning (danger / ok).
      canvas < surface < surface-2 < surface-3 is the elevation / fill order. */
-  --c-canvas: 246 245 242;     /* #F6F5F2  page: warm off-white, white cards sit on it */
+  --c-canvas: 245 245 246;     /* #F5F5F6  page: neutral light grey, white cards sit on it */
   --c-surface: 255 255 255;    /* #FFFFFF  cards, sheets, inputs */
-  --c-surface-2: 239 238 234;  /* #EFEEEA  quiet fill, hover, chips (reads on page and card) */
-  --c-surface-3: 229 228 223;  /* #E5E4DF  pressed, selected-soft, tracks */
-  --c-line: 225 224 219;       /* #E1E0DB  borders */
-  --c-line-soft: 236 235 231;  /* #ECEBE7  dividers inside cards */
+  --c-surface-2: 237 237 239;  /* #EDEDEF  quiet fill, hover, chips (reads on page and card) */
+  --c-surface-3: 228 228 231;  /* #E4E4E7  pressed, selected-soft, tracks */
+  --c-line: 226 226 229;       /* #E2E2E5  borders */
+  --c-line-soft: 236 236 239;  /* #ECECEF  dividers inside cards */
   --c-line-strong: 17 17 17;   /* #111111  focus, hover, active outline */
   --c-fg: 17 17 17;            /* #111111  primary text */
   --c-fg-2: 61 61 59;          /* #3D3D3B  secondary text */
@@ -176,10 +176,13 @@ body {
   -webkit-overflow-scrolling: touch;
   -webkit-tap-highlight-color: transparent;
   color: var(--foreground);
-  /* Light: warm off-white page with a soft warm glow at the top; white cards sit on it, no grid. */
+  /* Light: neutral light-grey page with a barely-there grid; white cards sit on it. */
   background-color: rgb(var(--c-canvas));
   background-image:
-    radial-gradient(ellipse 100% 45% at 50% -10%, rgba(255, 228, 196, 0.45), transparent 70%);
+    linear-gradient(rgba(17, 17, 17, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 17, 17, 0.035) 1px, transparent 1px);
+  background-size: 32px 32px, 32px 32px;
+  background-position: -1px -1px, -1px -1px;
   background-attachment: fixed;
   font-feature-settings: "rlig" 1, "calt" 1;
   -webkit-font-smoothing: antialiased;
@@ -188,10 +191,14 @@ body {
 
 .dark body, body.dark {
   /* Neutral ink black. The top glow is warm (not blue) so dark mode belongs to the same warm-paper
-     family as light mode. */
+     family as light mode; a fine grid gives depth. */
   background-color: rgb(var(--c-canvas));
   background-image:
+    linear-gradient(rgba(255, 255, 255, 0.032) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.032) 1px, transparent 1px),
     radial-gradient(ellipse 90% 50% at 50% -12%, rgba(255, 232, 205, 0.075), transparent 70%);
+  background-size: 32px 32px, 32px 32px, auto;
+  background-position: -1px -1px, -1px -1px, 0 0;
   background-attachment: fixed;
 }
 
@@ -619,12 +626,16 @@ body.fullscreen-open header:not([aria-modal="true"] header) {
 .campus-sig--done .campus-sig__art { clip-path: none; }
 @keyframes campusWipe { to { clip-path: inset(0 0 0 0); } }
 
+/* Fills, name and place settle in after the outline; their delay is set inline */
+.campus-sig--waiting .campus-sig__fill,
 .campus-sig--waiting .campus-sig__place { opacity: 0; }
-.campus-sig--playing .campus-sig__place { opacity: 0; animation: campusFade 600ms ease 2.6s forwards; }
-@keyframes campusFade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+.campus-sig--playing .campus-sig__fill { opacity: 0; animation: campusFill 700ms ease forwards; }
+.campus-sig--playing .campus-sig__place { opacity: 0; animation: campusFade 700ms cubic-bezier(.2,.7,.2,1) forwards; }
+@keyframes campusFill { to { opacity: 1; } }
+@keyframes campusFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   .campus-sig__line { stroke-dashoffset: 0; animation: none !important; }
   .campus-sig__art { clip-path: none; animation: none !important; }
-  .campus-sig__place { opacity: 1 !important; animation: none !important; }
+  .campus-sig__fill, .campus-sig__place { opacity: 1 !important; animation: none !important; }
 }
