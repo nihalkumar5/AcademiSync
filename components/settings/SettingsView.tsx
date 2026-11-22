@@ -677,7 +677,7 @@ ${PLAY_STORE_URL}
       </header>
 
       {/* Identity card */}
-      <div className="sheen-ink relative overflow-hidden bg-[#111111] dark:bg-[#15171D] dark:border dark:border-white/[0.08] text-white">
+      <div className="sheen-ink relative overflow-hidden bg-[#111111] dark:bg-surface dark:border dark:border-white/[0.08] text-white">
         <div
           aria-hidden="true"
           className="absolute inset-0 pointer-events-none"
@@ -699,7 +699,7 @@ ${PLAY_STORE_URL}
             <span className="block w-[76px] h-[76px] sm:w-[88px] sm:h-[88px] rounded-full overflow-hidden bg-[#F4F4F6]">
               <img src={getAvatarSrc(avatarSeed)} alt="" className="w-full h-full object-cover scale-110 translate-y-1" />
             </span>
-            <span className="absolute -bottom-0.5 -right-0.5 w-7 h-7 rounded-full bg-white text-[#111111] border-2 border-[#111111] dark:border-[#15171D] flex items-center justify-center group-hover:scale-105 transition-transform">
+            <span className="absolute -bottom-0.5 -right-0.5 w-7 h-7 rounded-full bg-white text-[#111111] border-2 border-[#111111] dark:border-line-soft flex items-center justify-center group-hover:scale-105 transition-transform">
               <Pencil className="w-3.5 h-3.5" strokeWidth={2.25} />
             </span>
           </button>
@@ -1807,7 +1807,7 @@ ${PLAY_STORE_URL}
                         : 'border-line bg-surface text-fg'
                     }`}
                   >
-                    <div className={`w-3 h-3 rounded-full border ${settings.classReminderMinutes === mins ? 'border-[#FFFFFF] dark:border-[#090A0C] bg-surface' : 'border-[#A0A0A0] bg-transparent'}`} />
+                    <div className={`w-3 h-3 rounded-full border ${settings.classReminderMinutes === mins ? 'border-[#FFFFFF] dark:border-canvas bg-surface' : 'border-[#A0A0A0] bg-transparent'}`} />
                     {mins} min
                   </button>
                 ))}
@@ -1860,7 +1860,7 @@ ${PLAY_STORE_URL}
                         : 'border-line bg-surface text-fg'
                     }`}
                   >
-                    <div className={`w-3 h-3 rounded-full border ${settings.homeworkWarningDays === days ? 'border-[#FFFFFF] dark:border-[#090A0C] bg-surface' : 'border-[#A0A0A0] bg-transparent'}`} />
+                    <div className={`w-3 h-3 rounded-full border ${settings.homeworkWarningDays === days ? 'border-[#FFFFFF] dark:border-canvas bg-surface' : 'border-[#A0A0A0] bg-transparent'}`} />
                     {days} {days === 1 ? 'day' : 'days'}
                   </button>
                 ))}

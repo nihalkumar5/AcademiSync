@@ -57,7 +57,7 @@ export const CheckInBanner: React.FC = () => {
   return (
     <>
       {todo && (
-        <section className="sheen-ink relative overflow-hidden bg-[#111111] dark:bg-[#15171D] dark:border dark:border-white/[0.08] text-white p-f4 sm:p-f5" aria-live="polite">
+        <section className="sheen-ink relative overflow-hidden bg-[#111111] dark:bg-surface dark:border dark:border-white/[0.08] text-white p-f4 sm:p-f5" aria-live="polite">
           <p className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[1.4px] text-[#5EE0C2]">
             <span className="relative flex w-2 h-2">
               <span className="absolute inline-flex w-full h-full rounded-full bg-[#5EE0C2] opacity-70 animate-ping" />

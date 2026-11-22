@@ -739,7 +739,7 @@ export const AcademicCalendar: React.FC = () => {
                     className={clsx(
                       "py-1.5 text-[11px] font-semibold rounded-lg capitalize transition-all cursor-pointer",
                       newType === t
-                        ? "bg-white dark:bg-[#1E2028] text-fg shadow-2xs font-bold"
+                        ? "bg-white dark:bg-surface text-fg shadow-2xs font-bold"
                         : "text-[#71717A] hover:text-fg"
                     )}
                   >

@@ -200,7 +200,7 @@ export const HomeMessCard: React.FC = () => {
       <button
         type="button"
         onClick={() => setActiveView('mess')}
-        className="rounded-card sheen-ink w-full p-5 bg-[#111111] dark:bg-[#15171D] border border-[#111111] dark:border-white/[0.08] text-white text-left cursor-pointer"
+        className="rounded-card sheen-ink w-full p-5 bg-[#111111] dark:bg-surface border border-[#111111] dark:border-white/[0.08] text-white text-left cursor-pointer"
       >
         <div className="flex items-center justify-between gap-3">
           <span className="inline-flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[1.4px]">

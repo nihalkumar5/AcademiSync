@@ -8,7 +8,6 @@ import {
   CheckSquare,
   User,
   Users,
-  LayoutGrid,
   ClipboardList,
   Utensils,
   CalendarRange,
@@ -21,6 +20,7 @@ import {
   FileText,
   Megaphone,
   NotebookPen,
+  Search,
 } from '@/components/ui/icons';
 import { useApp, ActiveView } from '@/context/AppContext';
 import { dedupeNotifications } from '@/lib/notificationDedupe';
@@ -54,6 +54,7 @@ const MORE_TONES: Record<string, string> = {
 export const MobileNav: React.FC = () => {
   const { activeView, setActiveView, homework, profile, exams, notifications, routines } = useApp();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [moreQuery, setMoreQuery] = useState('');
 
   // The floating tab bar steps out of the way so it never sits on a form:
   // - scrolling down hides it (scrolling up brings it back), so Save buttons at the end of a page show
@@ -189,6 +190,27 @@ export const MobileNav: React.FC = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, [isMoreOpen]);
 
+  // The round search button opens this sheet: every section, plus a box to find one by name
+  useEffect(() => {
+    if (!isMoreOpen) setMoreQuery('');
+  }, [isMoreOpen]);
+  const q = moreQuery.trim().toLowerCase();
+  const shownGroups: MoreGroup[] = q
+    ? (() => {
+        const seen = new Set<string>();
+        const all: MoreItem[] = [
+          ...tabs.map((t): MoreItem => ({ id: t.id, label: t.label, hint: "", icon: t.icon, badge: t.badge })),
+          ...moreItems,
+          { id: 'settings' as ActiveView, label: 'Profile & settings', short: 'Profile', hint: 'Your account and preferences', icon: <User className="w-5 h-5" /> },
+        ].filter((it) => {
+          if (seen.has(it.id)) return false;
+          seen.add(it.id);
+          return [it.label, it.short, it.hint].some((x) => x && x.toLowerCase().includes(q));
+        });
+        return all.length ? [{ label: 'Results', items: all }] : [];
+      })()
+    : moreGroups;
+
   const goTo = (view: ActiveView) => {
     setIsMoreOpen(false);
     setActiveView(view);
@@ -200,21 +222,22 @@ export const MobileNav: React.FC = () => {
       type="button"
       onClick={onClick}
       aria-label={badge ? `${label}, ${badge} pending` : label}
+      title={label}
       aria-current={isActive ? 'page' : undefined}
       className={clsx(
-        'flex flex-col items-center justify-center relative cursor-pointer flex-1 h-full min-w-0 select-none gap-[3px] transition-[color,transform] duration-200 active:scale-[0.94]',
-        isActive ? 'text-fg' : 'text-fg/[0.72] hover:text-fg'
+        'flex items-center justify-center relative cursor-pointer flex-1 h-full min-w-0 select-none transition-[color,transform] duration-200 active:scale-[0.92]',
+        isActive ? 'text-fg' : 'text-muted hover:text-fg'
       )}
     >
       {/* Active tab: a drop of lighter glass glides between tabs (shared layoutId) */}
       {isActive && (
         <motion.div
           layoutId="mobile-nav-indicator"
-          className="lg-lens absolute inset-x-[3px] inset-y-[5px] rounded-full"
+          className="absolute inset-x-[3px] inset-y-[5px] rounded-full bg-fg/[0.08] dark:bg-white/[0.12]"
           transition={{ type: 'spring', stiffness: 480, damping: 38, mass: 0.8 }}
         />
       )}
-      <div className="relative flex items-center justify-center [&>span>svg]:w-[21px] [&>span>svg]:h-[21px]">
+      <div className="relative flex items-center justify-center [&>span>svg]:w-[23px] [&>span>svg]:h-[23px]">
         <span className="relative">{icon}</span>
         {badge !== undefined && (
           <span className="absolute -top-1.5 -right-2.5 min-w-[15px] h-[15px] px-[3px] bg-rose-500 text-white text-[9px] font-bold tabular-nums flex items-center justify-center leading-none rounded-full ring-[1.5px] ring-white/80 dark:ring-black/40">
@@ -223,9 +246,6 @@ export const MobileNav: React.FC = () => {
         )}
       </div>
 
-      <span className={clsx('relative text-[10px] leading-none tracking-[0.01em] transition-colors', isActive ? 'font-semibold' : 'font-medium')}>
-        {label}
-      </span>
     </button>
   );
 
@@ -248,16 +268,30 @@ export const MobileNav: React.FC = () => {
               aria-modal="true"
               aria-label="More sections"
               className="md:hidden fixed left-0 right-0 bottom-0 z-[39] bg-surface rounded-t-[28px] shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.25)] dark:shadow-[0_-12px_40px_-8px_rgba(0,0,0,0.8)] pt-[13px] px-[21px]"
-              style={{ paddingBottom: `calc(${NAV_BOTTOM} + 60px + 16px)` }}
+              style={{ paddingBottom: `calc(${NAV_BOTTOM} + 58px + 16px)` }}
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 32, stiffness: 340 }}
             >
-              <div className="mx-auto mb-[21px] h-1 w-[34px] rounded-full bg-[#D9D9D6] dark:bg-white/15" />
+              <div className="mx-auto mb-[13px] h-1 w-[34px] rounded-full bg-[#D9D9D6] dark:bg-white/15" />
+              <label className="max-w-md mx-auto mb-[21px] flex items-center gap-2.5 h-11 px-4 rounded-full bg-surface-2 focus-within:ring-4 focus-within:ring-fg/[0.06] transition-shadow">
+                <Search className="w-[18px] h-[18px] text-muted shrink-0" />
+                <input
+                  type="search"
+                  value={moreQuery}
+                  onChange={(e) => setMoreQuery(e.target.value)}
+                  placeholder="Search sections"
+                  aria-label="Search sections"
+                  className="flex-1 min-w-0 bg-transparent text-[16px] text-fg placeholder:text-faint focus:outline-none"
+                />
+              </label>
               {/* Spacing follows the Fibonacci scale (8 · 13 · 21 · 34), each step ≈ the last × φ (1.618) */}
-              <div className="max-w-md mx-auto max-h-[72vh] overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden flex flex-col gap-[21px] pb-[8px]">
-                {moreGroups.map((g) => (
+              <div className="max-w-md mx-auto max-h-[min(58vh,calc(100dvh-260px))] overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden flex flex-col gap-[21px] pb-[8px]">
+                {q && shownGroups.length === 0 && (
+                  <p className="py-6 text-center text-[14px] text-muted">Nothing called &ldquo;{moreQuery}&rdquo;.</p>
+                )}
+                {shownGroups.map((g) => (
                   <section key={g.label} aria-label={g.label}>
                     <p className="mb-[8px] text-[13px] font-semibold text-muted">{g.label}</p>
                     <ul className={clsx('grid gap-[8px]', g.items.length === 1 ? 'grid-cols-1' : 'grid-cols-3')}>
@@ -310,31 +344,44 @@ export const MobileNav: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Floating Liquid Glass tab bar */}
+      {/* Floating tab bar (like Substack): an icon-only glass pill for the sections, and a separate
+          round button on the right for search, so the one action that isn't a place stands apart. */}
       <nav
         id="mobile-nav"
         aria-label="Main"
         className={clsx(
-          'lg lg-bar md:hidden fixed z-40 left-3 right-3 mx-auto max-w-[440px] rounded-full px-[3px] select-none',
+          'md:hidden fixed z-40 left-3 right-3 mx-auto max-w-[440px] flex items-center gap-2 select-none',
           'transition-[transform,opacity] duration-300 ease-[cubic-bezier(.2,.8,.2,1)] motion-reduce:transition-none',
           navHidden ? 'translate-y-[calc(100%+40px)] opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'
         )}
         style={{ bottom: NAV_BOTTOM }}
         aria-hidden={navHidden || undefined}
       >
-        <div className="flex items-center relative h-[60px]">
+        <div className="lg lg-bar flex-1 min-w-0 rounded-full px-1.5 flex items-center relative h-[58px]">
           {tabs.map((tab) =>
             renderTab(tab.id, tab.label, tab.icon, !isMoreOpen && activeView === tab.id, () => goTo(tab.id), tab.badge)
           )}
-          {renderTab(
-            'more',
-            'More',
-            <LayoutGrid className="w-5 h-5" />,
-            isMoreOpen || isMoreActive,
-            () => setIsMoreOpen((open) => !open),
-            moreBadge || undefined
-          )}
         </div>
+        <button
+          type="button"
+          onClick={() => setIsMoreOpen((open) => !open)}
+          aria-label={moreBadge ? `All sections and search, ${moreBadge} new` : 'All sections and search'}
+          aria-expanded={isMoreOpen}
+          aria-current={isMoreActive && !isMoreOpen ? 'page' : undefined}
+          title="Search"
+          className={clsx(
+            'lg lg-bar relative shrink-0 w-[58px] h-[58px] rounded-full flex items-center justify-center cursor-pointer active:scale-[0.92] transition-transform',
+            isMoreOpen || isMoreActive ? 'text-fg' : 'text-muted'
+          )}
+        >
+          {(isMoreOpen || isMoreActive) && <span className="absolute inset-[5px] rounded-full bg-fg/[0.08] dark:bg-white/[0.12]" aria-hidden="true" />}
+          <Search className="relative w-[23px] h-[23px]" />
+          {moreBadge > 0 && (
+            <span className="absolute top-2 right-2 min-w-[15px] h-[15px] px-[3px] bg-rose-500 text-white text-[9px] font-bold tabular-nums flex items-center justify-center leading-none rounded-full ring-[1.5px] ring-white/80 dark:ring-black/40">
+              {moreBadge > 9 ? '9+' : moreBadge}
+            </span>
+          )}
+        </button>
       </nav>
     </>
   );

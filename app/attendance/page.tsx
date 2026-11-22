@@ -347,7 +347,7 @@ export default function AttendanceCenterPage() {
   return (
     <div className="min-h-screen bg-canvas text-fg font-sans" style={{ paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 34px), 55px)' }}>
       {/* ---------- Header + navigation (same shell as the Control Center) ---------- */}
-      <header className="sheen sticky top-0 z-40 bg-[#FAFAF8]/90 dark:bg-[#0A0B0F]/80 backdrop-blur-xl border-b border-line" style={{ paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 8px), 13px)' }}>
+      <header className="sheen sticky top-0 z-40 bg-[#FAFAF8]/90 dark:bg-canvas/80 backdrop-blur-xl border-b border-line" style={{ paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 8px), 13px)' }}>
         <div className="max-w-6xl mx-auto px-f4 sm:px-f5">
           <div className="flex items-center justify-between gap-3 h-14">
             <div className="flex items-center gap-2 min-w-0">

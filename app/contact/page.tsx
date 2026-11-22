@@ -88,7 +88,7 @@ export default function ContactPage() {
       </div>
 
       {/* WhatsApp Quick Support Card */}
-      <div className="rounded-card mb-8 p-5 sm:p-6 bg-surface border border-[#E5E5E3] dark:border-[#282828] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all">
+      <div className="rounded-card mb-8 p-5 sm:p-6 bg-surface border border-[#E5E5E3] dark:border-line flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center rounded-full shrink-0">
             <MessageCircle className="w-5 h-5" />

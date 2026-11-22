@@ -240,10 +240,10 @@ export const CommandPalette: React.FC = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98, y: -8 }}
             transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-[560px] bg-[#FCFCFA] dark:bg-[#121317] border border-[#EAEAE6] dark:border-white/[0.08] rounded-sheet overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.18)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] overflow-hidden z-10 text-left flex flex-col"
+            className="relative w-full max-w-[560px] bg-[#FCFCFA] dark:bg-surface border border-[#EAEAE6] dark:border-white/[0.08] rounded-sheet overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.18)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] overflow-hidden z-10 text-left flex flex-col"
           >
             {/* Search Input Bar */}
-            <div className="flex items-center gap-3 px-4 h-[48px] sm:h-[50px] border-b border-line-soft bg-[#FCFCFA] dark:bg-[#121317]">
+            <div className="flex items-center gap-3 px-4 h-[48px] sm:h-[50px] border-b border-line-soft bg-[#FCFCFA] dark:bg-surface">
               <Search className="w-[18px] h-[18px] text-[#8A8A88] dark:text-[#A1A1AA] shrink-0" strokeWidth={1.5} />
               
               <input
@@ -325,7 +325,7 @@ export const CommandPalette: React.FC = () => {
             </div>
 
             {/* Bottom Keyboard Hint Bar */}
-            <div className="flex items-center justify-between px-4 h-[36px] bg-[#F3F3F1] dark:bg-[#16171B] border-t border-[#E8E8E4] dark:border-white/[0.06] text-muted">
+            <div className="flex items-center justify-between px-4 h-[36px] bg-[#F3F3F1] dark:bg-surface border-t border-[#E8E8E4] dark:border-white/[0.06] text-muted">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5 text-[11px] font-medium">
                   <kbd className="font-mono text-[11px] bg-surface px-1.5 py-0.5 rounded-md border border-line text-muted shadow-2xs">

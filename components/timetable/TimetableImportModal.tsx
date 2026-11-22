@@ -357,13 +357,13 @@ export const TimetableImportModal: React.FC<TimetableImportModalProps> = ({ isOp
                             onChange={(e) => updateExtractedRow(index, { day: e.target.value as any })}
                             className="w-full px-3 py-1.5 h-[38px] rounded-field bg-surface border border-line text-[13px] text-fg focus:outline-none focus:border-line-strong transition-colors appearance-none"
                           >
-                            <option value="Monday" className="dark:bg-[#121317]">Monday</option>
-                            <option value="Tuesday" className="dark:bg-[#121317]">Tuesday</option>
-                            <option value="Wednesday" className="dark:bg-[#121317]">Wednesday</option>
-                            <option value="Thursday" className="dark:bg-[#121317]">Thursday</option>
-                            <option value="Friday" className="dark:bg-[#121317]">Friday</option>
-                            <option value="Saturday" className="dark:bg-[#121317]">Saturday</option>
-                            <option value="Sunday" className="dark:bg-[#121317]">Sunday</option>
+                            <option value="Monday" className="dark:bg-surface">Monday</option>
+                            <option value="Tuesday" className="dark:bg-surface">Tuesday</option>
+                            <option value="Wednesday" className="dark:bg-surface">Wednesday</option>
+                            <option value="Thursday" className="dark:bg-surface">Thursday</option>
+                            <option value="Friday" className="dark:bg-surface">Friday</option>
+                            <option value="Saturday" className="dark:bg-surface">Saturday</option>
+                            <option value="Sunday" className="dark:bg-surface">Sunday</option>
                           </select>
                           <ChevronDown className="w-3 h-3 absolute right-2.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
                         </div>

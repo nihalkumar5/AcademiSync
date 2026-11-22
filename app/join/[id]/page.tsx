@@ -56,7 +56,7 @@ export default function JoinMessPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#FAFAF8] dark:bg-[#111110]">
+      <div className="flex items-center justify-center min-h-screen bg-[#FAFAF8] dark:bg-canvas">
         <div className="w-8 h-8 border-2 border-line-strong border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
@@ -64,7 +64,7 @@ export default function JoinMessPage() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#FAFAF8] dark:bg-[#111110] p-6 text-center">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#FAFAF8] dark:bg-canvas p-6 text-center">
         <h2 className="text-[24px] font-bold text-fg mb-2">Error</h2>
         <p className="text-[#6B6B6B] mb-6 text-[14px]">{error}</p>
         <button
@@ -79,7 +79,7 @@ export default function JoinMessPage() {
   }
 
   return (
-    <div className="flex flex-col justify-start pt-16 sm:pt-20 min-h-screen bg-[#FAFAF8] dark:bg-[#111110] p-6 text-left max-w-md mx-auto w-full font-sans">
+    <div className="flex flex-col justify-start pt-16 sm:pt-20 min-h-screen bg-[#FAFAF8] dark:bg-canvas p-6 text-left max-w-md mx-auto w-full font-sans">
       <div className="mb-6">
         <h2 className="page-title">
           Join your mess
