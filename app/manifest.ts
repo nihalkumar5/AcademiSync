@@ -1,9 +1,10 @@
 import { MetadataRoute } from 'next';
+import { BRAND, IS_COLLEGE_BRAND } from '@/lib/brand';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Intersemester — Academic Planner & Timetable',
-    short_name: 'Intersemester',
+    name: IS_COLLEGE_BRAND ? `${BRAND.name} — ${BRAND.tagline}` : 'Intersemester — Academic Planner & Timetable',
+    short_name: BRAND.shortName,
     description: 'Smart academic assistant that helps students manage classes, tasks, carry lists and exams.',
     start_url: '/',
     id: '/',

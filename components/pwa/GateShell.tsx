@@ -1,4 +1,5 @@
 'use client';
+import { BrandWordmark } from '@/components/brand/BrandWordmark';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -17,10 +18,7 @@ export const GateShell: React.FC<{ label: string; art: React.ReactNode; children
       className="shrink-0 flex items-center justify-center pb-2"
       style={{ paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 10px), 22px)' }}
     >
-      <span className="text-[22px] leading-none tracking-tighter" aria-label="intersemester">
-        <span className="font-extrabold">inter</span>
-        <span className="font-normal opacity-80">semester</span>
-      </span>
+      <BrandWordmark size={22} />
     </header>
 
     <div className="relative flex-1 min-h-0 flex items-center justify-center px-6 pt-3 pb-6 overflow-hidden">

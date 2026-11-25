@@ -629,3 +629,147 @@ body.fullscreen-open header:not([aria-modal="true"] header) {
   .campus-sig__art { clip-path: none; animation: none !important; }
   .campus-sig__fill, .campus-sig__place { opacity: 1 !important; animation: none !important; }
 }
+
+/* ============================================================================================
+   College-brand splash ("the seal"). See components/brand/BrandSplash.tsx.
+   Look: aurora light in the crest's colours, a glass halo with a spinning tricolour orbit, a bold
+   gradient wordmark with a shine pass, glass pills, and a progress hairline. Exit is an iris that
+   opens from the crest. Everything arrives from blur or a mask, never a plain slide.
+   ============================================================================================ */
+@property --bs-iris { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --bs-spin { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+
+.bs {
+  --bs-navy: 29 62 140;
+  --bs-saffron: 245 152 54;
+  --bs-green: 46 170 90;
+  --ease-out-expo: cubic-bezier(.16, 1, .3, 1);
+  --ease-spring: cubic-bezier(.34, 1.4, .64, 1);
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgb(var(--c-canvas));
+  overflow: hidden;
+  padding: env(safe-area-inset-top, 0px) 24px max(env(safe-area-inset-bottom, 0px), 28px);
+  -webkit-mask-image: radial-gradient(circle at 50% 40%, transparent var(--bs-iris), #000 calc(var(--bs-iris) + 1px));
+  mask-image: radial-gradient(circle at 50% 40%, transparent var(--bs-iris), #000 calc(var(--bs-iris) + 1px));
+}
+
+/* Aurora */
+.bs__aurora { position: absolute; inset: 0; opacity: 0; animation: bsFade 1000ms var(--ease-out-expo) forwards; }
+.bs__blob { position: absolute; border-radius: 9999px; filter: blur(60px); will-change: transform; }
+.bs__blob--a { width: 70vmin; height: 70vmin; left: -18vmin; top: 8vh; background: rgb(var(--bs-saffron) / .32); animation: bsDriftA 7s ease-in-out infinite alternate; }
+.bs__blob--b { width: 66vmin; height: 66vmin; right: -20vmin; top: 26vh; background: rgb(var(--bs-green) / .26); animation: bsDriftB 8s ease-in-out infinite alternate; }
+.bs__blob--c { width: 80vmin; height: 60vmin; left: 10vmin; bottom: -22vmin; background: rgb(var(--bs-navy) / .18); animation: bsDriftC 9s ease-in-out infinite alternate; }
+.dark .bs__blob--a { background: rgb(var(--bs-saffron) / .22); }
+.dark .bs__blob--b { background: rgb(var(--bs-green) / .18); }
+.dark .bs__blob--c { background: rgb(90 130 255 / .16); }
+
+.bs__grain {
+  position: absolute; inset: 0; opacity: .05; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.bs__stage { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: -8vh; }
+
+/* Seal */
+.bs__seal { position: relative; width: 150px; height: 150px; }
+.bs__halo {
+  position: absolute; inset: -34px; border-radius: 9999px;
+  background: radial-gradient(closest-side, rgb(255 255 255 / .9), rgb(255 255 255 / 0));
+  opacity: 0; transform: scale(.7);
+  animation: bsHalo 1000ms var(--ease-out-expo) 300ms forwards, bsPulse 2.4s ease-in-out 1300ms infinite;
+}
+.dark .bs__halo { background: radial-gradient(closest-side, rgb(255 255 255 / .16), rgb(255 255 255 / 0)); }
+
+/* Spinning tricolour orbit, masked to a thin ring */
+.bs__orbit {
+  position: absolute; inset: -14px; border-radius: 9999px;
+  background: conic-gradient(from var(--bs-spin), rgb(var(--bs-saffron)) 0deg, rgb(var(--bs-saffron) / 0) 90deg, rgb(var(--bs-green) / 0) 180deg, rgb(var(--bs-green)) 260deg, rgb(var(--bs-navy)) 320deg, rgb(var(--bs-saffron)) 360deg);
+  -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+  mask: radial-gradient(closest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+  filter: drop-shadow(0 0 6px rgb(var(--bs-saffron) / .5));
+  opacity: 0;
+  animation: bsFade 700ms ease 650ms forwards, bsSpin 2.2s linear 650ms infinite;
+}
+
+.bs__ring { position: absolute; inset: -28px; width: calc(100% + 56px); height: calc(100% + 56px); overflow: visible; transform: rotate(-90deg); }
+.bs__ring circle { fill: none; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.bs__ring-a { stroke: rgb(var(--bs-navy) / .35); stroke-width: .7; animation: bsInscribe 1000ms var(--ease-out-expo) 80ms forwards; }
+.dark .bs__ring-a { stroke: rgb(255 255 255 / .3); }
+
+.bs__crest {
+  position: absolute; inset: 0; border-radius: 9999px; overflow: hidden;
+  background: #fff;
+  box-shadow: 0 1px 0 rgb(255 255 255 / .9) inset, 0 30px 60px -26px rgb(var(--bs-navy) / .55), 0 0 0 1px rgb(var(--bs-navy) / .06);
+  opacity: 0; transform: scale(.7) rotate(-8deg); filter: blur(12px);
+  animation: bsBloom 900ms var(--ease-spring) 380ms forwards;
+}
+.bs__crest img { width: 100%; height: 100%; object-fit: contain; user-select: none; }
+.bs__sheen {
+  position: absolute; inset: -30%;
+  background: linear-gradient(115deg, transparent 40%, rgb(255 255 255 / .9) 50%, transparent 60%);
+  transform: translateX(-120%); mix-blend-mode: soft-light;
+  animation: bsSheen 1000ms cubic-bezier(.4, 0, .2, 1) 1100ms forwards;
+}
+
+/* Wordmark: bold; letters rise out of blur, then a light pass runs across (an overlay copy of the
+   text clipped to a moving gradient, so the rising letters keep their own transforms) */
+.bs__name { position: relative; margin-top: 40px; font-size: 32px; line-height: 1.05; font-weight: 700; letter-spacing: -.03em; white-space: nowrap; color: rgb(var(--c-fg)); }
+.bs__name::after {
+  content: attr(data-text); position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(100deg, transparent 35%, rgb(var(--bs-saffron)) 47%, rgb(var(--bs-green)) 53%, transparent 65%);
+  background-size: 300% 100%; background-position: 100% 0;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: bsShine 1300ms cubic-bezier(.4, 0, .2, 1) 1550ms forwards;
+}
+.bs__ch { display: inline-block; opacity: 0; transform: translateY(18px) scale(.96); filter: blur(8px); animation: bsRise 700ms var(--ease-out-expo) forwards; }
+
+/* Tagline as a glass pill */
+.bs__tagline {
+  margin-top: 18px; padding: 7px 14px; border-radius: 9999px;
+  font-size: 13px; font-weight: 500; color: rgb(var(--c-fg-2)); letter-spacing: .2em;
+  background: rgb(var(--c-surface) / .55); border: 1px solid rgb(var(--c-line) / .6);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  opacity: 0; transform: translateY(6px);
+  animation: bsTagline 900ms var(--ease-out-expo) 1320ms forwards;
+}
+
+/* Footer: glass pill and a progress hairline that fills until the app opens */
+.bs__foot { position: absolute; left: 0; right: 0; bottom: max(env(safe-area-inset-bottom, 0px), 30px); display: flex; flex-direction: column; align-items: center; gap: 14px; opacity: 0; animation: bsFade 700ms ease 1350ms forwards; }
+.bs__pill {
+  display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 9999px;
+  background: rgb(var(--c-surface) / .6); border: 1px solid rgb(var(--c-line) / .6);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: 0 8px 24px -16px rgb(0 0 0 / .3);
+}
+.bs__foot-label { font-size: 11px; color: rgb(var(--c-muted)); }
+.bs__foot-mark { font-size: 16px; line-height: 1; letter-spacing: -.05em; color: rgb(var(--c-fg)); }
+.bs__progress { width: 88px; height: 3px; border-radius: 3px; background: rgb(var(--c-fg) / .08); overflow: hidden; }
+.bs__progress > span { display: block; height: 100%; border-radius: inherit; background: rgb(var(--c-fg) / .55); transform-origin: left; transform: scaleX(0); animation: bsProgress 1900ms cubic-bezier(.5, 0, .3, 1) 250ms forwards; }
+
+/* Exit */
+.bs--leave { animation: bsIris 680ms cubic-bezier(.7, 0, .2, 1) forwards; }
+.bs--leave .bs__stage { animation: bsLift 680ms cubic-bezier(.7, 0, .2, 1) forwards; }
+.bs--leave .bs__foot { animation: bsOut 300ms ease forwards; }
+
+@keyframes bsFade { to { opacity: 1; } }
+@keyframes bsOut { to { opacity: 0; } }
+@keyframes bsDriftA { to { transform: translate(14vmin, 6vh) scale(1.12); } }
+@keyframes bsDriftB { to { transform: translate(-12vmin, -8vh) scale(1.08); } }
+@keyframes bsDriftC { to { transform: translate(-8vmin, -6vh) scale(1.15); } }
+@keyframes bsHalo { to { opacity: 1; transform: none; } }
+@keyframes bsPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes bsSpin { to { --bs-spin: 360deg; } }
+@keyframes bsInscribe { to { stroke-dashoffset: 0; } }
+@keyframes bsBloom { to { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes bsSheen { to { transform: translateX(120%); } }
+@keyframes bsRise { to { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes bsShine { to { background-position: 0% 0; } }
+@keyframes bsTagline { to { opacity: 1; transform: none; letter-spacing: .04em; } }
+@keyframes bsProgress { to { transform: scaleX(1); } }
+@keyframes bsIris { from { --bs-iris: 0px; } to { --bs-iris: 150vmax; } }
+@keyframes bsLift { to { opacity: 0; transform: scale(1.1); filter: blur(6px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bs *, .bs { animation-duration: 1ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; }
+}

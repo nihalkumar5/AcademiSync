@@ -1,4 +1,6 @@
 'use client';
+import { BrandWordmark } from '@/components/brand/BrandWordmark';
+import { IS_COLLEGE_BRAND } from '@/lib/brand';
 
 import React from 'react';
 import {
@@ -135,11 +137,10 @@ export const Sidebar: React.FC = () => {
       {/* Brand: same height as the page header so their bottom lines meet */}
       <div className="sheen h-[72px] shrink-0 flex items-center justify-between gap-f2 pl-f5 pr-f4 border-b border-line">
         <div className="leading-none min-w-0">
-          <p className="text-[24px] tracking-tighter text-fg">
-            <span className="font-extrabold">inter</span>
-            <span className="font-normal opacity-70">semester</span>
+          <p className="text-fg">
+            <BrandWordmark size={24} softOpacity={0.7} />
           </p>
-          <p className="mt-f1 text-[13px] text-muted">{isFaculty ? 'Faculty edition' : 'Student edition'}</p>
+          <p className="mt-f1 text-[13px] text-muted">{IS_COLLEGE_BRAND ? 'Powered by Intersemester' : isFaculty ? 'Faculty edition' : 'Student edition'}</p>
         </div>
         <button
           type="button"
