@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AppProvider } from '@/context/AppContext';
-import { BRAND, IS_COLLEGE_BRAND } from '@/lib/brand';
-import { BrandSplash } from '@/components/brand/BrandSplash';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -17,7 +15,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: IS_COLLEGE_BRAND ? `${BRAND.name} · ${BRAND.tagline}` : 'Intersemester — Your Academic Life, Organized',
+  title: 'Intersemester — Your Academic Life, Organized',
   description:
     'Smart academic assistant that helps students manage their classes, tasks, deadlines, and everyday campus life with clarity and calm.',
   icons: {
@@ -29,7 +27,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: BRAND.shortName,
+    title: 'Intersemester',
   },
 };
 import { Analytics } from '@vercel/analytics/react';
@@ -42,7 +40,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-canvas" suppressHydrationWarning>
       <head>
-        <meta name="apple-mobile-web-app-title" content={BRAND.shortName} />
+        <meta name="apple-mobile-web-app-title" content="Intersemester" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         {/* One layout on every phone: in portrait, lay the page out at a 390px design width (360px on
@@ -55,7 +53,6 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-[100dvh] bg-canvas text-fg antialiased flex flex-col font-sans selection:bg-[#96725B] selection:text-white">
-        <BrandSplash />
         <AppProvider>
           {children}
           <Analytics />

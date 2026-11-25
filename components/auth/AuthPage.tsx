@@ -1,6 +1,4 @@
 'use client';
-import { BRAND } from '@/lib/brand';
-import { PoweredBy } from '@/components/brand/BrandWordmark';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -240,7 +238,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
         await updateProfile(userCred.user, {
           displayName: cleanName
         });
-        showToast('Account Created', `Welcome to ${BRAND.name}, ${cleanName}!`, 'success');
+        showToast('Account Created', `Welcome to Intersemester, ${cleanName}!`, 'success');
         await proceedAfterAuth();
       } else {
         await signInWithEmailAndPassword(auth, cleanEmail, cleanPass);
@@ -301,7 +299,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
         : 'Enter your password'
       : isSignup
       ? 'Create your account'
-      : `Log in to ${BRAND.name}`;
+      : 'Log in to Intersemester';
   const subtitle =
     viewType === 'forgot_password'
       ? "Enter the email you signed up with. We'll send you a link."
@@ -335,7 +333,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
       <aside className="hidden lg:flex relative overflow-hidden rounded-[32px] bg-surface-2 flex-col justify-between p-12 xl:p-14">
         <div className="flex items-center gap-3">
           <BrandMark />
-          <span className="text-[17px] font-semibold tracking-tight">{BRAND.name}</span>
+          <span className="text-[17px] font-semibold tracking-tight">Intersemester</span>
         </div>
 
         <div className="max-w-[520px]">
@@ -350,7 +348,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
           <SlideDots active={slide} onPick={setSlide} large />
         </div>
 
-        {BRAND.poweredBy ? <PoweredBy /> : <p className="text-[13px] text-muted">Made for students, faculty and campus teams.</p>}
+        <p className="text-[13px] text-muted">Made for students, faculty and campus teams.</p>
       </aside>
 
       {/* ===== Form side ===== */}
@@ -360,7 +358,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
           {viewType === 'providers' ? (
             <div className="flex items-center gap-2.5 lg:invisible">
               <BrandMark small />
-              <span className="text-[15px] font-semibold tracking-tight">{BRAND.name}</span>
+              <span className="text-[15px] font-semibold tracking-tight">Intersemester</span>
             </div>
           ) : (
             <button
@@ -496,7 +494,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
                 </form>
 
                 <p className="mt-3 text-center text-[14px] text-muted">
-                  {isSignup ? 'Already have an account?' : `New to ${BRAND.name}?`}{' '}
+                  {isSignup ? 'Already have an account?' : 'New to Intersemester?'}{' '}
                   <button
                     type="button"
                     onClick={() => {
@@ -679,7 +677,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode: initialMode = 'signup'
               </Link>
               .
             </p>
-            {BRAND.poweredBy && <PoweredBy className="mt-4 w-full justify-center lg:hidden" />}
           </div>
         </div>
       </main>
@@ -743,7 +740,7 @@ const SlideDots: React.FC<{ active: number; onPick: (i: number) => void; large?:
 const BrandMark: React.FC<{ small?: boolean }> = ({ small }) => (
   <span className={`${small ? 'w-8 h-8 rounded-[10px]' : 'w-10 h-10 rounded-xl'} overflow-hidden bg-white border border-line-soft flex items-center justify-center shrink-0`}>
     {/* eslint-disable-next-line @next/next/no-img-element */}
-    <img src={BRAND.logo || '/logo51.png'} alt="" className={`w-full h-full object-cover select-none ${BRAND.logo ? '' : 'scale-[1.75]'}`} draggable={false} />
+    <img src="/logo51.png" alt="" className="w-full h-full object-cover scale-[1.75] select-none" draggable={false} />
   </span>
 );
 

@@ -1,5 +1,4 @@
 'use client';
-import { BrandWordmark } from '@/components/brand/BrandWordmark';
 
 import React, { useState, useRef, useEffect } from 'react';
 import {
@@ -169,8 +168,9 @@ export const Header: React.FC = () => {
         <div className="flex items-center justify-between w-full max-w-6xl mx-auto relative md:px-f5">
           <div className="flex items-center gap-3 select-none">
           {/* Logo only shown on mobile where sidebar is hidden */}
-          <h1 className="md:hidden leading-none text-fg">
-            <BrandWordmark size={22} />
+          <h1 className="md:hidden text-[22px] sm:text-2xl leading-none text-fg tracking-[-0.04em] font-sans">
+            <span className="font-extrabold">inter</span>
+            <span className="font-normal opacity-80">semester</span>
           </h1>
 
           {/* Desktop: where you are (the logo already lives in the sidebar) */}
