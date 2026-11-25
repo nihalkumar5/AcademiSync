@@ -1,6 +1,4 @@
 'use client';
-import { BrandWordmark } from '@/components/brand/BrandWordmark';
-import { BRAND } from '@/lib/brand';
 
 import { HandwrittenText } from '@/components/ui/HandwrittenText';
 import React, { useEffect, useRef, useState } from 'react';
@@ -115,7 +113,7 @@ export const OnboardingModal = () => {
   const content: Record<Step, React.ReactNode> = {
     0: (
       <>
-        <p className="text-[13px] font-semibold text-muted">Welcome to {BRAND.name}</p>
+        <p className="text-[13px] font-semibold text-muted">Welcome to Intersemester</p>
         <h1 className="mt-2 text-[34px] sm:text-[42px] leading-[1.06] tracking-tight text-fg">
           Your whole semester,
           <span className="block mt-1.5 -rotate-1 origin-left">
@@ -262,11 +260,14 @@ export const OnboardingModal = () => {
   const primaryLabel = step === 0 ? 'Get started' : 'Continue';
 
   return (
-    <div className="fixed inset-0 z-[100] bg-canvas text-fg w-full h-[100dvh] overflow-hidden lg:grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]" role="dialog" aria-modal="true" aria-label={`Welcome to ${BRAND.name}`}>
+    <div className="fixed inset-0 z-[100] bg-canvas text-fg w-full h-[100dvh] overflow-hidden lg:grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]" role="dialog" aria-modal="true" aria-label="Welcome to Intersemester">
       {/* ===== Desktop side panel ===== */}
       <aside className="hidden lg:flex lg:m-3 rounded-[32px] sheen-ink relative overflow-hidden bg-ink text-on-ink flex-col justify-between p-12 xl:p-16">
         <div className="flex items-center gap-3">
-          <BrandWordmark size={24} />
+          <span className="text-[24px] leading-none tracking-tighter font-sans" aria-label="intersemester">
+            <span className="font-extrabold">inter</span>
+            <span className="font-normal opacity-80">semester</span>
+          </span>
         </div>
         <div className="max-w-[500px]">
           <div className="rounded-card bg-surface border border-white/10 h-[340px] p-8 flex items-center justify-center">
@@ -300,7 +301,10 @@ export const OnboardingModal = () => {
               </button>
             ) : (
               <div className="flex items-center gap-2 lg:invisible">
-                <BrandWordmark size={21} className="text-fg" />
+                <span className="text-[21px] leading-none text-fg tracking-tighter font-sans" aria-label="intersemester">
+                  <span className="font-extrabold">inter</span>
+                  <span className="font-normal opacity-80">semester</span>
+                </span>
               </div>
             )}
             {/* Skip jumps to the last step, where returning users find "Already have an account?" */}
